@@ -58,6 +58,7 @@ namespace ServiceStack.Host
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
             var actions = serviceType.GetRequestActions(requestType);
+            var actionUpperNames = actions.Select(x => x.NameUpper).Distinct().ToList();
             authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
             var tagAttrs = requestType.AllAttributes<TagAttribute>().ToList();
 
@@ -67,7 +68,10 @@ namespace ServiceStack.Host
                 RequestType = requestType,
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
-                Actions = actions.Select(x => x.NameUpper).Distinct().ToList(),
+                Actions = actionUpperNames,
+                Method = ServiceClientUtils.GetHttpMethod(requestType) 
+                         ?? actionUpperNames.FirstOrDefault(x => x != "ANY")
+                         ?? HttpMethods.Post,
                 Routes = new List<RestPath>(),
                 RequestFilterAttributes = reqFilterAttrs,
                 ResponseFilterAttributes = resFilterAttrs,
@@ -743,8 +747,10 @@ namespace ServiceStack.Host
         public Type ViewModelType => AutoCrudOperation.GetViewModelType(RequestType, ResponseType);
         public RestrictAttribute RestrictTo { get; set; }
         public List<string> Actions { get; set; }
-        public List<RestPath> Routes { get; set; }
+        public bool ReturnsVoid => ResponseType == null;
         public bool IsOneWay => ResponseType == null;
+        public string Method { get; set; }
+        public List<RestPath> Routes { get; set; }
         public List<IRequestFilterBase> RequestFilterAttributes { get; set; }
         public List<IResponseFilterBase> ResponseFilterAttributes { get; set; }
         public bool RequiresAuthentication { get; set; }
@@ -764,6 +770,7 @@ namespace ServiceStack.Host
             ResponseType = ResponseType,
             RestrictTo = RestrictTo,
             Actions = Actions?.ToList(),
+            Method = Method,
             Routes = Routes?.ToList(),
             RequestFilterAttributes = RequestFilterAttributes,
             RequiresAuthentication = RequiresAuthentication,
@@ -843,7 +850,7 @@ namespace ServiceStack.Host
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
-                .Where(x => !x.IsOneWay)
+                .Where(x => !x.ReturnsVoid)
                 .Where(x => soapTypes.Contains(x.RequestType))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
@@ -854,7 +861,7 @@ namespace ServiceStack.Host
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
-                .Where(x => x.IsOneWay)
+                .Where(x => x.ReturnsVoid)
                 .Where(x => soapTypes.Contains(x.RequestType))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
@@ -890,7 +897,7 @@ namespace ServiceStack.Host
             var to = new OperationDto
             {
                 Name = operation.Name,
-                ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetOperationName(),
+                ResponseName = operation.ReturnsVoid ? null : operation.ResponseType.GetOperationName(),
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.Map(x => x.Path),

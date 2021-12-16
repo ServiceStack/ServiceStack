@@ -518,6 +518,9 @@ namespace ServiceStack.NativeTypes.Python
                 }
 
                 string responseTypeExpression = null;
+                string responseMethod = options?.Op?.Method != null
+                    ? $"def method(): return '{options?.Op?.Method}'"
+                    : null;
 
                 var interfaces = new List<string>();
                 var implStr = options.ImplementsFn?.Invoke();
@@ -648,6 +651,11 @@ namespace ServiceStack.NativeTypes.Python
                 {
                     sb.AppendLine("@staticmethod"); // needs to change if responseTypeExpression is no longer a static method 
                     sb.AppendLine(responseTypeExpression);
+                    if (responseMethod != null)
+                    {
+                        sb.AppendLine("@staticmethod"); // needs to change if responseMethod is no longer a static method 
+                        sb.AppendLine(responseMethod);
+                    }
                 }
                 else if (type.Properties.IsEmpty() && !addVersionInfo && type.Name != "IReturn`1" && type.Name != "IReturnVoid")
                 {

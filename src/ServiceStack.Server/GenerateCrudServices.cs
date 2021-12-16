@@ -1227,6 +1227,7 @@ namespace ServiceStack
                             : ctx.RoutePathBase + "/{" + id + "}";
                             
                         var op = new MetadataOperationType {
+                            Method = verb,
                             Actions = new List<string> { verb },
                             Routes = new List<MetadataRoute> {},
                             Request = new MetadataType {

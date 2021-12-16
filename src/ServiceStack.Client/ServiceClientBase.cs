@@ -590,62 +590,25 @@ namespace ServiceStack
             }
         }
 
-        public static string ToHttpMethod(Type requestType)
-        {
-            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>)))
-                return HttpMethods.Post;
-            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>)))
-                return HttpMethods.Put;
-            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IDeleteDb<>)))
-                return HttpMethods.Delete;
-            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
-                return HttpMethods.Patch;
-            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ISaveDb<>)))
-                return HttpMethods.Post;
-            if (typeof(IQuery).IsAssignableFrom(requestType))
-                return HttpMethods.Get;
-
-            return null;
-        }
-
         public virtual TResponse Send<TResponse>(object request)
         {
             if (typeof(TResponse) == typeof(object))
                 return (TResponse)this.Send(this.GetResponseType(request), request);
 
-            if (request is IVerb)
+            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
+            if (httpMethod != null)
             {
-                if (request is IGet)
-                    return Get<TResponse>(request);
-                if (request is IPost)
-                    return Post<TResponse>(request);
-                if (request is IPut)
-                    return Put<TResponse>(request);
-                if (request is IDelete)
-                    return Delete<TResponse>(request);
-                if (request is IPatch)
-                    return Patch<TResponse>(request);
+                return httpMethod switch {
+                    HttpMethods.Get => Get<TResponse>(request),
+                    HttpMethods.Post => Post<TResponse>(request),
+                    HttpMethods.Put => Put<TResponse>(request),
+                    HttpMethods.Delete => Delete<TResponse>(request),
+                    HttpMethods.Patch => Patch<TResponse>(request),
+                    _ => throw new NotSupportedException("Unknown " + httpMethod),
+                };
             }
 
-            if (request is IQuery)
-                return Get<TResponse>(request);
-            if (request is ICrud)
-            {
-                var crudMethod = ToHttpMethod(request.GetType());
-                if (crudMethod != null)
-                {
-                    return crudMethod switch {
-                        HttpMethods.Post => Post<TResponse>(request),
-                        HttpMethods.Put => Put<TResponse>(request),
-                        HttpMethods.Delete => Delete<TResponse>(request),
-                        HttpMethods.Patch => Patch<TResponse>(request),
-                        HttpMethods.Get => Get<TResponse>(request),
-                        _ => throw new NotSupportedException("Unknown " + crudMethod),
-                    };
-                }
-            }
-
-            var httpMethod = HttpMethod ?? DefaultHttpMethod;
+            httpMethod = HttpMethod ?? DefaultHttpMethod;
             var requestUri = ResolveUrl(httpMethod, UrlResolver == null
                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
                 : this.BasePath + request.GetType().Name);
@@ -1160,34 +1123,16 @@ namespace ServiceStack
             SendOneWay(requestDto);
         }
 
-        public static string GetExplicitMethod(object request)
-        {
-            if (!(request is IVerb))
-                return null;
-
-            return request is IGet ?
-                  HttpMethods.Get
-                : request is IPost ?
-                  HttpMethods.Post
-                : request is IPut ?
-                  HttpMethods.Put
-                : request is IDelete ?
-                  HttpMethods.Delete
-                : request is IPatch ?
-                  HttpMethods.Patch :
-                  null;
-        }
-
         public virtual void SendOneWay(object request)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType()) ?? HttpMethod ?? DefaultHttpMethod;
             SendOneWay(httpMethod, ResolveUrl(httpMethod, requestUri), request);
         }
 
         public virtual void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
-            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType()) ?? HttpMethod ?? DefaultHttpMethod;
             SendOneWay(httpMethod, ResolveUrl(httpMethod, relativeOrAbsoluteUrl), request);
         }
 
@@ -1225,24 +1170,23 @@ namespace ServiceStack
             if (typeof(TResponse) == typeof(object))
                 return (TResponse) await this.SendAsync(this.GetResponseType(request), request, token);
 
-            if (request is IVerb)
+            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
+            if (httpMethod != null)
             {
-                if (request is IGet)
-                    return await GetAsync<TResponse>(request, token);
-                if (request is IPost)
-                    return await PostAsync<TResponse>(request, token);
-                if (request is IPut)
-                    return await PutAsync<TResponse>(request, token);
-                if (request is IDelete)
-                    return await DeleteAsync<TResponse>(request, token);
-                if (request is IPatch)
-                    return await PatchAsync<TResponse>(request, token);
+                return httpMethod switch {
+                    HttpMethods.Get => await GetAsync<TResponse>(request, token).ConfigAwait(),
+                    HttpMethods.Post => await PostAsync<TResponse>(request, token).ConfigAwait(),
+                    HttpMethods.Put => await PutAsync<TResponse>(request, token).ConfigAwait(),
+                    HttpMethods.Delete => await DeleteAsync<TResponse>(request, token).ConfigAwait(),
+                    HttpMethods.Patch => await PatchAsync<TResponse>(request, token).ConfigAwait(),
+                    _ => throw new NotSupportedException("Unknown " + httpMethod),
+                };
             }
 
-            var httpMethod = HttpMethod ?? DefaultHttpMethod;
+            httpMethod = DefaultHttpMethod;
             var requestUri = ResolveUrl(httpMethod, UrlResolver == null
-                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
-                 : Format + "/reply/" + request.GetType().Name);
+                ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
+                : this.BasePath + request.GetType().Name);
 
             return await asyncClient.SendAsync<TResponse>(httpMethod, requestUri, request, token);
         }

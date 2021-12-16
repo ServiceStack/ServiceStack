@@ -638,39 +638,20 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
             return (TResponse) result;
         }
 
-        if (request is IVerb)
+        var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
+        if (httpMethod != null)
         {
-            if (request is IGet)
-                return await GetAsync<TResponse>(request, token).ConfigAwait();
-            if (request is IPost)
-                return await PostAsync<TResponse>(request, token).ConfigAwait();
-            if (request is IPut)
-                return await PutAsync<TResponse>(request, token).ConfigAwait();
-            if (request is IDelete)
-                return await DeleteAsync<TResponse>(request, token).ConfigAwait();
-            if (request is IPatch)
-                return await PatchAsync<TResponse>(request, token).ConfigAwait();
+            return httpMethod switch {
+                HttpMethods.Get => await GetAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Post => await PostAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Put => await PutAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Delete => await DeleteAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Patch => await PatchAsync<TResponse>(request, token).ConfigAwait(),
+                _ => throw new NotSupportedException("Unknown " + httpMethod),
+            };
         }
 
-        if (request is IQuery)
-            return await GetAsync<TResponse>(request, token);
-        if (request is ICrud)
-        {
-            var crudMethod = ServiceClientBase.ToHttpMethod(request.GetType());
-            if (crudMethod != null)
-            {
-                return crudMethod switch {
-                    HttpMethods.Post => await PostAsync<TResponse>(request, token).ConfigAwait(),
-                    HttpMethods.Put => await PutAsync<TResponse>(request, token).ConfigAwait(),
-                    HttpMethods.Delete => await DeleteAsync<TResponse>(request, token).ConfigAwait(),
-                    HttpMethods.Patch => await PatchAsync<TResponse>(request, token).ConfigAwait(),
-                    HttpMethods.Get => await GetAsync<TResponse>(request, token).ConfigAwait(),
-                    _ => throw new NotSupportedException("Unknown " + crudMethod),
-                };
-            }
-        }
-
-        var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
+        httpMethod = DefaultHttpMethod;
         var requestUri = ResolveUrl(httpMethod, UrlResolver == null
             ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
             : this.BasePath + request.GetType().Name);
@@ -854,7 +835,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     public void SendOneWay(string relativeOrAbsoluteUrl, object request) => SendOneWay(relativeOrAbsoluteUrl, request, default);
     public void SendOneWay(string relativeOrAbsoluteUrl, object request, CancellationToken token)
     {
-        var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
+        var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType()) ?? DefaultHttpMethod;
         var absoluteUri = ToAbsoluteUrl(ResolveUrl(httpMethod, relativeOrAbsoluteUrl));
         SendAsync<byte[]>(httpMethod, absoluteUri, request, token).Wait(token);
     }

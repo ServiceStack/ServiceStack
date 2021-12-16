@@ -142,6 +142,7 @@ namespace ServiceStack.NativeTypes
                 var opType = new MetadataOperationType
                 {
                     Actions = operation.Actions,
+                    Method = operation.Method,
                     Request = ToType(operation.RequestType),
                     Response = ToType(operation.ResponseType),
                     DataModel = ToTypeName(operation.DataModelType),

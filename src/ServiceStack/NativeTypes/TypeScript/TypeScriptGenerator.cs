@@ -425,8 +425,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                 }
 
                 string responseTypeExpression = null;
-                string responseMethod = options.Op?.Actions.Count == 1
-                    ? $"public getMethod() {{ return '{options.Op.Actions[0]}'; }}"
+                string responseMethod = options?.Op?.Method != null
+                    ? $"public getMethod() {{ return '{options.Op.Method}'; }}"
                     : null;
 
                 var interfaces = new List<string>();

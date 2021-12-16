@@ -391,6 +391,7 @@ namespace ServiceStack
         public MetadataType Response { get; set; }
         public List<string> Actions { get; set; }
         public bool ReturnsVoid { get; set; }
+        public string Method { get; set; }
         public MetadataTypeName ReturnType { get; set; }
         public List<MetadataRoute> Routes { get; set; }
         public MetadataTypeName DataModel { get; set; }
