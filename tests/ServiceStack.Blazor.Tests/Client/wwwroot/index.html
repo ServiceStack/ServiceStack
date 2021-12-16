@@ -47,6 +47,9 @@ document.querySelector('#app-loading .collapse .nav').innerHTML = NAV
                 <span class="${cls}" aria-hidden="true"></span> ${label}
             </a>
         </li>`).join('')
+    document.querySelector('#app-loading .navbar-toggler').onclick = function () {
+        this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse')
+    };
 </script>
                 </div>
             </div>
@@ -60,7 +63,7 @@ document.querySelector('#app-loading .collapse .nav').innerHTML = NAV
                     <div class="spinner-border float-start mt-2 me-2" role="status">
                         <span class="sr-only"></span>
                     </div>
-                    <h1>
+                    <h1 style="font-size:36px">
                         Loading...
                     </h1>
                     <!--/PAGE-->

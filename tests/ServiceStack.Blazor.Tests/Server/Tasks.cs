@@ -3,7 +3,9 @@ using ServiceStack.IO;
 using System.Text;
 using static System.Console;
 
-// Reuse Server App to run post build tasks like pre-rendering markdown pages
+// Reuse Server App to run post build tasks like pre-rendering SSG content like markdown pages
+// Tasks are automatically run in GitHub Actions release.yml but can be run locally with:
+// $ dotnet build /p:APP_TASKS=prerender:markdown
 public static class TaskRunner
 {
     public static Dictionary<string, ITask> Tasks = new()
