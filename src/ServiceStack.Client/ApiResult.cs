@@ -52,10 +52,12 @@ public class ApiResult<TResponse> : IHasErrorStatus
 
     public string? ErrorMessage => Error?.Message;
 
-    public string? ErrorSummary => Error != null && (Error.Errors == null || Error.Errors.Count == 0)
+    public ResponseError[] Errors => Error?.Errors.ToArray() ?? TypeConstants<ResponseError>.EmptyArray;
+
+    public string? ErrorSummary => Error != null && Errors.Length == 0
         ? Error.Message
         : null;
-
+    
     public string? FieldErrorMessage(string fieldName) => Error.FieldErrorMessage(fieldName);
 
     public ResponseError? FieldError(string fieldName) => Error.FieldError(fieldName);

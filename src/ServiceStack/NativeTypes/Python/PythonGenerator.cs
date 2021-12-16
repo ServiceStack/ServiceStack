@@ -517,13 +517,14 @@ namespace ServiceStack.NativeTypes.Python
                     }
                 }
 
+                var interfaces = new List<string>();
+                var implStr = options?.ImplementsFn?.Invoke();
+
                 string responseTypeExpression = null;
                 string responseMethod = options?.Op?.Method != null
                     ? $"def method(): return '{options?.Op?.Method}'"
                     : null;
 
-                var interfaces = new List<string>();
-                var implStr = options.ImplementsFn?.Invoke();
                 if (string.IsNullOrEmpty(implStr) && type.Type is {IsAbstract: true})
                 {
                     // need to emit type hint when a generic base class contains a generic response type
