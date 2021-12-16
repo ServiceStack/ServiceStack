@@ -12,7 +12,7 @@
 <h1 class="fs-2 mb-3">Sign Up</h1>
 
 <form @onsubmit="submit" class=@ClassNames("max-w-xl")>
-<CascadingValue Value=@apiResult.ErrorStatus>
+<CascadingValue Value=@apiResult.Error>
     <ErrorSummary VisibleFields=@(new[]{ 
         nameof(request.DisplayName), nameof(request.Email), nameof(request.Password), nameof(request.ConfirmPassword) }) />
 

@@ -4,7 +4,7 @@
 <h1 class="fs-2">Call Hello</h1>
 
 <form @onsubmit="submit" class="max-w-xl d-flex align-items-center">
-<CascadingValue Value=@apiResult.ErrorStatus>
+<CascadingValue Value=@apiResult.Error>
     <div class="form-floating">
         <TextInput placeholder="What's your name?" @bind-Value="request.Name" spellcheck="false" class="w-screen-xs" />
     </div>

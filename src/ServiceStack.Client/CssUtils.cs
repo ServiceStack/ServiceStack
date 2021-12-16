@@ -8,7 +8,7 @@ public static class CssUtils
     public static class Bootstrap
     {
         public static string InputClass<T>(ApiResult<T> apiResult, string fieldName, string? valid = null, string? invalid = null) =>
-            InputClass(apiResult.ErrorStatus, fieldName, valid, invalid);
+            InputClass(apiResult.Error, fieldName, valid, invalid);
 
         public static string InputClass(ResponseStatus? status, string fieldName,
             string? valid = null,
@@ -21,7 +21,7 @@ public static class CssUtils
     public static class Tailwind
     {
         public static string InputClass<T>(ApiResult<T> apiResult, string fieldName, string? valid = null, string? invalid = null) =>
-            InputClass(apiResult.ErrorStatus, fieldName, valid, invalid);
+            InputClass(apiResult.Error, fieldName, valid, invalid);
 
         public static string InputClass(ResponseStatus? status, string fieldName,
             string? valid = null,

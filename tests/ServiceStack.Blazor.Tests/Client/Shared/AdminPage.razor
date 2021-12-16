@@ -29,7 +29,7 @@
           </ol>
         </nav>
 
-        <ErrorSummary Status=@appMetadataResult.ErrorStatus />
+        <ErrorSummary Status=@appMetadataResult.Error />
 
     @if (!User.HasRole(AppRoles.Admin))
     {

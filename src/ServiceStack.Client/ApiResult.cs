@@ -40,27 +40,27 @@ public static class ApiResult
     }
 }
 
-public class ApiResult<TResponse>
+public class ApiResult<TResponse> : IHasErrorStatus
 {
     public TResponse? Response { get; }
 
-    public ResponseStatus? ErrorStatus { get; private set; }
+    public ResponseStatus? Error { get; private set; }
 
-    public bool Completed => Response != null || ErrorStatus != null;
-    public bool IsError => ErrorStatus.IsError();
+    public bool Completed => Response != null || Error != null;
+    public bool IsError => Error.IsError();
     public bool IsSuccess => !IsError && Response != null;
 
-    public string? ErrorMessage => ErrorStatus?.Message;
+    public string? ErrorMessage => Error?.Message;
 
-    public string? ErrorSummary => ErrorStatus != null && (ErrorStatus.Errors == null || ErrorStatus.Errors.Count == 0)
-        ? ErrorStatus.Message
+    public string? ErrorSummary => Error != null && (Error.Errors == null || Error.Errors.Count == 0)
+        ? Error.Message
         : null;
 
-    public string? FieldErrorMessage(string fieldName) => ErrorStatus.FieldErrorMessage(fieldName);
+    public string? FieldErrorMessage(string fieldName) => Error.FieldErrorMessage(fieldName);
 
-    public ResponseError? FieldError(string fieldName) => ErrorStatus.FieldError(fieldName);
+    public ResponseError? FieldError(string fieldName) => Error.FieldError(fieldName);
 
-    public bool HasFieldError(string fieldName) => ErrorStatus.HasErrorField(fieldName);
+    public bool HasFieldError(string fieldName) => Error.HasErrorField(fieldName);
 
     public ApiResult(TResponse response)
     {
@@ -69,27 +69,27 @@ public class ApiResult<TResponse>
 
     public ApiResult(ResponseStatus errorStatus)
     {
-        ErrorStatus = errorStatus;
+        Error = errorStatus;
     }
 
     public ApiResult() { }
 
-    public void Reset() => ErrorStatus = null;
+    public void Reset() => Error = null;
 
     public void AddFieldError(string fieldName, string message, string? errorCode = ApiResult.FieldErrorCode)
     {
-        ErrorStatus ??= new ResponseStatus {
+        Error ??= new ResponseStatus {
             ErrorCode = ErrorUtils.FieldErrorCode,
             Message = message,
         };
-        ErrorStatus.AddFieldError(fieldName, message);
+        Error.AddFieldError(fieldName, message);
     }
 
     public void SetError(string errorMessage, string errorCode = nameof(Exception))
     {
-        ErrorStatus ??= new ResponseStatus();
-        ErrorStatus.Message = errorMessage;
-        ErrorStatus.ErrorCode = errorCode;
+        Error ??= new ResponseStatus();
+        Error.Message = errorMessage;
+        Error.ErrorCode = errorCode;
     }
 }
 

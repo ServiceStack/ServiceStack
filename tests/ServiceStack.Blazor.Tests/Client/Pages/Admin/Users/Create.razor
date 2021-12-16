@@ -4,7 +4,7 @@
 <form @onsubmit="submit" @onsubmit:preventDefault autocomplete="off" class=@CssUtils.ClassNames("mt-3 relative shadow rounded p-4",
         createUserResult.IsError ? "error" : "",
         createUserResult.Completed ? "" : "loading", @class)>
-<CascadingValue Value=@createUserResult.ErrorStatus>
+<CascadingValue Value=@createUserResult.Error>
 
     <button type="button" class="close" @onclick="close"><i></i></button>
     <h1 class="fs-4 text-secondary text-center">
@@ -129,7 +129,7 @@
     ApiResult<AdminUserResponse> getUserResult = new();
     ApiResult<AdminUserResponse> createUserResult = new();
 
-    ResponseStatus? Status => createUserResult.ErrorStatus;
+    ResponseStatus? Status => createUserResult.Error;
 
     List<string> missingRoles => plugin?.AllRoles.Where(x => !request.Roles.Contains(x)).ToList() ?? new();
 

@@ -114,7 +114,7 @@
         if (apiResult.IsSuccess)
             todos = apiResult.Response!.Results;
         else
-            errorStatus = apiResult.ErrorStatus;
+            errorStatus = apiResult.Error;
     }
 
     async Task addTodo()
@@ -125,7 +125,7 @@
         if (apiResult.IsSuccess)
             request.Text = "";
         else
-            errorStatus = apiResult.ErrorStatus;
+            errorStatus = apiResult.Error;
         await refreshTodos();
     }
 
@@ -133,7 +133,7 @@
     {
         todos.RemoveAll(x => x.Id == id);
         var apiResult = await ApiAsync(new DeleteTodo { Id = id });
-        errorStatus = apiResult.ErrorStatus;
+        errorStatus = apiResult.Error;
         await refreshTodos();
     }
 
@@ -143,7 +143,7 @@
         if (ids.Count == 0) return;
         todos.RemoveAll(x => ids.Contains(x.Id));
         var apiResult = await ApiAsync(new DeleteTodos { Ids = ids });
-        errorStatus = apiResult.ErrorStatus;
+        errorStatus = apiResult.Error;
         await refreshTodos();
     }
 
@@ -152,7 +152,7 @@
         var todo = todos.Find(x => x.Id == id)!;
         todo.IsFinished = !todo.IsFinished;
         var apiResult = await ApiAsync(new UpdateTodo { Id = todo.Id, Text = todo.Text, IsFinished = todo.IsFinished });
-        errorStatus = apiResult.ErrorStatus;
+        errorStatus = apiResult.Error;
         await refreshTodos();
     }
 }

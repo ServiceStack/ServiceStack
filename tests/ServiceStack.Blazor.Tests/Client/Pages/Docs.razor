@@ -17,12 +17,12 @@
         <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/Docs.razor" IconSrc="/img/blazor.svg" />
     </div>
 }
-else if (Doc.ErrorStatus == null)
+else if (Doc.Error == null)
 {
     <div>Loading...</div>
 }
 
-<ErrorSummary Status=@Doc.ErrorStatus />
+<ErrorSummary Status=@Doc.Error />
 
 @code {
     [Parameter]

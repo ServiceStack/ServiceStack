@@ -12,7 +12,7 @@
 <h1 class="fs-2 mb-3">Sign In</h1>
 
 <form @onsubmit="submit" class="max-w-xl">
-<CascadingValue Value=@apiResult.ErrorStatus>
+<CascadingValue Value=@apiResult.Error>
     <ErrorSummary VisibleFields=@(new[]{ nameof(Authenticate.UserName), nameof(Authenticate.Password) }) />
 
     <div class="mb-3 form-floating">

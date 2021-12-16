@@ -5,7 +5,7 @@
 <form @onsubmit="submit" @onsubmit:preventDefault autocomplete="off" class=@CssUtils.ClassNames("mt-3 relative shadow rounded p-4",
         getUserResult.IsError || updateUserResult.IsError ? "error" : "",
         (getUserResult.Completed || updateUserResult.Completed) ? "" : "loading", @class)>
-<CascadingValue Value=@updateUserResult.ErrorStatus>
+<CascadingValue Value=@updateUserResult.Error>
 
     <button type="button" class="close" @onclick="close"><i></i></button>
     <h1 class="fs-4 text-secondary text-center">
@@ -13,9 +13,9 @@
     </h1>
 
     <div class="mb-3">
-        <ErrorSummary Status=@getUserResult.ErrorStatus VisibleFields=@VisibleFields />
-        <ErrorSummary Status=@updateUserResult.ErrorStatus VisibleFields=@VisibleFields />
-        <ErrorSummary Status=@deleteUserResult.ErrorStatus VisibleFields=@VisibleFields />
+        <ErrorSummary Status=@getUserResult.Error VisibleFields=@VisibleFields />
+        <ErrorSummary Status=@updateUserResult.Error VisibleFields=@VisibleFields />
+        <ErrorSummary Status=@deleteUserResult.Error VisibleFields=@VisibleFields />
         <AlertSuccess Message=@successMessage />
     </div>
     <div class="row">
@@ -27,7 +27,7 @@
                 @foreach (var f in rowProps)
                 {
                     <div class=@CssUtils.ClassNames("mb-3 me-1", f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
-                        <DynamicInput Input=@f Model=@Model Status=@updateUserResult.ErrorStatus />
+                        <DynamicInput Input=@f Model=@Model Status=@updateUserResult.Error />
                     </div>
                 }
                 </div>
@@ -177,7 +177,7 @@
     ApiResult<AdminUserResponse> updateUserResult = new();
     ApiResult<AdminDeleteUserResponse> deleteUserResult = new();
 
-    ResponseStatus? Status => updateUserResult.ErrorStatus;
+    ResponseStatus? Status => updateUserResult.Error;
 
     string[] missingRoles => plugin?.AllRoles.Where(x => !roles.Contains(x)).ToArray() ?? Array.Empty<string>();
 

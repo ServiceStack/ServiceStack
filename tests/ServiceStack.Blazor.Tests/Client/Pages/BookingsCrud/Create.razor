@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <form @onsubmit="_ => OnSubmit()" @onsubmit:preventDefault class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
-<CascadingValue Value=@apiResult.ErrorStatus>
+<CascadingValue Value=@apiResult.Error>
     <button type="button" class="close" @onclick="close"><i></i></button>
 
     <h1 class="fs-4 text-secondary text-center">

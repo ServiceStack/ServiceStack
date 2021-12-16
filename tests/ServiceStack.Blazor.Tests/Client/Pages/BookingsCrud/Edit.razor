@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <form @onsubmit="_ => OnSubmit()" class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
-<CascadingValue Value=@apiResult.ErrorStatus>
+<CascadingValue Value=@apiResult.Error>
     <button type="button" class="close" @onclick="close"><i></i></button>
 
     <h1 class="fs-4 text-secondary text-center">
@@ -12,7 +12,7 @@
         nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate), 
         nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
     }) />
-    <ErrorSummary ExplicitStatus=@deleteApiResult.ErrorStatus />
+    <ErrorSummary ExplicitStatus=@deleteApiResult.Error />
 
     <div class="mb-3 form-floating">
         <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
@@ -85,7 +85,7 @@
         var selectApiResult = await ApiAsync(new QueryBookings { Id = Id });
         if (selectApiResult.IsError)
         {
-            apiResult = ApiResult.CreateError<IdResponse>(selectApiResult.ErrorStatus!);
+            apiResult = ApiResult.CreateError<IdResponse>(selectApiResult.Error!);
             return;
         }
 
