@@ -40,6 +40,7 @@ public static class ServiceClientUtils
     }
     
     public static string[] GetRouteMethods(Type requestType) => requestType.AllAttributes<RouteAttribute>()
+        .Where(x => x.Verbs != null)
         .Select(x => x.Verbs.ToUpper())
         .Where(SupportedMethods.Contains)
         .Distinct().ToArray();
