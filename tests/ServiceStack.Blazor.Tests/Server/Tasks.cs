@@ -139,11 +139,13 @@ public static class TaskRunner
                     continue;
                 }
 
-                var mdBody = @$"<div class=""prose lg:prose-xl m-3"">
-        <div class=""markdown-body"">
-            {docRender.Response!.Preview!}
-        </div>
-    </div>";
+                var mdBody = @$"
+<div class=""prose lg:prose-xl m-3"">
+    <div class=""markdown-body"">
+        {docRender.Response!.Preview!}
+    </div>
+</div>
+";
 
                 var prerenderedPage = IndexTemplate.Render(cmd, mdBody);
                 string htmlPath = Path.GetFullPath(Path.Combine(dstDir, $"{name}.html"));
@@ -189,6 +191,7 @@ public static class TaskRunner
                         {
                             if (line.Contains("<!--/PAGE-->")) // discard up to end page marker
                             {
+                                sb.AppendLine();
                                 continue;
                             }
                         }
