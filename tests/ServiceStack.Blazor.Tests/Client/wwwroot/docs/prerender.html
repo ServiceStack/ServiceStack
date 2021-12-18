@@ -36,10 +36,145 @@
 
 <div class="prose lg:prose-xl min-vh-100 m-3" data-prerender="/docs/prerender">
     <div class="markdown-body">
-        <h1 id="improving-ux-with-prerendering">Improving UX with Prerendering</h1>
-<blockquote>
-<p>... TODO ...</p>
+        <blockquote>
+<p>Why did this page load so fast?</p>
 </blockquote>
+<h3 id="blazor-wasm-trade-offs">Blazor WASM trade-offs</h3>
+<p>Blazor WASM's enables reuse of C# skills, tooling &amp; libraries offering a compelling advantage for .NET teams, so much so
+it's become our recommended technology for developing internal LOB applications as it's better able to reuse existing
+C# investments in an integrated SPA Framework utilizing a single tooling ecosystem.</p>
+<p>However it does comes at a cost of a larger initial download size and performance cost resulting in a high Time-To-First-Render (TTFR)
+and an overall poor initial User Experience when served over the Internet, that's further exacerbated over low speed Mobile connections.</p>
+<p>This is likely an acceptable trade-off for most LOB applications served over high-speed local networks but may not be a
+suitable choice for public Internet sites.</p>
+<p>For some Apps whats even worse than its poor startup performance is its poor SEO as content isn't included in the initial download
+and needs to be loaded in after the App has initialized. For some content heavy sites this can be a deal breaker either prohibiting
+using Blazor WASM entirely or otherwise requiring proxy rules so content pages are served by a different SEO friendly site.</p>
+<h3 id="improving-startup-performance">Improving Startup Performance</h3>
+<p>The solution to both these problems is fairly straightforward, and is leveraged by <a href="https://jamstack.org/generators/">Jamstack Frameworks</a>
+for years, by prerendering content at build time.</p>
+<p>So we know what needs to be done, but how best to do it in Blazor WASM? Unfortunately the
+<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration?view=aspnetcore-6.0&amp;pivots=webassembly">official Blazor WASM prerendering guide</a>
+isn't prerendering at all which is typically used to describe
+<a href="https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/">Static Site Generators (SSG)</a>
+prerendering static content at build-time, where as Blazor WASM prerendering instead describes
+<a href="https://www.omnisci.com/technical-glossary/server-side-renderings">Server-Side-Rendering (SSR)</a> that requires a lot of complexity
+by forcing maintaining your Apps dependencies in both client and server projects, and doesn't yield an optimal result since prerendering
+is typically used so Apps can host their SSG content on static file hosts, instead SSR forces coupling of the .NET Server Host
+that prohibits Apps from being served from CDN edge caches.</p>
+<p>As this defeats <a href="hosting">many of the benefits</a> for using Blazor WASM in the first place we disregarded it as a solution and went
+for solutions that wouldn't compromise its CDN hosting ability.</p>
+<h3 id="increasing-perceived-performance">Increasing Perceived Performance</h3>
+<p>We have little opportunity over improving the startup time of the real Blazor App beyond hosting its static assets on CDN edge caches,
+but ultimately what matters is <a href="https://marvelapp.com/blog/a-designers-guide-to-perceived-performance/">perceived performance</a> which
+we do have some control over given the screen for a default Blazor WASM project is a glaring white screen flash:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm-loading-default.png" alt="" /></p>
+<p>The longer users have to wait looking at this black loading screen without signs of progress, the more they'll associate your site
+with taking forever to load.</p>
+<p>One technique many popular sites are using to increase perceived performance is to use content placeholders in place of real-content
+which gives the impression that the site has almost loaded and only requires a few moments for the latest live data to be slotted in, e.g.
+before the real site has loaded, YouTube looks like:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/youtube-placeholder.png" alt="" /></p>
+<p>But we can do a bit better than an inert content placeholder, and load a temporary chrome of our App. But as this needs to be done
+before Blazor has loaded we need to implement this with a sprinkling of HTML + JS.</p>
+<p>First thing we need to do is move the scoped styles of our Apps
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/MainLayout.razor">MainLayout</a> and
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/NavMenu.razor">NavMenu</a> into an external
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/css/main-layout.css">main-layout.css</a> so our temp
+App chrome can use it.</p>
+<p>Then in our <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html">/wwwroot/index.html</a> anything
+between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> is displayed whilst our Blazor App is loading, before it's replaced with the real App:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+    &lt;!-- loading: render temp static app chrome to improve perceived performance --&gt;
+    &lt;div id=&quot;app-loading&quot; class=&quot;main-layout page&quot;&gt;
+        &lt;div class=&quot;sidebar&quot;&gt;
+            &lt;div class=&quot;top-row navbar navbar-dark&quot;&gt;
+                &lt;a class=&quot;navbar-brand ps-4&quot; href=&quot;/&quot;&gt;MyApp&lt;/a&gt;
+                &lt;button class=&quot;navbar-toggler&quot;&gt;&lt;span class=&quot;navbar-toggler-icon&quot;&gt;&lt;/span&gt;&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;collapse&quot;&gt;
+                &lt;ul class=&quot;nav flex-column&quot;&gt;&lt;/ul&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;main&quot;&gt;
+            &lt;div class=&quot;main-top-row px-4&quot;&gt;
+                &lt;ul class=&quot;nav nav-pills&quot;&gt;&lt;/ul&gt;
+                &lt;a href=&quot;signin?return=docs/deploy&quot; class=&quot;btn btn-outline-primary&quot;&gt;Login&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;content px-4&quot;&gt;
+                &lt;!--PAGE--&gt;
+                &lt;div class=&quot;spinner-border float-start mt-2 me-2&quot; role=&quot;status&quot;&gt;
+                    &lt;span class=&quot;sr-only&quot;&gt;&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;h1 style=&quot;font-size:36px&quot;&gt;
+                    Loading...
+                &lt;/h1&gt;
+                &lt;!--/PAGE--&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Here we just paste in the <strong>MainLayout</strong> markup minus the dynamic navigation menus which we'll generate with a bit of JS below:</p>
+<pre><code class="language-js">const SIDEBAR = [
+    'Home,home,/$',
+    'Counter,plus,/counter',
+    'Todos,clipboard,/todomvc',
+    'Bookings CRUD,calendar,/bookings-crud',
+    'Call Hello,transfer,/hello$',
+    'Call HelloSecure,shield,/hello-secure',
+    'Fetch data,list-rich,/fetchdata',
+    'Admin,lock-locked,/admin',
+    'Login,account-login,/signin',
+]
+const TOP = [
+    '0.40 /mo,dollar,/docs/hosting',
+    'Prerendering,loop-circular,/docs/prerender',
+    'Deployments,cloud-upload,/docs/deploy',
+]
+
+const path = location.pathname
+const NAV = ({ label, cls, icon, route, exact }) =&gt; `&lt;li class=&quot;nav-item${cls}&quot;&gt;
+    &lt;a href=&quot;${route}&quot; class=&quot;nav-link${(exact ? path == route : path.startsWith(route)) ? ' active' : ''}&quot;&gt;
+        &lt;span class=&quot;oi oi-${icon}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; ${label}
+    &lt;/a&gt;&lt;/li&gt;`
+
+const sidebarInfo = (label, icon, route) =&gt; ({ label,
+    cls:` px-3${route==SIDEBAR[0].route?' pt-3':''}`,icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')
+})
+const $1 = s =&gt; document.querySelector(s)
+    $1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s =&gt; NAV(sidebarInfo.apply(null, s.split(',')))).join('')
+
+const topInfo = (label, icon, route) =&gt; ({label,cls:'',icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')})
+    $1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s =&gt; NAV(topInfo.apply(null, s.split(',')))).join('')
+</code></pre>
+<p>Which takes care of both rendering the top and sidebar menus as well as highlighting the active menu for the active
+nav item being loaded, and because we're rendering our real App navigation with real links, users will be able to navigate
+to the page they want before our App has loaded.</p>
+<p>With just this, every page now benefits from an instant App chrome to give the perception that our App has loaded instantly
+before any C# in our Blazor App was run. Here's what <a href="/counter">Blazor Counter</a> example looks like while it's loading:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm-loading.png" alt="" /></p>
+<p>If you click refresh the <a href="/counter">/counter</a> page a few times you'll see new loading screen prior to the Counter page being available.</p>
+<p>Our App is now in a pretty shippable state with decent UX of a loading page that looks like it loaded instantly instead
+of the &quot;under construction&quot; Loading... page from the default Blazor WASM project template.</p>
+<p>It's not quite a zero maintenance solution but still fairly low maintenance as only the <code>SIDEBAR</code> and <code>TOP</code> lists
+need updating when adding/removing nav items from your App.</p>
+<h3 id="improving-ux-with-prerendering">Improving UX with Prerendering</h3>
+<p>We'll now turn our focus to the most important page in our App, the <a href="/">Home Page</a> which is the page most people will see
+when loading the App from the first time</p>
+<pre><code class="language-js">const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r =&gt; r.text())
+    .then(html =&gt; {
+        if (html.indexOf('&lt;!DOCTYPE html&gt;') &gt;= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) {
+            pageBody.innerHTML = `&lt;i hidden data-prerender=&quot;${path}&quot;&gt;&lt;/i&gt;` + html
+            $1('#app-loading').classList.add('prerendered')
+        }
+    })
+    .catch(/* no prerendered content found for this path */)
+</code></pre>
 
     </div>
 </div>
@@ -77,10 +212,10 @@ const sidebarInfo = (label, icon, route) => ({ label,
     cls:` px-3${route==SIDEBAR[0].route?' pt-3':''}`,icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')
 })
 const $1 = s => document.querySelector(s)
-    $1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebarInfo.apply(null, s.split(',')))).join('')
+$1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebarInfo.apply(null, s.split(',')))).join('')
 
 const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')})
-    $1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(topInfo.apply(null, s.split(',')))).join('')
+$1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(topInfo.apply(null, s.split(',')))).join('')
 
 $1('#app-loading .navbar-toggler').onclick = function () {
     this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
@@ -89,12 +224,9 @@ const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/ind
 fetch(`/prerender${pagePath}`)
     .then(r => r.text())
     .then(html => {
-        if (html.indexOf('<!--' + 'prerendered-->') == -1) return // don't show CDN 404.html pages
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
         const pageBody = $1('#app-loading .content')
-        if (pageBody) {
-            pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
-            $1('#app-loading').classList.add('prerendered')
-        }
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
     })
     .catch(/* no prerendered content found for this path */)
 </script>
@@ -110,7 +242,7 @@ fetch(`/prerender${pagePath}`)
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    <!--<script src="_framework/blazor.webassembly.js"></script>-->
+    <script src="_framework/blazor.webassembly.js"></script>
 
 <script>
 /* DOM functions used in Blazor Components */

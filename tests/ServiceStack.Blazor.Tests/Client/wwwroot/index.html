@@ -74,10 +74,10 @@ const sidebarInfo = (label, icon, route) => ({ label,
     cls:` px-3${route==SIDEBAR[0].route?' pt-3':''}`,icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')
 })
 const $1 = s => document.querySelector(s)
-    $1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebarInfo.apply(null, s.split(',')))).join('')
+$1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebarInfo.apply(null, s.split(',')))).join('')
 
 const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')})
-    $1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(topInfo.apply(null, s.split(',')))).join('')
+$1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(topInfo.apply(null, s.split(',')))).join('')
 
 $1('#app-loading .navbar-toggler').onclick = function () {
     this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
@@ -88,10 +88,7 @@ fetch(`/prerender${pagePath}`)
     .then(html => {
         if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
         const pageBody = $1('#app-loading .content')
-        if (pageBody) {
-            pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
-            $1('#app-loading').classList.add('prerendered')
-        }
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
     })
     .catch(/* no prerendered content found for this path */)
 </script>
