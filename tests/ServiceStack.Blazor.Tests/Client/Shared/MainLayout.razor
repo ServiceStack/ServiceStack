@@ -37,6 +37,9 @@
                 }
                     <span class="ms-2 btn btn-outline-primary" @onclick="logout">Logout</span>
                 </Authorized>
+                <Authorizing>
+                    <NavLink class="btn btn-outline-primary" href=@LoginUrl>Login</NavLink>
+                </Authorizing>
                 <NotAuthorized>
                     <NavLink class="btn btn-outline-primary" href=@LoginUrl>Login</NavLink>
                 </NotAuthorized>

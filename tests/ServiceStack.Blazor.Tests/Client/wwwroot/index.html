@@ -85,6 +85,7 @@ $1('#app-loading .navbar-toggler').onclick = function () {
 fetch(`/prerender${path}`)
     .then(r => r.text())
     .then(html => {
+        if (html.indexOf('<!--' + 'prerendered-->') == -1) return // don't show CDN 404.html pages
         const pageBody = $1('#app-loading .content')
         if (pageBody) {
             pageBody.innerHTML = html

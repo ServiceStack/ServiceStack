@@ -7,12 +7,14 @@
             <NotAuthorized>
                 <h1>Sorry</h1>
                 <p>You're not authorized to reach this page.</p>
-                <p>Please <NavLink class="" href=@NavigationManager.GetLoginUrl()>login</NavLink> as a different user.</p>
+                <p>Please <NavLink href=@NavigationManager.GetLoginUrl()>login</NavLink> as a different user.</p>
             </NotAuthorized>
+            
             <Authorizing>
-                <h1>Authentication in progress</h1>
-                <p>Only visible while authentication is in progress.</p>
+                <h5 class="text-muted" style="position:absolute;top:4rem;right:1rem">Authenticating...</h5>
+                <RouteView RouteData="@routeData" />
             </Authorizing>
+
         </AuthorizeRouteView>
     </Found>
     <NotFound>

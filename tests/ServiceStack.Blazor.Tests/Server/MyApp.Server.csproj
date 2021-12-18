@@ -30,8 +30,7 @@
     </Target>
     <Target Name="PrerenderMarkdown">
         <Message Text="PrerenderMarkdown..." />
-        <Exec Command="dotnet run -task prerender:markdown -index $(ClientDir)/wwwroot/index.html $(ClientDir)/wwwroot/content $(ClientDir)/wwwroot/docs"
-              Condition="$(APP_TASKS.Contains('prerender:markdown'))"/>
+        <Exec Command="dotnet run -task prerender:markdown -index $(ClientDir)/wwwroot/index.html $(ClientDir)/wwwroot/content $(ClientDir)/wwwroot/docs" />
     </Target>
     <Target Name="PrerenderPages">
         <Message Text="PrerenderPages..." />
