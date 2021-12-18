@@ -1,7 +1,6 @@
 @page "/docs/{path?}"
 @inherits AppComponentBase
 @inject HttpClient Http
-@inject IJSRuntime JS
 @using Markdig
 @using Markdig.Syntax
 
@@ -31,21 +30,8 @@ else if (render.Error == null)
 
     ApiResult<MarkdownFileInfo> render { get; set; } = new();
 
-    async Task loadDoc()
-    {
-        var isPagePrerendered = false;
-        try
-        {
-            isPagePrerendered = await (JS.InvokeAsync<bool>("isPagePrerendered"));
-        }
-        catch (JSException e)
-        {
-            // ignore, tag function is missing, render at runtime.
-        }
-        
-        if(!isPagePrerendered && render.Response == null)
-            render = await MarkdownUtils.LoadDocumentAsync(Path!, doc => Http.GetStringAsync($"/content/{doc.FileName}"));
-    }
+    async Task loadDoc() => 
+        render = await MarkdownUtils.LoadDocumentAsync(Path!, doc => Http.GetStringAsync($"/content/{doc.FileName}"));
 
     protected override async Task OnParametersSetAsync() => await loadDoc();
     protected override async Task OnInitializedAsync() => await loadDoc();

@@ -147,12 +147,7 @@ public static class TaskRunner
     </div>
 </div>
 ";
-                var taggedAsPrerendered = @"
-<script>
-window.isPagePrerendered = function () { return true; };
-</script>";
 
-                mdBody += taggedAsPrerendered;
                 var prerenderedPage = IndexTemplate.Render(cmd, mdBody);
                 string htmlPath = Path.GetFullPath(Path.Combine(dstDir, $"{name}.html"));
                 File.WriteAllText(htmlPath, prerenderedPage);
