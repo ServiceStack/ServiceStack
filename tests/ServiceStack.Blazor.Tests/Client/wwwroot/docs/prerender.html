@@ -34,7 +34,7 @@
                 </div>
                 <div class="content px-4">
 
-<div class="prose lg:prose-xl min-vh-100 m-3">
+<div class="prose lg:prose-xl min-vh-100 m-3" data-prerender="/docs/prerender">
     <div class="markdown-body">
         <h1 id="improving-ux-with-prerendering">Improving UX with Prerendering</h1>
 <blockquote>
@@ -85,22 +85,41 @@ const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(
 $1('#app-loading .navbar-toggler').onclick = function () {
     this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
 
-fetch(`/prerender${path}`)
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
     .then(r => r.text())
     .then(html => {
-        console.log('found: ' + html.substring(0,100))
+        if (html.indexOf('<!--' + 'prerendered-->') == -1) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) {
+            pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+            $1('#app-loading').classList.add('prerendered')
+        }
     })
-    .catch(/* no prerendered content */)
+    .catch(/* no prerendered content found for this path */)
 </script>
+<style>
+/* show subtle visual cue for prerendered pages */
+#app-loading .content {
+    box-shadow: inset 0 4px 4px 0 rgb(0 0 0 / 0.05);
+}
+</style>
  
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    <script src="_framework/blazor.webassembly.js"></script>
+    <!--<script src="_framework/blazor.webassembly.js"></script>-->
 
 <script>
+/* DOM functions used in Blazor Components */
+
+/* Loading */
+window.prerenderedPage = function () {
+    const el = document.querySelector('#app-loading .content')
+    return el && el.innerHTML || ''
+}
 /* ShellCommand */
 window.copy = function(target) {
     let $el = document.createElement("input")
@@ -118,8 +137,6 @@ window.copy = function(target) {
         window.getSelection()?.removeAllRanges()
         window.getSelection()?.addRange(range)
     }
-
-    setTimeout(function () { successText.value = '' }, 3000)
 }
 </script>
 </body>

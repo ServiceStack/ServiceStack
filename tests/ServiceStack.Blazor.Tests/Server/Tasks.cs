@@ -140,8 +140,13 @@ public static class TaskRunner
                     continue;
                 }
 
+                var dirName = dstDir.IndexOf("wwwroot") >= 0
+                    ? dstDir.LastRightPart("wwwroot").Replace('\\','/')
+                    : new DirectoryInfo(dstDir).Name;
+                var path = dirName.CombineWith(name == "index" ? "" : name);
+
                 var mdBody = @$"
-<div class=""prose lg:prose-xl min-vh-100 m-3"">
+<div class=""prose lg:prose-xl min-vh-100 m-3"" data-prerender=""{path}"">
     <div class=""markdown-body"">
         {docRender.Response!.Preview!}
     </div>

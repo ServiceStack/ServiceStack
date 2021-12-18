@@ -82,13 +82,14 @@ const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(
 $1('#app-loading .navbar-toggler').onclick = function () {
     this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
 
-fetch(`/prerender${path}`)
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
     .then(r => r.text())
     .then(html => {
-        if (html.indexOf('<!--' + 'prerendered-->') == -1) return // don't show CDN 404.html pages
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
         const pageBody = $1('#app-loading .content')
         if (pageBody) {
-            pageBody.innerHTML = html
+            pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
             $1('#app-loading').classList.add('prerendered')
         }
     })
@@ -109,6 +110,13 @@ fetch(`/prerender${path}`)
     <script src="_framework/blazor.webassembly.js"></script>
 
 <script>
+/* DOM functions used in Blazor Components */
+
+/* Loading */
+window.prerenderedPage = function () {
+    const el = document.querySelector('#app-loading .content')
+    return el && el.innerHTML || ''
+}
 /* ShellCommand */
 window.copy = function(target) {
     let $el = document.createElement("input")
@@ -126,8 +134,6 @@ window.copy = function(target) {
         window.getSelection()?.removeAllRanges()
         window.getSelection()?.addRange(range)
     }
-
-    setTimeout(function () { successText.value = '' }, 3000)
 }
 </script>
 </body>
