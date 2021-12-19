@@ -11,7 +11,7 @@ using ServiceStack.NativeTypes.TypeScript;
 
 namespace ServiceStack.NativeTypes.Kotlin
 {
-    public class KotlinGenerator
+    public class KotlinGenerator : ILangGenerator
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
@@ -118,6 +118,11 @@ namespace ServiceStack.NativeTypes.Kotlin
         /// </summary>
         public List<string> AddQueryParamOptions { get; set; }
 
+        /// <summary>
+        /// Emit code without Header Options
+        /// </summary>
+        public bool HideHeader { get; set; }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -147,29 +152,32 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
-            sb.AppendLine("/* Options:");
-            sb.AppendLine($"Date: {DateTime.Now.ToString("s").Replace("T", " ")}");
-            sb.AppendLine($"Version: {Env.VersionString}");
-            sb.AppendLine($"Tip: {HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")}");
-            sb.AppendLine($"BaseUrl: {Config.BaseUrl}");
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+            if (!HideHeader)
+            {
+                sb.AppendLine("/* Options:");
+                sb.AppendLine($"Date: {DateTime.Now.ToString("s").Replace("T", " ")}");
+                sb.AppendLine($"Version: {Env.VersionString}");
+                sb.AppendLine($"Tip: {HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")}");
+                sb.AppendLine($"BaseUrl: {Config.BaseUrl}");
+                if (Config.UsePath != null)
+                    sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
 
-            sb.AppendLine();
-            sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+                sb.AppendLine();
+                sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
+                sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+                sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+                sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+                sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+                sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+                sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+                AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
-            sb.AppendLine("*/");
-            sb.AppendLine();
+                sb.AppendLine("*/");
+                sb.AppendLine();
+            }
 
             foreach (var typeName in Config.TreatTypesAsStrings.Safe())
             {

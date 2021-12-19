@@ -83,12 +83,12 @@ namespace ServiceStack
         public string AddDefaultXmlNamespace { get; set; }
         public bool MakeDataContractsExtensible { get; set; }
         public bool InitializeCollections { get; set; }
-        public List<string> AddNamespaces { get; set; }
-        public List<string> DefaultNamespaces { get; set; }
-        public List<string> DefaultImports { get; set; }
-        public List<string> IncludeTypes { get; set; }
-        public List<string> ExcludeTypes { get; set; }
-        public List<string> TreatTypesAsStrings { get; set; }
+        public List<string> AddNamespaces { get; set; } = new();
+        public List<string> DefaultNamespaces { get; set; } = new();
+        public List<string> DefaultImports { get; set; } = new();
+        public List<string> IncludeTypes { get; set; } = new();
+        public List<string> ExcludeTypes { get; set; } = new();
+        public List<string> TreatTypesAsStrings { get; set; } = new();
         public bool ExportValueTypes { get; set; }
 
         public string GlobalNamespace { get; set; }
@@ -96,10 +96,10 @@ namespace ServiceStack
         public string DataClass { get; set; }
         public string DataClassJson { get; set; }
 
-        public HashSet<Type> IgnoreTypes { get; set; }
-        public HashSet<Type> ExportTypes { get; set; }
-        public HashSet<Type> ExportAttributes { get; set; }
-        public List<string> IgnoreTypesInNamespaces { get; set; }
+        public HashSet<Type> IgnoreTypes { get; set; } = new();
+        public HashSet<Type> ExportTypes { get; set; } = new();
+        public HashSet<Type> ExportAttributes { get; set; } = new();
+        public List<string> IgnoreTypesInNamespaces { get; set; } = new();
     }
 
     [Exclude(Feature.Soap)]

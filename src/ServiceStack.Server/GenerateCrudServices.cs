@@ -824,27 +824,6 @@ namespace ServiceStack
             }
         }
 
-        public static string GenerateSourceCode(IRequest req, CrudCodeGenTypes request, 
-            MetadataTypesConfig typesConfig, MetadataTypes crudMetadataTypes, List<string> addQueryParamOptions=null)
-        {
-            var metadata = req.Resolve<INativeTypesMetadata>();
-            var src = request.Lang switch {
-                "csharp" => new CSharpGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
-                "fsharp" => new FSharpGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
-                "vbnet" => new VbNetGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                "typescript" => new TypeScriptGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
-                "dart" => new DartGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
-                "swift" => new SwiftGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
-                "swift4" => new Swift4Generator(typesConfig).GetCode(crudMetadataTypes, req),
-                "java" => new JavaGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
-                "kotlin" => new KotlinGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
-                "typescript.d" => new FSharpGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
-                _ => throw new NotSupportedException($"Unknown language '{request.Lang}', Supported languages: " +
-                                                     $"csharp, typescript, dart, swift, java, kotlin, vbnet, fsharp")
-            };
-            return src;
-        }
-
         public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter, 
             List<string> addQueryParamOptions=null)
         {
@@ -862,7 +841,8 @@ namespace ServiceStack
                 typesConfig.MakePropertiesOptional = true;
             }
 
-            var src = GenerateSourceCode(req, request, typesConfig, crudMetadataTypes, addQueryParamOptions);
+            var src = crudMetadataTypes.GenerateSourceCode(typesConfig, request.Lang, req,
+                c => c.AddQueryParamOptions = addQueryParamOptions);
             return src;
         }
 

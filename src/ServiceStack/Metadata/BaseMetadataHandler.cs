@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.NativeTypes;
 
 namespace ServiceStack.Metadata
 {
@@ -145,8 +147,70 @@ namespace ServiceStack.Metadata
                     sb.Append("</table>");
                 }
 
+                sb.Append(@"
+<style>
+.flex { display:flex }
+.space-x-4 > * + * { margin-left: 1rem }
+.types-nav a { 
+  color: rgb(107 114 128);
+  padding: .5rem .75rem; 
+  font-weight: 500; 
+  font-size: 0.875rem; 
+  line-height: 1.25rem; 
+  border-radius: 0.375rem; 
+  text-decoration: none;
+}
+.types-nav a:hover { color: rgb(55 65 81) }
+.types-nav a.active { background-color: rgb(243 244 246); color: rgb(55 65 81) }
+</style>");
+                var entries = new KeyValuePair<string,string>[] {
+                    new ("csharp", "C#"),
+                    new ("typescript", "TypeScript"),
+                    new ("python", "Python"),
+                    new ("swift", "Swift"),
+                    new ("java", "Java"),
+                    new ("kotlin", "Kotlin"),
+                    new ("dart", "Dart"),
+                    new ("fsharp", "F#"),
+                };
+                sb.AppendLine("<div class=\"types-nav\"><nav class=\"flex space-x-4\">");
+                var queryLang = httpReq.QueryString["lang"];
+                var queryLangName = "";
+                var showMetadata = string.IsNullOrEmpty(queryLang); 
+                var cls = showMetadata ? " class=\"active\"" : "";
+                var queryPrefix = $"?op={op.Name}";
+                sb.AppendLine($"<a {cls} href='{queryPrefix}'>Metadata</a>");
+                foreach (var entry in entries)
+                {
+                    cls = queryLang == entry.Key ? " class=\"active\"" : "";
+                    if (!string.IsNullOrEmpty(cls))
+                        queryLangName = entry.Value;
+                    sb.AppendLine($"<a {cls} href=\"{queryPrefix}&lang={entry.Key}\">{entry.Value}</a>");
+                }
+                sb.AppendLine("</nav></div>");
+                
+
                 var metadataTypes = metadata.GetMetadataTypesForOperation(httpReq, op);
-                metadataTypes.Each(x => AppendType(sb, op, x));
+                if (showMetadata)
+                {
+                    metadataTypes.Each(x => AppendType(sb, op, x));
+                }
+                else
+                {
+                    try
+                    {
+                        var src = metadataTypes.GenerateSourceCode(queryLang, httpReq, c => c.HideHeader = true);
+                        sb.AppendLine($"<link href=\"{httpReq.ResolveAbsoluteUrl("~/css/highlight.css")}\" rel=\"stylesheet\" />");
+                        sb.AppendLine($"<pre style=\"padding-left:1rem;\"><code lang=\"{queryLang}\">{src.HtmlEncodeLite()}</code></pre>");
+                        sb.AppendLine($"<p><a href=\"{httpReq.ResolveAbsoluteUrl($"~/types/{queryLang}?IncludeTypes={op.Name}.*")}\">{queryLangName} {op.Name} DTOs</a></p>");
+                        sb.AppendLine($"<script type=\"text/javascript\" src=\"{httpReq.ResolveAbsoluteUrl("~/js/highlight.js")}\"></script>");
+                        sb.AppendLine("<script>hljs.highlightAll()</script>");
+                    }
+                    catch (Exception e)
+                    {
+                        sb.AppendLine($"<pre>{e}</pre>");
+                    }
+                }
 
                 sb.Append(@"<div class=""call-info"">");
                 var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions

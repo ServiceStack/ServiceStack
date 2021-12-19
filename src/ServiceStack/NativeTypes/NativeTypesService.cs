@@ -162,7 +162,7 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return csharp;
         }
 
@@ -173,7 +173,7 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var fsharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            var fsharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return fsharp;
         }
 
@@ -184,7 +184,7 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return vbnet;
         }
 
@@ -423,7 +423,7 @@ namespace ServiceStack.NativeTypes
 
             try
             {
-                var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+                var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
                 return swift;
             }
             catch (System.Exception)
@@ -458,7 +458,7 @@ namespace ServiceStack.NativeTypes
 
             try
             {
-                var swift = new Swift4Generator(typesConfig).GetCode(metadataTypes, base.Request);
+                var swift = new Swift4Generator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
                 return swift;
             }
             catch (System.Exception)
