@@ -245,6 +245,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    [NamedConnection("SqlServer")]
+    [Route("/query/namedconnectionrockstars")]
+    public class QueryNamedConnectionRockstars : QueryDb<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     [Route("/query/rockstars")]
     public class QueryRockstars : QueryDb<Rockstar>
     {
@@ -888,9 +895,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_execute_basic_query_NamedRockstar()
+        public void Can_execute_basic_QueryNamedRockstars()
         {
             var response = client.Get(new QueryNamedRockstars { Include = "Total" });
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("SQL Server"));
+        }
+
+        [Test]
+        public void Can_execute_basic_QueryNamedConnectionRockstars()
+        {
+            var response = client.Get(new QueryNamedConnectionRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(1));
