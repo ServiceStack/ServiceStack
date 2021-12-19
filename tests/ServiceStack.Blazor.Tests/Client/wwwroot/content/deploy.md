@@ -91,24 +91,34 @@ by first copying the generated `index.html` home page into `404.html` in order t
 client routing:
 
 ```xml
+<PropertyGroup>
+    <ClientDir>$(MSBuildProjectDirectory)/../MyApp.Client</ClientDir>
+    <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
+</PropertyGroup>
+
 <!-- Populated in release.yml with GitHub Actions secrets -->
-<Target Name="DEPLOY_ACTION_API" AfterTargets="Build" Condition="$(DEPLOY_API) != ''">
+<Target Name="DeployApi" AfterTargets="Build" Condition="$(DEPLOY_API) != ''">
     <Exec Command="echo DEPLOY_API=$(DEPLOY_API)" />
 
     <!-- Update Production settings with DEPLOY_API Blazor UI should use  -->
-    <WriteLinesToFile File="$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/appsettings.Production.json" Lines="$([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))" Overwrite="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(WwwRoot)/appsettings.Production.json" 
+        Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))" 
+        Overwrite="true" Encoding="UTF-8" />
 
     <!-- 404.html SPA fallback (supported by GitHub Pages, Cloudflare & Netlify CDNs) -->
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/index.html" DestinationFiles="$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/404.html" />
+    <Copy SourceFiles="$(WwwRoot)/index.html" 
+        DestinationFiles="$(WwwRoot)/wwwroot/404.html" />
 
     <!-- define /api proxy routes (supported by Cloudflare or Netlify CDNs)  -->
-    <WriteLinesToFile File="$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/_redirects" Lines="$([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))" Overwrite="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(WwwRoot)/_redirects" 
+        Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))" 
+        Overwrite="true" Encoding="UTF-8" />
 </Target>
-<Target Name="DEPLOY_ACTION_CDN" AfterTargets="Build" Condition="$(DEPLOY_CDN) != ''">
+<Target Name="DeployCdn" AfterTargets="Build" Condition="$(DEPLOY_CDN) != ''">
     <Exec Command="echo DEPLOY_CDN=$(DEPLOY_CDN)" />
 
     <!-- Define custom domain name that CDN should use -->
-    <Exec Condition="$(DEPLOY_CDN) != ''" Command="echo $(DEPLOY_CDN) &gt; $(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/CNAME" />
+    <Exec Condition="$(DEPLOY_CDN) != ''" Command="echo $(DEPLOY_CDN) &gt; $(WwwRoot)/CNAME" />
 </Target>
 ```
 

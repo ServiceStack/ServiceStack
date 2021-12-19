@@ -1,12 +1,13 @@
 @page "/docs/{path?}"
 @inherits AppComponentBase
 @inject HttpClient Http
+@inject IJSRuntime JsRuntime
 @using Markdig
 @using Markdig.Syntax
 
 @if (render.Response?.Preview != null)
 {
-    <div class="prose lg:prose-xl min-vh-100 m-3">
+    <div class="prose lg:prose-xl min-vh-100 m-3" data-md=@Path>
         <div class="markdown-body">
             @((MarkupString)render.Response!.Preview)
         </div>
@@ -32,6 +33,9 @@ else if (render.Error == null)
 
     async Task loadDoc() => 
         render = await MarkdownUtils.LoadDocumentAsync(Path!, doc => Http.GetStringAsync($"/content/{doc.FileName}"));
+
+    protected override Task OnAfterRenderAsync(bool firstRender) =>
+        JsRuntime.InvokeVoidAsync("hljs.highlightAll").AsTask();
 
     protected override async Task OnParametersSetAsync() => await loadDoc();
     protected override async Task OnInitializedAsync() => await loadDoc();

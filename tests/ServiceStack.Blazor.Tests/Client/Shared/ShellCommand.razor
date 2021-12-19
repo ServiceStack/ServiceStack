@@ -1,4 +1,4 @@
-@inject IJSRuntime jsRuntime
+@inject IJSRuntime JsRuntime
 
 <div class=@CssUtils.ClassNames("lang relative bg-gray-700 text-gray-300 pl-5 py-3 sm:rounded flex", @class)>
     <div @ref="elCmd" class="flex ml-2 w-full justify-between cursor-pointer" @onclick="copyCommand">
@@ -30,7 +30,7 @@
     async Task copyCommand(MouseEventArgs e)
     {
         SuccessText = "copied";
-        await jsRuntime.InvokeVoidAsync("copy", elCmd);
+        await JsRuntime.InvokeVoidAsync("copy", elCmd);
         await Task.Delay(3_000);
         SuccessText = string.Empty;
     }

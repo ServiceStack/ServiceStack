@@ -31,6 +31,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Source", "..\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Server.Source", "..\ServiceStack.Server\ServiceStack.Server.Source.csproj", "{A4C22FD4-C21A-48B7-911E-EEFD92DF0602}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{3D2479BC-3857-4ABD-956F-B16DD9E20FFD}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\tests\ServiceStack.Blazor.Tests\sync.bat = ..\..\tests\ServiceStack.Blazor.Tests\sync.bat
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

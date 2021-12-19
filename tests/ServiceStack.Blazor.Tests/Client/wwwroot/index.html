@@ -8,6 +8,7 @@
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/typography.css" rel="stylesheet" />
+    <link href="css/markdown.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="css/main-layout.css" rel="stylesheet" />
     <link href="MyApp.Client.styles.css" rel="stylesheet" />
@@ -105,6 +106,9 @@ fetch(`/prerender${pagePath}`)
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+
+<script type="text/javascript" src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll()</script>
 
 <script>
 /* DOM functions used in Blazor Components */

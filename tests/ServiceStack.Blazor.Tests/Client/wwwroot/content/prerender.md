@@ -6,9 +6,9 @@ title: Improving UX with Prerendering
 
 ### Blazor WASM trade-offs
 
-Blazor WASM's enables reuse of C# skills, tooling & libraries offering a compelling advantage for .NET teams, so much so
+Blazor WASM enables reuse of C# skills, tooling & libraries offers a compelling advantage for .NET teams, so much so
 it's become our recommended technology for developing internal LOB applications as it's better able to reuse existing
-C# investments in an integrated SPA Framework utilizing a single tooling ecosystem.
+C# investments in an integrated SPA Framework utilizing a single tool chain.
 
 However it does comes at a cost of a larger initial download size and performance cost resulting in a high Time-To-First-Render (TTFR)
 and an overall poor initial User Experience when served over the Internet, that's further exacerbated over low speed Mobile connections.
@@ -132,7 +132,7 @@ const sidebarInfo = (label, icon, route) => ({ label,
 const $1 = s => document.querySelector(s)
 $1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebarInfo.apply(null, s.split(',')))).join('')
 
-const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')})
+const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(/\$$/,''),exact:route.endsWith('$')})
 $1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(topInfo.apply(null, s.split(',')))).join('')
 ```
 
@@ -210,7 +210,7 @@ a dependency-free solution by using the tool or .NET projects have: MSBuild.
 
 The [/Pages/Index.razor](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Index.razor) is pretty simple:
 
-```html
+```razor
 @page "/"
 
 <h1>Hello, world!</h1>
@@ -227,22 +227,23 @@ Where we can get most of the way there by replacing the `<GettingStarted />` tex
 ```xml
 <PropertyGroup>
     <ClientDir>$(MSBuildProjectDirectory)/../MyApp.Client</ClientDir>
+    <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
 </PropertyGroup>
 <Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
     <CallTarget Targets="PrerenderPages" Condition="$(APP_TASKS.Contains('prerender'))" />
 </Target>
 <Target Name="PrerenderPages">
     <Message Text="PrerenderPages..." />
-    
+        
     <PropertyGroup>
         <GettingStartedContents>$([System.IO.File]::ReadAllText('$(ClientDir)/Shared/GettingStarted.razor'))</GettingStartedContents>
         <IndexFileContents>
             $([System.IO.File]::ReadAllText('$(ClientDir)/Pages/Index.razor').Replace('<GettingStarted />',$(GettingStartedContents)))
         </IndexFileContents>
     </PropertyGroup>
-    <WriteLinesToFile File="$(ClientDir)/wwwroot/prerender/index.html" Lines="$(IndexFileContents)" Overwrite="true" />
+    <WriteLinesToFile File="$(WwwRoot)/prerender/index.html" Lines="$(IndexFileContents)" Overwrite="true" />
 
-    <Exec Command="dotnet run -task prerender:clean $(ClientDir)/wwwroot/prerender" />
+    <Exec Command="dotnet run -task prerender:clean $(WwwRoot)/prerender" />
 </Target>
 ```
 
@@ -263,10 +264,12 @@ Unfortunately the `@directives` and `@code{}` blocks in `.razor` pages also need
 to do with MSBuild only so we've done this in a custom cleanup task that's generically applied to all pages in the `/prerender` folder:
 
 ```xml
-<Exec Command="dotnet run -task prerender:clean $(ClientDir)/wwwroot/prerender" />
+<Exec Command="dotnet run -task prerender:clean $(WwwRoot)/prerender" />
 ```
 
 Which may initially appear confusing as `dotnet run` is what we use to run the Blazor Server Host and WASM Client. 
+
+### prerender:clean task
 
 As we need something more powerful than MSBuild without wanting to add any additional tool dependencies, we've chosen to 
 reuse the existing ASP.NET Core Server App for our custom tasks by calling 
@@ -276,7 +279,7 @@ at the start of our App, which will run any of our defined Tasks in
 
 This is what's used to implement our `-task prerender:clean` executed above:
 
-```c#
+```csharp
 public static class TaskRunner
 {
     public static Dictionary<string, ITask> Tasks = new()
@@ -328,7 +331,7 @@ and another during Authorization. To stop the unwanted yanking we've updated the
 [<Loading/>](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/Loading.razor) component
 to instead load the prerendered page content if it's for the current path:
 
-```c#
+```razor
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 
@@ -393,12 +396,14 @@ The other pages that would greatly benefit from prerendering are the Markdown `/
 However to enable SEO friendly content our `fetch(/prerender/*)` solution isn't good enough as the initial page download 
 needs to contain the prerendered content (i.e. not downloaded after).
 
+### prerender:markdown task
+
 To do this our `prerender:markdown` Task scans all `*.md` pages in the `<src>` directory and uses the same
 [/MyApp.Client/MarkdownUtils.cs](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/MarkdownUtils.cs)
 implementation that `Docs.razor` to generate the markdown and embeds it into the `index.html` loading page to generate 
 the pre-rendered page:
 
-```c#
+```csharp
 public static class TaskRunner
 {
     public static Dictionary<string, ITask> Tasks = new()
@@ -446,7 +451,7 @@ public static class TaskRunner
                     : new DirectoryInfo(dstDir).Name;
                 var path = dirName.CombineWith(name == "index" ? "" : name);
     
-                var mdBody = @$"
+                var mdBody = @"
     <div class=""prose lg:prose-xl min-vh-100 m-3"" data-prerender=""{path}"">
         <div class=""markdown-body"">
             {docRender.Response!.Preview!}
@@ -465,7 +470,7 @@ public static class TaskRunner
 The `wwwroot/index.html` is parsed using the method below and uses the resulting layout to generate pages 
 within `<!--PAGE--><!--/PAGE-->` markers:
 
-```c#
+```csharp
 public class IndexTemplate
 {
     public string? Contents { get; set; }
@@ -520,15 +525,11 @@ all pre-generated pages to the
 [/wwwroot/docs/*.html](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/docs) folder: 
 
 ```xml
-<PropertyGroup>
-    <ClientDir>$(MSBuildProjectDirectory)/../MyApp.Client</ClientDir>
-</PropertyGroup>
 <Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
     <CallTarget Targets="PrerenderMarkdown" Condition="$(APP_TASKS.Contains('prerender'))" />
 </Target>
 <Target Name="PrerenderMarkdown">
-    <Message Text="PrerenderMarkdown..." />
-    <Exec Command="dotnet run -task prerender:markdown -index $(ClientDir)/wwwroot/index.html $(ClientDir)/wwwroot/content $(ClientDir)/wwwroot/docs" />
+    <Exec Command="dotnet run -task prerender:markdown -index $(WwwRoot)/index.html $(WwwRoot)/content $(WwwRoot)/docs" />
 </Target>
 ```
 
@@ -540,6 +541,6 @@ C# version once the Blazor App has loaded.
 
 > Why did this page load so fast?
 
-So to answer the answer the initial question, this page loads so fast because it's prerendered version is being loaded from a CDN,
+So to answer the initial question, this page loads so fast because it's prerendered version is being loaded from a CDN,
 it's the same reason why our modern [nextjs.jamstacks.net](https://nextjs.jamstacks.net) and
 [vue-ssg.jamstacks.net](https://vue-ssg.jamstacks.net) SPA templates have such a great performance and UX.
