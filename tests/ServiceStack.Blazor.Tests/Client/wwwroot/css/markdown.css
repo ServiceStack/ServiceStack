@@ -36,6 +36,9 @@
     opacity: .8;
     color: #4b5563;
 }
+.prose blockquote {
+    border-left-style: solid;
+}
 
 @media (min-width: 1024px) {
     .lg\:prose-xl {
