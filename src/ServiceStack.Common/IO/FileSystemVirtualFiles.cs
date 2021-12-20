@@ -169,6 +169,15 @@ namespace ServiceStack.IO
                 throw e.InnerException ?? e;
             }
         }
+
+        public static void RecreateDirectory(string dirPath, int timeoutMs = 1000)
+        {
+            if (Directory.Exists(dirPath))
+            {
+                DeleteDirectoryRecursive(dirPath);
+            }
+            AssertDirectory(dirPath, timeoutMs);
+        }
         
     }
 }
