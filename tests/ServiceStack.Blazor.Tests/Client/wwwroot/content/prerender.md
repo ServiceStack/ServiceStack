@@ -295,7 +295,7 @@ public static class TaskRunner
     };
     
     /// <summary>
-    /// Simple cleanup of Blazor pages by removing @attributes and @code{} blocks
+    /// Clean Blazor .html pages by removing @attributes and @code{} blocks
     /// </summary>
     public class PrerenderClean : ITask
     {
@@ -391,7 +391,7 @@ the alternate layout with an `Authenticating...` text that will appear under the
 This last change brings us to the optimal UX we have now with the home page loading instantly whilst our Blazor App
 is loading in the background that'll eventually replace the home page with its identical looking C# version except
 for the **box-shadow under the top navigation** so you can tell when you're looking at the pre-rendered version
-or the C# Blazor version.
+instead of the C# Blazor version.
 
 ### Prerendering Markdown Content
 
@@ -492,7 +492,7 @@ all pre-generated pages to the
 ```
 
 This results in the path to the pre-generated markdown docs i.e. [/docs/prerender](/docs/prerender) having the **exact same path** 
-as its route in the Blazor App, which when exists, is given priority in CDNs over the SPA fallback the Blazor App is loaded with.
+as its route in the Blazor App, which when exists, CDNs give priority to over the SPA fallback the Blazor App is loaded with.
 
 It retains the similar behavior as the home page that initially loads pre-rendered content before it's replaced with the
 C# version once the Blazor App has loaded.
@@ -501,7 +501,7 @@ C# version once the Blazor App has loaded.
 
 So to answer the initial question, this page loads so fast because a prerendered version is initially loaded from a CDN edge cache,
 it's the same reason why our other modern [nextjs.jamstacks.net](https://nextjs.jamstacks.net) and
-[vue-ssg.jamstacks.net](https://vue-ssg.jamstacks.net) Jamstack SSG templates have such great performance and UX.
+[vue-ssg.jamstacks.net](https://vue-ssg.jamstacks.net) Jamstack SSG templates have such great performance and UX out-of-the-box.
 
 We hope this technique serves useful in greatly improving the initial UX of Blazor Apps, a new Blazor App
 with all this integrated can be created on the [Home Page](/)
