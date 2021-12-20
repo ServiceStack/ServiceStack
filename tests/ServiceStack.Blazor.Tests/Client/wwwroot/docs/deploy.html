@@ -8,6 +8,7 @@
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/typography.css" rel="stylesheet" />
+    <link href="css/markdown.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="css/main-layout.css" rel="stylesheet" />
     <link href="MyApp.Client.styles.css" rel="stylesheet" />
@@ -126,24 +127,34 @@ the result of <code>vite build</code> to <code>gh-pages</code> branch in the rep
 <p>The Host Server <code>.csproj</code> includes post build instructions populated by GitHub Actions when publishing <strong>Client</strong> assets to CDN
 by first copying the generated <code>index.html</code> home page into <code>404.html</code> in order to enable full page reloads to use Blazor's App
 client routing:</p>
-<pre><code class="language-xml">&lt;!-- Populated in release.yml with GitHub Actions secrets --&gt;
-&lt;Target Name=&quot;DEPLOY_ACTION_API&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(DEPLOY_API) != ''&quot;&gt;
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+    &lt;ClientDir&gt;$(MSBuildProjectDirectory)/../MyApp.Client&lt;/ClientDir&gt;
+    &lt;WwwRoot&gt;$(ClientDir)/wwwroot&lt;/WwwRoot&gt;
+&lt;/PropertyGroup&gt;
+
+&lt;!-- Populated in release.yml with GitHub Actions secrets --&gt;
+&lt;Target Name=&quot;DeployApi&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(DEPLOY_API) != ''&quot;&gt;
     &lt;Exec Command=&quot;echo DEPLOY_API=$(DEPLOY_API)&quot; /&gt;
 
     &lt;!-- Update Production settings with DEPLOY_API Blazor UI should use  --&gt;
-    &lt;WriteLinesToFile File=&quot;$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/appsettings.Production.json&quot; Lines=&quot;$([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))&quot; Overwrite=&quot;true&quot; Encoding=&quot;UTF-8&quot; /&gt;
+    &lt;WriteLinesToFile File=&quot;$(WwwRoot)/appsettings.Production.json&quot; 
+        Lines=&quot;$([System.IO.File]::ReadAllText($(WwwRoot)/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))&quot; 
+        Overwrite=&quot;true&quot; Encoding=&quot;UTF-8&quot; /&gt;
 
     &lt;!-- 404.html SPA fallback (supported by GitHub Pages, Cloudflare &amp; Netlify CDNs) --&gt;
-    &lt;Copy SourceFiles=&quot;$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/index.html&quot; DestinationFiles=&quot;$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/404.html&quot; /&gt;
+    &lt;Copy SourceFiles=&quot;$(WwwRoot)/index.html&quot; 
+        DestinationFiles=&quot;$(WwwRoot)/wwwroot/404.html&quot; /&gt;
 
     &lt;!-- define /api proxy routes (supported by Cloudflare or Netlify CDNs)  --&gt;
-    &lt;WriteLinesToFile File=&quot;$(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/_redirects&quot; Lines=&quot;$([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))&quot; Overwrite=&quot;true&quot; Encoding=&quot;UTF-8&quot; /&gt;
+    &lt;WriteLinesToFile File=&quot;$(WwwRoot)/_redirects&quot; 
+        Lines=&quot;$([System.IO.File]::ReadAllText($(WwwRoot)/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))&quot; 
+        Overwrite=&quot;true&quot; Encoding=&quot;UTF-8&quot; /&gt;
 &lt;/Target&gt;
-&lt;Target Name=&quot;DEPLOY_ACTION_CDN&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(DEPLOY_CDN) != ''&quot;&gt;
+&lt;Target Name=&quot;DeployCdn&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(DEPLOY_CDN) != ''&quot;&gt;
     &lt;Exec Command=&quot;echo DEPLOY_CDN=$(DEPLOY_CDN)&quot; /&gt;
 
     &lt;!-- Define custom domain name that CDN should use --&gt;
-    &lt;Exec Condition=&quot;$(DEPLOY_CDN) != ''&quot; Command=&quot;echo $(DEPLOY_CDN) &amp;gt; $(MSBuildProjectDirectory)/../MyApp.Client/wwwroot/CNAME&quot; /&gt;
+    &lt;Exec Condition=&quot;$(DEPLOY_CDN) != ''&quot; Command=&quot;echo $(DEPLOY_CDN) &amp;gt; $(WwwRoot)/CNAME&quot; /&gt;
 &lt;/Target&gt;
 </code></pre>
 <p>Whilst the <code>_redirects</code> file is a convention supported by many <a href="https://jamstack.wtf/#deployment">popular Jamstack CDNs</a>
@@ -180,45 +191,47 @@ so load times can be reduced as much as possible.</p>
 
     </div>
 </div>
-
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-const SIDEBAR = [
-    'Home,home,/$',
-    'Counter,plus,/counter',
-    'Todos,clipboard,/todomvc',
-    'Bookings CRUD,calendar,/bookings-crud',
-    'Call Hello,transfer,/hello$',
-    'Call HelloSecure,shield,/hello-secure',
-    'Fetch data,list-rich,/fetchdata',
-    'Admin,lock-locked,/admin',
-    'Login,account-login,/signin',
-]
-const TOP = [
-    '0.40 /mo,dollar,/docs/hosting',
-    'Prerendering,loop-circular,/docs/prerender',
-    'Deployments,cloud-upload,/docs/deploy',
-]
+
+const SIDEBAR = `
+    Home,home,/$
+    Counter,plus,/counter
+    Todos,clipboard,/todomvc
+    Bookings CRUD,calendar,/bookings-crud
+    Call Hello,transfer,/hello$
+    Call HelloSecure,shield,/hello-secure
+    Fetch data,list-rich,/fetchdata
+    Admin,lock-locked,/admin
+    Login,account-login,/signin
+`
+const TOP = `
+    0.40 /mo,dollar,/docs/hosting
+    Prerendering,loop-circular,/docs/prerender
+    Deployments,cloud-upload,/docs/deploy
+`
 
 const path = location.pathname
 const NAV = ({ label, cls, icon, route, exact }) => `<li class="nav-item${cls}">
-    <a href="${route}" class="nav-link${(exact ? path == route : path.startsWith(route)) ? ' active' : ''}">
+    <a href="${route}" class="nav-link${(exact ? path==route : path.startsWith(route)) ? ' active' : ''}">
         <span class="oi oi-${icon}" aria-hidden="true"></span> ${label}
     </a></li>`
-
-const sidebarInfo = (label, icon, route) => ({ label,
-    cls:` px-3${route==SIDEBAR[0].route?' pt-3':''}`,icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')
-})
+const renderNav = (csv,f) => csv.trim().split(/\r?\n/g).map(s => NAV(f.apply(null,s.split(',')))).join('')
 const $1 = s => document.querySelector(s)
-$1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebarInfo.apply(null, s.split(',')))).join('')
 
-const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')})
-$1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(topInfo.apply(null, s.split(',')))).join('')
+$1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, route) => ({
+    label, cls: ` px-3${route == SIDEBAR[0].route ? ' pt-3' : ''}`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
 
+$1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) => ({
+    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+    
 $1('#app-loading .navbar-toggler').onclick = function () {
     this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
 
@@ -245,6 +258,9 @@ fetch(`/prerender${pagePath}`)
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+
+<script type="text/javascript" src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll()</script>
 
 <script>
 /* DOM functions used in Blazor Components */

@@ -8,3 +8,4 @@ MOVE MyApp.Client.csproj %TO%\
 
 COPY Server\*.cs ..\..\..\NetCoreTemplates\blazor-wasm\MyApp\
 COPY ServiceModel\*.cs ..\..\..\NetCoreTemplates\blazor-wasm\MyApp.ServiceModel\
+COPY Tests\*.cs ..\..\..\NetCoreTemplates\blazor-wasm\MyApp.Tests\

@@ -24,27 +24,17 @@
     <PropertyGroup>
         <ClientDir>$(MSBuildProjectDirectory)/../Client</ClientDir>
         <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
+        <TestsDir>$(MSBuildProjectDirectory)/../Tests</TestsDir>
     </PropertyGroup>
+
     <Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
-        <CallTarget Targets="PrerenderMarkdown" Condition="$(APP_TASKS.Contains('prerender'))" />
-        <CallTarget Targets="PrerenderPages" Condition="$(APP_TASKS.Contains('prerender'))" />
+        <CallTarget Targets="Prerender" Condition="$(APP_TASKS.Contains('prerender'))" />
     </Target>
-    <Target Name="PrerenderMarkdown">
-        <Message Text="PrerenderMarkdown..." />
-        <Exec Command="dotnet run -task prerender:markdown -index $(WwwRoot)/index.html $(WwwRoot)/content $(WwwRoot)/docs" />
-    </Target>
-    <Target Name="PrerenderPages">
-        <Message Text="PrerenderPages..." />
 
-        <PropertyGroup>
-            <GettingStartedContents>$([System.IO.File]::ReadAllText('$(ClientDir)/Shared/GettingStarted.razor'))</GettingStartedContents>
-            <IndexFileContents>
-                $([System.IO.File]::ReadAllText('$(ClientDir)/Pages/Index.razor').Replace('<GettingStarted />',$(GettingStartedContents)))
-            </IndexFileContents>
-        </PropertyGroup>
-        <WriteLinesToFile File="$(WwwRoot)/prerender/index.html" Lines="$(IndexFileContents)" Overwrite="true" />
-
-        <Exec Command="dotnet run -task prerender:clean $(WwwRoot)/prerender" />
+    <Target Name="Prerender">
+        <Message Text="Prerender..." />
+        <Exec Command="dotnet test --filter TestCategory=prerender --logger:&quot;console;verbosity=detailed&quot;"
+              WorkingDirectory="$(TestsDir)" />
     </Target>
 
 </Project>

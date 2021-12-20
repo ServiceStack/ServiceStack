@@ -8,6 +8,7 @@
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/typography.css" rel="stylesheet" />
+    <link href="css/markdown.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="css/main-layout.css" rel="stylesheet" />
     <link href="MyApp.Client.styles.css" rel="stylesheet" />
@@ -93,45 +94,47 @@ from multiple HTTP, MQ or gRPC endpoints.</p>
 
     </div>
 </div>
-
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-const SIDEBAR = [
-    'Home,home,/$',
-    'Counter,plus,/counter',
-    'Todos,clipboard,/todomvc',
-    'Bookings CRUD,calendar,/bookings-crud',
-    'Call Hello,transfer,/hello$',
-    'Call HelloSecure,shield,/hello-secure',
-    'Fetch data,list-rich,/fetchdata',
-    'Admin,lock-locked,/admin',
-    'Login,account-login,/signin',
-]
-const TOP = [
-    '0.40 /mo,dollar,/docs/hosting',
-    'Prerendering,loop-circular,/docs/prerender',
-    'Deployments,cloud-upload,/docs/deploy',
-]
+
+const SIDEBAR = `
+    Home,home,/$
+    Counter,plus,/counter
+    Todos,clipboard,/todomvc
+    Bookings CRUD,calendar,/bookings-crud
+    Call Hello,transfer,/hello$
+    Call HelloSecure,shield,/hello-secure
+    Fetch data,list-rich,/fetchdata
+    Admin,lock-locked,/admin
+    Login,account-login,/signin
+`
+const TOP = `
+    0.40 /mo,dollar,/docs/hosting
+    Prerendering,loop-circular,/docs/prerender
+    Deployments,cloud-upload,/docs/deploy
+`
 
 const path = location.pathname
 const NAV = ({ label, cls, icon, route, exact }) => `<li class="nav-item${cls}">
-    <a href="${route}" class="nav-link${(exact ? path == route : path.startsWith(route)) ? ' active' : ''}">
+    <a href="${route}" class="nav-link${(exact ? path==route : path.startsWith(route)) ? ' active' : ''}">
         <span class="oi oi-${icon}" aria-hidden="true"></span> ${label}
     </a></li>`
-
-const sidebarInfo = (label, icon, route) => ({ label,
-    cls:` px-3${route==SIDEBAR[0].route?' pt-3':''}`,icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')
-})
+const renderNav = (csv,f) => csv.trim().split(/\r?\n/g).map(s => NAV(f.apply(null,s.split(',')))).join('')
 const $1 = s => document.querySelector(s)
-$1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebarInfo.apply(null, s.split(',')))).join('')
 
-const topInfo = (label, icon, route) => ({label,cls:'',icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')})
-$1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(topInfo.apply(null, s.split(',')))).join('')
+$1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, route) => ({
+    label, cls: ` px-3${route == SIDEBAR[0].route ? ' pt-3' : ''}`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
 
+$1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) => ({
+    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+    
 $1('#app-loading .navbar-toggler').onclick = function () {
     this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
 
@@ -158,6 +161,9 @@ fetch(`/prerender${pagePath}`)
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+
+<script type="text/javascript" src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll()</script>
 
 <script>
 /* DOM functions used in Blazor Components */

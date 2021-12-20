@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="NUnit" Version="3.*" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.*" />
+    <PackageReference Include="coverlet.collector" Version="3.*" />
+    <PackageReference Include="bunit" Version="1.4.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.Source.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.Source.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.Source.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
+    <ProjectReference Include="..\Client\MyApp.Client.csproj" />
+    <ProjectReference Include="..\Server\MyApp.Server.csproj" />
+    <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
+  </ItemGroup>
+
+</Project>

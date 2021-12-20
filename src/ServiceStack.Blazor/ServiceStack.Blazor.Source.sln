@@ -36,6 +36,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{3D2479BC
 		..\..\tests\ServiceStack.Blazor.Tests\sync.bat = ..\..\tests\ServiceStack.Blazor.Tests\sync.bat
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Tests", "..\..\tests\ServiceStack.Blazor.Tests\Tests\MyApp.Tests.csproj", "{84E34139-FB0A-488B-A9FF-8AC5E7C4CC12}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Kestrel.Source", "..\ServiceStack.Kestrel\ServiceStack.Kestrel.Source.csproj", "{22B5EC6C-680E-47E2-95D2-FEFD6A7532BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +102,14 @@ Global
 		{A4C22FD4-C21A-48B7-911E-EEFD92DF0602}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4C22FD4-C21A-48B7-911E-EEFD92DF0602}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4C22FD4-C21A-48B7-911E-EEFD92DF0602}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84E34139-FB0A-488B-A9FF-8AC5E7C4CC12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84E34139-FB0A-488B-A9FF-8AC5E7C4CC12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84E34139-FB0A-488B-A9FF-8AC5E7C4CC12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84E34139-FB0A-488B-A9FF-8AC5E7C4CC12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22B5EC6C-680E-47E2-95D2-FEFD6A7532BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22B5EC6C-680E-47E2-95D2-FEFD6A7532BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22B5EC6C-680E-47E2-95D2-FEFD6A7532BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22B5EC6C-680E-47E2-95D2-FEFD6A7532BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

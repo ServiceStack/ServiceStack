@@ -66,7 +66,9 @@ First thing we need to do is move the scoped styles of our Apps
 App chrome can use it.
 
 Then in our [/wwwroot/index.html](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html) anything
-between `<div id="app"></div>` is displayed whilst our Blazor App is loading, before it's replaced with the real App:
+between `<div id="app"></div>` is displayed whilst our Blazor App is loading, before it's replaced with the real App.
+
+So Herehwe just paste in the **MainLayout** markup:
 
 ```html
 <div id="app">
@@ -105,7 +107,7 @@ between `<div id="app"></div>` is displayed whilst our Blazor App is loading, be
 </div>
 ```
 
-Here we just paste in the **MainLayout** markup minus the dynamic navigation menus which we'll generate with a bit of JS below:
+Less our App's navigation menus which we'll dynamically generate with the splash of JS below:
 
 ```js
 const SIDEBAR = `
@@ -139,8 +141,7 @@ $1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, ro
 }))
 
 $1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) => ({
-    label, cls: '',
-    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
 }))
 ```
 
@@ -176,9 +177,9 @@ We'll now turn our focus to the most important page in our App, the [Home Page](
 when loading the App from the first time.
 
 With the above temp App chrome already in place, a simple generic pre-rendering solution to be able to load any prerendered
-any page is to check if any prerendered content exists in the
+page is to check if any prerendered content exists in the
 [/prerender](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/prerender)
-folder for the current path, then replace the index.html Loading... page with if it does:
+folder for the current path, then if it does replace the default index.html `Loading...` page with it:
 
 ```js
 const pagePath = path.endsWith('/') 
@@ -208,127 +209,95 @@ window.prerenderedPage = function () {
 </script>
 ```
 
-We now have a solution in place to load pre-rendered content from the `/prerender` folder, we now need some way of generating it.
+We now have a solution in place to load pre-rendered content from the `/prerender` folder, but still need some way of generating it.
 
 The solution is technology independent in that you can you use any solution your most comfortable with, (even manually construct
 each prerendered page if preferred), although it's less maintenance if you automate and get your CI to regenerate it when it publishes
 your App.
 
 Which ever tool you choose would also need to be installed in your CI/GitHub Action if that's where it's run, so we've opted for
-a dependency-free solution by using the tool or .NET projects have: MSBuild.
+a dependency-free & least invasive solution by utilizing the existing Tests project, which has both great IDE tooling support and
+can easily be run from the command-line and importantly is supported by the [bUnit](https://bunit.dev) testing library which we'll
+be using to render component fragments in isolation.
 
-As our [/Pages/Index.razor](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Index.razor) home page is pretty simple:
+To distinguish prerendering tasks from our other Tests we've tagged 
+[PrerenderTasks.cs](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Tests/PrerenderTasks.cs)
+with the `prerender` Test category. The only configuration the tasks require is the location of the `ClientDir` WASM Project 
+defined in [appsettings.json](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Tests/appsettings.json) 
+that's setup in the constructor.
 
-```razor
-@page "/"
+The `Render<T>()` method renders the Blazor Page inside a `Bunit.TestContext` which it saves at the location 
+specified by its `@page` directive.
 
-<h1>Hello, world!</h1>
+```csharp
+[TestFixture, Category("prerender")]
+public class PrerenderTasks
+{
+    Bunit.TestContext Context;
+    string ClientDir;
+    string WwrootDir => ClientDir.CombineWith("wwwroot");
+    string PrerenderDir => WwrootDir.CombineWith("prerender");
 
-Welcome to your new Blazor WASM app, if you're new to Blazor
-<a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor">checkout the docs</a> to get started.
+    public PrerenderTasks()
+    {
+        Context = new();
+        var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        ClientDir = config[nameof(ClientDir)] 
+            ?? throw new Exception($"{nameof(ClientDir)} not defined in appsettings.json");
+        FileSystemVirtualFiles.RecreateDirectory(PrerenderDir);
+    }
 
-<GettingStarted />
+    void Render<T>(params ComponentParameter[] parameters) where T : IComponent
+    {
+        WriteLine($"Rendering: {typeof(T).FullName}...");
+        var component = Context.RenderComponent<T>(parameters);
+        var route = typeof(T).GetCustomAttribute<RouteAttribute>()?.Template;
+        if (string.IsNullOrEmpty(route))
+            throw new Exception($"Couldn't infer @page for component {typeof(T).Name}");
+
+        var fileName = route.EndsWith("/") ? route + "index.html" : $"{route}.html";
+
+        var writeTo = Path.GetFullPath(PrerenderDir.CombineWith(fileName));
+        WriteLine($"Written to {writeTo}");
+        File.WriteAllText(writeTo, component.Markup);
+    }
+
+    [Test]
+    public void PrerenderPages()
+    {
+        Render<Client.Pages.Index>();
+        // Add Pages to prerender...
+    }
+}
 ```
 
-We can get most of the way there by replacing the `<GettingStarted />` text with the
-[GettingStarted.razor](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/GettingStarted.razor) component:
+Being a unit test gives it a number of different ways it can be run, using any of the NUnit test runners, from the GUI 
+integrated in C# IDEs or via command-line test runners like `dotnet test` which can be done with:
+
+```bash
+$ dotnet test --filter TestCategory=prerender 
+```
+
+To have CI automatically run it when it creates a production build of our App we'll add it to our Host `.csproj`:
 
 ```xml
 <PropertyGroup>
-  <ClientDir>$(MSBuildProjectDirectory)/../MyApp.Client</ClientDir>
-  <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
+    <TestsDir>$(MSBuildProjectDirectory)/../MyApp.Tests</TestsDir>
 </PropertyGroup>
-<Target Name="PrerenderPages">
-  <PropertyGroup>
-    <GettingStartedContents>$([System.IO.File]::ReadAllText('$(ClientDir)/Shared/GettingStarted.razor'))</GettingStartedContents>
-    <IndexFileContents>
-      $([System.IO.File]::ReadAllText('$(ClientDir)/Pages/Index.razor').Replace('<GettingStarted />',$(GettingStartedContents)))
-    </IndexFileContents>
-  </PropertyGroup>
-  <WriteLinesToFile File="$(WwwRoot)/prerender/index.html" Lines="$(IndexFileContents)" Overwrite="true" />
+<Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
+    <CallTarget Targets="Prerender" Condition="$(APP_TASKS.Contains('prerender'))" />
+</Target>
+<Target Name="Prerender">
+    <Exec Command="dotnet test --filter TestCategory=prerender --logger:&quot;console;verbosity=detailed&quot;" 
+            WorkingDirectory="$(TestsDir)" />
 </Target>
 ```
 
-To test it out locally, you can run the MSBuild `PrerenderPages` task with:
-
-```bash
-$ dotnet msbuild -target:PrerenderPages
-```
-
-Whereas [GitHub Actions runs it](https://github.com/NetCoreTemplates/blazor-wasm/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80)
-when it publishes your App with task parameters:
+Which allows [GitHub Actions to run it](https://github.com/NetCoreTemplates/blazor-wasm/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80)
+when it publishes the App with:
 
 ```bash
 $ dotnet publish -c Release /p:APP_TASKS=prerender
-```
-
-Enabled by an `AfterTargets="Build"` Task:
-
-```xml
-<Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
-  <CallTarget Targets="PrerenderPages" Condition="$(APP_TASKS.Contains('prerender'))" />
-</Target>
-```
-
-Unfortunately the `@directives` and `@code{}` blocks in `.razor` pages also needs to be stripped out but is too cumbersome to attempt
-to do with MSBuild alone so we've done this in a custom cleanup task that's generically applied to all pages in the `/prerender` folder:
-
-```xml
-<Exec Command="dotnet run -task prerender:clean $(WwwRoot)/prerender" />
-```
-
-Which may initially appear confusing as `dotnet run` is what we use to run the Blazor Server Host and WASM Client.
-
-### prerender:clean task
-
-As we need something more powerful than MSBuild without wanting to add any additional tool dependencies, we've chosen to
-reuse the existing ASP.NET Core Server App for our custom tasks by calling
-[TaskRunner.Handle(args)](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Program.cs#L4)
-at the start of our App, to run tasks defined in
-[Tasks.cs](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Tasks.cs).
-
-This is what's used to implement our `-task prerender:clean` executed above:
-
-```csharp
-public static class TaskRunner
-{
-    public static Dictionary<string, ITask> Tasks = new()
-    {
-        ["prerender:clean"] = new PrerenderClean(),
-    };
-    
-    /// <summary>
-    /// Clean Blazor .html pages by removing @attributes and @code{} blocks
-    /// </summary>
-    public class PrerenderClean : ITask
-    {
-        public string Usage => @"Usage: -task prerender:clean <dir>";
-        public CommandOption[] Options => Array.Empty<CommandOption>();
-
-        public void Execute(ArgsParser cmd)
-        {
-            if (cmd.Args.Count < 1) throw new Exception("Too few arguments");
-
-            var prerenderDir = cmd.Args[0];
-
-            foreach (var file in new DirectoryInfo(prerenderDir)
-                .GetFiles("*.html", SearchOption.AllDirectories))
-            {
-                var sb = new StringBuilder();
-                foreach (var line in File.ReadAllLines(file.FullName))
-                {
-                    if (line.StartsWith("@code"))
-                        break;
-                    if (line.StartsWith("@"))
-                        continue;
-                    sb.AppendLine(line);
-                }
-                sb.AppendLine("<!--prerendered-->"); //mark prerendered pages
-                File.WriteAllText(file.FullName, sb.ToString());
-            }
-        }
-    }       
-}
 ```
 
 Now when we next commit code, the GitHub CI Action will run the above task to generate our
@@ -404,107 +373,132 @@ The other pages that would greatly benefit from prerendering are the Markdown `/
 However to enable SEO friendly content our `fetch(/prerender/*)` solution isn't good enough as the initial page download
 needs to contain the prerendered content, i.e. instead of being downloaded in after.
 
-### prerender:markdown task
+### PrerenderMarkdown Task
 
-To do this our `prerender:markdown` Task scans all `*.md` pages in the `<src>` directory and uses the same
+To do this our `PrerenderMarkdown` Task scans all `*.md` pages in the 
+[content](https://github.com/NetCoreTemplates/blazor-wasm/tree/main/MyApp.Client/wwwroot/content)
+directory and uses the same
 [/MyApp.Client/MarkdownUtils.cs](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/MarkdownUtils.cs)
-implementation `Docs.razor` uses to generate the markdown and embeds it into the `index.html` loading page to generate
-the pre-rendered page:
+implementation [Docs.razor](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Docs.razor)
+uses to generate the markdown and embeds it into the `index.html` loading page to generate the pre-rendered page:
 
 ```csharp
-public static class TaskRunner
+[Test]
+public async Task PrerenderMarkdown()
 {
-    public static Dictionary<string, ITask> Tasks = new()
+    var srcDir = WwrootDir.CombineWith("content").Replace('\\', '/');
+    var dstDir = WwrootDir.CombineWith("docs").Replace('\\', '/');
+            
+    var indexPage = PageTemplate.Create(WwrootDir.CombineWith("index.html"));
+    if (!Directory.Exists(srcDir)) throw new Exception($"{Path.GetFullPath(srcDir)} does not exist");
+    FileSystemVirtualFiles.RecreateDirectory(dstDir);
+
+    foreach (var file in new DirectoryInfo(srcDir).GetFiles("*.md", SearchOption.AllDirectories))
     {
-        ["prerender:markdown"] = new PrerenderMarkdownTask(),
-    };
-    
-    public class PrerenderMarkdownTask : ITask
-    {
-        public string Usage => @"Usage: -task prerender:markdown <src-dir> <dest-dir>";
-        public CommandOption[] Options => new CommandOption[] {
-            new("-index <path>", "Path to index.html"),
-        };
-        public void Execute(ArgsParser cmd)
+        WriteLine($"Converting {file.FullName} ...");
+
+        var name = file.Name.WithoutExtension();
+        var docRender = await Client.MarkdownUtils.LoadDocumentAsync(name, doc =>
+            Task.FromResult(File.ReadAllText(file.FullName)));
+
+        if (docRender.Failed)
         {
-            if (cmd.Args.Count < 2) throw new Exception("Too few arguments");
-    
-            string santizePath(string path) => Path.DirectorySeparatorChar == '\\'
-                ? path.Replace('/', '\\')
-                : path.Replace('\\', '/');
-    
-            var srcDir = santizePath(cmd.Args[0]);
-            var dstDir = santizePath(cmd.Args[1]);
-    
-            if (!Directory.Exists(srcDir)) 
-                throw new Exception($"{Path.GetFullPath(srcDir)} does not exist");
-            if (Directory.Exists(dstDir)) 
-                FileSystemVirtualFiles.DeleteDirectoryRecursive(dstDir);
-            FileSystemVirtualFiles.AssertDirectory(dstDir);
-    
-            foreach (var file in new DirectoryInfo(srcDir)
-                .GetFiles("*.md", SearchOption.AllDirectories))
+            WriteLine($"Failed: {docRender.ErrorMessage}");
+            continue;
+        }
+
+        var dirName = dstDir.IndexOf("wwwroot") >= 0
+            ? dstDir.LastRightPart("wwwroot").Replace('\\', '/')
+            : new DirectoryInfo(dstDir).Name;
+        var path = dirName.CombineWith(name == "index" ? "" : name);
+
+        var mdBody = @$"
+<div class=""prose lg:prose-xl min-vh-100 m-3"" data-prerender=""{path}"">
+    <div class=""markdown-body"">
+        {docRender.Response!.Preview!}
+    </div>
+</div>";
+        var prerenderedPage = indexPage.Render(mdBody);
+        string htmlPath = Path.GetFullPath(Path.Combine(dstDir, $"{name}.html"));
+        File.WriteAllText(htmlPath, prerenderedPage);
+        WriteLine($"Written to {htmlPath}");
+    }
+}
+
+public class PageTemplate
+{
+    string? Header { get; set; }
+    string? Footer { get; set; }
+
+    public PageTemplate(string? header, string? footer)
+    {
+        Header = header;
+        Footer = footer;
+    }
+
+    public static PageTemplate Create(string indexPath)
+    {
+        if (!File.Exists(indexPath))
+            throw new Exception($"{Path.GetFullPath(indexPath)} does not exist");
+
+        string? header = null;
+        string? footer = null;
+
+        var sb = new StringBuilder();
+        foreach (var line in File.ReadAllLines(indexPath))
+        {
+            if (header == null)
             {
-                WriteLine($"Converting {file.FullName} ...");
-    
-                var name = file.Name.WithoutExtension();
-                var docRender = MyApp.Client.MarkdownUtils.LoadDocumentAsync(name, doc =>
-                    Task.FromResult(File.ReadAllText(file.FullName))).GetAwaiter().GetResult();
-    
-                if (docRender.Failed)
+                if (line.Contains("<!--PAGE-->"))
                 {
-                    WriteLine($"Failed: {docRender.ErrorMessage}");
-                    continue;
+                    header = sb.ToString(); // capture up to start page marker
+                    sb.Clear();
                 }
-    
-                var dirName = dstDir.IndexOf("wwwroot") >= 0
-                    ? dstDir.LastRightPart("wwwroot").Replace('\\','/')
-                    : new DirectoryInfo(dstDir).Name;
-                var path = dirName.CombineWith(name == "index" ? "" : name);
-    
-                var mdBody = @"
-    <div class=""prose lg:prose-xl min-vh-100 m-3"" data-prerender=""{path}"">
-        <div class=""markdown-body"">
-            {docRender.Response!.Preview!}
-        </div>
-    </div>";
-                var prerenderedPage = IndexTemplate.Render(cmd, mdBody);
-                string htmlPath = Path.GetFullPath(Path.Combine(dstDir, $"{name}.html"));
-                File.WriteAllText(htmlPath, prerenderedPage);
-                WriteLine($"Written to {htmlPath}");
+                else sb.AppendLine(line);
+            }
+            else
+            {
+                if (sb.Length == 0)
+                {
+                    if (line.Contains("<!--/PAGE-->")) // discard up to end page marker
+                    {
+                        sb.AppendLine();
+                        continue;
+                    }
+                }
+                else sb.AppendLine(line);
             }
         }
+        footer = sb.ToString();
+
+        if (string.IsNullOrEmpty(header) || string.IsNullOrEmpty(footer))
+            throw new Exception($"Parsing {indexPath} failed, missing <!--PAGE-->...<!--/PAGE--> markers");
+
+        return new PageTemplate(header, footer);
     }
+
+    public string Render(string body) => Header + body + Footer;
 }
 ```
 
 Whilst the `wwwroot/index.html` is parsed with [IndexTemplate](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Tasks.cs) 
 who uses the resulting layout to generate pages within `<!--PAGE--><!--/PAGE-->` markers.
 
-Prerendering the `/wwwroot/content/*.md` pages are also executed by a MSBuild task run by GitHub Actions below which outputs
-all pre-generated pages to the
-[/wwwroot/docs/*.html](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/docs) folder:
-
-```xml
-<Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
-  <CallTarget Targets="PrerenderMarkdown" Condition="$(APP_TASKS.Contains('prerender'))" />
-</Target>
-<Target Name="PrerenderMarkdown">
-  <Exec Command="dotnet run -task prerender:markdown -index $(WwwRoot)/index.html $(WwwRoot)/content $(WwwRoot)/docs" />
-</Target>
-```
+After it's also executed by the same MSBuild task run by GitHub Actions it prerenders all `/wwwroot/content/*.md` pages 
+which are written to the [/wwwroot/docs/*.html](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/docs) folder.
 
 This results in the path to the pre-generated markdown docs i.e. [/docs/prerender](/docs/prerender) having the **exact same path** 
 as its route in the Blazor App, which when exists, CDNs give priority to over the SPA fallback the Blazor App is loaded with.
 
-It retains the similar behavior as the home page that initially loads pre-rendered content before it's replaced with the
-C# version once the Blazor App has loaded.
+It shares similar behavior as the home page where its pre-rendered content is initially loaded before it's replaced with the
+C# version once the Blazor App loads. The difference is that it prerenders "complete pages" for better SEO & TTFR.
 
 > Why does this page load so fast?
 
 So to answer the initial question, this page loads so fast because a prerendered version is initially loaded from a CDN edge cache,
-it's the same reason why our other modern [nextjs.jamstacks.net](https://nextjs.jamstacks.net) and
-[vue-ssg.jamstacks.net](https://vue-ssg.jamstacks.net) Jamstack SSG templates have such great performance and UX out-of-the-box.
+i.e. the same reason why [Jamstack.org](https://jamstack.org) SSG templates like our modern 
+[nextjs.jamstacks.net](https://nextjs.jamstacks.net) and [vue-ssg.jamstacks.net](https://vue-ssg.jamstacks.net) 
+exhibit such great performance and UX out-of-the-box.
 
 We hope this technique serves useful in greatly improving the initial UX of Blazor Apps, a new Blazor App
 with all this integrated can be created on the [Home Page](/)
