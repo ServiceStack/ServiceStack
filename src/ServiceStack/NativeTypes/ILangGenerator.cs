@@ -21,7 +21,6 @@ public static class LangGeneratorExtensions
         var nativeTypes = HostContext.GetPlugin<NativeTypesFeature>();
         var request = new NativeTypesBase {
             // GlobalNamespace = "dtos",
-            IncludeTypes = metadataTypes.Map(x => x.Name),
             ExportAsTypes = true,
         };
         var types = new MetadataTypes {
