@@ -8,10 +8,7 @@
         Edit Booking
     </h1>
 
-    <ErrorSummary VisibleFields=@(new[]{ 
-        nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate), 
-        nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
-    }) />
+    <ErrorSummary Except=@VisibleFields />
     <ErrorSummary ExplicitStatus=@deleteApi.Error />
 
     <div class="mb-3 form-floating">
@@ -75,6 +72,11 @@
     [Parameter] public int? Id { get; set; }
     [Parameter] public EventCallback<IdResponse> done { get; set; }
     [Parameter] public string? @class { get; set; }
+
+    string[] VisibleFields => new[]{
+        nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate), 
+        nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
+    };
 
     bool deleteConfirmed = false;
 

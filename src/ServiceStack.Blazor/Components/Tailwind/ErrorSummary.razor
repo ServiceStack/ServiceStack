@@ -1,6 +1,6 @@
 ﻿@inherits ErrorSummaryBase
 
-@if (UseStatus.ShowSummary(UseVisibleFields))
+@if (UseStatus.ShowSummary(UseExcept))
 {
     <div class=@(ClassNames("rounded-md bg-red-50 p-4", CssClass())) role="alert">
         <div class="flex">
@@ -12,7 +12,7 @@
         </div>
         <div class="ml-3">
             <h3 class="text-sm font-medium text-red-800">
-            @UseStatus.SummaryMessage(UseVisibleFields)
+            @UseStatus.SummaryMessage(UseExcept)
             </h3>
         </div>
         </div>

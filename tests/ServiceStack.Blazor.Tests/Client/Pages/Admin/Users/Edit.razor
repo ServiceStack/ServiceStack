@@ -13,9 +13,9 @@
     </h1>
 
     <div class="mb-3">
-        <ErrorSummary Status=@getUserApi.Error VisibleFields=@VisibleFields />
-        <ErrorSummary Status=@updateUserApi.Error VisibleFields=@VisibleFields />
-        <ErrorSummary Status=@deleteUserApi.Error VisibleFields=@VisibleFields />
+        <ErrorSummary Status=@getUserApi.Error Except=@VisibleFields />
+        <ErrorSummary Status=@updateUserApi.Error Except=@VisibleFields />
+        <ErrorSummary Status=@deleteUserApi.Error Except=@VisibleFields />
         <AlertSuccess Message=@successMessage />
     </div>
     <div class="row">

@@ -8,7 +8,7 @@
         <span class="ml-1 sm:ml-4 text-xl sm:text-3xl text-gray-700">Todos Application</span>
     </div>
 
-    <ErrorSummary VisibleFields=@(new[] { nameof(CreateTodo.Text) }) />
+    <ErrorSummary Except=@VisibleFields />
 
     <TextInput placeholder="What needs to be done?" @bind-Value="request.Text" Label="" />
 

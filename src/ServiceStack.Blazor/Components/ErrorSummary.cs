@@ -11,7 +11,7 @@ public class ErrorSummaryBase : ApiComponentBase
     /// Do not show Field Error Messages for specified visible fields which will display them
     /// </summary>
     [Parameter]
-    public string[]? VisibleFields { get; set; }
+    public string[]? Except { get; set; }
 
-    protected string[] UseVisibleFields => VisibleFields ?? Array.Empty<string>();
+    protected string[] UseExcept => Except ?? Array.Empty<string>();
 }

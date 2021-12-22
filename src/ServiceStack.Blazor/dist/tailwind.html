@@ -48,8 +48,9 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
-<input type=@UseType class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
-CssClass("text-gray-900", "text-red-900"))
+<input type="date" class=@ClassNames("block w-full sm:text-sm rounded-md",
+CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
 id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
 @if (HasErrorField)
 {
@@ -100,7 +101,7 @@ else
 <TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
 }
 @inherits ErrorSummaryBase
-@if (UseStatus.ShowSummary(UseVisibleFields))
+@if (UseStatus.ShowSummary(UseExcept))
 {
 <div class=@(ClassNames("rounded-md bg-red-50 p-4", CssClass())) role="alert">
 <div class="flex">
@@ -112,7 +113,7 @@ else
 </div>
 <div class="ml-3">
 <h3 class="text-sm font-medium text-red-800">
-@UseStatus.SummaryMessage(UseVisibleFields)
+@UseStatus.SummaryMessage(UseExcept)
 </h3>
 </div>
 </div>
@@ -128,7 +129,7 @@ else
 <select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md",
 CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
 invalid:"text-red-900 focus:ring-red-500 focus:border-red-500"))
-@bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes">
+@bind="CurrentValue" @attributes="IncludeAttributes">
 @ChildContent
 @foreach (var kvp in KvpValues())
 {
@@ -157,6 +158,10 @@ invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
 {
 <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
 </div>
 </div>
 @typeparam TValue
@@ -167,8 +172,9 @@ invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
 <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
-<input type=@UseType class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
-CssClass("text-gray-900", "text-red-900"))
+<input type=@UseType class=@ClassNames("block w-full sm:text-sm rounded-md",
+CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
 id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
 @if (HasErrorField)
 {

@@ -13,8 +13,7 @@
 
 <form @onsubmit="submit" class=@ClassNames("max-w-xl")>
 <CascadingValue Value=@api.Error>
-    <ErrorSummary VisibleFields=@(new[]{ 
-        nameof(request.DisplayName), nameof(request.Email), nameof(request.Password), nameof(request.ConfirmPassword) }) />
+    <ErrorSummary Except=@VisibleFields />
 
     <div class="mb-3 form-floating">
         <TextInput @bind-Value="request.DisplayName" spellcheck="false" Help="Your first and last name" required />
@@ -55,6 +54,9 @@
 </div>
 
 @code {
+    string[] VisibleFields => new[]{ 
+        nameof(request.DisplayName), nameof(request.Email), nameof(request.Password), nameof(request.ConfirmPassword) };
+
     Register request = new() { AutoLogin = true };
 
     ApiResult<RegisterResponse> api = new();

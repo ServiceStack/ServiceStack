@@ -8,10 +8,7 @@
         New Booking
     </h1>
 
-    <ErrorSummary VisibleFields=@(new[]{ 
-        nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate), 
-        nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
-    }) />
+    <ErrorSummary Except=@VisibleFields />
 
     <div class="mb-3 form-floating">
         <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
@@ -69,6 +66,11 @@
     CreateBooking request = new()
     {
         BookingStartDate = DateTime.UtcNow,
+    };
+
+    string[] VisibleFields => new[]{
+        nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate),
+        nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
     };
 
     ApiResult<IdResponse> api = new();

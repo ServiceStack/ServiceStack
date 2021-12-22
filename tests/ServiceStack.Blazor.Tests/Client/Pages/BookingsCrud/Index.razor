@@ -22,9 +22,9 @@ else
 
 @if (api.Succeeded && api.Response!.Results?.Count > 0)
 {
-    <div class="shadow-sm p1 mt-4">
+    <div class="shadow-sm mt-4">
     <table class="table table-striped align-middle">
-            <thead>
+        <thead>
             <tr class="noselect">
                 <th>
                     <span class="oi oi-plus cursor-pointer" aria-hidden="true" title="New Booking" @onclick="_ => reset(newBooking:true)"></span>

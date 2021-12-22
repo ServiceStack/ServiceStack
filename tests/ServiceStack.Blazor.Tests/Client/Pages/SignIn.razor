@@ -13,7 +13,7 @@
 
 <form @onsubmit="submit" class="max-w-xl">
 <CascadingValue Value=@api.Error>
-    <ErrorSummary VisibleFields=@(new[]{ nameof(Authenticate.UserName), nameof(Authenticate.Password) }) />
+    <ErrorSummary Except=@VisibleFields />
 
     <div class="mb-3 form-floating">
         <TextInput @bind-Value="request.UserName" spellcheck="false" Help="Email address" />
@@ -42,6 +42,8 @@
 </div>
 
 @code {
+    string[] VisibleFields => new[]{ nameof(Authenticate.UserName), nameof(Authenticate.Password) };
+
     ApiResult<AuthenticateResponse> api = new();
 
     Authenticate request = new();

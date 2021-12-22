@@ -481,8 +481,8 @@ public class PageTemplate
 }
 ```
 
-Whilst the `wwwroot/index.html` is parsed with [IndexTemplate](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Tasks.cs) 
-who uses the resulting layout to generate pages within `<!--PAGE--><!--/PAGE-->` markers.
+Whilst the `wwwroot/index.html` is parsed with `PageTemplate` above who uses the resulting layout to generate pages 
+within `<!--PAGE--><!--/PAGE-->` markers.
 
 After it's also executed by the same MSBuild task run by GitHub Actions it prerenders all `/wwwroot/content/*.md` pages 
 which are written to the [/wwwroot/docs/*.html](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/docs) folder.

@@ -9,7 +9,7 @@
     <select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md", 
         CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
                invalid:"text-red-900 focus:ring-red-500 focus:border-red-500")) 
-            @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes">
+            @bind="CurrentValue" @attributes="IncludeAttributes">
             @ChildContent
     @foreach (var kvp in KvpValues())
     {

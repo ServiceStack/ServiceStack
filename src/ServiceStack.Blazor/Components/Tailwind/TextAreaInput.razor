@@ -16,5 +16,9 @@
     {
         <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
     }
+    else if (!string.IsNullOrEmpty(UseHelp))
+    {
+        <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+    }
     </div>
 </div>
