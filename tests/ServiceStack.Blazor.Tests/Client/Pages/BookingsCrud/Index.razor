@@ -1,5 +1,5 @@
 @page "/bookings-crud"
-@attribute [Authorize()]
+@attribute [Authorize(Roles="Employee")]
 @inherits AppAuthComponentBase
 
 <h1 class="fs-2">Bookings CRUD</h1>

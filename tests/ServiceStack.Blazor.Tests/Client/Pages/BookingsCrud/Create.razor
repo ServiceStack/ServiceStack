@@ -1,4 +1,5 @@
-@inherits AppComponentBase
+@attribute [Authorize(Roles="Employee")]
+@inherits AppAuthComponentBase
 
 <form @onsubmit="_ => OnSubmit()" @onsubmit:preventDefault class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
 <CascadingValue Value=@api.Error>

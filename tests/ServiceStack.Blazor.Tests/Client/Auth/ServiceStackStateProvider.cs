@@ -73,7 +73,13 @@ public class ServiceStackStateProvider : AuthenticationStateProvider
                 new Claim(ClaimTypes.Name, authResponse.DisplayName),
                 new Claim(ClaimTypes.Email, authResponse.UserName)
             };
-            foreach (var role in authResponse.Roles)
+
+            // Add all App Roles to Admin Users to use [Authorize(Roles)]
+            var isAdmin = authResponse.Roles.FirstOrDefault(x => x == AppRoles.Admin);
+            var roles = isAdmin != null
+                ? authResponse.Roles.Union(AppRoles.All).Distinct()
+                : authResponse.Roles;
+            foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
