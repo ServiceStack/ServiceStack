@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases;
 public class BasicEncryptedMessagesAppHost : AppSelfHostBase
 {
     public BasicEncryptedMessagesAppHost()
-        : base(typeof(BasicEncryptedMessagesAppHost).Name, typeof(BasicEncryptedMessagesService).Assembly) { }
+        : base(nameof(BasicEncryptedMessagesAppHost), typeof(BasicEncryptedMessagesService).Assembly) { }
 
     public override void Configure(Container container)
     {

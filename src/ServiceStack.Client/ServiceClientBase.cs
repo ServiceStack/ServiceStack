@@ -2042,6 +2042,12 @@ namespace ServiceStack
             }
         }
 
+        public static void DeleteCookie(this IHasCookieContainer hasCookieContainer, Uri uri, string name) =>
+            hasCookieContainer.CookieContainer.DeleteCookie(uri, name);
+
+        public static void DeleteCookie(this IJsonServiceClient client, string name) =>
+            client.AssertCookieContainer().DeleteCookie(new Uri(client.BaseUri), name);
+
         public static TResponse PostBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody) =>
             client.Send<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
         public static TResponse PostBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, string requestBody) =>
@@ -2194,12 +2200,22 @@ namespace ServiceStack
             client.SetCookie("ss-tok", token, expiresIn: TimeSpan.FromDays(365 * 20));
         }
 
+        public static void DeleteTokenCookie(this IJsonServiceClient client) => client.DeleteCookie("ss-tok");
+
         public static void SetRefreshTokenCookie(this IServiceClient client, string token)
         {
             if (token == null)
                 return;
 
             client.SetCookie("ss-reftok", token, expiresIn: TimeSpan.FromDays(365 * 20));
+        }
+
+        public static void DeleteRefreshTokenCookie(this IJsonServiceClient client) => client.DeleteCookie("ss-reftok");
+
+        public static void DeleteTokenCookies(this IJsonServiceClient client)
+        {
+            client.DeleteTokenCookie();
+            client.DeleteRefreshTokenCookie();
         }
 
         public static void SetTokenCookie(this CookieContainer cookies, string baseUri, string token)
@@ -2237,6 +2253,13 @@ namespace ServiceStack
         public static void AddAuthSecret(this IRestClient client, string authsecret)
         {
             client.AddHeader(HttpHeaders.XParamOverridePrefix + nameof(authsecret), authsecret);
+        }
+
+        public static T Apply<T>(this T client, Action<T> fn)
+            where T : IServiceGateway
+        {
+            fn(client);
+            return client;
         }
     }
 

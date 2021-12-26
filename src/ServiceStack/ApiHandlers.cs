@@ -31,14 +31,14 @@ public static class ApiHandlers
             throw new ArgumentException(apiPath + " must start with '/'");
         if (!apiPath.EndsWith("/{Request}"))
             throw new ArgumentException(apiPath + " must end with '/{Request}'");
-        var useApiPath = apiPath.LastLeftPart('/');
+        var useApiPath = apiPath.LastLeftPart('/') + '/';
         
         return req => {
             // Don't handle OPTIONS CORS requests
             if (req.HttpMethod == HttpMethods.Options) return null;
             
             var pathInfo = req.PathInfo;
-            if (pathInfo.StartsWith(useApiPath) && pathInfo.IndexOf('/',1) >= 0)
+            if (pathInfo.StartsWith(useApiPath))
             {
                 var apiName = pathInfo.LastRightPart('/');
                 return new GenericHandler(contentType, requestAttributes, feature) {

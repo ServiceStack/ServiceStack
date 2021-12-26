@@ -82,7 +82,7 @@ namespace ServiceStack.Server.Tests.Auth
 
     public class JsonHttpClientStatelessAuthTests : StatelessAuthTests
     {
-        protected override IServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
+        protected override IJsonServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
         {
             return new JsonHttpClient(ListeningOn)
             {
@@ -92,7 +92,7 @@ namespace ServiceStack.Server.Tests.Auth
             };
         }
 
-        protected override IServiceClient GetClientWithApiKey(string apiKey = null)
+        protected override IJsonServiceClient GetClientWithApiKey(string apiKey = null)
         {
             return new JsonHttpClient(ListeningOn)
             {
@@ -100,15 +100,12 @@ namespace ServiceStack.Server.Tests.Auth
             };
         }
 
-        protected override IServiceClient GetClientWithBearerToken(string bearerToken)
+        protected override IJsonServiceClient GetClientWithBearerTokenCookie(string bearerToken)
         {
-            return new JsonHttpClient(ListeningOn)
-            {
-                BearerToken = bearerToken,
-            };
+            return new JsonHttpClient(ListeningOn).Apply(c => c.SetTokenCookie(bearerToken));
         }
 
-        protected override IServiceClient GetClient()
+        protected override IJsonServiceClient GetClient()
         {
             return new JsonHttpClient(ListeningOn);
         }
@@ -122,14 +119,14 @@ namespace ServiceStack.Server.Tests.Auth
             {
                 ServiceURL = Environment.GetEnvironmentVariable("CI_DYNAMODB") ?? "http://localhost:8000",
             });
-
+    
             return dynamoClient;
         }
         protected override ServiceStackHost CreateAppHost()
         {
             var pocoDynamo = new PocoDynamo(CreateDynamoDBClient());
             pocoDynamo.DeleteAllTables(TimeSpan.FromMinutes(1));
-
+    
             return new AppHost
             {
                 Use = container => container.Register<IAuthRepository>(c => new DynamoDbAuthRepository(pocoDynamo))
@@ -735,7 +732,7 @@ namespace ServiceStack.Server.Tests.Auth
         public const string Username = "user";
         public const string Password = "p@55word";
 
-        protected virtual IServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
+        protected virtual IJsonServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
         {
             return new JsonServiceClient(ListeningOn)
             {
@@ -745,23 +742,20 @@ namespace ServiceStack.Server.Tests.Auth
             };
         }
 
-        protected virtual IServiceClient GetClientWithApiKey(string apiKey = null)
-        {
-            return new JsonServiceClient(ListeningOn)
-            {
+        protected virtual IJsonServiceClient GetClientWithApiKey(string apiKey = null) =>
+            new JsonServiceClient(ListeningOn) {
                 Credentials = new NetworkCredential(apiKey ?? ApiKey, ""),
             };
-        }
 
-        protected virtual IServiceClient GetClientWithBearerToken(string bearerToken)
-        {
-            return new JsonServiceClient(ListeningOn)
-            {
-                BearerToken = bearerToken,
-            };
-        }
+        protected virtual IJsonServiceClient GetClientWithBearerToken(string apiKey = null) =>
+            new JsonServiceClient(ListeningOn) { BearerToken = apiKey };
 
-        protected virtual IServiceClient GetClient() => new JsonServiceClient(ListeningOn);
+        protected virtual IJsonServiceClient GetClientWithBearerTokenCookie(string bearerToken) =>
+            new JsonServiceClient(ListeningOn).Apply(c => {
+                c.SetTokenCookie(bearerToken);
+            });
+
+        protected virtual IJsonServiceClient GetClient() => new JsonServiceClient(ListeningOn);
 
         [Test]
         public void Does_create_multiple_ApiKeys()
@@ -946,9 +940,9 @@ namespace ServiceStack.Server.Tests.Auth
             var client = GetClientWithUserPassword(alwaysSend: true);
 
             var authResponse = client.Send(new Authenticate());
-            Assert.That(authResponse.BearerToken, Is.Not.Null);
+            Assert.That(client.GetTokenCookie(), Is.Not.Null);
 
-            var jwtClient = GetClientWithBearerToken(authResponse.BearerToken);
+            var jwtClient = GetClientWithBearerTokenCookie(client.GetTokenCookie());
             var request = new Secured { Name = "test" };
             var response = jwtClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
@@ -975,10 +969,9 @@ namespace ServiceStack.Server.Tests.Auth
             var client = GetClientWithUserPassword(alwaysSend: true);
 
             var authResponse = client.Send(new Authenticate());
-            Assert.That(authResponse.BearerToken, Is.Not.Null);
 
             var jwtClient = GetClient();
-            jwtClient.SetTokenCookie(authResponse.BearerToken);
+            jwtClient.SetTokenCookie(client.GetTokenCookie());
 
             var request = new Secured { Name = "test" };
             var response = jwtClient.Send(request);
@@ -1099,6 +1092,7 @@ namespace ServiceStack.Server.Tests.Auth
                 provider = "credentials",
                 UserName = Username,
                 Password = Password,
+                // RememberMe = true,
             });
 
             client.Send(new Authenticate());
@@ -1107,8 +1101,11 @@ namespace ServiceStack.Server.Tests.Auth
             var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
+            var bearerToken = client.GetTokenCookie();
+            Assert.That(bearerToken, Is.Not.Null);
+            
             var newClient = GetClient();
-            newClient.SetSessionId(client.GetSessionId());
+            newClient.SetTokenCookie(bearerToken);
             response = newClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
         }
@@ -1179,7 +1176,8 @@ namespace ServiceStack.Server.Tests.Auth
             client = GetClientWithApiKey();
             AssertNoAccessToSecuredByRoleAndPermission(client);
 
-            var bearerToken = client.Get(new Authenticate()).BearerToken;
+            var authResponse = client.Get(new Authenticate());
+            var bearerToken = client.GetTokenCookie();
             client = GetClientWithBearerToken(bearerToken);
             AssertNoAccessToSecuredByRoleAndPermission(client);
 
@@ -1211,8 +1209,8 @@ namespace ServiceStack.Server.Tests.Auth
             client = GetClientWithApiKey(ApiKeyWithRole);
             AssertAccessToSecuredByRoleAndPermission(client);
 
-            var bearerToken = client.Get(new Authenticate()).BearerToken;
-            client = GetClientWithBearerToken(bearerToken);
+            client.Get(new Authenticate());
+            client = GetClientWithBearerTokenCookie(client.GetTokenCookie());
             AssertAccessToSecuredByRoleAndPermission(client);
 
             client = GetClient();
@@ -1237,7 +1235,7 @@ namespace ServiceStack.Server.Tests.Auth
                 Email = "as@if.com"
             });
 
-            var client = GetClientWithBearerToken(token);
+            var client = GetClientWithBearerTokenCookie(token);
 
             var request = new Secured { Name = "test" };
             var response = client.Send(request);
@@ -1277,7 +1275,7 @@ namespace ServiceStack.Server.Tests.Auth
 
             jwtProvider.CreatePayloadFilter = null;
 
-            var client = GetClientWithBearerToken(token);
+            var client = GetClientWithBearerTokenCookie(token);
 
             try
             {
@@ -1305,7 +1303,9 @@ namespace ServiceStack.Server.Tests.Auth
             client.OnAuthenticationRequired = () =>
             {
                 called++;
-                client.BearerToken = authClient.Send(new Authenticate()).BearerToken;
+                authClient.Send(new Authenticate());
+                client.BearerToken = null;
+                client.SetTokenCookie(authClient.GetTokenCookie());
             };
 
             var request = new Secured { Name = "test" };
@@ -1330,7 +1330,9 @@ namespace ServiceStack.Server.Tests.Auth
             client.OnAuthenticationRequired = () =>
             {
                 called++;
-                client.BearerToken = authClient.Send(new Authenticate()).BearerToken;
+                authClient.Send(new Authenticate());
+                client.BearerToken = null;
+                client.SetTokenCookie(authClient.GetTokenCookie());
             };
 
             var request = new Secured { Name = "test" };
@@ -1356,7 +1358,7 @@ namespace ServiceStack.Server.Tests.Auth
                 Email = "as@if.com"
             });
 
-            var client = GetClientWithBearerToken(token);
+            var client = GetClientWithBearerTokenCookie(token);
 
             try
             {
@@ -1392,7 +1394,8 @@ namespace ServiceStack.Server.Tests.Auth
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
-            newClient.SetSessionId(client.GetSessionId());
+            newClient.SetTokenCookie(client.GetTokenCookie());
+            client.DeleteTokenCookies();
 
             var tokenResponse = newClient.Send(new ConvertSessionToToken());
             var tokenCookie = newClient.GetTokenCookie();
@@ -1423,12 +1426,10 @@ namespace ServiceStack.Server.Tests.Auth
                 provider = "credentials",
                 UserName = Username,
                 Password = Password,
-                UseTokenCookie = true
             });
 
             var token = client.GetTokenCookie();
             Assert.That(token, Is.Not.Null);
-            Assert.That(token, Is.EqualTo(authResponse.BearerToken));
 
             var request = new Secured { Name = "test" };
             var response = client.Send(request);
