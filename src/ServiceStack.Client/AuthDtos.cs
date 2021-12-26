@@ -31,11 +31,6 @@ namespace ServiceStack
         [DataMember(Order = 14)] public string nc { get; set; }
         [DataMember(Order = 15)] public string cnonce { get; set; }
 
-        /// <summary>
-        /// Whether to convert successful Authenticated User Sessions to JWT Token in ss-tok Cookie 
-        /// </summary>
-        [DataMember(Order = 16)] public bool? UseTokenCookie { get; set; }
-
         [DataMember(Order = 17)] public string AccessToken { get; set; }
         [DataMember(Order = 18)] public string AccessTokenSecret { get; set; }
         [DataMember(Order = 19)] public string scope { get; set; }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases;
 
-public class JwtAuthProviderRsaEncryptedTests : JwtAuthProviderTests
+public class JwtAuthProviderRsaEncryptedNoCookiesTests : JwtAuthProviderNoCookiesTests
 {
     protected override JwtAuthProvider CreateJwtAuthProvider()
     {
@@ -25,6 +25,7 @@ public class JwtAuthProviderRsaEncryptedTests : JwtAuthProviderTests
 
         return new JwtAuthProvider
         {
+            UseTokenCookie = false,
             HashAlgorithm = "RS256",
             PrivateKeyXml = privateKeyXml,
             EncryptPayload = true,
@@ -33,7 +34,7 @@ public class JwtAuthProviderRsaEncryptedTests : JwtAuthProviderTests
     }
 }
 
-public class JwtAuthProviderRsaTests : JwtAuthProviderTests
+public class JwtAuthProviderRsaNoCookiesTests : JwtAuthProviderNoCookiesTests
 {
     protected override JwtAuthProvider CreateJwtAuthProvider()
     {
@@ -44,6 +45,7 @@ public class JwtAuthProviderRsaTests : JwtAuthProviderTests
 
         return new JwtAuthProvider
         {
+            UseTokenCookie = false,
             HashAlgorithm = "RS256",
             PrivateKeyXml = privateKeyXml,
             RequireSecureConnection = false,
@@ -51,11 +53,12 @@ public class JwtAuthProviderRsaTests : JwtAuthProviderTests
     }
 }
 
-public class JwtAuthProviderHS256Tests : JwtAuthProviderTests
+public class JwtAuthProviderHS256NoCookiesTests : JwtAuthProviderNoCookiesTests
 {
     private static readonly byte[] AuthKey = AesUtils.CreateKey();
 
     protected override JwtAuthProvider CreateJwtAuthProvider() => new() {
+        UseTokenCookie = false,
         AuthKey = AuthKey,
         RequireSecureConnection = false,
         AllowInQueryString = true,
@@ -106,11 +109,11 @@ public class JwtAuthProviderHS256Tests : JwtAuthProviderTests
         var client = GetClientWithBasicAuthCredentials();
 
         var authResponse = client.Post(new Authenticate());
-        AssertAuthenticateResponse(client, authResponse);
+        Assert.That(authResponse.BearerToken, Is.Not.Null);
 
         var request = new Secured { Name = "test" };
         var url = Config.ListeningOn.CombineWith(request.ToGetUrl())
-            .AddQueryParam(Keywords.TokenCookie, client.GetTokenCookie());
+            .AddQueryParam(Keywords.TokenCookie, authResponse.BearerToken);
 
         var response = url.PostJsonToUrl("{}")
             .FromJson<SecuredResponse>();
@@ -124,24 +127,23 @@ public class JwtAuthProviderHS256Tests : JwtAuthProviderTests
         var client = GetClientWithBasicAuthCredentials();
 
         var authResponse = client.Post(new Authenticate());
-        AssertAuthenticateResponse(client, authResponse);
+        Assert.That(authResponse.BearerToken, Is.Not.Null);
 
         var jwtProvider = (JwtAuthProvider) AuthenticateService.GetJwtAuthProvider();
         // Ensure minimum signature example
         // jwtProvider.ValidateToken = (js,req) => 
         //     req.GetJwtToken().LastRightPart('.').FromBase64UrlSafe().Length >= 32;
 
-        var bearerToken = client.GetTokenCookie();
         var req = new BasicHttpRequest {
-            Headers = {[HttpHeaders.Authorization] = "Bearer " + bearerToken}
+            Headers = {[HttpHeaders.Authorization] = "Bearer " + authResponse.BearerToken}
         };
 
         Assert.That(jwtProvider.IsJwtValid(req));
 
-        var startSigPos = bearerToken.LastIndexOf('.') + 1;
-        for (var i = startSigPos; i < bearerToken.Length; i++)
+        var startSigPos = authResponse.BearerToken.LastIndexOf('.') + 1;
+        for (var i = startSigPos; i < authResponse.BearerToken.Length; i++)
         {
-            req.Headers[HttpHeaders.Authorization] = "Bearer " + bearerToken.Substring(0, i);
+            req.Headers[HttpHeaders.Authorization] = "Bearer " + authResponse.BearerToken.Substring(0, i);
             Assert.That(jwtProvider.IsJwtValid(req), Is.False);
         }
     }
@@ -152,13 +154,13 @@ public class JwtAuthProviderHS256Tests : JwtAuthProviderTests
         var client = GetClientWithBasicAuthCredentials();
 
         var authResponse = client.Post(new Authenticate());
-        AssertAuthenticateResponse(client, authResponse);
+        Assert.That(authResponse.BearerToken, Is.Not.Null);
 
         var request = new Secured { Name = "test" };
         var url = Config.ListeningOn.CombineWith(request.ToGetUrl());
 
         var response = url.PostToUrl(new Dictionary<string,string> {
-                { Keywords.TokenCookie, client.GetTokenCookie() }
+                { Keywords.TokenCookie, authResponse.BearerToken }
             }, accept: MimeTypes.Json)
             .FromJson<SecuredResponse>();
 
@@ -171,10 +173,10 @@ public class JwtAuthProviderHS256Tests : JwtAuthProviderTests
         var authClient = GetClientWithBasicAuthCredentials();
 
         var authResponse = authClient.Post(new Authenticate());
-        AssertAuthenticateResponse(authClient, authResponse);
+        Assert.That(authResponse.BearerToken, Is.Not.Null);
 
         var client = GetClient();
-        var request = new HelloJwt { BearerToken = authClient.GetTokenCookie(), Name = "IHasBearerToken" };
+        var request = new HelloJwt { BearerToken = authResponse.BearerToken, Name = "IHasBearerToken" };
         var response = client.Get(request);
 
         Assert.That(response.Result, Is.EqualTo("Hello, IHasBearerToken"));
@@ -209,7 +211,7 @@ public class JwtAuthProviderHS256Tests : JwtAuthProviderTests
     }
 }
 
-public class JwtAuthProviderHS256HttpClientTests : JwtAuthProviderHS256Tests
+public class JwtAuthProviderHS256HttpClientNoCookiesTests : JwtAuthProviderHS256NoCookiesTests
 {
     protected override IJsonServiceClient GetClient()
     {
@@ -226,9 +228,9 @@ public class JwtAuthProviderHS256HttpClientTests : JwtAuthProviderHS256Tests
     }
 }
 
-public abstract class JwtAuthProviderTests
+public abstract class JwtAuthProviderNoCookiesTests
 {
-    public const string Username = "mythz";
+    public const string Username = "cookieless";
     public const string Password = "p@55word";
 
     class AppHost : AppSelfHostBase
@@ -292,13 +294,28 @@ public abstract class JwtAuthProviderTests
     protected virtual IJsonServiceClient GetClientWithRefreshToken(string refreshToken = null, string accessToken = null, bool useTokenCookie = false)
     {
         if (refreshToken == null)
+        {
             refreshToken = GetRefreshToken();
+        }
 
         var client = GetClient();
-        client.SetRefreshTokenCookie(refreshToken);
-        if (!useTokenCookie)
-            client.SetTokenCookie(accessToken);
-        return client;
+        if (client is JsonServiceClient serviceClient)
+        {
+            serviceClient.RefreshToken = refreshToken;
+            if (!useTokenCookie)
+                serviceClient.BearerToken = accessToken;
+            return serviceClient;
+        }
+
+        if (client is JsonHttpClient httpClient)
+        {
+            httpClient.RefreshToken = refreshToken;
+            if (!useTokenCookie)
+                httpClient.BearerToken = accessToken;
+            return httpClient;
+        }
+
+        throw new NotSupportedException(client.GetType().Name);
     }
 
     private static string CreateExpiredToken()
@@ -320,7 +337,7 @@ public abstract class JwtAuthProviderTests
 
     private readonly ServiceStackHost appHost;
 
-    public JwtAuthProviderTests()
+    public JwtAuthProviderNoCookiesTests()
     {
         appHost = new AppHost
             {
@@ -330,46 +347,20 @@ public abstract class JwtAuthProviderTests
             .Start(Config.ListeningOn);
     }
 
-    protected static void AssertAuthenticateResponse(IJsonServiceClient client, AuthenticateResponse authResponse)
-    {
-        Assert.That(authResponse.BearerToken, Is.Null);
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-    }
-
     [OneTimeTearDown]
     public void OneTimeTearDown() => appHost.Dispose();
 
     private string GetRefreshToken()
     {
         var authClient = GetClient();
-        authClient.Send(new Authenticate {
-            provider = "credentials",
-            UserName = Username,
-            Password = Password,
-        });
-        var refreshToken = authClient.GetRefreshTokenCookie();
-        Assert.That(refreshToken, Is.Not.Null);
+        var refreshToken = authClient.Send(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+            })
+            .RefreshToken;
         return refreshToken;
-    }
-
-    [Test]
-    public void Can_get_TokenCookie()
-    {
-        var authClient = GetClient();
-        var authResponse = authClient.Send(new Authenticate
-        {
-            provider = "credentials",
-            UserName = Username,
-            Password = Password,
-        });
-        Assert.That(authResponse.SessionId, Is.Not.Null);
-        Assert.That(authResponse.UserName, Is.EqualTo(Username));
-
-        var response = authClient.Send(new HelloJwt { Name = "from auth service" });
-        Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
-
-        var jwtToken = authClient.GetTokenCookie(); //From ss-tok Cookie
-        Assert.That(jwtToken, Is.Not.Null);
     }
 
     [Test]
@@ -385,10 +376,10 @@ public abstract class JwtAuthProviderTests
         });
         Assert.That(authResponse.SessionId, Is.Not.Null);
         Assert.That(authResponse.UserName, Is.EqualTo(Username));
-        Assert.That(authResponse.BearerToken, Is.Null);
+        Assert.That(authResponse.BearerToken, Is.Not.Null);
 
         var jwtToken = authClient.GetTokenCookie(); //From ss-tok Cookie
-        Assert.That(jwtToken, Is.Not.Null);
+        Assert.That(jwtToken, Is.Null);
 
         var response = authClient.Send(new HelloJwt { Name = "from auth service" });
         Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
@@ -441,14 +432,14 @@ public abstract class JwtAuthProviderTests
     public void Only_returns_Tokens_on_Requests_that_Authenticate_the_user()
     {
         var authClient = GetClient();
-        var authResponse = authClient.Send(new Authenticate
+        var refreshToken = authClient.Send(new Authenticate
         {
             provider = "credentials",
             UserName = Username,
             Password = Password,
-        });
+        }).RefreshToken;
 
-        Assert.That(authClient.GetRefreshTokenCookie(), Is.Not.Null); //On Auth using non IAuthWithRequest
+        Assert.That(refreshToken, Is.Not.Null); //On Auth using non IAuthWithRequest
 
         var postAuthRefreshToken = authClient.Send(new Authenticate()).RefreshToken;
         Assert.That(postAuthRefreshToken, Is.Null); //After Auth
@@ -520,10 +511,10 @@ public abstract class JwtAuthProviderTests
         {
             called++;
             var authClient = GetClient();
-            var authResponse = authClient.Send(new GetAccessToken {
+            serviceClient.BearerToken = authClient.Send(new GetAccessToken
+            {
                 RefreshToken = GetRefreshToken(),
-            });
-            serviceClient.BearerToken = authClient.GetTokenCookie();
+            }).AccessToken;
         };
 
         var request = new Secured { Name = "test" };
@@ -542,12 +533,12 @@ public abstract class JwtAuthProviderTests
         var client = GetClientWithBasicAuthCredentials();
 
         var response = client.Post(new Authenticate());
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-        Assert.That(client.GetRefreshTokenCookie(), Is.Not.Null);
+        Assert.That(response.BearerToken, Is.Not.Null);
+        Assert.That(response.RefreshToken, Is.Not.Null);
 
         response = client.Post(new Authenticate());
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-        Assert.That(client.GetRefreshTokenCookie(), Is.Not.Null);
+        Assert.That(response.BearerToken, Is.Not.Null);
+        Assert.That(response.RefreshToken, Is.Not.Null);
     }
 
     [Test]
@@ -556,12 +547,12 @@ public abstract class JwtAuthProviderTests
         var client = GetClientWithBasicAuthCredentials();
 
         var response = await client.PostAsync(new Authenticate());
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-        Assert.That(client.GetRefreshTokenCookie(), Is.Not.Null);
+        Assert.That(response.BearerToken, Is.Not.Null);
+        Assert.That(response.RefreshToken, Is.Not.Null);
 
         response = await client.PostAsync(new Authenticate());
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-        Assert.That(client.GetRefreshTokenCookie(), Is.Not.Null);
+        Assert.That(response.BearerToken, Is.Not.Null);
+        Assert.That(response.RefreshToken, Is.Not.Null);
     }
 
     [Test]
@@ -576,8 +567,8 @@ public abstract class JwtAuthProviderTests
             Password = Password,
             RememberMe = true,
         });
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-        Assert.That(client.GetRefreshTokenCookie(), Is.Not.Null);
+        Assert.That(response.BearerToken, Is.Not.Null);
+        Assert.That(response.RefreshToken, Is.Not.Null);
 
         response = client.Post(new Authenticate
         {
@@ -586,27 +577,26 @@ public abstract class JwtAuthProviderTests
             Password = Password,
             RememberMe = true,
         });
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-        Assert.That(client.GetRefreshTokenCookie(), Is.Not.Null);
+        Assert.That(response.BearerToken, Is.Not.Null);
+        Assert.That(response.RefreshToken, Is.Not.Null);
 
         response = client.Post(new Authenticate());
-        Assert.That(client.GetTokenCookie(), Is.Not.Null);
-        Assert.That(client.GetRefreshTokenCookie(), Is.Not.Null);
+        Assert.That(response.BearerToken, Is.Null);
+        Assert.That(response.RefreshToken, Is.Null);
     }
 
     [Test]
     public void Can_validate_valid_token()
     {
         var authClient = GetClient();
-        authClient.Send(new Authenticate
+        var jwt = authClient.Send(new Authenticate
         {
             provider = "credentials",
             UserName = Username,
             Password = Password,
-        });
+        }).BearerToken;
 
         var jwtProvider = AuthenticateService.GetJwtAuthProvider();
-        var jwt = authClient.GetTokenCookie();
         Assert.That(jwtProvider.IsJwtValid(jwt));
 
         var jwtPayload = jwtProvider.GetValidJwtPayload(jwt);
@@ -666,15 +656,15 @@ public abstract class JwtAuthProviderTests
     }
 }
     
-public class JwtAuthProviderIntegrationTests
+public class JwtAuthProviderIntegrationNoCookiesTests
 {
-    public const string Username = "mythz";
+    public const string Username = "cookieless";
     public const string Password = "p@55word";
     private static readonly byte[] AuthKey = AesUtils.CreateKey();
 
     private readonly ServiceStackHost appHost;
 
-    public JwtAuthProviderIntegrationTests()
+    public JwtAuthProviderIntegrationNoCookiesTests()
     {
         appHost = new AppHost()
             .Init()
@@ -699,6 +689,7 @@ public class JwtAuthProviderIntegrationTests
                     new CredentialsAuthProvider(),
                     new JwtAuthProvider
                     {
+                        UseTokenCookie = false,
                         AuthKey = AuthKey,
                         RequireSecureConnection = false,
                         AllowInQueryString = true,
@@ -732,14 +723,9 @@ public class JwtAuthProviderIntegrationTests
         Password = Password,
     };
 
-    protected virtual IJsonServiceClient GetJwtClient()
-    {
-        var authClient = GetClient();
-        var authResponse = authClient.Post(new Authenticate());
-        return new JsonServiceClient(Config.ListeningOn) {
-            BearerToken = authClient.GetTokenCookie()
-        };
-    }
+    protected virtual IJsonServiceClient GetJwtClient() => new JsonServiceClient(Config.ListeningOn) {
+        BearerToken = GetClient().Post(new Authenticate()).BearerToken
+    };
 
     [Test]
     public void Does_track_JWT_Sessions_calling_Authenticate_Services()
@@ -771,182 +757,5 @@ public class JwtAuthProviderIntegrationTests
         Assert.That(lastEntrySession, Is.Not.Null);
         Assert.That(lastEntrySession.AuthProvider, Is.EqualTo("jwt"));
         Assert.That(lastEntrySession.UserName, Is.EqualTo(Username));
-    }
-}
-    
-public class JwtAuthProviderTokenCookieTests
-{
-    public const string Username = "ss-reftok";
-    public const string Password = "p@55word";
-    private static readonly byte[] AuthKey = AesUtils.CreateKey();
-
-    private readonly ServiceStackHost appHost;
-
-    public JwtAuthProviderTokenCookieTests()
-    {
-        appHost = new AppHost()
-            .Init()
-            .Start(Config.ListeningOn);
-    }
-
-    [OneTimeTearDown]
-    public void OneTimeTearDown() => appHost.Dispose();
-
-    class AppHost : AppSelfHostBase
-    {
-        public AppHost()
-            : base(nameof(JwtAuthProviderTokenCookieTests), typeof(JwtServices).Assembly) { }
-
-        public override void Configure(Container container)
-        {
-            // just for testing, create a privateKeyXml on every instance
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                new IAuthProvider[] {
-                    new CredentialsAuthProvider(),
-                    new JwtAuthProvider
-                    {
-                        AuthKey = AuthKey,
-                        RequireSecureConnection = false,
-                        UseTokenCookie = true,
-                        AllowInQueryString = true,
-                        AllowInFormData = true,
-                    },
-                }));
-
-            container.Register<IAuthRepository>(c => new InMemoryAuthRepository());
-
-            var authRepo = GetAuthRepository();
-            authRepo.CreateUserAuth(new UserAuth
-            {
-                Id = 1,
-                UserName = Username,
-                FirstName = "First",
-                LastName = "Last",
-                DisplayName = "Display",
-            }, Password);
-                
-            Plugins.Add(new RequestLogsFeature {
-                EnableSessionTracking = true,
-                ExcludeRequestDtoTypes = new[] { typeof(Authenticate) },
-            });
-        }
-    }
-
-    [Test]
-    public void Can_use_RefreshTokenCookie_to_authenticate_and_get_new_AccessToken()
-    {
-        string initialAccessToken = null;
-        var client = new JsonServiceClient(Config.ListeningOn) {
-            ResponseFilter = res => {
-                if (initialAccessToken == null)
-                {
-                    var accessToken = res.Cookies[Keywords.TokenCookie];
-                    Assert.That(accessToken.Value, Is.Not.Null);
-                    initialAccessToken = accessToken.Value;
-                    var refreshToken = res.Cookies[Keywords.RefreshTokenCookie];
-                    Assert.That(refreshToken.Value, Is.Not.Null);
-                }
-            }
-        };
-        var authResponse = client.Post(new Authenticate {
-            provider = "credentials",
-            UserName = Username,
-            Password = Password
-        });
-
-        var request = new Secured { Name = "test" };
-        var response = client.Send(request);
-        Assert.That(response.Result, Is.EqualTo(request.Name));
-
-        var reqLogger = HostContext.TryResolve<IRequestLogger>();
-        var lastEntrySession = reqLogger.GetLatestLogs(1)[0]?.Session as AuthUserSession;
-        Assert.That(lastEntrySession, Is.Not.Null);
-        Assert.That(lastEntrySession.AuthProvider, Is.EqualTo("jwt"));
-        Assert.That(lastEntrySession.UserName, Is.EqualTo(Username));
-
-        string lastAccessToken = null;
-        client.ResponseFilter = res => {
-            var accessToken = res.Cookies[Keywords.TokenCookie];
-            lastAccessToken = accessToken.Value;
-        };
-        var i = 0;
-        do
-        {
-            var accessTokenResponse = client.Post(new GetAccessToken());
-            ExecUtils.SleepBackOffMultiplier(++i); //need to wait for iat to tick +1s so JWT's are different
-        } 
-        while (lastAccessToken == initialAccessToken);
-    }
-
-    [Test]
-    public void Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_ServiceClient() => 
-        AssertDoesGetAccessTokenUsingRefreshTokenCookie(new JsonServiceClient(Config.ListeningOn));
-
-    [Test]
-    public void Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_HttpClient() => 
-        AssertDoesGetAccessTokenUsingRefreshTokenCookie(new JsonHttpClient(Config.ListeningOn));
-
-    private static void AssertDoesGetAccessTokenUsingRefreshTokenCookie(IJsonServiceClient client)
-    {
-        var authResponse = client.Post(new Authenticate {
-            provider = "credentials",
-            UserName = Username,
-            Password = Password
-        });
-
-        var initialAccessToken = client.GetTokenCookie();
-        var initialRefreshToken = client.GetRefreshTokenCookie();
-        Assert.That(initialAccessToken, Is.Not.Null);
-        Assert.That(initialRefreshToken, Is.Not.Null);
-
-        var request = new Secured {Name = "test"};
-        var response = client.Send(request);
-        Assert.That(response.Result, Is.EqualTo(request.Name));
-
-        var jwtAuthProvider = AuthenticateService.GetRequiredJwtAuthProvider();
-        jwtAuthProvider.InvalidateJwtIds.Add(jwtAuthProvider.LastJwtId());
-        // JwtAuthProvider.PrintDump(initialAccessToken);
-        // JwtAuthProvider.PrintDump(initialRefreshToken);
-
-        response = client.Send(request);
-        Assert.That(response.Result, Is.EqualTo(request.Name));
-        var latestAccessToken = client.GetTokenCookie();
-        Assert.That(latestAccessToken, Is.Not.EqualTo(initialAccessToken));
-    }
-
-    [Test]
-    public async Task Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_ServiceClient_Async() => 
-        await AssertDoesGetAccessTokenUsingRefreshTokenCookieAsync(new JsonServiceClient(Config.ListeningOn));
-
-    [Test]
-    public async Task Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_HttpClient_Async() => 
-        await AssertDoesGetAccessTokenUsingRefreshTokenCookieAsync(new JsonHttpClient(Config.ListeningOn));
-
-    private static async Task AssertDoesGetAccessTokenUsingRefreshTokenCookieAsync(IJsonServiceClient client)
-    {
-        var authResponse = await client.PostAsync(new Authenticate {
-            provider = "credentials",
-            UserName = Username,
-            Password = Password
-        });
-
-        var initialAccessToken = client.GetTokenCookie();
-        var initialRefreshToken = client.GetRefreshTokenCookie();
-        Assert.That(initialAccessToken, Is.Not.Null);
-        Assert.That(initialRefreshToken, Is.Not.Null);
-
-        var request = new Secured {Name = "test"};
-        var response = await client.SendAsync(request);
-        Assert.That(response.Result, Is.EqualTo(request.Name));
-
-        var jwtAuthProvider = AuthenticateService.GetRequiredJwtAuthProvider();
-        jwtAuthProvider.InvalidateJwtIds.Add(jwtAuthProvider.LastJwtId());
-        // JwtAuthProvider.PrintDump(initialAccessToken);
-        // JwtAuthProvider.PrintDump(initialRefreshToken);
-
-        response = await client.SendAsync(request);
-        Assert.That(response.Result, Is.EqualTo(request.Name));
-        var latestAccessToken = client.GetTokenCookie();
-        Assert.That(latestAccessToken, Is.Not.EqualTo(initialAccessToken));
     }
 }

@@ -283,14 +283,9 @@ namespace ServiceStack.Auth
         public bool IncludeJwtInConvertSessionToTokenResponse { get; set; }
 
         /// <summary>
-        /// Whether to convert successful Authenticated User Sessions to JWT Token in ss-tok Cookie 
+        /// Whether to store JWTs in Cookies (ss-tok) for successful Authentications (default true) 
         /// </summary>
-        public bool UseTokenCookie { get; set; }
-
-        /// <summary>
-        /// Whether to create a refresh token in ss-reftok Cookie, defaults to: UseTokenCookie
-        /// </summary>
-        public bool? UseRefreshTokenCookie { get; set; }
+        public bool UseTokenCookie { get; set; } = true;
 
         /// <summary>
         /// Override conversion to Unix Time used in issuing JWTs and validation
@@ -374,8 +369,6 @@ namespace ServiceStack.Auth
                 RequiresAudience = appSettings.Get("jwt.RequiresAudience", RequiresAudience);
                 IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
                 UseTokenCookie = appSettings.Get("jwt.UseTokenCookie", UseTokenCookie);
-                if (appSettings.Exists("jwt.UseRefreshTokenCookie"))
-                    UseRefreshTokenCookie = appSettings.Get("jwt.UseRefreshTokenCookie", UseTokenCookie);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 KeyId = appSettings.GetString("jwt.KeyId");
@@ -1001,7 +994,7 @@ namespace ServiceStack.Auth
             if (req.IsInProcessRequest())
                 return ctx.AuthResponse;
 
-            if (ctx.AuthResponse.BearerToken == null || ctx.AuthRequest.UseTokenCookie.GetValueOrDefault(UseTokenCookie) != true)
+            if (ctx.AuthResponse.BearerToken == null || UseTokenCookie != true)
                 return ctx.AuthResponse;
 
             req.RemoveSession(req.GetSessionId());
@@ -1047,6 +1040,8 @@ namespace ServiceStack.Auth
                     Secure = req.IsSecureConnection,
                     Expires = expireTokenIn,
                 });
+            responseDto.BearerToken = null;
+
             var refreshToken = (responseDto as IHasRefreshToken)?.RefreshToken; 
             if (refreshToken != null)
             {
@@ -1056,6 +1051,7 @@ namespace ServiceStack.Auth
                         Secure = req.IsSecureConnection,
                         Expires = expireRefreshTokenIn,
                     });
+                ((IHasRefreshToken)responseDto).RefreshToken = null;
             }
 
             NotifyJwtCookiesUsed(httpResult);

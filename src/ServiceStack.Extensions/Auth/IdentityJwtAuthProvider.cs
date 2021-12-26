@@ -95,11 +95,6 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        /// Whether to create a refresh token in ss-reftok Cookie, defaults to: UseTokenCookie
-        /// </summary>
-        public bool UseRefreshTokenCookie { get; set; }
-
-        /// <summary>
         /// Whether to only allow access via Bearer Token from a secure connection (default true)
         /// </summary>
         public bool RequireSecureConnection { get; set; } = true;
@@ -317,7 +312,7 @@ namespace ServiceStack.Auth
             return session;
         }
 
-        protected virtual bool EnableRefreshToken() => UseRefreshTokenCookie;
+        protected virtual bool EnableRefreshToken() => true;
 
         public async Task<(TUser, IEnumerable<string>)> GetUserAndRolesAsync(IServiceBase service, string email)
         {
@@ -471,7 +466,7 @@ namespace ServiceStack.Auth
                     });
             }
             
-            if (UseRefreshTokenCookie && authContext.Result.Cookies.All(x => x.Name != IdentityAuth.RefreshTokenCookie) && EnableRefreshToken())
+            if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.RefreshTokenCookie) && EnableRefreshToken())
             {
                 var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
 

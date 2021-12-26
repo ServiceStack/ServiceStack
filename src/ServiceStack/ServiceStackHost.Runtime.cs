@@ -1092,7 +1092,7 @@ namespace ServiceStack
         /// </summary>
         public virtual string GetBearerToken(IRequest req)
         {
-            if (req.Dto is IHasBearerToken dto && dto.BearerToken != null)
+            if (req.Dto is IHasBearerToken { BearerToken: { } } dto)
                 return dto.BearerToken;
             
             var auth = GetAuthorization(req);

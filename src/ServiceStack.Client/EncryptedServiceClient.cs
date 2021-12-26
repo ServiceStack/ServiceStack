@@ -171,7 +171,7 @@ namespace ServiceStack
 
         public WebServiceException DecryptedException(WebServiceException ex, byte[] cryptKey, byte[] authKey)
         {
-            //Encrypted Messsage Exceptions are always written with 400 BadRequest
+            //Encrypted Message Exceptions are always written with 400 BadRequest
             if (ex.StatusCode != (int) HttpStatusCode.BadRequest)
             {
                 if (ex.ResponseStatus == null)
