@@ -402,7 +402,7 @@ public abstract class JwtAuthProviderTests
     }
 
     [Test]
-    public void Invalid_RefreshToken_throws_RefreshTokenException()
+    public void Invalid_RefreshToken_using_TokenCookies_throws_Unauthorized()
     {
         var client = GetClientWithRefreshToken("Invalid.Refresh.Token");
         try
@@ -411,16 +411,16 @@ public abstract class JwtAuthProviderTests
             var response = client.Send(request);
             Assert.Fail("Should throw");
         }
-        catch (RefreshTokenException ex)
+        catch (WebServiceException ex)
         {
             ex.Message.Print();
-            Assert.That(ex.StatusCode, Is.EqualTo(400));
-            Assert.That(ex.ErrorCode, Is.EqualTo(nameof(ArgumentException)));
+            Assert.That(ex.StatusCode, Is.EqualTo(401));
+            Assert.That(ex.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.Unauthorized)));
         }
     }
 
     [Test]
-    public async Task Invalid_RefreshToken_throws_RefreshTokenException_Async()
+    public async Task Invalid_RefreshToken_using_TokenCookies_throws_Unauthorized_Async()
     {
         var client = GetClientWithRefreshToken("Invalid.Refresh.Token");
         try
@@ -429,11 +429,11 @@ public abstract class JwtAuthProviderTests
             var response = await client.SendAsync(request);
             Assert.Fail("Should throw");
         }
-        catch (RefreshTokenException ex)
+        catch (WebServiceException ex)
         {
             ex.Message.Print();
-            Assert.That(ex.StatusCode, Is.EqualTo(400));
-            Assert.That(ex.ErrorCode, Is.EqualTo(nameof(ArgumentException)));
+            Assert.That(ex.StatusCode, Is.EqualTo(401));
+            Assert.That(ex.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.Unauthorized)));
         }
     }
 

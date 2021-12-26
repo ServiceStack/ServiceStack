@@ -501,67 +501,134 @@ namespace ServiceStack.Auth
             throw new NotImplementedException("JWT Authenticate() should not be called directly");
         }
 
-        public Task PreAuthenticateAsync(IRequest req, IResponse res)
+        public async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName))
-                return TypeConstants.EmptyTask;
+                return;
 
-            var bearerToken = req.GetJwtToken();
+            Exception origException = null;
 
-            if (bearerToken != null)
+            string refreshToken = null;
+            try
             {
-                try
+                var bearerToken = req.GetJwtToken();
+                if (bearerToken != null)
                 {
-                    var parts = bearerToken.Split('.');
-                    if (parts.Length == 3)
-                    {
-                        if (RequireSecureConnection && !req.IsSecureConnection)
-                            throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
-
-                        var jwtPayload = GetVerifiedJwtPayload(req, parts);
-                        if (jwtPayload == null) //not verified
-                            return TypeConstants.EmptyTask;
-
-                        if (ValidateToken != null)
-                        {
-                            if (!ValidateToken(jwtPayload, req))
-                                throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
-                        }
-
-                        var session = CreateSessionFromPayload(req, jwtPayload);
-                        req.Items[Keywords.Session] = session;
-                    }
-                    else if (parts.Length == 5) //Encrypted JWE Token
-                    {
-                        if (RequireSecureConnection && !req.IsSecureConnection)
-                            throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
-
-                        var jwtPayload = GetVerifiedJwtPayload(req, parts);
-                        if (jwtPayload == null) //not verified
-                            return TypeConstants.EmptyTask;
-
-                        if (ValidateToken != null)
-                        {
-                            if (!ValidateToken(jwtPayload, req))
-                                throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
-                        }
-
-                        var session = CreateSessionFromPayload(req, jwtPayload);
-                        req.Items[Keywords.Session] = session;
-                    }
-                }
-                catch (Exception)
-                {
-                    if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.TokenCookie))
-                    {
-                        (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
-                    }
-
-                    throw;
+                    if (AuthenticateBearerToken(req, res, bearerToken))
+                        return;
                 }
             }
-            return TypeConstants.EmptyTask;
+            catch (Exception e)
+            {
+                refreshToken = req.GetJwtRefreshToken();
+                if (refreshToken == null)
+                    throw;
+                
+                origException = e;
+            }
+
+            if (origException == null)
+                refreshToken = req.GetJwtRefreshToken();
+                
+            if (refreshToken != null)
+            {
+                if (await AuthenticateRefreshToken(req, res, refreshToken).ConfigAwait())
+                    return;
+            }
+
+            if (origException != null)
+                throw origException;
         }
+
+        protected virtual bool AuthenticateBearerToken(IRequest req, IResponse res, string bearerToken)
+        {
+            if (bearerToken == null)
+                throw new ArgumentNullException(nameof(bearerToken));
+            
+            try
+            {
+                var parts = bearerToken.Split('.');
+                if (parts.Length == 3)
+                {
+                    if (RequireSecureConnection && !req.IsSecureConnection)
+                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
+
+                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                    if (jwtPayload == null) //not verified
+                        return false;
+
+                    if (ValidateToken != null)
+                    {
+                        if (!ValidateToken(jwtPayload, req))
+                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                    }
+
+                    var session = CreateSessionFromPayload(req, jwtPayload);
+                    req.Items[Keywords.Session] = session;
+                    return true;
+                }
+
+                if (parts.Length == 5) //Encrypted JWE Token
+                {
+                    if (RequireSecureConnection && !req.IsSecureConnection)
+                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
+
+                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                    if (jwtPayload == null) //not verified
+                        return false;
+
+                    if (ValidateToken != null)
+                    {
+                        if (!ValidateToken(jwtPayload, req))
+                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                    }
+
+                    var session = CreateSessionFromPayload(req, jwtPayload);
+                    req.Items[Keywords.Session] = session;
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.TokenCookie))
+                    (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
+                throw;
+            }
+            return false;
+        }
+
+        protected virtual async Task<bool> AuthenticateRefreshToken(IRequest req, IResponse res, string refreshToken)
+        {
+            if (refreshToken == null)
+                throw new ArgumentNullException(nameof(refreshToken));
+
+            try
+            {
+                var accessToken = await CreateAccessTokenFromRefreshToken(refreshToken, req).ConfigAwait();
+                if (accessToken != null)
+                {
+                    if (AuthenticateBearerToken(req, res, accessToken))
+                    {
+                        (res as IHttpResponse)?.SetCookie(new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
+                            HttpOnly = true,
+                            Secure = req.IsSecureConnection,
+                            Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                        });
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.RefreshTokenCookie))
+                    (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.RefreshTokenCookie);
+                return false;
+            }
+            return false;
+        }
+
+        public virtual Task<string> CreateAccessTokenFromRefreshToken(string refreshToken, IRequest req) =>
+            (null as string).AsTaskResult();
 
         public bool IsJwtValid(string jwt) => GetValidJwtPayload(jwt) != null;
         public bool IsJwtValid(IRequest req, string jwt) => GetValidJwtPayload(req, jwt) != null;

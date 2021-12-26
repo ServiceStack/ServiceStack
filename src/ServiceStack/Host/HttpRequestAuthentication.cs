@@ -10,6 +10,7 @@ namespace ServiceStack.Host
         public static string GetAuthorization(this IRequest req) => HostContext.AppHost.GetAuthorization(req);
         public static string GetBearerToken(this IRequest req) => HostContext.AppHost.GetBearerToken(req);
         public static string GetJwtToken(this IRequest req) => HostContext.AppHost.GetJwtToken(req);
+        public static string GetJwtRefreshToken(this IRequest req) => HostContext.AppHost.GetJwtRefreshToken(req);
 
         public static string GetBasicAuth(this IRequest req)
         {

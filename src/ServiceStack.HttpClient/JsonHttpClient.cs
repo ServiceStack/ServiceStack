@@ -294,13 +294,11 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var hasRefreshTokenCookie = this.GetRefreshTokenCookie() != null;
-                var hasRefreshToken = RefreshToken != null || hasRefreshTokenCookie;
-                    
+                var hasRefreshToken = RefreshToken != null;
                 if (hasRefreshToken)
                 {
                     var refreshDto = new GetAccessToken {
-                        RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
+                        RefreshToken = RefreshToken,
                     };
                     var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
 
@@ -337,6 +335,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
                         throw;
                     }
                 }
+
                 if (UserName != null && Password != null && client.DefaultRequestHeaders.Authorization == null)
                 {
                     AddBasicAuth(client);

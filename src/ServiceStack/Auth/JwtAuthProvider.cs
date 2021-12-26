@@ -395,6 +395,50 @@ namespace ServiceStack.Auth
         /// Print Dump contents of JWT to Console
         /// </summary>
         public static void PrintDump(string jwt) => Console.WriteLine(Dump(jwt));
+        
+
+        public override async Task<string> CreateAccessTokenFromRefreshToken(string refreshToken, IRequest req)
+        {
+            if (string.IsNullOrEmpty(refreshToken))
+                throw new ArgumentNullException(nameof(refreshToken));
+
+            JsonObject jwtPayload;
+            try
+            {
+                jwtPayload = GetVerifiedJwtPayload(req, refreshToken.Split('.'));
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+
+            if (jwtPayload == null)
+                throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
+
+            AssertRefreshJwtPayloadIsValid(jwtPayload);
+
+            if (ValidateRefreshToken != null && !ValidateRefreshToken(jwtPayload, req))
+                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(req), nameof(refreshToken));
+
+            var userId = jwtPayload["sub"];
+
+            var result = await req.GetSessionFromSourceAsync(userId, async (authRepo, userAuth) => {
+                if (await IsAccountLockedAsync(authRepo, userAuth))
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(req));
+            }).ConfigAwait();
+
+            if (result == null)
+                throw new NotSupportedException(
+                    "JWT RefreshTokens requires a registered IUserAuthRepository or an AuthProvider implementing IUserSessionSource");
+
+            var accessToken = CreateJwtBearerToken(req,
+                session: result.Session, roles: result.Roles, perms: result.Permissions);
+            return accessToken;
+        }        
     }
 
     [Authenticate]
@@ -457,43 +501,7 @@ namespace ServiceStack.Auth
                 : null; 
 
             var refreshToken = request.RefreshToken ?? refreshTokenCookie;
-            if (string.IsNullOrEmpty(refreshToken))
-                throw new ArgumentNullException(nameof(refreshToken));
-
-            JsonObject jwtPayload;
-            try
-            {
-                jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(Request, refreshToken.Split('.'));
-            }
-            catch (ArgumentException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-
-            if (jwtPayload == null)
-                throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(Request));
-
-            jwtAuthProvider.AssertRefreshJwtPayloadIsValid(jwtPayload);
-
-            if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
-                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(Request), nameof(refreshToken));
-
-            var userId = jwtPayload["sub"];
-
-            var result = await Request.GetSessionFromSourceAsync(userId, async (authRepo, userAuth) => {
-                if (await jwtAuthProvider.IsAccountLockedAsync(authRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(Request));
-            }).ConfigAwait();
-
-            if (result == null)
-                throw new NotSupportedException("JWT RefreshTokens requires a registered IUserAuthRepository or an AuthProvider implementing IUserSessionSource");
-            
-            var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, 
-                session:result.Session, roles:result.Roles, perms:result.Permissions);
+            var accessToken = await jwtAuthProvider.CreateAccessTokenFromRefreshToken(refreshToken, Request).ConfigAwait();
 
             var response = new GetAccessTokenResponse
             {
@@ -513,6 +521,7 @@ namespace ServiceStack.Auth
                     });
             return httpResult;
         }
+
     }
 
     internal static class JwtAuthProviderUtils

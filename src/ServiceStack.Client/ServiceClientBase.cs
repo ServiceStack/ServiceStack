@@ -666,9 +666,7 @@ namespace ServiceStack
             var webEx = ex as WebException;
             try
             {
-                var hasRefreshTokenCookie = this.GetRefreshTokenCookie() != null;
-                var hasRefreshToken = refreshToken != null || hasRefreshTokenCookie;
-                
+                var hasRefreshToken = refreshToken != null;
                 if (WebRequestUtils.ShouldAuthenticate(webEx,
                     (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                     || credentials != null
@@ -679,7 +677,7 @@ namespace ServiceStack
                     if (hasRefreshToken)
                     {
                         var refreshRequest = new GetAccessToken {
-                            RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
+                            RefreshToken = RefreshToken,
                         };                        
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
                         
@@ -689,11 +687,7 @@ namespace ServiceStack
                         GetAccessTokenResponse tokenResponse;
                         try
                         {
-                            tokenResponse = uri.PostJsonToUrl(refreshRequest, requestFilter: req => {
-                                if (hasRefreshTokenCookie) {
-                                    req.CookieContainer = CookieContainer;
-                                }
-                            }).FromJson<GetAccessTokenResponse>();
+                            tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
                         }
                         catch (WebException refreshEx)
                         {

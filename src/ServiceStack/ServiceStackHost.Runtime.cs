@@ -1140,6 +1140,45 @@ namespace ServiceStack
                    req.GetCookieValue(Keywords.TokenCookie);
         }
 
+        /// <summary>
+        /// Override Authorization Refresh Token resolution
+        /// </summary>
+        public virtual string GetRefreshToken(IRequest req)
+        {
+            if (req.Dto is IHasRefreshToken { RefreshToken: { } } dto)
+                return dto.RefreshToken;
+            return null;            
+        }
+
+        /// <summary>
+        /// Override JWT Refresh Token resolution
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public virtual string GetJwtRefreshToken(IRequest req)
+        {
+            var jwtAuthProvider = AuthenticateService.GetJwtAuthProvider();
+            if (jwtAuthProvider != null)
+            {
+                if (jwtAuthProvider.AllowInFormData)
+                {
+                    var jwt = req.FormData[Keywords.RefreshTokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+
+                if (jwtAuthProvider.AllowInQueryString)
+                {
+                    var jwt = req.QueryString[Keywords.RefreshTokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+            }
+
+            return GetRefreshToken(req) ??
+                   req.GetCookieValue(Keywords.RefreshTokenCookie);
+        }
+
         public virtual IHttpResult Redirect(IServiceBase service, string redirect, string message)
         {
             return new HttpResult(HttpStatusCode.Redirect, message)
