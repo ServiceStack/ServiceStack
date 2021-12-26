@@ -48,7 +48,6 @@ public static class LangGeneratorExtensions
             "kotlin" => Generate(new Kotlin.KotlinGenerator(typesConfig)),
             "python" => Generate(new Python.PythonGenerator(typesConfig)),
             "swift" => Generate(new Swift.SwiftGenerator(typesConfig)),
-            "swift4" => Generate(new Swift.Swift4Generator(typesConfig)),
             "vbnet" => Generate(new VbNet.VbNetGenerator(typesConfig)),
             "fsharp" => Generate(new FSharp.FSharpGenerator(typesConfig)),
             _ => throw new NotSupportedException($"Unknown language '{lang}', Supported languages: " +
