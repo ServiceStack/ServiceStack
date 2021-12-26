@@ -178,9 +178,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class QueryDbTenant<From, Into> : QueryDb<From, Into> {}
 
-    public class CreateRockstarAuditTenant : CreateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasSessionId
+    public class CreateRockstarAuditTenant : CreateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasBearerToken
     {
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
@@ -189,17 +189,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public LivingStatus LivingStatus { get; set; }
     }
     
-    public class UpdateRockstarAuditTenant : UpdateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasSessionId
+    public class UpdateRockstarAuditTenant : UpdateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasBearerToken
     {
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         public int Id { get; set; }
         public string FirstName { get; set; }
         public LivingStatus? LivingStatus { get; set; }
     }
     
-    public class PatchRockstarAuditTenant : PatchAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasSessionId
+    public class PatchRockstarAuditTenant : PatchAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasBearerToken
     {
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         public int Id { get; set; }
         public string FirstName { get; set; }
         public LivingStatus? LivingStatus { get; set; }
@@ -285,9 +285,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     [Authenticate]
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
-    public class RealDeleteAuditTenant : IDeleteDb<RockstarAuditTenant>, IReturn<RockstarWithIdAndCountResponse>, IHasSessionId
+    public class RealDeleteAuditTenant : IDeleteDb<RockstarAuditTenant>, IReturn<RockstarWithIdAndCountResponse>, IHasBearerToken
     {
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         public int Id { get; set; }
         public int? Age { get; set; }
     }

@@ -43,7 +43,7 @@ namespace ServiceStack.Auth
             }
             if (requestDto is IHasBearerToken hasToken && hasToken.BearerToken == null)
             {
-                hasToken.BearerToken = req.GetBearerToken();
+                hasToken.BearerToken = req.GetJwtToken();
                 return hasToken.BearerToken != null;
             }
             return false;

@@ -372,7 +372,8 @@ namespace ServiceStack
 
             foreach (var requestFilter in GlobalMessageRequestFiltersAsyncArray)
             {
-                requestFilter(req, res, requestDto).Wait();
+                var task = requestFilter(req, res, requestDto);
+                task.Wait();
                 if (res.IsClosed) return res.IsClosed;
             }
 

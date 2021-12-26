@@ -1992,10 +1992,16 @@ namespace ServiceStack
                 if (request is IHasSessionId hasSession && hasSession.SessionId == null)
                     hasSession.SessionId = client.SessionId;
             }
-            if (client is IHasBearerToken clientBearer && clientBearer.BearerToken != null)
+            if (request is IHasBearerToken { BearerToken: null } hasBearer)
             {
-                if (request is IHasBearerToken hasBearer && hasBearer.BearerToken == null)
+                if (client is IHasBearerToken { BearerToken: { } } clientBearer)
+                {
                     hasBearer.BearerToken = clientBearer.BearerToken;
+                }
+                else if (client is IServiceClient serviceClient)
+                {
+                    hasBearer.BearerToken = serviceClient.GetTokenCookie();
+                }
             }
             if (client is IHasVersion clientVersion && clientVersion.Version > 0)
             {
