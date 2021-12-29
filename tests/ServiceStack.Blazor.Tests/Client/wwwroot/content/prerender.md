@@ -68,7 +68,7 @@ App chrome can use it.
 Then in our [/wwwroot/index.html](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html) anything
 between `<div id="app"></div>` is displayed whilst our Blazor App is loading, before it's replaced with the real App.
 
-So Herehwe just paste in the **MainLayout** markup:
+So Here we just paste in the **MainLayout** markup:
 
 ```html
 <div id="app">
@@ -331,7 +331,7 @@ else
 
 @code {
     [Parameter]
-    public string Messsage { get; set; } = "Loading...";
+    public string Message { get; set; } = "Loading...";
 
     [Parameter]
     public string @class { get; set; } = "";
