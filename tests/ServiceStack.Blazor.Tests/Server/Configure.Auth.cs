@@ -36,7 +36,6 @@ public class ConfigureAuth : IHostingStartup
                 new IAuthProvider[] {
                     new JwtAuthProvider(appSettings) {
                         AuthKeyBase64 = appSettings.GetString("AuthKeyBase64") ?? "cARl12kvS/Ra4moVBIaVsrWwTpXYuZ0mZf/gNLUhDW5=",
-                        UseTokenCookie = true,
                     },
                     new CredentialsAuthProvider(appSettings),     /* Sign In with Username / Password credentials */
                     new FacebookAuthProvider(appSettings),        /* Create App https://developers.facebook.com/apps */

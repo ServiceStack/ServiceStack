@@ -130,7 +130,6 @@ public class ServiceStackStateProvider : AuthenticationStateProvider
             provider = "credentials",
             Password = password,
             UserName = email,
-            UseTokenCookie = true
         }));
     }
 }
