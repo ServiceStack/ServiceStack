@@ -1,60 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Sign In</title>
-    <link rel="stylesheet" href="${BaseUrl}/css/bootstrap.css">
-    <link rel="stylesheet" href="${BaseUrl}/css/buttons-svg.css">
-    <link rel="stylesheet" href="${BaseUrl}/css/buttons.css">
-    <link rel="stylesheet" href="${BaseUrl}/css/svg-auth.css">
-    <script src="${BaseUrl}/js/servicestack-client.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0 0 50px 0;
-            color: #333;
-        }
-        a#logo {
-            position: absolute;
-            top: 4px;
-            right: 0;
-            width: 50px;
-            height: 50px;
-            background-size: 42px 42px;
-            background-repeat: no-repeat;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3E .path%7B%7D %3C/style%3E %3Cg id='servicestack-svg'%3E%3Cpath fill='%23ffffff' class='path' stroke='null' d='m16.564516,43.33871c16.307057,2.035887 54.629638,20.41875 60.67742,46.306452l-78.241936,0c19.859879,-1.616734 36.825605,-27.344758 17.564516,-46.306452zm6.387097,-30.33871c6.446976,7.105645 9.520766,16.74617 9.26129,26.666129c16.546573,6.726411 41.376412,24.690121 46.625807,49.979033l19.161291,0c-8.123589,-43.132863 -54.529839,-73.551412 -75.048388,-76.645162z' /%3E%3C/g%3E%3C/svg%3E");
-        }
-        h1 {
-            color: #FFF;
-            font-size: 26px;
-            font-weight: normal;
-            margin: 0;
-            padding: 0 0 0 15px;
-            line-height: 48px;
-            min-height: 48px;
-            border-radius: 0px;
-            border-bottom: 1px solid #191e23;
-            background: #2c3742; /* Old browsers */
-            background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
-        }
-        .stacktrace {
-            background: #f1f1f1;
-            padding: 1em;
-            margin: 1em 0 .5em 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            white-space: pre-wrap;
-        }
-        #auth {
-            max-width: 350px;
-        }
-        @media (max-width: 768px)
-        {
-            .container {
-                max-width: 700px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Sign In</title>
+<link rel="stylesheet" href="${BaseUrl}/css/bootstrap.css">
+<link rel="stylesheet" href="${BaseUrl}/css/buttons-svg.css">
+<link rel="stylesheet" href="${BaseUrl}/css/buttons.css">
+<link rel="stylesheet" href="${BaseUrl}/css/svg-auth.css">
+<script src="${BaseUrl}/js/servicestack-client.js"></script>
+<style>
+body {
+    margin: 0;
+    padding: 0 0 50px 0;
+    color: #333;
+}
+a#logo {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background-size: 42px 42px;
+    background-repeat: no-repeat;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3E .path%7B%7D %3C/style%3E %3Cg id='servicestack-svg'%3E%3Cpath fill='%23ffffff' class='path' stroke='null' d='m16.564516,43.33871c16.307057,2.035887 54.629638,20.41875 60.67742,46.306452l-78.241936,0c19.859879,-1.616734 36.825605,-27.344758 17.564516,-46.306452zm6.387097,-30.33871c6.446976,7.105645 9.520766,16.74617 9.26129,26.666129c16.546573,6.726411 41.376412,24.690121 46.625807,49.979033l19.161291,0c-8.123589,-43.132863 -54.529839,-73.551412 -75.048388,-76.645162z' /%3E%3C/g%3E%3C/svg%3E");
+}
+h1 {
+    color: #FFF;
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0;
+    padding: 0 0 0 15px;
+    line-height: 48px;
+    min-height: 48px;
+    border-radius: 0px;
+    border-bottom: 1px solid #191e23;
+    background: #2c3742; /* Old browsers */
+    background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
+}
+.stacktrace {
+    background: #f1f1f1;
+    padding: 1em;
+    margin: 1em 0 .5em 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    white-space: pre-wrap;
+}
+#auth {
+    max-width: 350px;
+}
+@media (max-width: 768px)
+{
+    .container {
+        max-width: 700px;
+    }
+}
+</style>
 </head>
 <body>
 <a id="logo" href="https://servicestack.net" title="ServiceStack"></a>
@@ -108,60 +108,60 @@
 
 
 <script>
-    Object.assign(window, window['@servicestack/client']); //import into global namespace
-    client = new JsonServiceClient('/');
+    Object.assign(window, window['@servicestack/client']) //import into global namespace
+    client = new JsonServiceClient('/')
     // regen dtos: `x ts && tsc wwwroot/assets/js/dtos.ts`
 </script>
 
 <script>
-    var BaseUrl = "${BaseUrl}";
-    var qs = queryString(location.href);
-    var CONTINUE = qs['continue'] || qs.ReturnUrl || qs.redirect || (BaseUrl + '/auth');
+let BaseUrl = "${BaseUrl}";
+let qs = queryString(location.href);
+let CONTINUE = qs['continue'] || qs.ReturnUrl || qs.redirect || (BaseUrl + '/auth')
 
-    function inIframe () {
-        try {
-            return window.self !== window.top;
-        } catch (e) {
-            return true;
-        }
+function inIframe () {
+    try {
+        return window.self !== window.top
+    } catch (e) {
+        return true
     }
+}
 
-    bootstrapForm(document.querySelector('form'), {
-        success: function (r) {
-            location.href = CONTINUE;
+bootstrapForm(document.querySelector('form'), {
+    success: function (r) {
+        location.href = CONTINUE
+    }
+})
+
+fetch(BaseUrl + '/auth.json')
+    .then(function (r) {
+        if (r.ok) {
+            location.href = CONTINUE
         }
-    });
+    })
 
-    fetch(BaseUrl + '/auth.json')
-        .then(function (r) {
-            if (r.ok) {
-                location.href = CONTINUE;
+fetch(BaseUrl + '/metadata/nav.json')
+    .then(function(r){ return r.json(); })
+    .then(function(r) {
+        let sb = []
+        let iframe = inIframe()
+        let auth = (r.navItemsMap || r.NavItemsMap || {})['auth']
+        if (auth)
+        {
+            for (let i=0; i<auth.length; i++) {
+                let nav = auth[i]
+                let meta = nav.meta || nav.Meta
+                if (iframe && !(meta && meta.allows === 'embed')) continue
+
+                let cls = nav.className || nav.ClassName
+                let iconCls = nav.iconClass || nav.IconClass
+                sb.push('<a href="' + BaseUrl + (nav.href || nav.Href) + '" class="btn btn-block btn-lg ' + cls + '">')
+                sb.push('<b class="' + iconCls + '"></b>')
+                sb.push(nav.label || nav.Label)
+                sb.push('</a>')
             }
-        });
-
-    fetch(BaseUrl + '/metadata/nav.json')
-        .then(function(r){ return r.json(); })
-        .then(function(r) {
-            var sb = [];
-            var iframe = inIframe();
-            var auth = (r.navItemsMap || r.NavItemsMap || {})['auth'];
-            if (auth)
-            {
-                for (var i=0; i<auth.length; i++) {
-                    var nav = auth[i];
-                    var meta = nav.meta || nav.Meta;
-                    if (iframe && !(meta && meta.allows === 'embed')) continue;
-
-                    var cls = nav.className || nav.ClassName;
-                    var iconCls = nav.iconClass || nav.IconClass;
-                    sb.push('<a href="' + BaseUrl + (nav.href || nav.Href) + '" class="btn btn-block btn-lg ' + cls + '">');
-                    sb.push('<b class="' + iconCls + '"></b>');
-                    sb.push(nav.label || nav.Label);
-                    sb.push('</a>');
-                }
-                document.querySelector('#auth').innerHTML = sb.join('');
-            }
-        });
+            document.querySelector('#auth').innerHTML = sb.join('')
+        }
+    })
 </script>
 
 </body>

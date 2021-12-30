@@ -9,7 +9,6 @@ layout: _script-layout
 body {
     background: #eceff1;
 }
-
 code {
     color: #222;
 }
@@ -331,24 +330,24 @@ button {
 
 
 <script>
-var active = document.querySelector('.active');
+let active = document.querySelector('.active');
 if (active) {
     active.scrollIntoView();
 }
-    
-var timeout;
+
+let timeout;
 document.querySelectorAll('.sel').forEach(function(sel) {
     sel.onclick = function(e) {
-        var el = e.target;
+        let el = e.target;
         if (window.getSelection) {
-            var selection = window.getSelection();
-            var range = document.createRange();
+            let selection = window.getSelection();
+            let range = document.createRange();
             range.selectNodeContents(el);
             selection.removeAllRanges();
             selection.addRange(range);
             document.execCommand("copy");
-            
-            var tooltip;
+
+            let tooltip;
             while (!tooltip|| !el) {
                 tooltip = el.querySelector('.tiptext');
                 el = el.parentElement; 

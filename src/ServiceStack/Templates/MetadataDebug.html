@@ -1,119 +1,120 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html lang="en">
 <style>
-    body {
-        background-color:white;
-        color:#000000;
-        font-family: "Helvetica Neue", Helvetica, Verdana, Arial;
-        margin: 0;
-    }
-    a#logo {
-        position: absolute;
-        top: 4px;
-        right: 0;
-        width: 50px;
-        height: 50px;
-        background-size: 42px 42px;
-        background-repeat: no-repeat;
-        background-image: url("{{serviceStackLogoDataUriLight}}");
-    }
-    h1 {
-        color: #FFF;
-        font-size: 26px;
-        font-weight: normal;
-        margin: 0;
-        padding: 0 0 0 15px;
-        line-height: 48px;
-        min-height: 48px;
-        border-radius: 0px;
-        border-bottom: 1px solid #191e23;
-        background: #2c3742; /* Old browsers */
-        background: -moz-linear-gradient(top,  #2c3742 0%, #28303a 100%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2c3742), color-stop(100%,#28303a)); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* IE10+ */
-        background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c3742', endColorstr='#28303a',GradientType=0 ); /* IE6-9 */
-    }
-    a {
-        color: #428bca;
-        font-weight: bold;
-        text-decoration: none;
-    }
-    a:hover, a:focus {
-        color: #2a6496;
-        text-decoration: underline;
-    }
-    body, textarea, input, table, td {
-        font-size: 18px;
-    }
-    td {
-        vertical-align: top;
-    }
-    textarea {
-        width: 100%;
-        font-family: Monaco, Consolas;
-        resize:vertical;
-        padding: 10px 10px 0 10px;
-    }
-    input {
-        padding: 5px 10px; 
-    }
-    .live-template {
-        padding: 10px 30px 0 30px;
-    }
-    .live-template textarea {
-        font-family: Monaco, Consolas;
-        font-size: .98rem;
-        line-height: 1.20rem;
-    }
-    .live-template .output {
-        border: 1px solid #eee;
-        border-radius: 2px;
-        padding: 25px 35px;
-        margin-top: .5em;
-        font-size: 1.2em;
-        line-height: 1.5em;
-        user-select: none;
-        min-height: 300px;
-    }
-    .live-template .output {
-        white-space: pre;
-    }
-    .live-template.error {
-        border-color: #a94442;
-    }
-    .error .output {
-        padding: 0;
-    }
-    .error textarea {
-    }
-    .alert-danger {
-        color: #721c24;
-        background-color: #f8d7da;
-        border-color: #f5c6cb;
-    }
-    .alert {
-        padding: .75rem 1.25rem;
-        margin-bottom: 1rem;
-        border: 1px solid transparent;
-        border-radius: .25rem;
-    }
-    pre {
-        white-space: pre-wrap;
-    }
-    table {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    caption, th, td {
-        padding: 2px 5px;
-        text-align: left;
-    }
-    caption {
-        padding: 5px 8px;
-        background: #f1f1f1;
-    }
+body {
+    background-color:white;
+    color:#000000;
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial;
+    margin: 0;
+}
+a#logo {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background-size: 42px 42px;
+    background-repeat: no-repeat;
+    background-image: url("{{serviceStackLogoDataUriLight}}");
+}
+h1 {
+    color: #FFF;
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0;
+    padding: 0 0 0 15px;
+    line-height: 48px;
+    min-height: 48px;
+    border-radius: 0px;
+    border-bottom: 1px solid #191e23;
+    background: #2c3742; /* Old browsers */
+    background: -moz-linear-gradient(top,  #2c3742 0%, #28303a 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2c3742), color-stop(100%,#28303a)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c3742', endColorstr='#28303a',GradientType=0 ); /* IE6-9 */
+}
+a {
+    color: #428bca;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:hover, a:focus {
+    color: #2a6496;
+    text-decoration: underline;
+}
+body, textarea, input, table, td {
+    font-size: 18px;
+}
+td {
+    vertical-align: top;
+}
+textarea {
+    width: 100%;
+    font-family: Monaco, Consolas;
+    resize:vertical;
+    padding: 10px 10px 0 10px;
+}
+input {
+    padding: 5px 10px; 
+}
+.live-template {
+    padding: 10px 30px 0 30px;
+}
+.live-template textarea {
+    font-family: Monaco, Consolas;
+    font-size: .98rem;
+    line-height: 1.20rem;
+}
+.live-template .output {
+    border: 1px solid #eee;
+    border-radius: 2px;
+    padding: 25px 35px;
+    margin-top: .5em;
+    font-size: 1.2em;
+    line-height: 1.5em;
+    user-select: none;
+    min-height: 300px;
+}
+.live-template .output {
+    white-space: pre;
+}
+.live-template.error {
+    border-color: #a94442;
+}
+.error .output {
+    padding: 0;
+}
+.error textarea {
+}
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+.alert {
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+pre {
+    white-space: pre-wrap;
+}
+table {
+    width: 100%;
+    margin-bottom: 10px;
+}
+caption, th, td {
+    padding: 2px 5px;
+    text-align: left;
+}
+caption {
+    padding: 5px 8px;
+    background: #f1f1f1;
+}
 </style>
 <body>
 <a id="logo" href="https://servicestack.net" title="ServiceStack"></a>
@@ -132,101 +133,100 @@
     <div class="result"><div class="output"></div></div>
 </div>
 <script>
-    var el = document.querySelector('.live-template');
-    var textarea = document.querySelector('textarea');
-    var output = document.querySelector('.output');
-    textarea.oninput = function () {
-        var script = this.value;
-        
-        fetch(location.pathname, {
-            method: "POST",
-            body: JSON.stringify({ script: script }), //sync with: MetadataDebug
-            credentials: 'include',
-            headers: {
-                'Accept': 'text/html, */*',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(function (res) {
-            if (!res.ok)
-                throw res;
-            
-            return res.text();
-        })
-        .then(function (html) {
-            el.classList.remove('error');
-            output.innerHTML = html;
-            autogrow();
-        })
-        .catch (function (res) {
-            try {
-                console.log('script error:', res.status, res.statusText);
-                el.classList.add('error');
-                res.text().then(function (text) {
-                    var status = parseResponseStatus(text, res.status + ' ' + res.statusText);
-                    if (status) {
-                        output.innerHTML = '<div class="alert alert-danger"><pre>' + status.errorCode + ' ' + htmlEscape(status.message) +
-                            (status.stackTrace ? '\n\nStackTrace:\n' + htmlEscape(status.stackTrace) : '') + '</pre></div>';
-                    }
-                })
-            } catch(ex) {
-                output.innerHTML = '<div class="alert alert-danger"><pre>' + res.status + ' ' + res.statusText + '</pre></div>';
-            }
-        });
-    };
-    textarea.oninput();
-
-    function autogrow() {
-        var el = textarea;
-        var minHeignt = 150;
-        el.style.height = "5px";
-        el.style.height = Math.max(el.scrollHeight + 10, minHeignt) + "px";
-    }
-    autogrow();
+let el = document.querySelector('.live-template');
+let textarea = document.querySelector('textarea');
+let output = document.querySelector('.output');
+textarea.oninput = function () {
+    let script = this.value;
     
-    function parseResponseStatus(json, defaultMsg) {
+    fetch(location.pathname, {
+        method: "POST",
+        body: JSON.stringify({ script: script }), //sync with: MetadataDebug
+        credentials: 'include',
+        headers: {
+            'Accept': 'text/html, */*',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function (res) {
+        if (!res.ok)
+            throw res;
+        
+        return res.text();
+    })
+    .then(function (html) {
+        el.classList.remove('error');
+        output.innerHTML = html;
+        autogrow();
+    })
+    .catch (function (res) {
         try {
-            var err = JSON.parse(json);
-            return sanitize(err.ResponseStatus || err.responseStatus);
-        } catch (e) {
-            return {
-                message: defaultMsg,
-                __error: { error: e, json: json }
-            };
+            console.log('script error:', res.status, res.statusText);
+            el.classList.add('error');
+            res.text().then(function (text) {
+                let status = parseResponseStatus(text, res.status + ' ' + res.statusText);
+                if (status) {
+                    output.innerHTML = '<div class="alert alert-danger"><pre>' + status.errorCode + ' ' + htmlEscape(status.message) +
+                        (status.stackTrace ? '\n\nStackTrace:\n' + htmlEscape(status.stackTrace) : '') + '</pre></div>';
+                }
+            })
+        } catch(ex) {
+            output.innerHTML = '<div class="alert alert-danger"><pre>' + res.status + ' ' + res.statusText + '</pre></div>';
         }
-    }
-    function sanitize(status) {
-        if (status["errors"])
-            return status;
+    });
+};
+textarea.oninput();
 
-        var to = {}, k;
-        for (k in status)
-            to[toCamelCase(k)] = status[k];
-        
-        to.errors = [];
-        var errors = status.Errors || [];
-        for (var i=0; i<errors.length; i++) {
-            var o = errors[i];
-            var err = {};
-            for (k in o)
-                err[toCamelCase(k)] = o[k];
-            to.errors.push(err);
-        }
-        return to;
-    }
-    function toCamelCase(key) {
-        return !key ? key : key.charAt(0).toLowerCase() + key.substring(1);
-    }
-        
-    function htmlEscape(str) {
-        return (str || '')
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-    }
+function autogrow() {
+    let el = textarea;
+    let minHeignt = 150;
+    el.style.height = "5px";
+    el.style.height = Math.max(el.scrollHeight + 10, minHeignt) + "px";
+}
+autogrow();
 
+function parseResponseStatus(json, defaultMsg) {
+    try {
+        var err = JSON.parse(json);
+        return sanitize(err.ResponseStatus || err.responseStatus);
+    } catch (e) {
+        return {
+            message: defaultMsg,
+            __error: { error: e, json: json }
+        };
+    }
+}
+function sanitize(status) {
+    if (status["errors"])
+        return status;
+
+    let to = {}, k;
+    for (k in status)
+        to[toCamelCase(k)] = status[k];
+    
+    to.errors = [];
+    let errors = status.Errors || [];
+    for (let i=0; i<errors.length; i++) {
+        let o = errors[i];
+        let err = {};
+        for (k in o)
+            err[toCamelCase(k)] = o[k];
+        to.errors.push(err);
+    }
+    return to;
+}
+function toCamelCase(key) {
+    return !key ? key : key.charAt(0).toLowerCase() + key.substring(1);
+}
+    
+function htmlEscape(str) {
+    return (str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 </script>
 </body>
 </html>

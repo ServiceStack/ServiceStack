@@ -1,191 +1,191 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />	
-    <title>{0}</title>
-    <style type="text/css">
-        body  {
-            background-color:white;
-            color:#000000;
-            font-family: "Helvetica Neue", Helvetica, Verdana, Arial;
-            margin: 0;
-            font-size: 13px;
-        }
-        a#logo {
-            position: absolute;
-            top: 4px;
-            right: 0;
-            width: 50px;
-            height: 50px;
-            background-size: 42px 42px;
-            background-repeat: no-repeat;
-            background-image: url("{{serviceStackLogoDataUriLight}}");
-        }
-        .icons {
-            display: block;
-            float: right;
-        }
-        .auth {
-            display: block;
-            width: 17px;
-            height: 17px;
-            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAIAAAC0D9CtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNWWFMmUAAADsSURBVDhPY/hPOsCr58Pi/w9s/t/k+X9P5//zjP+/X0OEcet5lvL/BgMKui3z/+d9oAwOPR9Xo6h+VfP/cQCI8dABKIlDD0QFBN0zAIn8eg7l/riNQ88dBYSeGyz/37T/f5YA5X5cjUMP0OkIPajo22lsel4UoKuDo1si//9+x9AD1IBHDzBs0MMAogEt0CDopsD/j8shqpD0IDSwIJS+bgbF7LfTQCdBlSH0oGl4VQ9CMIPRAFgPsgZgSgEGK17AgK4BmMAIAbCj33RDnUTIBggA2wPxLtCSr4ehwngB2D/A1ApEsKROAPz/DwCLE/At7aBI3gAAAABJRU5ErkJggg==);
-        }
-        h1 {
-            color: #FFF;
-            font-size: 26px;
-            font-weight: normal;
-            margin: 0;
-            padding: 0 0 0 15px;
-            line-height: 48px;
-            min-height: 48px;
-            border-radius: 0px;
-            border-bottom: 1px solid #191e23;
-            background: #2c3742; /* Old browsers */
-            background: -moz-linear-gradient(top,  #2c3742 0%, #28303a 100%); /* FF3.6+ */
-            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2c3742), color-stop(100%,#28303a)); /* Chrome,Safari4+ */
-            background: -webkit-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Chrome10+,Safari5.1+ */
-            background: -o-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Opera 11.10+ */
-            background: -ms-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* IE10+ */
-            background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
-            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c3742', endColorstr='#28303a',GradientType=0 ); /* IE6-9 */
-        }
-        h2 {
-            margin: 25px 0 20px 0;
-            color: #29323D;
-            font-family: 'Open Sans', sans-serif;
-            font-size: 24px;
-        }
-        h3 {
-            color: #29323D;
-            font-size: 18px;
-            font-family: 'Open Sans', sans-serif;
-        }
-        a {
-            color: #428bca;
-            font-weight: bold;
-            text-decoration: none;
-        }
-        a:hover, a:focus {
-            color: #2a6496;
-            text-decoration: underline;
-        }
-        ul {
-            margin: 10px 0 0 10px;
-            padding: 0 0 0 10px;
-        }
-        li {
-            clear: left;
-            margin-top: 10px;
-        }
-        table {
-            border-collapse: collapse;
-            border-spacing: 0;
-            margin: 0 0 20px 0;
-        }
-        table, tr, th, td {
-            border: none;
-        }
-        .operations, .operation {
-            padding: 0 0 0 15px;
-        }
-        /* All Operations */
-        .operations table {
-            margin-left: 1.5em;
-        }
-        .operations th {
-            text-align: left;
-            font-weight: normal;
-            line-height: 18px;
-            min-width: 27em;
-            white-space: nowrap;
-        }
-        /* Single Operation */
-        .operations td {
-            font-size: 12px;
-            line-height: 18px;
-            font-weight: bold;
-            color: #CCC;
-            padding-left: 1.5em;
-            vertical-align: top;
-        }
-        .operation caption {
-            text-align: left;
-            font-size: 14px;
-            padding: 10px 0;
-            white-space: nowrap;
-        }
-        .operation tbody th {
-            text-align: left;
-        }
-        .operation thead th {
-            text-align: left;
-            text-transform: uppercase;
-        }
-        .operation th, .operation td {
-            padding: 5px 15px;
-            vertical-align: top;
-        }
-        .operation h4 {
-            margin: 10px 0;
-            padding: 0;
-        }
-        .operation li {
-            margin: 0;
-        }
-        .example {
-            padding-left: 15px;
-        }
-        .example h3 { 
-            color:#000000;
-            margin: 10px 0 0 -15px;
-        }
-        .example pre {
-            background-color: #E5E5CC;
-            border: 1px solid #F0F0E0;
-            font-family: Courier New;
-            font-size: 15px;
-            padding: 5px;
-            margin-right: 15px;
-            white-space: pre-wrap;
-            overflow:auto;
-        }
-        .example .value {
-            color: blue;
-        }    
-        .call-info {
-            margin: 0 0 20px 0;
-        }
-        #desc{
-            margin: 0;
-            padding: 0 0 15px 15px;
-            font-size: 16px;
-        }
-        #desc P {
-            margin: 5px 0;
-            padding: 0;
-            line-height: 20px;
-            color: #444;
-        }
-        div.tags {
-            color: rgb(44, 87, 119);
-            user-select: none;
-            margin: -15px 0 0 0;
-        }
-        div.tags span {
-            background: rgb(225, 236, 244);
-            border-radius: 3px;
-            margin: 2px 0 5px 2px;
-            display: inline-block;
-        }
-        div.tags span:hover {
-            background: rgb(209, 229, 241);
-        }
-        div.tags b {
-            font-weight: normal;
-            padding: 2px 5px;
-        }
-    </style>
+<meta charset="utf-8" />	
+<title>{0}</title>
+<style>
+body  {
+    background-color:white;
+    color:#000000;
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial;
+    margin: 0;
+    font-size: 13px;
+}
+a#logo {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background-size: 42px 42px;
+    background-repeat: no-repeat;
+    background-image: url("{{serviceStackLogoDataUriLight}}");
+}
+.icons {
+    display: block;
+    float: right;
+}
+.auth {
+    display: block;
+    width: 17px;
+    height: 17px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAIAAAC0D9CtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNWWFMmUAAADsSURBVDhPY/hPOsCr58Pi/w9s/t/k+X9P5//zjP+/X0OEcet5lvL/BgMKui3z/+d9oAwOPR9Xo6h+VfP/cQCI8dABKIlDD0QFBN0zAIn8eg7l/riNQ88dBYSeGyz/37T/f5YA5X5cjUMP0OkIPajo22lsel4UoKuDo1si//9+x9AD1IBHDzBs0MMAogEt0CDopsD/j8shqpD0IDSwIJS+bgbF7LfTQCdBlSH0oGl4VQ9CMIPRAFgPsgZgSgEGK17AgK4BmMAIAbCj33RDnUTIBggA2wPxLtCSr4ehwngB2D/A1ApEsKROAPz/DwCLE/At7aBI3gAAAABJRU5ErkJggg==);
+}
+h1 {
+    color: #FFF;
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0;
+    padding: 0 0 0 15px;
+    line-height: 48px;
+    min-height: 48px;
+    border-radius: 0px;
+    border-bottom: 1px solid #191e23;
+    background: #2c3742; /* Old browsers */
+    background: -moz-linear-gradient(top,  #2c3742 0%, #28303a 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2c3742), color-stop(100%,#28303a)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c3742', endColorstr='#28303a',GradientType=0 ); /* IE6-9 */
+}
+h2 {
+    margin: 25px 0 20px 0;
+    color: #29323D;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 24px;
+}
+h3 {
+    color: #29323D;
+    font-size: 18px;
+    font-family: 'Open Sans', sans-serif;
+}
+a {
+    color: #428bca;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:hover, a:focus {
+    color: #2a6496;
+    text-decoration: underline;
+}
+ul {
+    margin: 10px 0 0 10px;
+    padding: 0 0 0 10px;
+}
+li {
+    clear: left;
+    margin-top: 10px;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0 0 20px 0;
+}
+table, tr, th, td {
+    border: none;
+}
+.operations, .operation {
+    padding: 0 0 0 15px;
+}
+/* All Operations */
+.operations table {
+    margin-left: 1.5em;
+}
+.operations th {
+    text-align: left;
+    font-weight: normal;
+    line-height: 18px;
+    min-width: 27em;
+    white-space: nowrap;
+}
+/* Single Operation */
+.operations td {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: bold;
+    color: #CCC;
+    padding-left: 1.5em;
+    vertical-align: top;
+}
+.operation caption {
+    text-align: left;
+    font-size: 14px;
+    padding: 10px 0;
+    white-space: nowrap;
+}
+.operation tbody th {
+    text-align: left;
+}
+.operation thead th {
+    text-align: left;
+    text-transform: uppercase;
+}
+.operation th, .operation td {
+    padding: 5px 15px;
+    vertical-align: top;
+}
+.operation h4 {
+    margin: 10px 0;
+    padding: 0;
+}
+.operation li {
+    margin: 0;
+}
+.example {
+    padding-left: 15px;
+}
+.example h3 { 
+    color:#000000;
+    margin: 10px 0 0 -15px;
+}
+.example pre {
+    background-color: #E5E5CC;
+    border: 1px solid #F0F0E0;
+    font-family: Courier New;
+    font-size: 15px;
+    padding: 5px;
+    margin-right: 15px;
+    white-space: pre-wrap;
+    overflow:auto;
+}
+.example .value {
+    color: blue;
+}    
+.call-info {
+    margin: 0 0 20px 0;
+}
+#desc{
+    margin: 0;
+    padding: 0 0 15px 15px;
+    font-size: 16px;
+}
+#desc P {
+    margin: 5px 0;
+    padding: 0;
+    line-height: 20px;
+    color: #444;
+}
+div.tags {
+    color: rgb(44, 87, 119);
+    user-select: none;
+    margin: -15px 0 0 0;
+}
+div.tags span {
+    background: rgb(225, 236, 244);
+    border-radius: 3px;
+    margin: 2px 0 5px 2px;
+    display: inline-block;
+}
+div.tags span:hover {
+    background: rgb(209, 229, 241);
+}
+div.tags b {
+    font-weight: normal;
+    padding: 2px 5px;
+}
+</style>
 </head>
 <body>
     <a id="logo" href="https://servicestack.net" title="ServiceStack"></a>

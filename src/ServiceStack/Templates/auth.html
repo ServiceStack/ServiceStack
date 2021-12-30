@@ -1,130 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>Authenticated Session</title>
-    <link rel="stylesheet" href="${BaseUrl}/css/bootstrap.css">
-    <style>
-        body {
-            margin: 0;
-            padding: 0 0 50px 0;
-            color: #333;
-        }
-        a#logo {
-            position: absolute;
-            top: 4px;
-            right: 0;
-            width: 50px;
-            height: 50px;
-            background-size: 42px 42px;
-            background-repeat: no-repeat;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3E .path%7B%7D %3C/style%3E %3Cg id='servicestack-svg'%3E%3Cpath fill='%23ffffff' class='path' stroke='null' d='m16.564516,43.33871c16.307057,2.035887 54.629638,20.41875 60.67742,46.306452l-78.241936,0c19.859879,-1.616734 36.825605,-27.344758 17.564516,-46.306452zm6.387097,-30.33871c6.446976,7.105645 9.520766,16.74617 9.26129,26.666129c16.546573,6.726411 41.376412,24.690121 46.625807,49.979033l19.161291,0c-8.123589,-43.132863 -54.529839,-73.551412 -75.048388,-76.645162z' /%3E%3C/g%3E%3C/svg%3E");
-        }
-        h1 {
-            color: #FFF;
-            font-size: 26px;
-            font-weight: normal;
-            margin: 0;
-            padding: 0 0 0 15px;
-            line-height: 48px;
-            min-height: 48px;
-            border-radius: 0px;
-            border-bottom: 1px solid #191e23;
-            background: #2c3742; /* Old browsers */
-            background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
-        }
-        .stacktrace {
-            background: #f1f1f1;
-            padding: 1em;
-            margin: 1em 0 .5em 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            white-space: pre-wrap;
-        }
-        #session img {
-            max-width: 200px;
-            max-height: 200px;
-        }
-        td,th {
-            vertical-align: top;
-        }
-        button {
-            user-select: auto !important;
-        }
-        .sel {
-            cursor: pointer;
-        }
-        .btn-copy {
-            padding-left: 10px;
-            max-height: 24px;
-        }
-        .btn-copy small {
-            padding-left: 10px;
-            max-width: 100px;
-            max-height: 24px;
-        }
-        .copy-text {
-            position: absolute;
-            margin-top: 3px;
-            width: 60px;
-            height: 24px;
-            max-width: 60px;
-            max-height: 24px;
-            overflow: hidden;
-            border-color: #ffc907;
-        }
-        .copy-text:hover {
-        }
-        .copy-text span {
-            opacity: 0;
-        }
-        .oauth b {
-            font-weight: normal !important;
-        }
-        .oauth {
-            width: auto;
-            min-width: 700px;
-        }
-        .oauth .c2 {
-            max-width: 700px;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-        .avatar {
-            width: 300px;
-        }
-        @media (max-width: 720px) {
-            #session {
-                padding-top: 1em !important;
-            }
-            #session img {
-                max-width: 150px;
-                max-height: 150px;
-            }
-            .avatar {
-                width: 220px;
-            }
-            .h2, h2 {
-                font-size: 1.5rem;
-            }
-            .oauth {
-                min-width: 650px;
-            }
-            .oauth .c2 {
-                max-width: 450px;
-            }
-        }
-        .svg-xs, .svg-sm, .svg-md, .svg-lg, .svg-2x, .svg-3x, .svg-4x, .svg-5x, .svg-6x, .svg-7x, .svg-8x, .svg-9x, .svg-10x, .svg-11x, .svg-12x, .svg-13x, .svg-14x {
-            background-position:0;background-repeat:no-repeat;display: inline-block;background-size: contain;vertical-align: middle;}
-        .svg-xs {width:12px;height:12px}.svg-sm {width:14px;height:14px}.svg-md {width:18px;height:18px}.svg-lg {width:24px;height:24px}.svg-2x {width:32px;height:32px}
-        .svg-3x {width:48px;height:48px}.svg-4x {width:64px;height:64px}.svg-5x {width:80px;height:80px}.svg-6x {width:96px;height:96px}.svg-7x {width:112px;height:112px}
-        .svg-8x {width:128px;height:128px}.svg-9x {width:144px;height:144px}.svg-10x {width:160px;height:160px}.svg-11x {width:180px;height:180px}
-        .svg-12x {width:204px;height:204px}.svg-13x {width:232px;height:232px}.svg-14x {width:264px;height:264px}
-        .svg-chevron-right, .fa-chevron-right {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23212121' width='48px' height='48px'%3E     %3Cpath d='M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'/%3E     %3Cpath d='M0 0h24v24H0z' fill='none'/%3E %3C/svg%3E");
-        }
-    </style>
-    <script>var model = ${Dto}</script>
+<meta charset="utf-8" />
+<title>Authenticated Session</title>
+<link rel="stylesheet" href="${BaseUrl}/css/bootstrap.css">
+<style>
+body {
+    margin: 0;
+    padding: 0 0 50px 0;
+    color: #333;
+}
+a#logo {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background-size: 42px 42px;
+    background-repeat: no-repeat;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3E .path%7B%7D %3C/style%3E %3Cg id='servicestack-svg'%3E%3Cpath fill='%23ffffff' class='path' stroke='null' d='m16.564516,43.33871c16.307057,2.035887 54.629638,20.41875 60.67742,46.306452l-78.241936,0c19.859879,-1.616734 36.825605,-27.344758 17.564516,-46.306452zm6.387097,-30.33871c6.446976,7.105645 9.520766,16.74617 9.26129,26.666129c16.546573,6.726411 41.376412,24.690121 46.625807,49.979033l19.161291,0c-8.123589,-43.132863 -54.529839,-73.551412 -75.048388,-76.645162z' /%3E%3C/g%3E%3C/svg%3E");
+}
+h1 {
+    color: #FFF;
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0;
+    padding: 0 0 0 15px;
+    line-height: 48px;
+    min-height: 48px;
+    border-radius: 0px;
+    border-bottom: 1px solid #191e23;
+    background: #2c3742; /* Old browsers */
+    background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
+}
+.stacktrace {
+    background: #f1f1f1;
+    padding: 1em;
+    margin: 1em 0 .5em 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    white-space: pre-wrap;
+}
+#session img {
+    max-width: 200px;
+    max-height: 200px;
+}
+td,th {
+    vertical-align: top;
+}
+button {
+    user-select: auto !important;
+}
+.sel {
+    cursor: pointer;
+}
+.btn-copy {
+    padding-left: 10px;
+    max-height: 24px;
+}
+.btn-copy small {
+    padding-left: 10px;
+    max-width: 100px;
+    max-height: 24px;
+}
+.copy-text {
+    position: absolute;
+    margin-top: 3px;
+    width: 60px;
+    height: 24px;
+    max-width: 60px;
+    max-height: 24px;
+    overflow: hidden;
+    border-color: #ffc907;
+}
+.copy-text:hover {
+}
+.copy-text span {
+    opacity: 0;
+}
+.oauth b {
+    font-weight: normal !important;
+}
+.oauth {
+    width: auto;
+    min-width: 700px;
+}
+.oauth .c2 {
+    max-width: 700px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.avatar {
+    width: 300px;
+}
+@media (max-width: 720px) {
+    #session {
+        padding-top: 1em !important;
+    }
+    #session img {
+        max-width: 150px;
+        max-height: 150px;
+    }
+    .avatar {
+        width: 220px;
+    }
+    .h2, h2 {
+        font-size: 1.5rem;
+    }
+    .oauth {
+        min-width: 650px;
+    }
+    .oauth .c2 {
+        max-width: 450px;
+    }
+}
+.svg-xs, .svg-sm, .svg-md, .svg-lg, .svg-2x, .svg-3x, .svg-4x, .svg-5x, .svg-6x, .svg-7x, .svg-8x, .svg-9x, .svg-10x, .svg-11x, .svg-12x, .svg-13x, .svg-14x {
+    background-position:0;background-repeat:no-repeat;display: inline-block;background-size: contain;vertical-align: middle;}
+.svg-xs {width:12px;height:12px}.svg-sm {width:14px;height:14px}.svg-md {width:18px;height:18px}.svg-lg {width:24px;height:24px}.svg-2x {width:32px;height:32px}
+.svg-3x {width:48px;height:48px}.svg-4x {width:64px;height:64px}.svg-5x {width:80px;height:80px}.svg-6x {width:96px;height:96px}.svg-7x {width:112px;height:112px}
+.svg-8x {width:128px;height:128px}.svg-9x {width:144px;height:144px}.svg-10x {width:160px;height:160px}.svg-11x {width:180px;height:180px}
+.svg-12x {width:204px;height:204px}.svg-13x {width:232px;height:232px}.svg-14x {width:264px;height:264px}
+.svg-chevron-right, .fa-chevron-right {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23212121' width='48px' height='48px'%3E     %3Cpath d='M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'/%3E     %3Cpath d='M0 0h24v24H0z' fill='none'/%3E %3C/svg%3E");
+}
+</style>
+<script>let model = ${Dto}</script>
 </head>
 <body>
 <a id="logo" href="https://servicestack.net" title="ServiceStack"></a>
@@ -134,191 +134,188 @@
 <div id="session" class="pt-5 ml-3"></div>
 
 <script>
-    var BaseUrl = "${BaseUrl}";
-    var LoginPath = "${AuthRedirect}";
-    var AllowOrigins = ("${AllowOrigins}" || "https://localhost:5001").split(';');
+let BaseUrl = "${BaseUrl}"
+let LoginPath = "${AuthRedirect}"
+let AllowOrigins = ("${AllowOrigins}" || "https://localhost:5001").split(';')
 
-    if (!Array.isArray) {
-        Array.isArray = function(arg) {
-            return Object.prototype.toString.call(arg) === '[object Array]';
-        };
+if (!Array.isArray) {
+    Array.isArray = function(arg) {
+        return Object.prototype.toString.call(arg) === '[object Array]'
     }
-    function normalizeKey (key) {
-        return typeof key == "string" ? key.toLowerCase().replace(/_/g, '') : key;
-    }
-    function normalize (dto, deep) {
-        if (Array.isArray(dto)) {
-            if (!deep) return dto;
-            var to = [];
-            for (var i = 0; i < dto.length; i++) {
-                to[i] = normalize(dto[i], deep);
-            }
-            return to;
+}
+function normalizeKey (key) {
+    return typeof key == "string" ? key.toLowerCase().replace(/_/g, '') : key
+}
+function normalize (dto, deep) {
+    if (Array.isArray(dto)) {
+        if (!deep) return dto
+        let to = []
+        for (let i = 0; i < dto.length; i++) {
+            to[i] = normalize(dto[i], deep)
         }
-        if (typeof dto != "object") return dto;
-        var o = {};
-        for (var k in dto) {
-            o[normalizeKey(k)] = deep ? normalize(dto[k], deep) : dto[k];
-        }
-        return o;
+        return to
     }
-    function splitCase(t) {
-        return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1').replace(/_/g, ' ');
+    if (typeof dto != "object") return dto
+    let o = {}
+    for (let k in dto) {
+        o[normalizeKey(k)] = deep ? normalize(dto[k], deep) : dto[k]
     }
-    function toPascalCase(s) { return !s ? s : s.charAt(0).toUpperCase() + s.substring(1); }
-    function humanize(s) { return !s || s.indexOf(' ') >= 0 ? toPascalCase(s) : toPascalCase(splitCase(s)); }
-    function splitOnFirst(s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; }
+    return o
+}
+function splitCase(t) {
+    return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1').replace(/_/g, ' ')
+}
+function toPascalCase(s) { return !s ? s : s.charAt(0).toUpperCase() + s.substring(1) }
+function humanize(s) { return !s || s.indexOf(' ') >= 0 ? toPascalCase(s) : toPascalCase(splitCase(s)) }
+function splitOnFirst(s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s] }
 
-    function queryString(url) {
-        if (!url || url.indexOf('?') === -1)
-            return {};
-        url = splitOnFirst(url,'#')[0];
-        var pairs = splitOnFirst(url, '?')[1].split('&');
-        var map = {};
-        for (var i = 0; i < pairs.length; ++i) {
-            var p = pairs[i].split('=');
-            map[p[0]] = p.length > 1
-                ? decodeURIComponent(p[1].replace(/\+/g, ' '))
-                : null;
-        }
-        return map;
+function queryString(url) {
+    if (!url || url.indexOf('?') === -1)
+        return {}
+    url = splitOnFirst(url,'#')[0]
+    let pairs = splitOnFirst(url, '?')[1].split('&')
+    let map = {}
+    for (let i = 0; i < pairs.length; ++i) {
+        let p = pairs[i].split('=')
+        map[p[0]] = p.length > 1
+            ? decodeURIComponent(p[1].replace(/\+/g, ' '))
+            : null
     }
+    return map
+}
 
-    var $ = function(id) { return document.querySelector(id); };
+let $ = function(id) { return document.querySelector(id); }
 
-    var sb = [];
-    var normalized = normalize(model,true);
-    var qs = queryString(location.href);
-    var copy = qs['copy'] ? qs['copy'].split(',') : null;
-    
-    function showCopy(id) {
-        return !copy || copy.indexOf(id) >= 0;
-    }
+let sb = []
+let normalized = normalize(model,true)
+let qs = queryString(location.href)
+let copy = qs['copy'] ? qs['copy'].split(',') : null
 
-    function showStackTrace() {
-        console.log('showStackTrace');
-        document.querySelector('.btn-stacktrace').style.display = 'none';
-        document.querySelector('.stacktrace').style.display = 'block';
-    }
-    
-    function btnLink(href,label) {
-        return '<a class="btn btn-outline-primary btn-sm" href="' + href + '">' + label + '</a>';
-    }
+function showCopy(id) {
+    return !copy || copy.indexOf(id) >= 0
+}
 
-    var error = normalized.responsestatus;
-    if (error && error.errorcode) {
-        $('#title').innerHTML = error.errorcode;
-        var errorHtml = ('<div class="alert alert-danger m-3">' + error.message +
-            (error.stacktrace ?
-                '<div><button class="btn btn-link btn-stacktrace" style="margin-left: -1em" onclick="showStackTrace()">' +
-                '<i class="svg-chevron-right svg-lg mb-1" title="expand"></i>StackTrace</button>' +
-                '<div class="stacktrace" style="display:none">' + error.stacktrace + '</div></div>' : '') +
-            '</div>');
-        errorHtml += '<p class="ml-3 btn-group">' + btnLink(BaseUrl,'&lt; home')  + (LoginPath ? btnLink(BaseUrl + '/login','login &gt;') : '') + '</p>';
-        $('#error').innerHTML = errorHtml;
-    } else {
-        var name = normalized.displayname || normalized.username;
-        document.title = name + ' Session';
-        sb.push('<table><tr><td class="text-center avatar">');
-        sb.push('<img src="' + (normalized.profileurl || BaseUrl + '/metadata/svg/male-color.svg') + '">');
-        sb.push('<h2>' + name + '</h2>');
-        sb.push('<p><a href="' + BaseUrl + '/auth/logout?continue=' + encodeURIComponent(BaseUrl + '/login') + '">sign out</a></p>');
-        sb.push('</td><td class="info"><table class="table">');
+function showStackTrace() {
+    console.log('showStackTrace')
+    document.querySelector('.btn-stacktrace').style.display = 'none'
+    document.querySelector('.stacktrace').style.display = 'block'
+}
 
-        var sbTokens = [];
-        for (var k in model) {
-            if (!model.hasOwnProperty(k) || !model[k]) continue;
-            var v = model[k];
-            var cmpKey = normalizeKey(k);
-            if (cmpKey === 'responsestatus' || cmpKey === 'profileurl') continue;
-            if (cmpKey === 'meta')
-            {
-                for (var name in v) {
-                    if (name.endsWith('-tokens')) {
-                        var provider = splitOnFirst(name,'-')[0];
-                        sbTokens.push('<tr><th class="c1">' + provider + '</th>');
-                        sbTokens.push('<td class="c2"><b title="' + v[name] + '">' + v[name] + '</b></td>');
-                        if (showCopy(provider)) {
-                            sbTokens.push('<td class="c3" style="width:100px">');
-                            sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="clip(this,\'' + normalizeKey(provider) + '\')">');
-                            sbTokens.push('<span>' + v[name] + '</span>');
-                            sbTokens.push('</button>');
-                            sbTokens.push('<small>copy</small></span>');
-                            sbTokens.push('</td>');
-                        } else {
-                            sbTokens.push('<td></td>');
-                        }
-                        sbTokens.push('</tr>');
-                            
+function btnLink(href,label) {
+    return '<a class="btn btn-outline-primary btn-sm" href="' + href + '">' + label + '</a>'
+}
+
+let error = normalized.responsestatus
+if (error && error.errorcode) {
+    $('#title').innerHTML = error.errorcode
+    let errorHtml = ('<div class="alert alert-danger m-3">' + error.message +
+        (error.stacktrace ?
+            '<div><button class="btn btn-link btn-stacktrace" style="margin-left: -1em" onclick="showStackTrace()">' +
+            '<i class="svg-chevron-right svg-lg mb-1" title="expand"></i>StackTrace</button>' +
+            '<div class="stacktrace" style="display:none">' + error.stacktrace + '</div></div>' : '') +
+        '</div>')
+    errorHtml += '<p class="ml-3 btn-group">' + btnLink(BaseUrl,'&lt; home')  + (LoginPath ? btnLink(BaseUrl + '/login','login &gt;') : '') + '</p>'
+    $('#error').innerHTML = errorHtml
+} else {
+    let name = normalized.displayname || normalized.username
+    document.title = name + ' Session'
+    sb.push('<table><tr><td class="text-center avatar">')
+    sb.push('<img src="' + (normalized.profileurl || BaseUrl + '/metadata/svg/male-color.svg') + '">')
+    sb.push('<h2>' + name + '</h2>')
+    sb.push('<p><a href="' + BaseUrl + '/auth/logout?continue=' + encodeURIComponent(BaseUrl + '/login') + '">sign out</a></p>')
+    sb.push('</td><td class="info"><table class="table">')
+
+    let sbTokens = []
+    for (let k in model) {
+        if (!model.hasOwnProperty(k) || !model[k]) continue
+        let v = model[k]
+        let cmpKey = normalizeKey(k)
+        if (cmpKey === 'responsestatus' || cmpKey === 'profileurl') continue
+        if (cmpKey === 'meta') {
+            for (let name in v) {
+                if (name.endsWith('-tokens')) {
+                    let provider = splitOnFirst(name,'-')[0]
+                    sbTokens.push('<tr><th class="c1">' + provider + '</th>')
+                    sbTokens.push('<td class="c2"><b title="' + v[name] + '">' + v[name] + '</b></td>')
+                    if (showCopy(provider)) {
+                        sbTokens.push('<td class="c3" style="width:100px">')
+                        sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="clip(this,\'' + normalizeKey(provider) + '\')">')
+                        sbTokens.push('<span>' + v[name] + '</span>')
+                        sbTokens.push('</button>')
+                        sbTokens.push('<small>copy</small></span>')
+                        sbTokens.push('</td>')
                     } else {
-                        sb.push('<tr><th><div>' + humanize(name) + '</div></th><td><div>' + v[name] + '</div></td></tr>');
+                        sbTokens.push('<td></td>')
                     }
-                }
-            }
-            else
-            {
-                var str = Array.isArray(v)
-                    ? v.join(', ')
-                    : typeof v == "string" || typeof v == "boolean" || typeof v == "number"
-                        ? v
-                        : JSON.stringify(v);
-                if (cmpKey === 'sessionid') {
-                    if (showCopy('session')) {
-                        str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="clip(this,\'' + cmpKey + '\')">' +
-                            '<span>' + str + '</span>' +
-                            '</button><small>copy</small></span>';
-                    }
-                }
-                if (cmpKey === 'referrerurl') {
-                    sb.push('<tr><td colspan="2"><div><a href="' + str + '">Referrer URL</a></div></td></tr>');
+                    sbTokens.push('</tr>')
+                        
                 } else {
-                    sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td>');
+                    sb.push('<tr><th><div>' + humanize(name) + '</div></th><td><div>' + v[name] + '</div></td></tr>')
                 }
             }
         }
-        sb.push('</table></td></table>');
-
-        if (sbTokens.length > 0) {
-            sb.push('<table class="oauth table table-striped">');
-            sb.push('<thead><tr><th colspan="3">OAuth Tokens</th></thead><tbody>');
-            sb.push(sbTokens.join(''));
-            sb.push('</tbody></table>');
-        }
-
-        $('#session').innerHTML = sb.join('');
-    }
-
-    function clip(el,provider) {
-        if (window.getSelection) {
-            var range = document.createRange();
-            range.selectNodeContents(el);
-            var sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-            document.execCommand("copy");
-            var btnText = el.parentElement.querySelector('small');
-            if (btnText) {
-                btnText.innerHTML = 'copied!';
-            }
-
-            if (window.parent) {
-                for (var i=0; i<AllowOrigins.length; i++) {
-                    try {
-                        var origin = AllowOrigins[i];
-                        var msg = { };
-                        msg[provider] = sel.toString();
-                        window.parent.postMessage({ copy: msg }, origin);
-                    } catch (e) {
-                    }
+        else
+        {
+            let str = Array.isArray(v)
+                ? v.join(', ')
+                : typeof v == "string" || typeof v == "boolean" || typeof v == "number"
+                    ? v
+                    : JSON.stringify(v)
+            if (cmpKey === 'sessionid') {
+                if (showCopy('session')) {
+                    str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="clip(this,\'' + cmpKey + '\')">' +
+                        '<span>' + str + '</span>' +
+                        '</button><small>copy</small></span>'
                 }
             }
-            
-            try {
-                window.close();
-            } catch (e) {}
+            if (cmpKey === 'referrerurl') {
+                sb.push('<tr><td colspan="2"><div><a href="' + str + '">Referrer URL</a></div></td></tr>')
+            } else {
+                sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td>')
+            }
         }
     }
+    sb.push('</table></td></table>')
 
+    if (sbTokens.length > 0) {
+        sb.push('<table class="oauth table table-striped">')
+        sb.push('<thead><tr><th colspan="3">OAuth Tokens</th></thead><tbody>')
+        sb.push(sbTokens.join(''))
+        sb.push('</tbody></table>')
+    }
+
+    $('#session').innerHTML = sb.join('')
+}
+
+function clip(el,provider) {
+    if (window.getSelection) {
+        let range = document.createRange()
+        range.selectNodeContents(el)
+        let sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+        document.execCommand("copy")
+        let btnText = el.parentElement.querySelector('small')
+        if (btnText) {
+            btnText.innerHTML = 'copied!'
+        }
+
+        if (window.parent) {
+            for (let i=0; i<AllowOrigins.length; i++) {
+                try {
+                    let origin = AllowOrigins[i]
+                    let msg = { }
+                    msg[provider] = sel.toString()
+                    window.parent.postMessage({ copy: msg }, origin)
+                } catch (e) {}
+            }
+        }
+        
+        try {
+            window.close()
+        } catch (e) {}
+    }
+}
 </script>
 </body>
 </html>

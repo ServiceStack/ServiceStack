@@ -368,11 +368,11 @@ function clearSel() {
 }
 
 function cmp(v1, v2){
-  var f1, f2, f1=parseFloat(v1), f2=parseFloat(v2);
-  if (!isNaN(f1) && !isNaN(f2)) v1=f1, v2=f2;
-  if (typeof v1 == 'string' && v1.substr(0,6) == '/Date(') v1=date(v1), v2=date(v2);
-  if (v1 == v2) return 0;
-  return v1 > v2 ? 1 : -1;
+  let f1=parseFloat(v1), f2=parseFloat(v2)
+  if (!isNaN(f1) && !isNaN(f2)) { v1=f1; v2=f2 }
+  if (typeof v1 == 'string' && v1.substr(0,6) === '/Date(') { v1=date(v1); v2=date(v2) }
+  if (v1 === v2) return 0
+  return v1 > v2 ? 1 : -1
 }
 
 // ]]>
