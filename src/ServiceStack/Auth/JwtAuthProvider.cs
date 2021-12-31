@@ -509,7 +509,7 @@ namespace ServiceStack.Auth
             };
 
             // Don't return JWT in Response Body if Refresh Token Cookie was used
-            if (refreshTokenCookie == null && request.UseTokenCookie.GetValueOrDefault(jwtAuthProvider.UseTokenCookie) != true)
+            if (refreshTokenCookie == null && jwtAuthProvider.UseTokenCookie != true)
                 return response;
 
             var httpResult = new HttpResult(new GetAccessTokenResponse())
