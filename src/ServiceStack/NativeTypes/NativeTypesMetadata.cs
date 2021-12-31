@@ -153,6 +153,7 @@ namespace ServiceStack.NativeTypes
                     RequiredPermissions = operation.RequiredPermissions,
                     RequiresAnyPermission = operation.RequiresAnyPermission,
                     Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
+                    FormLayout = operation.FormLayout,
                 };
                 opType.Request.RequestType = opType;
                 metadata.Operations.Add(opType);

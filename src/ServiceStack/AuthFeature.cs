@@ -9,6 +9,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Html;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -140,6 +141,17 @@ namespace ServiceStack
         public bool IncludeOAuthTokensInAuthenticateResponse { get; set; }
 
         public bool IncludeDefaultLogin { get; set; } = true;
+
+        /// <summary>
+        /// UI Layout for Authentication
+        /// </summary>
+        public List<List<InputInfo>> FormLayout { get; set; } = new()
+        {
+            new(){ Input.For<Authenticate>(x => x.provider, x => { x.Type = Input.Types.Hidden; x.Value = "credentials"; }) },
+            new(){ Input.For<Authenticate>(x => x.UserName, x => x.Help = "Email") },
+            new(){ Input.For<Authenticate>(x => x.Password) },
+            new(){ Input.For<Authenticate>(x => x.RememberMe) },
+        };
 
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
@@ -295,6 +307,7 @@ namespace ServiceStack
             AuthSecretSession = appHost.Config.AuthSecretSession;
 
             appHost.RegisterServices(ServiceRoutes);
+            appHost.ConfigureOperation<Authenticate>(op => op.FormLayout = FormLayout);
 
             var sessionFeature = RegisterPlugins.OfType<SessionFeature>().FirstOrDefault();
             if (sessionFeature != null)

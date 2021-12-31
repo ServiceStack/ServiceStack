@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Funq;
+using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -13,6 +14,12 @@ namespace ServiceStack
     public static class AppHostExtensions
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
+
+        public static void ConfigureOperation<T>(this IAppHost appHost, Action<Operation> configure)
+        {
+            if (appHost.Metadata.OperationsMap.TryGetValue(typeof(T), out var op))
+                configure(op);
+        }
 
         public static void RegisterServices(this IAppHost appHost, Dictionary<Type, string[]> serviceRoutes)
         {

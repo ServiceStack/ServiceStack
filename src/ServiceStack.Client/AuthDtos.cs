@@ -9,9 +9,11 @@ using ServiceStack.Model;
 
 namespace ServiceStack
 {
+    [Tag("auth"), Api("Sign In")]
     [DataContract]
     public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
     {
+        [ApiMember(Description = "AuthProvider, e.g. credentials")]
         [DataMember(Order = 1)] public string provider { get; set; }
         [DataMember(Order = 2)] public string State { get; set; }
         [DataMember(Order = 3)] public string oauth_token { get; set; }
@@ -61,6 +63,7 @@ namespace ServiceStack
         [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Tag("auth"), Api("Sign Up")]
     [DataContract]
     public class Register : IPost, IReturn<RegisterResponse>, IMeta
     {
@@ -99,6 +102,7 @@ namespace ServiceStack
         [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Tag("auth")]
     [DataContract]
     public class AssignRoles : IPost, IReturn<AssignRolesResponse>, IMeta
     {
@@ -140,6 +144,7 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Tag("auth")]
     [DataContract]
     public class UnAssignRoles : IPost, IReturn<UnAssignRolesResponse>, IMeta
     {
@@ -273,7 +278,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>, IMeta
+    public partial class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>, IMeta
     {
         [DataMember(Order = 1)]
         public bool PreserveSession { get; set; }
@@ -295,9 +300,9 @@ namespace ServiceStack
         [DataMember(Order = 4)]
         public ResponseStatus ResponseStatus { get; set; }
     }
-
+    
     [DataContract]
-    public class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
+    public partial class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
     {
         [DataMember(Order = 1)]
         public string RefreshToken { get; set; }
@@ -674,6 +679,8 @@ namespace ServiceStack
 
 /* Allow metadata discovery & code-gen in *.Source.csproj builds */    
 #if !SOURCE
+    [ExcludeMetadata] public partial class GetAccessToken {}
+    [ExcludeMetadata] public partial class ConvertSessionToToken {}
     [ExcludeMetadata] public partial class GetNavItems {}
     [ExcludeMetadata] public partial class MetadataApp { }
     [ExcludeMetadata] public partial class GetCrudEvents {}

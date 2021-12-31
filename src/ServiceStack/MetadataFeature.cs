@@ -200,9 +200,13 @@ namespace ServiceStack
             metadataTypes.Config = null;
 
             var appHost = HostContext.AssertAppHost();
+            var config = appHost.Config;
             var response = new AppMetadata
             {
-                App = appHost.Config.AppInfo ?? new AppInfo(),
+                App = config.AppInfo ?? new AppInfo(),
+                Config = new ConfigInfo {
+                    DebugMode = config.DebugMode,
+                },
                 ContentTypeFormats = appHost.ContentTypes.ContentTypeFormats,
                 HttpHandlers = new Dictionary<string, string>(),
                 Plugins = new PluginInfo

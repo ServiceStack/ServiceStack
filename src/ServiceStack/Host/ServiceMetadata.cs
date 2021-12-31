@@ -759,6 +759,7 @@ namespace ServiceStack.Host
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         public List<TagAttribute> Tags { get; set; }
+        public List<List<InputInfo>> FormLayout { get; set; }
         
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
         public List<IValidationRule> RequestPropertyValidationRules { get; private set; }

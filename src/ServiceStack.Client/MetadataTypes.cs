@@ -122,11 +122,19 @@ namespace ServiceStack
     public class AppMetadata : IMeta
     {
         public AppInfo App { get; set; }
+        public ConfigInfo Config { get; set; }
         public Dictionary<string, string> ContentTypeFormats { get; set; }
         public Dictionary<string, string> HttpHandlers { get; set; }
         public PluginInfo Plugins { get; set; }
         public Dictionary<string,CustomPluginInfo> CustomPlugins { get; set; }
         public MetadataTypes Api { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class ConfigInfo : IMeta
+    {
+        public bool? DebugMode { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -403,6 +411,7 @@ namespace ServiceStack
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         public List<string> Tags { get; set; }
+        public List<List<InputInfo>> FormLayout { get; set; }
     }
 
     [Exclude(Feature.Soap)]
