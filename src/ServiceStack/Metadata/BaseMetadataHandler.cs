@@ -166,11 +166,12 @@ namespace ServiceStack.Metadata
                 var entries = new KeyValuePair<string,string>[] {
                     new ("csharp", "C#"),
                     new ("typescript", "TypeScript"),
-                    new ("python", "Python"),
-                    new ("swift", "Swift"),
+                    new ("dart", "Dart"),
                     new ("java", "Java"),
                     new ("kotlin", "Kotlin"),
-                    new ("dart", "Dart"),
+                    new ("python", "Python"),
+                    new ("swift", "Swift"),
+                    new ("vbnet", "VB.NET"),
                     new ("fsharp", "F#"),
                 };
                 sb.AppendLine("<div class=\"types-nav\"><nav class=\"flex space-x-4\">");

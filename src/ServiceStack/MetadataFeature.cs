@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -185,43 +186,48 @@ namespace ServiceStack
     public class MetadataAppService : Service
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
-        public AppMetadata Any(MetadataApp request)
+        public AppMetadata Any(MetadataApp request) => NativeTypesMetadata.ToAppMetadata(Request);
+    }
+
+    public static class MetadataFeatureExtensions
+    {
+        public static AppMetadata ToAppMetadata(this INativeTypesMetadata nativeTypesMetadata, IRequest req)
         {
             var feature = HostContext.AssertPlugin<MetadataFeature>();
-            var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata());
+            var typesConfig = nativeTypesMetadata.GetConfig(new TypesMetadata());
             feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
-            var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, NativeTypesMetadata, Request);
+            var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, nativeTypesMetadata, req);
             metadataTypes.Config = null;
-            
+
             var appHost = HostContext.AssertAppHost();
-            var response = new AppMetadata {
+            var response = new AppMetadata
+            {
                 App = appHost.Config.AppInfo ?? new AppInfo(),
                 ContentTypeFormats = appHost.ContentTypes.ContentTypeFormats,
-                Plugins = new PluginInfo {
+                HttpHandlers = new Dictionary<string, string>(),
+                Plugins = new PluginInfo
+                {
                     Loaded = appHost.GetMetadataPluginIds(),
                 },
                 CustomPlugins = new Dictionary<string, CustomPluginInfo>(),
                 Api = metadataTypes,
             };
-            
+
             if (response.App.BaseUrl == null)
-                response.App.BaseUrl = Request.GetBaseUrl();
+                response.App.BaseUrl = req.GetBaseUrl();
             if (response.App.ServiceName == null)
                 response.App.ServiceName = appHost.ServiceName;
             if (response.App.JsTextCase == null)
-                response.App.JsTextCase = Text.JsConfig.TextCase.ToString();
+                response.App.JsTextCase = $"{Text.JsConfig.TextCase}";
 
             foreach (var fn in feature.AppMetadataFilters)
             {
                 fn(response);
             }
-            
+
             return response;
         }
-    }
 
-    public static class MetadataFeatureExtensions
-    {
         public static MetadataFeature AddPluginLink(this MetadataFeature metadata, string href, string title)
         {
             if (metadata != null)

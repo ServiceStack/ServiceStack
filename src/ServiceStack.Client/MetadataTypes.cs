@@ -123,6 +123,7 @@ namespace ServiceStack
     {
         public AppInfo App { get; set; }
         public Dictionary<string, string> ContentTypeFormats { get; set; }
+        public Dictionary<string, string> HttpHandlers { get; set; }
         public PluginInfo Plugins { get; set; }
         public Dictionary<string,CustomPluginInfo> CustomPlugins { get; set; }
         public MetadataTypes Api { get; set; }

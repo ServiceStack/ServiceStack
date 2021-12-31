@@ -19,7 +19,10 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             if (appHost.Config.EnableJsonApiRoute && appHost.PathBase == null && JsonApiRoute != null)
+            {
                 appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
+                appHost.AddToAppMetadata(metadata => metadata.HttpHandlers["ApiHandlers.Json"] = JsonApiRoute);
+            }
             
             appHost.CatchAllHandlers.Add(ProcessRequest);
         }
@@ -77,13 +80,11 @@ namespace ServiceStack
                         if (feature == Feature.None) feature = Feature.CustomFormat;
 
                         if (isReply)
-                            return new GenericHandler(contentType, RequestAttributes.Reply, feature)
-                            {
+                            return new GenericHandler(contentType, RequestAttributes.Reply, feature) {
                                 RequestName = requestName,
                             };
                         if (isOneWay)
-                            return new GenericHandler(contentType, RequestAttributes.OneWay, feature)
-                            {
+                            return new GenericHandler(contentType, RequestAttributes.OneWay, feature) {
                                 RequestName = requestName,
                             };
                     }
