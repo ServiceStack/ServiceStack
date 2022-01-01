@@ -18,9 +18,12 @@ public class HelloSecure : IReturn<HelloResponse>
 }
 
 [Tag("hello")]
-[Route("/hello-long/{Name}")]
+[Route("/hello-long/{Name}", "PATCH,PUT")]
+[Route("/hello-very-long/{Name}", "GET,POST,PUT")]
+[ValidateHasRole("Employee")]
+[ValidateHasPermission("ThePermission")]
 [ValidateIsAuthenticated]
-public class HelloVeryLongOperationNameVersions : IReturn<HelloResponse>
+public class HelloVeryLongOperationNameVersions : IReturn<HelloResponse>, IGet, IPost, IPut, IPatch
 {
     public string Name { get; set; }
 }

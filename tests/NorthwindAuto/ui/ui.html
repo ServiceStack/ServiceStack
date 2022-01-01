@@ -63,11 +63,32 @@
 .preview .hljs {
     background-color: transparent;
 }
+.loading .app { display: none }
+.when-loading { display: none }
+.loading .when-loading { display: block }
 </style>
 </head>
-<body>
+<body class="loading">
 
-<div v-scope class="flex">
+<div class="when-loading">
+    <div class="flex p-4">
+        <svg class="w-8 h-8 text-gray-600" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+            <g fill="none" fill-rule="evenodd" stroke-width="2">
+                <circle cx="22" cy="22" r="1">
+                    <animate attributeName="r" begin="0s" dur="1.8s" values="1; 20" calcMode="spline" keyTimes="0; 1" keySplines="0.165, 0.84, 0.44, 1" repeatCount="indefinite" />
+                    <animate attributeName="stroke-opacity" begin="0s" dur="1.8s" values="1; 0" calcMode="spline" keyTimes="0; 1" keySplines="0.3, 0.61, 0.355, 1" repeatCount="indefinite" />
+                </circle>
+                <circle cx="22" cy="22" r="1">
+                    <animate attributeName="r" begin="-0.9s" dur="1.8s" values="1; 20" calcMode="spline" keyTimes="0; 1" keySplines="0.165, 0.84, 0.44, 1" repeatCount="indefinite" />
+                    <animate attributeName="stroke-opacity" begin="-0.9s" dur="1.8s" values="1; 0" calcMode="spline" keyTimes="0; 1" keySplines="0.3, 0.61, 0.355, 1" repeatCount="indefinite" />
+                </circle>
+            </g>
+        </svg>
+        <h3 class="text-gray-600 text-xl ml-2">Loading...</h3>
+    </div>
+</div>
+
+<div v-scope class="app flex">
 
 <div class="sidebar border-r border-gray-200">
     <div class="sidebar-filter fixed h-filter pt-3">
@@ -87,14 +108,13 @@
                     <svg :class="[nav.expanded ? 'text-gray-400 rotate-90' : 'text-gray-300','mr-2 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 20 20" aria-hidden="true">
                         <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
                     </svg>
-                    {{ nav.tag }}
+                    {{nav.tag}}
                 </button>
                 <div v-if="nav.expanded" class="space-y-1">
-                     
                     <a v-for="op in nav.operations" :href="store.createHref({op:op.request.name,preview:''})" @click.prevent="store.select({op:op.request.name,preview:''})"
                        :class="[op.request.name == store.activeOp ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
                             'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
-                        <span class="nav-item flex-grow">{{ op.request.name }}</span>
+                        <span class="nav-item flex-grow">{{op.request.name}}</span>
                         <span v-if="op.requiresAuth" class="svg-lock w-5 h-5"></span>
                     </a>
                 </div>
@@ -105,7 +125,7 @@
 
 <div v-if="store.op">
     <div class="body-1">
-        <div class="fixed w-body-1/2 border-b border-gray-20">
+        <div class="fixed w-body-1/2 border-b border-gray-20 bg-white">
             <nav class="-mb-px flex" aria-label="Tabs">
                 <a v-for="(tab,name) in store.opTabs" :href="store.createHref({tab})" @click.prevent="store.select({tab})" :title="name"
                    :class="[tab == store.activeTab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300','w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm overflow-hidden']">
@@ -120,13 +140,24 @@
             <div v-else-if="store.activeTab === 'details'" class="px-4">
                 <div class="flex">
                     <div class="flex-grow">
-                        <h2 class="font-medium text-xl mb-3">
+                        <h2 class="font-medium mb-3">
+                            <span v-if="store.op.method" title="HTTP Method" class="mr-1 inline-flex items-center text-md px-2.5 py-0.5 bg-gray-100 text-gray-600">
+                              {{store.op.method}}
+                            </span>
                             <a :href="store.createHref({ preview: `types.${store.opName}` })" @click.prevent="store.select({ preview: `types.${store.opName}` })"
-                               class="text-blue-800">
+                               class="text-xl text-blue-800">
                                 {{store.opName}}
                             </a>
                         </h2>
-                        <p v-if="request.description" class="mb-3 text-gray-500">{{request.description}}</p>
+                        
+                        <div class="mb-3 pl-4">
+                            <div v-for="route in store.op.routes" class="text-sm text-gray-900">
+                                <span v-for="verb in (route.verbs||'').split(',').filter(verb => verb && verb != store.op.method)" class="font-medium mr-1">{{verb}}</span>
+                                {{route.path}}
+                            </div>
+                            <div v-if="predefinedRoute(request.name)" class="text-sm text-gray-900">{{predefinedRoute(request.name)}}</div>
+                        </div>
+                        
                         <div v-if="store.op.tags.length > 0" class="mb-3">
                             <span v-for="tag in store.op.tags" title="tag" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               {{tag}}
@@ -162,6 +193,8 @@
                         </div>
                     </div>
                 </div>
+
+                <p v-if="request.description" class="mb-3 text-gray-700 bg-gray-50 p-2 px-4">{{request.description}}</p>
                 
                 <div>
                     <div class="flex justify-between w-full">
@@ -170,12 +203,12 @@
                                 <span class="text-gray-500">inherits</span>
                                 <a :href="store.createHref({ preview: `types.${inheritedTypes(request.inherits)}` })" @click.prevent="store.select({ preview: `types.${inheritedTypes(request.inherits)}` })"
                                    class="text-blue-800">
-                                    {{ typeName(request.inherits) }}
+                                    {{typeName(request.inherits)}}
                                 </a>
                             </div>
                             <div v-if="request.implements.length" class="mb-3">
                                 <span class="text-gray-500">implements</span>
-                                <span class="text-indigo-800">
+                                <span class="text-gray-900">
                                     {{request.implements.map(iface => typeName(iface)).join(', ')}}
                                 </span>
                             </div>
@@ -184,14 +217,78 @@
                             <div v-if="store.op.returnType || store.op.returnsVoid">
                                 <span class="text-gray-500">returns</span>
                                 <a v-if="store.op.returnType" :href="store.createHref({ preview: `types.${store.op.returnType.name}` })" @click.prevent="store.select({ preview: `types.${store.op.returnType.name}` })"
-                                   class="text-blue-800">
+                                   class="text-blue-900">
                                     {{typeName(store.op.returnType)}}
                                 </a>
-                                <span v-else class="text-blue-800">void</span>
+                                <span v-else class="text-blue-900">void</span>
                             </div>
                         </div>
                     </div>
-                    
+                </div>
+                
+                <div>
+                    <div v-for="group in opReferencedTypes(store.op)">
+                        <div class="flex flex-col mb-3">
+                            <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
+                            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
+                                        <table v-if="group[0].type.isEnum" class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Enum Name
+                                                </th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr v-for="value in group[0].type.enumNames">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{value}}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <table v-else class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Name
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Type
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Required
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Description
+                                                </th>
+                                            </tr>
+                                            </thead>
+                                            <tbody v-for="(entry, index) in group">
+                                            <tr v-if="index > 0" :class="'bg-gray-50 border-b text-gray-600'">
+                                                <td colspan="4" class="text-center py-2">{{entry.typeName}}</td>
+                                            </tr>
+                                            <tr v-for="(prop,index) in entry.type.properties" :class="index %2 == 0 ? 'bg-white' : 'bg-gray-50;">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {{prop.name}}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ typeName({ name:prop.type, genericArgs:prop.genericArgs }) }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{prop.isRequired ? 'Yes' : 'No'}}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{prop.description}}
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
             </div>
@@ -216,15 +313,14 @@
     </div>
     <div class="preview body-2 bg-gray-50">
         <pre v-if="store.previewSrc" class="p-4"><code :lang="store.previewResult.lang" v-highlightjs="store.previewSrc"></code></pre>
-        <pre class="w-body-1/2" v-if="store.json">{{ store.json }}</pre>
+        <pre v-else-if="store.json" class="w-body-1/2">{{ store.json }}</pre>
     </div>
 </div>
 <div v-else class="preview body-full">
-    <pre class="" v-if="store.json">{{ store.json }}</pre>
+    <pre v-if="store.json" class="w-body-1/2">{{ store.json }}</pre>
 </div>
     
 </div>
-
 
 <script>
     let exports = { __esModule:true }, module = { exports:exports }
@@ -421,7 +517,7 @@ let store = PetiteVue.reactive({
     get opName() { return this.op && this.op.request.name },
     
     get json() {
-        return ''
+        //return ''
         return JSON.stringify(this.op || APP, undefined, 4)
     },
     
@@ -485,6 +581,88 @@ window.addEventListener('popstate', (event) => {
     store.init({ op, tab, lang, preview })
 });
 
+function typeProperties(type) {
+    let props = []
+    while (type) {
+        if (type.properties) props.push(...type.properties)
+        type = type.inherits ? TypesMap[type.inherits.name] : null
+    }
+    return props
+}
+function addReferencedTypes(allTypesMap, type) {
+    if (!type) return
+    if (allTypesMap[type.name]) return
+    allTypesMap[type.name] = type
+    if (type.inherits) {
+        addReferencedTypes(allTypesMap, TypesMap[type.inherits.name])
+        if (type.inherits.genericArgs) {
+            type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
+        }
+    }
+    typeProperties(type).forEach(prop => {
+        addReferencedTypes(allTypesMap, TypesMap[prop.type])
+        if (type.genericArgs) {
+            type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
+        }
+    })
+    return allTypesMap
+}
+let TypeAliases = {
+    String: 'string',
+    Boolean: 'bool',
+    Byte: 'byte',
+    Int16: 'short',
+    Int32: 'int',
+    Int64: 'long',
+    UInt16: 'ushort',
+    Unt32: 'uint',
+    UInt64: 'ulong',
+    Single: 'float',
+    Double: 'double',
+    Decimal: 'decimal',
+}
+function typeAlias(typeName) {
+    return TypeAliases[typeName] ?? typeName
+}
+function typeName(metaType) {
+    if (!metaType) return ''
+    let genericArgs = metaType.genericArgs || []
+    if (genericArgs.length === 0)
+        return typeAlias(metaType.name) 
+    if (metaType.name === 'Nullable`1')
+        return typeAlias(metaType.genericArgs[0]) + '?'
+    return leftPart(typeAlias(metaType.name), '`') + '<' + metaType.genericArgs.join(',') + '>'
+}
+function groupTypes(allTypes) {
+    let allTypesMap = {}
+    let groups = []
+    allTypes.forEach(type => {
+        if (allTypesMap[type.name]) return
+        let group = []
+        let addTypeDef = typeDef => {
+            if (!typeDef || allTypesMap[typeDef.name]) return
+            allTypesMap[typeDef.name] = typeDef
+            group.push({ type: typeDef, typeName: typeName(typeDef) })
+        }
+        let addTypeRef = typeRef => {
+            if (!typeRef || allTypesMap[typeRef.name]) return
+            let typeDef = TypesMap[typeRef.name]
+            allTypesMap[typeDef.name] = typeDef
+            group.push({ type: typeDef, typeName: typeName(typeRef) })
+            return typeDef
+        }
+        addTypeDef(type)
+        if (type.inherits) {
+            let subType = addTypeRef(type.inherits)
+            while (subType) {
+                subType = subType.inherits ? addTypeRef(subType.inherits) : null
+            }
+        }
+        groups.push(group)
+    })
+    return groups
+}
+
 PetiteVue.createApp({
     serviceName: APP.app.serviceName,
     langs: {
@@ -500,23 +678,31 @@ PetiteVue.createApp({
     },
     store,
     get request() { return this.store.op && this.store.op.request },
-    typeName(metaType) {
-        if (!metaType) return ''
-        return (metaType.genericArgs || []).length === 0 
-            ? metaType.name
-            : leftPart(metaType.name, '`') + '<' + metaType.genericArgs.join(',') + '>' 
-    },
+    typeName,
     inheritedTypes(typeRef) {
         if (!typeRef) return ''
         let types = [typeRef.name]
         let metaType = TypesMap[typeRef.name]
-        
         while (metaType != null && metaType.inherits != null) {
             types.push(metaType.inherits.name)
             metaType = TypesMap[metaType.inherits.name]
         }
         return types.join(',')
     },
+    opReferencedTypes(op) {
+        let allTypesMap = {}
+        addReferencedTypes(allTypesMap, op.request)
+        if (op.returnType) {
+            // QueryResponse<'T> => QueryResponse<Model>
+            addReferencedTypes(allTypesMap, { ...op.response, ...op.returnType }) 
+        }
+        return groupTypes(Object.values(allTypesMap))
+    },
+    predefinedRoute(opName) {
+        let apiFmt = APP.httpHandlers['ApiHandlers.Json']
+            || (APP.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
+        return apiFmt ? apiFmt.replace('{Request}', opName) : '' 
+    }
 })
 .directive('highlightjs', ({ effect, get, el}) => {
     effect(() => {
@@ -532,6 +718,7 @@ PetiteVue.createApp({
 .mount()
 
 PetiteVue.nextTick(() => {
+    document.body.classList.remove('loading')
     let max = Math.max(...Array.from($$('.sidebar .nav-item')).map(el => el.clientWidth))
     if (max > (240 - 75)) {
         document.documentElement.style.setProperty('--sidebar-width', (max + 75) + 'px')

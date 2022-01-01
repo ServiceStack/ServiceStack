@@ -30,8 +30,9 @@ public enum RoomType
     Suite,
 }
 
-[Api("Find Bookings")]
-[Tag("bookings")]
+[Tag("bookings"), Api("Find Bookings")]
+[Route("/bookings", "GET")]
+[Route("/bookings/{Id}", "GET")]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryBookings : QueryDb<Booking> 
 {
@@ -43,10 +44,9 @@ public class QueryBookings : QueryDb<Booking>
 // [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), Template = SqlTemplate.IsNotNull)]
 // public class DeletedBookings : QueryDb<Booking> {}
 
-[Api("Create a new Booking")]
-[Tag("bookings")]
+[Tag("bookings"), Api("Create a new Booking")]
+[Route("/bookings", "POST")]
 [ValidateHasRole("Employee")]
-[ValidateHasPermission("ThePermission")]
 [AutoApply(Behavior.AuditCreate)]
 public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
@@ -63,8 +63,8 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     public string Notes { get; set; }
 }
 
-[Api("Update an existing Booking")]
-[Tag("bookings")]
+[Tag("bookings"), Api("Update an existing Booking")]
+[Route("/booking/{Id}", "PATCH")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
@@ -83,8 +83,8 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public bool? Cancelled { get; set; }
 }
 
-[Api("Delete a Booking")]
-[Tag("bookings")]
+[Tag("bookings"), Api("Delete a Booking")]
+[Route("/booking/{Id}", "DELETE")]
 [ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
