@@ -273,11 +273,13 @@ namespace ServiceStack.NativeTypes.CSharp
                 if (ns != lastNS)
                 {
                     if (lastNS != null)
+                    {
                         sb.AppendLine("}");
+                        sb.AppendLine();
+                    }
 
                     lastNS = ns;
 
-                    sb.AppendLine();
                     sb.AppendLine($"namespace {ns.SafeToken()}");
                     sb.AppendLine("{");
                 }
@@ -285,7 +287,6 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb = sb.Indent();
             }
 
-            sb.AppendLine();
             AppendComments(sb, type.Description);
             if (options?.Routes != null)
             {
@@ -399,6 +400,7 @@ namespace ServiceStack.NativeTypes.CSharp
             {
                 sb = sb.UnIndent();
             }
+            sb.AppendLine();
 
             return lastNS;
         }

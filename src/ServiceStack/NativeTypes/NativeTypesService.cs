@@ -161,6 +161,10 @@ namespace ServiceStack.NativeTypes
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
+
+            if (request.AddServiceStackTypes == true)
+                typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return csharp;
@@ -172,6 +176,10 @@ namespace ServiceStack.NativeTypes
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
+
+            if (request.AddServiceStackTypes == true)
+                typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             var fsharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return fsharp;
@@ -183,6 +191,10 @@ namespace ServiceStack.NativeTypes
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
+
+            if (request.AddServiceStackTypes == true)
+                typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return vbnet;
