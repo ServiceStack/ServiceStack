@@ -58,7 +58,7 @@ public static class Input
         if (useType == typeof(DateTime) || useType == typeof(DateTimeOffset) || useType.Name == "DateOnly")
             return new InputInfo(pi.Name, Types.Date);
         if (useType == typeof(TimeSpan) || useType.Name == "TimeOnly")
-            return new InputInfo(pi.Name, Types.Date);
+            return new InputInfo(pi.Name, Types.Time);
 
         if (useType.IsEnum)
         {

@@ -26,6 +26,8 @@ public class HelloSecure : IReturn<HelloResponse>
 public class HelloVeryLongOperationNameVersions : IReturn<HelloResponse>, IGet, IPost, IPut, IPatch
 {
     public string Name { get; set; }
+    public string[] Names { get; set; }
+    public int[] Ids { get; set; }
 }
 
 [Tag("hello")]

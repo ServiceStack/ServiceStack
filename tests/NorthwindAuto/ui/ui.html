@@ -134,8 +134,39 @@
             </nav>
         </div>
         <div class="mt-16">
-            <div v-if="store.activeTab === ''">
-                {{store.opName}}
+            <div v-if="store.activeTab === ''" class="p-4">
+                
+                <form>
+                    <div class="shadow overflow-hidden sm:rounded-md bg-white">
+                        <div class="relative px-4 py-5 bg-white sm:p-6">
+                            <div v-for="group in resolveFormLayout(store.op)">
+                                <div v-for="input in group">
+                                    <input v-if="input.type=='hidden'" type="hidden" v-bind="input" />
+                                    <div v-else-if="input.type=='checkbox'">
+                                        <input type="checkbox" v-bind="input" />
+                                        <label v-if="input.label!==''" :for="input.id" class="block text-sm font-medium text-gray-700"
+                                               v-html="input.label || humanify(input.id)"></label>
+                                    </div>
+                                    <div v-else>
+                                        <label v-if="input.label!==''" :for="input.id" class="block text-sm font-medium text-gray-700"
+                                               v-html="input.label || humanify(input.id)"></label>
+                                        <select v-if="input.type=='select'" v-bind="input">
+                                            <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
+                                        </select>
+                                        <textarea v-else-if="input.type=='textarea'" v-bind="input"></textarea>
+                                        <input v-else :type="input.type||'text'" v-bind="input" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+                            <div class="flex justify-end">
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
             </div>
             <div v-else-if="store.activeTab === 'details'" class="px-4">
                 <div class="flex">
@@ -273,7 +304,7 @@
                                                     {{prop.name}}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ typeName({ name:prop.type, genericArgs:prop.genericArgs }) }}
+                                                    {{ typeName2(prop.type, prop.genericArgs) }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {{prop.isRequired ? 'Yes' : 'No'}}
@@ -624,15 +655,19 @@ let TypeAliases = {
 function typeAlias(typeName) {
     return TypeAliases[typeName] ?? typeName
 }
-function typeName(metaType) {
-    if (!metaType) return ''
-    let genericArgs = metaType.genericArgs || []
+function typeName2(name, genericArgs) {
+    if (!name) return ''
+    if (!genericArgs)
+        genericArgs = []
     if (genericArgs.length === 0)
-        return typeAlias(metaType.name) 
-    if (metaType.name === 'Nullable`1')
-        return typeAlias(metaType.genericArgs[0]) + '?'
-    return leftPart(typeAlias(metaType.name), '`') + '<' + metaType.genericArgs.join(',') + '>'
+        return typeAlias(name)
+    if (name === 'Nullable`1')
+        return typeAlias(genericArgs[0]) + '?'
+    if (name.endsWith('[]'))
+        return typeAlias(name.substring(0,name.length-2)) + '[]'
+    return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
 }
+function typeName(metaType) { return typeName2(metaType.name, metaType.genericArgs) }
 function groupTypes(allTypes) {
     let allTypesMap = {}
     let groups = []
@@ -662,6 +697,72 @@ function groupTypes(allTypes) {
     })
     return groups
 }
+let useType = type => (acc,x) => { acc[x]=type; return acc }
+let InputTypes = {
+    bool: 'checkbox',
+    ...'DateTime,DateTimeOffset,DateOnly'.split(',').reduce(useType('date'), {}),
+    ...'TimeSpan,TimeOnly'.split(',').reduce(useType('time'), {}),
+    ...'byte,short,int,long,ushort,uint,ulong,float,double,decimal'.split(',').reduce(useType('number'), {}),
+    ...'string,Guid,Uri'.split(',').reduce(useType('text'), {}),
+}
+function inputProp(prop) {
+    let normalizedType = typeName2(prop.type, prop.genericArgs)
+    if (normalizedType.endsWith('?'))
+        normalizedType = normalizedType.substring(0, normalizedType.length - 1)
+    let idLower = prop.name.toLowerCase()
+    let input = { id: prop.name, type:InputTypes[normalizedType] || 'text' }
+    let type = TypesMap[prop.type]
+    if (type && type.isEnum) {
+        input.type = 'select'
+        if (type.enumValues) {
+            input.allowableEntries = []
+            for (let i=0; i<type.enumNames; i++) {
+                input.allowableEntries.push({ key:type.enumValues[i], value:type.enumNames[i] })
+            }
+        } else {
+            input.allowableValues = type.enumNames
+        }
+    } else if (idLower.indexOf('password') >= 0) {
+        input.type = 'password'
+    } else if (idLower === 'email') {
+        input.type = 'email'
+    } else if (idLower.endsWith('url')) {
+        input.type = 'url'
+    }
+    return input
+}
+function kvpValues(input) {
+    return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x })) 
+}
+function supportsType(typeName) {
+    if (!typeName) return false
+    typeName = typeAlias(typeName)
+    if (typeName.endsWith('?'))
+        typeName = typeName.substring(0,typeName.length-1)
+    return InputTypes[typeName]
+}
+function supportsProp(prop) {
+    let propType = typeName2(prop.type, prop.genericArgs)
+    if (prop.isValueType || prop.isEnum || supportsType(propType)) 
+        return true
+    if (propType.endsWith('[]'))
+        return supportsType(propType.substring(0,propType.length-2))
+    if (prop.type === 'List`1')
+        return supportsType(prop.genericArgs[0])
+    console.log('!supportsProp', prop, 'propType',propType)
+    return false
+}
+function resolveFormLayout(op) {
+    if (op.formLayout) return op.formLayout
+    let allProps = typeProperties(op.request).filter(supportsProp)
+    let formLayout = [
+        allProps.map(inputProp)
+    ]
+    return formLayout
+}
+function humanify(id) {
+    return humanize(toPascalCase(id))
+}
 
 PetiteVue.createApp({
     serviceName: APP.app.serviceName,
@@ -678,7 +779,11 @@ PetiteVue.createApp({
     },
     store,
     get request() { return this.store.op && this.store.op.request },
+    humanify,
     typeName,
+    typeName2,
+    kvpValues,
+    resolveFormLayout,
     inheritedTypes(typeRef) {
         if (!typeRef) return ''
         let types = [typeRef.name]
