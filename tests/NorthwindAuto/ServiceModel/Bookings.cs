@@ -5,7 +5,7 @@ using System;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 
-namespace NorthwindAuto.ServiceModel;
+namespace MyApp.ServiceModel;
 
 public class Booking : AuditBase
 {
@@ -30,6 +30,8 @@ public enum RoomType
     Suite,
 }
 
+[Api("Find Bookings")]
+[Tag("bookings")]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryBookings : QueryDb<Booking> 
 {
@@ -41,10 +43,14 @@ public class QueryBookings : QueryDb<Booking>
 // [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), Template = SqlTemplate.IsNotNull)]
 // public class DeletedBookings : QueryDb<Booking> {}
 
+[Api("Create a new Booking")]
+[Tag("bookings")]
 [ValidateHasRole("Employee")]
+[ValidateHasPermission("ThePermission")]
 [AutoApply(Behavior.AuditCreate)]
 public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
+    [Description("Name this Booking is for")]
     public string Name { get; set; }
     [ApiAllowableValues(typeof(RoomType))]
     public RoomType RoomType { get; set; }
@@ -57,6 +63,8 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     public string Notes { get; set; }
 }
 
+[Api("Update an existing Booking")]
+[Tag("bookings")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
@@ -75,6 +83,8 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public bool? Cancelled { get; set; }
 }
 
+[Api("Delete a Booking")]
+[Tag("bookings")]
 [ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid

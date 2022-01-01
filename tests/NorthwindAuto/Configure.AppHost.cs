@@ -1,21 +1,16 @@
 using Funq;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using MyApp.ServiceInterface;
 
-[assembly: HostingStartup(typeof(NorthwindAuto.AppHost))]
+[assembly: HostingStartup(typeof(MyApp.AppHost))]
 
-namespace NorthwindAuto
+namespace MyApp
 {
     public class AppHost : AppHostBase, IHostingStartup
     {
         public void Configure(IWebHostBuilder builder) => builder
-            .ConfigureServices((context, services) => 
-                // Register Database Connection, see: https://github.com/ServiceStack/ServiceStack.OrmLite#usage
-                services.AddSingleton<IDbConnectionFactory>(c =>
-                    new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider)))
             .Configure(app => {
                 if (!HasInit) 
                     app.UseServiceStack(new AppHost());
@@ -36,26 +31,13 @@ namespace NorthwindAuto
                 MaxLimit = 100,
                 GenerateCrudServices = new GenerateCrudServices {}
             });
-        }
-    }
-
-    [Route("/hello")]
-    [Route("/hello/{Name}")]
-    public class Hello : IReturn<HelloResponse>
-    {
-        public string Name { get; set; }
-    }
-
-    public class HelloResponse
-    {
-        public string Result { get; set; }
-    }
-
-    public class MyServices : Service
-    {
-        public object Any(Hello request)
-        {
-            return new HelloResponse { Result = $"Hello, {request.Name}!" };
+            
+            Plugins.Add(new UiFeatureDev());
+            
+            Plugins.Add(new HotReloadFeature {
+                DefaultPattern = "*.html;*.js;*.css",
+                VirtualFiles = VirtualFiles // Monitor ContentRoot to detect changes in /src
+            });
         }
     }
 }

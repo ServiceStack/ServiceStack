@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MyApp</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,15 @@
     <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ui\ui.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="ServiceModel\bin\Debug\net6.0\MyApp.ServiceModel.deps.json" />
+    <_ContentIncludedByDefault Remove="ServiceModel\bin\Debug\net6.0\ServiceStack.Blazor.Tests.ServiceModel.deps.json" />
   </ItemGroup>
 
 </Project>

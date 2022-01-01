@@ -1,0 +1,9 @@
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  
+  "scripts": {
+    "ui:dev": "npx tailwindcss -c tailwind.config.js -i ui/input.css -o ui/ui.css --watch",
+    "ui:build": "npx tailwindcss -c tailwind.config.js -i ui/input.css -o ui/ui.css --minify"
+  }
+}
