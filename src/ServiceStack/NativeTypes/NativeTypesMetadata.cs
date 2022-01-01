@@ -650,8 +650,7 @@ namespace ServiceStack.NativeTypes
             return to.Count == 0 ? null : to;
         }
         
-        public static Dictionary<Type, Func<Attribute, MetadataAttribute>> AttributeConverters { get; } = 
-            new Dictionary<Type, Func<Attribute, MetadataAttribute>>();
+        public static Dictionary<Type, Func<Attribute, MetadataAttribute>> AttributeConverters { get; } = new();
 
         public MetadataAttribute ToAttribute(Attribute attr)
         {

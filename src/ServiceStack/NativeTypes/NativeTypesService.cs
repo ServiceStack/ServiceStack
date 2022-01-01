@@ -69,6 +69,10 @@ namespace ServiceStack.NativeTypes
     [Route("/types/python")]
     public class TypesPython : NativeTypesBase { }
 
+    [ExcludeMetadata]
+    [Route("/types/js")]
+    public class TypesCommonJs : NativeTypesBase { }
+
     public class NativeTypesBase
     {
         public string BaseUrl { get; set; }
@@ -131,6 +135,7 @@ namespace ServiceStack.NativeTypes
                 {"VbNet", new TypesVbNet().ToAbsoluteUri(Request)},
                 {"TypeScript", new TypesTypeScript().ToAbsoluteUri(Request)},
                 {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri(Request)},
+                {"CommonJs", new TypesCommonJs().ToAbsoluteUri(Request)},
                 {"Dart", new TypesDart().ToAbsoluteUri(Request)},
                 {"Java", new TypesJava().ToAbsoluteUri(Request)},
                 {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
@@ -228,6 +233,20 @@ namespace ServiceStack.NativeTypes
             var metadataTypes = ResolveMetadataTypes(typesConfig);
 
             var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            return typeScript;
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesCommonJs request)
+        {
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+            typesConfig.ExportAsTypes = true;
+
+            var metadataTypes = ResolveMetadataTypes(typesConfig);
+            var typeScript = new CommonJsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return typeScript;
         }
 

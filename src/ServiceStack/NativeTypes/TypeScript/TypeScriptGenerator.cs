@@ -72,7 +72,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         };
         
         private static string declaredEmptyString = "''";
-        private static readonly Dictionary<string, string> primitiveDefaultValues = new() {
+        internal static readonly Dictionary<string, string> primitiveDefaultValues = new() {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
             {"Boolean", "false"},
