@@ -317,7 +317,7 @@ exports.__esModule = true;");
                             else if (returnType.EndsWith("[]"))
                                 replaceReturnType = $"new Array<{returnType.Substring(0, returnType.Length -2)}>()";
                                 
-                            var responseName = replaceReturnType ?? $"new {returnType}();";
+                            var responseName = replaceReturnType ?? $"new {returnType}()";
                             sb.AppendLine(typeName + ".prototype.createResponse = function () { return " + responseName + "; };");
                         }
                         else if (implStr == "IReturnVoid")
