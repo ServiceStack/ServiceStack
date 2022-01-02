@@ -10,8 +10,8 @@
 ::-webkit-scrollbar{width:8px;height:5px}::-webkit-scrollbar-thumb{background-color:#ccc}
 :root {
     --sidebar-width:240px;
-    --top-filter-height:90px;
-    --body-half-width: calc(50% - var(--sidebar-width) / 2);
+    --top-bar-height:54px;
+    --top-filter-height:99px;
 }
 .sidebar {
     width: var(--sidebar-width);
@@ -19,48 +19,50 @@
 }
 .sidebar-filter {
     width: calc(var(--sidebar-width) - 1px);
-    height: var(--top-filter-height);
 }
 .sidebar-nav {
-    top: var(--top-filter-height);
+    top: calc(var(--top-filter-height) + 2px);
     width: calc(var(--sidebar-width) - 1px);
     height: calc(100vh - var(--top-filter-height));
 }
-.w-body-1\/2 {
-    width: var(--body-half-width);
-}
-.body-1-lang {
-    width: var(--body-half-width);
-    top: var(--top-filter-height);
-    height: calc(100vh - var(--top-filter-height) - 10px);
-    overflow: auto;
-}
-.body-1 {
+.body {
     position: fixed;
     left: var(--sidebar-width);
-    width: var(--body-half-width);
+    width: calc(100% - var(--sidebar-width));
     height: 100vh;
     overflow: auto;
 }
-.body-2 {
+.body-content {
     position: fixed;
-    left: calc(var(--sidebar-width) + var(--body-half-width) + 1px);
-    width: var(--body-half-width);
-    height: 100vh;
+    top: var(--top-bar-height);
+    height: calc(100vh - var(--top-bar-height));
+    width: calc(100% - var(--sidebar-width));
     overflow: auto;
 }
-.body-full {
-    left: var(--sidebar-width) + 1px;
+.body-nav-content {
+    position: fixed;
+    top: var(--top-filter-height);
+    height: calc(100vh - var(--top-filter-height));
+    width: calc(100% - var(--sidebar-width));
+    overflow-x: auto;
+}
+.w-body-full {
     width: calc(100% - var(--sidebar-width));
 }
-.body-1-lang:hover .copy {
+.w-body-1\/2 {
+    width: calc(50%);
+}
+.min-h-body {
+    height: calc(100vh - var(--top-bar-height));
+}
+.body-lang:hover .copy {
     display: block;
 }
 .svg-lock {
     background: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20fill%3D%22%23B1B4B5%22%20d%3D%22M376.749%20349.097c-13.531%200-24.5-10.969-24.5-24.5V181.932c0-48.083-39.119-87.203-87.203-87.203c-48.083%200-87.203%2039.119-87.203%2087.203v82.977c0%2013.531-10.969%2024.5-24.5%2024.5s-24.5-10.969-24.5-24.5v-82.977c0-75.103%2061.1-136.203%20136.203-136.203s136.203%2061.1%20136.203%20136.203v142.665c0%2013.531-10.969%2024.5-24.5%2024.5z%22%2F%3E%3Cpath%20fill%3D%22%23FFB636%22%20d%3D%22M414.115%20497.459H115.977c-27.835%200-50.4-22.565-50.4-50.4V274.691c0-27.835%2022.565-50.4%2050.4-50.4h298.138c27.835%200%2050.4%2022.565%2050.4%2050.4v172.367c0%2027.836-22.565%2050.401-50.4%2050.401z%22%2F%3E%3Cpath%20fill%3D%22%23FFD469%22%20d%3D%22M109.311%20456.841h-2.525c-7.953%200-14.4-6.447-14.4-14.4V279.309c0-7.953%206.447-14.4%2014.4-14.4h2.525c7.953%200%2014.4%206.447%2014.4%2014.4v163.132c0%207.953-6.447%2014.4-14.4%2014.4z%22%2F%3E%3C%2Fsvg%3E') no-repeat;
     background-size: cover;
 }
-.preview .hljs {
+.bg-gray-50 .hljs {
     background-color: transparent;
 }
 .loading .app { display: none }
@@ -70,23 +72,25 @@
 </head>
 <body class="loading">
 
-<div class="when-loading">
-    <div class="flex p-4">
-        <svg class="w-8 h-8 text-gray-600" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
-            <g fill="none" fill-rule="evenodd" stroke-width="2">
-                <circle cx="22" cy="22" r="1">
-                    <animate attributeName="r" begin="0s" dur="1.8s" values="1; 20" calcMode="spline" keyTimes="0; 1" keySplines="0.165, 0.84, 0.44, 1" repeatCount="indefinite" />
-                    <animate attributeName="stroke-opacity" begin="0s" dur="1.8s" values="1; 0" calcMode="spline" keyTimes="0; 1" keySplines="0.3, 0.61, 0.355, 1" repeatCount="indefinite" />
-                </circle>
-                <circle cx="22" cy="22" r="1">
-                    <animate attributeName="r" begin="-0.9s" dur="1.8s" values="1; 20" calcMode="spline" keyTimes="0; 1" keySplines="0.165, 0.84, 0.44, 1" repeatCount="indefinite" />
-                    <animate attributeName="stroke-opacity" begin="-0.9s" dur="1.8s" values="1; 0" calcMode="spline" keyTimes="0; 1" keySplines="0.3, 0.61, 0.355, 1" repeatCount="indefinite" />
-                </circle>
-            </g>
-        </svg>
-        <h3 class="text-gray-600 text-xl ml-2">Loading...</h3>
-    </div>
+<template id="loading-template">
+<div class="flex p-4">
+    <svg class="w-8 h-8 text-gray-600" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+        <g fill="none" fill-rule="evenodd" stroke-width="2">
+            <circle cx="22" cy="22" r="1">
+                <animate attributeName="r" begin="0s" dur="1.8s" values="1; 20" calcMode="spline" keyTimes="0; 1" keySplines="0.165, 0.84, 0.44, 1" repeatCount="indefinite" />
+                <animate attributeName="stroke-opacity" begin="0s" dur="1.8s" values="1; 0" calcMode="spline" keyTimes="0; 1" keySplines="0.3, 0.61, 0.355, 1" repeatCount="indefinite" />
+            </circle>
+            <circle cx="22" cy="22" r="1">
+                <animate attributeName="r" begin="-0.9s" dur="1.8s" values="1; 20" calcMode="spline" keyTimes="0; 1" keySplines="0.165, 0.84, 0.44, 1" repeatCount="indefinite" />
+                <animate attributeName="stroke-opacity" begin="-0.9s" dur="1.8s" values="1; 0" calcMode="spline" keyTimes="0; 1" keySplines="0.3, 0.61, 0.355, 1" repeatCount="indefinite" />
+            </circle>
+        </g>
+    </svg>
+    <h3 class="text-gray-600 text-xl ml-2">Loading...</h3>
 </div>
+</template>
+
+<div class="when-loading"></div>
 
 <div v-scope class="app flex">
 
@@ -100,7 +104,7 @@
                    class="sm:text-lg w-full" style="margin:9px 0 0 0px">
         </div>
     </div>
-    <div class="sidebar-nav fixed overflow-y-auto" style="margin:10px 0 0 0">
+    <div class="sidebar-nav fixed overflow-y-auto">
         <nav class="flex-1 space-y-1 bg-white" aria-label="Sidebar">
             <div v-for="nav in store.filteredSideNav" class="space-y-1">
                 <button v-if="nav.tag" type="button" @click.prevent="store.toggle(nav.tag)"
@@ -123,255 +127,255 @@
     </div>
 </div>
 
-<div v-if="store.op">
-    <div class="body-1">
-        <div class="fixed w-body-1/2 border-b border-gray-20 bg-white">
-            <nav class="-mb-px flex" aria-label="Tabs">
+<div class="body">
+    <div v-if="store.op">
+        <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
+            <nav class="-mb-px flex max-w-screen-md" aria-label="Tabs">
                 <a v-for="(tab,name) in store.opTabs" :href="store.createHref({tab})" @click.prevent="store.select({tab})" :title="name"
                    :class="[tab == store.activeTab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300','w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm overflow-hidden']">
                     {{name}}
                 </a>
             </nav>
         </div>
-        <div class="mt-16">
-            <div v-if="store.activeTab === ''" class="p-4">
-                
-                <form>
-                    <div class="shadow overflow-hidden sm:rounded-md bg-white">
-                        <div class="relative px-4 py-5 bg-white sm:p-6">
-                            <div v-for="group in resolveFormLayout(store.op)">
-                                <div v-for="input in group">
-                                    <input v-if="input.type=='hidden'" type="hidden" v-bind="input" />
-                                    <div v-else-if="input.type=='checkbox'">
-                                        <input type="checkbox" v-bind="input" />
-                                        <label v-if="input.label!==''" :for="input.id" class="block text-sm font-medium text-gray-700"
-                                               v-html="input.label || humanify(input.id)"></label>
-                                    </div>
-                                    <div v-else>
-                                        <label v-if="input.label!==''" :for="input.id" class="block text-sm font-medium text-gray-700"
-                                               v-html="input.label || humanify(input.id)"></label>
-                                        <select v-if="input.type=='select'" v-bind="input">
-                                            <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
-                                        </select>
-                                        <textarea v-else-if="input.type=='textarea'" v-bind="input"></textarea>
-                                        <input v-else :type="input.type||'text'" v-bind="input" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
-                            <div class="flex justify-end">
-                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                
+        <div class="body-content">
+            <div v-if="store.activeTab === ''">
+
+                <nav class="flex space-x-4 pl-2 mt-2.5 pb-1.5 border-b" aria-label="Tabs">
+                    <a v-for="formTab in ['form','json']" @click.prevent="store.formTab=formTab"
+                       :class="[store.formTab==formTab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
+                        {{formTab.toUpperCase()}}
+                    </a>
+                </nav>
+
+                <div v-if="store.formTab=='form'" class="p-4 max-w-screen-md" 
+                     v-scope="AutoForm({ 
+                        title:() => request.description || humanify(request.name), 
+                        layout: () => resolveFormLayout(store.op), 
+                        api: () => store.opName,
+                        error: () => store.apiResult && store.apiResult.api.error,  
+                        onsubmit:onAjaxForm 
+                    })"></div>
+                <div v-if="store.formTab=='json'">
+                    { JSON }
+                </div>
+
+                <div v-if="store.apiResultValid" v-scope="ApiResponse({ result: () => store.apiResult })"></div>
+
             </div>
-            <div v-else-if="store.activeTab === 'details'" class="px-4">
-                <div class="flex">
-                    <div class="flex-grow">
-                        <h2 class="font-medium mb-3">
+            <div v-else-if="store.activeTab === 'details'" class="flex min-h-body">
+                <div class="flex-1 mt-2.5 px-4">
+                    <div class="flex">
+                        <div class="flex-grow">
+                            <h2 class="font-medium mb-3">
                             <span v-if="store.op.method" title="HTTP Method" class="mr-1 inline-flex items-center text-md px-2.5 py-0.5 bg-gray-100 text-gray-600">
                               {{store.op.method}}
                             </span>
-                            <a :href="store.createHref({ preview: `types.${store.opName}` })" @click.prevent="store.select({ preview: `types.${store.opName}` })"
-                               class="text-xl text-blue-800">
-                                {{store.opName}}
-                            </a>
-                        </h2>
-                        
-                        <div class="mb-3 pl-4">
-                            <div v-for="route in store.op.routes" class="text-sm text-gray-900">
-                                <span v-for="verb in (route.verbs||'').split(',').filter(verb => verb && verb != store.op.method)" class="font-medium mr-1">{{verb}}</span>
-                                {{route.path}}
+                                <a :href="store.createHref({ detailSrc: store.opName })" @click.prevent="store.select({ detailSrc: store.opName })"
+                                   class="text-xl text-blue-800">
+                                    {{store.opName}}
+                                </a>
+                            </h2>
+
+                            <div class="mb-3 pl-4">
+                                <div v-for="route in store.op.routes" class="text-sm text-gray-900">
+                                    <span v-for="verb in (route.verbs||'').split(',').filter(verb => verb && verb != store.op.method)" class="font-medium mr-1">{{verb}}</span>
+                                    {{route.path}}
+                                </div>
+                                <div v-if="predefinedRoute(request.name)" class="text-sm text-gray-900">{{predefinedRoute(request.name)}}</div>
                             </div>
-                            <div v-if="predefinedRoute(request.name)" class="text-sm text-gray-900">{{predefinedRoute(request.name)}}</div>
-                        </div>
-                        
-                        <div v-if="store.op.tags.length > 0" class="mb-3">
+
+                            <div v-if="store.op.tags.length > 0" class="mb-3">
                             <span v-for="tag in store.op.tags" title="tag" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               {{tag}}
                             </span>
+                            </div>
                         </div>
-                    </div>
-                    <div v-if="store.op.requiresAuth">
-                        <div class="flex mb-3">
-                            <span class="flex-grow text-gray-500 mr-2">Authentication Required</span>
-                            <span class="svg-lock w-5 h-5"></span>
-                        </div>
-                        <div v-if="store.op.requiredRoles" class="mb-3 flex justify-end">
+                        <div v-if="store.op.requiresAuth">
+                            <div class="flex mb-3">
+                                <span class="flex-grow text-gray-500 mr-2">Authentication Required</span>
+                                <span class="svg-lock w-5 h-5"></span>
+                            </div>
+                            <div v-if="store.op.requiredRoles" class="mb-3 flex justify-end">
                             <span v-for="role in store.op.requiredRoles" title="required role" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               {{role}}
                             </span>
-                        </div>
-                        <div v-if="store.op.requiredPermissions" class="mb-3 flex justify-end">
+                            </div>
+                            <div v-if="store.op.requiredPermissions" class="mb-3 flex justify-end">
                             <span v-for="perm in store.op.requiredPermissions" title="required permission" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                               {{perm}}
                             </span>
-                        </div>
-                        <div v-if="store.op.requiresAnyRole.length" class="mb-3 flex justify-end">
-                            <span class="text-gray-400 mr-2">any role</span>
-                            <span v-for="role in store.op.requiresAnyRole" title="role" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            </div>
+                            <div v-if="store.op.requiresAnyRole.length" class="mb-3 flex justify-end">
+                                <span class="text-gray-400 mr-2">any role</span>
+                                <span v-for="role in store.op.requiresAnyRole" title="role" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               {{role}}
                             </span>
-                        </div>
-                        <div v-if="store.op.requiresAnyPermission.length" class="mb-3 flex justify-end">
-                            <span class="text-gray-400 mr-2">any permission</span>
-                            <span v-for="perm in store.op.requiresAnyPermission" title="permission" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            </div>
+                            <div v-if="store.op.requiresAnyPermission.length" class="mb-3 flex justify-end">
+                                <span class="text-gray-400 mr-2">any permission</span>
+                                <span v-for="perm in store.op.requiresAnyPermission" title="permission" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                               {{perm}}
                             </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <p v-if="request.description" class="mb-3 text-gray-700 bg-gray-50 p-2 px-4">{{request.description}}</p>
-                
-                <div>
-                    <div class="flex justify-between w-full">
-                        <div>
-                            <div v-if="request.inherits" class="mb-3">
-                                <span class="text-gray-500">inherits</span>
-                                <a :href="store.createHref({ preview: `types.${inheritedTypes(request.inherits)}` })" @click.prevent="store.select({ preview: `types.${inheritedTypes(request.inherits)}` })"
-                                   class="text-blue-800">
-                                    {{typeName(request.inherits)}}
-                                </a>
-                            </div>
-                            <div v-if="request.implements.length" class="mb-3">
-                                <span class="text-gray-500">implements</span>
-                                <span class="text-gray-900">
+                    <p v-if="request.description" class="mb-3 text-gray-700 bg-gray-50 p-2 px-4">{{request.description}}</p>
+
+                    <div>
+                        <div class="flex justify-between w-full">
+                            <div>
+                                <div v-if="request.inherits" class="mb-3">
+                                    <span class="text-gray-500">inherits</span>
+                                    <a :href="store.createHref({ detailSrc: inheritedTypes(request.inherits) })" @click.prevent="store.select({ detailSrc: inheritedTypes(request.inherits) })"
+                                       class="text-blue-800">
+                                        {{typeName(request.inherits)}}
+                                    </a>
+                                </div>
+                                <div v-if="request.implements.length" class="mb-3">
+                                    <span class="text-gray-500">implements</span>
+                                    <span class="text-gray-900">
                                     {{request.implements.map(iface => typeName(iface)).join(', ')}}
                                 </span>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <div v-if="store.op.returnType || store.op.returnsVoid">
-                                <span class="text-gray-500">returns</span>
-                                <a v-if="store.op.returnType" :href="store.createHref({ preview: `types.${store.op.returnType.name}` })" @click.prevent="store.select({ preview: `types.${store.op.returnType.name}` })"
-                                   class="text-blue-900">
-                                    {{typeName(store.op.returnType)}}
-                                </a>
-                                <span v-else class="text-blue-900">void</span>
+                            <div>
+                                <div v-if="store.op.returnType || store.op.returnsVoid">
+                                    <span class="text-gray-500">returns</span>
+                                    <a v-if="store.op.returnType" :href="store.createHref({ detailSrc: store.op.returnType.name })" @click.prevent="store.select({ detailSrc: store.op.returnType.name })"
+                                       class="text-blue-900">
+                                        {{typeName(store.op.returnType)}}
+                                    </a>
+                                    <span v-else class="text-blue-900">void</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div>
-                    <div v-for="group in opReferencedTypes(store.op)">
-                        <div class="flex flex-col mb-3">
-                            <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
-                            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
-                                        <table v-if="group[0].type.isEnum" class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Enum Name
-                                                </th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr v-for="value in group[0].type.enumNames">
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{value}}</td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                        <table v-else class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Name
-                                                </th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Type
-                                                </th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Required
-                                                </th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Description
-                                                </th>
-                                            </tr>
-                                            </thead>
-                                            <tbody v-for="(entry, index) in group">
-                                            <tr v-if="index > 0" :class="'bg-gray-50 border-b text-gray-600'">
-                                                <td colspan="4" class="text-center py-2">{{entry.typeName}}</td>
-                                            </tr>
-                                            <tr v-for="(prop,index) in entry.type.properties" :class="index %2 == 0 ? 'bg-white' : 'bg-gray-50;">
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {{prop.name}}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ typeName2(prop.type, prop.genericArgs) }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{prop.isRequired ? 'Yes' : 'No'}}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{prop.description}}
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
+
+                    <div>
+                        <div v-for="group in opReferencedTypes(store.op)">
+                            <div class="flex flex-col mb-3">
+                                <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
+                                <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                                    <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                        <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
+                                            <table v-if="group[0].type.isEnum" class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Enum Name
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr v-for="value in group[0].type.enumNames">
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{value}}</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                            <table v-else class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Name
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Type
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Required
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Description
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody v-for="(entry, index) in group">
+                                                <tr v-if="index > 0" :class="'bg-gray-50 border-b text-gray-600'">
+                                                    <td colspan="4" class="text-center py-2">{{entry.typeName}}</td>
+                                                </tr>
+                                                <tr v-for="(prop,index) in entry.type.properties" :class="index %2 == 0 ? 'bg-white' : 'bg-gray-50'">
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        {{prop.name}}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {{ typeName2(prop.type, prop.genericArgs) }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {{prop.isRequired ? 'Yes' : 'No'}}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {{prop.description}}
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
-                
+                <div v-if="store.detailSrc" class="flex-1 bg-gray-50 overflow-y-auto">
+                    <div v-if="store.detailSrcValid">
+                        <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+                            <button type="button" @click="store.setDetailSrc()" 
+                                    class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"><span class="sr-only">Close</span>
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        <pre class="pl-4 py-2"><code lang="csharp" v-highlightjs="store.detailSrcResult.result"></code></pre>
+                    </div>
+                    <div v-else v-scope="Loading()"></div>
+                </div>
             </div>
             <div v-else-if="store.activeTab === 'code'">
-                <nav class="flex space-x-4 pl-2" aria-label="Tabs">
+                <nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b" aria-label="Tabs">
                     <a v-for="(name,lang) in langs" :href="store.createHref({ lang })" @click.prevent="store.select({lang})"
                         :class="[lang == store.useLang ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
                         {{name}}
                     </a>
                 </nav>
-                <div class="body-1-lang fixed pl-2 pb-2 border-t" style="margin-top:8.5px">
-                    <div v-if="store.activeLangSrc" class="fixed w-body-1/2 mt-2 flex justify-end pr-6" @click="store.copy(store.activeLangSrc)">
-                        <div class="copy hidden cursor-pointer p-1 rounded-md border block border-gray-200 hover:bg-gray-50">
+                <div class="body-nav-content body-lang p-2">
+                    <div v-if="store.activeLangSrc" class="fixed right-0 mr-4" @click="store.copy(store.activeLangSrc)">
+                        <div class="copy hidden cursor-pointer p-1 rounded-md border block border-gray-200 bg-white hover:bg-gray-50">
                             <svg v-if="store.copied" class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500" viewBox="0 0 24 24"><g fill="none"><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1M8 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M8 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0h2a2 2 0 0 1 2 2v3m2 4H10m0 0l3-3m-3 3l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
                         </div>
                     </div>
-                    <pre v-if="store.activeLangSrc"><code :lang="store.useLang" v-highlightjs="store.activeLangSrc"></code></pre>
+                    <pre v-if="store.activeLangSrc" class=""><code :lang="store.activeLang" v-highlightjs="store.activeLangSrc"></code></pre>
                 </div>
             </div>
         </div>
     </div>
-    <div class="preview body-2 bg-gray-50">
-        <pre v-if="store.previewSrc" class="p-4"><code :lang="store.previewResult.lang" v-highlightjs="store.previewSrc"></code></pre>
-        <pre v-else-if="store.json" class="w-body-1/2">{{ store.json }}</pre>
+    <div class="preview p-4 hidden">
+        <pre v-else-if="store.json">{{ store.json }}</pre>
     </div>
-</div>
-<div v-else class="preview body-full">
-    <pre v-if="store.json" class="w-body-1/2">{{ store.json }}</pre>
 </div>
     
 </div>
 
 <script>
-    let exports = { __esModule:true }, module = { exports:exports }
-    function require(name) { return exports[name] || window[name] }
+let exports = { __esModule:true }, module = { exports:exports }
+function require(name) { return exports[name] || window[name] }
 </script>
 <script src="/js/servicestack-client.js"></script>
 <script src="/types/js"></script>
 <script>
-    Object.assign(window, exports)
-    const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
-    const $$ = (sel, el) => typeof sel === "string"
-        ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
-        : Array.isArray(sel) ? sel : [sel]
-    function on(sel, handlers) { $$(sel).forEach(e => {
-        Object.keys(handlers).forEach(evt => {
-            let fn = handlers[evt];
-            if (typeof evt === 'string' && typeof fn === 'function')
-                e.addEventListener(evt, fn.bind(e));
-        })
-    }) }
+Object.assign(window, exports)
+const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
+const $$ = (sel, el) => typeof sel === "string"
+    ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
+    : Array.isArray(sel) ? sel : [sel]
+function on(sel, handlers) { $$(sel).forEach(e => {
+    Object.keys(handlers).forEach(evt => {
+        let fn = handlers[evt];
+        if (typeof evt === 'string' && typeof fn === 'function')
+            e.addEventListener(evt, fn.bind(e));
+    })
+}) }
 </script>
 
 <script src="/js/petite-vue.js"></script>
@@ -382,6 +386,19 @@ let op = leftPart(location.href.substring(document.baseURI.length), '?')
 APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
+
+function createClient(fn) {
+    return new JsonServiceClient().apply(c => {
+        let apiFmt = APP.httpHandlers['ApiHandlers.Json']
+        if (apiFmt)
+            c.basePath = apiFmt.replace('/{Request}', '')
+        if (fn) fn(c)
+    })
+}
+let client = createClient()
+
+function Loading() { return { $template: '#loading-template' } }
+$1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true)) 
 
 let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack'))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
@@ -407,6 +424,7 @@ let other = {
 if (other.operations.length > 0) sideNav.push(other)
 
 let CACHE = {}
+let OPS_CACHE = {}
 let OpsMap = {}
 let TypesMap = {}
 APP.api.operations.forEach(op => {
@@ -426,6 +444,27 @@ let cleanSrc = src => src.startsWith('/*')
                 ? src.substring(src.indexOf('\n', src.lastIndexOf("'''", src.indexOf('Imports'))) + 1).trim()
                 : src;
 
+function formValues(form) {
+    let obj = {}
+    Array.from(form.elements).forEach(el => {
+        if (!el.id || el.value == null || el.value === '') return
+        let dataType = el.getAttribute('data-type')
+        let dataArgs = (el.getAttribute('data-args') || '').split(','), dataArg = dataArgs[0]
+        let value = el.type === 'checkbox' 
+            ? el.checked 
+            : el.value
+        if (isNumberType(dataType) || (dataType === 'Nullable`1' && isNumberType(dataArg))) {
+            value = Number(value)
+        } else if (dataType === 'List`1') {
+            value = value.split(',').map(x => isNumberType(dataArg)
+                ? Number(x)
+                : x)
+        }
+        obj[el.id] = value
+    })
+    return obj
+}
+
 let store = PetiteVue.reactive({
     activeOp: '',
     activeTab: '',
@@ -433,18 +472,23 @@ let store = PetiteVue.reactive({
     langResult: null,
     preview: '',
     previewResult: null,
+    apiResult: null,
     copied: false,
     filter: '',
     sideNav,
+    formTab: 'form',
+    detailSrc: '',
+    detailSrcResult: null,
     
     get useLang() { return this.activeLang || 'csharp' },
 
-    stateArgs({ op, tab, lang, preview }) {
+    stateArgs({ op, tab, lang, preview, detailSrc }) {
         let args = {
             op: op || this.activeOp,
             tab: tab != null ? tab : this.activeTab,
             lang: lang != null ? lang : this.activeLang,
-            preview: preview || this.preview
+            preview: preview || this.preview,
+            detailSrc,
         }
         let nonEmptyArgs = omit(args, Object.keys(args).filter(key => !args[key]))
         return nonEmptyArgs
@@ -478,6 +522,7 @@ let store = PetiteVue.reactive({
         if (args.tab != null) this.activeTab = args.tab
         if (args.lang != null) this.activeLang = args.lang
         if (args.preview != null) this.preview = args.preview
+        this.setDetailSrc(args.detailSrc)
         this.loadLang()
         this.loadPreview()
     },
@@ -499,10 +544,12 @@ let store = PetiteVue.reactive({
         }
     },
     
+    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&AddServiceStackTypes=true` },
+    
     get previewCache() {
         if (this.preview.startsWith('types.')) {
             let types = this.preview.substring('types.'.length)
-            return { preview: this.preview, url: `/types/csharp?IncludeTypes=${types}&AddServiceStackTypes=true`, lang:'csharp' }
+            return { preview: this.preview, url: this.getTypeUrl(types), lang:'csharp' }
         }
         return null
     },
@@ -512,11 +559,12 @@ let store = PetiteVue.reactive({
             let cache = this.previewCache
             if (!cache) return
             if (CACHE[cache.url]) {
-                this.previewResult = { ...cache, result: CACHE[cache.url] }
+                this.previewResult = { type:'src', ...cache, result: CACHE[cache.url] }
             } else {
                 this.cachedFetch(cache.url)
                     .then(src => {
-                        this.previewResult = { 
+                        this.previewResult = {
+                            type:'src',
                             ...cache,
                             result: CACHE[cache.url] = cache.lang ? cleanSrc(src) : src 
                         }
@@ -525,9 +573,10 @@ let store = PetiteVue.reactive({
         }
     },
     
-    get previewSrc() { 
-        if (!this.previewResult) return ''
-        return this.preview === this.previewResult.preview && this.previewResult.lang ? this.previewResult.result : ''
+    get previewSrc() {
+        let r = this.previewResult
+        if (!r) return ''
+        return this.preview === r.preview && r.type === 'src' && r.lang ? r.result : ''
     },
     
     get activeLangSrc() {
@@ -535,6 +584,21 @@ let store = PetiteVue.reactive({
         let ret = cache && this.activeOp === cache.op && this.useLang === cache.lang ? this.langResult.result : null
         return ret
     },
+    
+    setDetailSrc(types) {
+        this.detailSrc = types
+        if (!this.detailSrc) return
+        let cache = { url: this.getTypeUrl(types) }
+        if (CACHE[cache.url]) {
+            this.detailSrcResult = { ...cache, result: CACHE[cache.url] }
+        } else {
+            this.cachedFetch(cache.url).then(src => {
+                this.detailSrcResult = { ...cache, result: CACHE[cache.url] = cleanSrc(src) }
+            })
+        }
+    },
+    
+    get detailSrcValid() { return this.detailSrcResult && this.detailSrcResult.url === this.getTypeUrl(this.detailSrc) },
     
     select(args) {
         this.init(args)
@@ -565,6 +629,14 @@ let store = PetiteVue.reactive({
     langCache() {
         let op = this.activeOp, lang = this.useLang
         return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
+    },
+    
+    setOpResponse(op, r) {
+        this.apiResult = OPS_CACHE[op] = r
+    },
+    
+    get apiResultValid() {
+        return this.activeTab === '' && this.opName && this.apiResult && this.apiResult.opName === store.opName
     },
 
     cachedFetch(url) {
@@ -598,18 +670,18 @@ let store = PetiteVue.reactive({
         document.execCommand("copy")
         document.body.removeChild($el)
         setTimeout(() => this.copied = false, 3000)
-    }
+    },
 })
 
 if (op) store.init({ op })
 if (location.search) {
-    let { tab, lang, preview } = queryString(location.search)
-    store.init({ tab, lang, preview })
+    let { tab, lang, preview, detailSrc } = queryString(location.search)
+    store.init({ tab, lang, preview, detailSrc })
 }
 
 window.addEventListener('popstate', (event) => {
-    let { op, tab, lang, preview } = event.state
-    store.init({ op, tab, lang, preview })
+    let { op, tab, lang, preview, detailSrc } = event.state
+    store.init({ op, tab, lang, preview, detailSrc })
 });
 
 function typeProperties(type) {
@@ -618,7 +690,9 @@ function typeProperties(type) {
         if (type.properties) props.push(...type.properties)
         type = type.inherits ? TypesMap[type.inherits.name] : null
     }
-    return props
+    return props.map(prop => prop.type.endsWith('[]')
+        ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
+        : prop)   
 }
 function addReferencedTypes(allTypesMap, type) {
     if (!type) return
@@ -638,9 +712,7 @@ function addReferencedTypes(allTypesMap, type) {
     })
     return allTypesMap
 }
-let TypeAliases = {
-    String: 'string',
-    Boolean: 'bool',
+let NumTypesMap = {
     Byte: 'byte',
     Int16: 'short',
     Int32: 'int',
@@ -652,19 +724,29 @@ let TypeAliases = {
     Double: 'double',
     Decimal: 'decimal',
 }
+let NumTypes = [ ...Object.keys(NumTypesMap), ...Object.values(NumTypesMap) ]
+let TypeAliases = {
+    String: 'string',
+    Boolean: 'bool',
+    ...NumTypesMap,
+}
+function isNumberType(type) {
+    return type && NumTypes.indexOf(type) >= 0
+}
 function typeAlias(typeName) {
     return TypeAliases[typeName] ?? typeName
 }
+function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
 function typeName2(name, genericArgs) {
     if (!name) return ''
     if (!genericArgs)
         genericArgs = []
-    if (genericArgs.length === 0)
-        return typeAlias(name)
     if (name === 'Nullable`1')
         return typeAlias(genericArgs[0]) + '?'
     if (name.endsWith('[]'))
-        return typeAlias(name.substring(0,name.length-2)) + '[]'
+        return `List<${typeAlias(name.substring(0,name.length-2))}>`
+    if (genericArgs.length === 0)
+        return typeAlias(name)
     return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
 }
 function typeName(metaType) { return typeName2(metaType.name, metaType.genericArgs) }
@@ -706,12 +788,11 @@ let InputTypes = {
     ...'string,Guid,Uri'.split(',').reduce(useType('text'), {}),
 }
 function inputProp(prop) {
-    let normalizedType = typeName2(prop.type, prop.genericArgs)
-    if (normalizedType.endsWith('?'))
-        normalizedType = normalizedType.substring(0, normalizedType.length - 1)
-    let idLower = prop.name.toLowerCase()
-    let input = { id: prop.name, type:InputTypes[normalizedType] || 'text' }
-    let type = TypesMap[prop.type]
+    let id = toCamelCase(prop.name), idLower = id.toLowerCase()
+    let propType = unwrap(typeName2(prop.type, prop.genericArgs))
+    let input = { id, type:inputType(propType), 'data-type': prop.type }
+    if (prop.genericArgs) input['data-args'] = prop.genericArgs.join(',')
+    let type = TypesMap[propType]
     if (type && type.isEnum) {
         input.type = 'select'
         if (type.enumValues) {
@@ -729,42 +810,186 @@ function inputProp(prop) {
     } else if (idLower.endsWith('url')) {
         input.type = 'url'
     }
+    if (prop.input)
+        Object.assign(input, prop.input)
     return input
 }
-function kvpValues(input) {
-    return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x })) 
-}
-function supportsType(typeName) {
-    if (!typeName) return false
-    typeName = typeAlias(typeName)
-    if (typeName.endsWith('?'))
-        typeName = typeName.substring(0,typeName.length-1)
+function inputType(typeName) {
+    if (!typeName) return null
+    typeName = unwrap(typeAlias(typeName))
     return InputTypes[typeName]
 }
 function supportsProp(prop) {
     let propType = typeName2(prop.type, prop.genericArgs)
-    if (prop.isValueType || prop.isEnum || supportsType(propType)) 
+    if (prop.isValueType || prop.isEnum || inputType(propType)) 
         return true
-    if (propType.endsWith('[]'))
-        return supportsType(propType.substring(0,propType.length-2))
-    if (prop.type === 'List`1')
-        return supportsType(prop.genericArgs[0])
-    console.log('!supportsProp', prop, 'propType',propType)
+    if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
+        return true
+    console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0]))
     return false
 }
 function resolveFormLayout(op) {
-    if (op.formLayout) return op.formLayout
     let allProps = typeProperties(op.request).filter(supportsProp)
-    let formLayout = [
-        allProps.map(inputProp)
-    ]
+    if (op.formLayout) {
+        let allPropsMap = allProps.reduce((acc,x) => { acc[x.name] = x; return acc }, {})
+        let ret = op.formLayout.map(group => group.map(input => ({ ...inputProp(allPropsMap[input.id]), ...input }) ))
+        return ret
+    }
+    let formLayout = []
+    let inputProps = allProps.map(inputProp)
+    let fullWidthTypes = ['textarea','divider']
+    let fullWidth = input => input && (fullWidthTypes.indexOf(input.type) >= 0 || input['data-type'] === 'List`1')
+    let pagingStart = inputProps.findIndex(x => x.id.toLowerCase() === 'skip')
+    if (pagingStart >= 0) inputProps.splice(pagingStart, 0, {type:'divider'})
+    while (inputProps.length > 0) {
+        let left = inputProps.shift();
+        let right = inputProps.length > 0 ? inputProps.shift() : null;
+        if (fullWidth(left) || fullWidth(right)) {
+            formLayout.push([left])
+            if (right) formLayout.push([right])
+        } else {
+            formLayout.push(right ? [left,right] : [left])
+        }
+    }
     return formLayout
 }
-function humanify(id) {
-    return humanize(toPascalCase(id))
+function onAjaxForm(e) {
+    let form = e.target
+    let op = form.getAttribute('data-api')
+    if (!op) {
+        console.log('!op', form)
+        return
+    }
+    let obj = formValues(e.target)
+    apiSend(op, obj).then(r => {
+        store.setOpResponse(op, r)
+    })
 }
+function createDto(name, obj) {
+    let dtoCtor = window[name]
+    if (!dtoCtor) {
+        console.log(`Couldn't find Request DTO for ${name}`)
+        let AnonResponse = /** @class */ (function () { return function (init) { Object.assign(this, init) } }())
+        dtoCtor = /** @class */ (function () {
+            function AnonRequest(init) { Object.assign(this, init) }
+            AnonRequest.prototype.createResponse = function () { return new AnonResponse() }
+            AnonRequest.prototype.getTypeName = function () { return name }
+            AnonRequest.prototype.getMethod = function () { return 'POST' }
+            return AnonRequest
+        }())
+    }
+    return new dtoCtor(obj)
+}
+function apiSend(opName, obj) {
+    let requestDto = createDto(opName, obj)
+    let httpReq = null, httpRes = null
+    let newClient = createClient(c => {
+        c.requestFilter = req => httpReq = req
+        c.responseFilter = res => httpRes = res
+    })
+    let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse() 
+    let task = returnsVoid
+        ? newClient.apiVoid(requestDto)
+        : newClient.api(requestDto)
+    return task.then(api => ({ api, opName, requestDto, httpReq, httpRes }))
+}
+</script>
 
+<script>
+function AutoForm({ api, title, layout, error, onsubmit }) {
+    return {
+        $template: '#form-template',
+        get api() { return api() },
+        get title() { return title() },
+        get error() { return error() },
+        get gridClass() { return `grid grid-cols-6 gap-6` },
+        get gridInputs() {
+          let to = []
+          layout().forEach(group => {
+              group.forEach(input => {
+                  to.push({ ...input, attrs:input, 'class': this.colClass(group.length) })
+              })
+          })
+          return to  
+        },
+        colClass(fields) {
+            if (fields > 0 && fields < 3)
+                return `col-span-6 sm:col-span-${Math.floor(6/fields)}`
+            return `col-span-6`
+        },
+        humanify(id) { return humanize(toPascalCase(id)) },
+        kvpValues(input) {
+            return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x }))
+        },
+        hasError(id) {
+          return false  
+        },
+        inputClass(input) {
+            return ['block w-full sm:text-sm rounded-md', !this.hasError(input.id) 
+                ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300'
+                : 'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500'].join(' ')
+        },
+        onsubmit,
+    }
+}
+</script>
+<template id="form-template">
+<form @submit.prevent="onsubmit" autocomplete="off" :data-api="api">
+    <div class="shadow overflow-hidden sm:rounded-md bg-white">
+        <div class="relative px-4 py-5 bg-white sm:p-6">
+            <fieldset>
+                <legend class="text-lg text-gray-900 text-center mb-4">{{ title }}</legend>
+                <div :class="gridClass">
+                    <div v-for="input in gridInputs" :class="input.class">
+                        <div v-if="input.type=='divider'" class="border-t"></div>
+                        <input v-else-if="input.type=='hidden'" v-bind="input.attrs" type="hidden" />
+                        <div v-else-if="input.type=='checkbox'">
+                            <input v-bind="input.attrs" type="checkbox" />
+                            <label v-if="input.label!==''" :for="input.id" class="block text-sm font-medium text-gray-700"
+                                   v-html="input.label || humanify(input.id)"></label>
+                        </div>
+                        <div v-else>
+                            <label v-if="input.label!==''" :for="input.id" class="block text-sm font-medium text-gray-700"
+                                   v-html="input.label || humanify(input.id)"></label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <select v-if="input.type=='select'" v-bind="input.attrs" :class="inputClass(input)">
+                                    <option v-if="input['data-type']=='Nullable`1'"></option>
+                                    <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
+                                </select>
+                                <textarea v-else-if="input.type=='textarea'" v-bind="input.attrs" :class="inputClass(input)"></textarea>
+                                <input v-else v-bind="input.attrs" :class="inputClass(input)" :type="input.type||'text'" autocomplete="new-password" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+            <div class="flex justify-end">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+            </div>
+        </div>
+    </div>
+</form>
+</template>
+
+<script>
+function ApiResponse({ result }) {
+    return {
+        $template: '#api-response-template',
+        get result() { return result() },
+    }
+}
+</script>
+<template id="api-response-template">
+    This is an API Response
+</template>
+
+<script>
 PetiteVue.createApp({
+    AutoForm,
+    ApiResponse,
+    Loading,
     serviceName: APP.app.serviceName,
     langs: {
         csharp: "C#",
@@ -779,10 +1004,9 @@ PetiteVue.createApp({
     },
     store,
     get request() { return this.store.op && this.store.op.request },
-    humanify,
+    humanify(id) { return humanize(toPascalCase(id)) },
     typeName,
     typeName2,
-    kvpValues,
     resolveFormLayout,
     inheritedTypes(typeRef) {
         if (!typeRef) return ''
@@ -799,28 +1023,28 @@ PetiteVue.createApp({
         addReferencedTypes(allTypesMap, op.request)
         if (op.returnType) {
             // QueryResponse<'T> => QueryResponse<Model>
-            addReferencedTypes(allTypesMap, { ...op.response, ...op.returnType }) 
+            addReferencedTypes(allTypesMap, { ...op.response, ...op.returnType })
         }
         return groupTypes(Object.values(allTypesMap))
     },
     predefinedRoute(opName) {
         let apiFmt = APP.httpHandlers['ApiHandlers.Json']
             || (APP.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
-        return apiFmt ? apiFmt.replace('{Request}', opName) : '' 
+        return apiFmt ? apiFmt.replace('{Request}', opName) : ''
     }
 })
-.directive('highlightjs', ({ effect, get, el}) => {
-    effect(() => {
-        let src = get()
-        if (src) {
-            
-            el.className = '' // remove existing stale class
-            el.innerHTML = enc(src)
-            hljs.highlightElement(el)
-        }
+    .directive('highlightjs', ({ effect, get, el}) => {
+        effect(() => {
+            let src = get()
+            if (src) {
+
+                el.className = '' // remove existing stale class
+                el.innerHTML = enc(src)
+                hljs.highlightElement(el)
+            }
+        })
     })
-})
-.mount()
+    .mount()
 
 PetiteVue.nextTick(() => {
     document.body.classList.remove('loading')
