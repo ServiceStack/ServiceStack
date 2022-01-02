@@ -113,6 +113,13 @@ public static class Input
         return useEntries;
     }
 
+    public static string[] GetEnumValues(Type enumType)
+    {
+        if (!enumType.IsEnum) return null;
+        GetEnumEntries(enumType, out var entries);
+        return entries.Select(x => x.Value).ToArray();
+    }
+
     public static string? GetDescription(MemberInfo mi)
     {
         var apiAttr = mi.FirstAttribute<ApiMemberAttribute>();

@@ -147,9 +147,9 @@ namespace ServiceStack
         /// </summary>
         public List<List<InputInfo>> FormLayout { get; set; } = new()
         {
-            new(){ Input.For<Authenticate>(x => x.provider, x => { x.Type = Input.Types.Hidden; x.Value = "credentials"; }) },
-            new(){ Input.For<Authenticate>(x => x.UserName, x => x.Help = "Email") },
-            new(){ Input.For<Authenticate>(x => x.Password) },
+            new(){ Input.For<Authenticate>(x => x.provider, x => { x.Type = Input.Types.Select; x.Label = ""; }) },
+            new(){ Input.For<Authenticate>(x => x.UserName, x => x.Label = "Email") },
+            new(){ Input.For<Authenticate>(x => x.Password, x => x.Type = Input.Types.Password) },
             new(){ Input.For<Authenticate>(x => x.RememberMe) },
         };
 
@@ -257,6 +257,11 @@ namespace ServiceStack
 
             this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
+
+            FormLayout[0][0].AllowableValues = new List<string>(
+                authProviders.Where(x => x is not IAuthWithRequest).Select(x => x.Provider)) {
+                    "logout"
+                }.ToArray();
         }
 
         /// <summary>

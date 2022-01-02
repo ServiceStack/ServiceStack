@@ -808,6 +808,35 @@ namespace ServiceStack.NativeTypes
                 property.AllowableMax = apiAllowableValues.Max;
             }
 
+            var inputProp = pi.FirstAttribute<InputAttribute>();
+            if (inputProp != null)
+            {
+                property.Input = new InputInfo {
+                    Type = inputProp.Type,
+                    Value = inputProp.Value,
+                    Placeholder = inputProp.Placeholder,
+                    Help = inputProp.Help,
+                    Label = inputProp.Label,
+                    Size = inputProp.Size,
+                    Pattern = inputProp.Pattern,
+                    ReadOnly = inputProp.ReadOnly,
+                    Required = inputProp.Required,
+                    Min = inputProp.Min,
+                    Max = inputProp.Max,
+                    MinLength = inputProp.MinLength ?? property.AllowableMin,
+                    MaxLength = inputProp.MaxLength ?? property.AllowableMax,
+                    AllowableValues = inputProp.AllowableValues,
+                };
+                if (pi.PropertyType.IsEnum && property.Input.AllowableValues == null) 
+                {
+                    property.Input.Type ??= Html.Input.Types.Select;
+                    if (Html.Input.GetEnumEntries(pi.PropertyType, out var entries))
+                        property.Input.AllowableEntries = entries;
+                    else
+                        property.Input.AllowableValues = entries.Select(x => x.Value).ToArray();
+                }
+            }
+
             if (instance != null)
             {
                 var ignoreValue = ignoreValues != null && ignoreValues.TryGetValue(pi.Name, out var oValue)

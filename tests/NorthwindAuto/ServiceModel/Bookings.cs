@@ -4,6 +4,7 @@
 using System;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Html;
 
 namespace MyApp.ServiceModel;
 
@@ -52,7 +53,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
     [Description("Name this Booking is for")]
     public string Name { get; set; }
-    [ApiAllowableValues(typeof(RoomType))]
+    [Input]
     public RoomType RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int RoomNumber { get; set; }
@@ -60,6 +61,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     public DateTime? BookingEndDate { get; set; }
     [ValidateGreaterThan(0)]
     public decimal Cost { get; set; }
+    [Input(Type = Input.Types.Textarea)]
     public string Notes { get; set; }
 }
 
@@ -71,7 +73,7 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 {
     public int Id { get; set; }
     public string Name { get; set; }
-    [ApiAllowableValues(typeof(RoomType))]
+    [Input]
     public RoomType? RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int? RoomNumber { get; set; }
@@ -79,6 +81,7 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public DateTime? BookingEndDate { get; set; }
     [ValidateGreaterThan(0)]
     public decimal? Cost { get; set; }
+    [Input(Type = Input.Types.Textarea)]
     public string Notes { get; set; }
     public bool? Cancelled { get; set; }
 }

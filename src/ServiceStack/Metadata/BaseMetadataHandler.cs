@@ -304,16 +304,20 @@ namespace ServiceStack.Metadata
                 sb.Append($"<td>{(p.IsRequired.GetValueOrDefault() ? "Yes" : "No")}</td>");
 
                 var desc = p.Description;
-                if (!p.AllowableValues.IsEmpty())
+                var allowableValues = p.AllowableValues ?? p.Input?.AllowableValues;
+                if (!allowableValues.IsEmpty())
                 {
                     desc += "<h4>Allowable Values</h4>";
                     desc += "<ul>";
-                    p.AllowableValues.Each(x => desc += $"<li>{x}</li>");
+                    allowableValues.Each(x => desc += $"<li>{x}</li>");
                     desc += "</ul>";
                 }
-                if (p.AllowableMin != null)
+
+                var allowableMin = p.AllowableMin ?? (p.Input?.Min != null ? int.TryParse(p.Input?.Min, out var min) ? min : null : null);
+                if (allowableMin != null)
                 {
-                    desc += $"<h4>Valid Range: {p.AllowableMin} - {p.AllowableMax}</h4>";
+                    var allowableMax = p.AllowableMax ?? (p.Input?.Max != null ? int.TryParse(p.Input?.Max, out var max) ? max : null : null);
+                    desc += $"<h4>Valid Range: {allowableMin} - {allowableMax}</h4>";
                 }
                 sb.Append($"<td>{desc}</td>");
                 

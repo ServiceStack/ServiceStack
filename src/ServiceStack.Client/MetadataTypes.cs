@@ -545,6 +545,8 @@ namespace ServiceStack
         public int? AllowableMax { get; set; }
 
         public List<MetadataAttribute> Attributes { get; set; }
+        
+        public InputInfo Input { get; set; }
     }
 
     [Exclude(Feature.Soap)]
