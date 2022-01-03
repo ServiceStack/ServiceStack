@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>UI</title>
     <base href="">
-    <link rel="stylesheet" href="/css/highlight.css">
+    <link rel="stylesheet" href="../css/highlight.css">
     <link rel="stylesheet" href="assets/ui.css">
 <style>
 ::-webkit-scrollbar{width:8px;height:5px}::-webkit-scrollbar-thumb{background-color:#ccc}
@@ -103,8 +103,8 @@
 let exports = { __esModule:true }, module = { exports:exports }
 function require(name) { return exports[name] || window[name] }
 </script>
-<script src="/js/servicestack-client.js"></script>
-<script src="/types/js"></script>
+<script src="../js/servicestack-client.js"></script>
+<script src="../types/js"></script>
 <script>
 Object.assign(window, exports)
 const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
@@ -120,10 +120,10 @@ function on(sel, handlers) { $$(sel).forEach(e => {
 }) }
 function loadApp(app) { window.APP = app }
 </script>
-<script src="/metadata/app?callback=loadApp"></script>
+<script src="../metadata/app?callback=loadApp"></script>
 
-<script src="/js/petite-vue.js"></script>
-<script src="/js/highlight.js"></script>
+<script src="../js/petite-vue.js"></script>
+<script src="../js/highlight.js"></script>
 <script>
 let op = leftPart(location.href.substring(document.baseURI.length), '?')
 APP.api.operations.forEach(op => {
@@ -454,9 +454,7 @@ function typeName(metaType) { return typeName2(metaType.name, metaType.genericAr
 let Components = []
 </script>
 
-
-<!--files:/ui/components/*.html-->
-
+<!--files:components/*.html-->
 
 <script>
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
