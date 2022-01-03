@@ -164,7 +164,6 @@ let other = {
 if (other.operations.length > 0) sideNav.push(other)
 
 let CACHE = {}
-let OPS_CACHE = {}
 let OpsMap = {}
 let TypesMap = {}
 APP.api.operations.forEach(op => {
@@ -191,33 +190,54 @@ let store = PetiteVue.reactive({
     langResult: null,
     preview: '',
     previewResult: null,
-    apiResult: null,
     copied: false,
     filter: '',
     sideNav,
     formTab: 'form',
     detailSrc: '',
     detailSrcResult: null,
+    response: '',
+    body: '',
     
     get useLang() { return this.activeLang || 'csharp' },
 
-    stateArgs({ op, tab, lang, preview, detailSrc }) {
+    createHref(args) {
+        let state = this.stateArgs(args)
+        return appendQueryString(state.op, omit(state, ['op']))
+    },
+
+    stateArgs({ op, tab, lang, preview, detailSrc, response, body }) {
         let args = {
             op: op || this.activeOp,
             tab: tab != null ? tab : this.activeTab,
             lang: lang != null ? lang : this.activeLang,
             preview: preview || this.preview,
             detailSrc,
+            response,
+            body,
         }
         let nonEmptyArgs = omit(args, Object.keys(args).filter(key => !args[key]))
         return nonEmptyArgs
     },
-    
-    createHref(args) {
-        let state = this.stateArgs(args)
-        return appendQueryString(state.op, omit(state, ['op']))
+
+    init(args) {
+        if (args.op != null) this.activeOp = args.op
+        if (args.tab != null) this.activeTab = args.tab
+        if (args.lang != null) this.activeLang = args.lang
+        if (args.preview != null) this.preview = args.preview
+        if (args.response != null) this.response = args.response
+        if (args.body != null) this.body = args.body
+        this.setDetailSrc(args.detailSrc)
+        this.loadLang()
+        this.loadPreview()
     },
-    
+
+    select(args) {
+        this.init(args)
+        let state = this.stateArgs(args)
+        history.pushState(state, state.op, this.createHref(state))
+    },
+
     get filteredSideNav() {
         let lowerFilter = this.filter.toLowerCase()
         let ret = this.filter
@@ -234,16 +254,6 @@ let store = PetiteVue.reactive({
     toggle(tag) {
         let nav = this.sideNav.find(x => x.tag === tag)
         nav.expanded = !nav.expanded
-    },
-    
-    init(args) {
-        if (args.op != null) this.activeOp = args.op
-        if (args.tab != null) this.activeTab = args.tab
-        if (args.lang != null) this.activeLang = args.lang
-        if (args.preview != null) this.preview = args.preview
-        this.setDetailSrc(args.detailSrc)
-        this.loadLang()
-        this.loadPreview()
     },
     
     loadLang() {
@@ -319,20 +329,14 @@ let store = PetiteVue.reactive({
     
     get detailSrcValid() { return this.detailSrcResult && this.detailSrcResult.url === this.getTypeUrl(this.detailSrc) },
     
-    select(args) {
-        this.init(args)
-        let state = this.stateArgs(args)
-        history.pushState(state, state.op, this.createHref(state))
-    },
-    
     get op() {
         return this.activeOp ? APP.api.operations.find(op => op.request.name === this.activeOp) : null
     },
     get opName() { return this.op && this.op.request.name },
     
     get json() {
-        //return ''
-        return JSON.stringify(this.op || APP, undefined, 4)
+        return ''
+        //return JSON.stringify(this.op || APP, undefined, 4)
     },
     
     get opTabs() {
@@ -348,14 +352,6 @@ let store = PetiteVue.reactive({
     langCache() {
         let op = this.activeOp, lang = this.useLang
         return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
-    },
-    
-    setOpResponse(op, r) {
-        this.apiResult = OPS_CACHE[op] = r
-    },
-    
-    get apiResultValid() {
-        return this.activeTab === '' && this.opName && this.apiResult && this.apiResult.opName === store.opName
     },
 
     cachedFetch(url) {
@@ -394,13 +390,13 @@ let store = PetiteVue.reactive({
 
 if (op) store.init({ op })
 if (location.search) {
-    let { tab, lang, preview, detailSrc } = queryString(location.search)
-    store.init({ tab, lang, preview, detailSrc })
+    let { tab, lang, preview, detailSrc, response, body } = queryString(location.search)
+    store.init({ tab, lang, preview, detailSrc, response, body })
 }
 
 window.addEventListener('popstate', (event) => {
-    let { op, tab, lang, preview, detailSrc } = event.state
-    store.init({ op, tab, lang, preview, detailSrc })
+    let { op, tab, lang, preview, detailSrc, response, body } = event.state
+    store.init({ op, tab, lang, preview, detailSrc, response, body })
 });
 
 function typeProperties(type) {

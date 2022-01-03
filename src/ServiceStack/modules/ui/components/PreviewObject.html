@@ -1,0 +1,91 @@
+<script>
+function PreviewObject({ val }) {
+    let num = m => m
+    let date = toDate
+    let pad = d =>  d < 10 ? '0' + d : d
+    let dmft = (d) => d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate())
+    let str = m => m.substr(0, 6) === '/Date(' ? dmft(date(m)) : m
+
+    return {
+        $template: '#preview-object-template',
+        val,
+        type: typeof val,
+        num,
+        str,
+    }
+}
+function ArrayPreview({ val }) {
+    let show = k => typeof k !== 'string' || k.substr(0, 2) !== '__'
+    let type = typeof val[0]
+    let isScalar = type === 'string' || type === 'number' || type === 'boolean'
+    return {
+        $template: '#array-preview-template',
+        val,
+        type,
+        isScalar,
+        uniqueKeys: isScalar ? [] : uniqueKeys(val).filter(show),
+        keyFmt: t => humanize(toPascalCase(t)),
+    }
+}
+function ObjectPreview({ val }) {
+    let show = k => typeof k !== 'string' || k.substr(0, 2) !== '__'
+    let keyFmt = t => humanize(toPascalCase(t))
+    let keys = Object.keys(val).filter(show) 
+    return {
+        $template: '#object-preview-template',
+        val,
+        type: typeof val,
+        keys,
+        rows: keys.map(k => ({ key:keyFmt(k), val: val[k] })),
+    }
+}
+Components.push({ PreviewObject, ObjectPreview, ArrayPreview })
+
+</script>
+
+<template id="preview-object-template">
+<div v-if="val == null"></div>
+<div v-else-if="type == 'number'" v-html="num(val)"></div>
+<div v-else-if="type == 'string'" v-html="str(val)"></div>
+<div v-else-if="type == 'boolean'" v-html="val ? 'true' : 'false'"></div>
+<div v-else-if="val.length" v-scope="ArrayPreview({ val })"></div>
+<div v-else v-scope="ObjectPreview({ val })"></div>
+</template>
+
+<template id="array-preview-template">
+<span v-if="isScalar" v-html="val"></span>
+<div v-else class="flex flex-col">
+    <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">    
+                <table class="min-w-full divide-y divide-gray-200">
+                    <caption></caption>
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th v-for="k in uniqueKeys" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <b></b>{{keyFmt(k)}}
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(row,index) in val" :class="index % 2 == 0 'bg-white' : 'bg-gray-50'">
+                            <td v-for="k in uniqueKeys" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                v-scope="PreviewObject({ val:row[k] })">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+
+<template id="object-preview-template">
+<table>
+    <tr v-for="row in rows">
+        <th class="font-medium align-top py-2 px-4" v-html="row.key"></th>
+        <td class="align-top py-2 px-4" v-scope="PreviewObject({ val:row.val })"></td>
+    </tr>
+</table>
+</template>

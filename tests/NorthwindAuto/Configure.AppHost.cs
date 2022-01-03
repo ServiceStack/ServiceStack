@@ -40,6 +40,7 @@ namespace MyApp
             
             Plugins.AddIfDebug(new HotReloadFeature {
                 DefaultPattern = "*.html;*.js;*.css",
+                VirtualFiles = VirtualFiles,
             });
         }
     }

@@ -1,14 +1,57 @@
 <script>
+let OPS_CACHE = {}
 function Api({ store }) {
     return {
         $template: `#api-form-template`,
         store,
+        apiResult: null,
+        requestDto: null,
         get request() { return this.store.op.request },
+        get opName() { return this.request && this.request.name },
+        get title() { return this.request && (this.request.description || humanify(this.request.name)) },
         resolveFormLayout,
-        onAjaxForm,
+        onAjaxForm(e) {
+            let form = e.target
+            let op = form.getAttribute('data-api')
+            if (!op) {
+                console.log('!op', form)
+                return
+            }
+            let obj = formValues(e.target)
+            apiSend(op, obj).then(r => {
+                this.setOpResponse(op, r)
+            })
+        },
+        onAjaxFormInput(e) {
+            let form = e.target.tagName === 'FORM' ? e.target : e.target.form
+            if (!(form && form.tagName === 'FORM')) return
+            this.requestDto = createDto(form.getAttribute('data-api'), formValues(form))
+        },
+        onJsonSubmit(e) {
+            let json = $1('textarea',e.target).value
+            let obj = JSON.parse(json)
+            apiSend(this.opName, obj).then(r => {
+                this.setOpResponse(this.opName, r)
+            })
+        },
+
+        setOpResponse(op, r) {
+            this.apiResult = OPS_CACHE[op] = r
+            this.requestDto = this.apiResult && this.apiResult.requestDto
+        },
+
+        get apiResultValid() {
+            return this.apiResult && this.apiResult.opName === this.opName
+        },
+        
+        get apiRequestJson() {
+            return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || ''
+        },
     }
 }
 Components.push({ Api })
+
+function humanify(id) { return humanize(toPascalCase(id)) }
 
 let useType = type => (acc,x) => { acc[x]=type; return acc }
 let InputTypes = {
@@ -43,18 +86,6 @@ function resolveFormLayout(op) {
         }
     }
     return formLayout
-}
-function onAjaxForm(e) {
-    let form = e.target
-    let op = form.getAttribute('data-api')
-    if (!op) {
-        console.log('!op', form)
-        return
-    }
-    let obj = formValues(e.target)
-    apiSend(op, obj).then(r => {
-        store.setOpResponse(op, r)
-    })
 }
 
 function formValues(form) {
@@ -96,16 +127,28 @@ function createDto(name, obj) {
 
 function apiSend(opName, obj) {
     let requestDto = createDto(opName, obj)
-    let httpReq = null, httpRes = null
+    let httpReq = null, httpRes = null, headers = null
     let newClient = createClient(c => {
         c.requestFilter = req => httpReq = req
-        c.responseFilter = res => httpRes = res
+        c.responseFilter = res => {
+            httpRes = res
+            headers = Object.fromEntries(res.headers)
+        }
     })
     let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
     let task = returnsVoid
         ? newClient.apiVoid(requestDto)
         : newClient.api(requestDto)
-    return task.then(api => ({ api, opName, requestDto, httpReq, httpRes }))
+    return task.then(api => ({ 
+        api,
+        json: JSON.stringify(api.response || api.error, undefined, 4),
+        text: JSON.stringify(api.response || api.error),
+        opName,
+        requestDto, 
+        httpReq, 
+        httpRes,
+        headers,
+    }))
 }
 
 function groupTypes(allTypes) {
@@ -179,6 +222,7 @@ function supportsProp(prop) {
     console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0]))
     return false
 }
+
 </script>
 <template id="api-form-template">
 <nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
@@ -190,28 +234,78 @@ function supportsProp(prop) {
 
 <div v-if="store.formTab=='form'" class="p-4 max-w-screen-md"
      v-scope="AutoForm({ 
-        title:() => request.description || humanify(request.name), 
+        title:() => title, 
         layout: () => resolveFormLayout(store.op), 
-        api: () => store.opName,
-        error: () => store.apiResult && store.apiResult.api.error,  
-        onsubmit:onAjaxForm 
+        api: () => opName,
+        error: () => apiResult && apiResult.api.error,  
+        onsubmit:onAjaxForm.bind(store),
+        oninput:onAjaxFormInput.bind(store)
     })"></div>
 <div v-if="store.formTab=='json'">
-    { JSON }
+
+<form @submit.prevent="onJsonSubmit" autocomplete="off" :data-api="opName" class="p-4">
+    <div class="shadow overflow-hidden sm:rounded-md bg-white">
+        <div class="relative px-4 py-5 bg-white sm:p-6">
+            <fieldset>
+                <legend class="text-lg text-gray-900 text-center mb-4">{{ title }}</legend>
+                <div class="flex">
+                    <textarea class="flex-1" :rows="apiRequestJson.split('\n').length" v-html="apiRequestJson"></textarea>
+                </div>
+            </fieldset>
+        </div>
+        <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+            <div class="flex justify-end">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+            </div>
+        </div>
+    </div>
+</form>
+    
 </div>
 
-<div v-if="store.apiResultValid" v-scope="ApiResponse({ result: () => store.apiResult })"></div>
+<div v-if="apiResultValid" v-scope="ApiResponse({ store })"></div>
 </template>
 
 <script>
-function ApiResponse({ result }) {
+function ApiResponse({ store }) {
     return {
         $template: '#api-response-template',
-        get result() { return result() },
+        store,
     }
 }
 Components.push({ ApiResponse })
 </script>
 <template id="api-response-template">
-    This is an API Response
+<div class="mt-2 border-t w-full">
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-4 pl-2" aria-label="Tabs">
+            <a v-for="(tab,name) in {Body:'',Headers:'headers'}" :href="store.createHref({ response:tab })" @click.prevent="store.select({ response:tab })" 
+               :class="[store.response == tab ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-1 px-1 border-b-2 font-medium text-sm']">
+                {{name}}
+            </a>
+        </nav>
+    </div>
+
+    <div v-if="store.response == ''" class="p-2">
+        <span class="relative z-0 inline-flex shadow-sm rounded-md">
+          <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" :href="store.createHref({ body:tab })" @click.prevent="store.select({ body:tab })"
+              :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], store.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+            {{name}}
+          </a>
+        </span>
+
+        <div v-if="store.body == ''" class="pt-2">
+            <pre><code lang="json" v-highlightjs="apiResult.json"></code></pre>
+        </div>
+        <div v-else-if="store.body == 'raw'" class="flex pt-2">
+            <textarea class="min-h-fit flex-1" v-html="apiResult.text"></textarea>
+        </div>
+        <div v-else-if="store.body == 'preview'" class="flex pt-2">
+            <div class="" v-scope="PreviewObject({ val:apiResult.api.response || apiResult.api.error })"></div>
+        </div>
+    </div>
+    <div v-else-if="store.response == 'headers'" class="p-2">
+        <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:Object.keys(apiResult.headers).map(k => ({ Key:k, Value:apiResult.headers[k]})) })"></div>
+    </div>
+</div>
 </template>
