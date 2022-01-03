@@ -17,8 +17,10 @@ namespace ServiceStack;
 /// <summary>
 /// Simple, lightweight & high-performant HTML templating solution 
 /// </summary>
-public class HtmlModulesFeature : IPlugin
+public class HtmlModulesFeature : IPlugin, Model.IHasStringId
 {
+    public string Id => "module:" + string.Join(",", Modules.Select(x => x.BasePath).ToArray());
+    
     /// <summary>
     /// Define literal tokens to be replaced with dynamic fragments, e.g:
     /// &lt;base href=""&gt; = ctx => $"&lt;base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{DirPath}/")}\"&gt;"
@@ -32,10 +34,15 @@ public class HtmlModulesFeature : IPlugin
     /// </summary>
     public Dictionary<string, Func<HtmlModuleContext, string, ReadOnlyMemory<byte>>> Handlers { get; set; } = new()
     {
-        ["file"] = (ctx, path) => ctx.Cache($"file:{path}", key => ctx.VirtualFiles.GetFile(path).ReadAllText().AsMemory().ToUtf8()),
-        ["files"] = (ctx, paths) => ctx.Cache($"files:{paths}", key => {
+        ["file"] = (ctx, path) => ctx.Cache($"file:{path}", _ => 
+            ctx.VirtualFiles.GetFile(path.StartsWith("/") ? path : ctx.Module.DirPath.CombineWith(path)).ReadAllText().AsMemory().ToUtf8()),
+        
+        ["files"] = (ctx, paths) => ctx.Cache($"files:{paths}", _ => {
             var sb = StringBuilderCache.Allocate();
-            foreach (var file in ctx.VirtualFiles.GetAllMatchingFiles(paths))
+            var usePath = paths.StartsWith("/")
+                ? paths
+                : ctx.Module.DirPath.CombineWith(paths);
+            foreach (var file in ctx.VirtualFiles.GetAllMatchingFiles(usePath))
             {
                 sb.AppendLine(file.ReadAllText());
             }
@@ -45,9 +52,7 @@ public class HtmlModulesFeature : IPlugin
     
     public HtmlModule[] Modules { get; }
     public HtmlModulesFeature(params HtmlModule[] modules) => Modules = modules;
-    public HtmlModulesFeature(params string[] moduleDirs) => 
-        Modules = moduleDirs.Select(dir => new HtmlModule(dir)).ToArray();
-    public Action<HtmlModule> Configure { get; set; }
+    public Action<HtmlModule>? Configure { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
     public HotReloadFeature? HotReloadFeature { get; set; } = new()
@@ -140,6 +145,7 @@ public class HtmlModule
 {
     public HtmlModulesFeature? Feature { get; set; }
     public string DirPath { get; set; }
+    public string BasePath { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
     public string IndexFile { get; set; } = "index.html";
@@ -147,14 +153,15 @@ public class HtmlModule
         "/assets"
     };
 
-    public Dictionary<string, Func<HtmlModuleContext, ReadOnlyMemory<byte>>> Tokens { get; set; } = new();
+    public Dictionary<string, Func<HtmlModuleContext, ReadOnlyMemory<byte>>> Tokens { get; set; }
     public Dictionary<string, Func<HtmlModuleContext, string, ReadOnlyMemory<byte>>> Handlers { get; set; } = new();
 
-    public HtmlModule(string dirPath)
+    public HtmlModule(string dirPath, string? basePath=null)
     {
         DirPath = dirPath.TrimEnd('/');
+        BasePath = (basePath ?? DirPath).TrimEnd('/');
         Tokens = new() {
-            ["<base href=\"\">"] = ctx => ($"<base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{DirPath}/")}\">"
+            ["<base href=\"\">"] = ctx => ($"<base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{BasePath}/")}\">"
             + (HostContext.DebugMode ? "\n<script src=\"/js/hot-fileloader.js\"></script>" : "")).AsMemory().ToUtf8(),
         };
     }
@@ -247,14 +254,14 @@ public class HtmlModule
 
         appHost.RawHttpHandlers.Add(req =>
         {
-            if (!req.PathInfo.StartsWith(DirPath))
+            if (!req.PathInfo.StartsWith(BasePath))
                 return null;
             
             foreach (var path in PublicPaths)
             {
-                if (req.PathInfo.StartsWith(DirPath + path))
+                if (req.PathInfo.StartsWith(BasePath + path))
                 {
-                    var file = VirtualFiles.GetFile(req.PathInfo);
+                    var file = VirtualFiles.GetFile(DirPath + req.PathInfo.Substring(BasePath.Length));
                     return file != null
                         ? new StaticFileHandler(file)
                         : new NotFoundHttpHandler();
