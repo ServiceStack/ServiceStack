@@ -153,6 +153,13 @@ namespace ServiceStack
             return appHost;
         }
 
+        public static List<IPlugin> AddIfDebug<T>(this List<IPlugin> plugins, T plugin) where T : class, IPlugin
+        {
+            if (HostContext.DebugMode)
+                plugins.Add(plugin);
+            return plugins;
+        }
+
         public static List<IPlugin> AddIfNotExists<T>(this List<IPlugin> plugins, T plugin) where T : class, IPlugin =>
             plugins.AddIfNotExists(plugin, null);
         public static List<IPlugin> AddIfNotExists<T>(this List<IPlugin> plugins, T plugin, Action<T> configure) where T : class, IPlugin

@@ -21,7 +21,10 @@ namespace MyApp
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
-            SetConfig(new HostConfig { DebugMode = true });
+            SetConfig(new HostConfig
+            {
+                DebugMode = true
+            });
 
             // Register Database Connection, see: https://github.com/ServiceStack/ServiceStack.OrmLite#usage
             container.AddSingleton<IDbConnectionFactory>(c =>
@@ -31,8 +34,13 @@ namespace MyApp
                 MaxLimit = 100,
                 GenerateCrudServices = new GenerateCrudServices {}
             });
-            
+
+            Plugins.RemoveAll(x => x is HtmlModulesFeature { Id: "module:/ui" });
             Plugins.Add(new HtmlModulesFeature(new HtmlModule("/ui")));
+            
+            Plugins.AddIfDebug(new HotReloadFeature {
+                DefaultPattern = "*.html;*.js;*.css",
+            });
         }
     }
 }

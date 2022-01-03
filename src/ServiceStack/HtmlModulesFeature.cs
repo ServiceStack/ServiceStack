@@ -55,20 +55,9 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     public Action<HtmlModule>? Configure { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
-    public HotReloadFeature? HotReloadFeature { get; set; } = new()
-    {
-        DefaultPattern = "*.html;*.js;*.css",
-    };
-
     public void Register(IAppHost appHost)
     {
         VirtualFiles ??= appHost.VirtualFiles;
-        if (HostContext.DebugMode && HotReloadFeature != null)
-        {
-            HotReloadFeature.VirtualFiles ??= VirtualFiles;
-            appHost.LoadPlugin(HotReloadFeature);
-        }
-        
         foreach (var component in Modules)
         {
             component.Feature = this;
@@ -134,11 +123,14 @@ public class HtmlModuleContext
         Module = module;
         Request = request;
     }
-    
-    public ReadOnlyMemory<byte> Cache(string key,
-        Func<string, ReadOnlyMemory<byte>> handler) => !HostContext.DebugMode 
-            ? Module.Cache.GetOrAdd(key, handler) 
-            : handler(key);
+
+    public ReadOnlyMemory<byte> Cache(string key, Func<string, ReadOnlyMemory<byte>> handler)
+    {
+        if (!HostContext.DebugMode)
+            return Module.Cache.GetOrAdd(key, handler);
+        
+        return handler(key);
+    }
 }
 
 public class HtmlModule
