@@ -32,7 +32,7 @@ namespace MyApp
                 GenerateCrudServices = new GenerateCrudServices {}
             });
             
-            Plugins.Add(new HtmlModulesFeature("/ui"));
+            Plugins.Add(new HtmlModulesFeature(new HtmlModule("/ui")));
         }
     }
 }

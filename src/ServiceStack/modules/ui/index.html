@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" style="">
+<head>
+    <meta charset="UTF-8">
+    <title>UI</title>
+    <base href="">
+    <link rel="stylesheet" href="../css/highlight.css">
+    <link rel="stylesheet" href="assets/ui.css">
+<style>
+::-webkit-scrollbar{width:8px;height:5px}::-webkit-scrollbar-thumb{background-color:#ccc}
+:root {
+    --sidebar-width:240px;
+    --top-bar-height:54px;
+    --top-filter-height:99px;
+}
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+}
+.sidebar-filter {
+    width: calc(var(--sidebar-width) - 1px);
+}
+.sidebar-nav {
+    top: calc(var(--top-filter-height) + 2px);
+    width: calc(var(--sidebar-width) - 1px);
+    height: calc(100vh - var(--top-filter-height));
+}
+.body {
+    position: fixed;
+    left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    height: 100vh;
+    overflow: auto;
+}
+.body-content {
+    position: fixed;
+    top: var(--top-bar-height);
+    height: calc(100vh - var(--top-bar-height));
+    width: calc(100% - var(--sidebar-width));
+    overflow: auto;
+}
+.body-nav-content {
+    position: fixed;
+    top: var(--top-filter-height);
+    height: calc(100vh - var(--top-filter-height));
+    width: calc(100% - var(--sidebar-width));
+    overflow-x: auto;
+}
+.w-body-full {
+    width: calc(100% - var(--sidebar-width));
+}
+.min-h-body {
+    height: calc(100vh - var(--top-bar-height));
+}
+.body-lang:hover .copy {
+    display: block;
+}
+.svg-lock {
+    background: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20fill%3D%22%23B1B4B5%22%20d%3D%22M376.749%20349.097c-13.531%200-24.5-10.969-24.5-24.5V181.932c0-48.083-39.119-87.203-87.203-87.203c-48.083%200-87.203%2039.119-87.203%2087.203v82.977c0%2013.531-10.969%2024.5-24.5%2024.5s-24.5-10.969-24.5-24.5v-82.977c0-75.103%2061.1-136.203%20136.203-136.203s136.203%2061.1%20136.203%20136.203v142.665c0%2013.531-10.969%2024.5-24.5%2024.5z%22%2F%3E%3Cpath%20fill%3D%22%23FFB636%22%20d%3D%22M414.115%20497.459H115.977c-27.835%200-50.4-22.565-50.4-50.4V274.691c0-27.835%2022.565-50.4%2050.4-50.4h298.138c27.835%200%2050.4%2022.565%2050.4%2050.4v172.367c0%2027.836-22.565%2050.401-50.4%2050.401z%22%2F%3E%3Cpath%20fill%3D%22%23FFD469%22%20d%3D%22M109.311%20456.841h-2.525c-7.953%200-14.4-6.447-14.4-14.4V279.309c0-7.953%206.447-14.4%2014.4-14.4h2.525c7.953%200%2014.4%206.447%2014.4%2014.4v163.132c0%207.953-6.447%2014.4-14.4%2014.4z%22%2F%3E%3C%2Fsvg%3E') no-repeat;
+    background-size: cover;
+}
+.bg-gray-50 .hljs {
+    background-color: transparent;
+}
+.loading .app { display: none }
+.when-loading { display: none }
+.loading .when-loading { display: block }
+[lang=json] .hljs-attr { color: rgb(17 24 39) }
+[lang=json] .hljs-string { color: rgb(21 128 61) }
+</style>
+</head>
+<body class="loading">
+
+<div class="when-loading"></div>
+
+<div v-scope class="app flex">
+
+<div v-scope="Sidebar({ store })"></div>
+<div class="body">
+    <div v-if="store.op">
+        <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
+            <nav class="-mb-px flex max-w-screen-md" aria-label="Tabs">
+                <a v-for="(tab,name) in store.opTabs" :href="store.createHref({tab})" @click.prevent="store.select({tab})" :title="name"
+                   :class="[tab == store.activeTab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300','w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm overflow-hidden']">
+                    {{name}}
+                </a>
+            </nav>
+        </div>
+        <div class="body-content">
+            <div v-if="store.activeTab === ''" v-scope="Api({ store })"></div>
+            <div v-else-if="store.activeTab === 'details'" class="flex min-h-body" v-scope="ApiDetails({ store })"></div>
+            <div v-else-if="store.activeTab === 'code'" v-scope="ApiCode({ store })"></div>
+        </div>
+    </div>
+    <div v-else-if="store.json" class="preview p-4">
+        <pre><code lang="json" v-highlightjs="store.json"></code></pre>
+    </div>
+</div>
+    
+</div>
+
+<script>
+let exports = { __esModule:true }, module = { exports:exports }
+function require(name) { return exports[name] || window[name] }
+</script>
+<script src="../js/servicestack-client.js"></script>
+<script src="../types/js"></script>
+<script>
+Object.assign(window, exports)
+const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
+const $$ = (sel, el) => typeof sel === "string"
+    ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
+    : Array.isArray(sel) ? sel : [sel]
+function on(sel, handlers) { $$(sel).forEach(e => {
+    Object.keys(handlers).forEach(evt => {
+        let fn = handlers[evt];
+        if (typeof evt === 'string' && typeof fn === 'function')
+            e.addEventListener(evt, fn.bind(e));
+    })
+}) }
+function loadApp(app) { window.APP = app }
+</script>
+<script src="../metadata/app?callback=loadApp"></script>
+
+<script src="../js/petite-vue.js"></script>
+<script src="../js/highlight.js"></script>
+<script>
+let op = leftPart(location.href.substring(document.baseURI.length), '?')
+APP.api.operations.forEach(op => {
+    if (!op.tags) op.tags = []
+})
+
+function createClient(fn) {
+    return new JsonServiceClient().apply(c => {
+        let apiFmt = APP.httpHandlers['ApiHandlers.Json']
+        if (apiFmt)
+            c.basePath = apiFmt.replace('/{Request}', '')
+        if (fn) fn(c)
+    })
+}
+let client = createClient()
+
+let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack'))
+let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
+let sideNav = appTags.map(tag => ({
+    tag,
+    expanded: true,
+    operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
+}))
+
+let ssOps = APP.api.operations.filter(op => op.request.namespace.startsWith('ServiceStack'))
+let ssTags = Array.from(new Set(ssOps.flatMap(op => op.tags))).sort()
+ssTags.map(tag => ({
+    tag,
+    expanded: true,
+    operations: ssOps.filter(op => op.tags.indexOf(tag) >= 0)
+})).forEach(nav => sideNav.push(nav))
+
+let other = {
+    tag: appTags.length > 0 ? 'other' : 'APIs',
+    expanded: true,
+    operations: [...appOps, ...ssOps].filter(op => op.tags.length === 0)
+}
+if (other.operations.length > 0) sideNav.push(other)
+
+let CACHE = {}
+let OPS_CACHE = {}
+let OpsMap = {}
+let TypesMap = {}
+APP.api.operations.forEach(op => {
+    OpsMap[op.request.name] = op
+    TypesMap[op.request.name] = op.request
+    if (op.response) TypesMap[op.response.name] = op.response
+})
+APP.api.types.forEach(type => TypesMap[type.name] = type)
+
+let cleanSrc = src => src.startsWith('/*')
+    ? src.substring(src.indexOf('\n', src.indexOf('*/')) + 1).trim()
+    : src.startsWith('"""')
+        ? src.substring(src.indexOf('\n', src.indexOf('"""', 3)) + 1).trim()
+        : src.startsWith('(*')
+            ?src.substring(src.indexOf('\n', src.indexOf('*)')) + 1).trim()
+            : src.startsWith("' Options:")
+                ? src.substring(src.indexOf('\n', src.lastIndexOf("'''", src.indexOf('Imports'))) + 1).trim()
+                : src;
+
+let store = PetiteVue.reactive({
+    activeOp: '',
+    activeTab: '',
+    activeLang: '',
+    langResult: null,
+    preview: '',
+    previewResult: null,
+    apiResult: null,
+    copied: false,
+    filter: '',
+    sideNav,
+    formTab: 'form',
+    detailSrc: '',
+    detailSrcResult: null,
+    
+    get useLang() { return this.activeLang || 'csharp' },
+
+    stateArgs({ op, tab, lang, preview, detailSrc }) {
+        let args = {
+            op: op || this.activeOp,
+            tab: tab != null ? tab : this.activeTab,
+            lang: lang != null ? lang : this.activeLang,
+            preview: preview || this.preview,
+            detailSrc,
+        }
+        let nonEmptyArgs = omit(args, Object.keys(args).filter(key => !args[key]))
+        return nonEmptyArgs
+    },
+    
+    createHref(args) {
+        let state = this.stateArgs(args)
+        return appendQueryString(state.op, omit(state, ['op']))
+    },
+    
+    get filteredSideNav() {
+        let lowerFilter = this.filter.toLowerCase()
+        let ret = this.filter
+            ? this.sideNav.filter(nav => nav.operations.some(op => op.request.name.toLowerCase().indexOf(lowerFilter) >= 0))
+                .map(nav => ({
+                    ...nav,
+                    operations: nav.operations.filter(op => op.request.name.toLowerCase().indexOf(lowerFilter) >= 0)
+                }))
+            : this.sideNav
+        //return [...ret, ...ret, ...ret, ...ret]
+        return ret
+    },
+    
+    toggle(tag) {
+        let nav = this.sideNav.find(x => x.tag === tag)
+        nav.expanded = !nav.expanded
+    },
+    
+    init(args) {
+        if (args.op != null) this.activeOp = args.op
+        if (args.tab != null) this.activeTab = args.tab
+        if (args.lang != null) this.activeLang = args.lang
+        if (args.preview != null) this.preview = args.preview
+        this.setDetailSrc(args.detailSrc)
+        this.loadLang()
+        this.loadPreview()
+    },
+    
+    loadLang() {
+        if (!this.activeLangSrc) {
+            let cache = this.langCache()
+            if (CACHE[cache.url]) {
+                this.langResult = { cache, result: CACHE[cache.url] }
+            } else {
+                this.cachedFetch(cache.url)
+                    .then(src => {
+                        this.langResult = { cache, result: CACHE[cache.url] = cleanSrc(src) }
+                        if (!this.activeLangSrc) {
+                            this.loadLang()
+                        }
+                    })
+            }
+        }
+    },
+    
+    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&AddServiceStackTypes=true` },
+    
+    get previewCache() {
+        if (this.preview.startsWith('types.')) {
+            let types = this.preview.substring('types.'.length)
+            return { preview: this.preview, url: this.getTypeUrl(types), lang:'csharp' }
+        }
+        return null
+    },
+    
+    loadPreview() {
+        if (!this.previewSrc) {
+            let cache = this.previewCache
+            if (!cache) return
+            if (CACHE[cache.url]) {
+                this.previewResult = { type:'src', ...cache, result: CACHE[cache.url] }
+            } else {
+                this.cachedFetch(cache.url)
+                    .then(src => {
+                        this.previewResult = {
+                            type:'src',
+                            ...cache,
+                            result: CACHE[cache.url] = cache.lang ? cleanSrc(src) : src 
+                        }
+                    })
+            }
+        }
+    },
+    
+    get previewSrc() {
+        let r = this.previewResult
+        if (!r) return ''
+        return this.preview === r.preview && r.type === 'src' && r.lang ? r.result : ''
+    },
+    
+    get activeLangSrc() {
+        let cache = this.langResult && this.langResult.cache 
+        let ret = cache && this.activeOp === cache.op && this.useLang === cache.lang ? this.langResult.result : null
+        return ret
+    },
+    
+    setDetailSrc(types) {
+        this.detailSrc = types
+        if (!this.detailSrc) return
+        let cache = { url: this.getTypeUrl(types) }
+        if (CACHE[cache.url]) {
+            this.detailSrcResult = { ...cache, result: CACHE[cache.url] }
+        } else {
+            this.cachedFetch(cache.url).then(src => {
+                this.detailSrcResult = { ...cache, result: CACHE[cache.url] = cleanSrc(src) }
+            })
+        }
+    },
+    
+    get detailSrcValid() { return this.detailSrcResult && this.detailSrcResult.url === this.getTypeUrl(this.detailSrc) },
+    
+    select(args) {
+        this.init(args)
+        let state = this.stateArgs(args)
+        history.pushState(state, state.op, this.createHref(state))
+    },
+    
+    get op() {
+        return this.activeOp ? APP.api.operations.find(op => op.request.name === this.activeOp) : null
+    },
+    get opName() { return this.op && this.op.request.name },
+    
+    get json() {
+        //return ''
+        return JSON.stringify(this.op || APP, undefined, 4)
+    },
+    
+    get opTabs() {
+      return this.op 
+        ? { ['API']:'', 'Details':'details', 'Source Code':'code' }
+        : {}  
+    },
+    
+    get isServiceStackType() {
+        return this.op && this.op.request.namespace.startsWith("ServiceStack")
+    },
+    
+    langCache() {
+        let op = this.activeOp, lang = this.useLang
+        return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
+    },
+    
+    setOpResponse(op, r) {
+        this.apiResult = OPS_CACHE[op] = r
+    },
+    
+    get apiResultValid() {
+        return this.activeTab === '' && this.opName && this.apiResult && this.apiResult.opName === store.opName
+    },
+
+    cachedFetch(url) {
+        return new Promise((resolve,reject) => {
+            let src = CACHE[url]
+            if (src) {
+                resolve(src)
+            } else {
+                fetch(url)
+                    .then(r => {
+                        if (r.ok) return r.text()
+                        else throw r.statusText
+                    })
+                    .then(src => {
+                        resolve(CACHE[url] = src)
+                    })
+                    .catch(e => {
+                        console.log(`ERROR fetchCache (${url}):`, e)
+                        reject(e)
+                    })
+            }
+        })
+    },
+    
+    copy(text) {
+        this.copied = true
+        let $el = document.createElement("textarea")
+        $el.innerHTML = enc(text)
+        document.body.appendChild($el)
+        $el.select()
+        document.execCommand("copy")
+        document.body.removeChild($el)
+        setTimeout(() => this.copied = false, 3000)
+    },
+})
+
+if (op) store.init({ op })
+if (location.search) {
+    let { tab, lang, preview, detailSrc } = queryString(location.search)
+    store.init({ tab, lang, preview, detailSrc })
+}
+
+window.addEventListener('popstate', (event) => {
+    let { op, tab, lang, preview, detailSrc } = event.state
+    store.init({ op, tab, lang, preview, detailSrc })
+});
+
+function typeProperties(type) {
+    let props = []
+    while (type) {
+        if (type.properties) props.push(...type.properties)
+        type = type.inherits ? TypesMap[type.inherits.name] : null
+    }
+    return props.map(prop => prop.type.endsWith('[]')
+        ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
+        : prop)   
+}
+let NumTypesMap = {
+    Byte: 'byte',
+    Int16: 'short',
+    Int32: 'int',
+    Int64: 'long',
+    UInt16: 'ushort',
+    Unt32: 'uint',
+    UInt64: 'ulong',
+    Single: 'float',
+    Double: 'double',
+    Decimal: 'decimal',
+}
+let NumTypes = [ ...Object.keys(NumTypesMap), ...Object.values(NumTypesMap) ]
+let TypeAliases = {
+    String: 'string',
+    Boolean: 'bool',
+    ...NumTypesMap,
+}
+function isNumberType(type) {
+    return type && NumTypes.indexOf(type) >= 0
+}
+function typeAlias(typeName) {
+    return TypeAliases[typeName] ?? typeName
+}
+function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
+function typeName2(name, genericArgs) {
+    if (!name) return ''
+    if (!genericArgs)
+        genericArgs = []
+    if (name === 'Nullable`1')
+        return typeAlias(genericArgs[0]) + '?'
+    if (name.endsWith('[]'))
+        return `List<${typeAlias(name.substring(0,name.length-2))}>`
+    if (genericArgs.length === 0)
+        return typeAlias(name)
+    return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
+}
+function typeName(metaType) { return typeName2(metaType.name, metaType.genericArgs) }
+let Components = []
+</script>
+
+<!--files:components/*.html-->
+
+<script>
+$1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
+
+PetiteVue.createApp({
+    ...Components.reduce((acc,x) => { acc[x] = Components[x]; return acc }, {}),
+    serviceName: APP.app.serviceName,
+    langs: {
+        csharp: "C#",
+        typescript: "TypeScript",
+        dart: "Dart",
+        java: "Java",
+        kotlin: "Kotlin",
+        python: "Python",
+        swift: "Swift",
+        vbnet: "VB.NET",
+        fsharp: "F#",
+    },
+    store,
+    get request() { return this.store.op && this.store.op.request },
+    humanify(id) { return humanize(toPascalCase(id)) },
+    typeName,
+    typeName2,
+})
+    .directive('highlightjs', ({ effect, get, el}) => {
+        effect(() => {
+            let src = get()
+            if (src) {
+
+                el.className = '' // remove existing stale class
+                el.innerHTML = enc(src)
+                hljs.highlightElement(el)
+            }
+        })
+    })
+    .mount()
+
+PetiteVue.nextTick(() => {
+    document.body.classList.remove('loading')
+    let max = Math.max(...Array.from($$('.sidebar .nav-item')).map(el => el.clientWidth))
+    if (max > (240 - 75)) {
+        document.documentElement.style.setProperty('--sidebar-width', (max + 75) + 'px')
+    }
+})
+</script>
+
+</body>
+</html>

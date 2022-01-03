@@ -177,6 +177,10 @@ namespace ServiceStack
                 new SpanFormats(),
                 new SvgFeature(),
                 new Validation.ValidationFeature(),
+                new HtmlModulesFeature(new HtmlModule("/modules/ui", "/ui"))
+                {
+                    Configure = x => x.VirtualFiles = VirtualFileSources
+                },
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),
