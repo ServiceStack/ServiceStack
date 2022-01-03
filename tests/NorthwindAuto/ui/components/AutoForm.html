@@ -16,9 +16,7 @@ function AutoForm({ api, title, layout, error, onsubmit }) {
             return to
         },
         colClass(fields) {
-            if (fields > 0 && fields < 3)
-                return `col-span-6 sm:col-span-${Math.floor(6/fields)}`
-            return `col-span-6`
+            return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-3' : '')
         },
         humanify(id) { return humanize(toPascalCase(id)) },
         kvpValues(input) {
