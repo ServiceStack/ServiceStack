@@ -21,6 +21,8 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
 {
     public string Id => "module:" + string.Join(",", Modules.Select(x => x.BasePath).ToArray());
     
+    public bool IgnoreIfError { get; set; }
+    
     /// <summary>
     /// Define literal tokens to be replaced with dynamic fragments, e.g:
     /// &lt;base href=""&gt; = ctx => $"&lt;base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{DirPath}/")}\"&gt;"
@@ -181,7 +183,11 @@ public class HtmlModule
 
         var indexFile = VirtualFiles!.GetFile(DirPath.CombineWith(IndexFile));
         if (indexFile == null)
+        {
+            if (Feature!.IgnoreIfError) 
+                return TypeConstants<IHtmlModuleFragment>.EmptyArray;
             throw HttpError.NotFound(DirPath.CombineWith(IndexFile) + " was not found");
+        }
         var indexContents = indexFile.ReadAllText().AsMemory();
         
         var fragmentDefs = new List<FragmentTuple>();
@@ -242,7 +248,9 @@ public class HtmlModule
     public void Register(IAppHost appHost)
     {
         VirtualFiles ??= appHost.VirtualFiles;
-        GetIndexFragments(); //force parsing
+        var fragments = GetIndexFragments(); //force parsing
+        if (fragments.Length == 0) //Feature.IgnoreIfError
+            return;
 
         appHost.RawHttpHandlers.Add(req =>
         {

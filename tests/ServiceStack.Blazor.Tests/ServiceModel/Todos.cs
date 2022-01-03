@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace MyApp.ServiceModel;
 
+[Tag("todos")]
 [Route("/todos", "GET")]
 public class QueryTodos : QueryData<Todo>
 {
@@ -12,12 +13,14 @@ public class QueryTodos : QueryData<Todo>
     public string TextContains { get; set; }
 }
 
+[Tag("todos")]
 [Route("/todos", "POST")]
 public class CreateTodo : IPost, IReturn<Todo>
 {
     public string Text { get; set; }
 }
 
+[Tag("todos")]
 [Route("/todos/{Id}", "PUT")]
 public class UpdateTodo : IPut, IReturn<Todo>
 {
@@ -26,12 +29,14 @@ public class UpdateTodo : IPut, IReturn<Todo>
     public bool IsFinished { get; set; }
 }
 
+[Tag("todos")]
 [Route("/todos/{Id}", "DELETE")]
 public class DeleteTodo : IDelete, IReturnVoid
 {
     public long Id { get; set; }
 }
 
+[Tag("todos")]
 [Route("/todos", "DELETE")]
 public class DeleteTodos : IDelete, IReturnVoid
 {
