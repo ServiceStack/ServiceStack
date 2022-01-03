@@ -113,7 +113,7 @@ public static class Input
         return useEntries;
     }
 
-    public static string[] GetEnumValues(Type enumType)
+    public static string[]? GetEnumValues(Type enumType)
     {
         if (!enumType.IsEnum) return null;
         GetEnumEntries(enumType, out var entries);

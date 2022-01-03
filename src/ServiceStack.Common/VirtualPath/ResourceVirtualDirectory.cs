@@ -160,7 +160,12 @@ namespace ServiceStack.VirtualPath
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
         {
-            return Files.Where(f => f.Name.Glob(globPattern));
+            var useGlob = globPattern.TrimStart('/');
+            return Files.Where(f => {
+                return useGlob.IndexOf('/') >= 0
+                    ? f.VirtualPath.Glob(useGlob)
+                    : f.Name.Glob(useGlob);
+            });
         }
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)

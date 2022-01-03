@@ -10,8 +10,8 @@ namespace ServiceStack.IO
         : AbstractVirtualPathProviderBase
     {
         protected ResourceVirtualDirectory RootDir;
-        protected readonly Assembly BackingAssembly;
-        protected readonly string RootNamespace;
+        public Assembly BackingAssembly { get; }
+        public string RootNamespace { get; }
 
         public override IVirtualDirectory RootDirectory => RootDir;
         public override string VirtualPathSeparator => "/";
