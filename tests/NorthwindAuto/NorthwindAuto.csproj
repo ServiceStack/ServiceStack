@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="ui\ui.html" />
+    <Content Include="ui\index.html" />
   </ItemGroup>
 
   <ItemGroup>

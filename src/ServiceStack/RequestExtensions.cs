@@ -272,6 +272,9 @@ namespace ServiceStack
         public static bool IsFile(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsFile;
         public static bool IsDirectory(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsDirectory;
 
+        public static IVirtualFiles GetVirtualFiles(this IRequest request) => HostContext.VirtualFiles;
+        public static IVirtualPathProvider GetVirtualFileSources(this IRequest request) => HostContext.VirtualFileSources;
+
         public static T GetRuntimeConfig<T>(this IRequest req, string name, T defaultValue)
         {
             return req != null 

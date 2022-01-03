@@ -32,12 +32,7 @@ namespace MyApp
                 GenerateCrudServices = new GenerateCrudServices {}
             });
             
-            Plugins.Add(new UiFeatureDev());
-            
-            Plugins.Add(new HotReloadFeature {
-                DefaultPattern = "*.html;*.js;*.css",
-                VirtualFiles = VirtualFiles // Monitor ContentRoot to detect changes in /src
-            });
+            Plugins.Add(new HtmlModulesFeature("/ui"));
         }
     }
 }

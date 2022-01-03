@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -8,6 +10,7 @@ namespace ServiceStack.Host.Handlers
     {
         readonly string textContents;
         private readonly byte[] bytes;
+        readonly Stream stream;
         readonly string contentType;
 
         private StaticContentHandler(string contentType)
@@ -16,16 +19,12 @@ namespace ServiceStack.Host.Handlers
             this.RequestName = nameof(StaticContentHandler);
         }
 
-        public StaticContentHandler(string textContents, string contentType)
-            : this(contentType)
+        public StaticContentHandler(string textContents, string contentType) : this(contentType) => this.textContents = textContents;
+        public StaticContentHandler(byte[] bytes, string contentType) : this(contentType) => this.bytes = bytes;
+        public StaticContentHandler(Stream stream, string contentType) : this(contentType)
         {
-            this.textContents = textContents;
-        }
-
-        public StaticContentHandler(byte[] bytes, string contentType)
-            : this(contentType)
-        {
-            this.bytes = bytes;
+            stream.Position = 0;
+            this.stream = stream;
         }
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
@@ -41,6 +40,8 @@ namespace ServiceStack.Host.Handlers
                 await httpRes.WriteAsync(textContents);
             else if (bytes != null)
                 await httpRes.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+            else if (stream != null)
+                await stream.CopyToAsync(httpRes.OutputStream).ConfigAwait();
 
             await httpRes.FlushAsync();
             httpRes.EndHttpHandlerRequest(skipHeaders: true);

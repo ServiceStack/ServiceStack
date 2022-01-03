@@ -1,0 +1,217 @@
+<script>
+function Api({ store }) {
+    return {
+        $template: `#api-form-template`,
+        store,
+        get request() { return this.store.op.request },
+        resolveFormLayout,
+        onAjaxForm,
+    }
+}
+Components.push({ Api })
+
+let useType = type => (acc,x) => { acc[x]=type; return acc }
+let InputTypes = {
+    bool: 'checkbox',
+    ...'DateTime,DateTimeOffset,DateOnly'.split(',').reduce(useType('date'), {}),
+    ...'TimeSpan,TimeOnly'.split(',').reduce(useType('time'), {}),
+    ...'byte,short,int,long,ushort,uint,ulong,float,double,decimal'.split(',').reduce(useType('number'), {}),
+    ...'string,Guid,Uri'.split(',').reduce(useType('text'), {}),
+}
+
+function resolveFormLayout(op) {
+    let allProps = typeProperties(op.request).filter(supportsProp)
+    if (op.formLayout) {
+        let allPropsMap = allProps.reduce((acc,x) => { acc[x.name] = x; return acc }, {})
+        let ret = op.formLayout.map(group => group.map(input => ({ ...inputProp(allPropsMap[input.id]), ...input }) ))
+        return ret
+    }
+    let formLayout = []
+    let inputProps = allProps.map(inputProp)
+    let fullWidthTypes = ['textarea','divider']
+    let fullWidth = input => input && (fullWidthTypes.indexOf(input.type) >= 0 || input['data-type'] === 'List`1')
+    let pagingStart = inputProps.findIndex(x => x.id.toLowerCase() === 'skip')
+    if (pagingStart >= 0) inputProps.splice(pagingStart, 0, {type:'divider'})
+    while (inputProps.length > 0) {
+        let left = inputProps.shift();
+        let right = inputProps.length > 0 ? inputProps.shift() : null;
+        if (fullWidth(left) || fullWidth(right)) {
+            formLayout.push([left])
+            if (right) formLayout.push([right])
+        } else {
+            formLayout.push(right ? [left,right] : [left])
+        }
+    }
+    return formLayout
+}
+function onAjaxForm(e) {
+    let form = e.target
+    let op = form.getAttribute('data-api')
+    if (!op) {
+        console.log('!op', form)
+        return
+    }
+    let obj = formValues(e.target)
+    apiSend(op, obj).then(r => {
+        store.setOpResponse(op, r)
+    })
+}
+
+function formValues(form) {
+    let obj = {}
+    Array.from(form.elements).forEach(el => {
+        if (!el.id || el.value == null || el.value === '') return
+        let dataType = el.getAttribute('data-type')
+        let dataArgs = (el.getAttribute('data-args') || '').split(','), dataArg = dataArgs[0]
+        let value = el.type === 'checkbox'
+            ? el.checked
+            : el.value
+        if (isNumberType(dataType) || (dataType === 'Nullable`1' && isNumberType(dataArg))) {
+            value = Number(value)
+        } else if (dataType === 'List`1') {
+            value = value.split(',').map(x => isNumberType(dataArg)
+                ? Number(x)
+                : x)
+        }
+        obj[el.id] = value
+    })
+    return obj
+}
+
+function createDto(name, obj) {
+    let dtoCtor = window[name]
+    if (!dtoCtor) {
+        console.log(`Couldn't find Request DTO for ${name}`)
+        let AnonResponse = /** @class */ (function () { return function (init) { Object.assign(this, init) } }())
+        dtoCtor = /** @class */ (function () {
+            function AnonRequest(init) { Object.assign(this, init) }
+            AnonRequest.prototype.createResponse = function () { return new AnonResponse() }
+            AnonRequest.prototype.getTypeName = function () { return name }
+            AnonRequest.prototype.getMethod = function () { return 'POST' }
+            return AnonRequest
+        }())
+    }
+    return new dtoCtor(obj)
+}
+
+function apiSend(opName, obj) {
+    let requestDto = createDto(opName, obj)
+    let httpReq = null, httpRes = null
+    let newClient = createClient(c => {
+        c.requestFilter = req => httpReq = req
+        c.responseFilter = res => httpRes = res
+    })
+    let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
+    let task = returnsVoid
+        ? newClient.apiVoid(requestDto)
+        : newClient.api(requestDto)
+    return task.then(api => ({ api, opName, requestDto, httpReq, httpRes }))
+}
+
+function groupTypes(allTypes) {
+    let allTypesMap = {}
+    let groups = []
+    allTypes.forEach(type => {
+        if (allTypesMap[type.name]) return
+        let group = []
+        let addTypeDef = typeDef => {
+            if (!typeDef || allTypesMap[typeDef.name]) return
+            allTypesMap[typeDef.name] = typeDef
+            group.push({ type: typeDef, typeName: typeName(typeDef) })
+        }
+        let addTypeRef = typeRef => {
+            if (!typeRef || allTypesMap[typeRef.name]) return
+            let typeDef = TypesMap[typeRef.name]
+            allTypesMap[typeDef.name] = typeDef
+            group.push({ type: typeDef, typeName: typeName(typeRef) })
+            return typeDef
+        }
+        addTypeDef(type)
+        if (type.inherits) {
+            let subType = addTypeRef(type.inherits)
+            while (subType) {
+                subType = subType.inherits ? addTypeRef(subType.inherits) : null
+            }
+        }
+        groups.push(group)
+    })
+    return groups
+}
+
+function inputProp(prop) {
+    let id = toCamelCase(prop.name), idLower = id.toLowerCase()
+    let propType = unwrap(typeName2(prop.type, prop.genericArgs))
+    let input = { id, type:inputType(propType), 'data-type': prop.type }
+    if (prop.genericArgs) input['data-args'] = prop.genericArgs.join(',')
+    let type = TypesMap[propType]
+    if (type && type.isEnum) {
+        input.type = 'select'
+        if (type.enumValues) {
+            input.allowableEntries = []
+            for (let i=0; i<type.enumNames; i++) {
+                input.allowableEntries.push({ key:type.enumValues[i], value:type.enumNames[i] })
+            }
+        } else {
+            input.allowableValues = type.enumNames
+        }
+    } else if (idLower.indexOf('password') >= 0) {
+        input.type = 'password'
+    } else if (idLower === 'email') {
+        input.type = 'email'
+    } else if (idLower.endsWith('url')) {
+        input.type = 'url'
+    }
+    if (prop.input)
+        Object.assign(input, prop.input)
+    return input
+}
+function inputType(typeName) {
+    if (!typeName) return null
+    typeName = unwrap(typeAlias(typeName))
+    return InputTypes[typeName]
+}
+function supportsProp(prop) {
+    let propType = typeName2(prop.type, prop.genericArgs)
+    if (prop.isValueType || prop.isEnum || inputType(propType))
+        return true
+    if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
+        return true
+    console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0]))
+    return false
+}
+</script>
+<template id="api-form-template">
+<nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
+    <a v-for="formTab in ['form','json']" @click.prevent="store.formTab=formTab"
+       :class="[store.formTab==formTab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
+        {{formTab.toUpperCase()}}
+    </a>
+</nav>
+
+<div v-if="store.formTab=='form'" class="p-4 max-w-screen-md"
+     v-scope="AutoForm({ 
+        title:() => request.description || humanify(request.name), 
+        layout: () => resolveFormLayout(store.op), 
+        api: () => store.opName,
+        error: () => store.apiResult && store.apiResult.api.error,  
+        onsubmit:onAjaxForm 
+    })"></div>
+<div v-if="store.formTab=='json'">
+    { JSON }
+</div>
+
+<div v-if="store.apiResultValid" v-scope="ApiResponse({ result: () => store.apiResult })"></div>
+</template>
+
+<script>
+function ApiResponse({ result }) {
+    return {
+        $template: '#api-response-template',
+        get result() { return result() },
+    }
+}
+Components.push({ ApiResponse })
+</script>
+<template id="api-response-template">
+    This is an API Response
+</template>
