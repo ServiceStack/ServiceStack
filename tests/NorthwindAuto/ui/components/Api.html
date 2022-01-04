@@ -127,7 +127,7 @@ function createDto(name, obj) {
 
 function parseCookie(str) {
     return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
-            acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+            if (v[0]) acc[decodeURIComponent(v[0].trim())] = decodeURIComponent((v[1]||'').trim());
             return acc;
         }, {});
 }
@@ -258,7 +258,7 @@ function supportsProp(prop) {
             <fieldset>
                 <legend class="text-lg text-gray-900 text-center mb-4">{{ title }}</legend>
                 <div class="flex">
-                    <textarea class="flex-1" :rows="apiRequestJson.split('\n').length" v-html="apiRequestJson"></textarea>
+                    <textarea class="flex-1" :rows="Math.max(apiRequestJson.split('\n').length,10)" v-html="apiRequestJson"></textarea>
                 </div>
             </fieldset>
         </div>
@@ -339,8 +339,8 @@ Components.push({ ApiResponse })
         </div>
     </div>
     <div v-else-if="store.response == 'cookies'" class="p-4">
-        <div v-if="apiResult.cookies" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
-        <div class="mt-4" v-scope="Alert({ message:'HttpOnly Cookies are not displayed' })"></div>
+        <div v-if="apiResult.cookies && apiResult.cookies.length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
+        <div v-scope="Alert({ message:'HttpOnly Cookies are not displayed' })"></div>
     </div>
     <div v-else-if="store.response == 'headers'" class="p-4">
         <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:toKvps(apiResult.headers) })"></div>
