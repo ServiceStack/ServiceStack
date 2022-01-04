@@ -82,10 +82,11 @@
 
 <div class="when-loading"></div>
 
-<div v-scope class="app flex"><div :class="store.op ? 'op' : ''">
+<div v-scope class="app flex">
 
-<div v-if="!(store.sm && store.op)" v-scope="Sidebar({ store })"></div>
+<div v-scope="Sidebar({ store })"></div>
 <div class="body">
+    <div v-scope="AuthNav({ store })" class="absolute top-1 right-2"></div>
     <div v-if="store.op">
         <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
             <nav class="-mb-px flex max-w-screen-md" aria-label="Tabs">
@@ -109,9 +110,10 @@
     <div v-else-if="store.json" class="preview p-4">
         <pre><code lang="json" v-highlightjs="store.json"></code></pre>
     </div>
+    <div v-else v-scope="Welcome({ store })"></div>
 </div>
     
-</div></div>
+</div>
 
 <script>
 let exports = { __esModule:true }, module = { exports:exports }
@@ -125,16 +127,11 @@ const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector
 const $$ = (sel, el) => typeof sel === "string"
     ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
     : Array.isArray(sel) ? sel : [sel]
-function on(sel, handlers) { $$(sel).forEach(e => {
-    Object.keys(handlers).forEach(evt => {
-        let fn = handlers[evt];
-        if (typeof evt === 'string' && typeof fn === 'function')
-            e.addEventListener(evt, fn.bind(e));
-    })
-}) }
 function loadApp(app) { window.APP = app }
+function loadAuth(auth) { window.AUTH = !auth || auth.responseStatus ? null : auth }
 </script>
 <script src="../metadata/app?callback=loadApp"></script>
+<script src="../auth?callback=loadAuth"></script>
 
 <script src="../js/petite-vue.js"></script>
 <script src="../js/highlight.js"></script>
@@ -144,6 +141,7 @@ APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
 
+let DEBUG = APP.config.debugMode
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/') 
 function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
@@ -203,6 +201,29 @@ function isSmall() {
     return window.matchMedia('(max-width:640px)').matches
 }
 
+function EventBus() {
+    let subscriptions = {}
+    this.subscribe = function(type, callback) {
+        let id = Symbol('id')
+        if (!subscriptions[type]) subscriptions[type] = {}
+        subscriptions[type][id] = callback
+        return {
+            unsubscribe: function() {
+                delete subscriptions[type][id]
+                if (Object.getOwnPropertySymbols(subscriptions[type]).length === 0) {
+                    delete subscriptions[type]
+                }
+            }
+        }
+    }
+    this.publish = function(eventType, arg) {
+        if (!subscriptions[eventType]) return;
+        Object.getOwnPropertySymbols(subscriptions[eventType])
+            .forEach(key => subscriptions[eventType][key](arg))
+    }
+}
+let Events = new EventBus()
+
 let store = PetiteVue.reactive({
     activeOp: '',
     activeTab: '',
@@ -213,11 +234,14 @@ let store = PetiteVue.reactive({
     copied: false,
     filter: '',
     sideNav,
-    formTab: 'form',
+    form: '',
     detailSrc: '',
     detailSrcResult: null,
     response: '',
     body: '',
+    provider:'',
+    debug: APP.config.debugMode,
+    auth: window.AUTH,
     get sm() { return isSmall() },
     doLayout() {
         /* sm: only show sidebar on home page */
@@ -237,18 +261,20 @@ let store = PetiteVue.reactive({
 
     createHref(args) {
         let state = this.stateArgs(args)
-        return appendQueryString(state.op, omit(state, ['op']))
+        return appendQueryString(state.op || '', omit(state, ['op']))
     },
 
-    stateArgs({ op, tab, lang, preview, detailSrc, response, body }) {
+    stateArgs({ op, tab, lang, preview, detailSrc, form, response, body, provider }) {
         let args = {
-            op: op || this.activeOp,
+            op: op != null ? op : this.activeOp,
             tab: tab != null ? tab : this.activeTab,
             lang: lang != null ? lang : this.activeLang,
             preview: preview || this.preview,
             detailSrc,
+            form: form != null ? form : this.form,
             response,
             body,
+            provider,
         }
         let nonEmptyArgs = omit(args, Object.keys(args).filter(key => !args[key]))
         return nonEmptyArgs
@@ -259,12 +285,15 @@ let store = PetiteVue.reactive({
         if (args.tab != null) this.activeTab = args.tab
         if (args.lang != null) this.activeLang = args.lang
         if (args.preview != null) this.preview = args.preview
+        if (args.form != null) this.form = args.form
         if (args.response != null) this.response = args.response
         if (args.body != null) this.body = args.body
+        if (args.provider != null) this.provider = args.provider
         this.setDetailSrc(args.detailSrc)
         this.loadLang()
         this.loadPreview()
         this.doLayout()
+        Events.publish('init', args)
     },
 
     select(args) {
@@ -414,13 +443,13 @@ let store = PetiteVue.reactive({
 
 if (op) store.init({ op })
 if (location.search) {
-    let { tab, lang, preview, detailSrc, response, body } = queryString(location.search)
-    store.init({ tab, lang, preview, detailSrc, response, body })
+    let { tab, lang, preview, detailSrc, form, response, body, provider } = queryString(location.search)
+    store.init({ tab, lang, preview, detailSrc, form, response, body, provider })
 }
 
 window.addEventListener('popstate', (event) => {
-    let { op, tab, lang, preview, detailSrc, response, body } = event.state
-    store.init({ op, tab, lang, preview, detailSrc, response, body })
+    let { op, tab, lang, preview, detailSrc, form, response, body, provider } = event.state
+    store.init({ op, tab, lang, preview, detailSrc, form, response, body, provider })
 });
 
 function typeProperties(type) {
@@ -511,7 +540,6 @@ PetiteVue.createApp({
         })
     })
     .mount()
-
 
 window.onresize = () => store.doLayout()
 PetiteVue.nextTick(() => {

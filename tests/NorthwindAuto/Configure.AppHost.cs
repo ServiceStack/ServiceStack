@@ -23,7 +23,8 @@ namespace MyApp
         {
             SetConfig(new HostConfig
             {
-                DebugMode = true
+                DebugMode = true,
+                AdminAuthSecret = "secret",
             });
 
             // Register Database Connection, see: https://github.com/ServiceStack/ServiceStack.OrmLite#usage

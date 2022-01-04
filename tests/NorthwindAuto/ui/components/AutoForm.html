@@ -1,14 +1,12 @@
 <script>
-function AutoForm({ api, title, layout, error, onsubmit, oninput }) {
+function AutoForm({ state, onsubmit, oninput }) {
     return {
         $template: '#form-template',
-        get api() { return api() },
-        get title() { return title() },
-        get error() { return error() },
+        get state() { return state() },
         get gridClass() { return `grid grid-cols-6 gap-6` },
         get gridInputs() {
             let to = []
-            layout().forEach(group => {
+            this.state.formLayout.forEach(group => {
                 group.forEach(input => {
                     to.push({ ...input, attrs:input, 'class': this.colClass(group.length) })
                 })
@@ -29,7 +27,7 @@ function AutoForm({ api, title, layout, error, onsubmit, oninput }) {
             return input.placeholder != null ? input.placeholder : this.useLabel(input)
         },
         fieldError(id) {
-            let error = this.error
+            let error = this.state.error
             let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
             return fieldError && fieldError.message
         },
@@ -42,26 +40,41 @@ function AutoForm({ api, title, layout, error, onsubmit, oninput }) {
         ariaDescribedby(input) {
             return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
         },
-        // aria-invalid="true" aria-describedby="email-error"
-        onsubmit,
-        oninput,
+        onsubmit: onsubmit ?? (() => {}),
+        oninput: oninput ?? (() => {}),
     }
 }
 Components.push({ AutoForm })
 </script>
 <template id="form-template">
-<form @submit.prevent="onsubmit" autocomplete="off" :data-api="api" @input="oninput">
+<form @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName">
+    <div v-if="state.errorSummary" class="rounded-md bg-red-50 p-4 mb-4" role="alert">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <!-- Heroicon name: solid/x-circle -->
+                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">
+                    {{state.errorSummary}}
+                </h3>
+            </div>
+        </div>
+    </div>
+    
     <div class="shadow overflow-hidden sm:rounded-md bg-white">
         <div class="relative px-4 py-5 bg-white sm:p-6">
             <fieldset>
-                <legend class="text-lg text-gray-900 text-center mb-4">{{ title }}</legend>
+                <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
                 <div :class="gridClass">
                     <div v-for="input in gridInputs" :class="input.class">
                         <div v-if="input.type=='divider'" class="border-t"></div>
-                        <input v-else-if="input.type=='hidden'" v-bind="input.attrs" type="hidden" />
+                        <input v-else-if="input.type=='hidden'" v-bind="input.attrs" type="hidden" v-model="state.model[input.id]" />
                         <div v-else-if="input.type=='checkbox'" class="relative flex items-start">
                             <div class="flex items-center h-5">
-                                <input v-bind="input.attrs" type="checkbox"
+                                <input v-bind="input.attrs" type="checkbox" v-model="state.model[input.id]"
                                        :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                                        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
                             </div>
@@ -78,16 +91,16 @@ Components.push({ AutoForm })
                             <div class="mt-1 relative rounded-md shadow-sm">
                                 <select v-if="input.type=='select'" v-bind="input.attrs"
                                         :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
-                                        :class="inputClass(input)">
+                                        :class="inputClass(input)" v-model="state.model[input.id]">
                                     <option v-if="input['data-type']=='Nullable`1'"></option>
                                     <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
                                 </select>
                                 <textarea v-else-if="input.type=='textarea'" v-bind="input.attrs" :placeholder="usePlaceholder(input)"
                                           :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
-                                          :class="inputClass(input)"></textarea>
+                                          :class="inputClass(input)" v-model="state.model[input.id]"></textarea>
                                 <input v-else v-bind="input.attrs" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
                                        :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
-                                       :class="inputClass(input)" />
+                                       :class="inputClass(input)" v-model="state.model[input.id]" />
 
                                 <div v-if="fieldError(input.id)" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <!-- Heroicon name: solid/exclamation-circle -->

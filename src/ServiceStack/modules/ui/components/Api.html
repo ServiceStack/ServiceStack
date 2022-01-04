@@ -1,51 +1,101 @@
 <script>
-let OPS_CACHE = {}
+let OP_STATE = {}
+
 function Api({ store }) {
+    
     return {
-        $template: `#api-form-template`,
+        $template: `#api-template`,
         store,
-        apiResult: null,
-        requestDto: null,
-        get request() { return this.store.op.request },
-        get opName() { return this.request && this.request.name },
-        get title() { return this.request && (this.request.description || humanify(this.request.name)) },
-        resolveFormLayout,
-        onAjaxForm(e) {
-            let form = e.target
-            let op = form.getAttribute('data-api')
-            if (!op) {
-                console.log('!op', form)
-                return
+        tabs: {'FORM':'','JSON':'json'},
+        get state() {
+            let s = this.store
+            let opName = s.op && s.op.request && s.op.request.name
+            if (!opName) throw new Error('!state.opName')
+            let ret = OP_STATE[opName] || (OP_STATE[opName] = ({
+                opName,
+                op: s.op,
+                formJson: '',
+                jsonError: '',
+                requestDto: null,
+                get model() {
+                    let model = this.requestDto || {}
+                    this.formLayout.forEach(group => {
+                        group.forEach(input => {
+                            if (typeof model[input.id] == 'undefined') {
+                                model[input.id] = null
+                            }
+                        })
+                    })
+                    return model
+                },
+                apiLoading: false,
+                apiResult: null,
+                get error(){ return this.apiResult && this.apiResult.api.error },
+                get errorSummary() {
+                  return this.apiResult && this.apiResult.api.summaryMessage(this.formLayout.flatMap(group => group.map(input => input.id)))   
+                },
+                title: s.op.request.description || humanify(s.op.request.name),
+                get apiRequestJson() { return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || '' },
+                formLayout: resolveFormLayout(s.op),
+            }))
+            if (ret.opName !== opName) throw new Error('!!state.opName')
+            return ret
+        },
+        select(args) {
+            if (args.form === '') {
+                this.updateRequestDto(this.state.formJson)
+            } else if (args.form === 'json') {
+                this.saveForm($1('[data-autoform]'))
+                this.state.jsonError = null
             }
-            let obj = formValues(e.target)
-            apiSend(op, obj).then(r => {
-                this.setOpResponse(op, r)
-            })
+            return store.select(args)
+        },
+        saveForm(form) {
+            let state = this.state
+            if (!(form && form.tagName === 'FORM')) throw new Error('!form')
+            state.requestDto = createDto(state.opName, formValues(form))
+            state.formJson = JSON.stringify(state.requestDto, undefined, 4)
+            return state.requestDto
+        },
+        updateRequestDto(json){
+            let state = this.state
+            state.jsonError = null
+            try {
+                let obj = JSON.parse(json)
+                state.requestDto = createDto(state.opName, obj)
+            } catch (e) {
+                state.jsonError = { type:'input', message: `${e}` }
+            }
         },
         onAjaxFormInput(e) {
-            let form = e.target.tagName === 'FORM' ? e.target : e.target.form
-            if (!(form && form.tagName === 'FORM')) return
-            this.requestDto = createDto(form.getAttribute('data-api'), formValues(form))
+            this.state.formJson = JSON.stringify(formValues(e.target.tagName === 'FORM' ? e.target : e.target.form), undefined, 4)
         },
-        onJsonSubmit(e) {
-            let json = $1('textarea',e.target).value
-            let obj = JSON.parse(json)
-            apiSend(this.opName, obj).then(r => {
-                this.setOpResponse(this.opName, r)
+        onJsonFormInput(e) { this.updateRequestDto(e.target.value) },
+        onAjaxFormSubmit(e) {
+            this.saveForm(e.target)
+            this.apiSend()
+        },
+        onJsonFormSubmit(e) {
+            let state = this.state
+            try {
+                let json = $1('textarea',e.target).value
+                let obj = JSON.parse(json)
+                state.requestDto = createDto(state.opName, obj)
+                this.apiSend()
+            } catch (e) {
+                state.jsonError = { type:'submit', message: `${e}` }
+            }
+        },
+        apiSend() {
+            let state = this.state
+            if (!state.requestDto) return
+            state.jsonError = null
+            state.apiResult = null
+            state.apiLoading = true
+            apiSend(state.requestDto).then(r => {
+                state.apiResult = r
+                state.apiLoading = false
             })
-        },
-
-        setOpResponse(op, r) {
-            this.apiResult = OPS_CACHE[op] = r
-            this.requestDto = this.apiResult && this.apiResult.requestDto
-        },
-
-        get apiResultValid() {
-            return this.apiResult && this.apiResult.opName === this.opName
-        },
-        
-        get apiRequestJson() {
-            return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || ''
         },
     }
 }
@@ -127,13 +177,15 @@ function createDto(name, obj) {
 
 function parseCookie(str) {
     return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
-            if (v[0]) acc[decodeURIComponent(v[0].trim())] = decodeURIComponent((v[1]||'').trim());
-            return acc;
+            let key = v[0] && v[0].trim() && decodeURIComponent(v[0].trim())
+            if (key) acc[key] = decodeURIComponent((v[1]||'').trim())
+            return acc
         }, {});
 }
 
-function apiSend(opName, obj) {
-    let requestDto = createDto(opName, obj)
+function apiSend(requestDto) {
+    if (!requestDto) throw new Error('!requestDto')
+    let opName = requestDto.getTypeName()
     let httpReq = null, httpRes = null, headers = null
     let cookies = parseCookie(document.cookie)
     let newClient = createClient(c => {
@@ -228,43 +280,59 @@ function supportsProp(prop) {
         return true
     if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
         return true
-    console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0]))
+    if (DEBUG) console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0]))
     return false
 }
 
 </script>
-<template id="api-form-template">
+<template id="api-template">
 <nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
-    <a v-for="formTab in ['form','json']" @click.prevent="store.formTab=formTab"
-       :class="[store.formTab==formTab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
-        {{formTab.toUpperCase()}}
+    <a v-for="(tab,name) in tabs"  :href="store.createHref({ form:tab })" @click.prevent="select({ form:tab })"
+       :class="[store.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
+        {{name}}
     </a>
 </nav>
-
-<div v-if="store.formTab=='form'" class="p-4 max-w-screen-md"
+    
+<div v-if="store.form==''" class="p-4 max-w-screen-md"
      v-scope="AutoForm({ 
-        title:() => title, 
-        layout: () => resolveFormLayout(store.op), 
-        api: () => opName,
-        error: () => apiResult && apiResult.api.error,  
-        onsubmit:onAjaxForm.bind(store),
-        oninput:onAjaxFormInput.bind(store)
+        state: () => state,  
+        onsubmit: e => onAjaxFormSubmit(e),
+        //oninput:  e => onAjaxFormInput(e),
     })"></div>
-<div v-if="store.formTab=='json'">
+<div v-if="store.form=='json'">
 
-<form @submit.prevent="onJsonSubmit" autocomplete="off" :data-api="opName" class="p-4">
+<form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="p-4">
     <div class="shadow overflow-hidden sm:rounded-md bg-white">
         <div class="relative px-4 py-5 bg-white sm:p-6">
             <fieldset>
-                <legend class="text-lg text-gray-900 text-center mb-4">{{ title }}</legend>
-                <div class="flex">
-                    <textarea class="flex-1" :rows="Math.max(apiRequestJson.split('\n').length,10)" v-html="apiRequestJson"></textarea>
+                <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
+                <div class="flex flex-col">
+                    <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput">{{state.apiRequestJson}}</textarea>
+                    <div v-if="state.formJson" class="mt-1">
+                        <div v-if="state.jsonError" class="1 flex items-end">
+                            <svg class="text-red-600 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <g fill="none">
+                                    <path d="M20 20L4 4m16 0L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </g>
+                            </svg>
+                            <p class="ml-1 text-md text-red-500">{{(state.jsonError || {}).type=='submit' ? state.jsonError.message : 'invalid'}}</p>
+                        </div>
+                        <div v-else-if="state.apiRequestJson">
+                            <svg class="text-green-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <g fill="none"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </fieldset>
         </div>
         <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
             <div class="flex justify-end">
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+                <button type="submit" :disabled="state.jsonError" 
+                        :class="[state.jsonError ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', 
+                            'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white']">
+                    Submit
+                </button>
             </div>
         </div>
     </div>
@@ -272,7 +340,7 @@ function supportsProp(prop) {
     
 </div>
 
-<div v-if="apiResultValid" v-scope="ApiResponse({ store, apiResult })"></div>
+<div v-if="state.apiResult" v-scope="ApiResponse({ store, apiResult:state.apiResult })"></div>
 </template>
 
 <script>
@@ -339,7 +407,7 @@ Components.push({ ApiResponse })
         </div>
     </div>
     <div v-else-if="store.response == 'cookies'" class="p-4">
-        <div v-if="apiResult.cookies && apiResult.cookies.length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
+        <div v-if="apiResult.cookies && toKvps(apiResult.cookies).length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
         <div v-scope="Alert({ message:'HttpOnly Cookies are not displayed' })"></div>
     </div>
     <div v-else-if="store.response == 'headers'" class="p-4">
