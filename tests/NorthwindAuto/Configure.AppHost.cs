@@ -42,6 +42,8 @@ namespace MyApp
                 DefaultPattern = "*.html;*.js;*.css",
                 VirtualFiles = VirtualFiles,
             });
+            
+            Plugins.Add(new PostmanFeature());
         }
     }
 }

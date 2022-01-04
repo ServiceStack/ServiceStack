@@ -125,9 +125,17 @@ function createDto(name, obj) {
     return new dtoCtor(obj)
 }
 
+function parseCookie(str) {
+    return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
+            acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+            return acc;
+        }, {});
+}
+
 function apiSend(opName, obj) {
     let requestDto = createDto(opName, obj)
     let httpReq = null, httpRes = null, headers = null
+    let cookies = parseCookie(document.cookie)
     let newClient = createClient(c => {
         c.requestFilter = req => httpReq = req
         c.responseFilter = res => {
@@ -148,6 +156,7 @@ function apiSend(opName, obj) {
         httpReq, 
         httpRes,
         headers,
+        cookies,
     }))
 }
 
@@ -263,23 +272,47 @@ function supportsProp(prop) {
     
 </div>
 
-<div v-if="apiResultValid" v-scope="ApiResponse({ store })"></div>
+<div v-if="apiResultValid" v-scope="ApiResponse({ store, apiResult })"></div>
 </template>
 
 <script>
-function ApiResponse({ store }) {
+function ApiResponse({ store, apiResult }) {
     return {
         $template: '#api-response-template',
         store,
+        apiResult,
+        toKvps(obj) {
+            return Object.keys(obj).map(k => ({ Key:k, Value:obj[k]}))
+        },
+        get tabs() {
+          let tabs = { Body:'' }
+            tabs[this.headersLabel] = 'headers'
+            tabs[this.cookiesLabel] = 'cookies'
+            return tabs
+        },
+        get headersLabel() {
+            let count = apiResult && Object.keys(apiResult.headers).length || 0
+            return `Headers (${count})`
+        },
+        get cookiesLabel() {
+            let count = apiResult && Object.keys(apiResult.cookies).length || 0
+            return `Cookies (${count})`
+        },
+        fieldAttrs(id) {
+            let useId = id.replace(/\s+/g,'').toLowerCase() 
+            return useId === 'stacktrace' 
+                ? { 'class': 'whitespace-pre overflow-x-auto' } 
+                : {}
+        }
     }
 }
 Components.push({ ApiResponse })
 </script>
 <template id="api-response-template">
-<div class="mt-2 border-t w-full">
+<div class="mt-2 border-t">
     <div class="border-b border-gray-200">
         <nav class="-mb-px flex space-x-4 pl-2" aria-label="Tabs">
-            <a v-for="(tab,name) in {Body:'',Headers:'headers'}" :href="store.createHref({ response:tab })" @click.prevent="store.select({ response:tab })" 
+            <a v-for="(tab,name) in tabs" :href="store.createHref({ response:tab })" @click.prevent="store.select({ response:tab })" 
                :class="[store.response == tab ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-1 px-1 border-b-2 font-medium text-sm']">
                 {{name}}
             </a>
@@ -295,17 +328,21 @@ Components.push({ ApiResponse })
         </span>
 
         <div v-if="store.body == ''" class="pt-2">
-            <pre><code lang="json" v-highlightjs="apiResult.json"></code></pre>
+            <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="apiResult.json"></code></pre>
         </div>
         <div v-else-if="store.body == 'raw'" class="flex pt-2">
-            <textarea class="min-h-fit flex-1" v-html="apiResult.text"></textarea>
+            <textarea class="flex-1" rows="10" v-html="apiResult.text"></textarea>
         </div>
-        <div v-else-if="store.body == 'preview'" class="flex pt-2">
-            <div class="" v-scope="PreviewObject({ val:apiResult.api.response || apiResult.api.error })"></div>
+        <div v-else-if="store.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+            <div class="" v-scope="PreviewObject({ val:apiResult.api.response || apiResult.api.error, fieldAttrs })"></div>
         </div>
     </div>
-    <div v-else-if="store.response == 'headers'" class="p-2">
-        <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:Object.keys(apiResult.headers).map(k => ({ Key:k, Value:apiResult.headers[k]})) })"></div>
+    <div v-else-if="store.response == 'cookies'" class="p-4">
+        <div v-if="apiResult.cookies" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
+        <div class="mt-4" v-scope="Alert({ message:'HttpOnly Cookies are not displayed' })"></div>
+    </div>
+    <div v-else-if="store.response == 'headers'" class="p-4">
+        <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:toKvps(apiResult.headers) })"></div>
     </div>
 </div>
 </template>
