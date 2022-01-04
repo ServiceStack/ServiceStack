@@ -43,11 +43,6 @@ namespace ServiceStack
     [DataContract]
     public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
     {
-        public AuthenticateResponse()
-        {
-            this.ResponseStatus = new ResponseStatus();
-        }
-
         [DataMember(Order = 1)] public string UserId { get; set; }
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
@@ -84,11 +79,6 @@ namespace ServiceStack
     [DataContract]
     public class RegisterResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
     {
-        public RegisterResponse()
-        {
-            this.ResponseStatus = new ResponseStatus();
-        }
-
         [DataMember(Order = 1)] public string UserId { get; set; }
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
