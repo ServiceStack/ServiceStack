@@ -12,6 +12,7 @@ using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -503,7 +504,7 @@ namespace ServiceStack
                 }
 
                 var hold = httpRes.StatusDescription;
-                var hasDefaultStatusDescription = hold == null || hold == "OK";
+                var hasDefaultStatusDescription = hold is null or "OK";
 
                 httpRes.StatusCode = statusCode;
 
@@ -514,9 +515,20 @@ namespace ServiceStack
                 httpRes.ApplyGlobalResponseHeaders();
             }
 
+            var callback = httpReq.GetJsonpCallback();
+            var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
+            if (doJsonp)
+            {
+                httpRes.StatusCode = 200;
+                await httpRes.OutputStream.WriteAsync(DataCache.CreateJsonpPrefix(callback));
+            }
+
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType ?? httpRes.ContentType);
             if (serializer != null)
                 await serializer(httpReq, httpRes.Dto, httpRes.OutputStream);
+            
+            if (doJsonp)
+                await httpRes.OutputStream.WriteAsync(DataCache.JsonpSuffix);
 
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }

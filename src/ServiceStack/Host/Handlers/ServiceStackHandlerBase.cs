@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Serialization;
+using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -128,7 +129,7 @@ namespace ServiceStack.Host.Handlers
 
             if (doJsonp && !(response is CompressedResult))
             {
-                await httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes()).ConfigAwait();
+                await httpRes.WriteToResponse(httpReq, response, DataCache.CreateJsonpPrefix(callback), DataCache.JsonpSuffix).ConfigAwait();
                 return;
             }
 

@@ -544,6 +544,15 @@ namespace ServiceStack
                 var iAuthProvider = feature.AuthProviders.First(); 
                 res.AddHeader(HttpHeaders.WwwAuthenticate, $"{iAuthProvider.Provider} realm=\"{iAuthProvider.AuthRealm}\"");
             }
+            
+            var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(req.GetJsonpCallback());
+            if (doJsonp)
+            {
+                var errorMessage = res.StatusDescription ?? ErrorMessages.NotAuthenticated;
+                return res.WriteErrorToResponse(req, MimeTypes.Json, null, 
+                    errorMessage, HttpError.Unauthorized(errorMessage), res.StatusCode);
+            }
+
             return res.EndHttpHandlerRequestAsync();
         }
 
@@ -563,6 +572,14 @@ namespace ServiceStack
                 var url = feature.GetHtmlRedirectUrl(req, feature.HtmlRedirectAccessDenied, includeRedirectParam:false);
                 res.RedirectToUrl(url);
                 return TypeConstants.EmptyTask;
+            }
+
+            var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(req.GetJsonpCallback());
+            if (doJsonp)
+            {
+                var errorMessage = res.StatusDescription ?? ErrorMessages.AccessDenied;
+                return res.WriteErrorToResponse(req, MimeTypes.Json, null, 
+                    errorMessage, HttpError.Forbidden(errorMessage), res.StatusCode);
             }
 
             res.ContentType = "text/plain";

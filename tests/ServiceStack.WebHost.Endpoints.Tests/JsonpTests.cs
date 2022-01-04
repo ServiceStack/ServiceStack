@@ -2,6 +2,7 @@
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Logging;
+using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -54,6 +55,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(response, Does.StartWith("cb("));
 			Assert.That(response, Does.EndWith(")"));
 			Assert.That(response.Length, Is.GreaterThan(50));
-		} 
+		}
+
+		[Test]
+		public void Can_create_Utf8_callback()
+		{
+			var bytes = DataCache.CreateJsonpPrefix("test");
+			var fromUtf8 = bytes.FromUtf8Bytes();
+			Assert.That(fromUtf8, Is.EqualTo("test("));
+		}
 	}
 }
