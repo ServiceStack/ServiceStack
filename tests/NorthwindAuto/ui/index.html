@@ -52,9 +52,6 @@
 .min-h-body {
     height: calc(100vh - var(--top-bar-height));
 }
-.body-lang:hover .copy {
-    display: block;
-}
 .svg-lock {
     background: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20fill%3D%22%23B1B4B5%22%20d%3D%22M376.749%20349.097c-13.531%200-24.5-10.969-24.5-24.5V181.932c0-48.083-39.119-87.203-87.203-87.203c-48.083%200-87.203%2039.119-87.203%2087.203v82.977c0%2013.531-10.969%2024.5-24.5%2024.5s-24.5-10.969-24.5-24.5v-82.977c0-75.103%2061.1-136.203%20136.203-136.203s136.203%2061.1%20136.203%20136.203v142.665c0%2013.531-10.969%2024.5-24.5%2024.5z%22%2F%3E%3Cpath%20fill%3D%22%23FFB636%22%20d%3D%22M414.115%20497.459H115.977c-27.835%200-50.4-22.565-50.4-50.4V274.691c0-27.835%2022.565-50.4%2050.4-50.4h298.138c27.835%200%2050.4%2022.565%2050.4%2050.4v172.367c0%2027.836-22.565%2050.401-50.4%2050.401z%22%2F%3E%3Cpath%20fill%3D%22%23FFD469%22%20d%3D%22M109.311%20456.841h-2.525c-7.953%200-14.4-6.447-14.4-14.4V279.309c0-7.953%206.447-14.4%2014.4-14.4h2.525c7.953%200%2014.4%206.447%2014.4%2014.4v163.132c0%207.953-6.447%2014.4-14.4%2014.4z%22%2F%3E%3C%2Fsvg%3E') no-repeat;
     background-size: cover;
@@ -130,8 +127,9 @@ APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
 
+let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/') 
 function createClient(fn) {
-    return new JsonServiceClient().apply(c => {
+    return new JsonServiceClient(BASE_URL).apply(c => {
         let apiFmt = APP.httpHandlers['ApiHandlers.Json']
         if (apiFmt)
             c.basePath = apiFmt.replace('/{Request}', '')
@@ -374,17 +372,6 @@ let store = PetiteVue.reactive({
                     })
             }
         })
-    },
-    
-    copy(text) {
-        this.copied = true
-        let $el = document.createElement("textarea")
-        $el.innerHTML = enc(text)
-        document.body.appendChild($el)
-        $el.select()
-        document.execCommand("copy")
-        document.body.removeChild($el)
-        setTimeout(() => this.copied = false, 3000)
     },
 })
 

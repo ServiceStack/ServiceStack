@@ -327,7 +327,8 @@ Components.push({ ApiResponse })
           </a>
         </span>
 
-        <div v-if="store.body == ''" class="pt-2">
+        <div v-if="store.body == ''" class="pt-2 copy-outer">
+            <div v-if="apiResult.json" v-scope="Copy({ text:() => apiResult.json })"></div>
             <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="apiResult.json"></code></pre>
         </div>
         <div v-else-if="store.body == 'raw'" class="flex pt-2">
