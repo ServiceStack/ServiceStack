@@ -1,52 +1,61 @@
 <script>
-/* store:
-*  - provider
-*  - createHref
-*  - select
-*/
-function SignIn({ plugin, store }) {
-    let inputs = {
-        credentials: [
-            { id:'UserName', type:'text', label:'Email address', attrs: { required:true } },
-            { id:'Password', type:'password', label:'Password', attrs: { required:true } },
-            { id:'RememberMe', type:'checkbox', label:'Remember Me' },
-        ],
-        bearer: [
-            { id:'AccessToken', type:'textarea', label:'Bearer Token', attrs: { required:true } },
-        ],
-        authsecret: [
-            { id:'AuthSecret', type:'password', label:'Auth Secret', attrs: { required:true } },
-        ],
-    }
+function SignIn({ plugin, provider, createHref, select, login, api }) {
+    
     let model = {}
-    Object.keys(inputs).forEach(provider => inputs[provider].forEach(input => model[input.id] = ''))
+    plugin.authProviders.map(x => x.formLayout).filter(x => x)
+        .forEach(formLayout => formLayout.forEach(input => model[input.id] = ''))
 
-    model.UserName = 'admin@email.com'
-    model.Password = 'p@55wOrd'
+    let formProviders = plugin.authProviders.filter(x => x.formLayout)
+    let firstFormProvider = formProviders[0] || {}
+    let lastFormProvider = formProviders[Math.max(formProviders.length - 1,0)] || {}
+    
+    function formLayout(provider) {
+        let authProvider = provider 
+            ? plugin.authProviders.find(x => x.name === provider)
+            : firstFormProvider
+        return authProvider && authProvider.formLayout || []
+    }
+
+    //model.UserName = 'admin@email.com'; model.Password = 'p@55wOrd'
+    model.UserName = 'employee@email.com'; model.Password = 'p@55wOrd'
+    //model.authsecret = 'secret'
     
     return {
         $template: '#signin-template',
-        store,
+        get provider() { return provider() },
+        firstFormProvider,
+        lastFormProvider,
+        createHref,
+        select,
+        get api() { return api() },
+        get errorSummary() {
+            if (!this.api) return ''
+            let except = this.formLayout.map(input => input.id).filter(x => x)
+            return this.api.summaryMessage(except)
+        },
+        get formLayout() { return formLayout(this.provider) },
+        baseUri: document.baseURI,
+        get authProvider() {
+            return plugin.authProviders.find(x => x.name === this.provider)
+        },
+        get authProviderFormTabs()  {
+            return plugin.authProviders.filter(x => x.formLayout && x.formLayout.length > 0)
+                .reduce((acc,x) => {
+                    let label = x.label || toPascalCase(x.name) 
+                    acc[label] = x.name === firstFormProvider.name ? '' : x.name 
+                    return acc
+                }, {})
+        },
         get oauthProviders() {
             return plugin && plugin.authProviders.filter(x => x.type === 'oauth') || []
         },
-        baseUri: document.baseURI,
-        inputs,
         model,
-        api: null,
+        logoUri(dataUri) {
+            return dataUri.replace(/currentColor/g,'%234B5563')  
+        },
         onsubmit(e) {
-            if (store.provider === '') {
-                client.api(new Authenticate({
-                        provider: 'credentials',
-                        ...pick(this.model, inputs.credentials.map(input => input.id))
-                    }))
-                    .then(r => {
-                        this.api = r
-                        if (this.api.succeeded) {
-                            store.auth = this.api.response
-                        }
-                    })
-            }
+            let args = pick(this.model, this.formLayout.map(input => input.id))
+            login(args)
         },
     }
 }
@@ -60,8 +69,9 @@ Components.push({ SignIn })
         </h2>
         <p class="mt-4 text-center text-sm text-gray-600">
             <span class="relative z-0 inline-flex shadow-sm rounded-md">
-              <a v-for="(tab,name) in {Credentials:'','Bearer Token':'bearer','Auth Secret':'authsecret'}" :href="store.createHref({ provider:tab })" @click.prevent="store.select({ provider:tab })"
-                 :class="[{ Credentials:'rounded-l-md','Bearer Token':'-ml-px','Auth Secret':'rounded-r-md -ml-px' }[name], store.provider == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+              <a v-for="(tab,name) in authProviderFormTabs" :href="createHref({ provider:tab })" @click.prevent="select({ provider:tab })"
+                 :class="[tab == '' || tab == firstFormProvider.name ? 'rounded-l-md' : tab == lastFormProvider.name ? 'rounded-r-md -ml-px' : '-ml-px', 
+                         store.provider == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
                 {{name}}
               </a>
             </span>
@@ -69,16 +79,11 @@ Components.push({ SignIn })
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
         <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form @submit.prevent="onsubmit">
-                <div v-if="store.provider==''" class="space-y-6">
-                    <div v-for="input in inputs.credentials" v-scope="Input({ input, model, api })"></div>
-                </div>
-                <div v-else-if="store.provider=='bearer'" class="space-y-6">
-                    <div v-for="input in inputs.bearer" v-scope="Input({ input, model, api })"></div>
-                </div>
-                <div v-else-if="store.provider=='authsecret'" class="space-y-6">
-                    <div v-for="input in inputs.authsecret" v-scope="Input({ input, model, api })"></div>
+            <form v-if="formLayout.length" @submit.prevent="onsubmit">
+                <div ref="inputs" class="space-y-6">
+                    <div v-for="input in formLayout" :key="input.id" v-scope="Input({ input, model, api })"></div>
                 </div>
 
                 <div class="pt-4">
@@ -102,9 +107,13 @@ Components.push({ SignIn })
 
                 <div class="mt-6 grid grid-cols-3 gap-3">
                     <div v-for="provider in oauthProviders">
-                        <a :href="`${provider.navItem.href}?continue=${baseUri}`" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                            <span class="sr-only">Sign in with Facebook</span>
-                            <div v-scope="CompanyLogo({ name:provider.name })"></div>
+                        <a :href="`${provider.navItem.href}?continue=${baseUri}`" :title="provider.navItem && provider.navItem.label" 
+                           class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <img v-if="provider.logoUri" :src="logoUri(provider.logoUri)" class="h-5 w-5 text-gray-700">
+                            <svg v-else class="h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+                                <path d="M16 8a5 5 0 1 0 5 5a5 5 0 0 0-5-5z" fill="currentColor"/>
+                                <path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2zm7.992 22.926A5.002 5.002 0 0 0 19 20h-6a5.002 5.002 0 0 0-4.992 4.926a12 12 0 1 1 15.985 0z" fill="currentColor"/>
+                            </svg>
                         </a>
                     </div>                    
                 </div>
@@ -112,31 +121,4 @@ Components.push({ SignIn })
         </div>
     </div>
 </div>    
-</template>
-
-<script>
-function CompanyLogo({ name }) {
-    return {
-        $template: '#company-logo-template',
-        name,
-    }
-}
-Components.push({ CompanyLogo })
-</script>
-<template id="company-logo-template">
-<svg v-if="name=='facebook'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-    <path fill-rule="evenodd" d="M20 10c0-5.523-4.477-10-10-10S0 4.477 0 10c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V10h2.54V7.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V10h2.773l-.443 2.89h-2.33v6.988C16.343 19.128 20 14.991 20 10z" clip-rule="evenodd" />
-</svg>
-<svg v-else-if="name=='twitter'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-    <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84" />
-</svg>
-<svg v-else-if="name=='github'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-    <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd" />
-</svg>
-<svg v-else-if="name=='microsoftgraph'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-    <path d="M11.55 21H3v-8.55h8.55V21zM21 21h-8.55v-8.55H21V21zm-9.45-9.45H3V3h8.55v8.55zm9.45 0h-8.55V3H21v8.55z" fill="currentColor"/>
-</svg>
-<svg v-else-if="name=='google'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M11.99 13.9v-3.72h9.36c.14.63.25 1.22.25 2.05c0 5.71-3.83 9.77-9.6 9.77c-5.52 0-10-4.48-10-10S6.48 2 12 2c2.7 0 4.96.99 6.69 2.61l-2.84 2.76c-.72-.68-1.98-1.48-3.85-1.48c-3.31 0-6.01 2.75-6.01 6.12s2.7 6.12 6.01 6.12c3.83 0 5.24-2.65 5.5-4.22h-5.51v-.01z" fill="currentColor" />
-</svg>
 </template>

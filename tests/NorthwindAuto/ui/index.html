@@ -86,7 +86,7 @@
 
 <div v-scope="Sidebar({ store })"></div>
 <div class="body">
-    <div v-scope="AuthNav({ auth:store.auth })" class="absolute top-1 right-2"></div>
+    <div v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout(), createHref: args => store.createHref(args), select: args => store.select(args) })" class="absolute top-1 right-2"></div>
     <div v-if="store.op">
         <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
             <nav class="-mb-px flex max-w-screen-md" aria-label="Tabs">
@@ -127,6 +127,17 @@ const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector
 const $$ = (sel, el) => typeof sel === "string"
     ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
     : Array.isArray(sel) ? sel : [sel]
+function on(sel, handlers) {
+    $$(sel).forEach(e => {
+        Object.keys(handlers).forEach(function (evt) {
+            let fn = handlers[evt]
+            if (typeof evt === 'string' && typeof fn === 'function') {
+                e.addEventListener(evt, fn.bind(e))
+            }
+        })
+    })
+}
+
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { window.AUTH = !auth || auth.responseStatus ? null : auth }
 </script>
@@ -142,9 +153,14 @@ APP.api.operations.forEach(op => {
 })
 
 let DEBUG = APP.config.debugMode
-let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/') 
+let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
+let bearerToken = null
+let authsecret = null
+
 function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
+        c.bearerToken = bearerToken
+        if (authsecret) c.headers.set('authsecret', authsecret)
         let apiFmt = APP.httpHandlers['ApiHandlers.Json']
         if (apiFmt)
             c.basePath = apiFmt.replace('/{Request}', '')
@@ -179,6 +195,7 @@ if (other.operations.length > 0) sideNav.push(other)
 let CACHE = {}
 let OpsMap = {}
 let TypesMap = {}
+let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
 APP.api.operations.forEach(op => {
     OpsMap[op.request.name] = op
     TypesMap[op.request.name] = op.request
@@ -241,6 +258,7 @@ let store = PetiteVue.reactive({
     body: '',
     provider:'',
     debug: APP.config.debugMode,
+    api: null,
     auth: window.AUTH,
     get sm() { return isSmall() },
     doLayout() {
@@ -439,6 +457,71 @@ let store = PetiteVue.reactive({
             }
         })
     },
+    
+    SignIn() {
+        return SignIn({ 
+            plugin: APP.plugins.auth, 
+            provider:() => this.provider,
+            createHref:args => this.createHref(args), 
+            select:args => this.select(args), 
+            login:args => this.login(args),
+            api: () => this.api,
+        })
+    },
+    
+    login(args) {
+        let provider = this.provider || 'credentials'
+        let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
+        if (!authProvider) 
+            throw new Error("!authProvider")
+        let auth = new Authenticate()
+        bearerToken = authsecret = null 
+        if (authProvider.type === 'Bearer') {
+            bearerToken = client.bearerToken = (args['BearerToken'] || '').trim()
+        } else if (authProvider.type === 'authsecret') {
+            authsecret = (args['authsecret'] || '').trim()
+            client.headers.set('authsecret',authsecret)
+        } else {
+            auth = new Authenticate({ provider, ...args })
+        }
+        client.api(auth)
+            .then(r => {
+                this.api = r
+                if (r.error && !r.error.message) 
+                    r.error.message = HttpErrors[r.errorCode] || r.errorCode 
+                if (this.api.succeeded) {
+                    this.auth = this.api.response
+                }
+            })
+    },
+    logout() {
+        client.api(new Authenticate({ provider: 'logout' }))
+        authsecret = bearerToken = client.bearerToken = null
+        client.headers.delete('authsecret')
+        this.auth = null
+    },
+
+    invalidAccess() {
+        let op = this.op
+        if (!op || !op.requiresAuth) return null
+        if (!this.auth) return `Requires Authentication`
+        let authRoles = this.auth.roles, authPerms = this.auth.permissions
+        if (authRoles.indexOf('Admin') >= 0) return null
+        
+        let missingRoles = op.requiredRoles.filter(x => authRoles.indexOf(x) < 0)
+        if (missingRoles.length > 0)
+            return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
+        let missingPerms = op.requiredPermissions.filter(x => authPerms.indexOf(x) < 0)
+        if (missingPerms.length > 0)
+            return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+
+        if (missingRoles.length > 0)
+            return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
+        missingPerms = op.requiresAnyPermission.filter(x => authPerms.indexOf(x) < 0)
+        if (missingPerms.length > 0)
+            return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+        return null
+    },
 })
 
 if (op) store.init({ op })
@@ -503,7 +586,7 @@ function typeName(metaType) { return typeName2(metaType.name, metaType.genericAr
 let Components = []
 </script>
 
-<!--shared:Alert,AuthNav,Brand,Copy,Input,Loading,PreviewObject,SignIn-->
+<!--shared:Alert,AuthNav,Brand,Copy,Input,Loading,PreviewObject,SignIn,ErrorSummary-->
 <!--files:components/*.html-->
 
 <script>
