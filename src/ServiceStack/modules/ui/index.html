@@ -320,10 +320,13 @@ let store = PetiteVue.reactive({
     get filteredSideNav() {
         let filter = op => {
             let lowerFilter = this.filter.toLowerCase()
-            if (!this.debug && !this.auth && op.requiresAuth)
-                return false
-            if (invalidAccessMessage(op, this.auth.roles, this.auth.permissions))
-                return false
+            if (op.requiresAuth && !this.debug)
+            {
+                if (!this.auth)
+                    return false
+                if (invalidAccessMessage(op, this.auth.roles, this.auth.permissions))
+                    return false
+            }
             return !lowerFilter || op.request.name.toLowerCase().indexOf(lowerFilter) >= 0
         }
         let ret = this.sideNav.filter(nav => nav.operations.some(filter))
