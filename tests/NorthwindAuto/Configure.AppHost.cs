@@ -3,6 +3,7 @@ using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using MyApp.ServiceInterface;
+using ServiceStack.HtmlModules;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
 
@@ -37,7 +38,12 @@ namespace MyApp
             });
 
             Plugins.RemoveAll(x => x is HtmlModulesFeature { Id: "module:/ui" });
-            Plugins.Add(new HtmlModulesFeature(new HtmlModule("/ui")));
+            Plugins.Add(new HtmlModulesFeature(new HtmlModule("/ui"))
+            {
+                Handlers = {
+                    new SharedFolder("shared", "/shared")
+                }
+            });
             
             Plugins.AddIfDebug(new HotReloadFeature {
                 DefaultPattern = "*.html;*.js;*.css",

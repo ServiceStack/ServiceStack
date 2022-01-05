@@ -1,5 +1,10 @@
 <script>
-function SignIn({ store }) {
+/* store:
+*  - provider
+*  - createHref
+*  - select
+*/
+function SignIn({ plugin, store }) {
     let inputs = {
         credentials: [
             { id:'UserName', type:'text', label:'Email address', attrs: { required:true } },
@@ -15,12 +20,15 @@ function SignIn({ store }) {
     }
     let model = {}
     Object.keys(inputs).forEach(provider => inputs[provider].forEach(input => model[input.id] = ''))
+
+    model.UserName = 'admin@email.com'
+    model.Password = 'p@55wOrd'
     
     return {
         $template: '#signin-template',
         store,
         get oauthProviders() {
-            return APP.plugins.auth && APP.plugins.auth.authProviders.filter(x => x.type === 'oauth') || []
+            return plugin && plugin.authProviders.filter(x => x.type === 'oauth') || []
         },
         baseUri: document.baseURI,
         inputs,

@@ -1,8 +1,10 @@
 <script>
+    
 function Welcome({ store }) {
     return {
         $template: '#welcome-template',
-        store
+        store,
+        authPlugin: APP.plugins.auth,
     }
 }
 Components.push({ Welcome })
@@ -23,8 +25,7 @@ Components.push({ Welcome })
         </div>
     </div>
     
-    <div v-if="!store.auth" v-scope="SignIn({ store })"></div>
-
+    <div v-if="!store.auth" v-scope="SignIn({ plugin:authPlugin, store })"></div>
 
 </div>
 </template>

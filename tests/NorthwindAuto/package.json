@@ -5,6 +5,6 @@
   "scripts": {
     "ui:dev": "npx tailwindcss -c tailwind.config.js -i ui/index.css -o ui/assets/ui.css --watch",
     "ui:build": "npx tailwindcss -c tailwind.config.js -i ui/index.css -o ui/assets/ui.css --minify",
-    "ui:publish": "npm run ui:build && RD /q /s ..\\..\\src\\ServiceStack\\modules\\ui && XCOPY /Y /E /H /C /I ui ..\\..\\src\\ServiceStack\\modules\\ui && DEL ..\\..\\src\\ServiceStack\\modules\\ui\\index.css"
+    "ui:publish": "publish.bat"
   }
 }

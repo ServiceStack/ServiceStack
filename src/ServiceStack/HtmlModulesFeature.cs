@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using ServiceStack.HtmlModules;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Text;
@@ -22,7 +20,7 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     public string Id => "module:" + string.Join(",", Modules.Select(x => x.BasePath).ToArray());
     
     public bool IgnoreIfError { get; set; }
-    
+
     /// <summary>
     /// Define literal tokens to be replaced with dynamic fragments, e.g:
     /// &lt;base href=""&gt; = ctx => $"&lt;base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{DirPath}/")}\"&gt;"
@@ -31,25 +29,14 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
 
     /// <summary>
     /// Define custom html handlers, e.g:
+    /// &lt;!--shared:Brand,Input--&gt;
     /// &lt;!--file:/path/to/single.html--&gt; or /*file:/path/to/single.txt*/
     /// &lt;!--files:/dir/components/*.html--&gt; or /*files:/dir/*.css*/
     /// </summary>
-    public Dictionary<string, Func<HtmlModuleContext, string, ReadOnlyMemory<byte>>> Handlers { get; set; } = new()
+    public List<IHtmlModulesHandler> Handlers { get; set; } = new()
     {
-        ["file"] = (ctx, path) => ctx.Cache($"file:{path}", _ => 
-            ctx.VirtualFiles.GetFile(path.StartsWith("/") ? path : ctx.Module.DirPath.CombineWith(path)).ReadAllText().AsMemory().ToUtf8()),
-        
-        ["files"] = (ctx, paths) => ctx.Cache($"files:{paths}", _ => {
-            var sb = StringBuilderCache.Allocate();
-            var usePath = paths.StartsWith("/")
-                ? paths
-                : ctx.Module.DirPath.CombineWith(paths);
-            foreach (var file in ctx.VirtualFiles.GetAllMatchingFiles(usePath))
-            {
-                sb.AppendLine(file.ReadAllText());
-            }
-            return StringBuilderCache.ReturnAndFree(sb).AsMemory().ToUtf8();
-        })
+        new FileHandler("file"),
+        new FilesHandler("files"),
     };
     
     public HtmlModule[] Modules { get; }
@@ -68,50 +55,6 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
             component.Register(appHost);
         }
     }
-}
-
-public interface IHtmlModuleFragment
-{
-    Task WriteToAsync(HtmlModuleContext ctx, Stream responseStream, CancellationToken token = default);
-}
-public class HtmlTextFragment : IHtmlModuleFragment
-{
-    public ReadOnlyMemory<char> Text { get; }
-    public ReadOnlyMemory<byte> TextUtf8 { get; }
-    public HtmlTextFragment(string text) : this(text.AsMemory()) {}
-    public HtmlTextFragment(ReadOnlyMemory<char> text)
-    {
-        Text = text;
-        TextUtf8 = Text.ToUtf8();
-    }
-    public async Task WriteToAsync(HtmlModuleContext ctx, Stream responseStream, CancellationToken token = default) => 
-        await responseStream.WriteAsync(TextUtf8, token).ConfigAwait();
-}
-public class HtmlTokenFragment : IHtmlModuleFragment
-{
-    public string Token { get; }
-    private readonly Func<HtmlModuleContext, ReadOnlyMemory<byte>> fn;
-    public HtmlTokenFragment(string token, Func<HtmlModuleContext, ReadOnlyMemory<byte>> fn)
-    {
-        this.Token = token;
-        this.fn = fn;
-    }
-    public async Task WriteToAsync(HtmlModuleContext ctx, Stream responseStream, CancellationToken token = default) => 
-        await responseStream.WriteAsync(fn(ctx), token).ConfigAwait();
-}
-public class HtmlHandlerFragment : IHtmlModuleFragment
-{
-    public string Token { get; }
-    public string Args { get; }
-    private readonly Func<HtmlModuleContext, string, ReadOnlyMemory<byte>> fn;
-    public HtmlHandlerFragment(string token, string args, Func<HtmlModuleContext, string, ReadOnlyMemory<byte>> fn)
-    {
-        this.Token = token;
-        this.Args = args;
-        this.fn = fn;
-    }
-    public async Task WriteToAsync(HtmlModuleContext ctx, Stream responseStream, CancellationToken token = default) => 
-        await responseStream.WriteAsync(fn(ctx, Args), token).ConfigAwait();
 }
 
 public class HtmlModuleContext
@@ -148,7 +91,7 @@ public class HtmlModule
     };
 
     public Dictionary<string, Func<HtmlModuleContext, ReadOnlyMemory<byte>>> Tokens { get; set; }
-    public Dictionary<string, Func<HtmlModuleContext, string, ReadOnlyMemory<byte>>> Handlers { get; set; } = new();
+    public List<IHtmlModulesHandler> Handlers { get; set; } = new();
 
     public HtmlModule(string dirPath, string? basePath=null)
     {
@@ -199,7 +142,7 @@ public class HtmlModule
         }
         foreach (var handler in Handlers.Union(Feature?.Handlers ?? new()))
         {
-            var htmlCommentPrefix = "<!--" + handler.Key + ":";
+            var htmlCommentPrefix = "<!--" + handler.Name + ":";
             var pos = indexContents.IndexOf(htmlCommentPrefix);
             if (pos >= 0)
             {
@@ -208,10 +151,10 @@ public class HtmlModule
                     throw new Exception($"{htmlCommentPrefix} is missing -->");
                 var token = indexContents.Slice(pos, (endPos - pos) + "-->".Length).ToString();
                 var args = token.Substring(htmlCommentPrefix.Length, token.Length - htmlCommentPrefix.Length - "-->".Length);
-                fragmentDefs.Add(new(pos, token, new HtmlHandlerFragment(token, args, handler.Value)));
+                fragmentDefs.Add(new(pos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
             }
 
-            var jsCommentPrefix = "/*" + handler.Key + ":";
+            var jsCommentPrefix = "/*" + handler.Name + ":";
             pos = indexContents.IndexOf(jsCommentPrefix);
             if (pos >= 0)
             {
@@ -220,7 +163,7 @@ public class HtmlModule
                     throw new Exception($"{jsCommentPrefix} is missing */");
                 var token = indexContents.Slice(pos, endPos - pos + "-->".Length).ToString();
                 var args = token.Substring(jsCommentPrefix.Length, token.Length - jsCommentPrefix.Length - "*/".Length);
-                fragmentDefs.Add(new(pos, token, new HtmlHandlerFragment(token, args, handler.Value)));
+                fragmentDefs.Add(new(pos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
             }
         }
         fragmentDefs.Sort((a, b) => a.index.CompareTo(b.index));

@@ -86,7 +86,7 @@
 
 <div v-scope="Sidebar({ store })"></div>
 <div class="body">
-    <div v-scope="AuthNav({ store })" class="absolute top-1 right-2"></div>
+    <div v-scope="AuthNav({ auth:store.auth })" class="absolute top-1 right-2"></div>
     <div v-if="store.op">
         <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
             <nav class="-mb-px flex max-w-screen-md" aria-label="Tabs">
@@ -503,6 +503,7 @@ function typeName(metaType) { return typeName2(metaType.name, metaType.genericAr
 let Components = []
 </script>
 
+<!--shared:Alert,AuthNav,Brand,Copy,Input,Loading,PreviewObject,SignIn-->
 <!--files:components/*.html-->
 
 <script>

@@ -1,10 +1,10 @@
 <script>
-function AuthNav({ store }) {
+function AuthNav({ auth }) {
     return {
         $template: '#auth-nav-template',
-        store,
+        auth,
         get displayName() {
-            let auth = this.store.auth
+            let auth = this.auth
             return auth ? auth.displayName || auth.firstName || auth.userName || auth.email : null
         }
     }
@@ -13,10 +13,10 @@ Components.push({ AuthNav })
 </script>
 <template id="auth-nav-template">
 <div class="ml-3 relative z-10">
-    <div v-if="store.auth">
+    <div v-if="auth">
         <button type="button" class="max-w-xs bg-white rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 lg:p-2 lg:rounded-md lg:hover:bg-gray-50" 
                 id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-            <img v-if="store.auth.profileUrl" class="h-8 w-8 rounded-full" :src="store.auth.profileUrl" alt="">
+            <img v-if="auth.profileUrl" class="h-8 w-8 rounded-full" :src="auth.profileUrl" alt="">
             <svg v-else class="h-8 w-8 rounded-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 8a5 5 0 1 0 5 5a5 5 0 0 0-5-5z" fill="currentColor"/>
                 <path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2zm7.992 22.926A5.002 5.002 0 0 0 19 20h-6a5.002 5.002 0 0 0-4.992 4.926a12 12 0 1 1 15.985 0z" fill="currentColor"/>
             </svg>
@@ -29,7 +29,7 @@ Components.push({ AuthNav })
     </div>
     <div v-else>
         <a class="max-w-xs bg-white rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 lg:p-2 lg:rounded-md lg:hover:bg-gray-50"
-                id="user-menu-button" aria-expanded="false" aria-haspopup="true" :href="store.createHref({ op:'' })" @click="store.select({ op:'' })">
+                id="user-signin-button" aria-expanded="false" aria-haspopup="true" :href="store.createHref({ op:'' })" @click="store.select({ op:'' })">
             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M9.586 11L7.05 8.464L8.464 7.05l4.95 4.95l-4.95 4.95l-1.414-1.414L9.586 13H3v-2h6.586zM11 3h8c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2h-8v-2h8V5h-8V3z" fill="currentColor" fill-rule="evenodd"/>
             </svg>
