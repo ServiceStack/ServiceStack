@@ -10,7 +10,10 @@ function Api({ store }) {
         get state() {
             let s = this.store
             let opName = s.op && s.op.request && s.op.request.name
-            if (!opName) throw new Error('!state.opName')
+            if (!opName) {
+                console.log('!state.opName')
+                return null
+            }
             let ret = OP_STATE[opName] || (OP_STATE[opName] = ({
                 opName,
                 op: s.op,
@@ -32,7 +35,8 @@ function Api({ store }) {
                 apiResult: null,
                 get error(){ return this.apiResult && this.apiResult.api.error },
                 get errorSummary() {
-                  return this.apiResult && this.apiResult.api.summaryMessage(this.formLayout.flatMap(group => group.map(input => input.id)))   
+                    let except = this.formLayout.flatMap(group => group.map(input => input.id)).filter(x => x)
+                    return this.apiResult && this.apiResult.api.summaryMessage(except)   
                 },
                 title: s.op.request.description || humanify(s.op.request.name),
                 get apiRequestJson() { return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || '' },
@@ -286,61 +290,71 @@ function supportsProp(prop) {
 
 </script>
 <template id="api-template">
-<nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
-    <a v-for="(tab,name) in tabs"  :href="store.createHref({ form:tab })" @click.prevent="select({ form:tab })"
-       :class="[store.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
-        {{name}}
-    </a>
-</nav>
-    
-<div v-if="store.form==''" class="p-4 max-w-screen-md"
-     v-scope="AutoForm({ 
-        state: () => state,  
-        onsubmit: e => onAjaxFormSubmit(e),
-        //oninput:  e => onAjaxFormInput(e),
-    })"></div>
-<div v-if="store.form=='json'">
+<div v-if="state">
+    <nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
+        <a v-for="(tab,name) in tabs"  :href="store.createHref({ form:tab })" @click.prevent="select({ form:tab })"
+           :class="[store.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
+            {{name}}
+        </a>
+    </nav>
 
-<form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="p-4">
-    <div class="shadow overflow-hidden sm:rounded-md bg-white">
-        <div class="relative px-4 py-5 bg-white sm:p-6">
-            <fieldset>
-                <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
-                <div class="flex flex-col">
-                    <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput">{{state.apiRequestJson}}</textarea>
-                    <div v-if="state.formJson" class="mt-1">
-                        <div v-if="state.jsonError" class="1 flex items-end">
-                            <svg class="text-red-600 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <g fill="none">
-                                    <path d="M20 20L4 4m16 0L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </g>
-                            </svg>
-                            <p class="ml-1 text-md text-red-500">{{(state.jsonError || {}).type=='submit' ? state.jsonError.message : 'invalid'}}</p>
-                        </div>
-                        <div v-else-if="state.apiRequestJson">
-                            <svg class="text-green-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <g fill="none"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
-                            </svg>
+    <div v-if="state.op.requiresAuth && !store.auth" class="p-4">
+        <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
+        <div v-scope="store.SignIn()"></div>
+    </div>
+    <div v-else>
+
+        <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
+
+        <div v-if="store.form==''" class="p-4 max-w-screen-md"
+             v-scope="AutoForm({ 
+                state: () => state,  
+                onsubmit: e => onAjaxFormSubmit(e),
+                //oninput:  e => onAjaxFormInput(e),
+            })"></div>
+        <div v-if="store.form=='json'">
+
+            <form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="p-4">
+                <div class="shadow overflow-hidden sm:rounded-md bg-white">
+                    <div class="relative px-4 py-5 bg-white sm:p-6">
+                        <fieldset>
+                            <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
+                            <div class="flex flex-col">
+                                <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput">{{state.apiRequestJson}}</textarea>
+                                <div v-if="state.formJson" class="mt-1">
+                                    <div v-if="state.jsonError" class="1 flex items-end">
+                                        <svg class="text-red-600 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <g fill="none">
+                                                <path d="M20 20L4 4m16 0L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                            </g>
+                                        </svg>
+                                        <p class="ml-1 text-md text-red-500">{{(state.jsonError || {}).type=='submit' ? state.jsonError.message : 'invalid'}}</p>
+                                    </div>
+                                    <div v-else-if="state.apiRequestJson">
+                                        <svg class="text-green-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <g fill="none"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+                        <div class="flex justify-end">
+                            <button type="submit" :disabled="state.jsonError"
+                                    :class="[state.jsonError ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', 
+                                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white']">
+                                Submit
+                            </button>
                         </div>
                     </div>
                 </div>
-            </fieldset>
+            </form>
         </div>
-        <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
-            <div class="flex justify-end">
-                <button type="submit" :disabled="state.jsonError" 
-                        :class="[state.jsonError ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', 
-                            'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white']">
-                    Submit
-                </button>
-            </div>
-        </div>
-    </div>
-</form>
-    
-</div>
 
-<div v-if="state.apiResult" v-scope="ApiResponse({ store, apiResult:state.apiResult })"></div>
+        <div v-if="state.apiResult" v-scope="ApiResponse({ store, apiResult:state.apiResult })"></div>
+    </div>
+</div>
 </template>
 
 <script>
@@ -408,7 +422,7 @@ Components.push({ ApiResponse })
     </div>
     <div v-else-if="store.response == 'cookies'" class="p-4">
         <div v-if="apiResult.cookies && toKvps(apiResult.cookies).length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
-        <div v-scope="Alert({ message:'HttpOnly Cookies are not displayed' })"></div>
+        <div v-scope="Alert({ message: () => 'HttpOnly Cookies are not displayed' })"></div>
     </div>
     <div v-else-if="store.response == 'headers'" class="p-4">
         <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:toKvps(apiResult.headers) })"></div>

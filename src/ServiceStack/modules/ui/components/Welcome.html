@@ -4,15 +4,14 @@ function Welcome({ store }) {
     return {
         $template: '#welcome-template',
         store,
-        authPlugin: APP.plugins.auth,
     }
 }
 Components.push({ Welcome })
 </script>
 <template id="welcome-template">
-<div class="mt-8 pl-4 pt-5">
+<div class="mt-8 px-4 pt-5">
 
-    <div v-if="store.debug" class="mb-5 bg-pink-50 border-l-4 border-pink-400 p-4">
+    <div v-if="store.debug" class="mt-12 mb-5 bg-pink-50 border-l-4 border-pink-400 p-4">
         <div class="flex">
             <div class="flex-shrink-0">
                 <svg class="mt-0.5 w-6 h-6 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
@@ -25,7 +24,37 @@ Components.push({ Welcome })
         </div>
     </div>
     
-    <div v-if="!store.auth" v-scope="SignIn({ plugin:authPlugin, store })"></div>
+    <div v-if="!store.auth" v-scope="store.SignIn()"></div>
+    <div v-else class="rounded-lg bg-white overflow-hidden shadow">
+        <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
+        <div class="bg-white p-6">
+            <div class="sm:flex sm:items-center sm:justify-between">
+                <div class="sm:flex sm:space-x-5">
+                    <div class="flex-shrink-0">
+                        <img class="mx-auto h-22 w-22 rounded-full" 
+                             :src="store.auth.profileUrl" alt="">
+                    </div>
+                    <div class="mt-4 sm:mt-0 sm:pt-1 sm:text-left">
+                        <p class="text-sm font-medium text-gray-600">Welcome back,</p>
+                        <p class="text-xl font-bold text-gray-900 sm:text-2xl mb-2">{{ store.displayName }}</p>
+                        <div v-if="store.auth.roles.length" class="mb-2 flex">
+                            <span v-for="role in store.auth.roles" title="Role" 
+                                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {{role}}
+                            </span>
+                        </div>
+                        <div v-if="store.auth.permissions.length" class="mb-2 flex">
+                            <span v-for="perm in store.auth.permissions" title="Permission" 
+                                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              {{perm}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    
+    
 
 </div>
 </template>

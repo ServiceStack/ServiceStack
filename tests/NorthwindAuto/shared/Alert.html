@@ -2,7 +2,7 @@
 function Alert({ message }) {
     return {
         $template: `#alert-template`,
-        message,
+        get message() { return message() },
     }
 }
 Components.push({ Alert })

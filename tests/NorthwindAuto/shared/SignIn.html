@@ -17,7 +17,7 @@ function SignIn({ plugin, provider, createHref, select, login, api }) {
     }
 
     //model.UserName = 'admin@email.com'; model.Password = 'p@55wOrd'
-    model.UserName = 'employee@email.com'; model.Password = 'p@55wOrd'
+    //model.UserName = 'employee@email.com'; model.Password = 'p@55wOrd'
     //model.authsecret = 'secret'
     
     return {
@@ -67,7 +67,7 @@ Components.push({ SignIn })
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
         </h2>
-        <p class="mt-4 text-center text-sm text-gray-600">
+        <p v-if="Object.keys(authProviderFormTabs).length > 1" class="mt-4 text-center text-sm text-gray-600">
             <span class="relative z-0 inline-flex shadow-sm rounded-md">
               <a v-for="(tab,name) in authProviderFormTabs" :href="createHref({ provider:tab })" @click.prevent="select({ provider:tab })"
                  :class="[tab == '' || tab == firstFormProvider.name ? 'rounded-l-md' : tab == lastFormProvider.name ? 'rounded-r-md -ml-px' : '-ml-px', 

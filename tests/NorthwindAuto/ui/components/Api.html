@@ -299,12 +299,12 @@ function supportsProp(prop) {
     </nav>
 
     <div v-if="state.op.requiresAuth && !store.auth" class="p-4">
-        <div v-scope="Alert({ message: 'Requires Authentication' })"></div>
+        <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
         <div v-scope="store.SignIn()"></div>
     </div>
     <div v-else>
 
-        <div v-if="store.invalidAccess()" v-scope="Alert({ message: store.invalidAccess() })" class="pt-4 px-4"></div>
+        <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
 
         <div v-if="store.form==''" class="p-4 max-w-screen-md"
              v-scope="AutoForm({ 
@@ -422,7 +422,7 @@ Components.push({ ApiResponse })
     </div>
     <div v-else-if="store.response == 'cookies'" class="p-4">
         <div v-if="apiResult.cookies && toKvps(apiResult.cookies).length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
-        <div v-scope="Alert({ message:'HttpOnly Cookies are not displayed' })"></div>
+        <div v-scope="Alert({ message: () => 'HttpOnly Cookies are not displayed' })"></div>
     </div>
     <div v-else-if="store.response == 'headers'" class="p-4">
         <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:toKvps(apiResult.headers) })"></div>

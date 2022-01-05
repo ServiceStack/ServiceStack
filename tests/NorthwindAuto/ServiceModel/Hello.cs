@@ -4,6 +4,7 @@ namespace MyApp.ServiceModel;
 
 [Tag("hello")]
 [Route("/hello/{Name}")]
+[ValidateHasRole("Employee")]
 public class Hello : IReturn<HelloResponse>
 {
     public string Name { get; set; }

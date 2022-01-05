@@ -1,4 +1,4 @@
-npm run ui:build 
+call npm run ui:build 
 RD /q /s ..\..\src\ServiceStack\modules\ui 
 XCOPY /Y /E /H /C /I ui ..\..\src\ServiceStack\modules\ui 
 DEL ..\..\src\ServiceStack\modules\ui\index.css

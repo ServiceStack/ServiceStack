@@ -17,9 +17,11 @@
     --body-height-from-top-bar: calc(100vh - var(--top-bar-height));
     --body-height-from-nav-bar: calc(100vh - var(--top-filter-height));
 }
-
 ::-webkit-scrollbar{width:var(--scroll-width);height:var(--scroll-height)}
 ::-webkit-scrollbar-thumb{background-color:#ccc}
+b {
+    font-weight: 500;
+}
 .sidebar {
     width: var(--sidebar-width);
     min-height: 100vh;
@@ -152,6 +154,7 @@ APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
 
+//APP.config.debugMode = false
 let DEBUG = APP.config.debugMode
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
@@ -218,28 +221,23 @@ function isSmall() {
     return window.matchMedia('(max-width:640px)').matches
 }
 
-function EventBus() {
-    let subscriptions = {}
-    this.subscribe = function(type, callback) {
-        let id = Symbol('id')
-        if (!subscriptions[type]) subscriptions[type] = {}
-        subscriptions[type][id] = callback
-        return {
-            unsubscribe: function() {
-                delete subscriptions[type][id]
-                if (Object.getOwnPropertySymbols(subscriptions[type]).length === 0) {
-                    delete subscriptions[type]
-                }
-            }
-        }
-    }
-    this.publish = function(eventType, arg) {
-        if (!subscriptions[eventType]) return;
-        Object.getOwnPropertySymbols(subscriptions[eventType])
-            .forEach(key => subscriptions[eventType][key](arg))
-    }
+function invalidAccessMessage(op, authRoles, authPerms) {
+    if (authRoles.indexOf('Admin') >= 0) return null
+
+    let missingRoles = op.requiredRoles.filter(x => authRoles.indexOf(x) < 0)
+    if (missingRoles.length > 0)
+        return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
+    let missingPerms = op.requiredPermissions.filter(x => authPerms.indexOf(x) < 0)
+    if (missingPerms.length > 0)
+        return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+
+    if (missingRoles.length > 0)
+        return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
+    missingPerms = op.requiresAnyPermission.filter(x => authPerms.indexOf(x) < 0)
+    if (missingPerms.length > 0)
+        return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+    return null
 }
-let Events = new EventBus()
 
 let store = PetiteVue.reactive({
     activeOp: '',
@@ -311,7 +309,6 @@ let store = PetiteVue.reactive({
         this.loadLang()
         this.loadPreview()
         this.doLayout()
-        Events.publish('init', args)
     },
 
     select(args) {
@@ -321,16 +318,21 @@ let store = PetiteVue.reactive({
     },
 
     get filteredSideNav() {
-        let lowerFilter = this.filter.toLowerCase()
-        let ret = this.filter
-            ? this.sideNav.filter(nav => nav.operations.some(op => op.request.name.toLowerCase().indexOf(lowerFilter) >= 0))
-                .map(nav => ({
-                    ...nav,
-                    operations: nav.operations.filter(op => op.request.name.toLowerCase().indexOf(lowerFilter) >= 0)
-                }))
-            : this.sideNav
-        //return [...ret, ...ret, ...ret, ...ret]
-        return ret
+        let filter = op => {
+            let lowerFilter = this.filter.toLowerCase()
+            if (!this.debug && !this.auth && op.requiresAuth)
+                return false
+            if (invalidAccessMessage(op, this.auth.roles, this.auth.permissions))
+                return false
+            return !lowerFilter || op.request.name.toLowerCase().indexOf(lowerFilter) >= 0
+        }
+        let ret = this.sideNav.filter(nav => nav.operations.some(filter))
+            .map(nav => ({
+                ...nav,
+                operations: nav.operations.filter(filter)
+            }))
+
+        return ret    
     },
     
     toggle(tag) {
@@ -494,6 +496,7 @@ let store = PetiteVue.reactive({
                 }
             })
     },
+    
     logout() {
         client.api(new Authenticate({ provider: 'logout' }))
         authsecret = bearerToken = client.bearerToken = null
@@ -501,26 +504,18 @@ let store = PetiteVue.reactive({
         this.auth = null
     },
 
+    get displayName() {
+        let auth = this.auth
+        return auth 
+            ? auth.displayName || (auth.firstName ? `${auth.firstName} ${auth.lastName}` : null) || auth.userName || auth.email 
+            : null
+    },
+
     invalidAccess() {
         let op = this.op
         if (!op || !op.requiresAuth) return null
-        if (!this.auth) return `Requires Authentication`
-        let authRoles = this.auth.roles, authPerms = this.auth.permissions
-        if (authRoles.indexOf('Admin') >= 0) return null
-        
-        let missingRoles = op.requiredRoles.filter(x => authRoles.indexOf(x) < 0)
-        if (missingRoles.length > 0)
-            return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-        let missingPerms = op.requiredPermissions.filter(x => authPerms.indexOf(x) < 0)
-        if (missingPerms.length > 0)
-            return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
-
-        if (missingRoles.length > 0)
-            return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-        missingPerms = op.requiresAnyPermission.filter(x => authPerms.indexOf(x) < 0)
-        if (missingPerms.length > 0)
-            return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
-        return null
+        if (!this.auth) return `<b>${op.request.name}</b> requires Authentication`
+        return invalidAccessMessage(op, this.auth.roles, this.auth.permissions)
     },
 })
 

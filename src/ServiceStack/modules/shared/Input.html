@@ -35,10 +35,10 @@ Components.push({ Input })
 </script>
 <template id="input-template">
 <div v-if="input.type=='divider'" class="border-t"></div>
-<input v-else-if="input.type=='hidden'" v-bind="input.attrs" type="hidden" v-model="model[input.id]" />
+<input v-else-if="input.type=='hidden'" v-bind="input" type="hidden" v-model="model[input.id]" />
 <div v-else-if="input.type=='checkbox'" class="relative flex items-start">
     <div class="flex items-center h-5">
-        <input :id="input.id" v-bind="input.attrs" type="checkbox" v-model="model[input.id]"
+        <input v-bind="input" type="checkbox" v-model="model[input.id]"
                :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
     </div>
@@ -53,16 +53,16 @@ Components.push({ Input })
     <label v-if="useLabel(input)" :for="input.id" class="block text-sm font-medium text-gray-700"
            v-html="useLabel(input)"></label>
     <div class="mt-1 relative rounded-md shadow-sm">
-        <select v-if="input.type=='select'" :id="input.id" v-bind="input.attrs"
+        <select v-if="input.type=='select'" v-bind="input"
                 :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                 :class="inputClass(input)" v-model="model[input.id]">
             <option v-if="input['data-type']=='Nullable`1'"></option>
             <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
         </select>
-        <textarea v-else-if="input.type=='textarea'" :id="input.id" v-bind="input.attrs" :placeholder="usePlaceholder(input)"
+        <textarea v-else-if="input.type=='textarea'" v-bind="input" :placeholder="usePlaceholder(input)"
                   :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                   :class="inputClass(input)" v-model="model[input.id]"></textarea>
-        <input v-else v-bind="input.attrs" :type="input.type||'text'" :id="input.id" :placeholder="usePlaceholder(input)" autocomplete="new-password"
+        <input v-else v-bind="input" v-bind="input" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
                :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                :class="inputClass(input)" v-model="model[input.id]" />
 
