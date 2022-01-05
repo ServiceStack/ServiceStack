@@ -24,8 +24,11 @@ public class ModuleTests
         var uiIndexFile = ssResources.GetFile("/modules/ui/index.html");
         Assert.That(uiIndexFile, Is.Not.Null);
 
+        var sharedComponentFiles = ssResources.GetAllMatchingFiles("/modules/shared/*.html").ToList();
+        Assert.That(sharedComponentFiles.Count, Is.GreaterThanOrEqualTo(8));
+
         var componentFiles = ssResources.GetAllMatchingFiles("/modules/ui/components/*.html").ToList();
-        Assert.That(componentFiles.Count, Is.GreaterThanOrEqualTo(7));
+        Assert.That(componentFiles.Count, Is.GreaterThanOrEqualTo(6));
     }
 
     [Test]

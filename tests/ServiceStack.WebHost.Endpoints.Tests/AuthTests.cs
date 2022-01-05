@@ -1494,14 +1494,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 var logoutResponse = client.Get<AuthenticateResponse>("/auth/logout");
 
-                Assert.That(logoutResponse.ResponseStatus.ErrorCode, Is.Null);
+                Assert.That(logoutResponse.ResponseStatus?.ErrorCode, Is.Null);
 
                 logoutResponse = client.Send(new Authenticate
                 {
                     provider = AuthenticateService.LogoutAction,
                 });
 
-                Assert.That(logoutResponse.ResponseStatus.ErrorCode, Is.Null);
+                Assert.That(logoutResponse.ResponseStatus?.ErrorCode, Is.Null);
             }
             catch (WebServiceException webEx)
             {
