@@ -46,6 +46,12 @@ namespace ServiceStack.Auth
         public static string UrlFilter(AuthContext provider, string url) => url;
 
         public NavItem NavItem { get; set; }
+        
+        public int Sort { get; set; }
+        public string Label { get; set; }
+        public string LogoUri { get; set; }
+
+        public List<InputInfo> FormLayout { get; set; }
 
         public HashSet<string> ExcludeAuthInfoItems { get; set; } = new(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
 

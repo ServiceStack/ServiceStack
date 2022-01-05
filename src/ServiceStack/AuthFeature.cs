@@ -153,6 +153,21 @@ namespace ServiceStack
             new(){ Input.For<Authenticate>(x => x.RememberMe) },
         };
 
+        public MetaAuthProvider AdminAuthSecretInfo { get; set; } = new() {
+            Name = Keywords.AuthSecret,
+            Type = Keywords.AuthSecret,
+            Label = "Auth Secret",
+            FormLayout = new()
+            {
+                new InputInfo(Keywords.AuthSecret, Input.Types.Password)
+                {
+                    Label = "Auth Secret",
+                    Placeholder = "Admin Auth Secret",
+                    Required = true,
+                }
+            }
+        };
+
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
         /// </summary>
@@ -372,13 +387,20 @@ namespace ServiceStack
                         if (register != null)
                             routes[nameof(RegisterService)] = new []{ register.AtRestPath };
                     }),
-                    AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
-                        Type = x.Type,
-                        Name = x.Provider,
-                        NavItem = (x as AuthProvider)?.NavItem,
-                        Meta = x.Meta,
-                    })
+                    AuthProviders = AuthenticateService.GetAuthProviders()
+                        .OrderBy(x => (x as AuthProvider)?.Sort ?? 0)
+                        .Map(x => new MetaAuthProvider {
+                            Type = x.Type,
+                            Name = x.Provider,
+                            Label = (x as AuthProvider)?.Label,
+                            LogoUri = (x as AuthProvider)?.LogoUri,
+                            NavItem = (x as AuthProvider)?.NavItem,
+                            FormLayout = (x as AuthProvider)?.FormLayout,
+                            Meta = x.Meta,
+                        })
                 };
+                if (meta.Plugins.Auth.HasAuthSecret == true && AdminAuthSecretInfo != null)
+                    meta.Plugins.Auth.AuthProviders.Add(AdminAuthSecretInfo);
             });
 
             OnAfterInit.ForEach(x => x(this));

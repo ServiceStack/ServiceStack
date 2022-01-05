@@ -9,6 +9,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ServiceStack.Html;
 
 namespace ServiceStack.Auth
 {
@@ -147,6 +148,15 @@ namespace ServiceStack.Auth
 
         protected virtual void Init(IAppSettings appSettings = null)
         {
+            Label = "API Key";
+            FormLayout = new() {
+                new InputInfo(nameof(IHasBearerToken.BearerToken), Input.Types.Textarea) {
+                    Label = "API Key",
+                    Placeholder = "",
+                    Required = true,
+                },
+            };
+            
             InitSchema = true;
             RequireSecureConnection = true;
             Environments = DefaultEnvironments;

@@ -6,6 +6,7 @@ using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ServiceStack.Html;
 
 namespace ServiceStack.Auth
 {
@@ -39,13 +40,39 @@ namespace ServiceStack.Auth
         {
             Provider = Name;
             AuthRealm = Realm;
+            Init();
         }
 
         public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
-            : base(appSettings, authRealm, authProvider) { }
+            : base(appSettings, authRealm, authProvider)
+        {
+            Init();
+        }
 
         public CredentialsAuthProvider(IAppSettings appSettings)
-            : base(appSettings, Realm, Name) { }
+            : base(appSettings, Realm, Name)
+        {
+            Init();
+        }
+
+        protected virtual void Init()
+        {
+            Sort = -1;
+            Label = "Credentials";
+            FormLayout = new() {
+                Input.For<Authenticate>(x => x.UserName, c =>
+                {
+                    c.Label = "Email address";
+                    c.Required = true;
+                }),
+                Input.For<Authenticate>(x => x.Password, c =>
+                {
+                    c.Type = "Password";
+                    c.Required = true;
+                }),
+                Input.For<Authenticate>(x => x.RememberMe),
+            };
+        }
         
         public virtual async Task<bool> TryAuthenticateAsync(IServiceBase authService, string userName, string password, CancellationToken token=default)
         {
