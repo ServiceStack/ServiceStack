@@ -110,9 +110,6 @@ function addReferencedTypes(allTypesMap, type) {
         </div>
     </div>
 
-    <h2 v-if="request.description" class="mb-3 text-gray-700 text-2xl text-center">{{request.description}}</h2>
-    <div v-if="request.notes" class="notes mb-3 text-gray-700 bg-gray-50 p-4 rounded" v-html="request.notes"></div>
-
     <div>
         <div class="flex justify-between w-full">
             <div>
@@ -146,6 +143,9 @@ function addReferencedTypes(allTypesMap, type) {
     <div>
         <div v-for="group in opReferencedTypes(op)">
             <div class="flex flex-col mb-3">
+                <h2 v-if="group[0].type.description" class="my-3 text-gray-700 text-2xl text-center">{{group[0].type.description}}</h2>
+                <div v-if="group[0].type.notes" class="notes mb-3 text-gray-700 bg-gray-50 p-4 text-center rounded" v-html="group[0].type.notes"></div>
+                
                 <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
                 <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">

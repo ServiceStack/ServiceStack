@@ -424,7 +424,7 @@ Components.push({ ApiResponse })
     </div>
     <div v-else-if="store.response == 'cookies'" class="p-4">
         <div v-if="apiResult.cookies && toKvps(apiResult.cookies).length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
-        <div v-scope="Alert({ message: () => 'HttpOnly Cookies are not displayed' })"></div>
+        <div v-scope="Alert({ message: () => 'HttpOnly Cookies are not shown' })"></div>
     </div>
     <div v-else-if="store.response == 'headers'" class="p-4">
         <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:toKvps(apiResult.headers) })"></div>
