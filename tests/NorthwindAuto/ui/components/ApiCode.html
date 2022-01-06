@@ -287,7 +287,7 @@ Components.push({ ApiCode, InstallTool })
                         <div class="ml-3" v-if="store.activeLangSrc" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
                     </div>
                     <div class="text-lg p-4">
-                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonHttpClient</em>
+                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em> or <em>JsonHttpClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4">
                         <div class="icon-right" v-scope="CopyIcon({ text:() => csharpSrc })" title="Copy code"></div>
@@ -336,15 +336,11 @@ import { Hello } from './dtos'
 
 let client = new JsonServiceClient('{BASE_URL}')
 
-(async () =&gt; {
-    
-    let response = await client.get(new Hello({
-        //...
-    }))
+let response = await client.send(new Hello({
+    //...
+}))
 
-    Inspect.printDump(response)
-
-})()    
+Inspect.printDump(response)
 </template>
 <template id="dart-help">
 import 'dart:io';
@@ -425,9 +421,9 @@ Inspect.printDump(response)
 <template id="vbnet-help">
 Imports ServiceStack
 
-Dim client = New JsonServiceClient("{BASE_URL}")
+Dim client = New JsonHttpClient("{BASE_URL}")
 
-Dim response = client.Send(New Hello() With {
+Dim response = Await client.SendAsync(New Hello() With {
     '...
 })
 
@@ -437,7 +433,7 @@ Inspect.printDump(response)
 <template id="fsharp-help">
 open ServiceStack
 
-let client = new JsonHttpClient("{BASE_URL}")
+let client = new JsonServiceClient("{BASE_URL}")
 
 let response = client.Send(new Hello(
     //...
