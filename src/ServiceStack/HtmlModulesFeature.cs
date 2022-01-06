@@ -41,7 +41,7 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     
     public HtmlModule[] Modules { get; }
     public HtmlModulesFeature(params HtmlModule[] modules) => Modules = modules;
-    public Action<HtmlModule>? Configure { get; set; }
+    public Action<IAppHost, HtmlModule>? Configure { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
     public void Register(IAppHost appHost)
@@ -51,7 +51,7 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
         {
             component.Feature = this;
             component.VirtualFiles ??= VirtualFiles;
-            Configure?.Invoke(component);
+            Configure?.Invoke(appHost, component);
             component.Register(appHost);
         }
     }
@@ -134,37 +134,55 @@ public class HtmlModule
         var indexContents = indexFile.ReadAllText().AsMemory();
         
         var fragmentDefs = new List<FragmentTuple>();
+        var tokenPos = 0;
         foreach (var entry in Tokens.Union(Feature?.Tokens ?? new()))
         {
-            var pos = indexContents.IndexOf(entry.Key);
-            if (pos == -1) continue;
-            fragmentDefs.Add(new(pos, entry.Key, new HtmlTokenFragment(entry.Key, entry.Value)));
+            do
+            {
+                tokenPos = indexContents.IndexOf(entry.Key, tokenPos);
+                if (tokenPos == -1) continue;
+                fragmentDefs.Add(new(tokenPos, entry.Key, new HtmlTokenFragment(entry.Key, entry.Value)));
+                tokenPos += entry.Key.Length;
+            } while (tokenPos >= 0);
         }
         foreach (var handler in Handlers.Union(Feature?.Handlers ?? new()))
         {
             var htmlCommentPrefix = "<!--" + handler.Name + ":";
-            var pos = indexContents.IndexOf(htmlCommentPrefix);
-            if (pos >= 0)
-            {
-                var endPos = indexContents.IndexOf("-->", pos);
-                if (endPos == -1)
-                    throw new Exception($"{htmlCommentPrefix} is missing -->");
-                var token = indexContents.Slice(pos, (endPos - pos) + "-->".Length).ToString();
-                var args = token.Substring(htmlCommentPrefix.Length, token.Length - htmlCommentPrefix.Length - "-->".Length);
-                fragmentDefs.Add(new(pos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
-            }
-
             var jsCommentPrefix = "/*" + handler.Name + ":";
-            pos = indexContents.IndexOf(jsCommentPrefix);
-            if (pos >= 0)
+            int htmlPos = 0;
+            int jsPos = 0;
+            do
             {
-                var endPos = indexContents.IndexOf("*/", pos);
-                if (endPos == -1)
-                    throw new Exception($"{jsCommentPrefix} is missing */");
-                var token = indexContents.Slice(pos, endPos - pos + "-->".Length).ToString();
-                var args = token.Substring(jsCommentPrefix.Length, token.Length - jsCommentPrefix.Length - "*/".Length);
-                fragmentDefs.Add(new(pos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
-            }
+                if (htmlPos != -1)
+                {
+                    htmlPos = indexContents.IndexOf(htmlCommentPrefix, htmlPos);
+                    if (htmlPos >= 0)
+                    {
+                        var endPos = indexContents.IndexOf("-->", htmlPos);
+                        if (endPos == -1)
+                            throw new Exception($"{htmlCommentPrefix} is missing -->");
+                        var token = indexContents.Slice(htmlPos, (endPos - htmlPos) + "-->".Length).ToString();
+                        var args = token.Substring(htmlCommentPrefix.Length, token.Length - htmlCommentPrefix.Length - "-->".Length);
+                        fragmentDefs.Add(new(htmlPos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
+                        htmlPos = endPos;
+                    }
+                }
+
+                if (jsPos != -1)
+                {
+                    jsPos = indexContents.IndexOf(jsCommentPrefix, jsPos);
+                    if (jsPos >= 0)
+                    {
+                        var endPos = indexContents.IndexOf("*/", jsPos);
+                        if (endPos == -1)
+                            throw new Exception($"{jsCommentPrefix} is missing */");
+                        var token = indexContents.Slice(jsPos, endPos - jsPos + "-->".Length).ToString();
+                        var args = token.Substring(jsCommentPrefix.Length, token.Length - jsCommentPrefix.Length - "*/".Length);
+                        fragmentDefs.Add(new(jsPos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
+                        jsPos = endPos;
+                    }
+                }
+            } while (htmlPos >= 0 || jsPos >= 0);
         }
         fragmentDefs.Sort((a, b) => a.index.CompareTo(b.index));
 
