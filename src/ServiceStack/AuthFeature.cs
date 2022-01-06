@@ -328,6 +328,8 @@ namespace ServiceStack
 
             appHost.RegisterServices(ServiceRoutes);
             appHost.ConfigureOperation<Authenticate>(op => op.FormLayout = FormLayout);
+            appHost.ConfigureOperation<AssignRoles>(op => op.AddRole(RoleNames.Admin));
+            appHost.ConfigureOperation<UnAssignRoles>(op => op.AddRole(RoleNames.Admin));
 
             var sessionFeature = RegisterPlugins.OfType<SessionFeature>().FirstOrDefault();
             if (sessionFeature != null)

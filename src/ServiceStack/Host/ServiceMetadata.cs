@@ -821,6 +821,20 @@ namespace ServiceStack.Host
                 RequestPropertyValidationRules.AddRange(propertyValidators);
             }
         }
+
+        public Operation AddRole(string role)
+        {
+            RequiredRoles.AddIfNotExists(role);
+            RequiresAuthentication = true;
+            return this;
+        }
+
+        public Operation AddPermission(string permission)
+        {
+            RequiredPermissions.AddIfNotExists(permission);
+            RequiresAuthentication = true;
+            return this;
+        }
     }
 
     public class OperationDto
