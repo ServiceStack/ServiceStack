@@ -58,6 +58,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     public string BearerToken { get; set; }
     public string RefreshToken { get; set; }
     public string RefreshTokenUri { get; set; }
+    public bool EnableAutoRefreshToken { get; set; } = true;
 
     public bool UseCookies { get; set; } = true;
 
@@ -295,7 +296,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
                 var hasRefreshToken = RefreshToken != null;
-                if (hasRefreshToken)
+                if (EnableAutoRefreshToken && hasRefreshToken)
                 {
                     var refreshDto = new GetAccessToken {
                         RefreshToken = RefreshToken,

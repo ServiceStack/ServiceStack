@@ -91,6 +91,7 @@ namespace ServiceStack
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
             this.UserAgent = DefaultUserAgent;
+            this.EnableAutoRefreshToken = true;
 
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
 
@@ -412,6 +413,20 @@ namespace ServiceStack
         private string refreshTokenUri;
 
         /// <summary>
+        /// Whether to enable auto refreshing token of JWT Tokens from Refresh Tokens
+        /// </summary>
+        public bool EnableAutoRefreshToken
+        {
+            get => enableAutoRefreshToken;
+            set
+            {
+                enableAutoRefreshToken = value;
+                asyncClient.EnableAutoRefreshToken = value;
+            }
+        }
+        private bool enableAutoRefreshToken;
+
+        /// <summary>
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
         /// </summary>
@@ -674,7 +689,7 @@ namespace ServiceStack
                     || hasRefreshToken
                     || OnAuthenticationRequired != null))
                 {
-                    if (hasRefreshToken)
+                    if (EnableAutoRefreshToken && hasRefreshToken)
                     {
                         var refreshRequest = new GetAccessToken {
                             RefreshToken = RefreshToken,

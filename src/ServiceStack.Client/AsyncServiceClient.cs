@@ -49,6 +49,7 @@ namespace ServiceStack
         public string RefreshToken { get; set; }
 
         public string RefreshTokenUri { get; set; }
+        public bool EnableAutoRefreshToken { get; set; }
         
         public static int BufferSize = 8192;
 
@@ -379,7 +380,7 @@ namespace ServiceStack
                 {
                     try
                     {
-                        if (hasRefreshToken)
+                        if (EnableAutoRefreshToken && hasRefreshToken)
                         {
                             var refreshRequest = new GetAccessToken {
                                 RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
