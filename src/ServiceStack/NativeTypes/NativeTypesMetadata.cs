@@ -462,6 +462,7 @@ namespace ServiceStack.NativeTypes
             }
 
             metaType.Description = type.GetDescription();
+            metaType.Notes = type.FirstAttribute<NotesAttribute>()?.Notes;
 
             var dcAttr = type.GetDataContract();
             if (dcAttr != null)
