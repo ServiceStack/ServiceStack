@@ -67,6 +67,8 @@ namespace ServiceStack
             }
         }
 
+        public Func<string,string> TagFilter { get; set; }
+
         public MetadataFeature()
         {
             PluginLinksTitle = "Plugin Links:";
@@ -227,6 +229,15 @@ namespace ServiceStack
             foreach (var fn in feature.AppMetadataFilters)
             {
                 fn(response);
+            }
+
+            if (feature.TagFilter != null)
+            {
+                foreach (var op in response.Api.Operations)
+                {
+                    if (op.Tags != null && feature.TagFilter != null)
+                        op.Tags = op.Tags.Map(feature.TagFilter);
+                }
             }
 
             return response;

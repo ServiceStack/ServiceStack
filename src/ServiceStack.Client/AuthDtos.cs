@@ -9,7 +9,7 @@ using ServiceStack.Model;
 
 namespace ServiceStack
 {
-    [Tag("auth"), Api("Sign In")]
+    [Tag(TagNames.Auth), Api("Sign In")]
     [DataContract]
     public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
     {
@@ -58,7 +58,7 @@ namespace ServiceStack
         [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
     }
 
-    [Tag("auth"), Api("Sign Up")]
+    [Tag(TagNames.Auth), Api("Sign Up")]
     [DataContract]
     public class Register : IPost, IReturn<RegisterResponse>, IMeta
     {
@@ -92,7 +92,7 @@ namespace ServiceStack
         [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
     }
 
-    [Tag("auth")]
+    [Tag(TagNames.Auth)]
     [DataContract]
     public class AssignRoles : IPost, IReturn<AssignRolesResponse>, IMeta
     {
@@ -134,7 +134,7 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [Tag("auth")]
+    [Tag(TagNames.Auth)]
     [DataContract]
     public class UnAssignRoles : IPost, IReturn<UnAssignRolesResponse>, IMeta
     {
