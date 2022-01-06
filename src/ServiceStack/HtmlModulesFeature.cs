@@ -32,11 +32,14 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     /// &lt;!--shared:Brand,Input--&gt;
     /// &lt;!--file:/path/to/single.html--&gt; or /*file:/path/to/single.txt*/
     /// &lt;!--files:/dir/components/*.html--&gt; or /*files:/dir/*.css*/
+    /// &lt;!---: remove html comment --&gt; or /**: remove JS comment */
     /// </summary>
     public List<IHtmlModulesHandler> Handlers { get; set; } = new()
     {
         new FileHandler("file"),
         new FilesHandler("files"),
+        new RemoveJsLineCommentsHandler(),
+        new RemoveHtmlLineCommentsHandler(),
     };
     
     public HtmlModule[] Modules { get; }
