@@ -125,6 +125,9 @@ namespace ServiceStack
                 return aspNetReq.UrlHostName;
             }
 #endif
+            if (httpReq.AbsoluteUri == null)
+                return null;
+            
             var uri = httpReq.AbsoluteUri;
 
             var pos = uri.IndexOf("://", StringComparison.Ordinal) + "://".Length;
