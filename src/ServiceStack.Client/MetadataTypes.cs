@@ -122,6 +122,7 @@ namespace ServiceStack
     public class AppMetadata : IMeta
     {
         public AppInfo App { get; set; }
+        public UiInfo Ui { get; set; }
         public ConfigInfo Config { get; set; }
         public Dictionary<string, string> ContentTypeFormats { get; set; }
         public Dictionary<string, string> HttpHandlers { get; set; }
@@ -388,6 +389,33 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    /// <summary>
+    /// App Info and 
+    /// </summary>
+    [Exclude(Feature.Soap)]
+    public class UiInfo : IMeta
+    {
+        /// <summary>
+        /// The brand icon to use with App brand name
+        /// </summary>
+        public string BrandIconUri { get; set; }
+
+        /// <summary>
+        /// Hide APIs with tags 
+        /// </summary>
+        public List<string> HideTags { get; set; }
+
+        /// <summary>
+        /// Always hide APIs with tags (inc DebugMode) 
+        /// </summary>
+        public List<string> AlwaysHideTags { get; set; }
+        
+        /// <summary>
+        /// Custom User-Defined Attributes
+        /// </summary>
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
     [Exclude(Feature.Soap)]
     public class MetaAuthProvider : IMeta
     {
@@ -441,6 +469,7 @@ namespace ServiceStack
         public MetadataTypeName[] Implements { get; set; }
         public string DisplayType { get; set; }
         public string Description { get; set; }
+        public string Notes { get; set; }
         public bool? IsNested { get; set; }
         public bool? IsEnum { get; set; }
         public bool? IsEnumInt { get; set; }

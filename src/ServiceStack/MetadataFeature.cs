@@ -69,6 +69,8 @@ namespace ServiceStack
 
         public Func<string,string> TagFilter { get; set; }
 
+        public UiInfo Ui { get; set; }
+
         public MetadataFeature()
         {
             PluginLinksTitle = "Plugin Links:";
@@ -77,6 +79,12 @@ namespace ServiceStack
             DebugLinksTitle = "Debug Info:";
             DebugLinks = new Dictionary<string, string> {
                 {"operations/metadata", "Operations Metadata"},
+            };
+
+            Ui = new UiInfo
+            {
+                BrandIconUri = Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000"),
+                HideTags = new List<string> { TagNames.Auth },
             };
         }
 
