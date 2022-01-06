@@ -41,13 +41,16 @@ function SignIn({ plugin, provider, createHref, select, login, api }) {
         get authProviderFormTabs()  {
             return plugin.authProviders.filter(x => x.formLayout && x.formLayout.length > 0)
                 .reduce((acc,x) => {
-                    let label = x.label || toPascalCase(x.name) 
+                    let label = this.getLabel(x) || toPascalCase(x.name) 
                     acc[label] = x.name === firstFormProvider.name ? '' : x.name 
                     return acc
                 }, {})
         },
         get oauthProviders() {
             return plugin && plugin.authProviders.filter(x => x.type === 'oauth') || []
+        },
+        getLabel(provider) {
+            return provider.label || (provider.navItem && provider.navItem.label)
         },
         model,
         logoUri(dataUri) {
@@ -107,7 +110,7 @@ Components.push({ SignIn })
 
                 <div class="mt-6 grid grid-cols-3 gap-3">
                     <div v-for="provider in oauthProviders">
-                        <a :href="`${provider.navItem.href}?continue=${baseUri}`" :title="provider.navItem && provider.navItem.label" 
+                        <a :href="`${provider.navItem.href}?continue=${baseUri}`" :title="getLabel(provider)" 
                            class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                             <img v-if="provider.logoUri" :src="logoUri(provider.logoUri)" class="h-5 w-5 text-gray-700">
                             <svg v-else class="h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">

@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" style="">
 <head>
-    <meta charset="UTF-8">
-    <title>UI</title>
+    <!--shared:Meta-->
     <base href="">
     <link rel="stylesheet" href="../css/highlight.css">
     <link rel="stylesheet" href="assets/ui.css">
@@ -10,7 +9,7 @@
 :root {
     --sidebar-width: 240px;
     --top-bar-height: 54px;
-    --top-filter-height: 99px;
+    --top-filter-height: 97px;
     --scroll-height: 8px;
     --scroll-width: 8px;
     --body-width: calc(100vw - var(--sidebar-width));
@@ -83,8 +82,12 @@ em {
 .icon-right .icon {
     right: 1em;
 }
-.icon-right .icon {
-    right: 1em;
+.notes a {
+    color: rgb(30 64 175); /*text-blue-800*/
+}
+.svg-external {
+    background: url("data:image/svg+xml,%3Csvg width='1.25rem' height='1.25rem' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none'%3E%3Cpath d='M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14' stroke='%231E40AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E") no-repeat bottom right;
+    padding-right: 1.35rem;
 }
 .bg-gray-50 .hljs {
     background-color: transparent;
@@ -166,6 +169,7 @@ function loadAuth(auth) { window.AUTH = !auth || auth.responseStatus ? null : au
 <script src="../js/petite-vue.js"></script>
 <script src="../js/highlight.js"></script>
 <script>
+document.title = APP.app.serviceName
 let op = leftPart(location.href.substring(document.baseURI.length), '?')
 APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
@@ -211,6 +215,11 @@ let other = {
     operations: [...appOps, ...ssOps].filter(op => op.tags.length === 0)
 }
 if (other.operations.length > 0) sideNav.push(other)
+
+let alwaysHideTags = APP.ui.alwaysHideTags || !DEBUG && APP.ui.hideTags
+if (alwaysHideTags) {
+    sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
+}
 
 let CACHE = {}
 let OpsMap = {}
@@ -356,6 +365,7 @@ let store = PetiteVue.reactive({
                 operations: nav.operations.filter(filter)
             }))
 
+        //return [...ret, ...ret, ...ret, ...ret, ...ret]
         return ret    
     },
     
@@ -613,6 +623,8 @@ $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
 
 PetiteVue.createApp({
     ...Components.reduce((acc,x) => { acc[x] = Components[x]; return acc }, {}),
+    app: APP.app,
+    ui: APP.ui,
     serviceName: APP.app.serviceName,
     langs: {
         csharp: "C#",

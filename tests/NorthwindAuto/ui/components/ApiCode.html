@@ -4,6 +4,7 @@ let swiftPkg = `dependencies: [
         url: "https://github.com/ServiceStack/ServiceStack.Swift.git", 
         Version(5,0,0)..&lt;Version(6,0,0)),
 ]`
+document.body.classList.add('show-lang-help')
 function ApiCode({ store }) {
     let highlight = language => hljs.highlight(
         $1(`#${language}-help`).innerHTML.trim()
@@ -51,7 +52,7 @@ Components.push({ ApiCode, InstallTool })
     display: none;
 }
 .show-lang-help .icon-right .icon {
-    right: calc(1em + var(--lang-help-width));
+    right: calc(.5em + var(--lang-help-width));
 }
 .show-lang-help .lang-help {
     display: block;
@@ -60,7 +61,10 @@ Components.push({ ApiCode, InstallTool })
     display: none;
 } 
 .lang-help .icon-right .icon {
-    right: 1rem;
+    right: .5rem;
+}
+.lang-help .icon {
+    position: absolute;
 }
 </style>
 <template id="api-code-template">
@@ -70,11 +74,11 @@ Components.push({ ApiCode, InstallTool })
         {{name}}
     </a>
 </nav>
-<div id="api-code" class="body-nav-content show-lang-help">
+<div id="api-code" class="body-nav-content">
     <div class="flex min-h-body">
         <div class="flex-1 body-lang icon-outer p-2 overflow-x-auto">
             <div v-if="store.activeLangSrc" class="copy-icon icon-right" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
-            <div class="icon-right icon-lang-help" @click="$1('#api-code').classList.add('show-lang-help')" title="How to call this API">
+            <div class="icon-right icon-lang-help" @click="document.body.classList.add('show-lang-help')" title="How to call this API">
                 <div class="icon fixed cursor-pointer p-1 rounded-md border block border-gray-200 bg-white text-gray-500 hover:bg-gray-50">
                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <path d="M11 18h2v-2h-2v2m1-16A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8m0-14a4 4 0 0 0-4 4h2a2 2 0 0 1 2-2a2 2 0 0 1 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z" fill="currentColor"/>
@@ -86,14 +90,14 @@ Components.push({ ApiCode, InstallTool })
         <div class="flex-1 lang-help prose shadow-lg overflow-x-auto">
             <div class="">
                 <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4" title="Hide Help">
-                    <button type="button" @click="$1('#api-code').classList.remove('show-lang-help')"
+                    <button type="button" @click="document.body.classList.remove('show-lang-help')"
                             class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"><span class="sr-only">Close</span>
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
                 <div v-if="store.useLang=='csharp'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from C#</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
 
@@ -115,7 +119,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='typescript'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from TypeScript</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>@servicestack/client</b> package in your projects<em>package.json</em>
                     </p>
 
@@ -137,7 +141,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='dart'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Dart</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
                     </p>
 
@@ -159,7 +163,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='java'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Java</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
                     </p>
 
@@ -181,7 +185,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='kotlin'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Kotlin</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
                     </p>
 
@@ -203,7 +207,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='python'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Python</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>requirements.txt</em>
                     </p>
 
@@ -225,7 +229,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='swift'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Swift</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack</b> package in your projects <em>Package.swift</em>
                     </p>
 
@@ -250,7 +254,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='vbnet'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from VB.NET</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
 
@@ -272,7 +276,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
                 <div v-else-if="store.useLang=='fsharp'" class="pt-4">
                     <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from F#</h2>
-                    <p class="text-lg p-4 ">
+                    <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
 
@@ -324,7 +328,7 @@ var response = await client.SendAsync(new Hello {
 });
 
 // Quickly inpsect response
-Inspect.printDump();
+Inspect.printDump(response);
 </template>
 <template id="typescript-help">
 import { JsonServiceClient, Inspect } from '@servicestack/client'
@@ -428,7 +432,7 @@ Dim response = client.Send(New Hello() With {
 })
 
 ' Quickly inpsect response
-Inspect.printDump()
+Inspect.printDump(response)
 </template>
 <template id="fsharp-help">
 open ServiceStack

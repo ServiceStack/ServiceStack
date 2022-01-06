@@ -1,14 +1,22 @@
 <script>
-function Brand({ serviceName }) {
+function Brand({ serviceName, iconUri, href, onclick }) {
     return {
         $template: '#brand-template',
         serviceName,
+        iconUri: iconUri || '',
+        href: href || '',
+        onclick,
     }
 }
 Components.push({ Brand })
 </script>
+<style>.w-7 { width: 1.75rem } .h-7 { height: 1.75rem }</style>
 <template id="brand-template">
 <div class="flex items-center flex-shrink-0 max-w-sidebar">
-    <a class="pl-3 text-2xl whitespace-nowrap overflow-x-hidden" :title="serviceName" href="">{{serviceName}}</a>
+    <a :title="serviceName" :href="href" @click.prevent="onclick"
+       class="pl-3 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+        <img v-if="iconUri" class="w-7 h-7 mr-1" :src="iconUri" alt="Logo">
+        {{serviceName}}
+    </a>
 </div>
 </template>
