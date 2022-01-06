@@ -9,7 +9,7 @@ function Welcome({ store }) {
 Components.push({ Welcome })
 </script>
 <template id="welcome-template">
-<div class="mt-12 px-4">
+<div class="mt-12 px-4 sm:auth:hidden">
 
     <div v-if="store.debug" class="mb-5 bg-pink-50 border-l-4 border-pink-400 p-4">
         <div class="flex">
@@ -31,20 +31,20 @@ Components.push({ Welcome })
             <div class="sm:flex sm:items-center sm:justify-between">
                 <div class="sm:flex sm:space-x-5">
                     <div class="flex-shrink-0">
-                        <img class="mx-auto h-22 w-22 rounded-full" 
-                             :src="store.auth.profileUrl" alt="">
+                        <img class="mx-auto max-h-24 max-w-24 rounded-full" 
+                             :src="store.authProfileUrl" alt="">
                     </div>
                     <div class="mt-4 sm:mt-0 sm:pt-1 sm:text-left">
                         <p class="text-sm font-medium text-gray-600">Welcome back,</p>
                         <p class="text-xl font-bold text-gray-900 sm:text-2xl mb-2">{{ store.displayName }}</p>
-                        <div v-if="store.auth.roles.length" class="mb-2 flex">
-                            <span v-for="role in store.auth.roles" title="Role" 
+                        <div v-if="store.authRoles.length" class="mb-2 flex">
+                            <span v-for="role in store.authRoles" title="Role" 
                                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               {{role}}
                             </span>
                         </div>
-                        <div v-if="store.auth.permissions.length" class="mb-2 flex">
-                            <span v-for="perm in store.auth.permissions" title="Permission" 
+                        <div v-if="store.authPermissions.length" class="mb-2 flex">
+                            <span v-for="perm in store.authPermissions" title="Permission" 
                                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                               {{perm}}
                             </span>

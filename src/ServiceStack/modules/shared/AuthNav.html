@@ -26,7 +26,7 @@ Components.push({ AuthNav })
             <button type="button" @click.stop="showPopup = true"  
                     class="max-w-xs bg-white rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 lg:p-2 lg:rounded-md lg:hover:bg-gray-50"
                     aria-expanded="false" aria-haspopup="true">
-                <img v-if="auth && auth.profileUrl" class="h-8 w-8 rounded-full text-gray-700" :src="auth.profileUrl" alt="">
+                <img v-if="auth && auth.profileUrl" class="h-8 w-8 rounded-full text-gray-700" :src="auth && auth.profileUrl" alt="">
                 <svg v-else class="h-8 w-8 rounded-full text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 8a5 5 0 1 0 5 5a5 5 0 0 0-5-5z" fill="currentColor"/>
                     <path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2zm7.992 22.926A5.002 5.002 0 0 0 19 20h-6a5.002 5.002 0 0 0-4.992 4.926a12 12 0 1 1 15.985 0z" fill="currentColor"/>
                 </svg>
@@ -37,7 +37,7 @@ Components.push({ AuthNav })
                 </svg>
             </button>
         </div>
-        <div :class="[showPopup ? 'transform opacity-100 scale-100' : 'transform opacity-0 scale-95','origin-top-right absolute right-0 mt-2 w-48 flex flex-col rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none']" 
+        <div :class="[showPopup ? 'transform opacity-100 scale-100' : 'transform opacity-0 scale-95 hidden','origin-top-right absolute right-0 mt-2 w-48 flex flex-col rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none']" 
              role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
             <a :href="createHref({ op:'' })" @click.prevent="select({ op:'' })" class="block px-4 py-2 text-sm text-gray-700 text-left hover:bg-gray-50" role="menuitem" tabindex="-1">Your Profile</a>
             <button type="button" @click="logout" class="block px-4 py-2 text-sm text-gray-700 text-left hover:bg-gray-50" role="menuitem" tabindex="-1">Logout</button>

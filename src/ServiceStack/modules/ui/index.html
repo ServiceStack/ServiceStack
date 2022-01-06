@@ -98,16 +98,28 @@ em {
 [lang=json] .hljs-attr { color: rgb(17 24 39) }
 [lang=json] .hljs-string { color: rgb(21 128 61) }
 .language-typescript .hljs-attr { color: rgb(17 24 39) }
+
+.sm\:noauth-noop\:hidden { display: block }
+.sm\:noauth-noop\:block { display: none }
+.auth .sm\:auth\:hidden, .noauth .sm\:noauth\:hidden, .op .sm\:op\:hidden, .noop .sm\:noop\:hidden { display: block }
+.auth .sm\:auth\:block, .noauth .sm\:noauth\:block, .op .sm\:op\:block, .noop .sm\:noop\:block { display: none }
+
+@media (max-width: 640px) {
+    .auth .sm\:auth\:hidden, .noauth .sm\:noauth\:hidden, .op .sm\:op\:hidden, .noop .sm\:noop\:hidden { display: none }
+    .auth .sm\:auth\:block, .noauth .sm\:noauth\:block, .op .sm\:op\:block, .noop .sm\:noop\:block { display: block }
+    .noauth.noop .sm\:noauth-noop\:hidden { display: none }
+    .noauth.noop .sm\:noauth-noop\:block { display: block }
+}
 </style>
 </head>
-<body class="loading">
+<body class="loading noauth">
 
 <div class="when-loading"></div>
 
 <div v-scope class="app flex">
 
-<div v-scope="Sidebar({ store })"></div>
-<div class="body">
+<div id="sidebar" class="sm:noauth-noop:hidden" v-scope="Sidebar({ store })"></div>
+<div class="body sm:noauth-noop:hidden">
     <div v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout(), createHref: args => store.createHref(args), select: args => store.select(args) })" class="absolute top-1 right-2"></div>
     <div v-if="store.op">
         <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
@@ -134,6 +146,7 @@ em {
     </div>
     <div v-else v-scope="Welcome({ store })"></div>
 </div>
+<div class="sm:noauth-noop:block w-full" v-scope="store.SignIn()"></div>
     
 </div>
 
@@ -340,6 +353,14 @@ let store = PetiteVue.reactive({
         this.loadPreview()
         this.doLayout()
         Events.publish('init')
+        
+        if (this.activeOp) {
+            document.body.classList.remove('noop')
+            document.body.classList.add('op')
+        } else {
+            document.body.classList.remove('op')
+            document.body.classList.add('noop')
+        }
     },
 
     select(args) {
@@ -528,16 +549,25 @@ let store = PetiteVue.reactive({
                     r.error.message = HttpErrors[r.errorCode] || r.errorCode 
                 if (this.api.succeeded) {
                     this.auth = this.api.response
+                    document.body.classList.remove('noauth')
+                    document.body.classList.add('auth')
                 }
             })
     },
     
     logout() {
+        document.body.classList.remove('auth')
+        document.body.classList.add('noauth')
         client.api(new Authenticate({ provider: 'logout' }))
         authsecret = bearerToken = client.bearerToken = null
         client.headers.delete('authsecret')
         this.auth = null
     },
+
+    /**: v-if doesn't protect against nested access so need to guard against deep NRE access */
+    get authRoles() { return store.auth && store.auth.roles || [] },
+    get authPermissions() { return store.auth && store.auth.permissions || [] },
+    get authProfileUrl() { return store.auth && store.auth.profileUrl },
 
     get displayName() {
         let auth = this.auth

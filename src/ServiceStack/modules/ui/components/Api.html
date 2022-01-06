@@ -354,7 +354,8 @@ function supportsProp(prop) {
             </form>
         </div>
 
-        <div v-if="state.apiResult" v-scope="ApiResponse({ store, apiResult:state.apiResult })"></div>
+        <div v-if="state.apiLoading" v-scope="Loading()"></div>
+        <div v-else-if="state.apiResult" v-scope="ApiResponse({ store, apiResult:state.apiResult })"></div>
     </div>
 </div>
 </template>

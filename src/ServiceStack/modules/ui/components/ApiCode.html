@@ -74,7 +74,7 @@ Components.push({ ApiCode, InstallTool })
 }
 </style>
 <template id="api-code-template">
-<nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
+<nav class="flex overflow-x-auto space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
     <a v-for="(name,lang) in langs" :href="store.createHref({ lang })" @click.prevent="store.select({lang})"
        :class="[lang == store.useLang ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
         {{name}}
@@ -92,6 +92,7 @@ Components.push({ ApiCode, InstallTool })
                 </div>
             </div>
             <pre v-if="store.activeLangSrc" class=""><code :lang="store.activeLang" v-highlightjs="store.activeLangSrc"></code></pre>
+            <div v-else v-scope="Loading()"></div>
         </div>
         <div class="flex-1 lang-help prose shadow-lg overflow-x-auto">
             <div class="">
@@ -322,7 +323,6 @@ Components.push({ ApiCode, InstallTool })
     <h2 class="text-lg p-4">Once generated, the DTOs can be updated with:</h2>
 
     <div v-scope='CopyLine({ text: () => `$ x ${store.useLang}` })'></div>
-
 </template>
 <template id="csharp-help">
 using ServiceStack;
