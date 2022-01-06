@@ -31,10 +31,11 @@ public enum RoomType
 }
 
 [Tag("bookings"), Description("Find Bookings")]
+[Notes("See how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/nhc4MZufkcM'>C# Bookings App from Scratch</a>")]
 [Route("/bookings", "GET")]
 [Route("/bookings/{Id}", "GET")]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryBookings : QueryDb<Booking>
+public class QueryBookings : QueryDb<Booking> 
 {
     public int? Id { get; set; }
 }

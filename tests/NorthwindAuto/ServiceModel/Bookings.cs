@@ -4,7 +4,6 @@
 using System;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Html;
 
 namespace MyApp.ServiceModel;
 
@@ -62,7 +61,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     public decimal Cost { get; set; }
     public DateTime BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
-    [Input(Type = Input.Types.Textarea)]
+    [Input(Type = "textarea")]
     public string Notes { get; set; }
 }
 
@@ -82,7 +81,7 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public decimal? Cost { get; set; }
     public DateTime? BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
-    [Input(Type = Input.Types.Textarea)]
+    [Input(Type = "textarea")]
     public string Notes { get; set; }
     public bool? Cancelled { get; set; }
 }
