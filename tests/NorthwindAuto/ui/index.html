@@ -392,7 +392,7 @@ let store = PetiteVue.reactive({
         }
     },
     
-    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&AddServiceStackTypes=true` },
+    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&MakeVirtual=false&MakePartial=false&AddServiceStackTypes=true` },
     
     get previewCache() {
         if (this.preview.startsWith('types.')) {
@@ -470,7 +470,7 @@ let store = PetiteVue.reactive({
     
     langCache() {
         let op = this.activeOp, lang = this.useLang
-        return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
+        return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*&MakeVirtual=false&MakePartial=false` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
     },
 
     cachedFetch(url) {
@@ -648,7 +648,6 @@ PetiteVue.createApp({
         effect(() => {
             let src = get()
             if (src) {
-
                 el.className = '' // remove existing stale class
                 el.innerHTML = enc(src)
                 hljs.highlightElement(el)
