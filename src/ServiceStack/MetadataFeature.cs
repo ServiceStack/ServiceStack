@@ -71,6 +71,13 @@ namespace ServiceStack
 
         public UiInfo Ui { get; set; }
 
+        public HtmlModulesFeature UiModule { get; set; } = new(new HtmlModule("/modules/ui", "/ui"))
+        {
+            IgnoreIfError = true,
+            Configure = (appHost,module) => module.VirtualFiles = appHost.VirtualFileSources,
+            Handlers = { new HtmlModules.SharedFolder("shared", "/modules/shared") },
+        };
+
         public MetadataFeature()
         {
             PluginLinksTitle = "Plugin Links:";
@@ -98,6 +105,9 @@ namespace ServiceStack
             }
 
             appHost.RegisterServices(ServiceRoutes);
+
+            if (EnableAppMetadata)
+                UiModule?.Register(appHost);
         }
 
         public virtual IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
@@ -214,6 +224,7 @@ namespace ServiceStack
             var response = new AppMetadata
             {
                 App = config.AppInfo ?? new AppInfo(),
+                Ui = feature.Ui,
                 Config = new ConfigInfo {
                     DebugMode = config.DebugMode,
                 },

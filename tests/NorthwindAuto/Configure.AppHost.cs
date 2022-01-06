@@ -37,7 +37,7 @@ namespace MyApp
                 GenerateCrudServices = new GenerateCrudServices {}
             });
 
-            Plugins.RemoveAll(x => x is HtmlModulesFeature { Id: "module:/ui" });
+            this.AssertPlugin<MetadataFeature>().UiModule = null;
             Plugins.Add(new HtmlModulesFeature(new HtmlModule("/ui"))
             {
                 Handlers = {

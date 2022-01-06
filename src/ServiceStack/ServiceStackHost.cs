@@ -177,11 +177,6 @@ namespace ServiceStack
                 new SpanFormats(),
                 new SvgFeature(),
                 new Validation.ValidationFeature(),
-                new HtmlModulesFeature(new HtmlModule("/modules/ui", "/ui")) {
-                    IgnoreIfError = true,
-                    Configure = x => x.VirtualFiles = VirtualFileSources,
-                    Handlers = { new HtmlModules.SharedFolder("shared", "/modules/shared") },
-                },
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),
