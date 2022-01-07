@@ -165,7 +165,7 @@ public class HtmlModule
                         if (endPos == -1)
                             throw new Exception($"{htmlCommentPrefix} is missing -->");
                         var token = indexContents.Slice(htmlPos, (endPos - htmlPos) + "-->".Length).ToString();
-                        var args = token.Substring(htmlCommentPrefix.Length, token.Length - htmlCommentPrefix.Length - "-->".Length);
+                        var args = token.Substring(htmlCommentPrefix.Length, token.Length - htmlCommentPrefix.Length - "-->".Length).Trim();
                         fragmentDefs.Add(new(htmlPos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
                         htmlPos = endPos;
                     }
@@ -179,8 +179,8 @@ public class HtmlModule
                         var endPos = indexContents.IndexOf("*/", jsPos);
                         if (endPos == -1)
                             throw new Exception($"{jsCommentPrefix} is missing */");
-                        var token = indexContents.Slice(jsPos, endPos - jsPos + "-->".Length).ToString();
-                        var args = token.Substring(jsCommentPrefix.Length, token.Length - jsCommentPrefix.Length - "*/".Length);
+                        var token = indexContents.Slice(jsPos, endPos - jsPos + "*/".Length).ToString();
+                        var args = token.Substring(jsCommentPrefix.Length, token.Length - jsCommentPrefix.Length - "*/".Length).Trim();
                         fragmentDefs.Add(new(jsPos, token, new HtmlHandlerFragment(token, args, handler.Execute)));
                         jsPos = endPos;
                     }

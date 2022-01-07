@@ -1,4 +1,6 @@
+#nullable enable
 using System;
+using ServiceStack.IO;
 using ServiceStack.Text;
 
 namespace ServiceStack.HtmlModules;
@@ -12,6 +14,7 @@ public class FilesHandler : IHtmlModulesHandler
 {
     public string Name { get; }
     public FilesHandler(string name) => Name = name;
+    public Func<IVirtualFile, string> FileContentsResolver { get; set; } = FileReader.Read;
     public ReadOnlyMemory<byte> Execute(HtmlModuleContext ctx, string paths)
     {
         return ctx.Cache($"{Name}:{paths}", _ => {
@@ -21,7 +24,7 @@ public class FilesHandler : IHtmlModulesHandler
                 : ctx.Module.DirPath.CombineWith(paths);
             foreach (var file in ctx.VirtualFiles.GetAllMatchingFiles(usePath))
             {
-                sb.AppendLine(file.ReadAllText());
+                sb.AppendLine(FileContentsResolver(file));
             }
             return StringBuilderCache.ReturnAndFree(sb).AsMemory().ToUtf8();
         });

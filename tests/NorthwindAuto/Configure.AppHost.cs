@@ -43,6 +43,7 @@ namespace MyApp
                 Handlers = {
                     new SharedFolder("shared", "/shared", defaultExt:".html"),
                     new SharedFolder("shared/js", "/shared/js", defaultExt:".js"),
+                    new SharedFolder("plugins", "/shared/plugins", defaultExt:".js"),
                 }
             });
             

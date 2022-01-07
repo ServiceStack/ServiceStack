@@ -78,6 +78,7 @@ namespace ServiceStack
             Handlers = {
                 new HtmlModules.SharedFolder("shared", "/modules/shared", ".html"),
                 new HtmlModules.SharedFolder("shared/js", "/modules/shared/js", ".js"),
+                new HtmlModules.SharedFolder("plugins", "/modules/shared/plugins", ".js"),
             },
         };
 
