@@ -1,10 +1,12 @@
 {
   "name": "my-app",
   "version": "1.0.0",
-  
   "scripts": {
     "ui:dev": "npx tailwindcss -c tailwind.config.js -i ui/index.css -o ui/assets/ui.css --watch",
     "ui:build": "npx tailwindcss -c tailwind.config.js -i ui/index.css -o ui/assets/ui.css --minify",
     "ui:publish": "publish.bat"
+  },
+  "dependencies": {
+    "@servicestack/client": "^1.1.13"
   }
 }
