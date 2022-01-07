@@ -9,7 +9,7 @@ namespace ServiceStack.NativeTypes.TypeScript;
 
 public class CommonJsGenerator : ILangGenerator
 {
-    public bool HideHeader { get; set; }
+    public bool WithoutOptions { get; set; }
     public List<string> AddQueryParamOptions { get; set; }
 
     public readonly MetadataTypesConfig Config;
@@ -71,7 +71,8 @@ public class CommonJsGenerator : ILangGenerator
 
         var sbInner = StringBuilderCache.Allocate();
         var sb = new StringBuilderWrapper(sbInner);
-        if (!HideHeader)
+        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        if (includeOptions)
         {
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));

@@ -121,7 +121,7 @@ namespace ServiceStack.NativeTypes.Kotlin
         /// <summary>
         /// Emit code without Header Options
         /// </summary>
-        public bool HideHeader { get; set; }
+        public bool WithoutOptions { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -152,7 +152,8 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
-            if (!HideHeader)
+            var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+            if (includeOptions)
             {
                 sb.AppendLine("/* Options:");
                 sb.AppendLine($"Date: {DateTime.Now.ToString("s").Replace("T", " ")}");

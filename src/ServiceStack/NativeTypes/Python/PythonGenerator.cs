@@ -243,7 +243,7 @@ namespace ServiceStack.NativeTypes.Python
         /// <summary>
         /// Emit code without Header Options
         /// </summary>
-        public bool HideHeader { get; set; }
+        public bool WithoutOptions { get; set; }
 
         /// <summary>
         /// Add Code to bottom of generated code
@@ -279,7 +279,8 @@ namespace ServiceStack.NativeTypes.Python
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
-            if (!HideHeader)
+            var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+            if (includeOptions)
             {
                 sb.AppendLine("\"\"\" Options:");
                 sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));

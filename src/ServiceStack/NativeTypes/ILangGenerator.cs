@@ -6,7 +6,7 @@ namespace ServiceStack.NativeTypes;
 
 public interface ILangGenerator
 {
-    bool HideHeader { get; set; }
+    bool WithoutOptions { get; set; }
     
     List<string> AddQueryParamOptions { get; set; }
     
