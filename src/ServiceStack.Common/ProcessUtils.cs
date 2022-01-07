@@ -93,23 +93,7 @@ namespace ServiceStack
         /// </summary>
         public static string Run(string fileName, string arguments=null, string workingDir=null)
         {
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    FileName = fileName,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                }
-            };
-
-            if (arguments != null)
-                process.StartInfo.Arguments = arguments;
-            
-            if (workingDir != null)
-                process.StartInfo.WorkingDirectory = workingDir;
-
+            var process = CreateProcess(fileName, arguments, workingDir);
             using (process)
             {
                 process.StartInfo.RedirectStandardError = true;
@@ -127,7 +111,49 @@ namespace ServiceStack
                 return output;
             }
         }
+
+        public static Process CreateProcess(string fileName, string arguments, string workingDir)
+        {
+            var process = new Process
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                }
+            };
+            if (arguments != null)
+                process.StartInfo.Arguments = arguments;
+
+            if (workingDir != null)
+                process.StartInfo.WorkingDirectory = workingDir;
+            return process;
+        }
         
+        /// <summary>
+        /// Run the command with the OS's command runner 
+        /// </summary>
+        public static async Task RunShellAsync(string arguments, string workingDir=null, int? timeoutMs = null,
+            Action<string> onOut=null, Action<string> onError=null)
+        {
+            if (string.IsNullOrEmpty(arguments))
+                throw new ArgumentNullException(nameof(arguments));
+
+            if (Env.IsWindows)
+            {
+                var cmdArgs = "/C " + arguments; 
+                await RunAsync(CreateProcess("cmd.exe", cmdArgs, workingDir).StartInfo, timeoutMs, onOut, onError);
+            }
+            else
+            {
+                var escapedArgs = arguments.Replace("\"", "\\\"");
+                var cmdArgs = $"-c \"{escapedArgs}\"";
+                await RunAsync(CreateProcess("/bin/bash", cmdArgs, workingDir).StartInfo, timeoutMs, onOut, onError);
+            }
+        }
+
         /// <summary>
         /// Run a Process asynchronously, returning  entire captured process output, whilst streaming stdOut, stdErr callbacks
         /// </summary>
