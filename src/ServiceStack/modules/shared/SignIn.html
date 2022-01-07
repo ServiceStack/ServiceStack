@@ -1,5 +1,5 @@
 <script>
-App.component('SignIn', ({ plugin, provider, createHref, select, login, api }) => {
+App.component('SignIn', ({ plugin, provider, login, api }) => {
     
     let model = {}
     plugin.authProviders.map(x => x.formLayout).filter(x => x)
@@ -25,8 +25,6 @@ App.component('SignIn', ({ plugin, provider, createHref, select, login, api }) =
         get provider() { return provider() },
         firstFormProvider,
         lastFormProvider,
-        createHref,
-        select,
         get api() { return api() },
         get errorSummary() {
             if (!this.api) return ''
@@ -71,9 +69,9 @@ App.component('SignIn', ({ plugin, provider, createHref, select, login, api }) =
         </h2>
         <p v-if="Object.keys(authProviderFormTabs).length > 1" class="mt-4 text-center text-sm text-gray-600">
             <span class="relative z-0 inline-flex shadow-sm rounded-md">
-              <a v-for="(tab,name) in authProviderFormTabs" :href="createHref({ provider:tab })" @click.prevent="select({ provider:tab })"
+              <a v-for="(tab,name) in authProviderFormTabs" v-href="{ provider:tab }"
                  :class="[tab == '' || tab == firstFormProvider.name ? 'rounded-l-md' : tab == lastFormProvider.name ? 'rounded-r-md -ml-px' : '-ml-px', 
-                         store.provider == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                         routes.provider == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
                 {{name}}
               </a>
             </span>

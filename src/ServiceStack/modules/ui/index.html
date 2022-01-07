@@ -118,27 +118,27 @@ em {
 
 <div v-scope class="app flex">
 
-<div id="sidebar" class="sm:noauth-noop:hidden" v-scope="Sidebar({ store })"></div>
+<div id="sidebar" class="sm:noauth-noop:hidden" v-scope="Sidebar({ store, routes })"></div>
 <div class="body sm:noauth-noop:hidden">
-    <div v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout(), createHref: args => store.createHref(args), select: args => store.select(args) })" class="absolute top-1 right-2"></div>
+    <div v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })" class="absolute top-1 right-2"></div>
     <div v-if="store.op">
         <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
             <nav class="-mb-px flex max-w-screen-md" aria-label="Tabs">
-                <a class="block sm:hidden py-4 pl-4 text-gray-500" href="" @click.prevent="store.select({ op:'' })">
+                <a class="block sm:hidden py-4 pl-4 text-gray-500" v-href="{ op:'' }">
                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                         <path fill="currentColor" d="M16 6.6L8 1.4L6 2.7V1H4v3L0 6.6l1.9 2.7l.1-.1V15h5v-4h2v4h5V9.2l.1.1L16 6.6zm-14.6.3L8 2.6l6.6 4.3l-.7 1L8 4L2.1 7.9l-.7-1zM13 14h-3v-4H6v4H3V8.6l5-3.3l5 3.3V14z"/>
                     </svg>
                 </a>
-                <a v-for="(tab,name) in store.opTabs" :href="store.createHref({tab})" @click.prevent="store.select({tab})" :title="name"
-                   :class="[tab == store.activeTab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300','w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm overflow-hidden']">
+                <a v-for="(tab,name) in store.opTabs" v-href="{tab}" :title="name"
+                   :class="[tab == routes.tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300','w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm overflow-hidden']">
                     {{name}}
                 </a>
             </nav>
         </div>
         <div class="body-content">
-            <div v-if="store.activeTab === ''" v-scope="ApiForm({ store })"></div>
-            <div v-else-if="store.activeTab === 'details'" class="flex min-h-body" v-scope="ApiDetails({ store })"></div>
-            <div v-else-if="store.activeTab === 'code'" v-scope="ApiCode({ store })"></div>
+            <div v-if="routes.tab === ''" v-scope="ApiForm({ store, routes })"></div>
+            <div v-else-if="routes.tab === 'details'" class="flex min-h-body" v-scope="ApiDetails({ store, routes })"></div>
+            <div v-else-if="routes.tab === 'code'" v-scope="ApiCode({ store, routes })"></div>
         </div>
     </div>
     <div v-else-if="store.json" class="preview p-4">
@@ -263,15 +263,7 @@ APP.api.operations.forEach(op => {
 })
 APP.api.types.forEach(type => TypesMap[type.name] = type)
 
-let cleanSrc = src => src.startsWith('/*')
-    ? src.substring(src.indexOf('\n', src.indexOf('*/')) + 1).trim()
-    : src.startsWith('"""')
-        ? src.substring(src.indexOf('\n', src.indexOf('"""', 3)) + 1).trim()
-        : src.startsWith('(*')
-            ?src.substring(src.indexOf('\n', src.indexOf('*)')) + 1).trim()
-            : src.startsWith("' Options:")
-                ? src.substring(src.indexOf('\n', src.lastIndexOf("'''", src.indexOf('Imports'))) + 1).trim()
-                : src;
+let cleanSrc = src => src.trim();
 
 let SidebarWidth = '240px'
 function isSmall() { 
@@ -296,24 +288,29 @@ function invalidAccessMessage(op, authRoles, authPerms) {
     return null
 }
 
-let Events = new EventBus()
+/*shared/js:PetiteVueApp */
+let App = new PetiteVueApp()
+/*plugins:* */
 
-let store = PetiteVue.reactive({
-    activeOp: '',
-    activeTab: '',
-    activeLang: '',
-    langResult: null,
-    preview: '',
+let routes = App.pageRoutes({
+    page:'op',
+    queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider'.split(','),
+    handlers: {
+        init(state) {
+            //console.log('pageRoutes:init', state)
+        },
+        to(state) {
+            //console.log('pageRoutes:to', state)
+        }
+    }
+})
+
+var store = PetiteVue.reactive({
     previewResult: null,
     copied: false,
     filter: '',
     sideNav,
-    form: '',
-    detailSrc: '',
-    detailSrcResult: null,
-    response: '',
-    body: '',
-    provider:'',
+    detailSrcResult: {},
     debug: APP.config.debugMode,
     api: null,
     auth: window.AUTH,
@@ -324,7 +321,7 @@ let store = PetiteVue.reactive({
         let root = document.documentElement
         let sidebar = $1('.sidebar')
         if (!sidebar) return
-        if (isSmall() && this.activeOp) {
+        if (isSmall() && routes.op) {
             sidebar.style.display = 'none'
             root.style.setProperty('--sidebar-width', '0px')
         } else {
@@ -333,52 +330,21 @@ let store = PetiteVue.reactive({
         }
     },
     
-    get useLang() { return this.activeLang || 'csharp' },
+    get useLang() { return routes.lang || 'csharp' },
 
-    createHref(args) {
-        let state = this.stateArgs(args)
-        return appendQueryString(state.op || '', omit(state, ['op']))
-    },
-
-    stateArgs({ op, tab, lang, preview, detailSrc, form, response, body, provider }) {
-        let args = {
-            op: op != null ? op : this.activeOp,
-            tab: tab != null ? tab : this.activeTab,
-            lang: lang != null ? lang : this.activeLang,
-            preview: preview || this.preview,
-            detailSrc,
-            form: form != null ? form : this.form,
-            response,
-            body,
-            provider,
-        }
-        let nonEmptyArgs = omit(args, Object.keys(args).filter(key => !args[key]))
-        return nonEmptyArgs
-    },
-
-    init(args) {
-        if (args.op != null) this.activeOp = args.op
-        if (args.tab != null) this.activeTab = args.tab
-        if (args.lang != null) this.activeLang = args.lang
-        if (args.preview != null) this.preview = args.preview
-        if (args.form != null) this.form = args.form
-        if (args.response != null) this.response = args.response
-        if (args.body != null) this.body = args.body
-        if (args.provider != null) this.provider = args.provider
-        this.setDetailSrc(args.detailSrc)
+    init() {
+        this.loadDetailSrc()
         this.loadLang()
         this.loadPreview()
         this.doLayout()
-        Events.publish('init')
-        
-        setBodyClass({ op: this.activeOp })
+        setBodyClass({ op: routes.op })
     },
 
-    select(args) {
-        this.init(args)
-        let state = this.stateArgs(args)
-        history.pushState(state, state.op, this.createHref(state))
-    },
+    // select(args) {
+    //     this.init(args)
+    //     let state = this.stateArgs(args)
+    //     history.pushState(state, state.op, this.createHref(state))
+    // },
 
     get filteredSideNav() {
         let filter = op => {
@@ -424,12 +390,12 @@ let store = PetiteVue.reactive({
         }
     },
     
-    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&MakeVirtual=false&MakePartial=false&AddServiceStackTypes=true` },
+    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&WithoutOptions=true&MakeVirtual=false&MakePartial=false&AddServiceStackTypes=true` },
     
     get previewCache() {
-        if (this.preview.startsWith('types.')) {
-            let types = this.preview.substring('types.'.length)
-            return { preview: this.preview, url: this.getTypeUrl(types), lang:'csharp' }
+        if (routes.preview.startsWith('types.')) {
+            let types = routes.preview.substring('types.'.length)
+            return { preview: routes.preview, url: this.getTypeUrl(types), lang:'csharp' }
         }
         return null
     },
@@ -456,32 +422,31 @@ let store = PetiteVue.reactive({
     get previewSrc() {
         let r = this.previewResult
         if (!r) return ''
-        return this.preview === r.preview && r.type === 'src' && r.lang ? r.result : ''
+        return routes.preview === r.preview && r.type === 'src' && r.lang ? r.result : ''
     },
     
     get activeLangSrc() {
         let cache = this.langResult && this.langResult.cache 
-        let ret = cache && this.activeOp === cache.op && this.useLang === cache.lang ? this.langResult.result : null
+        let ret = cache && routes.op === cache.op && this.useLang === cache.lang ? this.langResult.result : null
         return ret
     },
     
-    setDetailSrc(types) {
-        this.detailSrc = types
-        if (!this.detailSrc) return
-        let cache = { url: this.getTypeUrl(types) }
+    loadDetailSrc() {
+        if (!routes.detailSrc) return
+        let cache = { url: this.getTypeUrl(routes.detailSrc) }
         if (CACHE[cache.url]) {
-            this.detailSrcResult = { ...cache, result: CACHE[cache.url] }
+            this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] }
         } else {
             this.cachedFetch(cache.url).then(src => {
-                this.detailSrcResult = { ...cache, result: CACHE[cache.url] = cleanSrc(src) }
+                this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] = cleanSrc(src) }
             })
         }
     },
     
-    get detailSrcValid() { return this.detailSrcResult && this.detailSrcResult.url === this.getTypeUrl(this.detailSrc) },
+    get activeDetailSrc() { return routes.detailSrc && this.detailSrcResult[this.getTypeUrl(routes.detailSrc)] },
     
     get op() {
-        return this.activeOp ? APP.api.operations.find(op => op.request.name === this.activeOp) : null
+        return routes.op ? APP.api.operations.find(op => op.request.name === routes.op) : null
     },
     get opName() { return this.op && this.op.request.name },
     
@@ -501,8 +466,8 @@ let store = PetiteVue.reactive({
     },
     
     langCache() {
-        let op = this.activeOp, lang = this.useLang
-        return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*&MakeVirtual=false&MakePartial=false` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
+        let op = routes.op, lang = this.useLang
+        return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*&WithoutOptions=true&MakeVirtual=false&MakePartial=false` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
     },
 
     cachedFetch(url) {
@@ -530,16 +495,14 @@ let store = PetiteVue.reactive({
     SignIn() {
         return SignIn({ 
             plugin: APP.plugins.auth, 
-            provider:() => this.provider,
-            createHref:args => this.createHref(args), 
-            select:args => this.select(args), 
+            provider:() => routes.provider,
             login:args => this.login(args),
             api: () => this.api,
         })
     },
     
     login(args) {
-        let provider = this.provider || 'credentials'
+        let provider = routes.provider || 'credentials'
         let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
         if (!authProvider) 
             throw new Error("!authProvider")
@@ -593,16 +556,7 @@ let store = PetiteVue.reactive({
     },
 })
 
-if (op) store.init({ op })
-if (location.search) {
-    let { tab, lang, preview, detailSrc, form, response, body, provider } = queryString(location.search)
-    store.init({ tab, lang, preview, detailSrc, form, response, body, provider })
-}
-
-window.addEventListener('popstate', (event) => {
-    let { op, tab, lang, preview, detailSrc, form, response, body, provider } = event.state
-    store.init({ op, tab, lang, preview, detailSrc, form, response, body, provider })
-});
+App.events.subscribe('pageRoutes:nav', args => store.init())
 
 function typeProperties(type) {
     let props = []
@@ -652,9 +606,6 @@ function typeName2(name, genericArgs) {
     return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
 }
 function typeName(metaType) { return typeName2(metaType.name, metaType.genericArgs) }
-
-/*shared/js:PetiteVueApp*/
-let App = new PetiteVueApp()
 </script>
 
 <!--shared:Alert,AuthNav,Brand,CopyIcon,CopyLine,Input,Loading,PreviewObject,SignIn,ErrorSummary-->
@@ -696,6 +647,7 @@ App.build({
 
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
 
+routes.start()
 window.onresize = () => store.doLayout()
 App.nextTick(() => {
     document.body.classList.remove('loading')

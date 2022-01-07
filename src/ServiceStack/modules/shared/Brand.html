@@ -1,18 +1,16 @@
 <script>
-App.component('Brand', ({ serviceName, iconUri, href, onclick }) => {
+App.component('Brand', ({ serviceName, iconUri }) => {
     return {
         $template: '#brand-template',
         serviceName,
         iconUri: iconUri || '',
-        href: href || '',
-        onclick,
     }
 })
 </script>
 <style>.brand-icon { width: 1.65rem; height: 1.65rem; margin-right: .4rem; }</style>
 <template id="brand-template">
 <div class="flex items-center flex-shrink-0 max-w-sidebar">
-    <a :title="serviceName" :href="href" @click.prevent="onclick"
+    <a :title="serviceName" v-href="{ op:'' }"
        class="pl-3 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
         <img v-if="iconUri" class="brand-icon" :src="iconUri" alt="Logo">
         {{serviceName}}

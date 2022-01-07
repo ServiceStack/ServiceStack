@@ -1,12 +1,13 @@
+import { EventBus } from '@servicestack/client'
 /**
  * App to register and build a PetiteVue App
  * @class
- * @requires PetiteVue
  */
 function PetiteVueApp() {
     let Components = []
     let Directives = {}
     this.petite = null
+    this.events = new EventBus()
     
     let assertNotBuilt = (name) => {
         if (this.petite)
@@ -67,7 +68,14 @@ function PetiteVueApp() {
         })
         Object.keys(Directives).forEach(name => this.petite.directive(name, Directives[name]))
         return this.petite
-    } 
+    }
+    
+    this.plugin = function (plugins) {
+        Object.keys(plugins).forEach(name => {
+            let f = plugins[name]
+            this[name] = typeof f == 'function' ? f.bind(this) : f 
+        })
+    }
     
     this.import = function (src) {
         return new Promise((resolve, reject) => {

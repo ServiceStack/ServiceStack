@@ -1,50 +1,54 @@
 /**
  * App to register and build a PetiteVue App
  * @class
- * @requires PetiteVue
  */
 function PetiteVueApp() {
     let Components = []
     let Directives = {}
     this.petite = null
+    this.events = new EventBus()
     
     let assertNotBuilt = (name) => {
         if (this.petite)
             throw new Error(`Cannot call App.${name}() after App is built`)
     }
-    let assertComponent = (name, fn) => {
-        if (typeof fn != "function")
-            throw new Error(`${name} is not a Component`)
-        return fn
+    function template (name, $template) {
+        if (typeof $template != 'string')
+            throw new Error(`Template ${name} must be a template selector not ${$template}`)
+        return create(name, function(args, apply) {
+            let to = {
+                $template,
+                ...args
+            }
+            if (apply) apply(to,name)
+            return to
+        })
     }
-    
+    function create (name, x) {
+        if (typeof x == "string")
+            return template(name, x)
+        else if (typeof x == "function")
+            return x
+        throw new Error(`${name} is not a Component or $template`)
+    }
+    function register (name, component) {
+        window[name] = Components[name] = create(name, component)
+    }
     this.components = function (components) {
         assertNotBuilt('components')
-        Object.keys(components).forEach(name => {
-            window[name] = Components[name] = assertComponent(name, components[name])
-        })
+        Object.keys(components).forEach(name => register(name, components[name]))
     }
-    
     this.component = function(name, component) {
         assertNotBuilt('component')
-        window[name] = Components[name] = assertComponent(name, component)
+        register(name, component)
     }
-    
+    this.template = function (name, $template) {
+        assertNotBuilt('template')
+        register(name, template(name, $template))
+    }
     this.templates = function (templates) {
-        assertNotBuilt('templates')
-        Object.keys(templates).forEach(name => {
-            let $template = templates[name]
-            if (typeof $template != 'string')
-                throw new Error('Template ${name} must be a template selector not ${$template}')
-            window[name] = Components[name] = assertComponent(name, function(args, apply) {
-                let to = {
-                    $template,
-                    ...args
-                }
-                if (apply) apply(to,name)
-                return to
-            })
-        })
+        assertNotBuilt('template')
+        Object.keys(templates).forEach(name => register(name, template(name, templates[name])))
     }
     
     this.directive = function(name, fn) {
@@ -54,18 +58,23 @@ function PetiteVueApp() {
 
     this.build = function(args) {
         if (!window.PetiteVue)
-            throw new Error('PetiteVue does not exist')
+            throw new ReferenceError('PetiteVue is not defined')
         Object.assign(this, window.PetiteVue)
         
         this.petite = PetiteVue.createApp({
             ...Components.reduce((acc,x) => { acc[x] = Components[x]; return acc }, {}),
             ...args,
         })
-        Object.keys(Directives).forEach(name => {
-            this.petite.directive(name, Directives[name])
-        })
+        Object.keys(Directives).forEach(name => this.petite.directive(name, Directives[name]))
         return this.petite
-    } 
+    }
+    
+    this.plugin = function (plugins) {
+        Object.keys(plugins).forEach(name => {
+            let f = plugins[name]
+            this[name] = typeof f == 'function' ? f.bind(this) : f 
+        })
+    }
     
     this.import = function (src) {
         return new Promise((resolve, reject) => {
@@ -77,5 +86,5 @@ function PetiteVueApp() {
         })
     }
 
-    if (window.PetiteVue) Object.assign(this, window.PetiteVue)
+    Object.assign(this, window.PetiteVue||{})
 }

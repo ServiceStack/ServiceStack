@@ -5,7 +5,7 @@ let swiftPkg = `dependencies: [
         Version(5,0,0)..&lt;Version(6,0,0)),
 ]`
 document.body.classList.add('show-lang-help')
-App.component('ApiCode', ({ store }) => {
+App.component('ApiCode', ({ store, routes }) => {
     let highlight = language => hljs.highlight(
         $1(`#${language}-help`).innerHTML.trim()
             .replace('{BASE_URL}',BASE_URL)
@@ -15,7 +15,7 @@ App.component('ApiCode', ({ store }) => {
     
     return {
         $template: '#api-code-template',
-        store,
+        store, routes,
         get csharpSrc() { return highlight('csharp') },
         get typescriptSrc() { return highlight('typescript') },
         get dartSrc() { return highlight('dart') },
@@ -68,7 +68,7 @@ App.components({ InstallTool: '#install-tool-template' })
 </style>
 <template id="api-code-template">
 <nav class="flex overflow-x-auto space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
-    <a v-for="(name,lang) in langs" :href="store.createHref({ lang })" @click.prevent="store.select({lang})"
+    <a v-for="(name,lang) in langs" v-href="{lang}"
        :class="[lang == store.useLang ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
         {{name}}
     </a>
@@ -84,7 +84,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     </svg>
                 </div>
             </div>
-            <pre v-if="store.activeLangSrc" class=""><code :lang="store.activeLang" v-highlightjs="store.activeLangSrc"></code></pre>
+            <pre v-if="store.activeLangSrc" class=""><code :lang="routes.lang" v-highlightjs="store.activeLangSrc"></code></pre>
             <div v-else v-scope="Loading()"></div>
         </div>
         <div class="flex-1 lang-help prose shadow-lg overflow-x-auto">

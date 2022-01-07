@@ -1,10 +1,11 @@
 <script>
-App.component('ApiDetails', ({ store }) => {
+App.component('ApiDetails', ({ store, routes }) => {
     return {
         $template: '#api-details-layout',
-        store,
+        store, routes,
         get op() { return this.store.op },
-        get opName() { return this.store.op.request.name },
+        get request() { return this.op && this.op.request },
+        get opName() { return this.request && this.request.name },
         predefinedRoute(opName) {
             let apiFmt = APP.httpHandlers['ApiHandlers.Json']
                 || (APP.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
@@ -52,15 +53,14 @@ function addReferencedTypes(allTypesMap, type) {
 }
 </script>
 <template id="api-details-layout">
-<div v-if="op" class="flex-1 pt-2.5 px-4 bg-white">
+<div v-if="request" class="flex-1 pt-2.5 px-4 bg-white">
     <div class="flex">
         <div class="flex-grow">
             <h2 class="mb-3">
                 <span v-if="op.method" title="HTTP Method" class="mr-1 inline-flex items-center text-md px-2.5 py-0.5 bg-gray-100 text-gray-600">
                   {{op.method}}
                 </span>
-                <a :href="store.createHref({ detailSrc: opName })" @click.prevent="store.select({ detailSrc: opName })"
-                   class="text-xl text-blue-800">
+                <a v-href="{ detailSrc: opName }" class="text-xl text-blue-800">
                     {{opName}}
                 </a>
             </h2>
@@ -114,8 +114,7 @@ function addReferencedTypes(allTypesMap, type) {
             <div>
                 <div v-if="request.inherits" class="mb-3">
                     <span class="text-gray-500">inherits</span>
-                    <a :href="store.createHref({ detailSrc: inheritedTypes(request.inherits) })" @click.prevent="store.select({ detailSrc: inheritedTypes(request.inherits) })"
-                       class="text-blue-800">
+                    <a v-href="{ detailSrc: inheritedTypes(request.inherits) }" class="text-blue-800">
                         {{typeName(request.inherits)}}
                     </a>
                 </div>
@@ -129,8 +128,7 @@ function addReferencedTypes(allTypesMap, type) {
             <div>
                 <div v-if="op.returnType || op.returnsVoid">
                     <span class="text-gray-500">returns</span>
-                    <a v-if="op.returnType" :href="store.createHref({ detailSrc: op.returnType.name })" @click.prevent="store.select({ detailSrc: op.returnType.name })"
-                       class="text-blue-800">
+                    <a v-if="op.returnType" v-href="{ detailSrc: op.returnType.name }" class="text-blue-800">
                         {{typeName(op.returnType)}}
                     </a>
                     <span v-else class="text-blue-800">void</span>
@@ -207,15 +205,15 @@ function addReferencedTypes(allTypesMap, type) {
         </div>
     </div>
 </div>
-<div v-if="store.detailSrc" class="flex-1 bg-gray-50 overflow-y-auto">
-    <div v-if="store.detailSrcValid">
+<div v-if="routes.detailSrc" class="flex-1 bg-gray-50 overflow-y-auto">
+    <div v-if="store.activeDetailSrc">
         <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
-            <button type="button" @click="store.setDetailSrc()"
+            <button type="button" v-href="{ detailSrc:'' }"
                     class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"><span class="sr-only">Close</span>
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
-        <pre class="pl-4 py-2"><code lang="csharp" v-highlightjs="store.detailSrcResult.result"></code></pre>
+        <pre class="pl-4 py-2"><code lang="csharp" v-highlightjs="store.activeDetailSrc.result"></code></pre>
     </div>
     <div v-else v-scope="Loading()"></div>
 </div>

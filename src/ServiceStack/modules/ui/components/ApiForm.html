@@ -1,15 +1,15 @@
 <script>
 let OP_STATE = {}
-App.component('ApiForm', ({ store }) => {
+App.component('ApiForm', ({ store, routes }) => {
     return {
         $template: `#api-form-template`,
-        store,
+        store, routes,
         tabs: {'FORM':'','JSON':'json'},
         get state() {
             let s = this.store
             let opName = s.op && s.op.request && s.op.request.name
             if (!opName) {
-                console.log('!state.opName')
+                if (DEBUG) console.log('!state.opName')
                 return null
             }
             let ret = OP_STATE[opName] || (OP_STATE[opName] = ({
@@ -43,20 +43,22 @@ App.component('ApiForm', ({ store }) => {
             if (ret.opName !== opName) throw new Error('!!state.opName')
             return ret
         },
-        select(args) {
+        get hasState() { return this.state && this.state.op },
+        opState(k) { return this.state && this.state[k] },
+        formNav(args) {
             if (args.form === '') {
                 this.updateRequestDto(this.state.formJson)
             } else if (args.form === 'json') {
                 this.saveForm($1('[data-autoform]'))
                 this.state.jsonError = null
             }
-            return store.select(args)
         },
         get showForm() {
-            if (!this.state || !this.state.op) return false
+            if (!this.hasState) return false
             return !this.state.op.requiresAuth || this.store.auth
         },
         saveForm(form) {
+            if (!this.hasState) return
             let state = this.state
             if (!(form && form.tagName === 'FORM')) throw new Error('!form')
             state.requestDto = createDto(state.opName, formValues(form))
@@ -64,6 +66,7 @@ App.component('ApiForm', ({ store }) => {
             return state.requestDto
         },
         updateRequestDto(json){
+            if (!this.hasState) return
             let state = this.state
             state.jsonError = null
             try {
@@ -74,6 +77,7 @@ App.component('ApiForm', ({ store }) => {
             }
         },
         onAjaxFormInput(e) {
+            if (!this.hasState) return
             this.state.formJson = JSON.stringify(formValues(e.target.tagName === 'FORM' ? e.target : e.target.form), undefined, 4)
         },
         onJsonFormInput(e) { this.updateRequestDto(e.target.value) },
@@ -82,6 +86,7 @@ App.component('ApiForm', ({ store }) => {
             this.apiSend()
         },
         onJsonFormSubmit(e) {
+            if (!this.hasState) return
             let state = this.state
             try {
                 let json = $1('textarea',e.target).value
@@ -93,12 +98,14 @@ App.component('ApiForm', ({ store }) => {
             }
         },
         apiSend() {
+            if (!this.hasState) return
             let state = this.state
             if (!state.requestDto) return
             state.jsonError = null
             state.apiResult = null
             state.apiLoading = true
             apiSend(state.requestDto).then(r => {
+                console.log(r)
                 state.apiResult = r
                 state.apiLoading = false
             })
@@ -167,7 +174,7 @@ function formValues(form) {
 function createDto(name, obj) {
     let dtoCtor = window[name]
     if (!dtoCtor) {
-        console.log(`Couldn't find Request DTO for ${name}`)
+        if (DEBUG) console.log(`Couldn't find Request DTO for ${name}`)
         let AnonResponse = /** @class */ (function () { return function (init) { Object.assign(this, init) } }())
         dtoCtor = /** @class */ (function () {
             function AnonRequest(init) { Object.assign(this, init) }
@@ -295,23 +302,22 @@ function supportsProp(prop) {
     <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
     <div v-scope="store.SignIn()"></div>
 </div>
-<div v-else-if="state">
+<div v-else-if="hasState">
     <nav class="flex space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
-        <a v-for="(tab,name) in tabs"  :href="store.createHref({ form:tab })" @click.prevent="select({ form:tab })"
-           :class="[store.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
+        <a v-for="(tab,name) in tabs" v-href="{ form:tab, $on:formNav }"
+           :class="[routes.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
             {{name}}
         </a>
     </nav>
     <div>
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
 
-        <div v-if="store.form==''" class="p-4 max-w-screen-md"
+        <div v-if="routes.form==''" class="p-4 max-w-screen-md"
              v-scope="AutoForm({ 
                 state: () => state,  
                 onsubmit: e => onAjaxFormSubmit(e),
-                //oninput:  e => onAjaxFormInput(e),
             })"></div>
-        <div v-if="store.form=='json'">
+        <div v-if="routes.form=='json'">
 
             <form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="p-4">
                 <div class="shadow overflow-hidden sm:rounded-md bg-white">
@@ -319,7 +325,7 @@ function supportsProp(prop) {
                         <fieldset>
                             <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
                             <div class="flex flex-col">
-                                <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput">{{state.apiRequestJson}}</textarea>
+                                <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput"></textarea>
                                 <div v-if="state.formJson" class="mt-1">
                                     <div v-if="state.jsonError" class="1 flex items-end">
                                         <svg class="text-red-600 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -352,22 +358,22 @@ function supportsProp(prop) {
         </div>
 
         <div v-if="state.apiLoading" v-scope="Loading()"></div>
-        <div v-else-if="state.apiResult" v-scope="ApiResponse({ store, apiResult:state.apiResult })"></div>
+        <div v-else-if="state.apiResult" v-scope="ApiResponse({ store, routes, apiResult:state.apiResult })"></div>
     </div>
 </div>
 </template>
 
 <script>
-function ApiResponse({ store, apiResult }) {
+App.component('ApiResponse', ({ store, routes, apiResult }) => {
     return {
         $template: '#api-response-template',
-        store,
+        store, routes,
         apiResult,
         toKvps(obj) {
             return Object.keys(obj).map(k => ({ Key:k, Value:obj[k]}))
         },
         get tabs() {
-          let tabs = { Body:'' }
+            let tabs = { Body:'' }
             tabs[this.headersLabel] = 'headers'
             tabs[this.cookiesLabel] = 'cookies'
             return tabs
@@ -381,50 +387,49 @@ function ApiResponse({ store, apiResult }) {
             return `Cookies (${count})`
         },
         fieldAttrs(id) {
-            let useId = id.replace(/\s+/g,'').toLowerCase() 
-            return useId === 'stacktrace' 
-                ? { 'class': 'whitespace-pre overflow-x-auto' } 
+            let useId = id.replace(/\s+/g,'').toLowerCase()
+            return useId === 'stacktrace'
+                ? { 'class': 'whitespace-pre overflow-x-auto' }
                 : {}
         }
     }
-}
-App.components({ ApiResponse })
+})
 </script>
 <template id="api-response-template">
 <div class="mt-2 border-t">
     <div class="border-b border-gray-200">
         <nav class="-mb-px flex space-x-4 pl-2" aria-label="Tabs">
-            <a v-for="(tab,name) in tabs" :href="store.createHref({ response:tab })" @click.prevent="store.select({ response:tab })" 
-               :class="[store.response == tab ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-1 px-1 border-b-2 font-medium text-sm']">
+            <a v-for="(tab,name) in tabs" v-href="{ response:tab }" 
+               :class="[routes.response == tab ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-1 px-1 border-b-2 font-medium text-sm']">
                 {{name}}
             </a>
         </nav>
     </div>
 
-    <div v-if="store.response == ''" class="p-2">
+    <div v-if="routes.response == ''" class="p-2">
         <span class="relative z-0 inline-flex shadow-sm rounded-md">
-          <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" :href="store.createHref({ body:tab })" @click.prevent="store.select({ body:tab })"
-              :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], store.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+          <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" v-href="{ body:tab }"
+              :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], routes.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
             {{name}}
           </a>
         </span>
 
-        <div v-if="store.body == ''" class="pt-2 icon-outer">
+        <div v-if="routes.body == ''" class="pt-2 icon-outer">
             <div v-if="apiResult.json" class="icon-right" v-scope="CopyIcon({ text:() => apiResult.json })"></div>
             <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="apiResult.json"></code></pre>
         </div>
-        <div v-else-if="store.body == 'raw'" class="flex pt-2">
+        <div v-else-if="routes.body == 'raw'" class="flex pt-2">
             <textarea class="flex-1" rows="10" v-html="apiResult.text"></textarea>
         </div>
-        <div v-else-if="store.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+        <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
             <div class="" v-scope="PreviewObject({ val:apiResult.api.response || apiResult.api.error, fieldAttrs })"></div>
         </div>
     </div>
-    <div v-else-if="store.response == 'cookies'" class="p-4">
+    <div v-else-if="routes.response == 'cookies'" class="p-4">
         <div v-if="apiResult.cookies && toKvps(apiResult.cookies).length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
         <div v-scope="Alert({ message: () => 'HttpOnly Cookies are not shown' })"></div>
     </div>
-    <div v-else-if="store.response == 'headers'" class="p-4">
+    <div v-else-if="routes.response == 'headers'" class="p-4">
         <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:toKvps(apiResult.headers) })"></div>
     </div>
 </div>
