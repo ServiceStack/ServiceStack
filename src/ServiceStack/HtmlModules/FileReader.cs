@@ -9,6 +9,7 @@ namespace ServiceStack.HtmlModules;
 public class FileReaderOptions
 {
     public List<Func<string,string?>> LineTransformers { get; set; } = new();
+    public List<Func<string,string>> FileTransformers { get; set; } = new();
 }
 
 public class FileReader
@@ -45,6 +46,12 @@ public class FileReader
                 sb.AppendLine(line);
             }
         }
-        return sb.ToString();
+
+        var fileContents = sb.ToString();
+        foreach (var fileTransformer in options.FileTransformers)
+        {
+            fileContents = fileTransformer(fileContents);
+        }
+        return fileContents;
     }
 }
