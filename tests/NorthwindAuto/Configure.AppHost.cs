@@ -41,7 +41,8 @@ namespace MyApp
             Plugins.Add(new HtmlModulesFeature(new HtmlModule("/ui"))
             {
                 Handlers = {
-                    new SharedFolder("shared", "/shared")
+                    new SharedFolder("shared", "/shared", defaultExt:".html"),
+                    new SharedFolder("shared/js", "/shared/js", defaultExt:".js"),
                 }
             });
             

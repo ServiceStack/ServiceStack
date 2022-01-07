@@ -1,9 +1,4 @@
-<script>
-function Loading() { 
-    return { $template: '#loading-template' } 
-}
-Components.push({ Loading })
-</script>
+<script>App.templates({ Loading: '#loading-template' })</script>
 <template id="loading-template">
     <div class="flex p-4">
         <svg class="w-8 h-8 text-gray-600" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">

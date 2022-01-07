@@ -5,7 +5,7 @@ let swiftPkg = `dependencies: [
         Version(5,0,0)..&lt;Version(6,0,0)),
 ]`
 document.body.classList.add('show-lang-help')
-function ApiCode({ store }) {
+App.component('ApiCode', ({ store }) => {
     let highlight = language => hljs.highlight(
         $1(`#${language}-help`).innerHTML.trim()
             .replace('{BASE_URL}',BASE_URL)
@@ -27,15 +27,8 @@ function ApiCode({ store }) {
         get fsharpSrc() { return highlight('fsharp') },
         swiftPkg,
     }
-}
-function InstallTool({ store }) {
-    return {
-        $template: '#install-tool-template',
-        store,
-    }
-}
-
-Components.push({ ApiCode, InstallTool })
+})
+App.templates({ InstallTool: '#install-tool-template' })
 </script>
 <style>
 :root {

@@ -1,5 +1,5 @@
 <script>
-function Input({ input, model, api }) {
+App.component('Input', ({ input, model, api }) => {
     return {
         $template: '#input-template',
         input,
@@ -30,8 +30,7 @@ function Input({ input, model, api }) {
             return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
         },
     }
-}
-Components.push({ Input })
+})
 </script>
 <template id="input-template">
 <div v-if="input.type=='divider'" class="border-t"></div>

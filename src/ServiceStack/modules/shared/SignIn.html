@@ -1,5 +1,5 @@
 <script>
-function SignIn({ plugin, provider, createHref, select, login, api }) {
+App.component('SignIn', ({ plugin, provider, createHref, select, login, api }) => {
     
     let model = {}
     plugin.authProviders.map(x => x.formLayout).filter(x => x)
@@ -61,8 +61,7 @@ function SignIn({ plugin, provider, createHref, select, login, api }) {
             login(args)
         },
     }
-}
-Components.push({ SignIn })
+})
 </script>
 <template id="signin-template">
 <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">

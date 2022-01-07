@@ -1,12 +1,4 @@
-<script>
-function ErrorSummary({ errorSummary }) {
-    return {
-        $template: '#error-summary-template',
-        get errorSummary() { return errorSummary() },
-    }
-}
-Components.push({ ErrorSummary })
-</script>
+<script>App.templates({ ErrorSummary: '#error-summary-template' })</script>
 <template id="error-summary-template">
 <div v-if="errorSummary" class="rounded-md bg-red-50 p-4 mb-4" role="alert">
     <div class="flex">
@@ -18,7 +10,7 @@ Components.push({ ErrorSummary })
         </div>
         <div class="ml-3">
             <h3 class="text-sm font-medium text-red-800">
-                {{errorSummary}}
+                {{errorSummary()}}
             </h3>
         </div>
     </div>

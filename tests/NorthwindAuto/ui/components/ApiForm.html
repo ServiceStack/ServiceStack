@@ -1,10 +1,8 @@
 <script>
 let OP_STATE = {}
-
-function Api({ store }) {
-    
+App.component('ApiForm', ({ store }) => {
     return {
-        $template: `#api-template`,
+        $template: `#api-form-template`,
         store,
         tabs: {'FORM':'','JSON':'json'},
         get state() {
@@ -106,8 +104,7 @@ function Api({ store }) {
             })
         },
     }
-}
-Components.push({ Api })
+})
 
 function humanify(id) { return humanize(toPascalCase(id)) }
 
@@ -293,7 +290,7 @@ function supportsProp(prop) {
 }
 
 </script>
-<template id="api-template">
+<template id="api-form-template">
 <div v-if="!showForm" class="p-4">
     <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
     <div v-scope="store.SignIn()"></div>
@@ -391,7 +388,7 @@ function ApiResponse({ store, apiResult }) {
         }
     }
 }
-Components.push({ ApiResponse })
+App.components({ ApiResponse })
 </script>
 <template id="api-response-template">
 <div class="mt-2 border-t">

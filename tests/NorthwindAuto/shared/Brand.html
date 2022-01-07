@@ -1,5 +1,5 @@
 <script>
-function Brand({ serviceName, iconUri, href, onclick }) {
+App.component('Brand', ({ serviceName, iconUri, href, onclick }) => {
     return {
         $template: '#brand-template',
         serviceName,
@@ -7,8 +7,7 @@ function Brand({ serviceName, iconUri, href, onclick }) {
         href: href || '',
         onclick,
     }
-}
-Components.push({ Brand })
+})
 </script>
 <style>.brand-icon { width: 1.65rem; height: 1.65rem; margin-right: .4rem; }</style>
 <template id="brand-template">

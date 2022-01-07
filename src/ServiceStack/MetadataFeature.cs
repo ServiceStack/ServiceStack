@@ -75,7 +75,10 @@ namespace ServiceStack
         {
             IgnoreIfError = true,
             Configure = (appHost,module) => module.VirtualFiles = appHost.VirtualFileSources,
-            Handlers = { new HtmlModules.SharedFolder("shared", "/modules/shared") },
+            Handlers = {
+                new HtmlModules.SharedFolder("shared", "/modules/shared", ".html"),
+                new HtmlModules.SharedFolder("shared/js", "/modules/shared/js", ".js"),
+            },
         };
 
         public MetadataFeature()

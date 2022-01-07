@@ -1,5 +1,5 @@
 <script>
-function ApiDetails({ store }) {
+App.component('ApiDetails', ({ store }) => {
     return {
         $template: '#api-details-layout',
         store,
@@ -30,8 +30,7 @@ function ApiDetails({ store }) {
             return types.join(',')
         },
     }
-}
-Components.push({ ApiDetails })
+})
 
 function addReferencedTypes(allTypesMap, type) {
     if (!type) return

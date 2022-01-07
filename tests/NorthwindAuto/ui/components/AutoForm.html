@@ -1,5 +1,5 @@
 <script>
-function AutoForm({ state, onsubmit, oninput }) {
+App.component('AutoForm', ({ state, onsubmit, oninput }) => {
     return {
         $template: '#form-template',
         get state() { return state() },
@@ -43,8 +43,7 @@ function AutoForm({ state, onsubmit, oninput }) {
         onsubmit: onsubmit ?? (() => {}),
         oninput: oninput ?? (() => {}),
     }
-}
-Components.push({ AutoForm })
+})
 </script>
 <template id="form-template">
 <form @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName">

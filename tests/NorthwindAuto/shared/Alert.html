@@ -1,12 +1,4 @@
-<script>
-function Alert({ message }) {
-    return {
-        $template: `#alert-template`,
-        get message() { return message() },
-    }
-}
-Components.push({ Alert })
-</script>
+<script>App.templates({ Alert: '#alert-template' })</script>
 <template id="alert-template">
 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
     <div class="flex">
@@ -17,7 +9,7 @@ Components.push({ Alert })
             </svg>
         </div>
         <div class="ml-3">
-            <p class="text-sm text-yellow-700" v-html="message"></p>
+            <p class="text-sm text-yellow-700" v-html="message()"></p>
         </div>
     </div>
 </div>

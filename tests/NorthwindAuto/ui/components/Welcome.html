@@ -1,13 +1,4 @@
-<script>
-    
-function Welcome({ store }) {
-    return {
-        $template: '#welcome-template',
-        store,
-    }
-}
-Components.push({ Welcome })
-</script>
+<script>App.templates({ Welcome: '#welcome-template' })</script>
 <template id="welcome-template">
 <div class="mt-12 px-4 sm:auth:hidden">
 
@@ -54,6 +45,5 @@ Components.push({ Welcome })
             </div>
         </div>
     </div>    
-
 </div>
 </template>

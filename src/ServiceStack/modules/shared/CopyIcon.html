@@ -9,15 +9,14 @@ function copy(text) {
     document.body.removeChild($el)
     setTimeout(() => this.copied = false, 3000)
 }
-function CopyIcon({ text }) {
+App.component('CopyIcon', ({ text }) => {
     return {
         $template: '#copy-icon-template',
         text,
         copied: false,
         copy,
     }
-}
-Components.push({ CopyIcon })
+})
 </script>
 <template id="copy-icon-template">
 <div class="icon fixed" @click="copy(text())">

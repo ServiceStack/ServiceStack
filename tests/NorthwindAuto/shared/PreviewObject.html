@@ -1,50 +1,50 @@
 <script>
-function PreviewObject({ val, fieldAttrs, attrs }) {
-    let num = m => m
-    let date = toDate
-    let pad = d =>  d < 10 ? '0' + d : d
-    let dmft = (d) => d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate())
-    let str = m => m.substr(0, 6) === '/Date(' ? dmft(date(m)) : m.trim()
+App.components({ 
+    PreviewObject({ val, fieldAttrs, attrs }) {
+        let num = m => m
+        let date = toDate
+        let pad = d =>  d < 10 ? '0' + d : d
+        let dmft = (d) => d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate())
+        let str = m => m.substr(0, 6) === '/Date(' ? dmft(date(m)) : m.trim()
 
-    return {
-        $template: '#preview-object-template',
-        val,
-        fieldAttrs,
-        attrs: attrs,
-        type: typeof val,
-        num,
-        str,
-    }
-}
-function ArrayPreview({ val, fieldAttrs }) {
-    let show = k => typeof k !== 'string' || k.substr(0, 2) !== '__'
-    let type = typeof val[0]
-    let isScalar = type === 'string' || type === 'number' || type === 'boolean'
-    return {
-        $template: '#array-preview-template',
-        val,
-        fieldAttrs,
-        type,
-        isScalar,
-        uniqueKeys: isScalar ? [] : uniqueKeys(val).filter(show),
-        keyFmt: t => humanize(toPascalCase(t)),
-    }
-}
-function ObjectPreview({ val, fieldAttrs }) {
-    let show = k => typeof k !== 'string' || k.substr(0, 2) !== '__'
-    let keyFmt = t => humanize(toPascalCase(t))
-    let keys = Object.keys(val).filter(show) 
-    return {
-        $template: '#object-preview-template',
-        val,
-        fieldAttrs,
-        type: typeof val,
-        keys,
-        rows: keys.map(k => ({ key:keyFmt(k), val: val[k] })),
-    }
-}
-Components.push({ PreviewObject, ObjectPreview, ArrayPreview })
-
+        return {
+            $template: '#preview-object-template',
+            val,
+            fieldAttrs,
+            attrs: attrs,
+            type: typeof val,
+            num,
+            str,
+        }
+    },
+    ObjectPreview({ val, fieldAttrs }) {
+        let show = k => typeof k !== 'string' || k.substr(0, 2) !== '__'
+        let keyFmt = t => humanize(toPascalCase(t))
+        let keys = Object.keys(val).filter(show)
+        return {
+            $template: '#object-preview-template',
+            val,
+            fieldAttrs,
+            type: typeof val,
+            keys,
+            rows: keys.map(k => ({ key:keyFmt(k), val: val[k] })),
+        }
+    },
+    ArrayPreview({ val, fieldAttrs }) {
+        let show = k => typeof k !== 'string' || k.substr(0, 2) !== '__'
+        let type = typeof val[0]
+        let isScalar = type === 'string' || type === 'number' || type === 'boolean'
+        return {
+            $template: '#array-preview-template',
+            val,
+            fieldAttrs,
+            type,
+            isScalar,
+            uniqueKeys: isScalar ? [] : uniqueKeys(val).filter(show),
+            keyFmt: t => humanize(toPascalCase(t)),
+        }
+    } 
+})
 </script>
 
 <template id="preview-object-template">

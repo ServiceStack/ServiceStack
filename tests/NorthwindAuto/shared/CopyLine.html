@@ -1,5 +1,5 @@
 <script>
-function CopyLine({ text }) {
+App.component('CopyLine', ({ text }) => {
     return {
         $template: '#copy-line-template',
         get text() { return text() },
@@ -15,8 +15,7 @@ function CopyLine({ text }) {
             setTimeout(() => this.copied = false, 3000)
         },
     }
-}
-Components.push({ CopyLine })
+})
 </script>
 <template id="copy-line-template">
 <div class="flex cursor-pointer" @click="copy(text)">

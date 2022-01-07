@@ -136,7 +136,7 @@ em {
             </nav>
         </div>
         <div class="body-content">
-            <div v-if="store.activeTab === ''" v-scope="Api({ store })"></div>
+            <div v-if="store.activeTab === ''" v-scope="ApiForm({ store })"></div>
             <div v-else-if="store.activeTab === 'details'" class="flex min-h-body" v-scope="ApiDetails({ store })"></div>
             <div v-else-if="store.activeTab === 'code'" v-scope="ApiCode({ store })"></div>
         </div>
@@ -173,14 +173,31 @@ function on(sel, handlers) {
     })
 }
 
+function setBodyClass(obj) {
+    let bodyCls = document.body.classList
+    Object.keys(obj).forEach(name => {
+        if (obj[name]) {
+            bodyCls.add(name)
+            bodyCls.remove(`no${name}`)
+        } else {
+            bodyCls.remove(name)
+            bodyCls.add(`no${name}`)
+        }
+    })
+}
+
 function loadApp(app) { window.APP = app }
-function loadAuth(auth) { window.AUTH = !auth || auth.responseStatus ? null : auth }
+function loadAuth(auth) { 
+    window.AUTH = !auth || auth.responseStatus ? null : auth
+    setBodyClass({ auth })
+}
 </script>
 <script src="../metadata/app?callback=loadApp"></script>
 <script src="../auth?callback=loadAuth"></script>
 
 <script src="../js/petite-vue.js"></script>
 <script src="../js/highlight.js"></script>
+
 <script>
 document.title = APP.app.serviceName
 let op = leftPart(location.href.substring(document.baseURI.length), '?')
@@ -354,13 +371,7 @@ let store = PetiteVue.reactive({
         this.doLayout()
         Events.publish('init')
         
-        if (this.activeOp) {
-            document.body.classList.remove('noop')
-            document.body.classList.add('op')
-        } else {
-            document.body.classList.remove('op')
-            document.body.classList.add('noop')
-        }
+        setBodyClass({ op: this.activeOp })
     },
 
     select(args) {
@@ -549,15 +560,13 @@ let store = PetiteVue.reactive({
                     r.error.message = HttpErrors[r.errorCode] || r.errorCode 
                 if (this.api.succeeded) {
                     this.auth = this.api.response
-                    document.body.classList.remove('noauth')
-                    document.body.classList.add('auth')
+                    setBodyClass({ auth: this.auth })
                 }
             })
     },
     
     logout() {
-        document.body.classList.remove('auth')
-        document.body.classList.add('noauth')
+        setBodyClass({ auth: this.auth })
         client.api(new Authenticate({ provider: 'logout' }))
         authsecret = bearerToken = client.bearerToken = null
         client.headers.delete('authsecret')
@@ -643,17 +652,27 @@ function typeName2(name, genericArgs) {
     return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
 }
 function typeName(metaType) { return typeName2(metaType.name, metaType.genericArgs) }
-let Components = []
+
+/*shared/js:PetiteVueApp*/
+let App = new PetiteVueApp()
 </script>
 
 <!--shared:Alert,AuthNav,Brand,CopyIcon,CopyLine,Input,Loading,PreviewObject,SignIn,ErrorSummary-->
 <!--files:components/*.html-->
 
 <script>
-$1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
+App.directive('highlightjs', ({ effect, get, el}) => {
+    effect(() => {
+        let src = get()
+        if (src) {
+            el.className = '' // remove existing stale class
+            el.innerHTML = enc(src)
+            hljs.highlightElement(el)
+        }
+    })
+})
 
-PetiteVue.createApp({
-    ...Components.reduce((acc,x) => { acc[x] = Components[x]; return acc }, {}),
+App.build({
     app: APP.app,
     ui: APP.ui,
     serviceName: APP.app.serviceName,
@@ -673,21 +692,12 @@ PetiteVue.createApp({
     humanify(id) { return humanize(toPascalCase(id)) },
     typeName,
     typeName2,
-})
-    .directive('highlightjs', ({ effect, get, el}) => {
-        effect(() => {
-            let src = get()
-            if (src) {
-                el.className = '' // remove existing stale class
-                el.innerHTML = enc(src)
-                hljs.highlightElement(el)
-            }
-        })
-    })
-    .mount()
+}).mount()
+
+$1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
 
 window.onresize = () => store.doLayout()
-PetiteVue.nextTick(() => {
+App.nextTick(() => {
     document.body.classList.remove('loading')
     let max = Math.max(...Array.from($$('.sidebar .nav-item')).map(el => el.clientWidth))
     if (max > (240 - 75)) {
