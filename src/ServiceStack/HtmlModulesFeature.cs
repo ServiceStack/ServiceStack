@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.HtmlModules;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -41,19 +42,34 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
         new RemoveJsLineCommentsHandler(),
         new RemoveHtmlLineCommentsHandler(),
     };
+
+    /// <summary>
+    /// File Transformer to use when reading files
+    /// </summary>
+    public Func<IVirtualFile, string>? FileContentsResolver { get; set; }
     
     public HtmlModule[] Modules { get; }
     public HtmlModulesFeature(params HtmlModule[] modules) => Modules = modules;
     public Action<IAppHost, HtmlModule>? Configure { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
+    /// <summary>
+    /// File Transformer options
+    ///  - defaults to FilesTransformer.Default
+    ///  - disable with FileTransformer.None
+    /// </summary>
+    public FilesTransformer? FilesTransformer { get; set; }
+    
     public void Register(IAppHost appHost)
     {
+        FilesTransformer ??= FilesTransformer.Default;
+        FileContentsResolver ??= FilesTransformer.ReadAll;
         VirtualFiles ??= appHost.VirtualFiles;
         foreach (var component in Modules)
         {
             component.Feature = this;
             component.VirtualFiles ??= VirtualFiles;
+            component.FileContentsResolver ??= FileContentsResolver;
             Configure?.Invoke(appHost, component);
             component.Register(appHost);
         }
@@ -65,6 +81,10 @@ public class HtmlModuleContext
     public HtmlModule Module { get; }
     public IRequest Request { get; }
     public IVirtualPathProvider VirtualFiles => Module.VirtualFiles!;
+
+    public Func<IVirtualFile, string> FileContentsResolver => Module.FileContentsResolver != null
+        ? Module.FileContentsResolver!
+        : file => file.ReadAllText();
 
     public HtmlModuleContext(HtmlModule module, IRequest request)
     {
@@ -95,6 +115,11 @@ public class HtmlModule
 
     public Dictionary<string, Func<HtmlModuleContext, ReadOnlyMemory<byte>>> Tokens { get; set; }
     public List<IHtmlModulesHandler> Handlers { get; set; } = new();
+
+    /// <summary>
+    /// File resolver to use to read file contents
+    /// </summary>
+    public Func<IVirtualFile, string>? FileContentsResolver { get; set; }
 
     public HtmlModule(string dirPath, string? basePath=null)
     {

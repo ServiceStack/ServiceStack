@@ -15,7 +15,6 @@ public class SharedFolder : IHtmlModulesHandler
     public string Name { get; }
     public string SharedDir { get; }
     public string DefaultExt { get; }
-    public Func<IVirtualFile, string> FileContentsResolver { get; set; } = FileReader.Read;
     public SharedFolder(string name, string sharedDir, string defaultExt)
     {
         if (string.IsNullOrEmpty(defaultExt))
@@ -42,13 +41,13 @@ public class SharedFolder : IHtmlModulesHandler
                     var files = ctx.VirtualFiles.GetAllMatchingFiles(path);
                     foreach (var file in files)
                     {
-                        sb.AppendLine(FileContentsResolver(file));
+                        sb.AppendLine(ctx.FileContentsResolver(file));
                     }
                 }
                 else
                 {
                     var file = ctx.VirtualFiles.GetFile(path);
-                    sb.AppendLine(FileContentsResolver(file));
+                    sb.AppendLine(ctx.FileContentsResolver(file));
                 }
             }
 

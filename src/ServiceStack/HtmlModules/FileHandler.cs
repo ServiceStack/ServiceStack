@@ -14,10 +14,9 @@ public class FileHandler : IHtmlModulesHandler
 {
     public string Name { get; }
     public FileHandler(string name) => Name = name;
-    public Func<IVirtualFile, string> FileContentsResolver { get; set; } = FileReader.Read;
     public ReadOnlyMemory<byte> Execute(HtmlModuleContext ctx, string path)
     {
-        return ctx.Cache($"{Name}:{path}", _ => FileContentsResolver(ctx.VirtualFiles.GetFile(path.StartsWith("/")
+        return ctx.Cache($"{Name}:{path}", _ => ctx.FileContentsResolver(ctx.VirtualFiles.GetFile(path.StartsWith("/")
             ? path
             : ctx.Module.DirPath.CombineWith(path))).AsMemory().ToUtf8());
     }
