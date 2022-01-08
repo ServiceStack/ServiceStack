@@ -28,6 +28,7 @@ public class FilesTransformer
     ///     - removes empty whitespace lines
     ///     - minifies in !DebugMode with <see cref="Minifiers.HtmlAdvanced"/>
     ///   .js:
+    ///     - removes lines starting with: 'import ', 'declare '
     ///     - removes line comments /**: ... */
     ///     - removes empty whitespace lines 
     ///     - minifies in !DebugMode with <see cref="Minifiers.JavaScript"/>
@@ -35,7 +36,9 @@ public class FilesTransformer
     ///     - removes line comments /**: ... */
     ///     - removes empty whitespace lines 
     /// </summary>
-    public static FilesTransformer Default => FilesTransformerUtils.Defaults();
+    public static FilesTransformer Default => Defaults(HostContext.DebugMode);
+    public static FilesTransformer Defaults(bool debugMode, Action<FilesTransformer>? with=null) => 
+        FilesTransformerUtils.Defaults(debugMode, with);
     
     public Dictionary<string, FileTransformerOptions> FileExtensions { get; private set; } = new();
 
@@ -80,18 +83,43 @@ public class FilesTransformer
         return clone;
     }
 
-    public static Func<string, string?> NotStartingWith(string linePrefix, bool ignoreWhiteSpace=false) => line => ignoreWhiteSpace 
+    public static void RecreateDirectory(string dirPath, int timeoutMs = 1000) =>
+        FileSystemVirtualFiles.RecreateDirectory(dirPath, timeoutMs);
+    
+    public void CopyAll(FileSystemVirtualFiles source, FileSystemVirtualFiles target,
+        bool cleanTarget = false,
+        Func<IVirtualFile, bool>? ignore = null, 
+        Action<IVirtualFile, string>? afterCopy = null)
+    {
+        if (cleanTarget)
+            FileSystemVirtualFiles.RecreateDirectory(target.RootDirInfo.FullName);
+
+        foreach (var file in source.GetAllFiles())
+        {
+            if (ignore != null && ignore(file)) 
+                continue;
+
+            var contents = ReadAll(file);
+            target.WriteFile(file.VirtualPath, contents);
+            afterCopy?.Invoke(file, contents);
+        }
+    }
+    
+}
+
+public static class Lines
+{
+    public static Func<string, string?> RemoveNotStartingWith(string linePrefix, bool ignoreWhiteSpace=false) => line => ignoreWhiteSpace 
         ? !line.AsSpan().TrimStart().StartsWith(linePrefix) ? line : null
         : !line.StartsWith(linePrefix) ? line : null;
 
-    public static Func<string, string?> IgnoreEmptyWhiteSpace() =>
+    public static Func<string, string?> RemoveOnlyWhitespace() =>
         line => line.AsSpan().Trim().Length == 0 ? null : line;
-
 }
 
 public static class FilesTransformerUtils
 {
-    public static FilesTransformer Defaults(Action<FilesTransformer>? with=null)
+    public static FilesTransformer Defaults(bool debugMode = true, Action<FilesTransformer>? with=null)
     {
         var options = new FilesTransformer
         {
@@ -101,45 +129,46 @@ public static class FilesTransformerUtils
                 {
                     LineTransformers =
                     {
-                        FilesTransformer.NotStartingWith("<!---:", ignoreWhiteSpace: true),
-                        FilesTransformer.IgnoreEmptyWhiteSpace(),
+                        Lines.RemoveNotStartingWith("<!---:", ignoreWhiteSpace: true),
+                        Lines.RemoveOnlyWhitespace(),
                     },
                 },
                 ["js"] = new FileTransformerOptions
                 {
                     LineTransformers =
                     {
-                        FilesTransformer.NotStartingWith("import "),
-                        FilesTransformer.NotStartingWith("/**:", ignoreWhiteSpace: true),
-                        FilesTransformer.IgnoreEmptyWhiteSpace(),
+                        Lines.RemoveNotStartingWith("import "),
+                        Lines.RemoveNotStartingWith("declare "),
+                        Lines.RemoveNotStartingWith("/**:", ignoreWhiteSpace: true),
+                        Lines.RemoveOnlyWhitespace(),
                     }
                 },
                 ["css"] = new FileTransformerOptions
                 {
                     LineTransformers =
                     {
-                        FilesTransformer.NotStartingWith("/**:", ignoreWhiteSpace: true),
-                        FilesTransformer.IgnoreEmptyWhiteSpace(),
+                        Lines.RemoveNotStartingWith("/**:", ignoreWhiteSpace: true),
+                        Lines.RemoveOnlyWhitespace(),
                     }
                 },
             },
-        }.MinifyInProduction(Minify.JavaScript | Minify.HtmlAdvanced);
+        };
+        if (!debugMode)
+            options = options.Minify(Html.Minify.JavaScript | Html.Minify.HtmlAdvanced);
         
         with?.Invoke(options);
         return options;
     }
     
-    public static FilesTransformer MinifyInProduction(this FilesTransformer options, Minify minify) => HostContext.DebugMode
-        ? options
-        : options.Clone(with: o => {
-            if (minify.HasFlag(Minify.JavaScript))
-                o.GetExt("js")?.FilesTransformers.Add(Minifiers.JavaScript.Compress);
-            if (minify.HasFlag(Minify.Css))
-                o.GetExt("css")?.FilesTransformers.Add(Minifiers.Css.Compress);
-            if (minify.HasFlag(Minify.HtmlAdvanced))
-                o.GetExt("html")?.FilesTransformers.Add(Minifiers.HtmlAdvanced.Compress);
-            if (minify.HasFlag(Minify.Html))
-                o.GetExt("html")?.FilesTransformers.Add(Minifiers.Html.Compress);
-        });
+    public static FilesTransformer Minify(this FilesTransformer options, Minify minify) => options.Clone(with: o => {
+        if (minify.HasFlag(Html.Minify.JavaScript))
+            o.GetExt("js")?.FilesTransformers.Add(Minifiers.JavaScript.Compress);
+        if (minify.HasFlag(Html.Minify.Css))
+            o.GetExt("css")?.FilesTransformers.Add(Minifiers.Css.Compress);
+        if (minify.HasFlag(Html.Minify.HtmlAdvanced))
+            o.GetExt("html")?.FilesTransformers.Add(Minifiers.HtmlAdvanced.Compress);
+        if (minify.HasFlag(Html.Minify.Html))
+            o.GetExt("html")?.FilesTransformers.Add(Minifiers.Html.Compress);
+    });
 }
     

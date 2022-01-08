@@ -12,9 +12,9 @@ public class PublishTasks
     readonly string ProjectDir = Path.GetFullPath("../../../../NorthwindAuto");
     string FromModulesDir => Path.GetFullPath(".");
     string ToModulesDir => Path.GetFullPath("../../src/ServiceStack/modules");
-    string[] IgnoreUiFiles = {
-        "index.css"
-    };
+    string[] IgnoreUiFiles = { "index.css" };
+
+    FilesTransformer transformOptions => FilesTransformer.Defaults(debugMode: true);
 
     [Test]
     public void Print_paths()
@@ -24,7 +24,7 @@ public class PublishTasks
         ToModulesDir.Print();
     }
 
-    /*  publish.bat
+    /*  publish.bat:
         call npm run ui:build 
         RD /q /s ..\..\src\ServiceStack\modules\ui 
         XCOPY /Y /E /H /C /I ui ..\..\src\ServiceStack\modules\ui 
@@ -39,9 +39,25 @@ public class PublishTasks
         FromModulesDir.Print();
         ToModulesDir.Print();
 
-        await PublishTailwind();
-        CopyUiFiles();
-        CopySharedFiles();
+        //publish tailwind
+        await ProcessUtils.RunShellAsync("npm run ui:build",
+            onOut:   Console.WriteLine, 
+            onError: Console.Error.WriteLine);
+        
+        // copy to modules/ui
+        transformOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
+            cleanTarget: true,
+            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+
+        // copy to modules/shared
+        transformOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }
 
     [Test]
@@ -65,43 +81,6 @@ public class PublishTasks
             var toFile = Path.GetFullPath(folder.CombineWith(bookingsName));
             $"Writing to {toFile}".Print();
             File.Copy(copyFile, toFile, overwrite:true);
-        }
-    }
-
-    public async Task PublishTailwind()
-    {
-        await ProcessUtils.RunShellAsync("npm run ui:build",
-            onOut: Console.WriteLine, 
-            onError:Console.Error.WriteLine);
-    }
-
-    private void CopySharedFiles()
-    {
-        FileSystemVirtualFiles.RecreateDirectory(ToModulesDir.CombineWith("shared"));
-        PublishFiles(
-            new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
-            new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")));
-    }
-
-    private void CopyUiFiles()
-    {
-        FileSystemVirtualFiles.RecreateDirectory(ToModulesDir.CombineWith("ui"));
-        PublishFiles(
-            new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
-            new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
-            IgnoreUiFiles);
-    }
-
-    private void PublishFiles(FileSystemVirtualFiles fromVfs, FileSystemVirtualFiles toVfs, string[]? ignoreFiles = null)
-    {
-        foreach (var file in fromVfs.GetAllFiles())
-        {
-            if (ignoreFiles != null && ignoreFiles.Contains(file.VirtualPath)) 
-                continue;
-
-            var contents = FilesTransformer.Options.ReadAll(file);
-            toVfs.WriteFile(file.VirtualPath, contents);
-            $"{file.VirtualPath} ({contents.Length})".Print();
         }
     }
 }

@@ -8,7 +8,7 @@ namespace ServiceStack.IO
     public class FileSystemVirtualFiles
         : AbstractVirtualPathProviderBase, IVirtualFiles
     {
-        protected DirectoryInfo RootDirInfo;
+        public DirectoryInfo RootDirInfo { get; protected set; }
         protected FileSystemVirtualDirectory RootDir;
 
         public override IVirtualDirectory RootDirectory => RootDir;
