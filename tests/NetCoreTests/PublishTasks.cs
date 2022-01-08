@@ -107,8 +107,11 @@ public class PublishTasks
         using var appHost = new AppHost().Init().Start(baseUrl);
         
         var dtos = baseUrl.CombineWith("/types/typescript").GetStringFromUrl();
+        dtos += @"
+// declare Types used in /ui 
+export declare var APP:AppMetadata";
         
         Directory.SetCurrentDirectory(ProjectDir);
-        File.WriteAllText(Path.GetFullPath("./lib/dtos.ts"), dtos);
+        File.WriteAllText(Path.GetFullPath("./lib/types.ts"), dtos);
     }
 }

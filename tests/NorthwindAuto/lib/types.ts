@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-01-08 14:02:56
+Date: 2022-01-08 14:34:01
 Version: 5.133
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -470,3 +470,6 @@ export class MetadataApp implements IReturn<AppMetadata>
     public getMethod() { return 'POST'; }
 }
 
+
+// declare Types used in /ui 
+export declare var APP:AppMetadata
