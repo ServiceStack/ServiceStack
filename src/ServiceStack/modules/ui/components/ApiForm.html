@@ -112,9 +112,7 @@ App.component('ApiForm', ({ store, routes }) => {
         },
     }
 })
-
 function humanify(id) { return humanize(toPascalCase(id)) }
-
 let useType = type => (acc,x) => { acc[x]=type; return acc }
 let InputTypes = {
     bool: 'checkbox',
@@ -123,7 +121,6 @@ let InputTypes = {
     ...'byte,short,int,long,ushort,uint,ulong,float,double,decimal'.split(',').reduce(useType('number'), {}),
     ...'string,Guid,Uri'.split(',').reduce(useType('text'), {}),
 }
-
 function resolveFormLayout(op) {
     let allProps = typeProperties(op.request).filter(supportsProp)
     if (op.formLayout) {
@@ -149,7 +146,6 @@ function resolveFormLayout(op) {
     }
     return formLayout
 }
-
 function formValues(form) {
     let obj = {}
     Array.from(form.elements).forEach(el => {
@@ -170,7 +166,6 @@ function formValues(form) {
     })
     return obj
 }
-
 function createDto(name, obj) {
     let dtoCtor = window[name]
     if (!dtoCtor) {
@@ -186,7 +181,6 @@ function createDto(name, obj) {
     }
     return new dtoCtor(obj)
 }
-
 function parseCookie(str) {
     return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
             let key = v[0] && v[0].trim() && decodeURIComponent(v[0].trim())
@@ -194,7 +188,6 @@ function parseCookie(str) {
             return acc
         }, {});
 }
-
 function apiSend(requestDto) {
     if (!requestDto) throw new Error('!requestDto')
     let opName = requestDto.getTypeName()
@@ -223,7 +216,6 @@ function apiSend(requestDto) {
         cookies,
     }))
 }
-
 function groupTypes(allTypes) {
     let allTypesMap = {}
     let groups = []
@@ -253,7 +245,6 @@ function groupTypes(allTypes) {
     })
     return groups
 }
-
 function inputProp(prop) {
     let id = toCamelCase(prop.name), idLower = id.toLowerCase()
     let propType = unwrap(typeName2(prop.type, prop.genericArgs))
@@ -295,7 +286,6 @@ function supportsProp(prop) {
     if (DEBUG) console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0]))
     return false
 }
-
 </script>
 <template id="api-form-template">
 <div v-if="!showForm" class="p-4">
@@ -311,14 +301,12 @@ function supportsProp(prop) {
     </nav>
     <div>
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
-
         <div v-if="routes.form==''" class="p-4 max-w-screen-md"
              v-scope="AutoForm({ 
                 state: () => state,  
                 onsubmit: e => onAjaxFormSubmit(e),
             })"></div>
         <div v-if="routes.form=='json'">
-
             <form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="p-4">
                 <div class="shadow overflow-hidden sm:rounded-md bg-white">
                     <div class="relative px-4 py-5 bg-white sm:p-6">
@@ -356,13 +344,11 @@ function supportsProp(prop) {
                 </div>
             </form>
         </div>
-
         <div v-if="state.apiLoading" v-scope="Loading()"></div>
         <div v-else-if="state.apiResult" v-scope="ApiResponse({ store, routes, apiResult:state.apiResult })"></div>
     </div>
 </div>
 </template>
-
 <script>
 App.component('ApiResponse', ({ store, routes, apiResult }) => {
     return {
@@ -405,7 +391,6 @@ App.component('ApiResponse', ({ store, routes, apiResult }) => {
             </a>
         </nav>
     </div>
-
     <div v-if="routes.response == ''" class="p-2">
         <span class="relative z-0 inline-flex shadow-sm rounded-md">
           <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" v-href="{ body:tab }"
@@ -413,7 +398,6 @@ App.component('ApiResponse', ({ store, routes, apiResult }) => {
             {{name}}
           </a>
         </span>
-
         <div v-if="routes.body == ''" class="pt-2 icon-outer">
             <div v-if="apiResult.json" class="icon-right" v-scope="CopyIcon({ text:() => apiResult.json })"></div>
             <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="apiResult.json"></code></pre>

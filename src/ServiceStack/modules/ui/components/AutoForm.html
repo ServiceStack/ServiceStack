@@ -48,7 +48,6 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
 <template id="form-template">
 <form @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName">
     <div v-if="state.errorSummary" v-scope="ErrorSummary({ errorSummary: () => state.errorSummary })"></div>
-    
     <div class="shadow overflow-hidden sm:rounded-md bg-white">
         <div class="relative px-4 py-5 bg-white sm:p-6">
             <fieldset>
@@ -86,7 +85,6 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
                                 <input v-else v-bind="input" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
                                        :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                                        :class="inputClass(input)" v-model="state.model[input.id]" />
-
                                 <div v-if="fieldError(input.id)" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <!-- Heroicon name: solid/exclamation-circle -->
                                     <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

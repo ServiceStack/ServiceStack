@@ -32,7 +32,6 @@ App.component('ApiDetails', ({ store, routes }) => {
         },
     }
 })
-
 function addReferencedTypes(allTypesMap, type) {
     if (!type) return
     if (allTypesMap[type.name]) return
@@ -64,7 +63,6 @@ function addReferencedTypes(allTypesMap, type) {
                     {{opName}}
                 </a>
             </h2>
-
             <div class="mb-3 pl-4">
                 <div v-for="route in op.routes" class="text-sm text-gray-900">
                     <span v-for="verb in (route.verbs||'').split(',').filter(verb => verb && verb != op.method)" class="font-medium mr-1">{{verb}}</span>
@@ -72,7 +70,6 @@ function addReferencedTypes(allTypesMap, type) {
                 </div>
                 <div v-if="predefinedRoute(request.name)" class="text-sm text-gray-900">{{predefinedRoute(request.name)}}</div>
             </div>
-
             <div v-if="op.tags.length > 0" class="mb-3">
                 <span v-for="tag in op.tags" title="tag" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   {{tag}}
@@ -108,7 +105,6 @@ function addReferencedTypes(allTypesMap, type) {
             </div>
         </div>
     </div>
-
     <div>
         <div class="flex justify-between w-full">
             <div>
@@ -136,13 +132,11 @@ function addReferencedTypes(allTypesMap, type) {
             </div>
         </div>
     </div>
-
     <div>
         <div v-for="group in opReferencedTypes(op)">
             <div class="flex flex-col mb-3">
                 <h2 v-if="group[0].type.description" class="my-3 text-gray-700 text-2xl text-center">{{group[0].type.description}}</h2>
                 <div v-if="group[0].type.notes" class="notes mb-3 text-gray-700 bg-gray-50 p-4 text-center rounded" v-html="group[0].type.notes"></div>
-                
                 <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
                 <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -217,5 +211,4 @@ function addReferencedTypes(allTypesMap, type) {
     </div>
     <div v-else v-scope="Loading()"></div>
 </div>
-
 </template>

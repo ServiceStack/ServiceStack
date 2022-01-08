@@ -58,7 +58,7 @@ App.plugin({
                 publish('to', cleanArgs)
             },
             href(args) {
-                // can't mutate reactive stores before createApp()
+                /**: can't mutate reactive stores before createApp() */
                 let s = args ? Object.assign({}, state(this), args) : state(this)
                 let path = s[page] || ''
                 let qs = queryKeys.filter(k => s[k]).map(k =>

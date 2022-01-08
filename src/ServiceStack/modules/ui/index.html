@@ -6,118 +6,12 @@
     <link rel="stylesheet" href="../css/highlight.css">
     <link rel="stylesheet" href="assets/ui.css">
 <style>
-:root {
-    --sidebar-width: 240px;
-    --top-bar-height: 54px;
-    --top-filter-height: 97px;
-    --scroll-height: 8px;
-    --scroll-width: 8px;
-    --body-width: calc(100vw - var(--sidebar-width));
-    --body-height-from-top-bar: calc(100vh - var(--top-bar-height));
-    --body-height-from-nav-bar: calc(100vh - var(--top-filter-height));
-}
-::-webkit-scrollbar{width:var(--scroll-width);height:var(--scroll-height)}
-::-webkit-scrollbar-thumb{background-color:#ccc}
-b {
-    font-weight: 500;
-}
-em {
-    color: #3b82f6;
-    font-weight: 400;
-    background-color: #eff6ff;
-    border-radius: 0.25rem;
-    padding: 0.125em 0.5rem;
-    margin-left: 0.125em;
-    margin-right: 0.125em;
-    font-style: normal;
-}
-.sidebar {
-    width: var(--sidebar-width);
-    min-height: 100vh;
-}
-.sidebar-filter {
-    width: calc(var(--sidebar-width) - 1px);
-}
-.sidebar-nav {
-    top: calc(var(--top-filter-height) + 2px);
-    width: calc(var(--sidebar-width) - 1px);
-    height: calc(100vh - var(--top-filter-height));
-}
-
-.body {
-    position: fixed;
-    left: var(--sidebar-width);
-    width: var(--body-width);
-    height: 100vh;
-    overflow: auto;
-}
-.body-content {
-    position: fixed;
-    top: var(--top-bar-height);
-    height: var(--body-height-from-top-bar);
-    width: var(--body-width);
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-.body-nav-content {
-    position: fixed;
-    top: var(--top-filter-height);
-    height: var(--body-height-from-nav-bar);
-    width: var(--body-width);
-    overflow-x: auto;
-}
-.w-body-full {
-    width: var(--body-width);
-}
-.h-body {
-    height: var(--body-height-from-nav-bar);
-}
-.min-h-body {
-    min-height: var(--body-height-from-nav-bar);
-}
-.svg-lock {
-    background: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20fill%3D%22%23B1B4B5%22%20d%3D%22M376.749%20349.097c-13.531%200-24.5-10.969-24.5-24.5V181.932c0-48.083-39.119-87.203-87.203-87.203c-48.083%200-87.203%2039.119-87.203%2087.203v82.977c0%2013.531-10.969%2024.5-24.5%2024.5s-24.5-10.969-24.5-24.5v-82.977c0-75.103%2061.1-136.203%20136.203-136.203s136.203%2061.1%20136.203%20136.203v142.665c0%2013.531-10.969%2024.5-24.5%2024.5z%22%2F%3E%3Cpath%20fill%3D%22%23FFB636%22%20d%3D%22M414.115%20497.459H115.977c-27.835%200-50.4-22.565-50.4-50.4V274.691c0-27.835%2022.565-50.4%2050.4-50.4h298.138c27.835%200%2050.4%2022.565%2050.4%2050.4v172.367c0%2027.836-22.565%2050.401-50.4%2050.401z%22%2F%3E%3Cpath%20fill%3D%22%23FFD469%22%20d%3D%22M109.311%20456.841h-2.525c-7.953%200-14.4-6.447-14.4-14.4V279.309c0-7.953%206.447-14.4%2014.4-14.4h2.525c7.953%200%2014.4%206.447%2014.4%2014.4v163.132c0%207.953-6.447%2014.4-14.4%2014.4z%22%2F%3E%3C%2Fsvg%3E') no-repeat;
-    background-size: cover;
-}
-.icon-right .icon {
-    right: 1em;
-}
-.notes a {
-    color: rgb(30 64 175); /*text-blue-800*/
-}
-.svg-external {
-    background: url("data:image/svg+xml,%3Csvg width='1.25rem' height='1.25rem' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none'%3E%3Cpath d='M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14' stroke='%231E40AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E") no-repeat bottom right;
-    padding-right: 1.35rem;
-}
-.bg-gray-50 .hljs {
-    background-color: transparent;
-}
-.loading .app { display: none }
-.when-loading { display: none }
-.loading .when-loading { display: block }
-[lang=json] .hljs-attr { color: rgb(17 24 39) }
-[lang=json] .hljs-string { color: rgb(21 128 61) }
-.language-typescript .hljs-attr { color: rgb(17 24 39) }
-
-.sm\:noauth-noop\:hidden { display: block }
-.sm\:noauth-noop\:block { display: none }
-.auth .sm\:auth\:hidden, .noauth .sm\:noauth\:hidden, .op .sm\:op\:hidden, .noop .sm\:noop\:hidden { display: block }
-.auth .sm\:auth\:block, .noauth .sm\:noauth\:block, .op .sm\:op\:block, .noop .sm\:noop\:block { display: none }
-
-@media (max-width: 640px) {
-    .auth .sm\:auth\:hidden, .noauth .sm\:noauth\:hidden, .op .sm\:op\:hidden, .noop .sm\:noop\:hidden { display: none }
-    .auth .sm\:auth\:block, .noauth .sm\:noauth\:block, .op .sm\:op\:block, .noop .sm\:noop\:block { display: block }
-    .noauth.noop .sm\:noauth-noop\:hidden { display: none }
-    .noauth.noop .sm\:noauth-noop\:block { display: block }
-}
+/*file:css/app.css */
 </style>
 </head>
 <body class="loading noauth">
-
 <div class="when-loading"></div>
-
 <div v-scope class="app flex">
-
 <div id="sidebar" class="sm:noauth-noop:hidden" v-scope="Sidebar({ store, routes })"></div>
 <div class="body sm:noauth-noop:hidden">
     <div v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })" class="absolute top-1 right-2"></div>
@@ -147,9 +41,7 @@ em {
     <div v-else v-scope="Welcome({ store })"></div>
 </div>
 <div class="sm:noauth-noop:block w-full" v-scope="store.SignIn()"></div>
-    
 </div>
-
 <script>
 let exports = { __esModule:true }, module = { exports:exports }
 function require(name) { return exports[name] || window[name] }
@@ -172,7 +64,6 @@ function on(sel, handlers) {
         })
     })
 }
-
 function setBodyClass(obj) {
     let bodyCls = document.body.classList
     Object.keys(obj).forEach(name => {
@@ -185,7 +76,6 @@ function setBodyClass(obj) {
         }
     })
 }
-
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { 
     window.AUTH = !auth || auth.responseStatus ? null : auth
@@ -194,423 +84,16 @@ function loadAuth(auth) {
 </script>
 <script src="../metadata/app?callback=loadApp"></script>
 <script src="../auth?callback=loadAuth"></script>
-
 <script src="../js/petite-vue.js"></script>
 <script src="../js/highlight.js"></script>
-
 <script>
-document.title = APP.app.serviceName
-let op = leftPart(location.href.substring(document.baseURI.length), '?')
-APP.api.operations.forEach(op => {
-    if (!op.tags) op.tags = []
-})
-
-//APP.config.debugMode = false
-let DEBUG = APP.config.debugMode
-let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
-let bearerToken = null
-let authsecret = null
-
-function createClient(fn) {
-    return new JsonServiceClient(BASE_URL).apply(c => {
-        c.bearerToken = bearerToken
-        c.enableAutoRefreshToken = false
-        if (authsecret) c.headers.set('authsecret', authsecret)
-        let apiFmt = APP.httpHandlers['ApiHandlers.Json']
-        if (apiFmt)
-            c.basePath = apiFmt.replace('/{Request}', '')
-        if (fn) fn(c)
-    })
-}
-let client = createClient()
-
-let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack'))
-let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
-let sideNav = appTags.map(tag => ({
-    tag,
-    expanded: true,
-    operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
-}))
-
-let ssOps = APP.api.operations.filter(op => op.request.namespace.startsWith('ServiceStack'))
-let ssTags = Array.from(new Set(ssOps.flatMap(op => op.tags))).sort()
-ssTags.map(tag => ({
-    tag,
-    expanded: true,
-    operations: ssOps.filter(op => op.tags.indexOf(tag) >= 0)
-})).forEach(nav => sideNav.push(nav))
-
-let other = {
-    tag: appTags.length > 0 ? 'other' : 'APIs',
-    expanded: true,
-    operations: [...appOps, ...ssOps].filter(op => op.tags.length === 0)
-}
-if (other.operations.length > 0) sideNav.push(other)
-
-let alwaysHideTags = APP.ui.alwaysHideTags || !DEBUG && APP.ui.hideTags
-if (alwaysHideTags) {
-    sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
-}
-
-let CACHE = {}
-let OpsMap = {}
-let TypesMap = {}
-let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
-APP.api.operations.forEach(op => {
-    OpsMap[op.request.name] = op
-    TypesMap[op.request.name] = op.request
-    if (op.response) TypesMap[op.response.name] = op.response
-})
-APP.api.types.forEach(type => TypesMap[type.name] = type)
-
-let cleanSrc = src => src.trim();
-
-let SidebarWidth = '240px'
-function isSmall() { 
-    return window.matchMedia('(max-width:640px)').matches
-}
-
-function invalidAccessMessage(op, authRoles, authPerms) {
-    if (authRoles.indexOf('Admin') >= 0) return null
-
-    let missingRoles = op.requiredRoles.filter(x => authRoles.indexOf(x) < 0)
-    if (missingRoles.length > 0)
-        return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    let missingPerms = op.requiredPermissions.filter(x => authPerms.indexOf(x) < 0)
-    if (missingPerms.length > 0)
-        return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
-
-    if (missingRoles.length > 0)
-        return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    missingPerms = op.requiresAnyPermission.filter(x => authPerms.indexOf(x) < 0)
-    if (missingPerms.length > 0)
-        return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
-    return null
-}
-
 /*shared/js:PetiteVueApp */
 let App = new PetiteVueApp()
 /*plugins:* */
-
-let routes = App.pageRoutes({
-    page:'op',
-    queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider'.split(','),
-    handlers: {
-        init(state) {
-            //console.log('pageRoutes:init', state)
-        },
-        to(state) {
-            //console.log('pageRoutes:to', state)
-        }
-    }
-})
-
-var store = PetiteVue.reactive({
-    previewResult: null,
-    copied: false,
-    filter: '',
-    sideNav,
-    detailSrcResult: {},
-    debug: APP.config.debugMode,
-    api: null,
-    auth: window.AUTH,
-    baseUrl: BASE_URL,
-    get sm() { return isSmall() },
-    doLayout() {
-        /* sm: only show sidebar on home page */
-        let root = document.documentElement
-        let sidebar = $1('.sidebar')
-        if (!sidebar) return
-        if (isSmall() && routes.op) {
-            sidebar.style.display = 'none'
-            root.style.setProperty('--sidebar-width', '0px')
-        } else {
-            sidebar.style.display = 'block'
-            root.style.setProperty('--sidebar-width', SidebarWidth)
-        }
-    },
-    
-    get useLang() { return routes.lang || 'csharp' },
-
-    init() {
-        this.loadDetailSrc()
-        this.loadLang()
-        this.loadPreview()
-        this.doLayout()
-        setBodyClass({ op: routes.op })
-    },
-
-    // select(args) {
-    //     this.init(args)
-    //     let state = this.stateArgs(args)
-    //     history.pushState(state, state.op, this.createHref(state))
-    // },
-
-    get filteredSideNav() {
-        let filter = op => {
-            let lowerFilter = this.filter.toLowerCase()
-            if (op.requiresAuth && !this.debug)
-            {
-                if (!this.auth)
-                    return false
-                if (invalidAccessMessage(op, this.auth.roles, this.auth.permissions))
-                    return false
-            }
-            return !lowerFilter || op.request.name.toLowerCase().indexOf(lowerFilter) >= 0
-        }
-        let ret = this.sideNav.filter(nav => nav.operations.some(filter))
-            .map(nav => ({
-                ...nav,
-                operations: nav.operations.filter(filter)
-            }))
-
-        //return [...ret, ...ret, ...ret, ...ret, ...ret]
-        return ret    
-    },
-    
-    toggle(tag) {
-        let nav = this.sideNav.find(x => x.tag === tag)
-        nav.expanded = !nav.expanded
-    },
-    
-    loadLang() {
-        if (!this.activeLangSrc) {
-            let cache = this.langCache()
-            if (CACHE[cache.url]) {
-                this.langResult = { cache, result: CACHE[cache.url] }
-            } else {
-                this.cachedFetch(cache.url)
-                    .then(src => {
-                        this.langResult = { cache, result: CACHE[cache.url] = cleanSrc(src) }
-                        if (!this.activeLangSrc) {
-                            this.loadLang()
-                        }
-                    })
-            }
-        }
-    },
-    
-    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&WithoutOptions=true&MakeVirtual=false&MakePartial=false&AddServiceStackTypes=true` },
-    
-    get previewCache() {
-        if (routes.preview.startsWith('types.')) {
-            let types = routes.preview.substring('types.'.length)
-            return { preview: routes.preview, url: this.getTypeUrl(types), lang:'csharp' }
-        }
-        return null
-    },
-    
-    loadPreview() {
-        if (!this.previewSrc) {
-            let cache = this.previewCache
-            if (!cache) return
-            if (CACHE[cache.url]) {
-                this.previewResult = { type:'src', ...cache, result: CACHE[cache.url] }
-            } else {
-                this.cachedFetch(cache.url)
-                    .then(src => {
-                        this.previewResult = {
-                            type:'src',
-                            ...cache,
-                            result: CACHE[cache.url] = cache.lang ? cleanSrc(src) : src 
-                        }
-                    })
-            }
-        }
-    },
-    
-    get previewSrc() {
-        let r = this.previewResult
-        if (!r) return ''
-        return routes.preview === r.preview && r.type === 'src' && r.lang ? r.result : ''
-    },
-    
-    get activeLangSrc() {
-        let cache = this.langResult && this.langResult.cache 
-        let ret = cache && routes.op === cache.op && this.useLang === cache.lang ? this.langResult.result : null
-        return ret
-    },
-    
-    loadDetailSrc() {
-        if (!routes.detailSrc) return
-        let cache = { url: this.getTypeUrl(routes.detailSrc) }
-        if (CACHE[cache.url]) {
-            this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] }
-        } else {
-            this.cachedFetch(cache.url).then(src => {
-                this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] = cleanSrc(src) }
-            })
-        }
-    },
-    
-    get activeDetailSrc() { return routes.detailSrc && this.detailSrcResult[this.getTypeUrl(routes.detailSrc)] },
-    
-    get op() {
-        return routes.op ? APP.api.operations.find(op => op.request.name === routes.op) : null
-    },
-    get opName() { return this.op && this.op.request.name },
-    
-    get json() {
-        return ''
-        //return JSON.stringify(this.op || APP, undefined, 4)
-    },
-    
-    get opTabs() {
-      return this.op 
-        ? { ['API']:'', 'Details':'details', 'Source Code':'code' }
-        : {}  
-    },
-    
-    get isServiceStackType() {
-        return this.op && this.op.request.namespace.startsWith("ServiceStack")
-    },
-    
-    langCache() {
-        let op = routes.op, lang = this.useLang
-        return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*&WithoutOptions=true&MakeVirtual=false&MakePartial=false` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') } 
-    },
-
-    cachedFetch(url) {
-        return new Promise((resolve,reject) => {
-            let src = CACHE[url]
-            if (src) {
-                resolve(src)
-            } else {
-                fetch(url)
-                    .then(r => {
-                        if (r.ok) return r.text()
-                        else throw r.statusText
-                    })
-                    .then(src => {
-                        resolve(CACHE[url] = src)
-                    })
-                    .catch(e => {
-                        console.log(`ERROR fetchCache (${url}):`, e)
-                        reject(e)
-                    })
-            }
-        })
-    },
-    
-    SignIn() {
-        return SignIn({ 
-            plugin: APP.plugins.auth, 
-            provider:() => routes.provider,
-            login:args => this.login(args),
-            api: () => this.api,
-        })
-    },
-    
-    login(args) {
-        let provider = routes.provider || 'credentials'
-        let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
-        if (!authProvider) 
-            throw new Error("!authProvider")
-        let auth = new Authenticate()
-        bearerToken = authsecret = null 
-        if (authProvider.type === 'Bearer') {
-            bearerToken = client.bearerToken = (args['BearerToken'] || '').trim()
-        } else if (authProvider.type === 'authsecret') {
-            authsecret = (args['authsecret'] || '').trim()
-            client.headers.set('authsecret',authsecret)
-        } else {
-            auth = new Authenticate({ provider, ...args })
-        }
-        client.api(auth)
-            .then(r => {
-                this.api = r
-                if (r.error && !r.error.message) 
-                    r.error.message = HttpErrors[r.errorCode] || r.errorCode 
-                if (this.api.succeeded) {
-                    this.auth = this.api.response
-                    setBodyClass({ auth: this.auth })
-                }
-            })
-    },
-    
-    logout() {
-        setBodyClass({ auth: this.auth })
-        client.api(new Authenticate({ provider: 'logout' }))
-        authsecret = bearerToken = client.bearerToken = null
-        client.headers.delete('authsecret')
-        this.auth = null
-    },
-
-    /**: v-if doesn't protect against nested access so need to guard against deep NRE access */
-    get authRoles() { return store.auth && store.auth.roles || [] },
-    get authPermissions() { return store.auth && store.auth.permissions || [] },
-    get authProfileUrl() { return store.auth && store.auth.profileUrl },
-
-    get displayName() {
-        let auth = this.auth
-        return auth 
-            ? auth.displayName || (auth.firstName ? `${auth.firstName} ${auth.lastName}` : null) || auth.userName || auth.email 
-            : null
-    },
-
-    invalidAccess() {
-        let op = this.op
-        if (!op || !op.requiresAuth) return null
-        if (!this.auth) return `<b>${op.request.name}</b> requires Authentication`
-        return invalidAccessMessage(op, this.auth.roles, this.auth.permissions)
-    },
-})
-
-App.events.subscribe('pageRoutes:nav', args => store.init())
-
-function typeProperties(type) {
-    let props = []
-    while (type) {
-        if (type.properties) props.push(...type.properties)
-        type = type.inherits ? TypesMap[type.inherits.name] : null
-    }
-    return props.map(prop => prop.type.endsWith('[]')
-        ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
-        : prop)   
-}
-let NumTypesMap = {
-    Byte: 'byte',
-    Int16: 'short',
-    Int32: 'int',
-    Int64: 'long',
-    UInt16: 'ushort',
-    Unt32: 'uint',
-    UInt64: 'ulong',
-    Single: 'float',
-    Double: 'double',
-    Decimal: 'decimal',
-}
-let NumTypes = [ ...Object.keys(NumTypesMap), ...Object.values(NumTypesMap) ]
-let TypeAliases = {
-    String: 'string',
-    Boolean: 'bool',
-    ...NumTypesMap,
-}
-function isNumberType(type) {
-    return type && NumTypes.indexOf(type) >= 0
-}
-function typeAlias(typeName) {
-    return TypeAliases[typeName] ?? typeName
-}
-function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
-function typeName2(name, genericArgs) {
-    if (!name) return ''
-    if (!genericArgs)
-        genericArgs = []
-    if (name === 'Nullable`1')
-        return typeAlias(genericArgs[0]) + '?'
-    if (name.endsWith('[]'))
-        return `List<${typeAlias(name.substring(0,name.length-2))}>`
-    if (genericArgs.length === 0)
-        return typeAlias(name)
-    return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
-}
-function typeName(metaType) { return typeName2(metaType.name, metaType.genericArgs) }
+/*files:js/*.js */
 </script>
-
 <!--shared:Alert,AuthNav,Brand,CopyIcon,CopyLine,Input,Loading,PreviewObject,SignIn,ErrorSummary-->
 <!--files:components/*.html-->
-
 <script>
 App.directive('highlightjs', ({ effect, get, el}) => {
     effect(() => {
@@ -622,7 +105,6 @@ App.directive('highlightjs', ({ effect, get, el}) => {
         }
     })
 })
-
 App.build({
     app: APP.app,
     ui: APP.ui,
@@ -644,9 +126,7 @@ App.build({
     typeName,
     typeName2,
 }).mount()
-
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
-
 routes.start()
 window.onresize = () => store.doLayout()
 App.nextTick(() => {
@@ -658,6 +138,5 @@ App.nextTick(() => {
     }
 })
 </script>
-
 </body>
 </html>

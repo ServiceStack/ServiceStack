@@ -12,19 +12,16 @@ App.plugin({
             throw new Error('page is required')
         if (typeof queryKeys == 'undefined' || !queryKeys.length)
             throw new Error('Array of queryKeys is required')
-
         let allKeys = [page,...queryKeys] 
         let getPage = () => leftPart(location.href.substring(document.baseURI.length),'?')
         let state = store => allKeys.reduce((acc,x) => {
             if (store[x]) acc[x] = store[x]
             return acc
         }, {})
-        
         let publish = (name,args) => {
             events.publish('pageRoutes:' + name, args)
             events.publish('pageRoutes:nav',args)
         }
-        
         let events = this.events
         let store = App.reactive({
             page, 
@@ -35,7 +32,6 @@ App.plugin({
                     this.set({ [page]:getPage(), ...queryString(location.search)})
                     publish('init', state(this))
                 }
-
                 window.addEventListener('popstate', (event) => {
                     this.set({ [page]:getPage(), ...event.state})
                     publish('init', state(this))
@@ -57,7 +53,6 @@ App.plugin({
                 publish('to', cleanArgs)
             },
             href(args) {
-                // can't mutate reactive stores before createApp()
                 let s = args ? Object.assign({}, state(this), args) : state(this)
                 let path = s[page] || ''
                 let qs = queryKeys.filter(k => s[k]).map(k =>
@@ -65,7 +60,6 @@ App.plugin({
                 return path + (qs ? '?' + qs : '')
             }
         })
-        
         this.directive('href',  ({ effect, get, el }) => {
             el.href = store.href(get())
             el.onclick = e => {
@@ -73,14 +67,12 @@ App.plugin({
                 store.to(get())
             }
         })
-
         if (handlers) {
             if (handlers.init)
                 this.events.subscribe('pageRoutes:init', args => handlers.init(args))
             if (handlers.to)
                 this.events.subscribe('pageRoutes:to', args => handlers.to(args))
         }
-
         return store
     }
 })

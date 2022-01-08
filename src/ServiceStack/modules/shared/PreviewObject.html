@@ -6,7 +6,6 @@ App.components({
         let pad = d =>  d < 10 ? '0' + d : d
         let dmft = (d) => d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate())
         let str = m => m.substr(0, 6) === '/Date(' ? dmft(date(m)) : m.trim()
-
         return {
             $template: '#preview-object-template',
             val,
@@ -46,7 +45,6 @@ App.components({
     } 
 })
 </script>
-
 <template id="preview-object-template">
 <div v-bind="attrs" v-if="val == null"></div>
 <div v-bind="attrs" v-else-if="type == 'number'"><span>{{num(val)}}</span></div>
@@ -55,7 +53,6 @@ App.components({
 <div v-bind="attrs" v-else-if="val.length" v-scope="ArrayPreview({ val, fieldAttrs })"></div>
 <div v-bind="attrs" v-else v-scope="ObjectPreview({ val, fieldAttrs })"></div>
 </template>
-
 <template id="array-preview-template">
 <span v-if="isScalar" v-html="val"></span>
 <div v-else class="flex flex-col">
@@ -83,7 +80,6 @@ App.components({
     </div>
 </div>
 </template>
-
 <template id="object-preview-template">
 <table class="table-object">
     <tr v-for="row in rows">

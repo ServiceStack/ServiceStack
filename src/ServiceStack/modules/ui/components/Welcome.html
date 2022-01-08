@@ -1,7 +1,6 @@
 <script>App.components({ Welcome: '#welcome-template' })</script>
 <template id="welcome-template">
 <div class="mt-12 px-4 sm:auth:hidden">
-
     <div v-if="store.debug" class="mb-5 bg-pink-50 border-l-4 border-pink-400 p-4">
         <div class="flex">
             <div class="flex-shrink-0">
@@ -14,7 +13,6 @@
             </div>
         </div>
     </div>
-
     <div v-if="!store.auth" v-scope="store.SignIn()"></div>
     <div v-else class="rounded-lg bg-white overflow-hidden shadow">
         <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>

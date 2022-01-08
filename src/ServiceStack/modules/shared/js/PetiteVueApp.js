@@ -7,7 +7,6 @@ function PetiteVueApp() {
     let Directives = {}
     this.petite = null
     this.events = new EventBus()
-    
     let assertNotBuilt = (name) => {
         if (this.petite)
             throw new Error(`Cannot call App.${name}() after App is built`)
@@ -50,17 +49,14 @@ function PetiteVueApp() {
         assertNotBuilt('template')
         Object.keys(templates).forEach(name => register(name, template(name, templates[name])))
     }
-    
     this.directive = function(name, fn) {
         assertNotBuilt('directive')
         Directives[name] = fn
     }
-
     this.build = function(args) {
         if (!window.PetiteVue)
             throw new ReferenceError('PetiteVue is not defined')
         Object.assign(this, window.PetiteVue)
-        
         this.petite = PetiteVue.createApp({
             ...Components.reduce((acc,x) => { acc[x] = Components[x]; return acc }, {}),
             ...args,
@@ -68,14 +64,12 @@ function PetiteVueApp() {
         Object.keys(Directives).forEach(name => this.petite.directive(name, Directives[name]))
         return this.petite
     }
-    
     this.plugin = function (plugins) {
         Object.keys(plugins).forEach(name => {
             let f = plugins[name]
             this[name] = typeof f == 'function' ? f.bind(this) : f 
         })
     }
-    
     this.import = function (src) {
         return new Promise((resolve, reject) => {
             let s = document.createElement('script')
@@ -85,6 +79,5 @@ function PetiteVueApp() {
             document.body.appendChild(s)
         })
     }
-
     Object.assign(this, window.PetiteVue||{})
 }

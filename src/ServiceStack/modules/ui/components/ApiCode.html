@@ -12,7 +12,6 @@ App.component('ApiCode', ({ store, routes }) => {
             .replace(/Hello/g,store.opName)
             .replace(/&gt;/g,'>').replace(/&lt;/g,'<'),
         { language }).value
-    
     return {
         $template: '#api-code-template',
         store, routes,
@@ -59,7 +58,6 @@ App.components({ InstallTool: '#install-tool-template' })
 .lang-help .icon {
     position: absolute;
 }
-
 @media screen and (max-width:640px) {
     .show-lang-help .body-lang {
         display: none;
@@ -100,9 +98,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
-
                     <div v-scope='CopyLine({ text: () => `<PackageReference Include="ServiceStack.HttpClient" Version="5.*" />` })'></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -114,7 +110,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => csharpSrc })" title="Copy code"></div>
                         <pre><code class="language-csharp" v-html="csharpSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='typescript'" class="pt-4">
@@ -122,9 +117,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>@servicestack/client</b> package in your projects<em>package.json</em>
                     </p>
-
                     <div v-scope='CopyLine({ text: () => `"@servicestack/client": "^1.1.12"` })'></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -136,7 +129,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => typescriptSrc })" title="Copy code"></div>
                         <pre><code class="language-typescript" v-html="typescriptSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='dart'" class="pt-4">
@@ -144,9 +136,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
                     </p>
-
                     <div v-scope='CopyLine({ text: () => `servicestack: ^2.0.0` })'></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -158,7 +148,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => dartSrc })" title="Copy code"></div>
                         <pre><code class="language-dart" v-html="dartSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='java'" class="pt-4">
@@ -166,9 +155,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
                     </p>
-
                     <div v-scope="CopyLine({ text: () => `implementation 'net.servicestack:client:1.0.49'` })"></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -180,7 +167,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => javaSrc })" title="Copy code"></div>
                         <pre><code class="language-java" v-html="javaSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='kotlin'" class="pt-4">
@@ -188,9 +174,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
                     </p>
-
                     <div v-scope="CopyLine({ text: () => `implementation 'net.servicestack:client:1.0.49'` })"></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -202,7 +186,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => kotlinSrc })" title="Copy code"></div>
                         <pre><code class="language-kotlin" v-html="kotlinSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='python'" class="pt-4">
@@ -210,9 +193,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>requirements.txt</em>
                     </p>
-
                     <div v-scope='CopyLine({ text: () => `servicestack>=0.1.1` })'></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -224,7 +205,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => pythonSrc })" title="Copy code"></div>
                         <pre><code class="language-python" v-html="pythonSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='swift'" class="pt-4">
@@ -232,12 +212,10 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack</b> package in your projects <em>Package.swift</em>
                     </p>
-
                     <div class="p-4 flex bg-gray-50 border-y">
                         <div class="icon-right" v-scope="CopyIcon({ text:() => swiftPkg })" title="Copy code"></div>
                         <pre v-html="swiftPkg"></pre>
                     </div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -249,7 +227,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => swiftSrc })" title="Copy code"></div>
                         <pre><code class="language-python" v-html="swiftSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='vbnet'" class="pt-4">
@@ -257,9 +234,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
-
                     <div v-scope='CopyLine({ text: () => `<PackageReference Include="ServiceStack.HttpClient" Version="5.*" />` })'></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -271,7 +246,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => csharpSrc })" title="Copy code"></div>
                         <pre><code class="language-vbnet" v-html="vbnetSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
                 <div v-else-if="store.useLang=='fsharp'" class="pt-4">
@@ -279,9 +253,7 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
-
                     <div v-scope='CopyLine({ text: () => `<PackageReference Include="ServiceStack.HttpClient" Version="5.*" />` })'></div>
-
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
                         <div class="ml-3" v-if="store.activeLangSrc" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
@@ -293,7 +265,6 @@ App.components({ InstallTool: '#install-tool-template' })
                         <div class="icon-right" v-scope="CopyIcon({ text:() => csharpSrc })" title="Copy code"></div>
                         <pre><code class="language-fsharp" v-html="fsharpSrc"></code></pre>
                     </div>
-
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
             </div>
@@ -306,39 +277,28 @@ App.components({ InstallTool: '#install-tool-template' })
         To easily update DTOs for all APIs install the 
         <em>x</em> <a class="text-blue-600 underline" href="https://docs.servicestack.net/dotnet-tool">dotnet tool</a>
     </h2>
-    
     <div v-scope='CopyLine({ text: () => `$ dotnet tool install --global x` })'></div>
-    
     <h2 class="text-lg p-4">To generate all DTOs for <b>{{store.baseUrl}}</b> run:</h2>
-
     <div v-scope='CopyLine({ text: () => `$ x ${store.useLang} ${store.baseUrl}` })'></div>
-
     <h2 class="text-lg p-4">Once generated, the DTOs can be updated with:</h2>
-
     <div v-scope='CopyLine({ text: () => `$ x ${store.useLang}` })'></div>
 </template>
 <template id="csharp-help">
 using ServiceStack;
-
 var client = new JsonHttpClient("{BASE_URL}");
-
 var response = await client.SendAsync(new Hello {
     //...
 });
-
 // Quickly inpsect response
 Inspect.printDump(response);
 </template>
 <template id="typescript-help">
 import { JsonServiceClient, Inspect } from '@servicestack/client'
 import { Hello } from './dtos'
-
 let client = new JsonServiceClient('{BASE_URL}')
-
 let response = await client.send(new Hello({
     //...
 }))
-
 Inspect.printDump(response)
 </template>
 <template id="dart-help">
@@ -347,15 +307,11 @@ import 'dart:typed_data';
 import 'package:servicestack/web_client.dart'
   if (dart.library.io) 'package:servicestack/client.dart';
 import 'package:servicestack/inspect.dart';
-
 void main(List&lt;String&gt; arguments) async {
-
   var client = ClientFactory.create('{BASE_URL}');
-
   var response = await client.send(Hello()
     //...
   );
-
   Inspect.printDump(response);
   exit(0);
 }    
@@ -363,18 +319,13 @@ void main(List&lt;String&gt; arguments) async {
 <template id="java-help">
 import net.servicestack.client.*;
 import java.util.Collections;
-
 public class App {
-
     public static void main(String[] args) {
-
         JsonServiceClient client = new JsonServiceClient(
             "{BASE_URL}");
-
         HelloResponse response = client.send(new Hello()
             //...
         );
-
         Inspect.printDump(response);
     }
 }
@@ -382,62 +333,47 @@ public class App {
 <template id="kotlin-help">
 package myapp
 import net.servicestack.client.*
-
 fun main(args: Array&lt;String&gt;) {
     val client = JsonServiceClient("{BASE_URL}")
-
     val response = client.send(Hello().apply {
         //...
     });
-
     Inspect.printDump(response)
 }    
 </template>
 <template id="python-help">
 from servicestack import JsonServiceClient
 from my_app.dtos import *
-
 client = JsonServiceClient('{BASE_URL}')
-
 response = client.send(Hello(
     #...
 ))
-
 printdump(response)    
 </template>
 <template id="swift-help">
 import Foundation
 import ServiceStack
-
 let client = JsonServiceClient(baseUrl: "{BASE_URL}")
-
 let request = Hello()
 //...
 let response = try client.send(request)
-
 Inspect.printDump(response)    
 </template>
 <template id="vbnet-help">
 Imports ServiceStack
-
 Dim client = New JsonHttpClient("{BASE_URL}")
-
 Dim response = Await client.SendAsync(New Hello() With {
     '...
 })
-
 ' Quickly inpsect response
 Inspect.printDump(response)
 </template>
 <template id="fsharp-help">
 open ServiceStack
-
 let client = new JsonServiceClient("{BASE_URL}")
-
 let response = client.Send(new Hello(
     //...
 ))
-
 // Quickly inpsect response
 Inspect.printDump(response)
 </template>
