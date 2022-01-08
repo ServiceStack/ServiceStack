@@ -22,7 +22,7 @@ public class FilesHandler : IHtmlModulesHandler
                 ? paths
                 : ctx.Module.DirPath.CombineWith(paths);
             var sortedFiles = ctx.VirtualFiles.GetAllMatchingFiles(usePath)
-                .OrderBy(file => file.VirtualPath);
+                .OrderBy(file => file.VirtualPath).ToList();
             foreach (var file in sortedFiles)
             {
                 sb.AppendLine(ctx.FileContentsResolver(file));

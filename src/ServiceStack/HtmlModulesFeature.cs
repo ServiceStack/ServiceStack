@@ -82,6 +82,14 @@ public class HtmlModuleContext
     public IRequest Request { get; }
     public IVirtualPathProvider VirtualFiles => Module.VirtualFiles!;
 
+    public IVirtualFile AssertFile(string virtualPath)
+    {
+        var file = VirtualFiles.GetFile(virtualPath);
+        if (file == null)
+            throw HttpError.NotFound($"{virtualPath} does not exist");
+        return file;
+    }
+
     public Func<IVirtualFile, string> FileContentsResolver => Module.FileContentsResolver != null
         ? Module.FileContentsResolver!
         : file => file.ReadAllText();
@@ -259,16 +267,23 @@ public class HtmlModule
 
             return new CustomActionHandlerAsync(async (httpReq, httpRes) =>
             {
-                var fragments = GetIndexFragments();
-                var ms = MemoryStreamFactory.GetStream();
-                var ctx = new HtmlModuleContext(this, httpReq);
-                foreach (var fragment in fragments)
+                try
                 {
-                    await fragment.WriteToAsync(ctx, ms).ConfigAwait();
+                    var fragments = GetIndexFragments();
+                    var ms = MemoryStreamFactory.GetStream();
+                    var ctx = new HtmlModuleContext(this, httpReq);
+                    foreach (var fragment in fragments)
+                    {
+                        await fragment.WriteToAsync(ctx, ms).ConfigAwait();
+                    }
+                    httpRes.ContentType = MimeTypes.Html;
+                    ms.Position = 0;
+                    await ms.CopyToAsync(httpRes.OutputStream).ConfigAwait();
                 }
-                httpRes.ContentType = MimeTypes.Html;
-                ms.Position = 0;
-                await ms.CopyToAsync(httpRes.OutputStream).ConfigAwait();
+                catch (Exception ex)
+                {
+                    await httpRes.WriteError(ex).ConfigAwait();
+                }
             });
         });
     }

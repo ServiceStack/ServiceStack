@@ -40,7 +40,7 @@ public class SharedFolder : IHtmlModulesHandler
                 if (path.IndexOf('*') >= 0)
                 {
                     var files = ctx.VirtualFiles.GetAllMatchingFiles(path)
-                        .OrderBy(file => file.VirtualPath);
+                        .OrderBy(file => file.VirtualPath).ToList();
                     foreach (var file in files)
                     {
                         sb.AppendLine(ctx.FileContentsResolver(file));
