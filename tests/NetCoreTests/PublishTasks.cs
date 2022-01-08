@@ -1,7 +1,11 @@
+using System.Reflection;
+using Funq;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
+using ServiceStack.NativeTypes;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace NetCoreTests;
@@ -82,5 +86,29 @@ public class PublishTasks
             $"Writing to {toFile}".Print();
             File.Copy(copyFile, toFile, overwrite:true);
         }
+    }
+
+    class AppHost : AppSelfHostBase
+    {
+        public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService)) {}
+        public override void Configure(Container container)
+        {
+            Metadata.ForceInclude = new() {
+                typeof(MetadataApp),
+                typeof(AppMetadata),
+            };
+        }
+    }
+
+    [Test]
+    public void Generate_AppMetadata_details()
+    {
+        var baseUrl = "http://localhost:20000";
+        using var appHost = new AppHost().Init().Start(baseUrl);
+        
+        var dtos = baseUrl.CombineWith("/types/typescript").GetStringFromUrl();
+        
+        Directory.SetCurrentDirectory(ProjectDir);
+        File.WriteAllText(Path.GetFullPath("./lib/dtos.ts"), dtos);
     }
 }

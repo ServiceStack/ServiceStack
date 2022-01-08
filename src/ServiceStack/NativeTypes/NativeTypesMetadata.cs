@@ -1368,6 +1368,9 @@ namespace ServiceStack.NativeTypes
 
         public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config, List<string> overrideIncludeType = null)
         {
+            if (config.ForceInclude(type))
+                return false;
+            
             // If is a systemType and export types doesn't include this 
             if (type.IgnoreSystemType() && config.ExportTypes.All(x => x.Name != type.Name && !type.Name.StartsWith(x.Name + "`")))
                 return true;

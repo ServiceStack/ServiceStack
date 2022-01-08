@@ -25,6 +25,7 @@ namespace ServiceStack.Host
             this.OperationsMap = new Dictionary<Type, Operation>();
             this.OperationsResponseMap = new Dictionary<Type, Operation>();
             this.OperationNamesMap = new Dictionary<string, Operation>();
+            this.ForceInclude = new HashSet<Type>();
         }
 
         public Dictionary<Type, Operation> OperationsMap { get; protected set; }
@@ -36,6 +37,8 @@ namespace ServiceStack.Host
         private readonly List<RestPath> restPaths;
 
         public IEnumerable<Operation> Operations => OperationsMap.Values;
+        
+        public HashSet<Type> ForceInclude { get; set; }
 
         public void Add(Type serviceType, Type requestType, Type responseType)
         {
@@ -217,7 +220,7 @@ namespace ServiceStack.Host
         public List<string> GetOperationNamesForMetadata(IRequest httpReq)
         {
             return Operations
-                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata))
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) || x.RequestType.ForceInclude())
                 .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
@@ -225,7 +228,7 @@ namespace ServiceStack.Host
         {
             var formatRequestAttr = format.ToRequestAttribute();
             return Operations
-                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) && x.RestrictTo.CanShowTo(formatRequestAttr))
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) && x.RestrictTo.CanShowTo(formatRequestAttr) || x.RequestType.ForceInclude())
                 .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
@@ -293,7 +296,7 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IRequest httpReq, Operation operation)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false } || operation.RequestType.ForceInclude())
                 return true;
 
             if (operation.RequestType.ExcludesFeature(Feature.Metadata))
@@ -309,7 +312,7 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IRequest httpReq, Type requestType)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             var operation = HostContext.Metadata.GetOperation(requestType);
@@ -318,13 +321,17 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IRequest httpReq, Format format, string operationName)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
-            if (operation.RequestType.ExcludesFeature(Feature.Metadata)) return false;
+            if (operation.RequestType.ForceInclude())
+                return true;
+
+            if (operation.RequestType.ExcludesFeature(Feature.Metadata)) 
+                return false;
 
             var canCall = HasImplementation(operation, format);
             if (!canCall) return false;
@@ -345,19 +352,23 @@ namespace ServiceStack.Host
 
         public bool CanAccess(RequestAttributes reqAttrs, Format format, string operationName)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
-            if (operation == null) return false;
+            if (operation == null) 
+                return false;
 
             var canCall = HasImplementation(operation, format);
-            if (!canCall) return false;
+            if (!canCall) 
+                return false;
 
-            if (operation.RestrictTo == null) return true;
+            if (operation.RestrictTo == null || operation.RequestType.ForceInclude()) 
+                return true;
 
             var allow = operation.RestrictTo.HasAccessTo(reqAttrs);
-            if (!allow) return false;
+            if (!allow) 
+                return false;
 
             var allowsFormat = operation.RestrictTo.HasAccessTo((RequestAttributes)(long)format);
             return allowsFormat;
@@ -365,16 +376,19 @@ namespace ServiceStack.Host
 
         public bool CanAccess(Format format, string operationName)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
-            if (operation == null) return false;
+            if (operation == null) 
+                return false;
 
             var canCall = HasImplementation(operation, format);
-            if (!canCall) return false;
+            if (!canCall) 
+                return false;
 
-            if (operation.RestrictTo == null) return true;
+            if (operation.RestrictTo == null || operation.RequestType.ForceInclude()) 
+                return true;
 
             var allowsFormat = operation.RestrictTo.HasAccessTo((RequestAttributes)(long)format);
             return allowsFormat;
@@ -1031,6 +1045,19 @@ namespace ServiceStack.Host
             filter?.Invoke(to);
             return to;
         }
+        
+
+        public static bool ForceInclude(this MetadataTypesConfig config, Type type) =>
+            HostContext.Metadata.ForceInclude.Contains(type);
+
+        public static bool ForceInclude(this MetadataTypesConfig config, MetadataType type) =>
+            HostContext.Metadata.ForceInclude.Any(x =>
+                type.Type != null
+                    ? x == type.Type
+                    : type.Name == x.Name && type.Namespace == x.Namespace);
+
+        internal static bool ForceInclude(this Type type) => HostContext.Metadata.ForceInclude.Contains(type);
+
     }
     
 }
