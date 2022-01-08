@@ -1,6 +1,6 @@
 #nullable enable
 using System;
-using ServiceStack.IO;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.HtmlModules;
@@ -21,7 +21,9 @@ public class FilesHandler : IHtmlModulesHandler
             var usePath = paths.StartsWith("/")
                 ? paths
                 : ctx.Module.DirPath.CombineWith(paths);
-            foreach (var file in ctx.VirtualFiles.GetAllMatchingFiles(usePath))
+            var sortedFiles = ctx.VirtualFiles.GetAllMatchingFiles(usePath)
+                .OrderBy(file => file.VirtualPath);
+            foreach (var file in sortedFiles)
             {
                 sb.AppendLine(ctx.FileContentsResolver(file));
             }

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -38,7 +39,8 @@ public class SharedFolder : IHtmlModulesHandler
             {
                 if (path.IndexOf('*') >= 0)
                 {
-                    var files = ctx.VirtualFiles.GetAllMatchingFiles(path);
+                    var files = ctx.VirtualFiles.GetAllMatchingFiles(path)
+                        .OrderBy(file => file.VirtualPath);
                     foreach (var file in files)
                     {
                         sb.AppendLine(ctx.FileContentsResolver(file));
