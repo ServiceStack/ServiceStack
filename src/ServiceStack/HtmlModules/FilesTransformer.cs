@@ -153,8 +153,9 @@ public static class FilesTransformerUtils
                 },
             },
         };
-        if (!debugMode)
-            options = options.Minify(Html.Minify.JavaScript | Html.Minify.HtmlAdvanced);
+        // TODO test
+        // if (!debugMode)
+        //     options = options.Minify(Html.Minify.JavaScript | Html.Minify.HtmlAdvanced);
         
         with?.Invoke(options);
         return options;
