@@ -4,16 +4,25 @@ using ServiceStack.HtmlModules;
 using ServiceStack.IO;
 using ServiceStack.Text;
 
-namespace MyApp;
+namespace NetCoreTests;
 
+[Category("Publish Tasks")]
 public class PublishTasks
 {
-    readonly string ProjectDir = Path.GetFullPath("../../..");
+    readonly string ProjectDir = Path.GetFullPath("../../../../NorthwindAuto");
     string FromModulesDir => Path.GetFullPath(".");
     string ToModulesDir => Path.GetFullPath("../../src/ServiceStack/modules");
     string[] IgnoreUiFiles = {
         "index.css"
     };
+
+    [Test]
+    public void Print_paths()
+    {
+        Directory.SetCurrentDirectory(ProjectDir);
+        FromModulesDir.Print();
+        ToModulesDir.Print();
+    }
 
     /*  publish.bat
         call npm run ui:build 
@@ -90,7 +99,7 @@ public class PublishTasks
             if (ignoreFiles != null && ignoreFiles.Contains(file.VirtualPath)) 
                 continue;
 
-            var contents = FileReader.Read(file);
+            var contents = FilesTransformer.Options.ReadAll(file);
             toVfs.WriteFile(file.VirtualPath, contents);
             $"{file.VirtualPath} ({contents.Length})".Print();
         }

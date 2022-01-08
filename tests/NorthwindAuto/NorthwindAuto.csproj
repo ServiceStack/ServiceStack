@@ -18,19 +18,6 @@
     <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
-
-    <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-    <PackageReference Include="NUnit" Version="3.13.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="ui\index.html" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="ServiceModel\bin\Debug\net6.0\MyApp.ServiceModel.deps.json" />
-    <_ContentIncludedByDefault Remove="ServiceModel\bin\Debug\net6.0\ServiceStack.Blazor.Tests.ServiceModel.deps.json" />
   </ItemGroup>
 
 </Project>
