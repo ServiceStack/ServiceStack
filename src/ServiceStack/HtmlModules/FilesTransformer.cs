@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Text;
@@ -10,8 +10,19 @@ namespace ServiceStack.HtmlModules;
 
 public class FileTransformerOptions
 {
-    public List<Func<string,string?>> LineTransformers { get; set; } = new();
-    public List<Func<string,string>> FilesTransformers { get; set; } = new();
+    public List<HtmlModuleLine> LineTransformers { get; set; } = new();
+    public List<HtmlModuleBlock> BlockTransformers { get; set; } = new();
+    public List<HtmlModuleBlock> FilesTransformers { get; set; } = new();
+
+    public FileTransformerOptions Without(Run behavior)
+    {
+        return new FileTransformerOptions
+        {
+            LineTransformers = LineTransformers.Where(x => x.Behaviour != behavior).ToList(),
+            BlockTransformers = BlockTransformers.Where(x => x.Behaviour != behavior).ToList(),
+            FilesTransformers = FilesTransformers.Where(x => x.Behaviour != behavior).ToList(),
+        };
+    }
 }
 
 public class FilesTransformer
@@ -37,9 +48,24 @@ public class FilesTransformer
     ///     - removes empty whitespace lines 
     /// </summary>
     public static FilesTransformer Default => Defaults(HostContext.DebugMode);
-    public static FilesTransformer Defaults(bool debugMode, Action<FilesTransformer>? with=null) => 
-        FilesTransformerUtils.Defaults(debugMode, with);
-    
+    public static FilesTransformer Defaults(bool? debugMode = null, Action<FilesTransformer>? with=null)
+    {
+        var defaults = FilesTransformerUtils.Defaults(with);
+        return debugMode == null 
+            ? defaults 
+            : defaults.Without(HostContext.DebugMode ? Run.IgnoreInDebug : Run.OnlyInDebug);
+    }
+
+    public FilesTransformer Without(Run behaviour)
+    {
+        var to = new FilesTransformer();
+        foreach (var entry in this.FileExtensions)
+        {
+            to.FileExtensions[entry.Key] = this.FileExtensions[entry.Key].Without(behaviour);
+        }
+        return to;
+    }
+
     public Dictionary<string, FileTransformerOptions> FileExtensions { get; private set; } = new();
 
     public FileTransformerOptions? GetExt(string fileExt) => FileExtensions.TryGetValue(fileExt, out var options)
@@ -48,27 +74,79 @@ public class FilesTransformer
 
     public string ReadAll(IVirtualFile file)
     {
-        if (!FileExtensions.TryGetValue(file.Extension, out var options))
+        if (!FileExtensions.TryGetValue(file.Extension, out var extOptions))
             return file.ReadAllText();
+
+        var options = extOptions.Without(HostContext.DebugMode ? Run.IgnoreInDebug : Run.OnlyInDebug);
         
-        string? line = null;
+        string? line;
         var sb = StringBuilderCache.Allocate();
         using var reader = file.OpenText();
+        HtmlModuleBlock? inBlock = null;
+        var blockLines = new List<string>();
         while ((line = reader.ReadLine()) != null)
         {
-            foreach (var lineTransformer in options.LineTransformers)
+            var trimmedLine = line.AsSpan().Trim();
+            if (inBlock == null)
             {
-                line = lineTransformer(line!);
-                if (line == null) break;
+                foreach (var lineTransformer in options.LineTransformers)
+                {
+                    line = lineTransformer.Transform(line!);
+                    if (line == null) break;
+                }
             }
-            if (line != null)
-                sb.AppendLine(line);
+            else
+            {
+                HtmlModuleBlock? endBlock = null;
+                foreach (var x in options.BlockTransformers)
+                {
+                    if (trimmedLine.EqualTo(x.EndTag))
+                    {
+                        endBlock = x;
+                        break;
+                    }
+                }
+                if (endBlock != null)
+                {
+                    var blockOutput = endBlock.Transform(blockLines);
+                    if (blockOutput != null)
+                    {
+                        sb.AppendLine(blockOutput);
+                    }
+                    inBlock = null;
+                    blockLines.Clear();
+                    continue;
+                }
+                blockLines.Add(line);
+                continue;
+            }
+            if (line == null)
+                continue;
+
+            HtmlModuleBlock? startBlock = null;
+            foreach (var x in options.BlockTransformers)
+            {
+                if (trimmedLine.EqualTo(x.StartTag))
+                {
+                    startBlock = x;
+                    break;
+                }
+            }
+            if (startBlock != null)
+            {
+                inBlock = startBlock;
+                continue;
+            }
+
+            sb.AppendLine(line);
         }
 
         var fileContents = sb.ToString();
         foreach (var filesTransformer in options.FilesTransformers)
         {
-            fileContents = filesTransformer(fileContents);
+            fileContents = filesTransformer.Transform(fileContents);
+            if (fileContents == null)
+                return string.Empty;
         }
         return fileContents;
     }
@@ -107,19 +185,9 @@ public class FilesTransformer
     
 }
 
-public static class Lines
-{
-    public static Func<string, string?> RemoveNotStartingWith(string linePrefix, bool ignoreWhiteSpace=false) => line => ignoreWhiteSpace 
-        ? !line.AsSpan().TrimStart().StartsWith(linePrefix) ? line : null
-        : !line.StartsWith(linePrefix) ? line : null;
-
-    public static Func<string, string?> RemoveOnlyWhitespace() =>
-        line => line.AsSpan().Trim().Length == 0 ? null : line;
-}
-
 public static class FilesTransformerUtils
 {
-    public static FilesTransformer Defaults(bool debugMode = true, Action<FilesTransformer>? with=null)
+    public static FilesTransformer Defaults(Action<FilesTransformer>? with=null)
     {
         var options = new FilesTransformer
         {
@@ -127,49 +195,60 @@ public static class FilesTransformerUtils
             {
                 ["html"] = new FileTransformerOptions
                 {
+                    BlockTransformers = {
+                        new RawBlock("<!--raw-->", "<!--/raw-->", Run.Always),
+                        new MinifyBlock("<!--minify-->", "<!--/minify-->", Minifiers.HtmlAdvanced, Run.IgnoreInDebug),
+                    },
                     LineTransformers =
                     {
-                        Lines.RemoveNotStartingWith("<!---:", ignoreWhiteSpace: true),
-                        Lines.RemoveOnlyWhitespace(),
+                        // Hide dev comments from browser (RemoveHtmlLineComments syntax)
+                        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
+                        new RemoveLineWithOnlyWhitespace(Run.Always),
                     },
                 },
                 ["js"] = new FileTransformerOptions
                 {
+                    BlockTransformers = {
+                        new RawBlock("/*raw|*/", "/*|raw*/", Run.Always),
+                        new MinifyBlock("/*minify|*/", "/*|minify*/", Minifiers.JavaScript, Run.IgnoreInDebug),
+                    },
                     LineTransformers =
                     {
-                        Lines.RemoveNotStartingWith("import "),
-                        Lines.RemoveNotStartingWith("declare "),
-                        Lines.RemoveNotStartingWith("/**:", ignoreWhiteSpace: true),
-                        Lines.RemoveOnlyWhitespace(),
+                        // Enable static typing during dev, strip from browser to run
+                        new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
+                        // Hide dev comments from browser (RemoveJsLineComments syntax)
+                        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+                        new RemoveLineWithOnlyWhitespace(Run.Always),
                     }
                 },
                 ["css"] = new FileTransformerOptions
                 {
+                    BlockTransformers = {
+                        new RawBlock("/*raw|*/", "/*|raw*/", Run.Always),
+                        new MinifyBlock("/*minify|*/", "/*|minify*/", Minifiers.Css, Run.IgnoreInDebug),
+                    },
                     LineTransformers =
                     {
-                        Lines.RemoveNotStartingWith("/**:", ignoreWhiteSpace: true),
-                        Lines.RemoveOnlyWhitespace(),
+                        new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, Run.Always),
+                        new RemoveLineWithOnlyWhitespace(Run.Always),
                     }
                 },
             },
         };
-        // TODO test
-        // if (!debugMode)
-        //     options = options.Minify(Html.Minify.JavaScript | Html.Minify.HtmlAdvanced);
         
         with?.Invoke(options);
         return options;
     }
     
-    public static FilesTransformer Minify(this FilesTransformer options, Minify minify) => options.Clone(with: o => {
+    public static FilesTransformer Minify(this FilesTransformer options, Minify minify, Run behavior = Run.OnlyInDebug) => options.Clone(with: o => {
         if (minify.HasFlag(Html.Minify.JavaScript))
-            o.GetExt("js")?.FilesTransformers.Add(Minifiers.JavaScript.Compress);
+            o.GetExt("js")?.FilesTransformers.Add(new MinifyBlock(Minifiers.JavaScript, behavior));
         if (minify.HasFlag(Html.Minify.Css))
-            o.GetExt("css")?.FilesTransformers.Add(Minifiers.Css.Compress);
+            o.GetExt("css")?.FilesTransformers.Add(new MinifyBlock(Minifiers.Css, behavior));
         if (minify.HasFlag(Html.Minify.HtmlAdvanced))
-            o.GetExt("html")?.FilesTransformers.Add(Minifiers.HtmlAdvanced.Compress);
+            o.GetExt("html")?.FilesTransformers.Add(new MinifyBlock(Minifiers.HtmlAdvanced, behavior));
         if (minify.HasFlag(Html.Minify.Html))
-            o.GetExt("html")?.FilesTransformers.Add(Minifiers.Html.Compress);
+            o.GetExt("html")?.FilesTransformers.Add(new MinifyBlock(Minifiers.Html, behavior));
     });
 }
     

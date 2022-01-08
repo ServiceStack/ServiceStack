@@ -109,7 +109,8 @@ public class PublishTasks
         var dtos = baseUrl.CombineWith("/types/typescript").GetStringFromUrl();
         dtos += @"
 // declare Types used in /ui 
-export declare var APP:AppMetadata";
+export declare var APP:AppMetadata
+";
         
         Directory.SetCurrentDirectory(ProjectDir);
         File.WriteAllText(Path.GetFullPath("./lib/types.ts"), dtos);

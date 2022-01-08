@@ -39,8 +39,8 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     {
         new FileHandler("file"),
         new FilesHandler("files"),
-        new RemoveJsLineCommentsHandler(),
-        new RemoveHtmlLineCommentsHandler(),
+        new RemoveJsLineComments(),
+        new RemoveHtmlLineComments(),
     };
 
     /// <summary>

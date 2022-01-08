@@ -25,6 +25,7 @@ namespace MyApp
             SetConfig(new HostConfig
             {
                 DebugMode = true,
+                // DebugMode = false,
                 AdminAuthSecret = "secret",
             });
 
