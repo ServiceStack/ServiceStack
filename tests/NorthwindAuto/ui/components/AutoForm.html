@@ -26,6 +26,9 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
         usePlaceholder(input) {
             return input.placeholder || ''
         },
+        isRequired(input) {
+            return input.required || false 
+        },
         fieldError(id) {
             let error = this.state.error
             let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
@@ -82,8 +85,8 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
                                 </select>
                                 <textarea v-else-if="input.type=='textarea'" v-bind="input" :placeholder="usePlaceholder(input)"
                                           :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
-                                          :class="inputClass(input)" v-model="state.model[input.id]"></textarea>
-                                <input v-else v-bind="input" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
+                                          :class="inputClass(input)" v-model="state.model[input.id]" :required="isRequired(input)"></textarea>
+                                <input v-else v-bind="input" :required="isRequired(input)" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
                                        :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                                        :class="inputClass(input)" v-model="state.model[input.id]" />
 
