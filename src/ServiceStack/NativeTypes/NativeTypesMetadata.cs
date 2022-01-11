@@ -821,7 +821,7 @@ namespace ServiceStack.NativeTypes
                     Size = inputProp.Size,
                     Pattern = inputProp.Pattern,
                     ReadOnly = inputProp.ReadOnly,
-                    Required = inputProp.Required,
+                    Required = inputProp.Required ?? property.IsRequired,
                     Min = inputProp.Min,
                     Max = inputProp.Max,
                     MinLength = inputProp.MinLength ?? property.AllowableMin,
