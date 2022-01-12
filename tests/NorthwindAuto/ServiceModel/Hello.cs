@@ -11,7 +11,7 @@ public class Hello : IReturn<HelloResponse>
 }
 
 [Tag("hello")]
-[Route("/hellosecure/{Name}")]
+[Route("/hellosecure/{Name}", "PUT")]
 [ValidateIsAuthenticated]
 public class HelloSecure : IReturn<HelloResponse>
 {
