@@ -46,7 +46,7 @@ let store = PetiteVue.reactive({
         this.loadLang()
         this.loadPreview()
         this.doLayout()
-        setBodyClass({ op: routes.op })
+        setBodyClass({ page: routes.op })
     },
 
     get filteredSideNav() {
@@ -153,11 +153,6 @@ let store = PetiteVue.reactive({
     },
     get opName() { return this.op && this.op.request.name },
 
-    get json() {
-        return ''
-        //return JSON.stringify(this.op || APP, undefined, 4)
-    },
-
     get opTabs() {
         return this.op
             ? { ['API']:'', 'Details':'details', 'Source Code':'code' }
@@ -242,9 +237,9 @@ let store = PetiteVue.reactive({
     },
 
     /**: v-if doesn't protect against nested access so need to guard against deep NRE access */
-    get authRoles() { return store.auth && store.auth.roles || [] },
-    get authPermissions() { return store.auth && store.auth.permissions || [] },
-    get authProfileUrl() { return store.auth && store.auth.profileUrl },
+    get authRoles() { return this.auth && this.auth.roles || [] },
+    get authPermissions() { return this.auth && this.auth.permissions || [] },
+    get authProfileUrl() { return this.auth && this.auth.profileUrl },
     
     get authLinks() {
         let to = []

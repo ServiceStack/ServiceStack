@@ -1,0 +1,15 @@
+<script>
+App.component('Image', ({ svg, uri, alt, cls }, opt) => {
+    return {
+        $template: '#image-template',
+        svg,
+        uri,
+        alt: alt || (opt && opt.alt) || '',
+        cls: cls || (opt && opt.cls) || '',
+    }
+})
+</script>
+<template id="image-template">
+<svg v-if="svg" v-html="svg" :class="cls" :aria-label="alt"></svg>
+<img v-else-if="uri" :src="uri" :class="cls" :alt="alt">
+</template>

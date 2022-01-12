@@ -28,16 +28,15 @@ App.plugin({
             queryKeys,
             ...allKeys.reduce((acc,x) => { acc[x] = ''; return acc }, {}),
             start() {
-                if (location.search) {
-                    this.set({ [page]:getPage(), ...queryString(location.search)})
-                    publish('init', state(this))
-                }
                 window.addEventListener('popstate', (event) => {
                     this.set({ [page]:getPage(), ...event.state})
                     publish('init', state(this))
                 })
+                this.set({ [page]:getPage(), ...(location.search ? queryString(location.search) : {}) })
+                publish('init', state(this))
             },
             set(args) {
+                if (typeof args['$page'] != 'undefined') args[page] = args['$page']
                 Object.keys(args).forEach(k => {
                     if (allKeys.indexOf(k) >= 0) {
                         this[k] = args[k]
@@ -53,6 +52,7 @@ App.plugin({
                 publish('to', cleanArgs)
             },
             href(args) {
+                if (args && typeof args['$page'] != 'undefined') args[page] = args['$page']
                 let s = args ? Object.assign({}, state(this), args) : state(this)
                 let path = s[page] || ''
                 let qs = queryKeys.filter(k => s[k]).map(k =>

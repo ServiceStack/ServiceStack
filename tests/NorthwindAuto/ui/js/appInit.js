@@ -20,8 +20,6 @@ function createClient(fn) {
 }
 let client = createClient()
 
-document.title = APP.app.serviceName
-let op = leftPart(location.href.substring(document.baseURI.length), '?')
 APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
@@ -66,11 +64,6 @@ APP.api.operations.forEach(op => {
 APP.api.types.forEach(type => TypesMap[type.name] = type)
 
 let cleanSrc = src => src.trim();
-
-let SidebarWidth = '240px'
-function isSmall() {
-    return window.matchMedia('(max-width:640px)').matches
-}
 
 function invalidAccessMessage(op, authRoles, authPerms) {
     if (authRoles.indexOf('Admin') >= 0) return null

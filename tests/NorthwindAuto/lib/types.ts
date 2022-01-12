@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-01-12 11:49:37
+Date: 2022-01-13 05:07:36
 Version: 5.133
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -60,11 +60,23 @@ export class AppInfo
     public constructor(init?: Partial<AppInfo>) { (Object as any).assign(this, init); }
 }
 
+export class LinkInfo
+{
+    public id: string;
+    public href: string;
+    public label: string;
+    public iconSvg: string;
+    public iconUri: string;
+
+    public constructor(init?: Partial<LinkInfo>) { (Object as any).assign(this, init); }
+}
+
 export class UiInfo
 {
     public brandIconUri: string;
     public hideTags: string[];
     public alwaysHideTags: string[];
+    public adminLinks: LinkInfo[];
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<UiInfo>) { (Object as any).assign(this, init); }
@@ -488,15 +500,6 @@ export class ResponseStatus
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
-}
-
-export class LinkInfo
-{
-    public href: string;
-    public label: string;
-    public iconUri: string;
-
-    public constructor(init?: Partial<LinkInfo>) { (Object as any).assign(this, init); }
 }
 
 export class KeyValuePair<TKey, TValue>

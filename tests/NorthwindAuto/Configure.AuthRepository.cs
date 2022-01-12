@@ -70,7 +70,7 @@ public class ConfigureAuthRepository : IHostingStartup
 
             // Removing unused UserName in Admin Users UI 
             appHost.Plugins.Add(new ServiceStack.Admin.AdminUsersFeature {
-                
+                /*
                 // Show custom fields in Search Results
                 QueryUserAuthProperties = new() {
                     nameof(AppUser.Id),
@@ -119,6 +119,7 @@ public class ConfigureAuthRepository : IHostingStartup
                         Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate),
                     },
                 }
+                */
             });
 
         },
