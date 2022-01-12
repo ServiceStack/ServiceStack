@@ -8,21 +8,6 @@
     --body-height-from-top-bar: calc(100vh - var(--top-bar-height));
     --body-height-from-nav-bar: calc(100vh - var(--top-filter-height));
 }
-::-webkit-scrollbar{width:var(--scroll-width);height:var(--scroll-height)}
-::-webkit-scrollbar-thumb{background-color:#ccc}
-b {
-    font-weight: 500;
-}
-em {
-    color: #3b82f6;
-    font-weight: 400;
-    background-color: #eff6ff;
-    border-radius: 0.25rem;
-    padding: 0.125em 0.5rem;
-    margin-left: 0.125em;
-    margin-right: 0.125em;
-    font-style: normal;
-}
 .sidebar {
     width: var(--sidebar-width);
     min-height: 100vh;
