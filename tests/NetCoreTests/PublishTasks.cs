@@ -2,6 +2,7 @@ using System.Reflection;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
+using ServiceStack.Auth;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
 using ServiceStack.NativeTypes;
@@ -97,6 +98,10 @@ public class PublishTasks
                 typeof(MetadataApp),
                 typeof(AppMetadata),
             };
+            
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
+                new CredentialsAuthProvider(AppSettings),
+            }));
         }
     }
 
