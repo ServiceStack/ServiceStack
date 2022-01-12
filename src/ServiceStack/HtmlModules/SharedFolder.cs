@@ -14,7 +14,7 @@ namespace ServiceStack.HtmlModules;
 public class SharedFolder : IHtmlModulesHandler
 {
     public string Name { get; }
-    public string SharedDir { get; }
+    public string SharedDir { get; set; }
     public string DefaultExt { get; }
     public SharedFolder(string name, string sharedDir, string defaultExt)
     {

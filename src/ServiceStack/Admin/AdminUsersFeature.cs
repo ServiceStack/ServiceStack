@@ -81,6 +81,8 @@ namespace ServiceStack.Admin
             nameof(UserAuth.DigestHa1Hash),
         };
 
+        public HtmlModule HtmlModule { get; set; } = new("/modules/admin-ui", "/admin-ui");
+
         /// <summary>
         /// Invoked before user is created or updated.
         /// A non-null return (e.g. HttpResult/HttpError) invalidates the request and is used as the API Response instead
@@ -166,6 +168,19 @@ namespace ServiceStack.Admin
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(AdminUsersService));
+
+            var uiFeature = appHost.GetPlugin<UiFeature>();
+            var registerUiModule = HtmlModule != null && uiFeature != null;
+            if (registerUiModule)
+            {
+                uiFeature.HtmlModules.Add(HtmlModule);
+                uiFeature.Info.AdminLinks.Add(new LinkInfo
+                {
+                    Id = "users",
+                    Label = "Manage Users",
+                    IconSvg = Svg.Create(Svg.Body.Users),
+                });
+            }
             
             appHost.AddToAppMetadata(meta => {
                 var host = (ServiceStackHost) appHost;
@@ -204,6 +219,17 @@ namespace ServiceStack.Admin
                     {
                         var formPropNames = MapUserFormField(input => input.Id).ToSet();
                         plugin.UserAuth.Properties.RemoveAll(x => !formPropNames.Contains(x.Name));
+                    }
+
+                    if (meta.Plugins.Auth == null)
+                        throw new Exception(nameof(AdminUsersFeature) + " requires " + nameof(AuthFeature));
+
+                    if (registerUiModule)
+                    {
+                        meta.Plugins.Auth.RoleLinks[RoleNames.Admin] = new List<LinkInfo>
+                        {
+                            new() { Href = "../admin-ui/users", Label = "Manage Users", IconUri = Svg.GetDataUri(Svg.Icons.Users) },
+                        };
                     }
                 }
             });

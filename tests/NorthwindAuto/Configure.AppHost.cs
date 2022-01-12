@@ -3,6 +3,7 @@ using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using MyApp.ServiceInterface;
+using ServiceStack.Admin;
 using ServiceStack.HtmlModules;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
@@ -38,15 +39,13 @@ namespace MyApp
                 GenerateCrudServices = new GenerateCrudServices {}
             });
 
-            this.AssertPlugin<MetadataFeature>().UiModule = null;
-            Plugins.Add(new HtmlModulesFeature(new HtmlModule("/ui"))
+            var uiFeature = this.AssertPlugin<UiFeature>();
+            uiFeature.Configure = feature =>
             {
-                Handlers = {
-                    new SharedFolder("shared", "/shared", defaultExt:".html"),
-                    new SharedFolder("shared/js", "/shared/js", defaultExt:".js"),
-                    new SharedFolder("plugins", "/shared/plugins", defaultExt:".js"),
-                }
-            });
+                feature.Module.Configure = null;
+                feature.HtmlModules.ForEach(x => x.DirPath = x.DirPath.Replace("/modules",""));
+                feature.Handlers.Cast<SharedFolder>().Each(x => x.SharedDir = x.SharedDir.Replace("/modules", ""));
+            };
             
             Plugins.AddIfDebug(new HotReloadFeature {
                 DefaultPattern = "*.html;*.js;*.css",

@@ -400,13 +400,7 @@ namespace ServiceStack
                             FormLayout = (x as AuthProvider)?.FormLayout,
                             Meta = x.Meta,
                         }),
-                    RoleLinks = new()
-                    {
-                        [RoleNames.Admin] = new List<LinkInfo>
-                        {
-                            new() { Href = "../admin-ui/users", Label = "Manage Users", IconUri = Svg.GetDataUri(Svg.Icons.Users) },
-                        }
-                    },
+                    RoleLinks = new() {},
                 };
                 if (meta.Plugins.Auth.HasAuthSecret == true && AdminAuthSecretInfo != null)
                     meta.Plugins.Auth.AuthProviders.Add(AdminAuthSecretInfo);

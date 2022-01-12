@@ -47,6 +47,8 @@ namespace ServiceStack
             } },
         };
 
+        public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui");
+
         public bool EnableNav
         {
             get => ServiceRoutes.ContainsKey(typeof(MetadataNavService));
@@ -69,19 +71,6 @@ namespace ServiceStack
 
         public Func<string,string> TagFilter { get; set; }
 
-        public UiInfo Ui { get; set; }
-
-        public HtmlModulesFeature UiModule { get; set; } = new(new HtmlModule("/modules/ui", "/ui"))
-        {
-            IgnoreIfError = true,
-            Configure = (appHost,module) => module.VirtualFiles = appHost.VirtualFileSources,
-            Handlers = {
-                new HtmlModules.SharedFolder("shared", "/modules/shared", ".html"),
-                new HtmlModules.SharedFolder("shared/js", "/modules/shared/js", ".js"),
-                new HtmlModules.SharedFolder("plugins", "/modules/shared/plugins", ".js"),
-            },
-        };
-
         public MetadataFeature()
         {
             PluginLinksTitle = "Plugin Links:";
@@ -90,12 +79,6 @@ namespace ServiceStack
             DebugLinksTitle = "Debug Info:";
             DebugLinks = new Dictionary<string, string> {
                 {"operations/metadata", "Operations Metadata"},
-            };
-
-            Ui = new UiInfo
-            {
-                BrandIconUri = Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000"),
-                HideTags = new List<string> { TagNames.Auth },
             };
         }
 
@@ -110,8 +93,8 @@ namespace ServiceStack
 
             appHost.RegisterServices(ServiceRoutes);
 
-            if (EnableAppMetadata)
-                UiModule?.Register(appHost);
+            if (EnableAppMetadata && HtmlModule != null)
+                appHost.GetPlugin<UiFeature>()?.HtmlModules.Add(HtmlModule);
         }
 
         public virtual IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
@@ -222,13 +205,14 @@ namespace ServiceStack
             feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
             var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, nativeTypesMetadata, req);
             metadataTypes.Config = null;
+            var uiFeature = HostContext.GetPlugin<UiFeature>();
 
             var appHost = HostContext.AssertAppHost();
             var config = appHost.Config;
             var response = new AppMetadata
             {
                 App = config.AppInfo ?? new AppInfo(),
-                Ui = feature.Ui,
+                Ui = uiFeature?.Info,
                 Config = new ConfigInfo {
                     DebugMode = config.DebugMode,
                 },

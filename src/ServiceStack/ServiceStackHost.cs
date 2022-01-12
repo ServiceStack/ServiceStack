@@ -176,6 +176,7 @@ namespace ServiceStack
                 new RequestInfoFeature(),
                 new SpanFormats(),
                 new SvgFeature(),
+                new UiFeature(),
                 new Validation.ValidationFeature(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {

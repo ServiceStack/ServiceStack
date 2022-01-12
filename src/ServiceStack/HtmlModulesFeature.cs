@@ -48,8 +48,8 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     /// </summary>
     public Func<IVirtualFile, string>? FileContentsResolver { get; set; }
     
-    public HtmlModule[] Modules { get; }
-    public HtmlModulesFeature(params HtmlModule[] modules) => Modules = modules;
+    public List<HtmlModule> Modules { get; set; }
+    public HtmlModulesFeature(params HtmlModule[] modules) => Modules = modules.ToList();
     public Action<IAppHost, HtmlModule>? Configure { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 

@@ -155,8 +155,10 @@ namespace ServiceStack
     [Exclude(Feature.Soap)]
     public class LinkInfo
     {
+        public string Id { get; set; }
         public string Href { get; set; }
         public string Label { get; set; }
+        public string IconSvg { get; set; }
         public string IconUri { get; set; }
     }
 
@@ -419,6 +421,11 @@ namespace ServiceStack
         /// Always hide APIs with tags (inc DebugMode) 
         /// </summary>
         public List<string> AlwaysHideTags { get; set; }
+
+        /// <summary>
+        /// Admin UI Links
+        /// </summary>
+        public List<LinkInfo> AdminLinks { get; set; }
         
         /// <summary>
         /// Custom User-Defined Attributes
