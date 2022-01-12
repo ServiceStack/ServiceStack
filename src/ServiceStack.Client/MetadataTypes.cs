@@ -153,6 +153,14 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
+    public class LinkInfo
+    {
+        public string Href { get; set; }
+        public string Label { get; set; }
+        public string IconUri { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
     public class AuthInfo : IMeta
     {
         public bool? HasAuthSecret { get; set; }
@@ -161,6 +169,8 @@ namespace ServiceStack
         public bool? IncludesOAuthTokens { get; set; }
         public string HtmlRedirect { get; set; }
         public List<MetaAuthProvider> AuthProviders { get; set; }
+        
+        public Dictionary<string, List<LinkInfo>> RoleLinks { get; set; }
         public Dictionary<string,string[]> ServiceRoutes { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
