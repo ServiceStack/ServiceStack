@@ -49,7 +49,7 @@ namespace ServiceStack.Auth
         
         public int Sort { get; set; }
         public string Label { get; set; }
-        public string LogoUri { get; set; }
+        public ImageInfo Icon { get; set; }
 
         public List<InputInfo> FormLayout { get; set; }
 

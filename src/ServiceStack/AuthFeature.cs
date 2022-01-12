@@ -395,7 +395,7 @@ namespace ServiceStack
                             Type = x.Type,
                             Name = x.Provider,
                             Label = (x as AuthProvider)?.Label,
-                            LogoUri = (x as AuthProvider)?.LogoUri,
+                            Icon = (x as AuthProvider)?.Icon,
                             NavItem = (x as AuthProvider)?.NavItem,
                             FormLayout = (x as AuthProvider)?.FormLayout,
                             Meta = x.Meta,

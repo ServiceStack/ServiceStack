@@ -259,6 +259,9 @@ namespace ServiceStack
 
         public static string Create(string body, string fill="none", string viewBox="0 0 24 24", string stroke="currentColor") =>
             $"<svg xmlns='http://www.w3.org/2000/svg' fill='{fill}' viewBox='{viewBox}' stroke='{stroke}' aria-hidden='true'>{body}</svg>";
+
+        public static ImageInfo ImageSvg(string svg) => new() { Svg = svg };
+        public static ImageInfo ImageUri(string uri) => new() { Uri = uri };
         
         public static class Body
         {

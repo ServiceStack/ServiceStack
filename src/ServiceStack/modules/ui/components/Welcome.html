@@ -10,7 +10,7 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <p class="text-lg text-pink-700">Protected APIs are visible whilst in <b>DebugMode</b></p>
+                    <p class="text-lg text-pink-700">Protected APIs only visible whilst in <b>DebugMode</b></p>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
             <div v-if="store.authLinks.length" class="ml-3 mb-3 flex">
                 <a v-for="link in store.authLinks" :href="link.href"
                    class="mr-3 inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-xl font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <img v-if="link.iconUri" class="-ml-1 mr-3 h-8 w-8" :src="link.iconUri" :alt="`${link.label} icon`">
+                    <span v-scope="Image(link.icon, {cls:'-ml-1 mr-3 h-8 w-8',alt:`${link.label} icon`})"></span>
                     {{link.label}}
                 </a>
             </div>

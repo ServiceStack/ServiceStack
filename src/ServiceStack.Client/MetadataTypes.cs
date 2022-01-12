@@ -158,8 +158,16 @@ namespace ServiceStack
         public string Id { get; set; }
         public string Href { get; set; }
         public string Label { get; set; }
-        public string IconSvg { get; set; }
-        public string IconUri { get; set; }
+        public ImageInfo Icon { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class ImageInfo
+    {
+        public string Svg { get; set; }
+        public string Uri { get; set; }
+        public string Alt { get; set; }
+        public string Cls { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -410,7 +418,7 @@ namespace ServiceStack
         /// <summary>
         /// The brand icon to use with App brand name
         /// </summary>
-        public string BrandIconUri { get; set; }
+        public ImageInfo BrandIcon { get; set; }
 
         /// <summary>
         /// Hide APIs with tags 
@@ -440,7 +448,7 @@ namespace ServiceStack
         public string Label { get; set; }
         public string Type { get; set; }
         public NavItem NavItem { get; set; }
-        public string LogoUri { get; set; }
+        public ImageInfo Icon { get; set; }
         public List<InputInfo> FormLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }

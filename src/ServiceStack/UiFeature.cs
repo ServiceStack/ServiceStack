@@ -32,7 +32,7 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
     {
         Info = new UiInfo
         {
-            BrandIconUri = Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000"),
+            BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
             HideTags = new List<string> { TagNames.Auth },
             AdminLinks = new()
             {
@@ -40,7 +40,7 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
                 {
                     Id = "",
                     Label = "Dashboard",
-                    IconSvg = Svg.Create(Svg.Body.Home),
+                    Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Home)),
                 },
             },
         };

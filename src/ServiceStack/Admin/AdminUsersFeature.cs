@@ -178,7 +178,7 @@ namespace ServiceStack.Admin
                 {
                     Id = "users",
                     Label = "Manage Users",
-                    IconSvg = Svg.Create(Svg.Body.Users),
+                    Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
                 });
             }
             
@@ -228,7 +228,7 @@ namespace ServiceStack.Admin
                     {
                         meta.Plugins.Auth.RoleLinks[RoleNames.Admin] = new List<LinkInfo>
                         {
-                            new() { Href = "../admin-ui/users", Label = "Manage Users", IconUri = Svg.GetDataUri(Svg.Icons.Users) },
+                            new() { Href = "../admin-ui/users", Label = "Manage Users", Icon = Svg.ImageUri(Svg.GetDataUri(Svg.Icons.Users)) },
                         };
                     }
                 }
