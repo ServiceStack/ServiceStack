@@ -38,9 +38,6 @@
             <div v-else-if="routes.tab === 'code'" v-scope="ApiCode({ store, routes })"></div>
         </div>
     </div>
-    <div v-else-if="store.json" class="preview p-4">
-        <pre><code lang="json" v-highlightjs="store.json"></code></pre>
-    </div>
     <div v-else v-scope="Welcome({ store })"></div>
 </div>
 <div class="sm:noauth-noop:block w-full" v-scope="store.SignIn()"></div>
@@ -56,34 +53,7 @@ function require(name) { return exports[name] || window[name] }
 <script>
 Object.assign(window, exports)
 
-const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
-const $$ = (sel, el) => typeof sel === "string"
-    ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
-    : Array.isArray(sel) ? sel : [sel]
-function on(sel, handlers) {
-    $$(sel).forEach(e => {
-        Object.keys(handlers).forEach(function (evt) {
-            let fn = handlers[evt]
-            if (typeof evt === 'string' && typeof fn === 'function') {
-                e.addEventListener(evt, fn.bind(e))
-            }
-        })
-    })
-}
-
-function setBodyClass(obj) {
-    let bodyCls = document.body.classList
-    Object.keys(obj).forEach(name => {
-        if (obj[name]) {
-            bodyCls.add(name)
-            bodyCls.remove(`no${name}`)
-        } else {
-            bodyCls.remove(name)
-            bodyCls.add(`no${name}`)
-        }
-    })
-}
-
+/*shared/js:core */
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { 
     window.AUTH = !auth || auth.responseStatus ? null : auth
