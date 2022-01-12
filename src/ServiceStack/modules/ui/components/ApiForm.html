@@ -301,7 +301,7 @@ function supportsProp(prop) {
     </nav>
     <div>
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
-        <div v-if="routes.form==''" class="p-4 max-w-screen-md"
+        <div v-if="routes.form==''" class="p-4 max-w-screen-md mb-8 pb-8"
              v-scope="AutoForm({ 
                 state: () => state,  
                 onsubmit: e => onAjaxFormSubmit(e),

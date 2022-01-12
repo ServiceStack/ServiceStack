@@ -30,6 +30,7 @@ App.component('ApiCode', ({ store, routes }) => {
 })
 App.components({ InstallTool: '#install-tool-template' })
 </script>
+<!--minify-->
 <style>
 :root {
     --lang-help-width: calc(var(--body-width) / 2);
@@ -317,6 +318,8 @@ App.components({ InstallTool: '#install-tool-template' })
 
     <div v-scope='CopyLine({ text: () => `$ x ${store.useLang}` })'></div>
 </template>
+<!--/minify-->
+<!--raw-->
 <template id="csharp-help">
 using ServiceStack;
 
@@ -441,3 +444,4 @@ let response = client.Send(new Hello(
 // Quickly inpsect response
 Inspect.printDump(response)
 </template>
+<!--/raw-->

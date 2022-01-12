@@ -5,7 +5,7 @@ import { queryString, leftPart } from '@servicestack/client'
  * Events:
  *   pageRoutes:init - loaded from URL
  *   pageRoutes:to   - navigated by to()
- *   pageRoutes:nav  - on either change
+ *   pageRoutes:nav  - fired for both
  */
 App.plugin({
     pageRoutes({ page, queryKeys, handlers }) {

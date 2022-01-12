@@ -14,7 +14,7 @@
 <div v-scope class="app flex">
 <div id="sidebar" class="sm:noauth-noop:hidden" v-scope="Sidebar({ store, routes })"></div>
 <div class="body sm:noauth-noop:hidden">
-    <div v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })" class="absolute top-1 right-2"></div>
+    <div v-if="plugins.auth" v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })" class="absolute top-1 right-2"></div>
     <div v-if="store.op">
         <div class="fixed border-b border-gray-20 bg-white top-0 w-body-full">
             <nav class="-mb-px flex max-w-screen-md" aria-label="Tabs">
@@ -109,6 +109,8 @@ App.build({
     app: APP.app,
     ui: APP.ui,
     serviceName: APP.app.serviceName,
+    get plugins() { return APP.plugins },
+    get api() { return APP.api },
     langs: {
         csharp: "C#",
         typescript: "TypeScript",

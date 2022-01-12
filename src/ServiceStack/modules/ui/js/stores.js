@@ -170,12 +170,14 @@ let store = PetiteVue.reactive({
         })
     },
     SignIn() {
-        return SignIn({
+        return APP.plugins.auth
+        ? SignIn({
             plugin: APP.plugins.auth,
             provider:() => routes.provider,
             login:args => this.login(args),
             api: () => this.api,
         })
+        : NoAuth({ message:`${APP.app.serviceName} API Explorer` })
     },
     login(args) {
         let provider = routes.provider || 'credentials'
@@ -213,6 +215,17 @@ let store = PetiteVue.reactive({
     get authRoles() { return store.auth && store.auth.roles || [] },
     get authPermissions() { return store.auth && store.auth.permissions || [] },
     get authProfileUrl() { return store.auth && store.auth.profileUrl },
+    get authLinks() {
+        let to = []
+        let roleLinks = this.auth && APP.plugins.auth && APP.plugins.auth.roleLinks || {} 
+        if (Object.keys(roleLinks).length > 0) {
+            this.authRoles.forEach(role => {
+                if (!roleLinks[role]) return;
+                roleLinks[role].forEach(link => to.push(link))
+            })
+        }
+        return to
+    },
     get displayName() {
         let auth = this.auth
         return auth

@@ -229,7 +229,7 @@ public static class FilesTransformerUtils
                     },
                     LineTransformers =
                     {
-                        new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, Run.Always),
+                        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, Run.Always),
                         new RemoveLineWithOnlyWhitespace(Run.Always),
                     }
                 },
