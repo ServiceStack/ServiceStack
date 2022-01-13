@@ -194,7 +194,7 @@ exports.__esModule = true;");
                                             : Type(operation.ReturnType.Name, operation.ReturnType.GenericArgs)
                                     });
                                 return response != null
-                                    ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                    ? Gen.Type("IReturn`1", new[] { Gen.Type(response.Name, response.GenericArgs) })
                                     : null;
                             },
                             IsRequest = true,
@@ -299,6 +299,10 @@ exports.__esModule = true;");
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
 
+                string responseTypeExpression = options?.Op != null
+                    ? "public createResponse() {}"
+                    : null;
+
                 //Request DTO props...
                 var implStr = options?.ImplementsFn?.Invoke();
                 if (!string.IsNullOrEmpty(implStr))
@@ -319,17 +323,20 @@ exports.__esModule = true;");
                                 replaceReturnType = $"new Array<{returnType.Substring(0, returnType.Length -2)}>()";
                                 
                             var responseName = replaceReturnType ?? $"new {returnType}()";
-                            sb.AppendLine(typeName + ".prototype.createResponse = function () { return " + responseName + "; };");
+                            responseTypeExpression = typeName + ".prototype.createResponse = function () { return " + responseName + "; };";
                         }
                         else if (implStr == "IReturnVoid")
                         {
-                            sb.AppendLine(typeName + ".prototype.createResponse = function () { };");
+                            responseTypeExpression = typeName + ".prototype.createResponse = function () { };";
                         }
-                        sb.AppendLine(typeName + ".prototype.getTypeName = function () { return '" + typeName +  "'; };");
                     }
                 }
+                if (options?.Op != null)
+                    sb.AppendLine(typeName + ".prototype.getTypeName = function () { return '" + typeName +  "'; };");
                 if (options?.Op?.Method != null)
                     sb.AppendLine(typeName + ".prototype.getMethod = function () { return '" + options.Op.Method + "'; };");
+                if (responseTypeExpression != null)
+                    sb.AppendLine(responseTypeExpression);
                 sb.AppendLine($"return {typeName};");
 
                 sb = sb.UnIndent();

@@ -433,7 +433,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                     }
                 }
 
-                string responseTypeExpression = null;
+                string responseTypeExpression = options?.Op != null
+                    ? "public createResponse() {}"
+                    : null;
                 string responseMethod = options?.Op?.Method != null
                     ? $"public getMethod() {{ return '{options.Op.Method}'; }}"
                     : null;
@@ -542,14 +544,17 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 if (Config.ExportAsTypes)
                 {
-                    if (responseTypeExpression != null)
+                    if (options?.Op != null)
                     {
-                        sb.AppendLine(responseTypeExpression);
                         sb.AppendLine("public getTypeName() {{ return '{0}'; }}".Fmt(type.Name));
                     }
                     if (responseMethod != null)
                     {
                         sb.AppendLine(responseMethod);
+                    }
+                    if (responseTypeExpression != null)
+                    {
+                        sb.AppendLine(responseTypeExpression);
                     }
                 }
 
