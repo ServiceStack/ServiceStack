@@ -21,6 +21,10 @@ public class CommonJsGenerator : ILangGenerator
 
     public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
         
+    public string DictionaryDeclaration { get; set; } = CreateEmptyClass("Dictionary");
+        
+    public HashSet<string> AddedDeclarations { get; set; } = new();
+
     /// <summary>
     /// Add Code to top of generated code
     /// </summary>
@@ -43,6 +47,8 @@ public class CommonJsGenerator : ILangGenerator
     public string DeclarationType(string type, string[] genericArgs, out string addDeclaration)
     {
         var typeName = Gen.DeclarationType(type, genericArgs, out addDeclaration);
+        if (addDeclaration == Gen.DictionaryDeclaration)
+            addDeclaration = DictionaryDeclaration;
         typeName = typeName.LeftPart('<');
         return typeName;
     }
@@ -273,9 +279,17 @@ exports.__esModule = true;");
             }
             else
             {
+                string addDeclaration = null;
                 var extendsType = type.Inherits != null
-                    ? DeclarationType(type.Inherits.Name, type.Inherits.GenericArgs, out var addDeclaration)
+                    ? DeclarationType(type.Inherits.Name, type.Inherits.GenericArgs, out addDeclaration)
                     : "";
+                
+                if (addDeclaration != null && !AddedDeclarations.Contains(addDeclaration))
+                {
+                    AddedDeclarations.Add(addDeclaration);
+                    sb.AppendLine(addDeclaration);
+                }
+                
                 var superArg = extendsType.Length > 0
                     ? "_super"
                     : "";
@@ -300,7 +314,7 @@ exports.__esModule = true;");
                 sb.AppendLine("}");
 
                 string responseTypeExpression = options?.Op != null
-                    ? "public createResponse() {}"
+                    ? typeName + ".prototype.createResponse = function () { };"
                     : null;
 
                 //Request DTO props...
@@ -347,5 +361,12 @@ exports.__esModule = true;");
         
         return lastNS;
     }
+
+    public static string CreateEmptyClass(string name) => "var " + name + @" = /** @class */ (function () {
+        function " + name + @"() {
+    }
+    return " + name + @";
+    }());
+exports." + name + " = " + name + ";";
 
 }
