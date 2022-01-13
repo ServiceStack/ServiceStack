@@ -28,7 +28,6 @@ namespace ServiceStack.Admin
             nameof(UserAuth.Company),
             nameof(UserAuth.State),
             nameof(UserAuth.Country),
-            nameof(UserAuth.CreatedDate),
             nameof(UserAuth.ModifiedDate),
         };
 
@@ -228,7 +227,8 @@ namespace ServiceStack.Admin
                     {
                         meta.Plugins.Auth.RoleLinks[RoleNames.Admin] = new List<LinkInfo>
                         {
-                            new() { Href = "../admin-ui/users", Label = "Manage Users", Icon = Svg.ImageUri(Svg.GetDataUri(Svg.Icons.Users)) },
+                            new() { Href = "../admin-ui", Label = "Dashboard", Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Home)) },
+                            new() { Href = "../admin-ui/users", Label = "Manage Users", Icon = Svg.ImageSvg(Svg.GetImage(Svg.Icons.Users, "currentColor")) },
                         };
                     }
                 }

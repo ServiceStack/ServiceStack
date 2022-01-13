@@ -2,6 +2,7 @@ using System.Reflection;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
@@ -97,11 +98,18 @@ public class PublishTasks
             Metadata.ForceInclude = new() {
                 typeof(MetadataApp),
                 typeof(AppMetadata),
+                typeof(AdminQueryUsers),
+                typeof(AdminGetUser),
+                typeof(AdminCreateUser),
+                typeof(AdminUpdateUser),
+                typeof(AdminDeleteUser),
             };
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
                 new CredentialsAuthProvider(AppSettings),
             }));
+            
+            Plugins.Add(new AdminUsersFeature());
         }
     }
 

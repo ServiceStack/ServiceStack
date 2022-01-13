@@ -34,6 +34,10 @@ namespace MyApp
             container.AddSingleton<IDbConnectionFactory>(c =>
                 new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider));
 
+            // For TodosService
+            Plugins.Add(new AutoQueryDataFeature());
+
+            // For NorthwindAuto + Bookings
             Plugins.Add(new AutoQueryFeature {
                 MaxLimit = 100,
                 GenerateCrudServices = new GenerateCrudServices {}

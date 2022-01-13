@@ -63,14 +63,15 @@ public class ConfigureAuthRepository : IHostingStartup
             CreateUser(authRepo, "employee@email.com", "A Employee", "p@55wOrd", roles: new[] { "Employee" });
 
             //Populate with lots of demo users
-            //for (var i = 1; i < 102; i++)
-            //{
-            //    CreateUser(authRepo, $"employee{i}@email.com", $"Employee {i}", "p@55wOrd", roles: new[] { AppRoles.Employee });
-            //}
+            for (var i = 1; i < 102; i++)
+            {
+                CreateUser(authRepo, $"employee{i}@email.com", $"Employee {i}", "p@55wOrd", roles: new[] { "Employee" });
+            }
 
             // Removing unused UserName in Admin Users UI 
             appHost.Plugins.Add(new ServiceStack.Admin.AdminUsersFeature {
                 /*
+                */
                 // Show custom fields in Search Results
                 QueryUserAuthProperties = new() {
                     nameof(AppUser.Id),
@@ -107,7 +108,7 @@ public class ConfigureAuthRepository : IHostingStartup
                     },
                     new() {
                         Input.For<AppUser>(x => x.Nickname, c => {
-                            c.Help = "Public alias visible to others (3-12 lower alpha numeric chars)";
+                            c.Help = "Public alias (3-12 lower alpha numeric chars)";
                             c.Pattern = "^[a-z][a-z0-9_.-]{3,12}$";
                             //c.Required = true;
                         })
@@ -119,7 +120,6 @@ public class ConfigureAuthRepository : IHostingStartup
                         Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate),
                     },
                 }
-                */
             });
 
         },

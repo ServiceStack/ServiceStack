@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Hosting;
 using ServiceStack;
 using ServiceStack.Data;
 
-[assembly: HostingStartup(typeof(MyApp.ConfigureAutoQuery))]
+// In Configure.AppHost
+// [assembly: HostingStartup(typeof(MyApp.ConfigureAutoQuery))]
 
 namespace MyApp
 {

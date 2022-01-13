@@ -55,7 +55,6 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
     [Description("Name this Booking is for")]
     public string Name { get; set; }
-    [Input]
     public RoomType RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int RoomNumber { get; set; }
@@ -75,7 +74,6 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 {
     public int Id { get; set; }
     public string Name { get; set; }
-    [Input]
     public RoomType? RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int? RoomNumber { get; set; }
