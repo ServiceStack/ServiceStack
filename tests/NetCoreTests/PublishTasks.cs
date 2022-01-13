@@ -18,7 +18,8 @@ public class PublishTasks
     readonly string ProjectDir = Path.GetFullPath("../../../../NorthwindAuto");
     string FromModulesDir => Path.GetFullPath(".");
     string ToModulesDir => Path.GetFullPath("../../src/ServiceStack/modules");
-    string[] IgnoreUiFiles = { "index.css" };
+    string[] IgnoreUiFiles = { };
+    string[] IgnoreAdminUiFiles = { };
 
     FilesTransformer transformOptions => FilesTransformer.Defaults(debugMode: true);
 
@@ -53,15 +54,23 @@ public class PublishTasks
         // copy to modules/ui
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui").AssertDir()), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        
+        // copy to modules/admin-ui
+        transformOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui").AssertDir()), 
+            cleanTarget: true,
+            ignore: file => IgnoreAdminUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
         // copy to modules/shared
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared").AssertDir()),
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }

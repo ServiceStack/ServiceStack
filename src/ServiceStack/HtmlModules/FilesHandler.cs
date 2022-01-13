@@ -16,7 +16,7 @@ public class FilesHandler : IHtmlModulesHandler
     public FilesHandler(string name) => Name = name;
     public ReadOnlyMemory<byte> Execute(HtmlModuleContext ctx, string paths)
     {
-        return ctx.Cache($"{Name}:{paths}", _ => {
+        return ctx.Cache($"{Name}:{ctx.Module.DirPath}:{paths}", _ => {
             var sb = StringBuilderCache.Allocate();
             var usePath = paths.StartsWith("/")
                 ? paths

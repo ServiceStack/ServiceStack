@@ -29,12 +29,21 @@ public class ModuleTests
 
         var componentFiles = ssResources.GetAllMatchingFiles("/modules/ui/components/*.html").ToList();
         Assert.That(componentFiles.Count, Is.GreaterThanOrEqualTo(6));
+
+        var adminUiJsFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/js/*.js").ToList();
+        Assert.That(adminUiJsFiles.Count, Is.GreaterThanOrEqualTo(3));
+
+        var adminUiCssFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/css/*.css").ToList();
+        Assert.That(adminUiCssFiles.Count, Is.GreaterThanOrEqualTo(1));
+
+        var adminUiHtmlFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/components/*.html").ToList();
+        Assert.That(adminUiHtmlFiles.Count, Is.GreaterThanOrEqualTo(3));
     }
 
     [Test]
     public void Tailwind_did_gen_properly()
     {
-        var uiCss = ssResources.GetFile("/modules/ui/assets/ui.css");
+        var uiCss = ssResources.GetFile("/modules/shared/css/ui.css");
         Assert.That(uiCss, Is.Not.Null);
 
         var uiCssContents = uiCss.ReadAllText();

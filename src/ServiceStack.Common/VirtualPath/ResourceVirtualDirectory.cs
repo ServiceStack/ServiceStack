@@ -11,7 +11,7 @@ namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualDirectory : AbstractVirtualDirectoryBase
     {
-        public static HashSet<string> EmbeddedResourceTreatAsFiles { get; set; } = new HashSet<string>();
+        public static HashSet<string> EmbeddedResourceTreatAsFiles { get; set; } = new();
 
         private static ILog Log = LogManager.GetLogger(typeof(ResourceVirtualDirectory));
 
@@ -158,20 +158,23 @@ namespace ServiceStack.VirtualPath
             return null;
         }
 
+        public string TranslatePath(string path) => path.Replace('-', '_');
+
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
         {
             var useGlob = globPattern.TrimStart('/');
+            var useGlobTranslate = TranslatePath(useGlob);
             return Files.Where(f => {
                 return useGlob.IndexOf('/') >= 0
-                    ? f.VirtualPath.Glob(useGlob)
-                    : f.Name.Glob(useGlob);
+                    ? f.VirtualPath.Glob(useGlob) || f.VirtualPath.Glob(useGlobTranslate) 
+                    : f.Name.Glob(useGlob) || f.Name.Glob(useGlobTranslate);
             });
         }
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
         {
             return Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase(directoryName)) ??
-                Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase((directoryName ?? "").Replace('-', '_')));
+                Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase(TranslatePath(directoryName ?? "")));
         }
 
         protected override string GetRealPathToRoot()
