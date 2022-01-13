@@ -1,0 +1,39 @@
+<script>App.components({Sidebar: '#sidebar-template'})</script>
+<template id="sidebar-template">
+<div class="sidebar fixed flex flex-col fixed inset-y-0 overflow-y-auto">
+    <div class="sidebar flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
+        <div class="z-10 sidebar-filter fixed h-filter pt-3">
+            <div v-scope="Brand({ icon: ui.brandIcon, serviceName })"></div>
+        </div>
+        <div class="mt-6 pt-6 flex-1 flex flex-col overflow-y-auto">
+            <div class="overflow-y-auto flex-1 flex flex-col overflow-y-auto">
+                <nav class="mt-5 flex-1 px-2 bg-white space-y-1" aria-label="Sidebar">
+                    <div class="px-2 space-y-1">
+                        <a v-for="({id,label,icon}) in store.adminLinks" v-href="{ admin:id }"
+                           :class="[routes.admin === id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900', 
+                                   'group flex items-center px-2 py-2 text-base font-medium rounded-md']">
+                            <span v-scope="Image(icon,{cls: () => `${routes.admin === id ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'} mr-3 h-6 w-6`})"></span>
+                            {{label}}
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <div class="flex-shrink-0 flex border-t border-gray-200 p-4">
+                <a v-href="{ $page:'' }" class="flex-shrink-0 w-full group block">
+                    <div class="flex items-center">
+                        <img v-if="store.authProfileUrl" class="h-8 w-8 rounded-full text-gray-700" :src="store.authProfileUrl" alt="">
+                        <svg v-else class="h-8 w-8 rounded-full text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 8a5 5 0 1 0 5 5a5 5 0 0 0-5-5z" fill="currentColor"/>
+                            <path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2zm7.992 22.926A5.002 5.002 0 0 0 19 20h-6a5.002 5.002 0 0 0-4.992 4.926a12 12 0 1 1 15.985 0z" fill="currentColor"/>
+                        </svg>
+                        <div class="ml-3">
+                            <p class="text-base font-medium text-gray-700 group-hover:text-gray-900">
+                                {{ store.displayName }}
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</template>

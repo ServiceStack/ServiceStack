@@ -3,17 +3,17 @@ App.component('Input', ({ input, model, api }) => {
     return {
         $template: '#input-template',
         input,
-        model,
-        get error() { return api && api.error },
+        model: model || {},
+        get error() { return resolve(api, x => x && x.error) },
         humanify(id) { return humanize(toPascalCase(id)) },
         kvpValues(input) {
-            return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x }))
+            return resolve(input.allowableEntries) || (resolve(input.allowableValues)||[]).map(x => ({ key:x, value:x }))
         },
         useLabel(input) {
             return input.label != null ? input.label : this.humanify(input.id)
         },
         usePlaceholder(input) {
-            return input.placeholder != null ? input.placeholder : this.useLabel(input)
+            return input.placeholder || '' 
         },
         fieldError(id) {
             let error = this.error
@@ -66,7 +66,7 @@ App.component('Input', ({ input, model, api }) => {
                :class="inputClass(input)" v-model="model[input.id]" />
 
         <div v-if="fieldError(input.id)" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <!-- Heroicon name: solid/exclamation-circle -->
+            <!---: Heroicon name: solid/exclamation-circle -->
             <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
             </svg>

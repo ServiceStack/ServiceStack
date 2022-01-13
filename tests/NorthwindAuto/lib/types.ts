@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-01-13 05:07:36
+Date: 2022-01-13 07:18:45
 Version: 5.133
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -40,6 +40,51 @@ export interface IPost
 {
 }
 
+export interface IGet
+{
+}
+
+export interface IPut
+{
+}
+
+export interface IDelete
+{
+}
+
+// @DataContract
+export class AdminUserBase
+{
+    // @DataMember(Order=1)
+    public userName: string;
+
+    // @DataMember(Order=2)
+    public firstName: string;
+
+    // @DataMember(Order=3)
+    public lastName: string;
+
+    // @DataMember(Order=4)
+    public displayName: string;
+
+    // @DataMember(Order=5)
+    public email: string;
+
+    // @DataMember(Order=6)
+    public password: string;
+
+    // @DataMember(Order=7)
+    public profileUrl: string;
+
+    // @DataMember(Order=8)
+    public userAuthProperties: { [index: string]: string; };
+
+    // @DataMember(Order=9)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<AdminUserBase>) { (Object as any).assign(this, init); }
+}
+
 export class AppInfo
 {
     public baseUrl: string;
@@ -60,20 +105,29 @@ export class AppInfo
     public constructor(init?: Partial<AppInfo>) { (Object as any).assign(this, init); }
 }
 
+export class ImageInfo
+{
+    public svg: string;
+    public uri: string;
+    public alt: string;
+    public cls: string;
+
+    public constructor(init?: Partial<ImageInfo>) { (Object as any).assign(this, init); }
+}
+
 export class LinkInfo
 {
     public id: string;
     public href: string;
     public label: string;
-    public iconSvg: string;
-    public iconUri: string;
+    public icon: ImageInfo;
 
     public constructor(init?: Partial<LinkInfo>) { (Object as any).assign(this, init); }
 }
 
 export class UiInfo
 {
-    public brandIconUri: string;
+    public brandIcon: ImageInfo;
     public hideTags: string[];
     public alwaysHideTags: string[];
     public adminLinks: LinkInfo[];
@@ -141,7 +195,7 @@ export class MetaAuthProvider
     public label: string;
     public type: string;
     public navItem: NavItem;
-    public logoUri: string;
+    public icon: ImageInfo;
     public formLayout: InputInfo[];
     public meta: { [index: string]: string; };
 
@@ -603,6 +657,45 @@ export class UnAssignRolesResponse
     public constructor(init?: Partial<UnAssignRolesResponse>) { (Object as any).assign(this, init); }
 }
 
+// @DataContract
+export class AdminUserResponse
+{
+    // @DataMember(Order=1)
+    public id: string;
+
+    // @DataMember(Order=2)
+    public result: { [index: string]: Object; };
+
+    // @DataMember(Order=3)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminUserResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class AdminUsersResponse
+{
+    // @DataMember(Order=1)
+    public results: { [index:string]: Object; }[];
+
+    // @DataMember(Order=2)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminUsersResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class AdminDeleteUserResponse
+{
+    // @DataMember(Order=1)
+    public id: string;
+
+    // @DataMember(Order=2)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminDeleteUserResponse>) { (Object as any).assign(this, init); }
+}
+
 // @Route("/metadata/app")
 // @DataContract
 export class MetadataApp implements IReturn<AppMetadata>
@@ -729,6 +822,96 @@ export class UnAssignRoles implements IReturn<UnAssignRolesResponse>, IPost
     public createResponse() { return new UnAssignRolesResponse(); }
     public getTypeName() { return 'UnAssignRoles'; }
     public getMethod() { return 'POST'; }
+}
+
+// @DataContract
+export class AdminGetUser implements IReturn<AdminUserResponse>, IGet
+{
+    // @DataMember(Order=10)
+    public id: string;
+
+    public constructor(init?: Partial<AdminGetUser>) { (Object as any).assign(this, init); }
+    public createResponse() { return new AdminUserResponse(); }
+    public getTypeName() { return 'AdminGetUser'; }
+    public getMethod() { return 'GET'; }
+}
+
+// @DataContract
+export class AdminQueryUsers implements IReturn<AdminUsersResponse>, IGet
+{
+    // @DataMember(Order=1)
+    public query: string;
+
+    // @DataMember(Order=2)
+    public orderBy: string;
+
+    // @DataMember(Order=3)
+    public skip?: number;
+
+    // @DataMember(Order=4)
+    public take?: number;
+
+    public constructor(init?: Partial<AdminQueryUsers>) { (Object as any).assign(this, init); }
+    public createResponse() { return new AdminUsersResponse(); }
+    public getTypeName() { return 'AdminQueryUsers'; }
+    public getMethod() { return 'GET'; }
+}
+
+// @DataContract
+export class AdminCreateUser extends AdminUserBase implements IReturn<AdminUserResponse>, IPost
+{
+    // @DataMember(Order=10)
+    public roles: string[];
+
+    // @DataMember(Order=11)
+    public permissions: string[];
+
+    public constructor(init?: Partial<AdminCreateUser>) { super(init); (Object as any).assign(this, init); }
+    public createResponse() { return new AdminUserResponse(); }
+    public getTypeName() { return 'AdminCreateUser'; }
+    public getMethod() { return 'POST'; }
+}
+
+// @DataContract
+export class AdminUpdateUser extends AdminUserBase implements IReturn<AdminUserResponse>, IPut
+{
+    // @DataMember(Order=10)
+    public id: string;
+
+    // @DataMember(Order=11)
+    public lockUser?: boolean;
+
+    // @DataMember(Order=12)
+    public unlockUser?: boolean;
+
+    // @DataMember(Order=13)
+    public addRoles: string[];
+
+    // @DataMember(Order=14)
+    public removeRoles: string[];
+
+    // @DataMember(Order=15)
+    public addPermissions: string[];
+
+    // @DataMember(Order=16)
+    public removePermissions: string[];
+
+    public constructor(init?: Partial<AdminUpdateUser>) { super(init); (Object as any).assign(this, init); }
+    public createResponse() { return new AdminUserResponse(); }
+    public getTypeName() { return 'AdminUpdateUser'; }
+    public getMethod() { return 'PUT'; }
+}
+
+// @DataContract
+export class AdminDeleteUser implements IReturn<AdminDeleteUserResponse>, IDelete
+{
+    // @DataMember(Order=10)
+    public id: string;
+
+    public constructor(init?: Partial<AdminDeleteUser>) { (Object as any).assign(this, init); }
+    public createResponse() { return new AdminDeleteUserResponse(); }
+    public getTypeName() { return 'AdminDeleteUser'; }
+    public getMethod() { return 'DELETE'; }
 }
 
 

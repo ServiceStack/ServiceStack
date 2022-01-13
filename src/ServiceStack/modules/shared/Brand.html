@@ -10,7 +10,7 @@ App.component('Brand', ({ serviceName, icon }) => {
 <style>.brand-icon { width: 1.65rem; height: 1.65rem; margin-right: .4rem; }</style>
 <template id="brand-template">
 <div class="flex items-center flex-shrink-0 max-w-sidebar">
-    <a :title="serviceName" v-href="{ op:'' }"
+    <a :title="serviceName" v-href="{ $page:'' }"
        class="pl-3 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
         <span v-if="icon" class="brand-icon" v-scope="Image(icon, {alt:'logo'})"></span>
         {{serviceName}}

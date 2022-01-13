@@ -1,15 +1,20 @@
 <script>
 App.component('Image', ({ svg, uri, alt, cls }, opt) => {
+    let f = attr => !opt || !opt[attr] ? '' : resolve(opt[attr])  
     return {
         $template: '#image-template',
-        svg,
         uri,
-        alt: alt || (opt && opt.alt) || '',
-        cls: cls || (opt && opt.cls) || '',
+        get svg() { 
+            let val = resolve(svg)
+            if (!val || !val.startsWith('<svg ')) return val 
+            return `<svg class='${this.cls}' ${val.substring(4)}`
+        },
+        get alt() { return alt || f('alt') },
+        get cls() { return cls || f('cls') },
     }
 })
 </script>
 <template id="image-template">
-<svg v-if="svg" v-html="svg" :class="cls" :aria-label="alt"></svg>
+<span v-if="svg" v-html="svg" :aria-label="alt"></span>
 <img v-else-if="uri" :src="uri" :class="cls" :alt="alt">
 </template>

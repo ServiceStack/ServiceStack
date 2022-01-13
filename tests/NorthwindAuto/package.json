@@ -6,7 +6,7 @@
     "ui:build": "npx tailwindcss -c tailwind.config.js -i index.css -o shared/css/ui.css --minify"
   },
   "dependencies": {
-    "@servicestack/client": "^1.1.13",
+    "@servicestack/client": "^1.1.15",
     "@tailwindcss/forms": "^0.4.0"
   }
 }

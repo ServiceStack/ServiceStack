@@ -105,7 +105,6 @@ App.component('ApiForm', ({ store, routes }) => {
             state.apiResult = null
             state.apiLoading = true
             apiSend(state.requestDto).then(r => {
-                console.log(r)
                 state.apiResult = r
                 state.apiLoading = false
             })

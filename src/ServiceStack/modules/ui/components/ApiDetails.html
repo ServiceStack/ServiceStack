@@ -201,12 +201,7 @@ function addReferencedTypes(allTypesMap, type) {
 </div>
 <div v-if="routes.detailSrc" class="flex-1 bg-gray-50 overflow-y-auto">
     <div v-if="store.activeDetailSrc">
-        <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
-            <button type="button" v-href="{ detailSrc:'' }"
-                    class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"><span class="sr-only">Close</span>
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
+        <div v-scope="CloseButton({ onclick:() => routes.to({ detailSrc:'' }) })" title="Close"></div>
         <pre class="pl-4 py-2"><code lang="csharp" v-highlightjs="store.activeDetailSrc.result"></code></pre>
     </div>
     <div v-else v-scope="Loading()"></div>

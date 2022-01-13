@@ -48,8 +48,8 @@
 
             <div v-if="store.authLinks.length" class="ml-3 mb-3 flex">
                 <a v-for="link in store.authLinks" :href="link.href"
-                   class="mr-3 inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-xl font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <span v-scope="Image(link.icon, {cls:'-ml-1 mr-3 h-8 w-8',alt:`${link.label} icon`})"></span>
+                   class="mr-3 inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-lg font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span v-if="link.icon" v-scope="Image(link.icon, {cls:'-ml-1 mr-3 h-6 w-6 text-gray-600', alt:() => `${link.label} icon`})"></span>
                     {{link.label}}
                 </a>
             </div>

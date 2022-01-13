@@ -1,0 +1,54 @@
+:root {
+    --sidebar-width: 240px;
+    --top-bar-height: 54px;
+    --top-filter-height: 54px;
+    --scroll-height: 8px;
+    --scroll-width: 8px;
+    --body-width: calc(100vw - var(--sidebar-width));
+    --body-height-from-top-bar: calc(100vh - var(--top-bar-height));
+    --body-height-from-nav-bar: calc(100vh - var(--top-filter-height));
+}
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+}
+.sidebar-filter {
+    width: calc(var(--sidebar-width) - 1px);
+}
+.sidebar-nav {
+    top: calc(var(--top-filter-height) + 2px);
+    width: calc(var(--sidebar-width) - 1px);
+    height: calc(100vh - var(--top-filter-height));
+}
+.body {
+    position: fixed;
+    left: var(--sidebar-width);
+    width: var(--body-width);
+    height: 100vh;
+    overflow: auto;
+}
+.body-content {
+    height: 100vh;
+    width: var(--body-width);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.body-nav-content {
+    position: fixed;
+    top: var(--top-filter-height);
+    height: var(--body-height-from-nav-bar);
+    width: var(--body-width);
+    overflow-x: auto;
+}
+.w-body-full {
+    width: var(--body-width);
+}
+.h-body {
+    height: var(--body-height-from-nav-bar);
+}
+.min-h-body {
+    min-height: var(--body-height-from-nav-bar);
+}
+.icon-right .icon {
+    right: 1em;
+}

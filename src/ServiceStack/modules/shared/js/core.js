@@ -24,3 +24,22 @@ function setBodyClass(obj) {
         }
     })
 }
+function mapGetForInput(o, id) {
+    let ret = apiValue(mapGet(o,id))
+    return isDate(ret)
+        ?  `${ret.getFullYear()}-${padInt(ret.getMonth() + 1)}-${padInt(ret.getDate())}`
+        : ret
+}
+function gridClass() { return `grid grid-cols-6 gap-6` }
+function gridInputs(formLayout) {
+    let to = []
+    formLayout.forEach(group => {
+        group.forEach(input => {
+            to.push({ input, rowClass: colClass(group.length) })
+        })
+    })
+    return to
+}
+function colClass(fields) {
+    return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-3' : '')
+}
