@@ -108,7 +108,7 @@ public class ConfigureAuthRepository : IHostingStartup
                     },
                     new() {
                         Input.For<AppUser>(x => x.Nickname, c => {
-                            c.Help = "Public alias visible to others (3-12 lower alpha numeric chars)";
+                            c.Help = "Public alias (3-12 lower alpha numeric chars)";
                             c.Pattern = "^[a-z][a-z0-9_.-]{3,12}$";
                             //c.Required = true;
                         })
