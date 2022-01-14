@@ -1,57 +1,33 @@
 :root {
-    --sidebar-width: 240px;
-    --top-bar-height: 54px;
-    --top-filter-height: 97px;
-    --scroll-height: 8px;
+    --sidebar-width: 20rem;
+    --sm-nav-height: 0px;
+    --top-nav-height: 65px;
+    --sub-nav-height: 44px;
     --scroll-width: 8px;
     --body-width: calc(100vw - var(--sidebar-width));
-    --body-height-from-top-bar: calc(100vh - var(--top-bar-height));
-    --body-height-from-nav-bar: calc(100vh - var(--top-filter-height));
 }
-.sidebar {
-    width: var(--sidebar-width);
-    min-height: 100vh;
-}
-.sidebar-filter {
-    width: calc(var(--sidebar-width) - 1px);
-}
-.sidebar-nav {
-    top: calc(var(--top-filter-height) + 2px);
-    width: calc(var(--sidebar-width) - 1px);
-    height: calc(100vh - var(--top-filter-height));
+@media (max-width: 768px) {
+    :root {
+        --sm-nav-height: 50px;
+    }
 }
 
-.body {
-    position: fixed;
-    left: var(--sidebar-width);
-    width: var(--body-width);
-    height: 100vh;
-    overflow: auto;
+.top-sm-nav { top: calc(var(--sm-nav-height)) }
+.top-top-nav { top: calc(var(--sm-nav-height) + var(--top-nav-height)) }
+.top-sub-nav { top: calc(var(--sm-nav-height) + var(--top-nav-height) + var(--sub-nav-height)) }
+.w-sidebar { width: var(--sidebar-width); }
+.mw-sidebar { max-width: var(--sidebar-width); }
+.mh-top-nav { min-height: calc(100vh - var(--sm-nav-height) - var(--top-nav-height)) }
+.h-top-nav { height: calc(100vh - var(--sm-nav-height) - var(--top-nav-height)) }
+.w-body { width: 100vw }
+@media (min-width: 768px) {
+    .md\:w-sidebar { width: var(--sidebar-width) }
+    .md\:pl-sidebar { padding-left: var(--sidebar-width) }
+    .md\:w-sidebar { width: calc(100vw - var(--sidebar-width)) !important }
+    .md\:mw-sidebar { max-width: calc(100vw - var(--sidebar-width)) }
+    .md\:w-body { width: calc(100vw - var(--sidebar-width)) }
 }
-.body-content {
-    position: fixed;
-    top: var(--top-bar-height);
-    height: var(--body-height-from-top-bar);
-    width: var(--body-width);
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-.body-nav-content {
-    position: fixed;
-    top: var(--top-filter-height);
-    height: var(--body-height-from-nav-bar);
-    width: var(--body-width);
-    overflow-x: auto;
-}
-.w-body-full {
-    width: var(--body-width);
-}
-.h-body {
-    height: var(--body-height-from-nav-bar);
-}
-.min-h-body {
-    min-height: var(--body-height-from-nav-bar);
-}
+
 .icon-right .icon {
     right: 1em;
 }

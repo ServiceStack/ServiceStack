@@ -6,16 +6,17 @@ let swiftPkg = `dependencies: [
 ]`
 document.body.classList.add('show-lang-help')
 App.component('ApiCode', ({ store, routes }) => {
-    let highlight = language => hljs.highlight(
-        $1(`#${language}-help`).innerHTML.trim()
-            .replace('{BASE_URL}',BASE_URL)
-            .replace(/Hello/g,store.opName)
-            .replace(/&gt;/g,'>').replace(/&lt;/g,'<'),
-        { language }).value
+    let langSrc = language => $1(`#${language}-help`).innerHTML.trim()
+        .replace('{BASE_URL}',BASE_URL)
+        .replace(/Hello/g,store.opName)
+        .replace(/&gt;/g,'>').replace(/&lt;/g,'<') 
+    
+    let highlight = language => hljs.highlight(langSrc(language), { language }).value
     
     return {
         $template: '#api-code-template',
         store, routes,
+        langSrc,
         get csharpSrc() { return highlight('csharp') },
         get typescriptSrc() { return highlight('typescript') },
         get dartSrc() { return highlight('dart') },
@@ -61,21 +62,21 @@ App.components({ InstallTool: '#install-tool-template' })
     position: absolute;
 }
 
-@media screen and (max-width:640px) {
+@media screen and (max-width:768px) {
     .show-lang-help .body-lang {
         display: none;
     }
 }
 </style>
 <template id="api-code-template">
-<nav class="flex overflow-x-auto space-x-4 pl-2 pt-2.5 pb-1.5 border-b bg-white" aria-label="Tabs">
+<nav class="w-body md:w-body fixed flex space-x-4 pl-2 py-2 border-b bg-white overflow-x-auto" aria-label="Tabs">
     <a v-for="(name,lang) in langs" v-href="{lang}"
        :class="[lang == store.useLang ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
         {{name}}
     </a>
 </nav>
-<div id="api-code" class="body-nav-content">
-    <div class="flex min-h-body">
+<div id="api-code">
+    <div class="w-body md:w-body fixed top-sub-nav h-top-nav flex">
         <div class="flex-1 body-lang icon-outer p-2 overflow-x-auto">
             <div v-if="store.activeLangSrc" class="copy-icon icon-right" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
             <div class="icon-right icon-lang-help" @click="document.body.classList.add('show-lang-help')" title="How to call this API">
@@ -88,7 +89,7 @@ App.components({ InstallTool: '#install-tool-template' })
             <pre v-if="store.activeLangSrc" class=""><code :lang="routes.lang" v-highlightjs="store.activeLangSrc"></code></pre>
             <div v-else v-scope="Loading()"></div>
         </div>
-        <div class="flex-1 lang-help prose shadow-lg overflow-x-auto">
+        <div class="flex-1 lang-help w-full lg:w-1/2 overflow-auto shadow-lg">
             <div class="">
                 <div v-scope="CloseButton({ onclick:() => document.body.classList.remove('show-lang-help') })" title="Hide"></div>
                 <div v-if="store.useLang=='csharp'" class="pt-4">
@@ -106,8 +107,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonHttpClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => csharpSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-csharp" v-html="csharpSrc"></code></pre>
                     </div>
 
@@ -128,8 +129,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => typescriptSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-typescript" v-html="typescriptSrc"></code></pre>
                     </div>
 
@@ -150,8 +151,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => dartSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-dart" v-html="dartSrc"></code></pre>
                     </div>
 
@@ -172,8 +173,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => javaSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-java" v-html="javaSrc"></code></pre>
                     </div>
 
@@ -194,8 +195,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => kotlinSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-kotlin" v-html="kotlinSrc"></code></pre>
                     </div>
 
@@ -216,8 +217,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => pythonSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-python" v-html="pythonSrc"></code></pre>
                     </div>
 
@@ -241,8 +242,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => swiftSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-python" v-html="swiftSrc"></code></pre>
                     </div>
 
@@ -263,8 +264,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonHttpClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => csharpSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-vbnet" v-html="vbnetSrc"></code></pre>
                     </div>
 
@@ -285,8 +286,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em> or <em>JsonHttpClient</em>
                     </div>
-                    <div class="bg-gray-50 border-y border-gray-200 p-4">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => csharpSrc })" title="Copy code"></div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
                         <pre><code class="language-fsharp" v-html="fsharpSrc"></code></pre>
                     </div>
 

@@ -24,9 +24,12 @@ function setBodyClass(obj) {
         }
     })
 }
-function isSmall() { 
-    return window.matchMedia('(max-width:640px)').matches 
+let ResolutionSizes = { '2xl':1536, xl:1280, lg:1024, md:768, sm:640 }
+function resolutionBreakpoints() {
+    let w = document.body.clientWidth
+    return Object.keys(ResolutionSizes).filter(k => w > ResolutionSizes[k])
 }
+function isSmall() { return window.matchMedia('(max-width:640px)').matches }
 function humanify(id) { 
     return humanize(toPascalCase(id)) 
 }

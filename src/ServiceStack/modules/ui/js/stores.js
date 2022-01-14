@@ -1,12 +1,10 @@
+App.useTransitions({ sidebar: true })
 let routes = App.pageRoutes({
     page:'op',
     queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider'.split(','),
     handlers: {
-        init(state) {
-            //console.log('pageRoutes:init', state)
-        },
-        to(state) {
-            //console.log('pageRoutes:to', state)
+        nav(state) {
+            if (DEBUG) console.log('nav', state)
         }
     }
 })
@@ -20,18 +18,13 @@ let store = PetiteVue.reactive({
     api: null,
     auth: window.AUTH,
     baseUrl: BASE_URL,
-    get sm() { return isSmall() },
+    ...Object.keys(ResolutionSizes).reduce((acc,x) => { acc[x] = false; return acc }, {}),
     doLayout() {
         let root = document.documentElement
-        let sidebar = $1('.sidebar')
-        if (!sidebar) return
-        if (isSmall() && routes.op) {
-            sidebar.style.display = 'none'
-            root.style.setProperty('--sidebar-width', '0px')
-        } else {
-            sidebar.style.display = 'block'
-            root.style.setProperty('--sidebar-width', SidebarWidth)
-        }
+        root.style.setProperty('--sidebar-width', SidebarWidth)
+        let w = document.body.clientWidth;
+        Object.keys(ResolutionSizes).forEach(k => this[k] = w < ResolutionSizes[k])
+        //console.log(Object.keys(ResolutionSizes).map(k => [k,this[k]]))
     },
     get useLang() { return routes.lang || 'csharp' },
     init() {
@@ -134,7 +127,7 @@ let store = PetiteVue.reactive({
     get opName() { return this.op && this.op.request.name },
     get opTabs() {
         return this.op
-            ? { ['API']:'', 'Details':'details', 'Source Code':'code' }
+            ? { ['API']:'', 'Details':'details', ['Code']:'code' }
             : {}
     },
     get isServiceStackType() {

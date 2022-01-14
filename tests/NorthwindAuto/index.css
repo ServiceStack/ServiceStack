@@ -5,11 +5,8 @@
 b {
     font-weight: 500;
 }
-::-webkit-scrollbar{width:var(--scroll-width);height:var(--scroll-height)}
+::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-thumb{background-color:#ccc}
-b {
-    font-weight: 500;
-}
 em {
     color: #3b82f6;
     font-weight: 400;

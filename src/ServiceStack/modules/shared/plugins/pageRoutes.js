@@ -72,6 +72,8 @@ App.plugin({
                 this.events.subscribe('pageRoutes:init', args => handlers.init(args))
             if (handlers.to)
                 this.events.subscribe('pageRoutes:to', args => handlers.to(args))
+            if (handlers.nav)
+                this.events.subscribe('pageRoutes:nav', args => handlers.nav(args))
         }
         this.onStart(app => store.start())
         return store
