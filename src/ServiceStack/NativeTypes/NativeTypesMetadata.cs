@@ -825,6 +825,7 @@ namespace ServiceStack.NativeTypes
                     Required = inputProp.Required.NullIfFalse() ?? property.IsRequired,
                     Min = inputProp.Min,
                     Max = inputProp.Max,
+                    Step = inputProp.Step.NullIfMinValue(), 
                     MinLength = inputProp.MinLength.NullIfMinValue() ?? property.AllowableMin,
                     MaxLength = inputProp.MaxLength.NullIfMinValue() ?? property.AllowableMax,
                     AllowableValues = inputProp.AllowableValues,
