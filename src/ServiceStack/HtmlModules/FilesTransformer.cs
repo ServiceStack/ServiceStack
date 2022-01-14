@@ -203,6 +203,7 @@ public static class FilesTransformerUtils
                     {
                         // Enable static typing during dev, strip from browser to run
                         new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
+                        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
                         // Hide dev comments from browser (RemoveHtmlLineComments syntax)
                         new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
                         new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
@@ -219,6 +220,7 @@ public static class FilesTransformerUtils
                     {
                         // Enable static typing during dev, strip from browser to run
                         new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
+                        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
                         // Hide dev comments from browser (RemoveJsLineComments syntax)
                         new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
                         new RemoveLineWithOnlyWhitespace(Run.Always),

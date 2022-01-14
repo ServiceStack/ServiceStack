@@ -13,22 +13,22 @@ public abstract class HtmlModuleLine
 
 public class RemoveLineStartingWith : HtmlModuleLine
 {
-    public string[] LinePrefixes { get; }
+    public string[] Prefixes { get; }
     public bool IgnoreWhiteSpace { get; }
     
-    public RemoveLineStartingWith(string linePrefix, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
-        : this(new[]{ linePrefix }, ignoreWhiteSpace, behaviour) {}
+    public RemoveLineStartingWith(string prefix, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
+        : this(new[]{ prefix }, ignoreWhiteSpace, behaviour) {}
     
-    public RemoveLineStartingWith(string[] linePrefixes, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
+    public RemoveLineStartingWith(string[] prefixes, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
     {
-        LinePrefixes = linePrefixes;
+        Prefixes = prefixes;
         IgnoreWhiteSpace = ignoreWhiteSpace;
         Behaviour = behaviour;
     }
 
     public override string? Transform(string line)
     {
-        foreach (var linePrefix in LinePrefixes)
+        foreach (var linePrefix in Prefixes)
         {
             if (IgnoreWhiteSpace)
             {
@@ -39,6 +39,40 @@ public class RemoveLineStartingWith : HtmlModuleLine
             {
                 if (line.StartsWith(linePrefix))
                     return null;
+            }
+        }
+        return line;
+    }
+}
+
+public class RemovePrefixesFromLine : HtmlModuleLine
+{
+    public string[] Prefixes { get; }
+    public bool IgnoreWhiteSpace { get; }
+    
+    public RemovePrefixesFromLine(string prefix, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
+        : this(new[]{ prefix }, ignoreWhiteSpace, behaviour) {}
+    
+    public RemovePrefixesFromLine(string[] prefixes, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
+    {
+        Prefixes = prefixes;
+        IgnoreWhiteSpace = ignoreWhiteSpace;
+        Behaviour = behaviour;
+    }
+
+    public override string? Transform(string line)
+    {
+        foreach (var linePrefix in Prefixes)
+        {
+            if (IgnoreWhiteSpace)
+            {
+                if (line.AsSpan().TrimStart().StartsWith(linePrefix))
+                    return line.Substring(line.IndexOf(linePrefix, StringComparison.Ordinal) + linePrefix.Length);
+            }
+            else
+            {
+                if (line.StartsWith(linePrefix))
+                    return line.Substring(linePrefix.Length);
             }
         }
         return line;
