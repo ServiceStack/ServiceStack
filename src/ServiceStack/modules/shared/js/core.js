@@ -41,5 +41,5 @@ function gridInputs(formLayout) {
     return to
 }
 function colClass(fields) {
-    return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-3' : '')
+    return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
 }
