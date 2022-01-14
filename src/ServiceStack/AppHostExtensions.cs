@@ -17,8 +17,9 @@ namespace ServiceStack
 
         public static void ConfigureOperation<T>(this IAppHost appHost, Action<Operation> configure)
         {
-            if (appHost.Metadata.OperationsMap.TryGetValue(typeof(T), out var op))
-                configure(op);
+            if (!appHost.Metadata.ConfigureOperations.TryGetValue(typeof(T), out var handlers))
+                handlers = appHost.Metadata.ConfigureOperations[typeof(T)] = new();
+            handlers.Add(configure);
         }
 
         public static void RegisterServices(this IAppHost appHost, Dictionary<Type, string[]> serviceRoutes)

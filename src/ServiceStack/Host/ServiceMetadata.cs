@@ -36,6 +36,8 @@ namespace ServiceStack.Host
         public HashSet<Type> ResponseTypes { get; protected set; }
         private readonly List<RestPath> restPaths;
 
+        public Dictionary<Type, List<Action<Operation>>> ConfigureOperations { get; protected set; } = new();
+
         public IEnumerable<Operation> Operations => OperationsMap.Values;
         
         public HashSet<Type> ForceInclude { get; set; }
@@ -114,6 +116,17 @@ namespace ServiceStack.Host
                     continue;
 
                 operation.Routes.Add(restPath);
+            }
+
+            foreach (var entry in ConfigureOperations)
+            {
+                if (!OperationsMap.TryGetValue(entry.Key, out var op)) 
+                    continue;
+                
+                foreach (var configure in entry.Value)
+                {
+                    configure(op);
+                }
             }
         }
 
