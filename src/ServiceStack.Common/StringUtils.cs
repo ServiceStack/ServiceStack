@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.Script;
@@ -27,7 +28,7 @@ namespace ServiceStack
 
         public List<TextNode> Children { get; set; }
     }
-
+    
     public static class StringUtils
     {
         public static List<Command> ParseCommands(this string commandsString)
@@ -673,7 +674,18 @@ namespace ServiceStack
 
             return node;
         }
+
+        public static ReadOnlyMemory<char> NewLineMemory = Environment.NewLine.AsMemory();
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AppendLine(this StringBuilder sb, ReadOnlyMemory<char> line)
+        {
+#if NET6_0_OR_GREATER
+            sb.Append(line).Append(NewLineMemory);
+#else
+            sb.AppendLine(line.ToString());
+#endif
+        }
         
         // http://www.w3.org/TR/html5/entities.json
         // TODO: conditional compilation for NET45 that uses ReadOnlyDictionary

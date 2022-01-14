@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using ServiceStack.HtmlModules;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
@@ -33,14 +34,11 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     /// &lt;!--shared:Brand,Input--&gt;
     /// &lt;!--file:/path/to/single.html--&gt; or /*file:/path/to/single.txt*/
     /// &lt;!--files:/dir/components/*.html--&gt; or /*files:/dir/*.css*/
-    /// &lt;!---: remove html comment --&gt; or /**: remove JS comment */
     /// </summary>
     public List<IHtmlModulesHandler> Handlers { get; set; } = new()
     {
         new FileHandler("file"),
         new FilesHandler("files"),
-        new RemoveJsLineComments(),
-        new RemoveHtmlLineComments(),
     };
 
     /// <summary>
@@ -124,6 +122,8 @@ public class HtmlModule
     public Dictionary<string, Func<HtmlModuleContext, ReadOnlyMemory<byte>>> Tokens { get; set; }
     public List<IHtmlModulesHandler> Handlers { get; set; } = new();
 
+    public List<HtmlModuleLine> LineTransformers { get; set; } = new();
+
     /// <summary>
     /// File resolver to use to read file contents
     /// </summary>
@@ -137,6 +137,8 @@ public class HtmlModule
             ["<base href=\"\">"] = ctx => ($"<base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{BasePath}/")}\">"
             + (HostContext.DebugMode ? "\n<script src=\"/js/hot-fileloader.js\"></script>" : "")).AsMemory().ToUtf8(),
         };
+        if (FilesTransformer.Default.FileExtensions.TryGetValue("html", out var htmlTransformers))
+            LineTransformers = new List<HtmlModuleLine>(htmlTransformers.LineTransformers);
     }
     
     public ConcurrentDictionary<string, ReadOnlyMemory<byte>> Cache { get; } = new();
@@ -231,15 +233,39 @@ public class HtmlModule
             if (startPos == -1)
                 throw new Exception($"Error parsing {IndexFile}, missing '{fragmentDef.token}'");
             
-            fragments.Add(new HtmlTextFragment(indexContents.Slice(lastPos, startPos - lastPos)));
+            fragments.Add(new HtmlTextFragment(TransformContent(indexContents.Slice(lastPos, startPos - lastPos))));
             fragments.Add(fragmentDef.fragment);
             
             lastPos = startPos + fragmentDef.token.Length;
         }
-        fragments.Add(new HtmlTextFragment(indexContents.Slice(lastPos)));
+        fragments.Add(new HtmlTextFragment(TransformContent(indexContents.Slice(lastPos))));
 
         indexFragments = fragments.ToArray();
         return indexFragments;
+    }
+
+    public ReadOnlyMemory<char> TransformContent(ReadOnlyMemory<char> content)
+    {
+        if (content.Length == 0 || LineTransformers.Count == 0)
+            return content;
+
+        int startIndex = 0;
+        var sb = StringBuilderCache.Allocate();
+        var newLine = Environment.NewLine.AsSpan();
+        while (content.TryReadLine(out var line, ref startIndex))
+        {
+            foreach (var lineTransformer in LineTransformers)
+            {
+                line = lineTransformer.Transform(line);
+                if (line.Length == 0)
+                    break;
+            }
+            if (line.Length > 0)
+            {
+                sb.AppendLine(line);
+            }
+        }
+        return StringBuilderCache.ReturnAndFree(sb).AsMemory();
     }
 
     public void Register(IAppHost appHost)

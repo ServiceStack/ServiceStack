@@ -8,7 +8,7 @@ namespace ServiceStack.HtmlModules;
 public abstract class HtmlModuleLine
 {
     public Run Behaviour { get; set; }
-    public abstract string? Transform(string line);
+    public abstract ReadOnlyMemory<char> Transform(ReadOnlyMemory<char> line);
 }
 
 public class RemoveLineStartingWith : HtmlModuleLine
@@ -26,19 +26,19 @@ public class RemoveLineStartingWith : HtmlModuleLine
         Behaviour = behaviour;
     }
 
-    public override string? Transform(string line)
+    public override ReadOnlyMemory<char> Transform(ReadOnlyMemory<char> line)
     {
         foreach (var linePrefix in Prefixes)
         {
             if (IgnoreWhiteSpace)
             {
-                if (line.AsSpan().TrimStart().StartsWith(linePrefix))
-                    return null;
+                if (line.Span.TrimStart().StartsWith(linePrefix))
+                    return default;
             }
             else
             {
                 if (line.StartsWith(linePrefix))
-                    return null;
+                    return default;
             }
         }
         return line;
@@ -60,19 +60,19 @@ public class RemovePrefixesFromLine : HtmlModuleLine
         Behaviour = behaviour;
     }
 
-    public override string? Transform(string line)
+    public override ReadOnlyMemory<char> Transform(ReadOnlyMemory<char> line)
     {
         foreach (var linePrefix in Prefixes)
         {
             if (IgnoreWhiteSpace)
             {
-                if (line.AsSpan().TrimStart().StartsWith(linePrefix))
-                    return line.Substring(line.IndexOf(linePrefix, StringComparison.Ordinal) + linePrefix.Length);
+                if (line.Span.TrimStart().StartsWith(linePrefix))
+                    return line.Slice(line.IndexOf(linePrefix) + linePrefix.Length);
             }
             else
             {
                 if (line.StartsWith(linePrefix))
-                    return line.Substring(linePrefix.Length);
+                    return line.Slice(linePrefix.Length);
             }
         }
         return line;
@@ -82,5 +82,5 @@ public class RemovePrefixesFromLine : HtmlModuleLine
 public class RemoveLineWithOnlyWhitespace : HtmlModuleLine
 {
     public RemoveLineWithOnlyWhitespace(Run behaviour = Run.Always) => Behaviour = behaviour;
-    public override string? Transform(string line) => line.AsSpan().Trim().Length == 0 ? null : line;
+    public override ReadOnlyMemory<char> Transform(ReadOnlyMemory<char> line) => line.Span.Trim().Length == 0 ? default : line;
 }

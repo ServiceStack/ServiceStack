@@ -86,13 +86,19 @@ public class FilesTransformer
         var blockLines = new List<string>();
         while ((line = reader.ReadLine()) != null)
         {
-            var trimmedLine = line.AsSpan().Trim();
+            var lineSpan = line.AsMemory();
+            var trimmedLine = lineSpan.Span.Trim();
             if (inBlock == null)
             {
                 foreach (var lineTransformer in options.LineTransformers)
                 {
-                    line = lineTransformer.Transform(line!);
-                    if (line == null) break;
+                    lineSpan = lineTransformer.Transform(lineSpan);
+                    if (lineSpan.Length == 0)
+                    {
+                        line = null;
+                        break;
+                    }
+                    line = lineSpan.ToString();
                 }
             }
             else
