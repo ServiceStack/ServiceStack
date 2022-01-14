@@ -24,6 +24,12 @@ function setBodyClass(obj) {
         }
     })
 }
+function isSmall() { 
+    return window.matchMedia('(max-width:640px)').matches 
+}
+function humanify(id) { 
+    return humanize(toPascalCase(id)) 
+}
 function mapGetForInput(o, id) {
     let ret = apiValue(mapGet(o,id))
     return isDate(ret)
@@ -42,4 +48,29 @@ function gridInputs(formLayout) {
 }
 function colClass(fields) {
     return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
+}
+function toggleAttr(el, attr) {
+    let hasAttr = el.hasAttribute(attr) 
+    if (hasAttr) 
+        el.removeAttribute(attr)
+    else
+        el.setAttribute(attr, 'true')
+    return hasAttr
+}
+function parentsWithAttr(el, attr)
+{
+    let els = []
+    let parentEl = el
+    while ((parentEl = parentEl.parentElement.closest(`[${attr}]`)) != null) {
+        els.push(parentEl)
+        let siblingEl = parentEl
+        while ((siblingEl = siblingEl.previousElementSibling) != null) {
+            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
+        }
+        siblingEl = parentEl
+        while ((siblingEl = siblingEl.nextElementSibling) != null) {
+            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
+        }
+    }
+    return els
 }

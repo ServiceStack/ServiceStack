@@ -1,6 +1,6 @@
 import { apiValue, isDate, mapGet, padInt } from "@servicestack/client"
 
-const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
+export const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
 const $$ = (sel, el) => typeof sel === "string"
     ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
     : Array.isArray(sel) ? sel : [sel]
@@ -15,7 +15,7 @@ function on(sel, handlers) {
     })
 }
 
-function setBodyClass(obj) {
+export function setBodyClass(obj) {
     let bodyCls = document.body.classList
     Object.keys(obj).forEach(name => {
         if (obj[name]) {
@@ -26,6 +26,14 @@ function setBodyClass(obj) {
             bodyCls.add(`no${name}`)
         }
     })
+}
+
+export function isSmall() { 
+    return window.matchMedia('(max-width:640px)').matches 
+}
+
+export function humanify(id) { 
+    return humanize(toPascalCase(id)) 
 }
 
 function mapGetForInput(o, id) {
@@ -47,4 +55,31 @@ function gridInputs(formLayout) {
 }
 function colClass(fields) {
     return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
+}
+
+export function toggleAttr(el, attr) {
+    let hasAttr = el.hasAttribute(attr) 
+    if (hasAttr) 
+        el.removeAttribute(attr)
+    else
+        el.setAttribute(attr, 'true')
+    return hasAttr
+}
+
+export function parentsWithAttr(el, attr)
+{
+    let els = []
+    let parentEl = el
+    while ((parentEl = parentEl.parentElement.closest(`[${attr}]`)) != null) {
+        els.push(parentEl)
+        let siblingEl = parentEl
+        while ((siblingEl = siblingEl.previousElementSibling) != null) {
+            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
+        }
+        siblingEl = parentEl
+        while ((siblingEl = siblingEl.nextElementSibling) != null) {
+            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
+        }
+    }
+    return els
 }

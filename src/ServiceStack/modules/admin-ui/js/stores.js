@@ -1,3 +1,4 @@
+App.useTransitions({ sidebar: true })
 let routes = App.pageRoutes({
     page:'admin',
     queryKeys:'tab,provider,q,page,sort,new,edit'.split(','),

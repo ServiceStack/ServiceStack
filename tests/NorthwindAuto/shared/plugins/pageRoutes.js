@@ -81,6 +81,8 @@ App.plugin({
             if (handlers.to)
                 this.events.subscribe('pageRoutes:to', args => handlers.to(args))
         }
+        
+        this.onStart(app => store.start())
 
         return store
     }

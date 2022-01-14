@@ -6,6 +6,8 @@ import { EventBus } from '@servicestack/client'
 function PetiteVueApp() {
     let Components = []
     let Directives = {}
+    let Props = {}
+    let OnStart = []
     this.petite = null
     this.events = new EventBus()
     
@@ -56,6 +58,15 @@ function PetiteVueApp() {
         assertNotBuilt('directive')
         Directives[name] = fn
     }
+    
+    this.prop = function (name, val) {
+        assertNotBuilt('prop')
+        Props[name] = val
+    }
+    this.props = function (props) {
+        assertNotBuilt('props')
+        Object.assign(Props, props)
+    }
 
     this.build = function(args) {
         if (!window.PetiteVue)
@@ -63,6 +74,7 @@ function PetiteVueApp() {
         Object.assign(this, window.PetiteVue)
         
         this.petite = PetiteVue.createApp({
+            ...Props,
             ...Components.reduce((acc,x) => { acc[x] = Components[x]; return acc }, {}),
             ...args,
         })
@@ -85,6 +97,13 @@ function PetiteVueApp() {
             s.addEventListener('error', reject)
             document.body.appendChild(s)
         })
+    }
+    
+    this.onStart = function (f) {
+        OnStart.push(f)
+    }
+    this.start = function () {
+        OnStart.forEach(f => f(this))
     }
 
     Object.assign(this, window.PetiteVue||{})

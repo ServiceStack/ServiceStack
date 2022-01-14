@@ -5,7 +5,6 @@
     <base href="">
 <style>
 /*shared:css/ui.css */
-/*file:css/app.css */
 </style>
 </head>
 <body class="loading noauth">
@@ -14,22 +13,32 @@
 
 <div v-scope class="app">
     
-<div v-if="store.auth && store.isAdmin" class="flex">
+<div v-if="store.auth && store.isAdmin" class="">
     <div id="sidebar" v-scope="Sidebar({ store, routes })"></div>
-    <div class="body">
-        <div class="body-content">
-            <main class="flex-1">
-                <div class="py-3 px-3 sm:px-8">
-                    <div class="mx-auto">
-                        <h1 class="text-2xl text-gray-900">{{store.link.label}}</h1>
-                    </div>
-                    <div class="mx-auto mt-6">
+    <div class="md:pl-64 flex flex-col flex-1">
+        <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
+            <button type="button" @click="transition('sidebar')" 
+                    class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                <span class="sr-only">Open sidebar</span>
+                <!---: Heroicon name: outline/menu -->
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+        <main class="flex-1">
+            <div class="py-6">
+                <div class="mx-auto px-4 sm:px-6 md:px-8">
+                    <h1 class="text-2xl font-semibold text-gray-900">{{store.link.label}}</h1>
+                </div>
+                <div class="mx-auto px-4 sm:px-6 md:px-8">
+                    <div class="py-4">
                         <div v-if="routes.admin === ''" v-scope="Dashboard({ store, routes, client })"></div>
                         <div v-else-if="routes.admin === 'users'" v-scope="AdminUsers({ store, routes, client })"></div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
 </div>
 <div v-else-if="store.auth && !store.isAdmin" class="w-full h-screen flex justify-center items-center">
@@ -47,16 +56,15 @@
     
 </div>
 
-<script>
-let exports = { __esModule:true }, module = { exports:exports }
-function require(name) { return exports[name] || window[name] }
-</script>
+<!--shared:CommonJs-->
 <script src="../js/servicestack-client.js"></script>
 <script src="../types/js"></script>
 <script>
 Object.assign(window, exports)
 
 /*shared/js:core */
+import { setBodyClass, $1, humanify } from "../shared/js/core"
+
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { 
     window.AUTH = !auth || auth.responseStatus ? null : auth
@@ -69,8 +77,6 @@ function loadAuth(auth) {
 <script src="../js/petite-vue.js"></script>
 <script>
 document.title = APP.app.serviceName
-let SidebarWidth = '240px'
-function isSmall() { return window.matchMedia('(max-width:640px)').matches }
 
 /*shared/js:PetiteVueApp */
 let App = new PetiteVueApp()
@@ -96,13 +102,13 @@ App.build({
     allTypes,
     store,
     get request() { return this.store.op && this.store.op.request },
-    humanify(id) { return humanize(toPascalCase(id)) },
+    humanify,
     resolve,
 }).mount()
 
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
 
-routes.start()
+App.start()
 App.nextTick(() => document.body.classList.remove('loading'))
 </script>
 

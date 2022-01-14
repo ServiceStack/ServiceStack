@@ -1,5 +1,7 @@
 import { APP, Authenticate } from "../../lib/types"
 
+App.useTransitions({ sidebar: true })
+
 /**: SignIn:provider */
 let routes = App.pageRoutes({
     page:'admin',

@@ -2,7 +2,7 @@
 <template id="sidebar-template">
 <div class="sidebar border-r border-gray-200">
     <div class="z-10 sidebar-filter fixed h-filter pt-3">
-        <div v-scope="Brand({ icon: ui.brandIcon, serviceName })"></div>
+        <div class="pl-3" v-scope="Brand({ icon: ui.brandIcon, serviceName })"></div>
         <div>
             <input type="search" placeholder="filter" v-model="store.filter"
                    class="text-lg w-full" style="margin:9px 0 0 0">

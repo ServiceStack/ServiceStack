@@ -78,14 +78,17 @@ App.component('AdminUsers', ({ store, routes, client }) => {
             </div>
             <div class="ml-3 align-middle">
                 <p class="text-sm text-gray-700">
-                    Showing results
-                    <span class="font-medium">{{ (page * pageSize) + 1 }}</span>
-                    to
-                    <span class="font-medium">{{ (page * pageSize) + results.length }}</span>
+                    <span class="hidden lg:inline">Showing results</span>
+                    <span class="whitespace-nowrap">
+                        <span class="font-medium">{{ (page * pageSize) + 1 }}</span>
+                        to
+                        <span class="font-medium">{{ (page * pageSize) + results.length }}</span>
+                    </span>
                 </p>
             </div>
             <a v-href="{ new:1,edit:null }" class="ml-3 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                New User
+                New 
+                <span class="hidden md:ml-1 md:inline">User</span>
             </a>
         </div>
     </form>

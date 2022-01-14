@@ -1,0 +1,5 @@
+<script>
+/**: Naive require() to allow include of commonjs libraries */
+let exports = { __esModule:true }, module = { exports:exports }
+function require(name) { return exports[name] || window[name] }
+</script>
