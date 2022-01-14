@@ -820,12 +820,13 @@ namespace ServiceStack.NativeTypes
                     Label = inputProp.Label,
                     Size = inputProp.Size,
                     Pattern = inputProp.Pattern,
-                    ReadOnly = inputProp.ReadOnly,
-                    Required = inputProp.Required ?? property.IsRequired,
+                    ReadOnly = inputProp.ReadOnly.NullIfFalse(),
+                    Disabled = inputProp.Disabled.NullIfFalse(),
+                    Required = inputProp.Required.NullIfFalse() ?? property.IsRequired,
                     Min = inputProp.Min,
                     Max = inputProp.Max,
-                    MinLength = inputProp.MinLength ?? property.AllowableMin,
-                    MaxLength = inputProp.MaxLength ?? property.AllowableMax,
+                    MinLength = inputProp.MinLength.NullIfMinValue() ?? property.AllowableMin,
+                    MaxLength = inputProp.MaxLength.NullIfMinValue() ?? property.AllowableMax,
                     AllowableValues = inputProp.AllowableValues,
                 };
                 if (pi.PropertyType.IsEnum && property.Input.AllowableValues == null) 

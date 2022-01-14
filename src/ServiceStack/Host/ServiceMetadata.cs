@@ -1033,6 +1033,7 @@ namespace ServiceStack.Host
             (flag & feature) != 0;
 
         public static bool? NullIfFalse(this bool value) => value ? true : (bool?)null;
+        public static int? NullIfMinValue(this int value) => value != int.MinValue ? value : (int?)null;
 
         public static Dictionary<string, string[]> ToMetadataServiceRoutes(this Dictionary<Type, string[]> serviceRoutes,
             Action<Dictionary<string,string[]>> filter=null)
