@@ -1039,7 +1039,21 @@ namespace ServiceStack
         public virtual void OnStartupException(Exception ex)
         {
             if (Config.StrictMode == true || Config.DebugMode)
+            {
+                if (Config.DebugMode)
+                {
+                    if (Log is NullDebugLogger)
+                    {
+                        Console.WriteLine(nameof(OnStartupException));
+                        Console.WriteLine(ex);
+                    }
+                    else
+                    {
+                        Log.Error(nameof(OnStartupException), ex);
+                    }
+                }
                 throw ex;
+            }
 
             this.StartUpErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
         }
