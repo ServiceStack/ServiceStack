@@ -229,13 +229,13 @@ public class HtmlModule
         for (var i = 0; i < fragmentDefs.Count; i++)
         {
             var fragmentDef = fragmentDefs[i];
-            var startPos = indexContents.IndexOf(fragmentDef.token);
+            var startPos = indexContents.IndexOf(fragmentDef.token, lastPos);
             if (startPos == -1)
                 throw new Exception($"Error parsing {IndexFile}, missing '{fragmentDef.token}'");
-            
+
             fragments.Add(new HtmlTextFragment(TransformContent(indexContents.Slice(lastPos, startPos - lastPos))));
             fragments.Add(fragmentDef.fragment);
-            
+
             lastPos = startPos + fragmentDef.token.Length;
         }
         fragments.Add(new HtmlTextFragment(TransformContent(indexContents.Slice(lastPos))));
