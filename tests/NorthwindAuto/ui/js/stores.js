@@ -1,5 +1,6 @@
 import { leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
+import { isSmall, $1, setBodyClass } from "../../shared/js/core"
 
 let routes = App.pageRoutes({
     page:'op',
