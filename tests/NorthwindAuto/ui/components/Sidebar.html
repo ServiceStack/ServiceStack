@@ -72,6 +72,7 @@ App.components({
         </div>
         <div class="flex-1 flex flex-col pt-5 pb-4">
             <div class="z-10" v-scope="SidebarTop({ store })"></div>
+            <!---: sm: use top-nav  -->
             <div v-scope="SidebarNav({ store, $on:() => transition('sidebar') })"
                  class="flex-1 flex flex-col fixed top-top-nav w-sidebar h-top-nav overflow-y-auto"></div>
         </div>
@@ -87,7 +88,7 @@ App.components({
         <div class="flex-1 flex flex-col pt-5 pb-4">
             <div class="z-10" v-scope="SidebarTop({ store })"></div>
             <div v-scope="SidebarNav({ store })" 
-                 class="flex-1 flex flex-col fixed top-top-nav w-sidebar -ml-[1px] h-top-nav overflow-y-auto"></div>
+                 class="flex-1 flex flex-col fixed top-sub-nav w-sidebar -ml-[1px] h-sub-nav overflow-y-auto"></div>
         </div>
     </div>
 </div>
