@@ -2,18 +2,27 @@
 App.components({
     Sidebar: '#sidebar-template',
     SidebarTop: '#sidebar-top-template',
-    SidebarNav: '#sidebar-nav-template',
+    SidebarNav({ store, $on }) {
+        return {
+            $template: '#sidebar-nav-template',
+            store,
+            $on: $on || null,
+        }
+    },
 })
 </script>
 <template id="sidebar-top-template">
 <div class="pl-4 pb-3" v-scope="Brand({ icon: ui.brandIcon, serviceName })"></div>
-<div class="">
-    <input type="search" placeholder="filter" v-model="store.filter"
-           class="text-lg w-full">
+<div class="bg-white py-1.5 px-3.5">
+    <svg class="absolute ml-2.5 mt-2.5 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
+    </svg>
+    <input type="search" v-model="store.filter" placeholder="Filter..." 
+           class="border rounded-full overflow-hidden flex w-full px-4 py-1 pl-8 border-gray-200">
 </div>
 </template>
 <template id="sidebar-nav-template">
-<nav class="flex-1 space-y-1 bg-white" aria-label="Sidebar">
+<nav class="flex-1 space-y-1 bg-white pb-4" aria-label="Sidebar">
     <div v-for="nav in store.filteredSideNav" class="space-y-1">
         <button v-if="nav.tag" type="button" @click.prevent="store.toggle(nav.tag)"
                 class="bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pr-2 py-2 text-left text-sm font-medium">
@@ -23,7 +32,7 @@ App.components({
             {{nav.tag}}
         </button>
         <div v-if="nav.expanded" class="space-y-1">
-            <a v-for="op in nav.operations" v-href="{ op:op.request.name, preview:'' }"
+            <a v-for="op in nav.operations" v-href="{ op:op.request.name, preview:'', $on }"
                :class="[op.request.name == routes.op ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
                 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
                 <span class="nav-item flex-grow">{{op.request.name}}</span>
@@ -42,7 +51,7 @@ App.components({
     <div data-transition="{ cls:'transition ease-in-out duration-300 transform', 
         entering:{ from:'-translate-x-full', to:'translate-x-0'}, 
         leaving: { from:'translate-x-0',     to:'-translate-x-full' } 
-    }" data-transition-for="sidebar" class="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+    }" data-transition-for="sidebar" class="relative flex-1 flex flex-col max-w-sidebar w-full bg-white">
         <div data-transition="{ cls:'ease-in-out duration-300',  
             entering:{ from:'opacity-0',   to:'opacity-100'}, 
             leaving: { from:'opacity-100', to:'opacity-0' } 
@@ -57,7 +66,8 @@ App.components({
         </div>
         <div class="flex-1 flex flex-col pt-5 pb-4">
             <div class="z-10" v-scope="SidebarTop({ store })"></div>
-            <div class="overflow-y-auto flex-1 flex flex-col overflow-y-auto" v-scope="SidebarNav({ store })"></div>
+            <div v-scope="SidebarNav({ store, $on:() => transition('sidebar') })"
+                 class="flex-1 flex flex-col fixed top-top-nav w-sidebar h-top-nav overflow-y-auto"></div>
         </div>
     </div>
     <div class="flex-shrink-0 w-14">
@@ -67,7 +77,8 @@ App.components({
     <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
         <div class="flex-1 flex flex-col pt-5 pb-4">
             <div class="z-10" v-scope="SidebarTop({ store })"></div>
-            <div class="overflow-y-auto flex-1 flex flex-col overflow-y-auto" v-scope="SidebarNav({ store })"></div>
+            <div v-scope="SidebarNav({ store })" 
+                 class="flex-1 flex flex-col fixed top-top-nav w-sidebar -ml-[1px] h-top-nav overflow-y-auto"></div>
         </div>
     </div>
 </div>

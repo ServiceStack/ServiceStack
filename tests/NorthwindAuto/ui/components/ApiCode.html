@@ -55,14 +55,8 @@ App.components({ InstallTool: '#install-tool-template' })
 .show-lang-help .icon-lang-help {
     display: none;
 } 
-.lang-help .icon-right .icon {
-    right: .5rem;
-}
-.lang-help .icon {
-    position: absolute;
-}
 
-@media screen and (max-width:768px) {
+@media screen and (max-width:1024px) {
     .show-lang-help .body-lang {
         display: none;
     }
@@ -89,12 +83,12 @@ App.components({ InstallTool: '#install-tool-template' })
             <pre v-if="store.activeLangSrc" class=""><code :lang="routes.lang" v-highlightjs="store.activeLangSrc"></code></pre>
             <div v-else v-scope="Loading()"></div>
         </div>
-        <div class="flex-1 lang-help w-full lg:w-1/2 overflow-auto shadow-lg">
+        <div class="flex-1 lang-help w-full lg:w-1/2 overflow-auto pb-sm shadow-lg">
             <div class="">
                 <div v-scope="CloseButton({ onclick:() => document.body.classList.remove('show-lang-help') })" title="Hide"></div>
-                <div v-if="store.useLang=='csharp'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from C#</h2>
-                    <p class="text-lg p-4">
+                <div v-if="store.useLang=='csharp'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from C#</h2>
+                    <p class="text-lg p-4 pt-20">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
 
@@ -102,20 +96,21 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonHttpClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-csharp" v-html="csharpSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='typescript'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from TypeScript</h2>
+                <div v-else-if="store.useLang=='typescript'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from TypeScript</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>@servicestack/client</b> package in your projects<em>package.json</em>
                     </p>
@@ -124,20 +119,20 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-typescript" v-html="typescriptSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='dart'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Dart</h2>
+                <div v-else-if="store.useLang=='dart'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Dart</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
                     </p>
@@ -146,20 +141,21 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-dart" v-html="dartSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='java'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Java</h2>
+                <div v-else-if="store.useLang=='java'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Java</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
                     </p>
@@ -168,20 +164,21 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-java" v-html="javaSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='kotlin'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Kotlin</h2>
+                <div v-else-if="store.useLang=='kotlin'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Kotlin</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
                     </p>
@@ -190,20 +187,21 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-kotlin" v-html="kotlinSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='python'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Python</h2>
+                <div v-else-if="store.useLang=='python'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Python</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>requirements.txt</em>
                     </p>
@@ -212,20 +210,21 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-python" v-html="pythonSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='swift'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from Swift</h2>
+                <div v-else-if="store.useLang=='swift'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Swift</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack</b> package in your projects <em>Package.swift</em>
                     </p>
@@ -237,20 +236,21 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-python" v-html="swiftSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='vbnet'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from VB.NET</h2>
+                <div v-else-if="store.useLang=='vbnet'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from VB.NET</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
@@ -259,20 +259,21 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonHttpClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-vbnet" v-html="vbnetSrc"></code></pre>
                     </div>
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
-                <div v-else-if="store.useLang=='fsharp'" class="pt-4">
-                    <h2 class="text-2xl pl-4 mb-3 border-b pb-3">Call this API from F#</h2>
+                <div v-else-if="store.useLang=='fsharp'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from F#</h2>
                     <p class="text-lg p-4">
                         <b class="mr-2">1.</b> Include <b>ServiceStack.HttpClient</b> package in your projects<em>.csproj</em>
                     </p>
@@ -281,13 +282,14 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
-                        <div class="ml-3" v-if="store.activeLangSrc" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
                     </div>
                     <div class="text-lg p-4">
                         <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em> or <em>JsonHttpClient</em>
                     </div>
                     <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => langSrc(store.useLang) })" title="Copy code"></div>
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
                         <pre><code class="language-fsharp" v-html="fsharpSrc"></code></pre>
                     </div>
 

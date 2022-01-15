@@ -298,9 +298,9 @@ function supportsProp(prop) {
             {{name}}
         </a>
     </nav>
-    <div class="w-body md:w-body fixed top-sub-nav h-top-nav overflow-auto pb-8 mb-8">
+    <div class="w-body md:w-body fixed top-sub-nav h-top-nav overflow-auto pb-sm">
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
-            <div v-if="routes.form==''" class="sm:p-4 max-w-screen-md mb-8 pb-8"
+            <div v-if="routes.form==''" class="sm:p-4 max-w-screen-md"
                  v-scope="AutoForm({ 
                     state: () => state,  
                     onsubmit: e => onAjaxFormSubmit(e),
@@ -408,11 +408,11 @@ App.component('ApiResponse', ({ store, routes, apiResult }) => {
             <div class="" v-scope="PreviewObject({ val:apiResult.api.response || apiResult.api.error, fieldAttrs })"></div>
         </div>
     </div>
-    <div v-else-if="routes.response == 'cookies'" class="p-4">
+    <div v-else-if="routes.response == 'cookies'" class="md:p-4">
         <div v-if="apiResult.cookies && toKvps(apiResult.cookies).length" class="mb-4" v-scope="ArrayPreview({ val:toKvps(apiResult.cookies) })"></div>
         <div v-scope="Alert({ message: () => 'HttpOnly Cookies are not shown' })"></div>
     </div>
-    <div v-else-if="routes.response == 'headers'" class="p-4">
+    <div v-else-if="routes.response == 'headers'" class="md:p-4">
         <div v-if="apiResult.headers" v-scope="ArrayPreview({ val:toKvps(apiResult.headers) })"></div>
     </div>
 </div>

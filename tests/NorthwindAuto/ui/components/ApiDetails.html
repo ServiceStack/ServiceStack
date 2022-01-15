@@ -236,7 +236,7 @@
         </div>
     </div>
 
-    <div v-if="routes.detailSrc" id="detail-src" class="flex-1 w-full lg:w-1/2 bg-gray-50 overflow-auto shadow-lg">
+    <div v-if="routes.detailSrc" id="detail-src" class="flex-1 w-full lg:w-1/2 lg:bg-gray-50 overflow-auto lg:shadow-lg">
         <div v-if="store.activeDetailSrc">
             <div v-scope="CloseButton({ onclick:() => routes.to({ detailSrc:'' }) })" title="Close"></div>
             <pre class="pl-4 py-2"><code lang="csharp" v-highlightjs="store.activeDetailSrc.result"></code></pre>

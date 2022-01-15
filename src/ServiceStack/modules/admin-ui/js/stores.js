@@ -28,7 +28,7 @@ let store = PetiteVue.reactive({
             root.style.setProperty('--sidebar-width', '0px')
         } else {
             sidebar.style.display = 'block'
-            root.style.setProperty('--sidebar-width', SidebarWidth)
+            root.style.setProperty('--sidebar-width', sidebarWidth)
         }
     },
     init() {

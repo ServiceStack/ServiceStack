@@ -26,10 +26,11 @@ let store = PetiteVue.reactive({
     baseUrl: BASE_URL,
 
     ...Object.keys(ResolutionSizes).reduce((acc,x) => { acc[x] = false; return acc }, {}),
-    doLayout() {
+    doLayout({ sidebarWidth }) {
         /**: sm: only show sidebar on home page */
         let root = document.documentElement
-        root.style.setProperty('--sidebar-width', SidebarWidth)
+        if (sidebarWidth)
+            root.style.setProperty('--sidebar-width', sidebarWidth)
 
         let w = document.body.clientWidth;
         Object.keys(ResolutionSizes).forEach(k => this[k] = w < ResolutionSizes[k])
@@ -42,7 +43,6 @@ let store = PetiteVue.reactive({
         this.loadDetailSrc()
         this.loadLang()
         this.loadPreview()
-        this.doLayout()
         setBodyClass({ page: routes.op })
     },
 
