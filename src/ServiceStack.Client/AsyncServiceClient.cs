@@ -290,7 +290,7 @@ namespace ServiceStack
 
                     var totalRead = 0;
                     int read;
-                    var ms = MemoryStreamFactory.GetStream();
+                    using var ms = MemoryStreamFactory.GetStream();
 
                     while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigAwait()) != 0)
                     {
