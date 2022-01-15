@@ -5,13 +5,14 @@
     --sub-nav-height: 45px;
     --scroll-width: 8px;
     --body-width: calc(100vw - var(--sidebar-width));
-    --pb-sm: 4rem;
+    --pb-scroll: 0;
 }
 @media (max-width: 768px) {
     :root {
-        --pb-sm: 4rem;
+        --pb-scroll: 8rem; /* fix scrolling to bottom */
         --sm-nav-height: 45px;
     }
+    .md\:pb-scroll { padding-bottom: var(--pb-scroll) !important }
 }
 
 .top-sm-nav { top: calc(var(--sm-nav-height)) }
@@ -22,7 +23,6 @@
 .h-top-nav { height: calc(100vh - var(--sm-nav-height) - var(--top-nav-height)) }
 .h-sub-nav { height: calc(100vh - var(--sm-nav-height) - var(--top-nav-height) - var(--sub-nav-height)) }
 .w-body { width: 100vw }
-.pb-sm { padding-bottom: var(--pb-sm) }
 
 @media (min-width: 768px) {
     .md\:w-sidebar { width: var(--sidebar-width) }

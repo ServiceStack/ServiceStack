@@ -64,7 +64,7 @@
 </style>
 <template id="api-details-layout">
 <div class="w-body md:w-body fixed top-top-nav h-top-nav flex">
-    <div v-if="request && !(routes.detailSrc && store.lg)" id="detail-info" class="flex-1 w-full lg:w-1/2 pt-2 sm:px-4 bg-white overflow-auto">
+    <div v-if="request && !(routes.detailSrc && store.lg)" id="detail-info" class="flex-1 w-full lg:w-1/2 pt-2 sm:px-4 bg-white overflow-auto md:pb-scroll">
         <div class="flex px-2 sm:px-0">
             <div class="flex-grow">
                 <h2 class="mb-3">
@@ -236,7 +236,7 @@
         </div>
     </div>
 
-    <div v-if="routes.detailSrc" id="detail-src" class="flex-1 w-full lg:w-1/2 lg:bg-gray-50 overflow-auto lg:shadow-lg">
+    <div v-if="routes.detailSrc" id="detail-src" class="flex-1 w-full lg:w-1/2 lg:bg-gray-50 lg:shadow-lg overflow-auto md:pb-scroll">
         <div v-if="store.activeDetailSrc">
             <div v-scope="CloseButton({ onclick:() => routes.to({ detailSrc:'' }) })" title="Close"></div>
             <pre class="pl-4 py-2"><code lang="csharp" v-highlightjs="store.activeDetailSrc.result"></code></pre>

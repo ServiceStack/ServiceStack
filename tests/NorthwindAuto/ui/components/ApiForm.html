@@ -1,4 +1,6 @@
 <script>
+import { resolve } from "@servicestack/client"
+
 let OP_STATE = {}
 App.component('ApiForm', ({ store, routes }) => {
     return {
@@ -43,8 +45,9 @@ App.component('ApiForm', ({ store, routes }) => {
             if (ret.opName !== opName) throw new Error('!!state.opName')
             return ret
         },
-        get hasState() { return this.state && this.state.op },
-        opState(k) { return this.state && this.state[k] },
+        get apiLoading() { return resolve(this.state, x => x && x.apiLoading || false) },
+        get apiResult() { return resolve(this.state, x => x && x.apiResult) },
+        get hasState() { return resolve(this.state, x => x && x.op || false) },
         formNav(args) {
             if (args.form === '') {
                 this.updateRequestDto(this.state.formJson)
@@ -135,7 +138,7 @@ function resolveFormLayout(op) {
     let fullWidthTypes = ['textarea','divider']
     let fullWidth = input => input && (fullWidthTypes.indexOf(input.type) >= 0 || input['data-type'] === 'List`1')
     let pagingStart = inputProps.findIndex(x => x.id.toLowerCase() === 'skip')
-    if (pagingStart >= 0) inputProps.splice(pagingStart, 0, {type:'divider'})
+    if (pagingStart >= 0) inputProps.splice(pagingStart, 0, { id:`__divider${pagingStart}`, type:'divider' })
     while (inputProps.length > 0) {
         let left = inputProps.shift();
         let right = inputProps.length > 0 ? inputProps.shift() : null;
@@ -308,7 +311,7 @@ function supportsProp(prop) {
             {{name}}
         </a>
     </nav>
-    <div class="w-body md:w-body fixed top-sub-nav h-top-nav overflow-auto pb-sm">
+    <div class="w-body md:w-body fixed top-sub-nav h-top-nav overflow-auto md:pb-scroll">
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
  
             <div v-if="routes.form==''" class="sm:p-4 max-w-screen-md"
@@ -356,8 +359,8 @@ function supportsProp(prop) {
             </form>
         </div>
 
-        <div v-if="state.apiLoading" v-scope="Loading()"></div>
-        <div v-else-if="state.apiResult" class="mb-8 pb-8" v-scope="ApiResponse({ store, routes, apiResult:state.apiResult })"></div>
+        <div v-if="apiLoading" v-scope="Loading()"></div>
+        <div v-else-if="apiResult" class="mb-8 pb-8" v-scope="ApiResponse({ store, routes, apiResult })"></div>
     </div>
 </div>
 </template>
