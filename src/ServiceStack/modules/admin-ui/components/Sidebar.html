@@ -1,14 +1,20 @@
 <script>
 App.components({
     Sidebar: '#sidebar-template',
-    SidebarNav: '#sidebar-nav-template',
     SidebarAuth: '#sidebar-auth-template',
+    SidebarNav({ store, $on }) {
+        return {
+            $template: '#sidebar-nav-template',
+            store,
+            $on: $on || null,
+        }
+    },
 })
 </script>
 <template id="sidebar-nav-template">
 <div class="flex items-center flex-shrink-0 px-4" v-scope="Brand({ icon: ui.brandIcon, serviceName })"></div>
 <nav class="mt-5 flex-1 px-2 bg-white space-y-1" aria-label="Sidebar">
-    <a v-for="({id,label,icon}) in store.adminLinks" v-href="{ admin:id }"
+    <a v-for="({id,label,icon}) in store.adminLinks" v-href="{ admin:id, $on }"
        :class="[routes.admin === id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900', 
                                'group flex items-center px-2 py-2 text-base font-medium rounded-md']">
         <span v-scope="Image(icon,{cls: () => `${routes.admin === id ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'} mr-3 h-6 w-6`})"></span>
@@ -53,7 +59,7 @@ App.components({
                 </svg>
             </button>
         </div>
-        <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto" v-scope="SidebarNav({ store })"></div>
+        <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto" v-scope="SidebarNav({ store, $on:() => transition('sidebar') })"></div>
         <div class="flex-shrink-0 flex border-t border-gray-200 p-4" v-scope="SidebarAuth({ store })"></div>
     </div>
     <div class="flex-shrink-0 w-14">
