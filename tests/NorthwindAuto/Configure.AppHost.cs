@@ -46,6 +46,7 @@ namespace MyApp
             var uiFeature = this.AssertPlugin<UiFeature>();
             uiFeature.Configure = feature =>
             {
+                //feature.Module.EnableHttpCaching = true;
                 feature.Module.Configure = null;
                 feature.HtmlModules.ForEach(x => x.DirPath = x.DirPath.Replace("/modules",""));
                 feature.Handlers.Cast<SharedFolder>().Each(x => x.SharedDir = x.SharedDir.Replace("/modules", ""));

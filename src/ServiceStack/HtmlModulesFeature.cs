@@ -4,10 +4,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Security.Cryptography;
+using ServiceStack.Auth;
 using ServiceStack.HtmlModules;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -57,14 +57,30 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     ///  - disable with FileTransformer.None
     /// </summary>
     public FilesTransformer? FilesTransformer { get; set; }
+
+    /// <summary>
+    /// Whether to enable ETag HTTP Caching when not in DebugMode
+    /// </summary>
+    public bool? EnableHttpCaching { get; set; }
+
+    /// <summary>
+    /// The HTTP CacheControl Header to use (default: public, max-age=3600, must-revalidate)
+    /// </summary>
+    public string? CacheControl { get; set; }
+
+    public const string DefaultCacheControl = "public, max-age=3600, must-revalidate"; 
     
     public void Register(IAppHost appHost)
     {
         FilesTransformer ??= FilesTransformer.Default;
         FileContentsResolver ??= FilesTransformer.ReadAll;
         VirtualFiles ??= appHost.VirtualFiles;
+        if (EnableHttpCaching == null)
+            EnableHttpCaching = !appHost.Config.DebugMode;
         foreach (var component in Modules)
         {
+            component.EnableHttpCaching ??= EnableHttpCaching;
+            component.CacheControl ??= CacheControl;
             component.Feature = this;
             component.VirtualFiles ??= VirtualFiles;
             component.FileContentsResolver ??= FileContentsResolver;
@@ -109,11 +125,14 @@ public class HtmlModuleContext
 
 public class HtmlModule
 {
+    public bool? EnableHttpCaching { get; set; }
+    public string? CacheControl { get; set; }
     public HtmlModulesFeature? Feature { get; set; }
     public string DirPath { get; set; }
     public string BasePath { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
+    private string? indexFileETag = null;
     public string IndexFile { get; set; } = "index.html";
     public List<string> PublicPaths { get; set; } = new() {
         "/assets"
@@ -169,7 +188,9 @@ public class HtmlModule
                 return TypeConstants<IHtmlModuleFragment>.EmptyArray;
             throw HttpError.NotFound(DirPath.CombineWith(IndexFile) + " was not found");
         }
-        var indexContents = indexFile.ReadAllText().AsMemory();
+
+        var indexContentsString = indexFile.ReadAllText();
+        var indexContents = indexContentsString.AsMemory();
         
         var fragmentDefs = new List<FragmentTuple>();
         var tokenPos = 0;
@@ -241,6 +262,7 @@ public class HtmlModule
         fragments.Add(new HtmlTextFragment(TransformContent(indexContents.Slice(lastPos))));
 
         indexFragments = fragments.ToArray();
+        
         return indexFragments;
     }
 
@@ -251,7 +273,6 @@ public class HtmlModule
 
         int startIndex = 0;
         var sb = StringBuilderCache.Allocate();
-        var newLine = Environment.NewLine.AsSpan();
         while (content.TryReadLine(out var line, ref startIndex))
         {
             foreach (var lineTransformer in LineTransformers)
@@ -295,8 +316,21 @@ public class HtmlModule
             {
                 try
                 {
+                    if (EnableHttpCaching == true && indexFileETag != null)
+                    {
+                        httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
+                        if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
+                            httpRes.AddHeader(HttpHeaders.CacheControl, CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
+
+                        if (req.ETagMatch(indexFileETag))
+                        {
+                            httpRes.EndNotModified();
+                            return;
+                        }
+                    }
+                    
                     var fragments = GetIndexFragments();
-                    var ms = MemoryStreamFactory.GetStream();
+                    using var ms = MemoryStreamFactory.GetStream();
                     var ctx = new HtmlModuleContext(this, httpReq);
                     foreach (var fragment in fragments)
                     {
@@ -305,6 +339,12 @@ public class HtmlModule
                     httpRes.ContentType = MimeTypes.Html;
                     ms.Position = 0;
                     await ms.CopyToAsync(httpRes.OutputStream).ConfigAwait();
+
+                    // If EnableHttpCaching, calculate ETag hash from entire processed file 
+                    if (EnableHttpCaching == true && indexFileETag == null)
+                    {
+                        indexFileETag = ms.ToMd5Hash().Quoted();
+                    }
                 }
                 catch (Exception ex)
                 {
