@@ -197,7 +197,6 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                     return ['', ...store.adminUsers.allPermissions.filter(x => this.request.permissions.indexOf(x) < 0)]
                 },
                 submit() {
-                    console.log(arguments)
                     let complete = delaySet(x => this.loading = x)
                     client.api(this.request)
                         .then(api => {
