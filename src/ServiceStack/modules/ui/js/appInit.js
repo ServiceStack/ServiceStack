@@ -1,5 +1,5 @@
+/*minify:*/
 //APP.config.debugMode = false
-let DEBUG = APP.config.debugMode
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
@@ -68,3 +68,4 @@ function invalidAccessMessage(op, authRoles, authPerms) {
         return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
     return null
 }
+/*:minify*/

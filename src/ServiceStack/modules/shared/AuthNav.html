@@ -1,4 +1,4 @@
-<script>
+<script minify>
 App.component('AuthNav', ({ auth, logout }) => {
     return {
         $template: '#auth-nav-template',
@@ -17,6 +17,7 @@ App.component('AuthNav', ({ auth, logout }) => {
     }
 })
 </script>
+<!--minify-->
 <template id="auth-nav-template">
 <div class="ml-3 mt-1 relative z-10 bg-gray-50" @vue:mounted="mounted">
     <div v-if="auth">
@@ -52,3 +53,4 @@ App.component('AuthNav', ({ auth, logout }) => {
     </div>
 </div>
 </template>
+<!--/minify-->

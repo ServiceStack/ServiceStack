@@ -1,8 +1,7 @@
 import { JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 
-//APP.config.debugMode = false
-let DEBUG = APP.config.debugMode
+/*minify:*/
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
@@ -19,3 +18,4 @@ function createClient(fn) {
     })
 }
 let client = createClient()
+/*:minify*/

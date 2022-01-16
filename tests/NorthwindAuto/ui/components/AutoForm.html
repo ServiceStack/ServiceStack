@@ -1,6 +1,9 @@
-<script>
+<script minify>
+import { humanify } from "@servicestack/client"
+
 App.component('AutoForm', ({ state, onsubmit, oninput }) => {
     let emptyState = { model:{} }
+    function getId(input) { return input && (input.id || `__${input.type}${to.length}`) || `__undefined${to.length}` }
     return {
         $template: '#form-template',
         get state() { return state && state() || emptyState },
@@ -11,8 +14,8 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
             if (formLayout) {
                 formLayout.forEach(group => {
                     group.forEach(input => {
-                        let id = input && (input.id || `__${input.type}${to.length}`) || `__undefined${to.length}`
-                        if (DEBUG && (!input || !input.id)) console.log(`!id ${id}`)
+                        let id = getId(input) 
+                        if (id.startsWith('__')) console.log(`!id ${id}`) /*debug*/
                         to.push({ id, input, rowClass: this.colClass(group.length) })
                     })
                 })
@@ -22,12 +25,11 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
         colClass(fields) {
             return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
         },
-        humanify(id) { return humanize(toPascalCase(id)) },
         kvpValues(input) {
             return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x }))
         },
         useLabel(input) {
-            return input.label != null ? input.label : this.humanify(input.id)
+            return input.label != null ? input.label : humanify(input.id)
         },
         usePlaceholder(input) {
             return input.placeholder || ''
@@ -54,6 +56,7 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
     }
 })
 </script>
+<!--minify-->
 <template id="form-template">
 <form v-if="state" @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName">
     <div v-if="state.errorSummary" v-scope="ErrorSummary({ errorSummary: () => state.errorSummary })"></div>
@@ -118,3 +121,4 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
     </div>
 </form>
 </template>
+<!--/minify-->

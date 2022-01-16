@@ -1,19 +1,5 @@
-import { apiValue, isDate, mapGet, padInt } from "@servicestack/client"
-
-export const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
-const $$ = (sel, el) => typeof sel === "string"
-    ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
-    : Array.isArray(sel) ? sel : [sel]
-function on(sel, handlers) {
-    $$(sel).forEach(e => {
-        Object.keys(handlers).forEach(function (evt) {
-            let fn = handlers[evt]
-            if (typeof evt === 'string' && typeof fn === 'function') {
-                e.addEventListener(evt, fn.bind(e))
-            }
-        })
-    })
-}
+import { apiValue, isDate, mapGet, padInt, $1 } from "@servicestack/client"
+/*minify:*/
 
 export function setBodyClass(obj) {
     let bodyCls = document.body.classList
@@ -28,16 +14,12 @@ export function setBodyClass(obj) {
     })
 }
 
-let ResolutionSizes = { '2xl':1536, xl:1280, lg:1024, md:768, sm:640 }
-export function resolutionBreakpoints() {
-    let w = document.body.clientWidth
-    return Object.keys(ResolutionSizes).filter(k => w > ResolutionSizes[k])
+export function styleProperty(name) {
+    return document.documentElement.style.getPropertyValue(name)
 }
-
-export function isSmall() { return window.matchMedia('(max-width:640px)').matches }
-
-export function humanify(id) { 
-    return humanize(toPascalCase(id)) 
+export function setStyleProperty(props) {
+    let style = document.documentElement.style
+    Object.keys(props).forEach(name => style.setProperty(name, props[name]))
 }
 
 function mapGetForInput(o, id) {
@@ -61,29 +43,17 @@ function colClass(fields) {
     return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
 }
 
-export function toggleAttr(el, attr) {
-    let hasAttr = el.hasAttribute(attr) 
-    if (hasAttr) 
-        el.removeAttribute(attr)
-    else
-        el.setAttribute(attr, 'true')
-    return hasAttr
+export function setFavIcon(icon, defaultSrc) {
+    setFavIconSrc(icon.uri || defaultSrc)
 }
 
-export function parentsWithAttr(el, attr)
-{
-    let els = []
-    let parentEl = el
-    while ((parentEl = parentEl.parentElement.closest(`[${attr}]`)) != null) {
-        els.push(parentEl)
-        let siblingEl = parentEl
-        while ((siblingEl = siblingEl.previousElementSibling) != null) {
-            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
-        }
-        siblingEl = parentEl
-        while ((siblingEl = siblingEl.nextElementSibling) != null) {
-            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
-        }
+export function setFavIconSrc(src) {
+    let link = $1("link[rel~='icon']")
+    if (!link) {
+        link = document.createElement('link')
+        link.rel = 'icon'
+        $1('head').appendChild(link)
     }
-    return els
+    link.href = src
 }
+/*:minify*/

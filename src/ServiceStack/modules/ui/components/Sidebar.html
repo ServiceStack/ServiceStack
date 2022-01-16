@@ -1,4 +1,4 @@
-<script>
+<script minify>
 App.components({
     Sidebar: '#sidebar-template',
     SidebarTop: '#sidebar-top-template',
@@ -11,6 +11,7 @@ App.components({
     },
 })
 </script>
+<!--minify-->
 <template id="sidebar-top-template">
 <div class="pl-4 pb-3" v-scope="Brand({ icon: ui.brandIcon, serviceName })"></div>
 <div class="bg-white py-1.5 px-3.5">
@@ -83,3 +84,4 @@ App.components({
     </div>
 </div>
 </template>
+<!--/minify-->

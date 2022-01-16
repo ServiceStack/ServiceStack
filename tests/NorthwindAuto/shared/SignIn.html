@@ -1,4 +1,6 @@
-<script>
+<script minify>
+import { each } from "./js/core"
+
 App.component('SignIn', ({ plugin, provider, login, api }) => {
     
     let model = {}
@@ -33,12 +35,11 @@ App.component('SignIn', ({ plugin, provider, login, api }) => {
             return plugin.authProviders.find(x => x.name === this.provider)
         },
         get authProviderFormTabs()  {
-            return plugin.authProviders.filter(x => x.formLayout && x.formLayout.length > 0)
-                .reduce((acc,x) => {
-                    let label = this.getLabel(x) || toPascalCase(x.name) 
-                    acc[label] = x.name === firstFormProvider.name ? '' : x.name 
-                    return acc
-                }, {})
+            return each(plugin.authProviders.filter(x => x.formLayout && x.formLayout.length > 0),
+                (acc,x) => {
+                    let label = this.getLabel(x) || toPascalCase(x.name)
+                    acc[label] = x.name === firstFormProvider.name ? '' : x.name
+                })
         },
         get oauthProviders() {
             return plugin && plugin.authProviders.filter(x => x.type === 'oauth') || []
@@ -57,6 +58,7 @@ App.component('SignIn', ({ plugin, provider, login, api }) => {
     }
 })
 </script>
+<!--minify-->
 <template id="signin-template">
 <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
@@ -123,3 +125,4 @@ App.component('SignIn', ({ plugin, provider, login, api }) => {
 <template id="noauth-template">
     <h1 class="text-2xl my-3">{{message}}</h1>
 </template>
+<!--/minify-->

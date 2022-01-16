@@ -1,10 +1,10 @@
-<script>
+<script minify>
 let swiftPkg = `dependencies: [
     .package(name: "ServiceStack", 
         url: "https://github.com/ServiceStack/ServiceStack.Swift.git", 
         Version(5,0,0)..&lt;Version(6,0,0)),
 ]`
-document.body.classList.add('show-lang-help')
+;document.body.classList.add('show-lang-help')
 App.component('ApiCode', ({ store, routes }) => {
     let langSrc = language => $1(`#${language}-help`).innerHTML.trim()
         .replace('{BASE_URL}',BASE_URL)
@@ -31,8 +31,7 @@ App.component('ApiCode', ({ store, routes }) => {
 })
 App.components({ InstallTool: '#install-tool-template' })
 </script>
-<!--minify-->
-<style>
+<style minify>
 :root {
     --lang-help-width: calc(var(--body-width) / 2);
 }
@@ -62,6 +61,7 @@ App.components({ InstallTool: '#install-tool-template' })
     }
 }
 </style>
+<!--minify-->
 <template id="api-code-template">
 <nav class="w-body md:w-body fixed flex space-x-4 pl-2 py-2 border-b bg-white overflow-x-auto" aria-label="Tabs">
     <a v-for="(name,lang) in langs" v-href="{lang}"

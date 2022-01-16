@@ -1,42 +1,35 @@
-import { queryString, leftPart } from '@servicestack/client'
+/*minify:*/
 /**
  * Maintain page route state:
  *  - /{pageKey}?{queryKeys}
  * Events:
- *   pageRoutes:init - loaded from URL
- *   pageRoutes:to   - navigated by to()
- *   pageRoutes:nav  - fired for both
+ *   route:init - loaded from URL
+ *   route:to   - navigated by to()
+ *   route:nav  - fired for both
  */
 App.plugin({
-    pageRoutes({ page, queryKeys, handlers }) {
+    usePageRoutes({ page, queryKeys, handlers }) {
         if (typeof page  != 'string' || page === '')
             throw new Error('page is required')
         if (typeof queryKeys == 'undefined' || !queryKeys.length)
             throw new Error('Array of queryKeys is required')
-
         let allKeys = [page,...queryKeys] 
         let getPage = () => leftPart(location.href.substring(document.baseURI.length),'?')
-        let state = store => allKeys.reduce((acc,x) => {
-            if (store[x]) acc[x] = store[x]
-            return acc
-        }, {})
-        
+        let state = store => each(allKeys, (o, key) => store[key] ? o[key] = store[key] : null)
         let publish = (name,args) => {
-            events.publish('pageRoutes:' + name, args)
-            events.publish('pageRoutes:nav',args)
+            events.publish('route:' + name, args)
+            events.publish('route:nav',args)
         }
-        
         let events = this.events
         let store = App.reactive({
             page, 
             queryKeys,
-            ...allKeys.reduce((acc,x) => { acc[x] = ''; return acc }, {}),
+            ...each(allKeys, (o,x) => o[x] = ''),
             start() {
                 window.addEventListener('popstate', (event) => {
                     this.set({ [page]:getPage(), ...event.state})
                     publish('init', state(this))
                 })
-
                 this.set({ [page]:getPage(), ...(location.search ? queryString(location.search) : {}) })
                 publish('init', state(this))
             },
@@ -57,7 +50,6 @@ App.plugin({
                 publish('to', cleanArgs)
             },
             href(args) {
-                /**: can't mutate reactive stores before createApp() */
                 if (args && typeof args['$page'] != 'undefined') args[page] = args['$page']
                 let s = args ? Object.assign({}, state(this), args) : state(this)
                 let path = s[page] || ''
@@ -66,7 +58,6 @@ App.plugin({
                 return path + (qs ? '?' + qs : '')
             }
         })
-        
         this.directive('href',  ({ effect, get, el }) => {
             el.href = store.href(get())
             el.onclick = e => {
@@ -74,18 +65,16 @@ App.plugin({
                 store.to(get())
             }
         })
-
         if (handlers) {
             if (handlers.init)
-                this.events.subscribe('pageRoutes:init', args => handlers.init(args))
+                this.events.subscribe('route:init', args => handlers.init(args))
             if (handlers.to)
-                this.events.subscribe('pageRoutes:to', args => handlers.to(args))
+                this.events.subscribe('route:to', args => handlers.to(args))
             if (handlers.nav)
-                this.events.subscribe('pageRoutes:nav', args => handlers.nav(args))
+                this.events.subscribe('route:nav', args => handlers.nav(args))
         }
-        
         this.onStart(app => store.start())
-
         return store
     }
 })
+/*:minify*/

@@ -1,6 +1,6 @@
-<script>
+<script minify>
+import { apiValueFmt, delaySet } from "@servicestack/client"
 import { AdminQueryUsers } from "../../lib/types"
-import { apiValueFmt } from "@servicestack/client"
 
 /**: cheap nav update without creating multiple App.events subs per child component */
 let adminUsersNav = null
@@ -28,11 +28,12 @@ App.component('AdminUsers', ({ store, routes, client }) => {
             this.request.orderBy = routes.sort ? routes.sort : null
             this.request.skip = routes.page > 0 ? this.pageSize * Number(routes.page || 1) : 0
             this.request.take = this.pageSize
-            this.loading = true
+            
+            let complete = delaySet(x => this.loading = x)
             client.api(this.request)
                 .then(api => {
                     this.api = api
-                    this.loading = false
+                    complete()
                 })
         },
         sortBy(field) {
@@ -45,7 +46,6 @@ App.component('AdminUsers', ({ store, routes, client }) => {
         api: null,
         get results() { return this.api && this.api.response && this.api.response.results || [] },
         get fieldNames() { return store.adminUsers.queryUserAuthProperties || [] },
-        humanify(id) { return humanize(toPascalCase(id)) },
         apiValueFmt,
         mounted() {
             this.search()
@@ -56,6 +56,7 @@ App.component('AdminUsers', ({ store, routes, client }) => {
     }
 })
 </script>
+<!--minify-->
 <template id="admin-users-template">
 <section id="admin-users" @keydown="onKeyDown" @vue:mounted="mounted">
     <form @submit.prevent="formSearch()" class="mb-3">
@@ -152,8 +153,9 @@ App.component('AdminUsers', ({ store, routes, client }) => {
     </div>
 </section>
 </template>
+<!--/minify-->
 
-<script>
+<script minify>
 import { AdminCreateUser, AdminDeleteUser, AdminGetUser, AdminUpdateUser } from "../../lib/types"
 import { mapGet, resolve } from "@servicestack/client"
 
@@ -213,12 +215,13 @@ import { mapGet, resolve } from "@servicestack/client"
                     return ['', ...store.adminUsers.allPermissions.filter(x => this.request.permissions.indexOf(x) < 0)]
                 },
                 submit() {
-                    this.loading = true
+                    console.log(arguments)
+                    let complete = delaySet(x => this.loading = x)
                     client.api(this.request)
                         .then(api => {
-                            this.loading = false
+                            complete()
                             this.api = api
-                            if (!this.api.error) done()
+                            if (!api.failed) done()
                         })
                 },
             }
@@ -323,12 +326,12 @@ import { mapGet, resolve } from "@servicestack/client"
         },
     })    
 })()
-
 </script>
 
+<!--minify-->
 <template id="admin-users-new-template">
 <div class="shadow overflow-hidden sm:rounded-md bg-white">
-    <form @submit="submit" autocomplete="off">
+    <form @submit.prevent="submit" autocomplete="off">
     <div class="relative px-4 py-5 bg-white sm:p-6">
         <div v-scope="CloseButton({ onclick:() => routes.to({ new:null }) })" title="Close"></div>
             <div class="text-xl text-gray-900 text-center mb-4">New User</div>
@@ -395,7 +398,7 @@ import { mapGet, resolve } from "@servicestack/client"
             <div v-if="loading" v-scope="Loading({ cls:'p-0' })"></div>            
         </div>
         <div>
-            <button type="submit" :disabled="loading" @click="submit"
+            <button type="submit" :disabled="loading"
                     :class="`${!loading ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
                 Create User
             </button>
@@ -407,7 +410,7 @@ import { mapGet, resolve } from "@servicestack/client"
 
 <template id="admin-users-edit-template">
     <div class="shadow overflow-hidden sm:rounded-md bg-white" @vue:mounted="mounted">
-        <form @submit="submit" autocomplete="off">
+        <form @submit.prevent="submit" autocomplete="off">
             <div class="relative px-4 py-5 bg-white sm:p-6">
                 <div v-scope="CloseButton({ onclick:() => routes.to({ edit:null }) })" title="Close"></div>
                 <div class="text-xl text-gray-900 text-center mb-4">Edit User</div>
@@ -510,7 +513,7 @@ import { mapGet, resolve } from "@servicestack/client"
                     <div v-if="loading" v-scope="Loading({ cls:'p-0' })"></div>
                 </div>
                 <div>
-                    <button type="submit" :disabled="loading" @click="submit"
+                    <button type="submit" :disabled="loading"
                             :class="`${!loading ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
                         Update User
                     </button>
@@ -519,3 +522,4 @@ import { mapGet, resolve } from "@servicestack/client"
         </form>
     </div>
 </template>
+<!--/minify-->

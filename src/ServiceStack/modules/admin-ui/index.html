@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" style="">
 <head>
-    <!--shared:Meta-->
-    <base href="">
+<!--shared:Meta-->
+<base href="">
+<script>
+let DEBUG = false
+DEBUG = true /*debug*/
+</script>
 <style>
 /*file:css/app.css */
 /*shared:css/ui.css */
@@ -51,7 +55,10 @@
 </div>
 <div v-else class="w-full" v-scope="store.SignIn()"></div>
 </div>
-<!--shared:CommonJs-->
+<script>
+let exports = { __esModule:true }, module = { exports:exports }
+function require(name) { return exports[name] || window[name] }
+</script>
 <script src="../js/servicestack-client.js"></script>
 <script src="../types/js"></script>
 <script>
@@ -68,6 +75,7 @@ function loadAuth(auth) {
 <script src="../js/petite-vue.js"></script>
 <script>
 document.title = APP.app.serviceName
+setFavIcon(APP.ui.brandIcon, combinePaths(APP.app.baseUrl, '/metadata/svg/servicestack.datauri'))
 /*shared/js:PetiteVueApp */
 let App = new PetiteVueApp()
 /*plugins:* */

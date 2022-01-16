@@ -1,10 +1,11 @@
-import { EventBus } from '@servicestack/client'
+import { EventBus, each } from '@servicestack/client'
+/*minify:*/
 /**
  * App to register and build a PetiteVue App
  * @class
  */
 function PetiteVueApp() {
-    let Components = []
+    let Components = {}
     let Directives = {}
     let Props = {}
     let OnStart = []
@@ -75,7 +76,7 @@ function PetiteVueApp() {
         
         this.petite = PetiteVue.createApp({
             ...Props,
-            ...Components.reduce((acc,x) => { acc[x] = Components[x]; return acc }, {}),
+            ...Components,
             ...args,
         })
         Object.keys(Directives).forEach(name => this.petite.directive(name, Directives[name]))
@@ -108,3 +109,4 @@ function PetiteVueApp() {
 
     Object.assign(this, window.PetiteVue||{})
 }
+/*:minify*/

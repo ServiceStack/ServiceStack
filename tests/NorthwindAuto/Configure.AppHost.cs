@@ -3,7 +3,6 @@ using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using MyApp.ServiceInterface;
-using ServiceStack.Admin;
 using ServiceStack.HtmlModules;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
@@ -25,8 +24,8 @@ namespace MyApp
         {
             SetConfig(new HostConfig
             {
+                //DebugMode = false,
                 DebugMode = true,
-                // DebugMode = false,
                 AdminAuthSecret = "secret",
             });
 

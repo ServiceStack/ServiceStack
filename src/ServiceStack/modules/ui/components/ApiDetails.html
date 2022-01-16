@@ -1,69 +1,70 @@
-<script>
-    App.component('ApiDetails', ({store, routes}) => {
-        return {
-            $template: '#api-details-layout',
-            store, routes,
-            get op() {
-                return this.store.op
-            },
-            get request() {
-                return this.op && this.op.request
-            },
-            get opName() {
-                return this.request && this.request.name
-            },
-            predefinedRoute(opName) {
-                let apiFmt = APP.httpHandlers['ApiHandlers.Json']
-                    || (APP.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
-                return apiFmt ? apiFmt.replace('{Request}', opName) : ''
-            },
-            opReferencedTypes(op) {
-                let allTypesMap = {}
-                addReferencedTypes(allTypesMap, op.request)
-                if (op.returnType) {
-                    // QueryResponse<'T> => QueryResponse<Model>
-                    addReferencedTypes(allTypesMap, {...op.response, ...op.returnType})
-                }
-                return groupTypes(Object.values(allTypesMap))
-            },
-            inheritedTypes(typeRef) {
-                if (!typeRef) return ''
-                let types = [typeRef.name]
-                let metaType = TypesMap[typeRef.name]
-                while (metaType != null && metaType.inherits != null) {
-                    types.push(metaType.inherits.name)
-                    metaType = TypesMap[metaType.inherits.name]
-                }
-                return types.join(',')
-            },
+<script minify>
+App.component('ApiDetails', ({ store, routes, breakpoints }) => {
+    return {
+        $template: '#api-details-layout',
+        store, routes, breakpoints,
+        get op() {
+            return this.store.op
+        },
+        get request() {
+            return this.op && this.op.request
+        },
+        get opName() {
+            return this.request && this.request.name
+        },
+        predefinedRoute(opName) {
+            let apiFmt = APP.httpHandlers['ApiHandlers.Json']
+                || (APP.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
+            return apiFmt ? apiFmt.replace('{Request}', opName) : ''
+        },
+        opReferencedTypes(op) {
+            let allTypesMap = {}
+            addReferencedTypes(allTypesMap, op.request)
+            if (op.returnType) {
+                // QueryResponse<'T> => QueryResponse<Model>
+                addReferencedTypes(allTypesMap, {...op.response, ...op.returnType})
+            }
+            return groupTypes(Object.values(allTypesMap))
+        },
+        inheritedTypes(typeRef) {
+            if (!typeRef) return ''
+            let types = [typeRef.name]
+            let metaType = TypesMap[typeRef.name]
+            while (metaType != null && metaType.inherits != null) {
+                types.push(metaType.inherits.name)
+                metaType = TypesMap[metaType.inherits.name]
+            }
+            return types.join(',')
+        },
+    }
+})
+function addReferencedTypes(allTypesMap, type) {
+    if (!type) return
+    if (allTypesMap[type.name]) return
+    allTypesMap[type.name] = type
+    if (type.inherits) {
+        addReferencedTypes(allTypesMap, TypesMap[type.inherits.name])
+        if (type.inherits.genericArgs) {
+            type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
+        }
+    }
+    typeProperties(type).forEach(prop => {
+        addReferencedTypes(allTypesMap, TypesMap[prop.type])
+        if (type.genericArgs) {
+            type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
         }
     })
-    function addReferencedTypes(allTypesMap, type) {
-        if (!type) return
-        if (allTypesMap[type.name]) return
-        allTypesMap[type.name] = type
-        if (type.inherits) {
-            addReferencedTypes(allTypesMap, TypesMap[type.inherits.name])
-            if (type.inherits.genericArgs) {
-                type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
-            }
-        }
-        typeProperties(type).forEach(prop => {
-            addReferencedTypes(allTypesMap, TypesMap[prop.type])
-            if (type.genericArgs) {
-                type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
-            }
-        })
-        return allTypesMap
-    }
+    return allTypesMap
+}
 </script>
-<style>
-    #detail-info .min-w-full {
-    }
+<style minify>
+#detail-info .min-w-full {
+}
 </style>
+<!--minify-->
 <template id="api-details-layout">
 <div class="w-body md:w-body fixed top-top-nav h-top-nav flex">
-    <div v-if="request && !(routes.detailSrc && store.lg)" id="detail-info" class="flex-1 w-full lg:w-1/2 pt-2 sm:px-4 bg-white overflow-auto md:pb-scroll">
+    <div v-if="request && !(routes.detailSrc && !breakpoints.lg)" id="detail-info" class="flex-1 w-full lg:w-1/2 pt-2 sm:px-4 bg-white overflow-auto md:pb-scroll">
         <div class="flex px-2 sm:px-0">
             <div class="flex-grow">
                 <h2 class="mb-3">
@@ -239,3 +240,4 @@
     </div>
 </div>
 </template>
+<!--/minify-->

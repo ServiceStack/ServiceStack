@@ -1,3 +1,4 @@
+/*minify:*/
 exports.AdminDeleteUser = exports.AdminUpdateUser = exports.AdminCreateUser = exports.AdminQueryUsers = exports.AdminGetUser = exports.AdminDeleteUserResponse = exports.AdminUsersResponse = exports.AdminUserResponse = exports.AdminUserBase = void 0;
 var AdminUserBase = /** @class */ (function () {
     function AdminUserBase(init) {
@@ -82,3 +83,4 @@ var AdminDeleteUser = /** @class */ (function () {
     return AdminDeleteUser;
 }());
 exports.AdminDeleteUser = AdminDeleteUser;
+/*:minify*/

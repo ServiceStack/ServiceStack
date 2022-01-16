@@ -1,3 +1,4 @@
+/*minify:*/
 App.plugin({
     useTransitions(transitions) {
         function transition(prop, enter) {
@@ -12,14 +13,14 @@ App.plugin({
                     let nextTransition = rule[enter ? 'entering' : 'leaving']
                     if (rule.cls) {
                         if (el.className.indexOf(rule.cls) < 0) el.className += ` ${rule.cls}`
-                        let clsDuration = rule.cls.split(' ').find(x => x.startsWith('duration-'))
+                        ;let clsDuration = rule.cls.split(' ').find(x => x.startsWith('duration-'))
                         if (clsDuration) {
                             duration = parseInt(clsDuration.split('-')[1])
                         }
                     }
                     el.className = el.className.replace(` ${prevTransition.to}`, '')
                     el.className += ` ${nextTransition.from}`
-                    setTimeout(() => {
+                    ;setTimeout(() => {
                         el.className = el.className.replace(nextTransition.from, nextTransition.to)
                     }, duration)
                 }
@@ -49,3 +50,4 @@ App.plugin({
         })
     }
 })
+/*:minify*/

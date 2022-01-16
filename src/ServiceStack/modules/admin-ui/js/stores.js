@@ -1,14 +1,10 @@
+/*minify:*/
 App.useTransitions({ sidebar: true })
-let routes = App.pageRoutes({
+let routes = App.usePageRoutes({
     page:'admin',
     queryKeys:'tab,provider,q,page,sort,new,edit'.split(','),
     handlers: {
-        init(state) {
-            if (DEBUG) console.log('pageRoutes:init', state)
-        },
-        to(state) {
-            if (DEBUG) console.log('pageRoutes:to', state)
-        }
+        nav(state) { console.log('nav', state) } /*debug*/
     }
 })
 let store = PetiteVue.reactive({
@@ -18,21 +14,7 @@ let store = PetiteVue.reactive({
     api: null,
     auth: window.AUTH,
     baseUrl: BASE_URL,
-    get sm() { return isSmall() },
-    doLayout() {
-        let root = document.documentElement
-        let sidebar = $1('.sidebar')
-        if (!sidebar) return
-        if (isSmall() && routes.admin) {
-            sidebar.style.display = 'none'
-            root.style.setProperty('--sidebar-width', '0px')
-        } else {
-            sidebar.style.display = 'block'
-            root.style.setProperty('--sidebar-width', sidebarWidth)
-        }
-    },
     init() {
-        this.doLayout()
         setBodyClass({ page: routes.admin })
     },
     get adminUsers() { return APP.plugins.adminUsers },
@@ -54,7 +36,7 @@ let store = PetiteVue.reactive({
                         resolve(CACHE[url] = src)
                     })
                     .catch(e => {
-                        console.log(`ERROR fetchCache (${url}):`, e)
+                        console.error(`fetchCache (${url}):`, e)
                         reject(e)
                     })
             }
@@ -125,4 +107,5 @@ let store = PetiteVue.reactive({
             : null
     },
 })
-App.events.subscribe('pageRoutes:nav', args => store.init())
+App.events.subscribe('route:nav', args => store.init())
+/*:minify*/

@@ -1,16 +1,15 @@
-<script>
+<script minify>
 App.component('Input', ({ input, model, api }) => {
     return {
         $template: '#input-template',
         input,
         model: model || {},
         get error() { return resolve(api, x => x && x.error) },
-        humanify(id) { return humanize(toPascalCase(id)) },
         kvpValues(input) {
             return resolve(input.allowableEntries) || (resolve(input.allowableValues)||[]).map(x => ({ key:x, value:x }))
         },
         useLabel(input) {
-            return input.label != null ? input.label : this.humanify(input.id)
+            return input.label != null ? input.label : humanify(input.id)
         },
         usePlaceholder(input) {
             return input.placeholder || '' 
@@ -32,6 +31,7 @@ App.component('Input', ({ input, model, api }) => {
     }
 })
 </script>
+<!--minify-->
 <template id="input-template">
 <div v-if="input.type=='divider'" class="border-t"></div>
 <input v-else-if="input.type=='hidden'" v-bind="input" type="hidden" v-model="model[input.id]" />
@@ -74,3 +74,4 @@ App.component('Input', ({ input, model, api }) => {
     <p v-else-if="input.help" :id="`${input.id}-description`" class="text-gray-500" v-html="input.help"></p>
 </div>
 </template>
+<!--/minify-->

@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" style="">
 <head>
-    <!--shared:Meta-->
-    <base href="">
-    <link rel="stylesheet" href="../css/highlight.css">
+<!--shared:Meta-->
+<base href="">
+<style>
+/*vfs[]:/css/highlight.css*/
+</style>
+<script>
+let DEBUG = false
+DEBUG = true /*debug*/
+</script>
 <style>
 /*file:css/app.css */
 /*shared:css/ui.css */
@@ -16,7 +22,7 @@
     <div id="sidebar" v-scope="Sidebar({ store, routes })"></div>
     <div class="md:pl-sidebar md:w-sidebar overflow-auto flex flex-col flex-1">
         <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
-            <button type="button" @click="transition('sidebar')"
+            <button type="button" @click="transition('sidebar')"    
                     class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                 <span class="sr-only">Open sidebar</span>
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -38,7 +44,7 @@
                     </div>
                     <div class="fixed top-top-nav flex-grow min-h-screen overflow-auto">
                         <div v-if="routes.tab === ''" v-scope="ApiForm({ store, routes })"></div>
-                        <div v-else-if="routes.tab === 'details'" class="flex" v-scope="ApiDetails({ store, routes })"></div>
+                        <div v-else-if="routes.tab === 'details'" class="flex" v-scope="ApiDetails({ store, routes, breakpoints })"></div>
                         <div v-else-if="routes.tab === 'code'" v-scope="ApiCode({ store, routes })"></div>
                     </div>
                 </div>
@@ -48,7 +54,10 @@
     </div>
 </div>
 </div>
-<!--shared:CommonJs-->
+<script>
+let exports = { __esModule:true }, module = { exports:exports }
+function require(name) { return exports[name] || window[name] }
+</script>
 <script src="../js/servicestack-client.js"></script>
 <script src="../types/js"></script>
 <script>
@@ -63,9 +72,9 @@ function loadAuth(auth) {
 <script src="../metadata/app?callback=loadApp"></script>
 <script src="../auth?callback=loadAuth"></script>
 <script src="../js/petite-vue.js"></script>
-<script src="../js/highlight.js"></script>
 <script>
 document.title = APP.app.serviceName
+setFavIcon(APP.ui.brandIcon, combinePaths(APP.app.baseUrl, '/metadata/svg/servicestack.datauri'))
 /*shared/js:PetiteVueApp */
 let App = new PetiteVueApp()
 /*plugins:* */
@@ -73,6 +82,7 @@ let App = new PetiteVueApp()
 </script>
 <!--shared:Alert,AuthNav,Brand,CloseButton,CopyIcon,CopyLine,Image,Input,Loading,PreviewObject,SignIn,ErrorSummary-->
 <!--files:components/*.html-->
+<script src="../js/highlight.js"></script>
 <script>
 App.directive('highlightjs', ({ effect, get, el}) => {
     effect(() => {
@@ -108,15 +118,14 @@ App.build({
     typeName2,
 }).mount()
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
+let sidebarWidth = styleProperty('--sidebar-width')
 App.start()
-let sidebarWidth = '20rem'
-window.onresize = () => store.doLayout({ sidebarWidth })
 App.nextTick(() => {
     document.body.classList.remove('loading')
     let max = Math.max(...Array.from($$('#sidebar .nav-item')).map(el => el.clientWidth))
     if (max > (240 - 75)) {
        sidebarWidth = (max + 75) + 'px'
-       store.doLayout({ sidebarWidth })
+       setStyleProperty({ '--sidebar-width': sidebarWidth })
     }
 })
 </script>

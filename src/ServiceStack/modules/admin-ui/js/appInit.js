@@ -1,5 +1,4 @@
-//APP.config.debugMode = false
-let DEBUG = APP.config.debugMode
+/*minify:*/
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
@@ -15,3 +14,4 @@ function createClient(fn) {
     })
 }
 let client = createClient()
+/*:minify*/

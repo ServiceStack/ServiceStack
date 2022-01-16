@@ -1,17 +1,4 @@
-const $1 = (sel, el) => typeof sel === "string" ? (el || document).querySelector(sel) : sel || null
-const $$ = (sel, el) => typeof sel === "string"
-    ? Array.prototype.slice.call((el || document).querySelectorAll(sel))
-    : Array.isArray(sel) ? sel : [sel]
-function on(sel, handlers) {
-    $$(sel).forEach(e => {
-        Object.keys(handlers).forEach(function (evt) {
-            let fn = handlers[evt]
-            if (typeof evt === 'string' && typeof fn === 'function') {
-                e.addEventListener(evt, fn.bind(e))
-            }
-        })
-    })
-}
+/*minify:*/
 function setBodyClass(obj) {
     let bodyCls = document.body.classList
     Object.keys(obj).forEach(name => {
@@ -24,14 +11,12 @@ function setBodyClass(obj) {
         }
     })
 }
-let ResolutionSizes = { '2xl':1536, xl:1280, lg:1024, md:768, sm:640 }
-function resolutionBreakpoints() {
-    let w = document.body.clientWidth
-    return Object.keys(ResolutionSizes).filter(k => w > ResolutionSizes[k])
+function styleProperty(name) {
+    return document.documentElement.style.getPropertyValue(name)
 }
-function isSmall() { return window.matchMedia('(max-width:640px)').matches }
-function humanify(id) { 
-    return humanize(toPascalCase(id)) 
+function setStyleProperty(props) {
+    let style = document.documentElement.style
+    Object.keys(props).forEach(name => style.setProperty(name, props[name]))
 }
 function mapGetForInput(o, id) {
     let ret = apiValue(mapGet(o,id))
@@ -52,28 +37,16 @@ function gridInputs(formLayout) {
 function colClass(fields) {
     return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
 }
-function toggleAttr(el, attr) {
-    let hasAttr = el.hasAttribute(attr) 
-    if (hasAttr) 
-        el.removeAttribute(attr)
-    else
-        el.setAttribute(attr, 'true')
-    return hasAttr
+function setFavIcon(icon, defaultSrc) {
+    setFavIconSrc(icon.uri || defaultSrc)
 }
-function parentsWithAttr(el, attr)
-{
-    let els = []
-    let parentEl = el
-    while ((parentEl = parentEl.parentElement.closest(`[${attr}]`)) != null) {
-        els.push(parentEl)
-        let siblingEl = parentEl
-        while ((siblingEl = siblingEl.previousElementSibling) != null) {
-            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
-        }
-        siblingEl = parentEl
-        while ((siblingEl = siblingEl.nextElementSibling) != null) {
-            if (siblingEl.hasAttribute(attr)) els.push(siblingEl)
-        }
+function setFavIconSrc(src) {
+    let link = $1("link[rel~='icon']")
+    if (!link) {
+        link = document.createElement('link')
+        link.rel = 'icon'
+        $1('head').appendChild(link)
     }
-    return els
+    link.href = src
 }
+/*:minify*/

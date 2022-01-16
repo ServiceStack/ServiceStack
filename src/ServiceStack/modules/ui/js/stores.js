@@ -1,11 +1,15 @@
+/*minify:*/
 App.useTransitions({ sidebar: true })
-let routes = App.pageRoutes({
+let breakpoints = App.useBreakpoints({
+    handlers: {
+        change({ previous, current }) { console.log('breakpoints.change', previous, current) } /*debug*/
+    }
+})
+let routes = App.usePageRoutes({
     page:'op',
     queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider'.split(','),
     handlers: {
-        nav(state) {
-            if (DEBUG) console.log('nav', state)
-        }
+        nav(state) { console.log('nav', state) } /*debug*/
     }
 })
 let store = PetiteVue.reactive({
@@ -18,15 +22,6 @@ let store = PetiteVue.reactive({
     api: null,
     auth: window.AUTH,
     baseUrl: BASE_URL,
-    ...Object.keys(ResolutionSizes).reduce((acc,x) => { acc[x] = false; return acc }, {}),
-    doLayout({ sidebarWidth }) {
-        let root = document.documentElement
-        if (sidebarWidth)
-            root.style.setProperty('--sidebar-width', sidebarWidth)
-        let w = document.body.clientWidth;
-        Object.keys(ResolutionSizes).forEach(k => this[k] = w < ResolutionSizes[k])
-        //console.log(Object.keys(ResolutionSizes).map(k => [k,this[k]]))
-    },
     get useLang() { return routes.lang || 'csharp' },
     init() {
         this.loadDetailSrc()
@@ -152,7 +147,7 @@ let store = PetiteVue.reactive({
                         resolve(CACHE[url] = src)
                     })
                     .catch(e => {
-                        console.log(`ERROR fetchCache (${url}):`, e)
+                        console.error(`fetchCache (${url}):`, e)
                         reject(e)
                     })
             }
@@ -225,10 +220,10 @@ let store = PetiteVue.reactive({
         let op = this.op
         if (!op || !op.requiresAuth) return null
         if (!this.auth) return `<b>${op.request.name}</b> requires Authentication`
-        return invalidAccessMessage(op, this.auth.roles, this.auth.permissions)
+        ;return invalidAccessMessage(op, this.auth.roles, this.auth.permissions)
     },
 })
-App.events.subscribe('pageRoutes:nav', args => store.init())
+App.events.subscribe('route:nav', args => store.init())
 function typeProperties(type) {
     let props = []
     while (type) {
@@ -272,8 +267,9 @@ function typeName2(name, genericArgs) {
         return typeAlias(genericArgs[0]) + '?'
     if (name.endsWith('[]'))
         return `List<${typeAlias(name.substring(0,name.length-2))}>`
-    if (genericArgs.length === 0)
+    ;if (genericArgs.length === 0)
         return typeAlias(name)
     return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
 }
-function typeName(metaType) { return typeName2(metaType.name, metaType.genericArgs) }
+function typeName(metaType) { return metaType && typeName2(metaType.name, metaType.genericArgs) }
+/*:minify*/

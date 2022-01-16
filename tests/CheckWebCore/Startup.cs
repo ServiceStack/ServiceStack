@@ -134,7 +134,16 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
-            RawHttpHandlers.Add(ApiHandlers.Json("/api/{Request}"));
+            SetConfig(new HostConfig
+            {
+                AddRedirectParamsToQueryString = true,
+                DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
+                //DebugMode = true,
+//                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
+                UseSecureCookies = true,
+                AdminAuthSecret = "secretz",
+                CompressFilesWithExtensions = { "js", "css" },
+            });
             
             RegisterService<GetFileService>();
 
@@ -157,17 +166,6 @@ namespace CheckWebCore
             }
 
             Plugins.Add(new RazorFormat()); // enable ServiceStack.Razor
-            
-            SetConfig(new HostConfig
-            {
-                AddRedirectParamsToQueryString = true,
-                DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
-                // DebugMode = true,
-//                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
-                UseSecureCookies = true,
-                AdminAuthSecret = "secretz",
-                CompressFilesWithExtensions = { "js", "css" },
-            });
 
             var cache = container.Resolve<ICacheClient>();
             

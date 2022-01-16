@@ -1,4 +1,4 @@
-<script>
+<script minify>
 App.component('Image', ({ svg, uri, alt, cls }, opt) => {
     let f = attr => !opt || !opt[attr] ? '' : resolve(opt[attr])  
     return {
