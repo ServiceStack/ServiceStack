@@ -195,6 +195,13 @@ public static class FilesTransformerUtils
 {
     public static FilesTransformer Defaults(Action<FilesTransformer>? with=null)
     {
+        // Enable static typing during dev, strip from browser to run
+        var jsTransformers = new List<HtmlModuleLine>
+        {
+            new RemoveLineStartingWith(new[] { "import ", "declare " }, ignoreWhiteSpace: false, Run.Always),
+            new RemovePrefixesFromLine("export ", ignoreWhiteSpace: false, Run.Always),
+        };
+            
         var options = new FilesTransformer
         {
             FileExtensions =
@@ -204,6 +211,13 @@ public static class FilesTransformerUtils
                     BlockTransformers = {
                         new RawBlock("<!--raw-->", "<!--/raw-->", Run.Always),
                         new MinifyBlock("<!--minify-->", "<!--/minify-->", Minifiers.HtmlAdvanced, Run.IgnoreInDebug),
+                        new MinifyBlock("<script minify>", "</script>", Minifiers.JavaScript, Run.IgnoreInDebug) {
+                            LineTransformers = jsTransformers,
+                            Convert = js => "<script>" + js + "</script>",
+                        },
+                        new MinifyBlock("<style minify>", "</style>", Minifiers.Css, Run.IgnoreInDebug) {
+                            Convert = css => "<style>" + css + "</style>"
+                        },
                     },
                     LineTransformers =
                     {
@@ -219,8 +233,10 @@ public static class FilesTransformerUtils
                 ["js"] = new FileTransformerOptions
                 {
                     BlockTransformers = {
-                        new RawBlock("/*raw|*/", "/*|raw*/", Run.Always),
-                        new MinifyBlock("/*minify|*/", "/*|minify*/", Minifiers.JavaScript, Run.IgnoreInDebug),
+                        new RawBlock("/*raw:*/", "/*:raw*/", Run.Always),
+                        new MinifyBlock("/*minify:*/", "/*:minify*/", Minifiers.JavaScript, Run.IgnoreInDebug) {
+                            LineTransformers = jsTransformers
+                        },
                     },
                     LineTransformers =
                     {
@@ -235,8 +251,8 @@ public static class FilesTransformerUtils
                 ["css"] = new FileTransformerOptions
                 {
                     BlockTransformers = {
-                        new RawBlock("/*raw|*/", "/*|raw*/", Run.Always),
-                        new MinifyBlock("/*minify|*/", "/*|minify*/", Minifiers.Css, Run.IgnoreInDebug),
+                        new RawBlock("/*raw:*/", "/*:raw*/", Run.Always),
+                        new MinifyBlock("/*minify:*/", "/*:minify*/", Minifiers.Css, Run.IgnoreInDebug),
                     },
                     LineTransformers =
                     {

@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using ServiceStack.Text;
 
 namespace ServiceStack.HtmlModules;
 
@@ -40,6 +41,10 @@ public class RawBlock : HtmlModuleBlock
 public class MinifyBlock : HtmlModuleBlock
 {
     public ICompressor Compressor { get; }
+    
+    public Func<string, string?>? Convert { get; set; }
+
+    public List<HtmlModuleLine> LineTransformers { get; set; } = new();
 
     /// <summary>
     /// When tags are not used, e.g. in File Transformers
@@ -54,7 +59,30 @@ public class MinifyBlock : HtmlModuleBlock
 
     public override string? Transform(string block)
     {
+        if (LineTransformers.Count > 0)
+        {
+            var blockChars = block.AsMemory();
+            int startIndex = 0;
+            var sb = StringBuilderCache.Allocate();
+            while (blockChars.TryReadLine(out var line, ref startIndex))
+            {
+                foreach (var lineTransformer in LineTransformers)
+                {
+                    line = lineTransformer.Transform(line);
+                    if (line.Length == 0)
+                        break;
+                }
+                if (line.Length > 0)
+                {
+                    sb.AppendLine(line);
+                }
+            }
+            block = StringBuilderCache.ReturnAndFree(sb);
+        }
+        
         var output = Compressor.Compress(block);
-        return output;
+        return Convert != null
+            ? Convert(output)
+            : output;
     }
 }
