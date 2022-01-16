@@ -5,10 +5,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.HtmlModules;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
+using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -64,6 +67,11 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     public bool? EnableHttpCaching { get; set; }
 
     /// <summary>
+    /// Whether to enable cached compressed responses
+    /// </summary>
+    public bool? EnableCompression { get; set; }
+
+    /// <summary>
     /// The HTTP CacheControl Header to use (default: public, max-age=3600, must-revalidate)
     /// </summary>
     public string? CacheControl { get; set; }
@@ -72,14 +80,16 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     
     public void Register(IAppHost appHost)
     {
+        EnableHttpCaching ??= !appHost.Config.DebugMode;
+        EnableCompression ??= !appHost.Config.DebugMode;
+        
         FilesTransformer ??= FilesTransformer.Default;
         FileContentsResolver ??= FilesTransformer.ReadAll;
         VirtualFiles ??= appHost.VirtualFiles;
-        if (EnableHttpCaching == null)
-            EnableHttpCaching = !appHost.Config.DebugMode;
         foreach (var component in Modules)
         {
             component.EnableHttpCaching ??= EnableHttpCaching;
+            component.EnableCompression ??= EnableCompression;
             component.CacheControl ??= CacheControl;
             component.Feature = this;
             component.VirtualFiles ??= VirtualFiles;
@@ -126,13 +136,13 @@ public class HtmlModuleContext
 public class HtmlModule
 {
     public bool? EnableHttpCaching { get; set; }
+    public bool? EnableCompression { get; set; }
     public string? CacheControl { get; set; }
     public HtmlModulesFeature? Feature { get; set; }
     public string DirPath { get; set; }
     public string BasePath { get; set; }
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
-    private string? indexFileETag = null;
     public string IndexFile { get; set; } = "index.html";
     public List<string> PublicPaths { get; set; } = new() {
         "/assets"
@@ -289,6 +299,11 @@ public class HtmlModule
         return StringBuilderCache.ReturnAndFree(sb).AsMemory();
     }
 
+    private string? indexFileETag = null;
+
+    private byte[]? cachedBytes; 
+    private ConcurrentDictionary<string, byte[]> zipCache = new();
+
     public void Register(IAppHost appHost)
     {
         VirtualFiles ??= appHost.VirtualFiles;
@@ -328,6 +343,9 @@ public class HtmlModule
                             return;
                         }
                     }
+
+                    if (EnableCompression == true && await TryReturnCompressedResponse(httpReq, httpRes).ConfigAwait())
+                        return;
                     
                     var fragments = GetIndexFragments();
                     using var ms = MemoryStreamFactory.GetStream();
@@ -338,13 +356,21 @@ public class HtmlModule
                     }
                     httpRes.ContentType = MimeTypes.Html;
                     ms.Position = 0;
-                    await ms.CopyToAsync(httpRes.OutputStream).ConfigAwait();
 
                     // If EnableHttpCaching, calculate ETag hash from entire processed file 
                     if (EnableHttpCaching == true && indexFileETag == null)
                     {
                         indexFileETag = ms.ToMd5Hash().Quoted();
                     }
+
+                    if (EnableCompression == true)
+                    {
+                        cachedBytes = ms.ToArray();
+                        if (await TryReturnCompressedResponse(httpReq, httpRes).ConfigAwait())
+                            return;
+                    }
+
+                    await ms.CopyToAsync(httpRes.OutputStream).ConfigAwait();
                 }
                 catch (Exception ex)
                 {
@@ -352,5 +378,21 @@ public class HtmlModule
                 }
             });
         });
+    }
+
+    private async Task<bool> TryReturnCompressedResponse(IRequest httpReq, IResponse httpRes)
+    {
+        var compressionType = httpReq.GetCompressionType();
+        var compressor = compressionType != null && cachedBytes != null
+            ? StreamCompressors.Get(compressionType)
+            : null;
+        if (compressor != null)
+        {
+            var zipBytes = zipCache.GetOrAdd(compressor.Encoding, _ => compressor.Compress(cachedBytes!));
+            httpRes.AddHeader(HttpHeaders.ContentEncoding, compressor.Encoding);
+            await httpRes.OutputStream.WriteAsync(zipBytes);
+            return true;
+        }
+        return false;
     }
 }
