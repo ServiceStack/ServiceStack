@@ -45,6 +45,40 @@ public class RemoveLineStartingWith : HtmlModuleLine
     }
 }
 
+public class RemoveLineEndingWith : HtmlModuleLine
+{
+    public string[] Suffixes { get; }
+    public bool IgnoreWhiteSpace { get; }
+    
+    public RemoveLineEndingWith(string suffix, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
+        : this(new[]{ suffix }, ignoreWhiteSpace, behaviour) {}
+    
+    public RemoveLineEndingWith(string[] prefixes, bool ignoreWhiteSpace=false, Run behaviour=Run.Always)
+    {
+        Suffixes = prefixes;
+        IgnoreWhiteSpace = ignoreWhiteSpace;
+        Behaviour = behaviour;
+    }
+
+    public override ReadOnlyMemory<char> Transform(ReadOnlyMemory<char> line)
+    {
+        foreach (var linePrefix in Suffixes)
+        {
+            if (IgnoreWhiteSpace)
+            {
+                if (line.Span.TrimStart().EndsWith(linePrefix))
+                    return default;
+            }
+            else
+            {
+                if (line.EndsWith(linePrefix))
+                    return default;
+            }
+        }
+        return line;
+    }
+}
+
 public class RemovePrefixesFromLine : HtmlModuleLine
 {
     public string[] Prefixes { get; }

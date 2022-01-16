@@ -53,7 +53,7 @@ public class FilesTransformer
         var defaults = FilesTransformerUtils.Defaults(with);
         return debugMode == null 
             ? defaults 
-            : defaults.Without(HostContext.DebugMode ? Run.IgnoreInDebug : Run.OnlyInDebug);
+            : defaults.Without(debugMode.Value ? Run.IgnoreInDebug : Run.OnlyInDebug);
     }
 
     public FilesTransformer Without(Run behaviour)
@@ -189,19 +189,41 @@ public class FilesTransformer
         }
     }
     
+    public static List<HtmlModuleLine> HtmlLineTransformers { get; } = new()
+    {
+        // Enable static typing during dev, strip from browser to run
+        new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
+        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
+        new RemoveLineEndingWith(new[]{ "/*debug*/", "<!--debug-->" }, ignoreWhiteSpace:true, Run.IgnoreInDebug),
+        // Hide dev comments from browser (RemoveHtmlLineComments syntax)
+        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always),
+    };
+
+    // Enable static typing during dev, strip from browser to run
+    public static List<HtmlModuleLine> JsLineTransformers { get; } = new()
+    {
+        new RemoveLineStartingWith(new[] { "import ", "declare " }, ignoreWhiteSpace:false, Run.Always),
+        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always),
+        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
+        // Hide dev comments from browser (RemoveJsLineComments syntax)
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always),
+    };
+
+    public static List<HtmlModuleLine> CssLineTransformers { get; } = new()
+    {
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always),
+        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace: true, Run.IgnoreInDebug),
+    };
 }
 
 public static class FilesTransformerUtils
 {
     public static FilesTransformer Defaults(Action<FilesTransformer>? with=null)
     {
-        // Enable static typing during dev, strip from browser to run
-        var jsTransformers = new List<HtmlModuleLine>
-        {
-            new RemoveLineStartingWith(new[] { "import ", "declare " }, ignoreWhiteSpace: false, Run.Always),
-            new RemovePrefixesFromLine("export ", ignoreWhiteSpace: false, Run.Always),
-        };
-            
         var options = new FilesTransformer
         {
             FileExtensions =
@@ -212,41 +234,24 @@ public static class FilesTransformerUtils
                         new RawBlock("<!--raw-->", "<!--/raw-->", Run.Always),
                         new MinifyBlock("<!--minify-->", "<!--/minify-->", Minifiers.HtmlAdvanced, Run.IgnoreInDebug),
                         new MinifyBlock("<script minify>", "</script>", Minifiers.JavaScript, Run.IgnoreInDebug) {
-                            LineTransformers = jsTransformers,
+                            LineTransformers = FilesTransformer.JsLineTransformers.ToList(),
                             Convert = js => "<script>" + js + "</script>",
                         },
                         new MinifyBlock("<style minify>", "</style>", Minifiers.Css, Run.IgnoreInDebug) {
                             Convert = css => "<style>" + css + "</style>"
                         },
                     },
-                    LineTransformers =
-                    {
-                        // Enable static typing during dev, strip from browser to run
-                        new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
-                        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
-                        // Hide dev comments from browser (RemoveHtmlLineComments syntax)
-                        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
-                        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
-                        new RemoveLineWithOnlyWhitespace(Run.Always),
-                    },
+                    LineTransformers = FilesTransformer.HtmlLineTransformers.ToList(),
                 },
                 ["js"] = new FileTransformerOptions
                 {
                     BlockTransformers = {
                         new RawBlock("/*raw:*/", "/*:raw*/", Run.Always),
                         new MinifyBlock("/*minify:*/", "/*:minify*/", Minifiers.JavaScript, Run.IgnoreInDebug) {
-                            LineTransformers = jsTransformers
+                            LineTransformers = FilesTransformer.JsLineTransformers.ToList()
                         },
                     },
-                    LineTransformers =
-                    {
-                        // Enable static typing during dev, strip from browser to run
-                        new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
-                        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
-                        // Hide dev comments from browser (RemoveJsLineComments syntax)
-                        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
-                        new RemoveLineWithOnlyWhitespace(Run.Always),
-                    }
+                    LineTransformers = FilesTransformer.JsLineTransformers.ToList(),
                 },
                 ["css"] = new FileTransformerOptions
                 {
@@ -254,11 +259,7 @@ public static class FilesTransformerUtils
                         new RawBlock("/*raw:*/", "/*:raw*/", Run.Always),
                         new MinifyBlock("/*minify:*/", "/*:minify*/", Minifiers.Css, Run.IgnoreInDebug),
                     },
-                    LineTransformers =
-                    {
-                        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, Run.Always),
-                        new RemoveLineWithOnlyWhitespace(Run.Always),
-                    }
+                    LineTransformers = FilesTransformer.CssLineTransformers.ToList(),
                 },
             },
         };

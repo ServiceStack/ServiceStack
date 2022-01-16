@@ -4,14 +4,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Auth;
 using ServiceStack.HtmlModules;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
-using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -42,6 +38,8 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     {
         new FileHandler("file"),
         new FilesHandler("files"),
+        new FileHandler("vfs") { VirtualFilesResolver = ctx => HostContext.VirtualFiles },
+        new FileHandler("vfs[]") { VirtualFilesResolver = ctx => HostContext.VirtualFileSources },
     };
 
     /// <summary>
@@ -76,18 +74,27 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     /// </summary>
     public string? CacheControl { get; set; }
 
-    public const string DefaultCacheControl = "public, max-age=3600, must-revalidate"; 
-    
+    public const string DefaultCacheControl = "public, max-age=3600, must-revalidate";
+
+    /// <summary>
+    /// Whether to include FilesTransformer["html"].LineTransformers in main index.html
+    /// </summary>
+    public bool IncludeHtmlLineTransformers { get; set; } = true;
+
     public void Register(IAppHost appHost)
     {
-        EnableHttpCaching ??= !appHost.Config.DebugMode;
-        EnableCompression ??= !appHost.Config.DebugMode;
+        var debugMode = appHost.Config.DebugMode;
+        EnableHttpCaching ??= !debugMode;
+        EnableCompression ??= !debugMode;
+        FilesTransformer ??= FilesTransformer.Defaults(debugMode);
         
-        FilesTransformer ??= FilesTransformer.Default;
         FileContentsResolver ??= FilesTransformer.ReadAll;
         VirtualFiles ??= appHost.VirtualFiles;
         foreach (var component in Modules)
         {
+            if (IncludeHtmlLineTransformers && FilesTransformer.FileExtensions.TryGetValue("html", out var ext))
+                component.LineTransformers.AddRange(ext.LineTransformers);
+
             component.EnableHttpCaching ??= EnableHttpCaching;
             component.EnableCompression ??= EnableCompression;
             component.CacheControl ??= CacheControl;
@@ -105,14 +112,15 @@ public class HtmlModuleContext
     public HtmlModule Module { get; }
     public IRequest Request { get; }
     public IVirtualPathProvider VirtualFiles => Module.VirtualFiles!;
+    public bool DebugMode => HostContext.DebugMode;
 
-    public IVirtualFile AssertFile(string virtualPath)
-    {
-        var file = VirtualFiles.GetFile(virtualPath);
-        if (file == null)
-            throw HttpError.NotFound($"{virtualPath} does not exist");
-        return file;
-    }
+    /// <summary>
+    /// Resolve file from the Module configured VirtualFiles
+    /// </summary>
+    public IVirtualFile AssertFile(string virtualPath) => AssertFile(VirtualFiles, virtualPath);
+
+    public IVirtualFile AssertFile(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)
+        ?? throw HttpError.NotFound($"{virtualPath} does not exist");
 
     public Func<IVirtualFile, string> FileContentsResolver => Module.FileContentsResolver != null
         ? Module.FileContentsResolver!
@@ -163,11 +171,12 @@ public class HtmlModule
         DirPath = dirPath.TrimEnd('/');
         BasePath = (basePath ?? DirPath).TrimEnd('/');
         Tokens = new() {
-            ["<base href=\"\">"] = ctx => ($"<base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{BasePath}/")}\">"
-            + (HostContext.DebugMode ? "\n<script src=\"/js/hot-fileloader.js\"></script>" : "")).AsMemory().ToUtf8(),
+            ["<base href=\"\">"] = ctx => ($"<base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{BasePath}/")}\">\n"
+            + (ctx.DebugMode ? "<script>\n" 
+                    + ctx.AssertFile(HostContext.VirtualFileSources,"/js/hot-fileloader.js").ReadAllText() 
+                + "\n</script>\n" : ""))
+                .AsMemory().ToUtf8(),
         };
-        if (FilesTransformer.Default.FileExtensions.TryGetValue("html", out var htmlTransformers))
-            LineTransformers = new List<HtmlModuleLine>(htmlTransformers.LineTransformers);
     }
     
     public ConcurrentDictionary<string, ReadOnlyMemory<byte>> Cache { get; } = new();

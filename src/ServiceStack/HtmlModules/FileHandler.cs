@@ -14,10 +14,15 @@ public class FileHandler : IHtmlModulesHandler
 {
     public string Name { get; }
     public FileHandler(string name) => Name = name;
+    public Func<HtmlModuleContext,IVirtualPathProvider>? VirtualFilesResolver { get; set; }
     public ReadOnlyMemory<byte> Execute(HtmlModuleContext ctx, string path)
     {
-        return ctx.Cache($"{Name}:{ctx.Module.DirPath}:{path}", _ => ctx.FileContentsResolver(ctx.AssertFile(path.StartsWith("/")
-            ? path
-            : ctx.Module.DirPath.CombineWith(path))).AsMemory().ToUtf8());
+        return ctx.Cache($"{Name}:{ctx.Module.DirPath}:{path}", _ =>
+        {
+            var useVfs = VirtualFilesResolver?.Invoke(ctx) ?? ctx.VirtualFiles;
+            return ctx.FileContentsResolver(ctx.AssertFile(useVfs, path.StartsWith("/")
+                ? path
+                : ctx.Module.DirPath.CombineWith(path))).AsMemory().ToUtf8();
+        });
     }
 }
