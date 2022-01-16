@@ -24,12 +24,12 @@ public static class StreamCompressors
     public static void Set(string encoding, IStreamCompressor compressor) =>
         Compressors[encoding] = compressor;
     
-    public static bool SupportsEncoding(string encoding) => Compressors.ContainsKey(encoding);
+    public static bool SupportsEncoding(string? encoding) => encoding != null && Compressors.ContainsKey(encoding);
 
     /// <summary>
     /// IStreamCompressor implementation for registered CompressionTypes 
     /// </summary>
-    public static IStreamCompressor? Get(string type) => Compressors.TryGetValue(type, out var compressor)
+    public static IStreamCompressor? Get(string? type) => type != null && Compressors.TryGetValue(type, out var compressor)
         ? compressor
         : null;
     
