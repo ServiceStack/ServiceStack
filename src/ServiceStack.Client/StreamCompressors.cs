@@ -12,7 +12,7 @@ namespace ServiceStack;
 
 public static class StreamCompressors
 {
-    public static Dictionary<string, IStreamCompressor> Compressors { get; } = new()
+    static Dictionary<string, IStreamCompressor> Compressors { get; } = new()
     {
 #if NET6_0_OR_GREATER
         { "br", BrotliCompressor.Instance }, //CompressionTypes.Brotli
@@ -21,6 +21,9 @@ public static class StreamCompressors
         { CompressionTypes.GZip, GZipCompressor.Instance },
     };
 
+    public static void Set(string encoding, IStreamCompressor compressor) =>
+        Compressors[encoding] = compressor;
+    
     public static bool SupportsEncoding(string encoding) => Compressors.ContainsKey(encoding);
 
     /// <summary>
