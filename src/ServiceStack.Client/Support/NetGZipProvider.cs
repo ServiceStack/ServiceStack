@@ -8,6 +8,8 @@ namespace ServiceStack.Support
 {
     public class NetGZipProvider : IGZipProvider
     {
+        public static NetGZipProvider Instance { get; } = new();
+
         public byte[] GZip(string text)
         {
             return GZip(Encoding.UTF8.GetBytes(text));

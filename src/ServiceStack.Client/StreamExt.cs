@@ -54,9 +54,9 @@ namespace ServiceStack
             throw new NotSupportedException(compressionType);
         }
 
-        public static IDeflateProvider DeflateProvider = new Support.NetDeflateProvider();
+        public static IDeflateProvider DeflateProvider = Support.NetDeflateProvider.Instance;
 
-        public static IGZipProvider GZipProvider = new Support.NetGZipProvider();
+        public static IGZipProvider GZipProvider = Support.NetGZipProvider.Instance;
 
         /// <summary>
         /// Decompresses the specified gz buffer using the default compression method: Inflate

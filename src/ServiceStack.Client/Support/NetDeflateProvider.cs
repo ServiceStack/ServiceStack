@@ -8,6 +8,8 @@ namespace ServiceStack.Support
 {
     public class NetDeflateProvider : IDeflateProvider
     {
+        public static NetDeflateProvider Instance { get; } = new();
+        
         public byte[] Deflate(string text)
         {
             return Deflate(Encoding.UTF8.GetBytes(text));
