@@ -41,7 +41,7 @@ namespace ServiceStack
             };
         }
 
-        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new())
         {
             using var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read) {
                 Position = Adler32ChecksumLength

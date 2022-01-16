@@ -60,8 +60,8 @@ namespace ServiceStack.Host
             this.acceptEncoding = this.acceptEncoding.ToLower();
         }
 
-        public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
-
+        public bool AcceptsBrotli => AcceptEncoding != null && AcceptEncoding.Contains("br");
         public bool AcceptsDeflate => AcceptEncoding != null && AcceptEncoding.Contains("deflate");
+        public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
     }
 }

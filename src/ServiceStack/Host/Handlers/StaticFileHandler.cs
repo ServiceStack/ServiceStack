@@ -29,6 +29,7 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -80,10 +81,10 @@ namespace ServiceStack.Host.Handlers
         private static DateTime DefaultFileModified { get; set; }
         private static string DefaultFilePath { get; set; }
         private static byte[] DefaultFileContents { get; set; }
-        private static byte[] DefaultFileContentsGzip { get; set; }
-        private static byte[] DefaultFileContentsDeflate { get; set; }
         public IVirtualNode VirtualNode { get; set; }
 
+        private static ConcurrentDictionary<string, byte[]> defaultFileCacheZip = new();
+        
         /// <summary>
         /// Keep default file contents in-memory
         /// </summary>
@@ -190,27 +191,15 @@ namespace ServiceStack.Host.Handlers
                         if (file.LastModified > DefaultFileModified)
                             SetDefaultFile(DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
 
-                        if (!shouldCompress)
+                        var compressor = shouldCompress ? StreamCompressors.Get(encoding) : null;
+                        if (compressor == null)
                         {
                             await r.OutputStream.WriteAsync(DefaultFileContents).ConfigAwait();
                             await r.OutputStream.FlushAsync().ConfigAwait();
                         }
                         else
                         {
-                            byte[] zipBytes = null;
-                            if (encoding == CompressionTypes.GZip)
-                            {
-                                zipBytes = DefaultFileContentsGzip ??= DefaultFileContents.CompressBytes(encoding);
-                            }
-                            else if (encoding == CompressionTypes.Deflate)
-                            {
-                                zipBytes = DefaultFileContentsDeflate ??= DefaultFileContents.CompressBytes(encoding);
-                            }
-                            else
-                            {
-                                zipBytes = DefaultFileContents.CompressBytes(encoding);
-                            }
-
+                            var zipBytes = defaultFileCacheZip.GetOrAdd(encoding, _ => compressor.Compress(DefaultFileContents));
                             r.AddHeader(HttpHeaders.ContentEncoding, encoding);
                             r.SetContentLength(zipBytes.Length);
                             await r.OutputStream.WriteAsync(zipBytes).ConfigAwait();

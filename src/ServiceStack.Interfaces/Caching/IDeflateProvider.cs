@@ -1,7 +1,9 @@
+using System;
 using System.IO;
 
 namespace ServiceStack.Caching
 {
+    [Obsolete("Use DeflateCompressor and IStreamCompressor")]
     public interface IDeflateProvider
     {
         byte[] Deflate(string text);

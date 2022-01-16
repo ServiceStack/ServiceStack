@@ -939,14 +939,9 @@ namespace ServiceStack
             }
             else
             {
-                if (RequestCompressionType == CompressionTypes.Deflate)
-                {
-                    requestStream = new System.IO.Compression.DeflateStream(requestStream, System.IO.Compression.CompressionMode.Compress);
-                }
-                else if (RequestCompressionType == CompressionTypes.GZip)
-                {
-                    requestStream = new System.IO.Compression.GZipStream(requestStream, System.IO.Compression.CompressionMode.Compress);
-                }
+                var compressor = StreamCompressors.Get(RequestCompressionType);
+                if (compressor != null)
+                    requestStream = compressor.Compress(requestStream, leaveOpen: true);
 
                 if (HttpLog == null)
                 {

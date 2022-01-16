@@ -24,13 +24,23 @@ namespace ServiceStack
 
         public static string GetCompressionType(this IRequest request)
         {
-            if (request.RequestPreferences.AcceptsDeflate)
+            //CompressionTypes.Brotli;
+            if (request.RequestPreferences.AcceptsBrotli && StreamCompressors.SupportsEncoding("br"))
+                return "br";
+            
+            if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))
                 return CompressionTypes.Deflate;
 
-            if (request.RequestPreferences.AcceptsGzip)
+            if (request.RequestPreferences.AcceptsGzip && StreamCompressors.SupportsEncoding(CompressionTypes.GZip))
                 return CompressionTypes.GZip;
 
             return null;
+        }
+
+        public static IStreamCompressor GetCompressor(this IRequest request)
+        {
+            var encoding = request.GetCompressionType();
+            return encoding != null ? StreamCompressors.Get(encoding) : null;
         }
 
         public static string GetContentEncoding(this IRequest request)
@@ -41,10 +51,11 @@ namespace ServiceStack
         public static Stream GetInputStream(this IRequest req, Stream stream)
         {
             var enc = req.GetContentEncoding();
-            if (enc == CompressionTypes.Deflate)
-                return new DeflateStream(stream, CompressionMode.Decompress);
-            if (enc == CompressionTypes.GZip)
-                return new GZipStream(stream, CompressionMode.Decompress);
+            var compressor = enc != null
+                ? StreamCompressors.Get(enc)
+                : null;
+            if (compressor != null)
+                return compressor.Decompress(stream);
 
             return stream;
         }
@@ -80,12 +91,12 @@ namespace ServiceStack
             
             request.Response.Dto = dto;
 
-            var compressionType = request.GetCompressionType();
-            if (compressionType == null)
+            var compressor = request.GetCompressor();
+            if (compressor == null)
                 return HostContext.ContentTypes.SerializeToString(request, dto);
 
             using var ms = new MemoryStream();
-            using var compressionStream = GetCompressionStream(ms, compressionType);
+            using var compressionStream = compressor.Compress(ms);
             using (httpResult?.ResultScope?.Invoke())
             {
                 using (var msBuffer = MemoryStreamFactory.GetStream())
@@ -98,8 +109,7 @@ namespace ServiceStack
             }
 
             var compressedBytes = ms.ToArray();
-            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
-            {
+            return new CompressedResult(compressedBytes, compressor.Encoding, request.ResponseContentType) {
                 Status = request.Response.StatusCode
             };
         }
@@ -116,12 +126,12 @@ namespace ServiceStack
 
             request.Response.Dto = dto;
 
-            var compressionType = request.GetCompressionType();
-            if (compressionType == null)
+            var compressor = request.GetCompressor();
+            if (compressor == null)
                 return HostContext.ContentTypes.SerializeToString(request, dto);
 
             using var ms = new MemoryStream();
-            using var compressionStream = GetCompressionStream(ms, compressionType);
+            using var compressionStream = compressor.Compress(ms);
             using (httpResult?.ResultScope?.Invoke())
             {
                 await HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream);
@@ -129,20 +139,10 @@ namespace ServiceStack
             }
 
             var compressedBytes = ms.ToArray();
-            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+            return new CompressedResult(compressedBytes, compressor.Encoding, request.ResponseContentType)
             {
                 Status = request.Response.StatusCode
             };
-        }
-
-        private static Stream GetCompressionStream(Stream outputStream, string compressionType)
-        {
-            if (compressionType == CompressionTypes.Deflate)
-                return StreamExt.DeflateProvider.DeflateStream(outputStream);
-            if (compressionType == CompressionTypes.GZip)
-                return StreamExt.GZipProvider.GZipStream(outputStream);
-
-            throw new NotSupportedException(compressionType);
         }
 
         /// <summary>

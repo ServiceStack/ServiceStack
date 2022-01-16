@@ -14,6 +14,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Caching;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
@@ -204,53 +205,27 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     }
 
     private int activeAsyncRequests = 0;
-
-    internal sealed class GzipContent : HttpContent
+    
+    internal sealed class CompressContent : HttpContent
     {
         private readonly HttpContent content;
-        public GzipContent(HttpContent content)
+        private IStreamCompressor compressor;
+        public CompressContent(HttpContent content, IStreamCompressor compressor)
         {
             this.content = content;
+            this.compressor = compressor;
+            
             foreach (var header in content.Headers)
             {
                 Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
-            Headers.ContentEncoding.Add(CompressionTypes.GZip);
+            Headers.ContentEncoding.Add(compressor.Encoding);
         }
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            using (var zip = new GZipStream(stream, CompressionMode.Compress, true))
-            {
-                await content.CopyToAsync(zip).ConfigAwait();
-            }
-        }
-
-        protected override bool TryComputeLength(out long length)
-        {
-            length = -1;
-            return false;
-        }
-    }
-    internal sealed class DeflateContent : HttpContent
-    {
-        private readonly HttpContent content;
-        public DeflateContent(HttpContent content)
-        {
-            this.content = content;
-            foreach (var header in content.Headers)
-            {
-                Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-            Headers.ContentEncoding.Add(CompressionTypes.Deflate);
-        }
-
-        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
-        {
-            using (var zip = new DeflateStream(stream, CompressionMode.Compress, true))
-            {
-                await content.CopyToAsync(zip).ConfigAwait();
-            }
+            using var zip = compressor.Compress(stream, leaveOpen:true);
+            await content.CopyToAsync(zip).ConfigAwait();
         }
 
         protected override bool TryComputeLength(out long length)
@@ -392,14 +367,9 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
                     httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
                 }
 
-                if (RequestCompressionType == CompressionTypes.Deflate)
-                {
-                    httpReq.Content = new DeflateContent(httpReq.Content);
-                }
-                else if (RequestCompressionType == CompressionTypes.GZip)
-                {
-                    httpReq.Content = new GzipContent(httpReq.Content);
-                }
+                var compressor = StreamCompressors.Get(RequestCompressionType);
+                if (compressor != null)
+                    httpReq.Content = new CompressContent(httpReq.Content, compressor);
             }
         }
 
