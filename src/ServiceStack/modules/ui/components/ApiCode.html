@@ -202,8 +202,8 @@ App.components({ InstallTool: '#install-tool-template' })
                     <p class="text-lg p-4 pt-20">
                         <b class="mr-2">1.</b> Include <b>ServiceStack</b> package in your projects <em>Package.swift</em>
                     </p>
-                    <div class="p-4 flex bg-gray-50 border-y">
-                        <div class="icon-right" v-scope="CopyIcon({ text:() => swiftPkg })" title="Copy code"></div>
+                    <div class="p-4 bg-gray-50 border-y overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => swiftPkg, cls:'absolute right-0' })" title="Copy code"></div>
                         <pre v-html="swiftPkg"></pre>
                     </div>
                     <div class="text-lg p-4 flex">

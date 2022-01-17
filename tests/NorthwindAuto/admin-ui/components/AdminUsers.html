@@ -335,15 +335,15 @@ import { mapGet, resolve } from "@servicestack/client"
         <div v-scope="CloseButton({ onclick:() => routes.to({ new:null }) })" title="Close"></div>
             <div class="text-xl text-gray-900 text-center mb-4">New User</div>
             <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
-            <div class="flex">
-                <fieldset class="flex-grow">
+            <div class="flex flex-wrap sm:flex-nowrap">
+                <fieldset class="flex-grow mb-3 sm:mb-0">
                     <div :class="gridClass">
                         <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
                             <div :key="input.id" v-scope="Input({ input, model:isDtoProp(input.id) ? request : request.userAuthProperties, api:() => api })"></div>
                         </div>
                     </div>
                 </fieldset>
-                <fieldset class="flex-shrink ml-3 sm:ml-6">
+                <fieldset class="flex-grow sm:flex-shrink sm:ml-6">
                     <div :class="gridClass">
                         <div class="col-span-6">
                             <div v-scope="Input({ input:{ id:'password', type:'password' }, model:request, api:() => api })"></div>
@@ -416,15 +416,15 @@ import { mapGet, resolve } from "@servicestack/client"
                 <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
                 <div v-else-if="success" v-scope="AlertSuccess({ message:() => success })" class="mb-3"></div>
 
-                <div class="flex">
-                    <fieldset class="flex-grow">
+                <div class="flex flex-wrap sm:flex-nowrap">
+                    <fieldset class="flex-grow mb-3 sm:mb-0">
                         <div :class="gridClass">
                             <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
                                 <div :key="input.id" v-scope="Input({ input, model:isDtoProp(input.id) ? request : request.userAuthProperties, api:() => api })"></div>
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset class="flex-shrink ml-3 sm:ml-6">
+                    <fieldset class="flex-grow sm:flex-shrink sm:ml-6">
                         <div :class="gridClass">
                             <div class="col-span-6 flex items-end">
                                 <div class="flex-grow" v-scope="Input({ input:{ id:'password', type:'password' }, model, api:() => api })"></div>
@@ -509,7 +509,7 @@ import { mapGet, resolve } from "@servicestack/client"
                     </button>
                 </div>
                 <div>
-                    <div v-if="loading" v-scope="Loading({ cls:'p-0' })"></div>
+                    <div v-if="loading" class="hidden sm:block" v-scope="Loading({ cls:'p-0' })"></div>
                 </div>
                 <div>
                     <button type="submit" :disabled="loading"
