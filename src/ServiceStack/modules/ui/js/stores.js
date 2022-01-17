@@ -256,7 +256,7 @@ function isNumberType(type) {
     return type && NumTypes.indexOf(type) >= 0
 }
 function typeAlias(typeName) {
-    return TypeAliases[typeName] ?? typeName
+    return TypeAliases[typeName] || typeName
 }
 function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
 function typeName2(name, genericArgs) {

@@ -319,10 +319,10 @@ import net.servicestack.client.*;
 import java.util.Collections;
 
 JsonServiceClient client = new JsonServiceClient(
-"{BASE_URL}");
+    "{BASE_URL}");
 
 HelloResponse response = client.send(new Hello()
-//...
+    //...
 );
 
 Inspect.printDump(response);

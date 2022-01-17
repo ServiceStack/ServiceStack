@@ -49,8 +49,8 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
         ariaDescribedby(input) {
             return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
         },
-        onsubmit: onsubmit ?? (() => {}),
-        oninput: oninput ?? (() => {}),
+        onsubmit: onsubmit || (() => {}),
+        oninput: oninput || (() => {}),
     }
 })
 </script>
