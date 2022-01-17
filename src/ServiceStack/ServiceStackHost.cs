@@ -449,26 +449,15 @@ namespace ServiceStack
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
-                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x.Assembly) } ));
+                .Map(x => new ResourceVirtualFiles(x)));
 
             pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
-                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x) } ));
+                .Map(x => new ResourceVirtualFiles(x)));
 
             if (AddVirtualFileSources.Count > 0)
                 pathProviders.AddRange(AddVirtualFileSources);
 
             return pathProviders;
-        }
-
-        private static DateTime GetAssemblyLastModified(Assembly asm)
-        {
-            try
-            {
-                if (asm.Location != null)
-                    return new FileInfo(asm.Location).LastWriteTime;
-            }
-            catch (Exception) { /* ignored */ }
-            return default(DateTime);
         }
 
         /// <summary>
