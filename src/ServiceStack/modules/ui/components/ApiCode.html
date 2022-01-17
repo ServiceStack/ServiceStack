@@ -306,50 +306,38 @@ import 'package:servicestack/web_client.dart'
   if (dart.library.io) 'package:servicestack/client.dart';
 import 'package:servicestack/inspect.dart';
 
-void main(List&lt;String&gt; arguments) async {
+var client = ClientFactory.create('{BASE_URL}');
 
-  var client = ClientFactory.create('{BASE_URL}');
-
-  var response = await client.send(Hello()
+var response = await client.send(Hello()
     //...
-  );
+);
 
-  Inspect.printDump(response);
-  exit(0);
-}    
+Inspect.printDump(response);
 </template>
 <template id="java-help">
 import net.servicestack.client.*;
 import java.util.Collections;
 
-public class App {
+JsonServiceClient client = new JsonServiceClient(
+"{BASE_URL}");
 
-    public static void main(String[] args) {
+HelloResponse response = client.send(new Hello()
+//...
+);
 
-        JsonServiceClient client = new JsonServiceClient(
-            "{BASE_URL}");
-
-        HelloResponse response = client.send(new Hello()
-            //...
-        );
-
-        Inspect.printDump(response);
-    }
-}
+Inspect.printDump(response);
 </template>
 <template id="kotlin-help">
 package myapp
 import net.servicestack.client.*
 
-fun main(args: Array&lt;String&gt;) {
-    val client = JsonServiceClient("{BASE_URL}")
+val client = JsonServiceClient("{BASE_URL}")
 
-    val response = client.send(Hello().apply {
-        //...
-    });
+val response = client.send(Hello().apply {
+    //...
+});
 
-    Inspect.printDump(response)
-}    
+Inspect.printDump(response)
 </template>
 <template id="python-help">
 from servicestack import JsonServiceClient
@@ -367,7 +355,8 @@ printdump(response)
 import Foundation
 import ServiceStack
 
-let client = JsonServiceClient(baseUrl: "{BASE_URL}")
+let client = JsonServiceClient(baseUrl: 
+    "{BASE_URL}")
 
 let request = Hello()
 //...
