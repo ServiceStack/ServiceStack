@@ -39,22 +39,20 @@ namespace ServiceStack.ServiceHost.Tests
 
         private static void CanOptimizeResult(string contentType, IPlugin pluginFormat)
         {
-            using (var appHost = new BasicAppHost().Init())
-            {
-                var dto = new TestDto { Name = "test" };
+            using var appHost = new BasicAppHost().Init();
+            var dto = new TestDto { Name = "test" };
 
-                var httpReq = new MockHttpRequest {
-                    PathInfo = "/"
-                };
-                httpReq.Headers.Add(HttpHeaders.AcceptEncoding, "gzip,deflate,sdch");
-                httpReq.ResponseContentType = contentType;
+            var httpReq = new MockHttpRequest {
+                PathInfo = "/"
+            };
+            httpReq.Headers.Add(HttpHeaders.AcceptEncoding, "gzip,deflate,sdch");
+            httpReq.ResponseContentType = contentType;
 
-                if (pluginFormat != null) pluginFormat.Register(appHost);
+            if (pluginFormat != null) pluginFormat.Register(appHost);
 
-                object result = httpReq.ToOptimizedResult(dto);
-                Assert.IsNotNull(result);
-                Assert.IsTrue(result is CompressedResult);
-            }
+            object result = httpReq.ToOptimizedResult(dto);
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result is CompressedResult);
         }
 
         public class TestDto
