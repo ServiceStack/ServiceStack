@@ -1224,6 +1224,24 @@ namespace ServiceStack
         public virtual object OnDeserializeJson(Type intoType, Stream fromStream) =>
             JsonDataContractSerializer.Instance.DeserializeFromStream(intoType, fromStream);
 
-    }
+ 
+        public virtual string GetCompressionType(IRequest request)
+        {
+            if (request.UserAgent.IndexOf("firefox", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                //CompressionTypes.Brotli;
+                if (request.RequestPreferences.AcceptsBrotli && StreamCompressors.SupportsEncoding("br"))
+                    return "br";
+            }
+            
+            if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))
+                return CompressionTypes.Deflate;
+
+            if (request.RequestPreferences.AcceptsGzip && StreamCompressors.SupportsEncoding(CompressionTypes.GZip))
+                return CompressionTypes.GZip;
+
+            return null;
+        }
+   }
 
 }

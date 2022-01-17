@@ -22,20 +22,8 @@ namespace ServiceStack
             return request.GetSession() as AuthUserSession;
         }
 
-        public static string GetCompressionType(this IRequest request)
-        {
-            //CompressionTypes.Brotli;
-            if (request.RequestPreferences.AcceptsBrotli && StreamCompressors.SupportsEncoding("br"))
-                return "br";
-            
-            if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))
-                return CompressionTypes.Deflate;
-
-            if (request.RequestPreferences.AcceptsGzip && StreamCompressors.SupportsEncoding(CompressionTypes.GZip))
-                return CompressionTypes.GZip;
-
-            return null;
-        }
+        public static string GetCompressionType(this IRequest request) =>
+            HostContext.AssertAppHost().GetCompressionType(request);
 
         public static IStreamCompressor GetCompressor(this IRequest request)
         {

@@ -4,6 +4,7 @@ using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using MyApp.ServiceInterface;
 using ServiceStack.HtmlModules;
+using ServiceStack.Web;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
 
@@ -58,5 +59,17 @@ namespace MyApp
             
             Plugins.Add(new PostmanFeature());
         }
+        
+        public override string? GetCompressionType(IRequest request)
+        {
+            if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))
+                return CompressionTypes.Deflate;
+
+            if (request.RequestPreferences.AcceptsGzip && StreamCompressors.SupportsEncoding(CompressionTypes.GZip))
+                return CompressionTypes.GZip;
+
+            return null;
+        }
+        
     }
 }
