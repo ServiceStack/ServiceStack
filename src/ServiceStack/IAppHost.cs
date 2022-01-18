@@ -422,6 +422,20 @@ namespace ServiceStack
         /// </summary>
         Task<object> EvalScriptValueAsync(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args = null);
 
+        /// <summary>
+        /// Register a callback to configure a plugin just before it's registered 
+        /// </summary>
+        void ConfigurePlugin<T>(Action<T> configure) where T : class, IPlugin;
+
+        /// <summary>
+        /// Register a callback to configure a plugin just after it's registered 
+        /// </summary>
+        void PostConfigurePlugin<T>(Action<T> configure) where T : class, IPlugin;
+
+        /// <summary>
+        /// Register a callback to configure a plugin after AfterPluginsLoaded is run 
+        /// </summary>
+        void AfterPluginLoaded<T>(Action<T> configure) where T : class, IPlugin;
     }
 
     public interface IHasAppHost

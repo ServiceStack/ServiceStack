@@ -159,6 +159,10 @@ namespace CheckWebCore
 //                RequireAuthSecret = true,
                 AllowScriptingOfAllTypes = true,
             });
+            
+            ConfigurePlugin<UiFeature>(feature => {
+                feature.Info.BrandIcon.Uri = "https://vuejs.org/images/logo.svg";
+            });
 
             //not needed for /wwwroot/ui 
             //Plugins.AddIfDebug(new HotReloadFeature());

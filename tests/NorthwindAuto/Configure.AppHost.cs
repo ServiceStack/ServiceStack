@@ -43,14 +43,13 @@ namespace MyApp
                 GenerateCrudServices = new GenerateCrudServices {}
             });
 
-            var uiFeature = this.AssertPlugin<UiFeature>();
-            uiFeature.Configure = feature =>
-            {
+            ConfigurePlugin<UiFeature>(feature => {
+                Console.WriteLine("ConfigurePlugin<UiFeature>...");
                 //feature.Module.EnableHttpCaching = true;
                 feature.Module.Configure = null;
-                feature.HtmlModules.ForEach(x => x.DirPath = x.DirPath.Replace("/modules",""));
+                feature.HtmlModules.ForEach(x => x.DirPath = x.DirPath.Replace("/modules", ""));
                 feature.Handlers.Cast<SharedFolder>().Each(x => x.SharedDir = x.SharedDir.Replace("/modules", ""));
-            };
+            });
             
             // Not needed in `dotnet watch` and in /wwwroot/modules/ui which can use _framework/aspnetcore-browser-refresh.js"
             Plugins.AddIfDebug(new HotReloadFeature
@@ -61,7 +60,7 @@ namespace MyApp
             
             //Plugins.Add(new PostmanFeature());
         }
-        
+
         public override string? GetCompressionType(IRequest request)
         {
             if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))

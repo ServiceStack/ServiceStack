@@ -140,6 +140,9 @@ namespace ServiceStack
             UncaughtExceptionHandlersAsync = new List<HandleUncaughtExceptionAsyncDelegate>();
             GatewayExceptionHandlers = new List<HandleGatewayExceptionDelegate>();
             GatewayExceptionHandlersAsync = new List<HandleGatewayExceptionAsyncDelegate>();
+            OnPreRegisterPlugins = new Dictionary<Type, List<Action<IPlugin>>>();
+            OnPostRegisterPlugins = new Dictionary<Type, List<Action<IPlugin>>>();
+            OnAfterPluginsLoaded = new Dictionary<Type, List<Action<IPlugin>>>();
             BeforeConfigure = new List<Action<ServiceStackHost>>();
             AfterConfigure = new List<Action<ServiceStackHost>>();
             AfterPluginsLoaded = new List<Action<ServiceStackHost>>();
@@ -1284,7 +1287,13 @@ namespace ServiceStack
             try
             {
                 if (instance is IPostInitPlugin postPlugin)
+                {
                     postPlugin.AfterPluginsLoaded(this);
+                
+                    if (instance is IPlugin plugin && 
+                        OnAfterPluginsLoaded.TryGetValue(instance.GetType(), out var afterLoadedCallbacks))
+                        afterLoadedCallbacks.Each(fn => fn(plugin));
+                }
             }
             catch (Exception ex)
             {
@@ -1556,6 +1565,42 @@ namespace ServiceStack
             return VirtualFileSources.CombineVirtualPath(RootDirectory.RealPath, virtualPath);
         }
 
+        public Dictionary<Type, List<Action<IPlugin>>> OnPreRegisterPlugins { get; set; }
+        
+        /// <summary>
+        /// Register a callback to configure a plugin just before it's registered 
+        /// </summary>
+        public void ConfigurePlugin<T>(Action<T> configure) where T : class, IPlugin
+        {
+            if (!OnPreRegisterPlugins.TryGetValue(typeof(T), out var actions))
+                actions = OnPreRegisterPlugins[typeof(T)] = new();
+            actions.Add(plugin => configure((T)plugin));
+        }
+
+        public Dictionary<Type, List<Action<IPlugin>>> OnPostRegisterPlugins { get; set; } 
+        
+        /// <summary>
+        /// Register a callback to configure a plugin just after it's registered 
+        /// </summary>
+        public void PostConfigurePlugin<T>(Action<T> configure) where T : class, IPlugin
+        {
+            if (!OnPostRegisterPlugins.TryGetValue(typeof(T), out var actions))
+                actions = OnPostRegisterPlugins[typeof(T)] = new();
+            actions.Add(plugin => configure((T)plugin));
+        }
+
+        public Dictionary<Type, List<Action<IPlugin>>> OnAfterPluginsLoaded { get; set; } 
+        
+        /// <summary>
+        /// Register a callback to configure a plugin after AfterPluginsLoaded is run 
+        /// </summary>
+        public void AfterPluginLoaded<T>(Action<T> configure) where T : class, IPlugin
+        {
+            if (!OnAfterPluginsLoaded.TryGetValue(typeof(T), out var actions))
+                actions = OnAfterPluginsLoaded[typeof(T)] = new();
+            actions.Add(plugin => configure((T)plugin));
+        }
+
         private bool delayedLoadPlugin;
         /// <summary>
         /// Manually register Plugin to load
@@ -1583,7 +1628,14 @@ namespace ServiceStack
             {
                 try
                 {
+                    if (OnPreRegisterPlugins.TryGetValue(plugin.GetType(), out var preRegisterCallbacks))
+                        preRegisterCallbacks.Each(fn => fn(plugin));
+                    
                     plugin.Register(this);
+                    
+                    if (OnPostRegisterPlugins.TryGetValue(plugin.GetType(), out var postRegisterCallbacks))
+                        postRegisterCallbacks.Each(fn => fn(plugin));
+                    
                     PluginsLoaded.Add(plugin.GetType().Name);
                 }
                 catch (Exception ex)
