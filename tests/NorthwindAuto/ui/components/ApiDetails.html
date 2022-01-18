@@ -21,10 +21,12 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
             let allTypesMap = {}
             addReferencedTypes(allTypesMap, op.request)
             if (op.returnType) {
-                // QueryResponse<'T> => QueryResponse<Model>
+                /**: QueryResponse<'T> => QueryResponse<Model> */
                 addReferencedTypes(allTypesMap, {...op.response, ...op.returnType})
             }
-            return groupTypes(Object.values(allTypesMap))
+            let opTypes = Object.values(allTypesMap)
+                .filter(type => !type.isValueType && type.name.toLowerCase() !== 'string')
+            return groupTypes(opTypes)
         },
         inheritedTypes(typeRef) {
             if (!typeRef) return ''
@@ -172,8 +174,8 @@ function addReferencedTypes(allTypesMap, type) {
                     </div>
                     <div class="">
                         <div class="py-2 align-middle inline-block min-w-full sm:px-2 lg:px-4">
-                            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
-                                <table v-if="group[0].type.isEnum" class="min-w-full divide-y divide-gray-200">
+                            <div v-if="group[0].type.isEnum" class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
+                                <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                     <tr>
                                         <th scope="col"
@@ -190,7 +192,9 @@ function addReferencedTypes(allTypesMap, type) {
                                     </tr>
                                     </tbody>
                                 </table>
-                                <table v-else class="min-w-full divide-y divide-gray-200">
+                            </div>
+                            <div v-else-if="group.some(x => x.type.properties && x.type.properties.length)" class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
+                                <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                     <tr>
                                         <th scope="col"
