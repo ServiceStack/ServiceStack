@@ -39,8 +39,9 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
             return types.join(',')
         },
         apiDocs(typeName) {
-            return typeof window[`${typeName}Docs`] == 'function'
-                ? window[`${typeName}Docs`]({ op:() => this.op, store, routes, breakpoints })
+            let name = typeName + 'Docs'
+            return typeof window[name] == 'function'
+                ? DocComponent()
                 : null
         },
     }

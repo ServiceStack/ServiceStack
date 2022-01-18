@@ -56,4 +56,10 @@ export function setFavIconSrc(src) {
     }
     link.href = src
 }
+
+export function highlight(src, language) {
+    if (!language) language = 'csharp'
+    return hljs.highlight(src, { language }).value
+}
+
 /*:minify*/

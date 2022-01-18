@@ -99,6 +99,25 @@ let App = new PetiteVueApp()
 <!--files:components/*.html-->
 <!--files:docs/*.html-->
 
+<script minify>
+/**: crude workaround for PetiteVue's lack of dynamic components */
+let docComponents = window.APP.api.operations.map(op => op.request.name).filter(name => window[name + 'Docs'])
+document.write(`<template id='doc-component-template'><div v-if="false"></div>`)
+docComponents.forEach(x => {
+    document.write(`<div v-else-if="routes.op === '${x}'" v-scope="${x}Docs({ op:() => op, store, routes, breakpoints })"></div>`)
+})
+document.write(`</template>`)
+App.components({
+    DocComponent() {
+        return {
+            $template: '#doc-component-template',
+            store, routes, breakpoints,
+            get op() { return APP.api.operations.find(op => op.request.name === routes.op) }
+        }
+    }
+})
+</script>
+
 <script src="../js/highlight.js"></script>
 <script>
 App.directive('highlightjs', ({ effect, get, el}) => {

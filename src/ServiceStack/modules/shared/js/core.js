@@ -49,4 +49,8 @@ function setFavIconSrc(src) {
     }
     link.href = src
 }
+function highlight(src, language) {
+    if (!language) language = 'csharp'
+    return hljs.highlight(src, { language }).value
+}
 /*:minify*/
