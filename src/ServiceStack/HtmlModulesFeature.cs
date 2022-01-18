@@ -212,9 +212,9 @@ public class HtmlModule
         var indexContents = indexContentsString.AsMemory();
         
         var fragmentDefs = new List<FragmentTuple>();
-        var tokenPos = 0;
         foreach (var entry in Tokens.Union(Feature?.Tokens ?? new()))
         {
+            var tokenPos = 0;
             do
             {
                 tokenPos = indexContents.IndexOf(entry.Key, tokenPos);
@@ -304,6 +304,12 @@ public class HtmlModule
             {
                 sb.AppendLine(line);
             }
+        }
+        // Trim last new line to remove new lines between tokens & text fragments 
+        if (sb.Length > 2)
+        {
+            if (sb[sb.Length - 1] == '\n') sb.Length -= 1;
+            if (sb[sb.Length - 1] == '\r') sb.Length -= 1;
         }
         return StringBuilderCache.ReturnAndFree(sb).AsMemory();
     }
