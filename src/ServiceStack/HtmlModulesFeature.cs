@@ -113,6 +113,7 @@ public class HtmlModuleContext
     public IRequest Request { get; }
     public IVirtualPathProvider VirtualFiles => Module.VirtualFiles!;
     public bool DebugMode => HostContext.DebugMode;
+    public ServiceStackHost AppHost => HostContext.AppHost;
 
     /// <summary>
     /// Resolve file from the Module configured VirtualFiles
@@ -172,11 +173,11 @@ public class HtmlModule
         BasePath = (basePath ?? DirPath).TrimEnd('/');
         Tokens = new() {
             ["<base href=\"\">"] = ctx => ($"<base href=\"{ctx.Request.ResolveAbsoluteUrl($"~{BasePath}/")}\">\n"
-            + (ctx.DebugMode ? "<script>\n" 
-                    + ctx.AssertFile(HostContext.VirtualFileSources,"/js/hot-fileloader.js").ReadAllText() 
+            + (ctx.DebugMode && ctx.AppHost.HasPlugin<HotReloadFeature>() ? "<script>\n" 
+                    + ctx.AssertFile(ctx.AppHost.VirtualFileSources,"/js/hot-fileloader.js").ReadAllText() 
                 + "\n</script>\n" : ""))
                 .AsMemory().ToUtf8(),
-            ["vfx=hash"] = ctx => $"vfx={Env.ServiceStackVersion}".AsMemory().ToUtf8()
+            ["vfx=hash"] = _ => $"vfx={Env.ServiceStackVersion}".AsMemory().ToUtf8()
         };
     }
     

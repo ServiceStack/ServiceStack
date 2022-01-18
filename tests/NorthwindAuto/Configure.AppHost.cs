@@ -52,12 +52,14 @@ namespace MyApp
                 feature.Handlers.Cast<SharedFolder>().Each(x => x.SharedDir = x.SharedDir.Replace("/modules", ""));
             };
             
-            Plugins.AddIfDebug(new HotReloadFeature {
-                DefaultPattern = "*.html;*.js;*.css",
+            // Not needed in `dotnet watch` and in /wwwroot/modules/ui which can use _framework/aspnetcore-browser-refresh.js"
+            Plugins.AddIfDebug(new HotReloadFeature
+            {
                 VirtualFiles = VirtualFiles,
+                DefaultPattern = "*.html;*.js;*.css"
             });
             
-            Plugins.Add(new PostmanFeature());
+            //Plugins.Add(new PostmanFeature());
         }
         
         public override string? GetCompressionType(IRequest request)

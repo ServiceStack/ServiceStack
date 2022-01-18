@@ -160,10 +160,8 @@ namespace CheckWebCore
                 AllowScriptingOfAllTypes = true,
             });
 
-            if (Config.DebugMode)
-            {
-                Plugins.Add(new HotReloadFeature());
-            }
+            //not needed for /wwwroot/ui 
+            //Plugins.AddIfDebug(new HotReloadFeature());
 
             Plugins.Add(new RazorFormat()); // enable ServiceStack.Razor
 
