@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Internal;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
