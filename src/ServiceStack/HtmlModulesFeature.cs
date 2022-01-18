@@ -176,6 +176,7 @@ public class HtmlModule
                     + ctx.AssertFile(HostContext.VirtualFileSources,"/js/hot-fileloader.js").ReadAllText() 
                 + "\n</script>\n" : ""))
                 .AsMemory().ToUtf8(),
+            ["vfx=hash"] = ctx => $"vfx={Env.ServiceStackVersion}".AsMemory().ToUtf8()
         };
     }
     

@@ -65,7 +65,7 @@ DEBUG = true /*debug*/
 let exports = { __esModule:true }, module = { exports:exports }
 function require(name) { return exports[name] || window[name] }
 </script>
-<script src="../js/servicestack-client.js"></script>
+<script src="../js/servicestack-client.js?vfx=hash"></script>
 <script src="../types/js"></script>
 <script>
 Object.assign(window, exports)
@@ -83,7 +83,7 @@ function loadAuth(auth) {
 <script src="../metadata/app?callback=loadApp"></script>
 <script src="../auth?callback=loadAuth"></script>
 
-<script src="../js/petite-vue.js"></script>
+<script src="../js/petite-vue.js?vfx=hash"></script>
 <script>
 document.title = APP.app.serviceName
 setFavIcon(APP.ui.brandIcon, combinePaths(APP.app.baseUrl, '/metadata/svg/servicestack.datauri'))
@@ -118,7 +118,7 @@ App.components({
 })
 </script>
 
-<script src="../js/highlight.js"></script>
+<script src="../js/highlight.js?vfx=hash"></script>
 <script>
 App.directive('highlightjs', ({ effect, get, el}) => {
     effect(() => {
