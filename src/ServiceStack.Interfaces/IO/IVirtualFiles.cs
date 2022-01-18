@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ServiceStack.IO
 {
     public interface IVirtualFiles : IVirtualPathProvider
     {
+        Task WriteFileAsync(string filePath, object contents, CancellationToken token=default);
+
         void WriteFile(string filePath, string textContents);
 
         void WriteFile(string filePath, Stream stream);

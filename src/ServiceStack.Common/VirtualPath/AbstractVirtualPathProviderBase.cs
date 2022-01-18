@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
 
@@ -111,23 +113,18 @@ namespace ServiceStack.VirtualPath
         }
         
         protected NotSupportedException CreateContentNotSupportedException(object value) =>
-            new NotSupportedException($"Could not write '{value?.GetType().Name ?? "null"}' value. Only string, byte[], Stream or IVirtualFile content is supported.");
+            new($"Could not write '{value?.GetType().Name ?? "null"}' value. Only string, byte[], Stream or IVirtualFile content is supported.");
 
-        public virtual void WriteFile(string path, ReadOnlyMemory<char> text)
+        protected IVirtualFiles AssertVirtualFiles()
         {
-            if (!(this is IVirtualFiles vfs))
+            if (this is not IVirtualFiles vfs)
                 throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
-
-            vfs.WriteFile(path, text.ToString());
+            return vfs;
         }
-        
-        public virtual void WriteFile(string path, ReadOnlyMemory<byte> bytes)
-        {
-            if (!(this is IVirtualFiles vfs))
-                throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
 
-            vfs.WriteFile(path, ToMemoryStream(bytes));
-        }
+        public virtual void WriteFile(string path, ReadOnlyMemory<char> text) => AssertVirtualFiles().WriteFile(path, text.ToString());
+
+        public virtual void WriteFile(string path, ReadOnlyMemory<byte> bytes) => AssertVirtualFiles().WriteFile(path, ToMemoryStream(bytes));
 
         private static MemoryStream ToMemoryStream(ReadOnlyMemory<byte> bytes)
         {
@@ -138,12 +135,10 @@ namespace ServiceStack.VirtualPath
 
         public virtual void WriteFile(string path, object contents)
         {
-            if (!(this is IVirtualFiles vfs))
-                throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
-            
             if (contents == null)
                 return;
 
+            var vfs = AssertVirtualFiles();
             if (contents is IVirtualFile vfile)
                 WriteFile(path, vfile.GetContents());
             else if (contents is string textContents)
@@ -152,10 +147,8 @@ namespace ServiceStack.VirtualPath
                 WriteFile(path, romChars);
             else if (contents is byte[] binaryContents)
             {
-                using (var ms = MemoryStreamFactory.GetStream(binaryContents))
-                {
-                    vfs.WriteFile(path, ms);
-                }
+                using var ms = MemoryStreamFactory.GetStream(binaryContents);
+                vfs.WriteFile(path, ms);
             }
             else if (contents is ReadOnlyMemory<byte> romBytes)
                 WriteFile(path, romBytes);
@@ -164,28 +157,21 @@ namespace ServiceStack.VirtualPath
             else
                 throw CreateContentNotSupportedException(contents);
         }
-        
-        public virtual void AppendFile(string path, ReadOnlyMemory<char> text)
-        {
-            if (!(this is IVirtualFiles vfs))
-                throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
 
-            vfs.AppendFile(path, text.ToString());
+        // Can implement all async APIs here
+        public virtual Task WriteFileAsync(string path, object contents, CancellationToken token=default)
+        {
+            WriteFile(path, contents);
+            return TypeConstants.EmptyTask;
         }
         
-        public virtual void AppendFile(string path, ReadOnlyMemory<byte> bytes)
-        {
-            if (!(this is IVirtualFiles vfs))
-                throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
+        public virtual void AppendFile(string path, ReadOnlyMemory<char> text) => AssertVirtualFiles().AppendFile(path, text.ToString());
 
-            vfs.AppendFile(path, ToMemoryStream(bytes));
-        }
+        public virtual void AppendFile(string path, ReadOnlyMemory<byte> bytes) => AssertVirtualFiles().AppendFile(path, ToMemoryStream(bytes));
 
         public virtual void AppendFile(string path, object contents)
         {
-            if (!(this is IVirtualFiles vfs))
-                throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
-            
+            var vfs = AssertVirtualFiles();
             if (contents == null)
                 return;
 
@@ -197,10 +183,8 @@ namespace ServiceStack.VirtualPath
                 AppendFile(path, romChars);
             else if (contents is byte[] binaryContents)
             {
-                using (var ms = MemoryStreamFactory.GetStream(binaryContents))
-                {
-                    vfs.AppendFile(path, ms);
-                }
+                using var ms = MemoryStreamFactory.GetStream(binaryContents);
+                vfs.AppendFile(path, ms);
             }
             else if (contents is ReadOnlyMemory<byte> romBytes)
                 AppendFile(path, romBytes);
