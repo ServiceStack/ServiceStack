@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -321,9 +322,28 @@ namespace ServiceStack.Auth
         {
             try
             {
-                using var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
-                    .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken), token:token).ConfigAwait();
-                using var origImage = System.Drawing.Image.FromStream(origStream);
+                var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
+                    .GetStreamFromUrlAsync(requestFilter: req => req.AddBearerToken(accessToken), token: token)
+                    .ConfigAwait();
+                Image origImage;
+                try
+                {
+                    origImage = Image.FromStream(origStream);
+                }
+                catch (Exception e)
+                {
+                    Log.Warn($"Failed to load '{MicrosoftGraphAuthProvider.Name}' photo, skipping PNG resize.", e);
+                    // Refetch stream since Seek may not be supported.
+                    origStream = await MicrosoftGraphAuthProvider.PhotoUrl
+                        .GetStreamFromUrlAsync(requestFilter: req => req.AddBearerToken(accessToken), token: token)
+                        .ConfigAwait();
+                    var bytes = await origStream.ReadFullyAsync(token: token);
+                    await origStream.DisposeAsync();
+                    var fullImgBase64 = Convert.ToBase64String(bytes);
+                    // Assumes stream is a PNG file
+                    return "data:image/png;base64," + fullImgBase64;
+                }
+                
                 var parts = savePhotoSize?.Split('x');
                 var width = origImage.Width;
                 var height = origImage.Height;
@@ -335,7 +355,8 @@ namespace ServiceStack.Auth
                     int.TryParse(parts[1], out height);
 
                 using var resizedImage = origImage.ResizeToPng(width, height);
-                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                origImage.Dispose();
+                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int)resizedImage.Length);
                 return "data:image/png;base64," + base64;
             }
             catch (Exception ex)
