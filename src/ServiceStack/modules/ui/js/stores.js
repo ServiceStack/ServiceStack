@@ -7,7 +7,7 @@ let breakpoints = App.useBreakpoints({
 })
 let routes = App.usePageRoutes({
     page:'op',
-    queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider'.split(','),
+    queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider,doc'.split(','),
     handlers: {
         nav(state) { console.log('nav', state) } /*debug*/
     }

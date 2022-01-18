@@ -36,6 +36,11 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
             }
             return types.join(',')
         },
+        apiDocs(typeName) {
+            return typeof window[`${typeName}Docs`] == 'function'
+                ? window[`${typeName}Docs`]({ op:this.op, store, routes, breakpoints })
+                : null
+        },
     }
 })
 function addReferencedTypes(allTypesMap, type) {
@@ -57,10 +62,6 @@ function addReferencedTypes(allTypesMap, type) {
     return allTypesMap
 }
 </script>
-<style minify>
-#detail-info .min-w-full {
-}
-</style>
 <!--minify-->
 <template id="api-details-layout">
 <div class="w-body md:w-body fixed top-top-nav h-top-nav flex">
@@ -156,12 +157,15 @@ function addReferencedTypes(allTypesMap, type) {
         <div>
             <div v-for="group in opReferencedTypes(op)">
                 <div class="flex flex-col mb-3">
-                    <h2 v-if="group[0].type.description" class="my-3 text-gray-700 text-2xl text-center">
-                        {{group[0].type.description}}</h2>
-                    <div v-if="group[0].type.notes"
-                         class="notes mb-3 text-gray-700 bg-gray-50 p-4 text-center rounded"
-                         v-html="group[0].type.notes"></div>
-                    <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
+                    <div v-if="apiDocs(group[0].typeName)" v-scope="apiDocs(group[0].typeName)"></div>
+                    <div v-else-if="group[0]">
+                        <h2 v-if="group[0].type.description" class="my-3 text-gray-700 text-2xl text-center">
+                            {{group[0].type.description}}</h2>
+                        <div v-if="group[0].type.notes"
+                             class="notes mb-3 text-gray-700 bg-gray-50 p-4 text-center rounded"
+                             v-html="group[0].type.notes"></div>
+                        <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
+                    </div>
                     <div class="">
                         <div class="py-2 align-middle inline-block min-w-full sm:px-2 lg:px-4">
                             <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
