@@ -5,7 +5,13 @@ RD /q /s %TO%\MyApp.Client
 MD %TO%\MyApp.Client
 XCOPY /Y /E /H /C /I Client %TO%\
 MOVE MyApp.Client.csproj %TO%\
+RD /q /s ..\..\..\NetCoreTemplates\nextjs\ui\public\modules\
+RD /q /s ..\..\..\NetCoreTemplates\vue-ssg\ui\public\modules\
+RD /q /s ..\..\..\NetCoreTemplates\vue-vite\ui\public\modules\
 RD /q /s ..\..\..\NetCoreTemplates\blazor-wasm\MyApp\wwwroot\modules\
+XCOPY /Y /E /H /C /I Server\modules ..\..\..\NetCoreTemplates\nextjs\ui\public\modules\
+XCOPY /Y /E /H /C /I Server\modules ..\..\..\NetCoreTemplates\vue-ssg\ui\publicwwwroot\modules\
+XCOPY /Y /E /H /C /I Server\modules ..\..\..\NetCoreTemplates\vue-vite\ui\public\modules\
 XCOPY /Y /E /H /C /I Server\modules ..\..\..\NetCoreTemplates\blazor-wasm\MyApp\wwwroot\modules\
 
 COPY Server\*.cs ..\..\..\NetCoreTemplates\blazor-wasm\MyApp\
