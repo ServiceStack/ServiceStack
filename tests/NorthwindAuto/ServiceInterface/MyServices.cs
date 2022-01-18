@@ -10,6 +10,9 @@ public class MyServices : Service
         ? throw new ArgumentNullException(nameof(Name))
         : Name;
 
+    public object Get(Greet request) =>
+        new HelloResponse { Result = "Welcome!" };
+
     public object Get(Hello request) =>
         new HelloResponse { Result = $"Hello, {AssertName(request.Name)}!" };
 

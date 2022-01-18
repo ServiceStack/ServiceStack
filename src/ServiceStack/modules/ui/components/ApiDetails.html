@@ -21,7 +21,6 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
             let allTypesMap = {}
             addReferencedTypes(allTypesMap, op.request)
             if (op.returnType) {
-                // QueryResponse<'T> => QueryResponse<Model>
                 addReferencedTypes(allTypesMap, {...op.response, ...op.returnType})
             }
             let opTypes = Object.values(allTypesMap)
@@ -40,7 +39,7 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
         },
         apiDocs(typeName) {
             return typeof window[`${typeName}Docs`] == 'function'
-                ? window[`${typeName}Docs`]({ op:this.op, store, routes, breakpoints })
+                ? window[`${typeName}Docs`]({ op:() => this.op, store, routes, breakpoints })
                 : null
         },
     }

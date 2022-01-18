@@ -3,6 +3,10 @@
 namespace MyApp.ServiceModel;
 
 [Tag("hello")]
+[Route("/greet/{Name}")]
+public class Greet : IReturn<HelloResponse> {}
+
+[Tag("hello")]
 [Route("/hello/{Name}")]
 [ValidateHasRole("Employee")]
 public class Hello : IReturn<HelloResponse>
