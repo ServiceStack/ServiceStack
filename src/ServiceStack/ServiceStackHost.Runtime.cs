@@ -1243,6 +1243,8 @@ namespace ServiceStack
 
             return null;
         }
-   }
+
+        public virtual bool HasUi() => false; //HasPlugin<UiFeature>();
+    }
 
 }
