@@ -292,7 +292,8 @@ namespace ServiceStack.Admin
                 throw new ArgumentNullException(nameof(request.Id));
             
             var existingUser = await AuthRepositoryAsync.GetUserAuthAsync(request.Id);
-            return await CreateUserResponse(existingUser);
+            var existingUserDetails = await AuthRepositoryAsync.GetUserAuthDetailsAsync(request.Id);
+            return await CreateUserResponse(existingUser, existingUserDetails);
         }
 
         public async Task<object> Get(AdminQueryUsers request)
@@ -444,7 +445,7 @@ namespace ServiceStack.Admin
             };
         }
 
-        private async Task<object> CreateUserResponse(IUserAuth user)
+        private async Task<object> CreateUserResponse(IUserAuth user, List<IUserAuthDetails> existingUserDetails = null)
         {
             if (user == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
@@ -453,7 +454,8 @@ namespace ServiceStack.Admin
 
             return new AdminUserResponse {
                 Id = user.Id.ToString(),
-                Result = userProps
+                Result = userProps,
+                Details = existingUserDetails?.Map(x => x.ToObjectDictionary()), 
             };
         }
 

@@ -648,7 +648,8 @@ namespace ServiceStack
     {
         [DataMember(Order = 1)] public string Id { get; set; }
         [DataMember(Order = 2)] public Dictionary<string,object> Result { get; set; }
-        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 3)] public List<Dictionary<string,object>> Details { get; set; }
+        [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
     }
     
     [DataContract]

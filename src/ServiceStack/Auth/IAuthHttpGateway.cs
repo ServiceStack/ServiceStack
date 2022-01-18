@@ -322,7 +322,7 @@ namespace ServiceStack.Auth
             try
             {
                 using var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
-                    .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken)).ConfigAwait();
+                    .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken), token:token).ConfigAwait();
                 using var origImage = System.Drawing.Image.FromStream(origStream);
                 var parts = savePhotoSize?.Split('x');
                 var width = origImage.Width;
