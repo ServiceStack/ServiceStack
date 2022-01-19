@@ -60,11 +60,7 @@ DEBUG = true /*debug*/
     
 </div>
 
-<script>
-/**: Naive require() to allow include of commonjs libraries */
-let exports = { __esModule:true }, module = { exports:exports }
-function require(name) { return exports[name] || window[name] }
-</script>
+<script src="../js/require.js?vfx=hash"></script>
 <script src="../js/servicestack-client.js?vfx=hash"></script>
 <script src="../types/js"></script>
 <script>
