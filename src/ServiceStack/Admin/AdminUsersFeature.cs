@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Admin
 {
-    public class AdminUsersFeature : IPlugin, Model.IHasStringId, IAfterInitAppHost
+    public class AdminUsersFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, IAfterInitAppHost
     {
         public string Id { get; set; } = Plugins.AdminUsers;
         public string AdminRole { get; set; } = RoleNames.Admin;
@@ -163,24 +163,28 @@ namespace ServiceStack.Admin
             RemoveFromUserForm(fieldNames);
             return this;
         }
-        
+
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.ConfigurePlugin<UiFeature>(feature =>
+            {
+                if (HtmlModule != null)
+                {
+                    feature.HtmlModules.Add(HtmlModule);
+                    feature.Info.AdminLinks.Add(new LinkInfo
+                    {
+                        Id = "users",
+                        Label = "Manage Users",
+                        Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
+                    });
+                }
+            });
+        }
+
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(AdminUsersService));
-
-            var uiFeature = appHost.GetPlugin<UiFeature>();
-            var registerUiModule = HtmlModule != null && uiFeature != null;
-            if (registerUiModule)
-            {
-                uiFeature.HtmlModules.Add(HtmlModule);
-                uiFeature.Info.AdminLinks.Add(new LinkInfo
-                {
-                    Id = "users",
-                    Label = "Manage Users",
-                    Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
-                });
-            }
-            
+           
             appHost.AddToAppMetadata(meta => {
                 var host = (ServiceStackHost) appHost;
                 var authRepo = host.GetAuthRepository();
@@ -223,7 +227,7 @@ namespace ServiceStack.Admin
                     if (meta.Plugins.Auth == null)
                         throw new Exception(nameof(AdminUsersFeature) + " requires " + nameof(AuthFeature));
 
-                    if (registerUiModule)
+                    if (HtmlModule != null)
                     {
                         meta.Plugins.Auth.RoleLinks[RoleNames.Admin] = new List<LinkInfo>
                         {

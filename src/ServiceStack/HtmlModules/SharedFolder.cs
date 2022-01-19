@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.IO;
 using System.Linq;
 using ServiceStack.IO;
 using ServiceStack.Script;
@@ -49,6 +50,9 @@ public class SharedFolder : IHtmlModulesHandler
                 else
                 {
                     var file = ctx.VirtualFiles.GetFile(path);
+                    if (file == null)
+                        throw new FileNotFoundException($"File '{path}' does not exist in {ctx.VirtualFiles}", path);
+                    
                     sb.AppendLine(ctx.FileContentsResolver(file));
                 }
             }

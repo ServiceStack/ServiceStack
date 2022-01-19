@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class MetadataFeature : IPlugin, Model.IHasStringId
+    public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     {
         public string Id { get; set; } = Plugins.Metadata;
         public string PluginLinksTitle { get; set; }
@@ -82,6 +82,12 @@ namespace ServiceStack
             };
         }
 
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.ConfigurePlugin<UiFeature>(feature => 
+                feature.HtmlModules.Add(HtmlModule));
+        }
+
         public void Register(IAppHost appHost)
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);
@@ -92,9 +98,6 @@ namespace ServiceStack
             }
 
             appHost.RegisterServices(ServiceRoutes);
-
-            if (EnableAppMetadata && HtmlModule != null)
-                appHost.GetPlugin<UiFeature>()?.HtmlModules.Add(HtmlModule);
         }
 
         public virtual IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)

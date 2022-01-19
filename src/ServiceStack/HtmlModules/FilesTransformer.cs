@@ -74,6 +74,9 @@ public class FilesTransformer
 
     public string ReadAll(IVirtualFile file)
     {
+        if (file == null)
+            throw new ArgumentNullException(nameof(file));
+        
         if (!FileExtensions.TryGetValue(file.Extension, out var extOptions))
             return file.ReadAllText();
 

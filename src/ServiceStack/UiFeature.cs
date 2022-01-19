@@ -20,13 +20,13 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
         new SharedFolder("plugins", "/modules/shared/plugins", ".js"),
     };
 
-    public HtmlModulesFeature Module { get; } = new()
-    {
-        IgnoreIfError = true,
-        Configure = (appHost,module) => module.VirtualFiles = appHost.VirtualFileSources,
-    };
+    public HtmlModulesFeature Module { get; } = new HtmlModulesFeature {
+            IgnoreIfError = true,
+        }
+        .Configure((appHost,module) => 
+            module.VirtualFiles = appHost.VirtualFileSources);
     
-    public Action<UiFeature> Configure { get; set; }
+    public Action<IAppHost> Configure { get; set; }
 
     public UiFeature()
     {
@@ -52,7 +52,7 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
     {
         if (HtmlModules.Count > 0)
         {
-            Configure?.Invoke(this);
+            Configure?.Invoke(appHost);
             Module.Modules.AddRange(HtmlModules);
             Module.Handlers.AddRange(Handlers);
             Module.Register(appHost);

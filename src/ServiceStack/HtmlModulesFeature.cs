@@ -49,7 +49,7 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     
     public List<HtmlModule> Modules { get; set; }
     public HtmlModulesFeature(params HtmlModule[] modules) => Modules = modules.ToList();
-    public Action<IAppHost, HtmlModule>? Configure { get; set; }
+    public List<Action<IAppHost, HtmlModule>> OnConfigure { get; set; } = new();
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
     /// <summary>
@@ -81,6 +81,12 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     /// </summary>
     public bool IncludeHtmlLineTransformers { get; set; } = true;
 
+    public HtmlModulesFeature Configure(Action<IAppHost, HtmlModule> configure)
+    {
+        OnConfigure.Add(configure);
+        return this;
+    }
+
     public void Register(IAppHost appHost)
     {
         var debugMode = appHost.Config.DebugMode;
@@ -101,7 +107,10 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
             component.Feature = this;
             component.VirtualFiles ??= VirtualFiles;
             component.FileContentsResolver ??= FileContentsResolver;
-            Configure?.Invoke(appHost, component);
+            foreach (var configure in OnConfigure)
+            {
+                configure(appHost, component);
+            }
             component.Register(appHost);
         }
     }
