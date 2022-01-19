@@ -363,14 +363,11 @@ namespace ServiceStack
             Action<ServiceStackHost> afterPluginsLoaded = null,
             Action<ServiceStackHost> afterAppHostInit = null)
         {
-            if (beforeConfigure != null)
-                ServiceStackHost.GlobalBeforeConfigure.Add(beforeConfigure);
-            if (afterConfigure != null)
-                ServiceStackHost.GlobalAfterConfigure.Add(afterConfigure);
-            if (afterPluginsLoaded != null)
-                ServiceStackHost.GlobalAfterPluginsLoaded.Add(afterPluginsLoaded);
-            if (afterAppHostInit != null)
-                ServiceStackHost.GlobalAfterAppHostInit.Add(afterAppHostInit);
+            HostContext.ConfigureAppHost(
+                beforeConfigure:beforeConfigure,
+                afterConfigure:afterConfigure,
+                afterPluginsLoaded:afterPluginsLoaded,
+                afterAppHostInit:afterAppHostInit);
             return builder;
         }
 

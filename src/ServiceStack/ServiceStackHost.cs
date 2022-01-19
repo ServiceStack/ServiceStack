@@ -1943,6 +1943,7 @@ namespace ServiceStack
                     Container = null;
                 }
 
+                HostContext.Reset();
                 AuthenticateService.Reset();
                 JS.UnConfigure();
                 JsConfig.Reset(); //Clears Runtime Attributes

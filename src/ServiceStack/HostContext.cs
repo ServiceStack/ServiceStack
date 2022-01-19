@@ -72,7 +72,7 @@ namespace ServiceStack
 
         public static bool TestMode
         {
-            get => ServiceStackHost.Instance != null && ServiceStackHost.Instance.TestMode;
+            get => ServiceStackHost.Instance is { TestMode: true };
             set => ServiceStackHost.Instance.TestMode = value;
         }
 
@@ -342,5 +342,30 @@ namespace ServiceStack
 
             return -1;
         }
+        
+        public static void ConfigureAppHost(
+            Action<ServiceStackHost> beforeConfigure = null,
+            Action<ServiceStackHost> afterConfigure = null,
+            Action<ServiceStackHost> afterPluginsLoaded = null,
+            Action<ServiceStackHost> afterAppHostInit = null)
+        {
+            if (beforeConfigure != null)
+                ServiceStackHost.GlobalBeforeConfigure.Add(beforeConfigure);
+            if (afterConfigure != null)
+                ServiceStackHost.GlobalAfterConfigure.Add(afterConfigure);
+            if (afterPluginsLoaded != null)
+                ServiceStackHost.GlobalAfterPluginsLoaded.Add(afterPluginsLoaded);
+            if (afterAppHostInit != null)
+                ServiceStackHost.GlobalAfterAppHostInit.Add(afterAppHostInit);
+        }
+
+        public static void Reset()
+        {
+            ServiceStackHost.GlobalBeforeConfigure.Clear();
+            ServiceStackHost.GlobalAfterConfigure.Clear();
+            ServiceStackHost.GlobalAfterPluginsLoaded.Clear();
+            ServiceStackHost.GlobalAfterAppHostInit.Clear();
+        }
+        
     }
 }
