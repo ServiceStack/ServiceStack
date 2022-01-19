@@ -46,13 +46,13 @@ DEBUG = true /*debug*/
                             </a>
                         </nav>
                     </div>
-                    <div class="fixed top-top-nav flex-grow min-h-screen overflow-auto">
+                    <div class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto">
                         <div v-if="routes.tab === ''" v-scope="ApiForm({ store, routes })"></div>
                         <div v-else-if="routes.tab === 'details'" class="flex" v-scope="ApiDetails({ store, routes, breakpoints })"></div>
                         <div v-else-if="routes.tab === 'code'" v-scope="ApiCode({ store, routes })"></div>
                     </div>
                 </div>
-                <div v-else v-scope="Welcome({ store })"></div>
+                <div class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto" v-else v-scope="Welcome({ store })"></div>
             </div>
         </main>
     </div>

@@ -288,8 +288,8 @@ function supportsProp(prop) {
 </script>
 <!--minify-->
 <template id="api-form-template">
-<div v-if="!showForm" class="w-body md:w-body md:p-4">
-    <div class="">
+<div v-if="!showForm" class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto">
+    <div class="md:p-4">
         <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
         <div v-scope="store.SignIn()"></div>
     </div>
@@ -301,7 +301,7 @@ function supportsProp(prop) {
             {{name}}
         </a>
     </nav>
-    <div class="w-body md:w-body fixed top-sub-nav h-top-nav overflow-auto md:pb-scroll">
+    <div class="w-body md:w-body fixed top-sub-nav h-sub-nav overflow-auto md:pb-scroll">
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
             <div v-if="routes.form==''" class="sm:p-4 max-w-screen-md"
                  v-scope="AutoForm({ 
