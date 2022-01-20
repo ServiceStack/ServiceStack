@@ -24,9 +24,6 @@ public class TodosServices : Service
 
     public Todo Post(CreateTodo request)
     {
-        if (request.Text.IsNullOrEmpty())
-            throw new ArgumentNullException(nameof(request.Text));
-
         var newTodo = new Todo { Id = Todos.NextId(), Text = request.Text };
         Todos.Add(newTodo);
         return newTodo;

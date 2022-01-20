@@ -76,27 +76,34 @@ public class PublishTasks
     }
 
     [Test]
-    public void Publish_Bookings_cs()
+    public void Publish_Bookings_and_Todos_cs()
     {
         Directory.SetCurrentDirectory(ProjectDir);
-        var bookingsName = "Bookings.cs";
-        var toFolders = new[]
-        {
-            "../../tests/ServiceStack.Blazor.Tests/ServiceModel/",
-            "../../../NetCoreTemplates/blazor-wasm/MyApp.ServiceModel/",
-            "../../../NetCoreTemplates/vue-vite/api/MyApp.ServiceModel/",
-            "../../../NetCoreTemplates/vue-ssg/api/MyApp.ServiceModel/",
-            "../../../NetCoreTemplates/nextjs/api/MyApp.ServiceModel/",
-        };
         
-        var copyFile = "ServiceModel".CombineWith(bookingsName);
-        $"Copying {Path.GetFullPath(copyFile)}...".Print();
-        foreach (var folder in toFolders)
+        string[] ResolveTargetDirs(string name) => new[]
         {
-            var toFile = Path.GetFullPath(folder.CombineWith(bookingsName));
-            $"Writing to {toFile}".Print();
-            File.Copy(copyFile, toFile, overwrite:true);
+            $"../../tests/ServiceStack.Blazor.Tests/{name}/",
+            $"../../../NetCoreTemplates/blazor-wasm/MyApp.{name}/",
+            $"../../../NetCoreTemplates/vue-vite/api/MyApp.{name}/",
+            $"../../../NetCoreTemplates/vue-ssg/api/MyApp.{name}/",
+            $"../../../NetCoreTemplates/nextjs/api/MyApp.{name}/",
+        };
+
+        void CopyFile(string copyFile, string fileName, string[] targetDirs)
+        {
+            $"Copying {Path.GetFullPath(copyFile)}...".Print();
+            foreach (var folder in targetDirs)
+            {
+                var toFile = Path.GetFullPath(folder.CombineWith(fileName));
+                $"Writing to {toFile}".Print();
+                File.Copy(copyFile, toFile, overwrite: true);
+            }
+            "".Print();
         }
+
+        CopyFile("ServiceModel/Bookings.cs", "Bookings.cs", ResolveTargetDirs("ServiceModel"));
+        CopyFile("ServiceModel/Todos.cs", "Todos.cs", ResolveTargetDirs("ServiceModel"));
+        CopyFile("ServiceInterface/TodosServices.cs", "TodosServices.cs", ResolveTargetDirs("ServiceInterface"));
     }
 
     class AppHost : AppSelfHostBase

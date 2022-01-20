@@ -9,14 +9,15 @@ namespace MyApp.ServiceModel;
 public class QueryTodos : QueryData<Todo>
 {
     public int? Id { get; set; }
-    public List<long> Ids { get; set; }
-    public string TextContains { get; set; }
+    public List<long>? Ids { get; set; }
+    public string? TextContains { get; set; }
 }
 
 [Tag("todos")]
 [Route("/todos", "POST")]
 public class CreateTodo : IPost, IReturn<Todo>
 {
+    [ValidateNotEmpty]
     public string Text { get; set; }
 }
 
@@ -25,6 +26,7 @@ public class CreateTodo : IPost, IReturn<Todo>
 public class UpdateTodo : IPut, IReturn<Todo>
 {
     public long Id { get; set; }
+    [ValidateNotEmpty]
     public string Text { get; set; }
     public bool IsFinished { get; set; }
 }
