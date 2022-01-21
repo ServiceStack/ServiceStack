@@ -108,7 +108,8 @@ namespace ServiceStack.Auth
             {
                 try
                 {
-                    obj[AuthMetadataProvider.ProfileUrlKey] = await AuthHttpGateway.CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
+                    var profileUrl = await AuthHttpGateway.CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
+                    obj[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
                 }
                 catch (Exception ex)
                 {

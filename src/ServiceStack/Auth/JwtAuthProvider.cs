@@ -24,6 +24,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool SetBearerTokenOnAuthenticateResponse { get; set; }
 
+        public static int MaxProfileUrlSize { get; set; } = 3900;
+
         public JwtAuthProvider() : this(null) {}
 
         public JwtAuthProvider(IAppSettings appSettings) : base(appSettings)
@@ -363,7 +365,16 @@ namespace ServiceStack.Auth
 
             var profileUrl = session.GetProfileUrl();
             if (profileUrl != null && profileUrl != Svg.GetDataUri(Svg.Icons.DefaultProfile))
-                jwtPayload["picture"] = profileUrl;
+            {
+                if (profileUrl.Length <= MaxProfileUrlSize)
+                {
+                    jwtPayload["picture"] = profileUrl;
+                }
+                else
+                {
+                    Log.Warn($"User '{session.UserAuthId}' ProfileUrl exceeds max JWT Cookie size, using default profile");
+                }
+            }
 
             var combinedRoles = new List<string>(session.Roles.Safe());
             var combinedPerms = new List<string>(session.Permissions.Safe());
