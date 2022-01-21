@@ -45,11 +45,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         this.Format = "json";
         this.Headers = new NameValueCollection();
         this.CookieContainer = new CookieContainer();
-
-        //SetBaseUri()
-        this.BaseUri = baseUri;
-        this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + BasePath;
-        this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + BasePath;
+        SetBaseUri(this.BaseUri = baseUri);
         JsConfig.InitStatics();
     }
 
@@ -108,13 +104,26 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     /// Relative BasePath to use for predefined routes. Set with `UseBasePath` or `WithBasePath()`
     /// Always contains '/' prefix + '/' suffix, e.g. /api/
     /// </summary>
-    public string BasePath { get; set; } = DefaultBasePath;
+    public string BasePath { get; protected set; } = DefaultBasePath;
+
+    /// <summary>
+    /// Replace the Base reply/oneway paths to use a different prefix
+    /// </summary>
+    public string UseBasePath
+    {
+        set
+        {
+            if (!string.IsNullOrEmpty(value))
+                this.BasePath = (value[0] != '/' ? '/' + value : value).WithTrailingSlash();
+            SetBaseUri(this.BaseUri);
+        }
+    }
 
     public JsonApiClient SetBaseUri(string baseUri)
     {
         this.BaseUri = baseUri;
-        this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + BasePath;
-        this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + BasePath;
+        this.SyncReplyBaseUri = baseUri.CombineWith(BasePath);
+        this.AsyncOneWayBaseUri = baseUri.CombineWith(BasePath);
         return this;
     }
 
