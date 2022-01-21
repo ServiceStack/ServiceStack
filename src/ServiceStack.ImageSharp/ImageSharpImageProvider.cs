@@ -1,7 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
-namespace ServiceStack.ImageWeb;
+namespace ServiceStack.ImageSharp;
 
 public class ImageSharpImageProvider : ImageProvider
 {
