@@ -52,6 +52,6 @@ public class ConfigureAuth : IHostingStartup
             //override the default registration validation with your own custom implementation
             appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
 
-            ImageProvider.Instance = new ImageSharpImageProvider();
+            //ImageProvider.Instance = new ImageSharpImageProvider();
         });
 }
