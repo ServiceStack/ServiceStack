@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -296,7 +297,9 @@ namespace ServiceStack.Auth
                 using var origStream = MicrosoftGraphAuthProvider.PhotoUrl
                     .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
                 using var resizedImage = ImageProvider.Instance.Resize(origStream, savePhotoSize);
-                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                var base64 = resizedImage is MemoryStream ms 
+                    ? Convert.ToBase64String(ms.GetBuffer(), 0, (int) ms.Length)
+                    : Convert.ToBase64String(resizedImage.ReadFully());
                 return "data:image/png;base64," + base64;
             }
             catch (Exception ex)
@@ -314,7 +317,9 @@ namespace ServiceStack.Auth
                     .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken), token:token).ConfigAwait();
                 
                 using var resizedImage = ImageProvider.Instance.Resize(origStream, savePhotoSize);
-                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                var base64 = resizedImage is MemoryStream ms 
+                    ? Convert.ToBase64String(ms.GetBuffer(), 0, (int) ms.Length)
+                    : Convert.ToBase64String(await resizedImage.ReadFullyAsync(token));
                 return "data:image/png;base64," + base64;
             }
             catch (Exception ex)

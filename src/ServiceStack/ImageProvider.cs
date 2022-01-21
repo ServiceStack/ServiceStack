@@ -1,3 +1,5 @@
+#nullable  enable
+
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -11,32 +13,31 @@ public abstract class ImageProvider
 {
     public static ImageProvider Instance { get; set; } = new ImageDrawingProvider();
 
-    public abstract MemoryStream Resize(Stream origStream, string savePhotoSize = null);
-    
-    public abstract MemoryStream ResizeToPng(Image img, int newWidth, int newHeight);
+    public abstract Stream Resize(Stream stream, int newWidth, int newHeight);
 
-    public abstract MemoryStream CropToPng(Image img, int newWidth, int newHeight, int startX = 0, int startY = 0);
+    public virtual Stream Resize(Stream origStream, string? savePhotoSize = null)
+    {
+        var parts = savePhotoSize?.Split('x');
+        if (parts is { Length: > 1 } &&
+            int.TryParse(parts[0], out var width) && int.TryParse(parts[1], out var height))
+            return Resize(origStream, width, height);
+
+        return origStream;
+    }
 }
 
 public class ImageDrawingProvider : ImageProvider
 {
-    public override MemoryStream Resize(Stream origStream, string savePhotoSize = null)
+    public override Stream Resize(Stream origStream, int newWidth, int newHeight)
     {
         using var origImage = Image.FromStream(origStream);
-        var parts = savePhotoSize?.Split('x');
-        var width = origImage.Width;
-        var height = origImage.Height;
-
-        if (parts is { Length: > 0 })
-            int.TryParse(parts[0], out width);
-
-        if (parts is { Length: > 1 })
-            int.TryParse(parts[1], out height);
-
-        return origImage.ResizeToPng(width, height);
+        return origImage.ResizeToPng(newWidth, newHeight);
     }
+}
 
-    public override MemoryStream ResizeToPng(Image img, int newWidth, int newHeight)
+public static class ImageExtensions
+{
+    public static MemoryStream ResizeToPng(this Image img, int newWidth, int newHeight)
     {
         if (newWidth != img.Width || newHeight != img.Height)
         {
@@ -69,8 +70,8 @@ public class ImageDrawingProvider : ImageProvider
             return ms;
         }
     }
-    
-    public override MemoryStream CropToPng(Image img, int newWidth, int newHeight, int startX = 0, int startY = 0)
+
+    public static MemoryStream CropToPng(this Image img, int newWidth, int newHeight, int startX = 0, int startY = 0)
     {
         if (img.Height < newHeight)
             newHeight = img.Height;
@@ -92,13 +93,4 @@ public class ImageDrawingProvider : ImageProvider
         ms.Position = 0;
         return ms;
     }    
-}
-
-public static class ImageExtensions
-{
-    public static MemoryStream ResizeToPng(this Image img, int newWidth, int newHeight) =>
-        ImageProvider.Instance.ResizeToPng(img, newWidth, newHeight);
-
-    public static MemoryStream CropToPng(this Image img, int newWidth, int newHeight, int startX = 0, int startY = 0) =>
-        ImageProvider.Instance.CropToPng(img, newWidth, newHeight, startX, startY);
 }
