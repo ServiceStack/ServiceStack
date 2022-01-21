@@ -177,7 +177,6 @@ namespace ServiceStack
                 new NativeTypesFeature(),
                 new HttpCacheFeature(),
                 new RequestInfoFeature(),
-                new SpanFormats(),
                 new SvgFeature(),
                 new UiFeature(),
                 new Validation.ValidationFeature(),

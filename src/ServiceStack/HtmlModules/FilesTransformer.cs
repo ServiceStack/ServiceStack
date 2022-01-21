@@ -198,7 +198,7 @@ public class FilesTransformer
         new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
         new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
         new RemoveLineEndingWith(new[]{ "/*debug*/", "<!--debug-->" }, ignoreWhiteSpace:true, Run.IgnoreInDebug),
-        // Hide dev comments from browser (RemoveHtmlLineComments syntax)
+        // Hide dev comments from browser
         new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
         new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
         new RemoveLineWithOnlyWhitespace(Run.Always),
@@ -210,7 +210,7 @@ public class FilesTransformer
         new RemoveLineStartingWith(new[] { "import ", "declare " }, ignoreWhiteSpace:false, Run.Always),
         new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always),
         new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
-        // Hide dev comments from browser (RemoveJsLineComments syntax)
+        // Hide dev comments from browser
         new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
         new RemoveLineWithOnlyWhitespace(Run.Always),
     };

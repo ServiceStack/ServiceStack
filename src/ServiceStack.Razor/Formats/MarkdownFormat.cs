@@ -36,7 +36,7 @@ namespace ServiceStack.Formats
         public static string[] PageExts = new[] { MarkdownExt, TemplateExt };
 
         private static MarkdownFormat instance;
-        public static MarkdownFormat Instance => instance ?? (instance = new MarkdownFormat());
+        public static MarkdownFormat Instance => instance ??= new MarkdownFormat();
 
         // ~/View - Dynamic Pages
         public Dictionary<string, MarkdownPage> ViewPages = new(StringComparer.CurrentCultureIgnoreCase);

@@ -30,7 +30,11 @@ namespace ServiceStack.Host
 
         public Dictionary<string, StreamSerializerDelegateAsync> ContentTypeSerializersAsync = new();
 
-        public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync = new();
+        public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync = new()
+        {
+            { MimeTypes.Json, JsonSerializer.DeserializeFromStreamAsync },
+            { MimeTypes.Jsv, TypeSerializer.DeserializeFromStreamAsync },
+        };
 
         public readonly Dictionary<string, StringSerializerDelegate> ContentTypeStringSerializers = new() {
             { MimeTypes.Json, (r, o) => JsonDataContractSerializer.Instance.SerializeToString(o) },
