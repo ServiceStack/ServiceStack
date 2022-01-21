@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
@@ -271,7 +273,7 @@ namespace ServiceStack.Auth
         {
             var json = await GoogleAuthProvider.DefaultUserProfileUrl
                 .AddQueryParam("access_token", accessToken)
-                .GetJsonFromUrlAsync().ConfigAwait();
+                .GetJsonFromUrlAsync(token: token).ConfigAwait();
 
             return json;
         }
@@ -313,9 +315,12 @@ namespace ServiceStack.Auth
         {
             try
             {
-                using var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
-                    .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken), token:token).ConfigAwait();
-                
+                using var httpClient = new HttpClient();
+                var req = new HttpRequestMessage(HttpMethod.Get, MicrosoftGraphAuthProvider.PhotoUrl);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                var result = await httpClient.SendAsync(req, token);
+
+                using var origStream = await result.Content.ReadAsStreamAsync(token);
                 using var resizedImage = ImageProvider.Instance.Resize(origStream, savePhotoSize);
                 var base64 = resizedImage is MemoryStream ms 
                     ? Convert.ToBase64String(ms.GetBuffer(), 0, (int) ms.Length)
