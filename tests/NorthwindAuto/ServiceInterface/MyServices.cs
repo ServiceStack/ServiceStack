@@ -1,6 +1,5 @@
 ﻿using ServiceStack;
 using MyApp.ServiceModel;
-using System;
 
 namespace MyApp.ServiceInterface;
 
