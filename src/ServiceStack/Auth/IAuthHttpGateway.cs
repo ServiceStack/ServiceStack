@@ -325,9 +325,9 @@ namespace ServiceStack.Auth
             try
             {
                 using var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
-                    .GetStreamFromUrlAsync(requestFilter: req => req.AddBearerToken(accessToken), token: token)
+                    .GetStreamFromUrlAsync(requestFilter: req => req.AddBearerToken(accessToken), token: CancellationToken.None)
                     .ConfigAwait();
-                
+        
                 MemoryStream tempMs = null;
                 if (Env.IsLinux)
                 {
@@ -338,7 +338,7 @@ namespace ServiceStack.Auth
                 var fallback = false;
                 try
                 {
-                    origImage = Image.FromStream(origStream);
+                    origImage = Image.FromStream((Env.IsLinux ? tempMs : origStream)!);
                 }
                 catch (Exception e)
                 {
@@ -349,7 +349,12 @@ namespace ServiceStack.Auth
                 if (fallback)
                 {
                     if (tempMs == null)
+                    {
+                        Log.Warn("Fallback failed, payload null.");
                         return null;
+                    }
+
+                    tempMs.Position = 0;
                     // Failed to use Image.FromStream, fallback to just 
                     var bytes = await tempMs.ReadFullyAsync(token: token);
                     await tempMs.DisposeAsync();
