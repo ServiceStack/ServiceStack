@@ -7,9 +7,9 @@ namespace ServiceStack.Blazor
         public static Func<HttpMessageHandler>? MessageHandlerFactory { get; set; } =
             () => new EnableCorsMessageHandler();
         
-        public static JsonHttpClient Create(string baseUrl, Action<JsonHttpClient>? configure = null) 
+        public static JsonApiClient Create(string baseUrl, Action<JsonApiClient>? configure = null) 
         {
-            var client = new JsonHttpClient(baseUrl) {
+            var client = new JsonApiClient(baseUrl) {
                 HttpMessageHandler = MessageHandlerFactory?.Invoke()
             };
             configure?.Invoke(client);

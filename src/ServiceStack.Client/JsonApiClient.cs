@@ -1,12 +1,11 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
-// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+#nullable enable
+#if NET6_0_OR_GREATER
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -20,45 +19,72 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieContainer, IServiceClientMeta
+public interface IHasJsonApiClient
 {
-    public static ILog log = LogManager.GetLogger(typeof(JsonHttpClient));
+    public JsonApiClient? Client { get; }
+}
 
-    public static Func<HttpMessageHandler> GlobalHttpMessageHandlerFactory { get; set; }
-    public HttpMessageHandler HttpMessageHandler { get; set; }
-
-    public HttpClient HttpClient { get; set; }
-    public CookieContainer CookieContainer { get; set; }
-
-    public ResultsFilterHttpDelegate ResultsFilter { get; set; }
-    public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
-    public ExceptionFilterHttpDelegate ExceptionFilter { get; set; }
-
+/// <summary>
+/// JsonApiClient designed to work with 
+/// </summary>
+public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceClientMeta
+{
+    static ILog Log = LogManager.GetLogger(typeof(JsonApiClient));
+    
+    public static string DefaultBasePath { get; set; } = "/api/";
     public const string DefaultHttpMethod = HttpMethods.Post;
-    public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.VersionString;
+    public static string DefaultUserAgent = "ServiceStack JsonApiClient " + Env.VersionString;
+
+    public JsonApiClient(HttpClient httpClient) : this(httpClient.BaseAddress?.ToString() ?? "/")
+    {
+        this.HttpClient = httpClient;
+    }
+
+    public JsonApiClient(string baseUri)
+    {
+        this.Format = "json";
+        this.Headers = new NameValueCollection();
+        this.CookieContainer = new CookieContainer();
+
+        //SetBaseUri()
+        this.BaseUri = baseUri;
+        this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + BasePath;
+        this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + BasePath;
+        JsConfig.InitStatics();
+    }
+
+    public static Func<HttpMessageHandler>? GlobalHttpMessageHandlerFactory { get; set; }
+    public HttpMessageHandler? HttpMessageHandler { get; set; }
+
+    public HttpClient? HttpClient { get; set; }
+    public CookieContainer? CookieContainer { get; set; }
+
+    public ResultsFilterHttpDelegate? ResultsFilter { get; set; }
+    public ResultsFilterHttpResponseDelegate? ResultsFilterResponse { get; set; }
+    public ExceptionFilterHttpDelegate? ExceptionFilter { get; set; }
 
     public string BaseUri { get; set; }
 
-    public string Format { get; private set; }
-    public string RequestCompressionType { get; set; }
-    public string ContentType = MimeTypes.Json;
+    public string? Format { get; private set; }
+    public string? RequestCompressionType { get; set; }
+    public string? ContentType = MimeTypes.Json;
 
-    public string SyncReplyBaseUri { get; set; }
+    public string? SyncReplyBaseUri { get; set; }
 
-    public string AsyncOneWayBaseUri { get; set; }
+    public string? AsyncOneWayBaseUri { get; set; }
 
     public int Version { get; set; }
-    public string SessionId { get; set; }
+    public string? SessionId { get; set; }
 
-    public string UserName { get; set; }
-    public string Password { get; set; }
+    public string? UserName { get; set; }
+    public string? Password { get; set; }
     public bool AlwaysSendBasicAuthHeader { get; set; }
 
-    public ICredentials Credentials { get; set; }
+    public ICredentials? Credentials { get; set; }
 
-    public string BearerToken { get; set; }
-    public string RefreshToken { get; set; }
-    public string RefreshTokenUri { get; set; }
+    public string? BearerToken { get; set; }
+    public string? RefreshToken { get; set; }
+    public string? RefreshTokenUri { get; set; }
     public bool EnableAutoRefreshToken { get; set; } = true;
 
     public bool UseCookies { get; set; } = true;
@@ -66,69 +92,30 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     /// <summary>
     /// Gets the collection of headers to be added to outgoing requests.
     /// </summary>
-    public NameValueCollection Headers { get; private set; }
+    public NameValueCollection? Headers { get; private set; }
 
-    public JsonHttpClient SetBaseUri(string baseUri)
-    {
-        this.BasePath = "/" + Format + "/reply/";
-        this.BaseUri = baseUri;
-        this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
-        this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
-        return this;
-    }
+    public Action<HttpRequestMessage>? RequestFilter { get; set; }
+    public static Action<HttpRequestMessage>? GlobalRequestFilter { get; set; }
 
-    public JsonHttpClient SetBaseUri(string baseUri, string basePath) => 
-        SetBaseUri(baseUri).WithBasePath(basePath);
+    public Action<HttpResponseMessage>? ResponseFilter { get; set; }
+    public static Action<HttpResponseMessage>? GlobalResponseFilter { get; set; }
+
+    public UrlResolverDelegate? UrlResolver { get; set; }
+
+    public TypedUrlResolverDelegate? TypedUrlResolver { get; set; }
 
     /// <summary>
     /// Relative BasePath to use for predefined routes. Set with `UseBasePath` or `WithBasePath()`
     /// Always contains '/' prefix + '/' suffix, e.g. /api/
     /// </summary>
-    public string BasePath { get; protected set; }
+    public string BasePath { get; set; } = DefaultBasePath;
 
-    /// <summary>
-    /// Replace the Base reply/oneway paths to use a different prefix
-    /// </summary>
-    public string UseBasePath
+    public JsonApiClient SetBaseUri(string baseUri)
     {
-        set
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                SetBaseUri(this.BaseUri);
-            }
-            else
-            {
-                this.BasePath = (value[0] != '/' ? '/' + value : value).WithTrailingSlash();
-                this.SyncReplyBaseUri = this.BaseUri.CombineWith(BasePath);
-                this.AsyncOneWayBaseUri = this.BaseUri.CombineWith(BasePath);
-            }
-        }
-    }
-
-    public JsonHttpClient WithBasePath(string basePath)
-    {
-        UseBasePath = basePath;
+        this.BaseUri = baseUri;
+        this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + BasePath;
+        this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + BasePath;
         return this;
-    }
-
-    public JsonHttpClient(HttpClient httpClient) : this()
-    {
-        this.HttpClient = httpClient;
-    }
-
-    public JsonHttpClient(string baseUri) : this()
-    {
-        SetBaseUri(baseUri);
-    }
-
-    public JsonHttpClient()
-    {
-        this.Format = "json";
-        this.Headers = new NameValueCollection();
-        this.CookieContainer = new CookieContainer();
-
-        JsConfig.InitStatics();
     }
 
     public void SetCredentials(string userName, string password)
@@ -136,10 +123,6 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         this.UserName = userName;
         this.Password = password;
     }
-
-    public UrlResolverDelegate UrlResolver { get; set; }
-
-    public TypedUrlResolverDelegate TypedUrlResolver { get; set; }
 
     public virtual string ToAbsoluteUrl(string relativeOrAbsoluteUrl)
     {
@@ -176,18 +159,19 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         {
             var useHandler = new HttpClientHandler
             {
-                CookieContainer = CookieContainer,
                 UseDefaultCredentials = Credentials == null,
                 Credentials = Credentials,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
             };
+            if (CookieContainer != null)
+                useHandler.CookieContainer = CookieContainer;
             if (UseCookies) //UseCookies throws in Blazor, only set if true
                 useHandler.UseCookies = UseCookies;
                 
             handler = useHandler;
         }
             
-        var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
+        var baseUri = new Uri(BaseUri);
 
         var client = new HttpClient(handler, disposeHandler: HttpMessageHandler == null) { BaseAddress = baseUri };
 
@@ -201,10 +185,11 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
     public void AddHeader(string name, string value)
     {
+        Headers ??= new NameValueCollection();
         Headers[name] = value;
     }
 
-    private int activeAsyncRequests = 0;
+    private int activeAsyncRequests;
     
     internal sealed class CompressContent : HttpContent
     {
@@ -222,7 +207,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
             Headers.ContentEncoding.Add(compressor.Encoding);
         }
 
-        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
             using var zip = compressor.Compress(stream, leaveOpen:true);
             await content.CopyToAsync(zip).ConfigAwait();
@@ -235,7 +220,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         }
     }
 
-    public async Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default)
+    public async Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object? request, CancellationToken token = default)
     {
         var client = GetHttpClient();
         if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
@@ -251,8 +236,8 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         }
         catch (Exception ex)
         {
-            if (log.IsDebugEnabled)
-                log.Debug("Could not parse URL: " + absoluteUrl, ex);
+            if (Log.IsDebugEnabled)
+                Log.Debug("Could not parse URL: " + absoluteUrl, ex);
         }
 
         var filterResponse = ResultsFilter?.Invoke(typeof(TResponse), httpMethod, absoluteUrl, request);
@@ -325,20 +310,24 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         }
         catch (Exception e)
         {
-            log.Error(e, "HttpClient Exception: " + e.Message);
+            Log.Error(e, "HttpClient Exception: " + e.Message);
             throw;
         }
     }
 
-    private HttpRequestMessage CreateRequest(string httpMethod, string absoluteUrl, object request)
+    private HttpRequestMessage CreateRequest(string httpMethod, string absoluteUrl, object? request)
     {
         this.PopulateRequestMetadata(request);
 
         var httpReq = new HttpRequestMessage(new HttpMethod(httpMethod), absoluteUrl);
 
-        foreach (var name in Headers.AllKeys)
+        if (Headers != null)
         {
-            httpReq.Headers.Add(name, Headers[name]);
+            foreach (var name in Headers.AllKeys)
+            {
+                if (name != null)
+                    httpReq.Headers.Add(name, Headers[name]);
+            }
         }
         httpReq.Headers.Add(HttpHeaders.Accept, ContentType);
 
@@ -380,7 +369,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         return httpReq;
     }
 
-    private async Task<TResponse> ConvertToResponse<TResponse>(HttpResponseMessage httpRes, string httpMethod, string absoluteUrl, object request, CancellationToken token)
+    private async Task<TResponse> ConvertToResponse<TResponse>(HttpResponseMessage httpRes, string httpMethod, string absoluteUrl, object? request, CancellationToken token=default)
     {
         ApplyWebResponseFilters(httpRes);
 
@@ -393,34 +382,31 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
         if (typeof(TResponse) == typeof(string))
         {
-            var result = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(), httpRes, request, absoluteUrl).ConfigAwait();
+            var result = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
             var response = (TResponse) (object) result;
             ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
             return response;
         }
         if (typeof(TResponse) == typeof(byte[]))
         {
-            var result = await ThrowIfError(() => httpRes.Content.ReadAsByteArrayAsync(), httpRes, request, absoluteUrl).ConfigAwait();
+            var result = await ThrowIfError(() => httpRes.Content.ReadAsByteArrayAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
             var response = (TResponse) (object) result;
             ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
             return response;
         }
         if (typeof(TResponse) == typeof(Stream))
         {
-            var result = await ThrowIfError(() => httpRes.Content.ReadAsStreamAsync(), httpRes, request, absoluteUrl).ConfigAwait();
+            var result = await ThrowIfError(() => httpRes.Content.ReadAsStreamAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
             var response = (TResponse) (object) result;
             ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
             return response;
         }
 
-        var json = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(), httpRes, request, absoluteUrl).ConfigAwait();
+        var json = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
         var obj = json.FromJson<TResponse>();
         ResultsFilterResponse?.Invoke(httpRes, obj, httpMethod, absoluteUrl, request);
         return obj;
     }
-
-    public Action<HttpRequestMessage> RequestFilter { get; set; }
-    public static Action<HttpRequestMessage> GlobalRequestFilter { get; set; }
 
     private void ApplyWebRequestFilters(HttpRequestMessage httpReq)
     {
@@ -428,16 +414,13 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         GlobalRequestFilter?.Invoke(httpReq);
     }
 
-    public Action<HttpResponseMessage> ResponseFilter { get; set; }
-    public static Action<HttpResponseMessage> GlobalResponseFilter { get; set; }
-
     private void ApplyWebResponseFilters(HttpResponseMessage httpRes)
     {
         ResponseFilter?.Invoke(httpRes);
         GlobalResponseFilter?.Invoke(httpRes);
     }
 
-    private async Task<TResponse> ThrowIfError<TResponse>(Func<Task<TResponse>> fn, HttpResponseMessage httpRes, object request, string requestUri)
+    private async Task<TResponse> ThrowIfError<TResponse>(Func<Task<TResponse>> fn, HttpResponseMessage httpRes, object? request, string requestUri)
     {
         Interlocked.Decrement(ref activeAsyncRequests);
 
@@ -448,7 +431,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         }
         catch (Exception e)
         {
-            throw CreateException<TResponse>(httpRes, e);
+            throw CreateException(httpRes, e);
         }
 
         if (!httpRes.IsSuccessStatusCode)
@@ -467,35 +450,33 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     }
 
     protected T ResultFilter<T>(T response, HttpResponseMessage httpRes, string httpMethod, string requestUri, object request)
+        where T : class
     {
         ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, requestUri, request);
         return response;
     }
 
-    private static WebServiceException CreateException<TResponse>(HttpResponseMessage httpRes, Exception ex)
-    {
-        return new WebServiceException();
-    }
+    private static WebServiceException CreateException(HttpResponseMessage httpRes, Exception ex) => new();
 
-    readonly ConcurrentDictionary<Type, Action<HttpResponseMessage, object, string, object>> ResponseHandlers = new();
+    readonly ConcurrentDictionary<Type, Action<HttpResponseMessage, object?, string, object?>> responseHandlers = new();
 
-    private void ThrowResponseTypeException<TResponse>(HttpResponseMessage httpRes, object request, string requestUri, object response)
+    private void ThrowResponseTypeException<TResponse>(HttpResponseMessage httpRes, object? request, string requestUri, object? response)
     {
         var responseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
-        if (!ResponseHandlers.TryGetValue(responseType, out var responseHandler))
+        if (!responseHandlers.TryGetValue(responseType, out var responseHandler))
         {
             var mi = GetType().GetInstanceMethod("ThrowWebServiceException")
-                .MakeGenericMethod(new[] { responseType });
+                .MakeGenericMethod(responseType);
 
-            responseHandler = (Action<HttpResponseMessage, object, string, object>)mi.CreateDelegate(
-                typeof(Action<HttpResponseMessage, object, string, object>), this);
+            responseHandler = (Action<HttpResponseMessage, object?, string, object?>)mi.CreateDelegate(
+                typeof(Action<HttpResponseMessage, object?, string, object?>), this);
 
-            ResponseHandlers[responseType] = responseHandler;
+            responseHandlers[responseType] = responseHandler;
         }
         responseHandler(httpRes, request, requestUri, response);
     }
 
-    public static byte[] GetResponseBytes(object response)
+    public static byte[]? GetResponseBytes(object response)
     {
         if (response is Stream stream)
             return stream.ReadFully();
@@ -508,12 +489,12 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     }
 
     public static WebServiceException ToWebServiceException(
-        HttpResponseMessage httpRes, object response, Func<Stream, object> parseDtoFn)
+        HttpResponseMessage httpRes, object response, Func<Stream, object?> parseDtoFn)
     {
-        if (log.IsDebugEnabled)
+        if (Log.IsDebugEnabled)
         {
-            log.DebugFormat("Status Code : {0}", httpRes.StatusCode);
-            log.DebugFormat("Status Description : {0}", httpRes.ReasonPhrase);
+            Log.DebugFormat("Status Code : {0}", httpRes.StatusCode);
+            Log.DebugFormat("Status Description : {0}", httpRes.ReasonPhrase);
         }
 
         var serviceEx = new WebServiceException(httpRes.ReasonPhrase)
@@ -534,7 +515,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
                 {
                     var stream = MemoryStreamFactory.GetStream(bytes);
                     serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                    serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
+                    serviceEx.ResponseDto = parseDtoFn(stream);
 
                     if (stream.CanRead)
                         stream.Dispose(); //alt ms throws when you dispose twice
@@ -956,7 +937,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null).GetSyncResponse();
     }
 
-    public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null, CancellationToken token = default)
+    public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null, CancellationToken token = default)
     {
         using var content = new MultipartFormDataContent();
         var fileBytes = await fileToUpload.ReadFullyAsync(token).ConfigAwait();
@@ -1000,7 +981,8 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         foreach (string key in nameValueCollection)
         {
             var value = nameValueCollection[key];
-            content.Add(new StringContent(value), $"\"{key}\"");
+            if (value != null)
+                content.Add(new StringContent(value), $"\"{key}\"");
         }
 
         var fileBytes = await fileToUpload.ReadFullyAsync(token).ConfigAwait();
@@ -1054,7 +1036,8 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         foreach (string key in nameValueCollection)
         {
             var value = nameValueCollection[key];
-            content.Add(new StringContent(value), $"\"{key}\"");
+            if (value != null)
+                content.Add(new StringContent(value), $"\"{key}\"");
         }
 
         var disposables = new List<IDisposable>();
@@ -1124,3 +1107,4 @@ internal static class InternalExtensions
         }
     }
 }
+#endif

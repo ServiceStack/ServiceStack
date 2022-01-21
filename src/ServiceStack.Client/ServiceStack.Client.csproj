@@ -40,6 +40,9 @@
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
+
+    <!-- Include JsonApiClient in .NET6 builds -->
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

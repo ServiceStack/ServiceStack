@@ -21,7 +21,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
-        <ProjectReference Include="..\ServiceStack.HttpClient\ServiceStack.HttpClient.Source.csproj" />
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     </ItemGroup>
 
