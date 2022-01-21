@@ -42,9 +42,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #if NETCORE
                 ServiceStack.Memory.NetCoreMemory.Configure();
 #endif
-      
-                if (!Plugins.Any(x => x is SpanFormats)) //Registered by default
-                    Plugins.Add(new SpanFormats()); 
             }
         }
 
