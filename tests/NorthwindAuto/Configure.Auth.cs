@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
-using ServiceStack.ImageWeb;
+using ServiceStack.ImageSharp;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAuth))]
 
