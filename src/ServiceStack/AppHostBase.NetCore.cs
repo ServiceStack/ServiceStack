@@ -88,15 +88,21 @@ namespace ServiceStack
             app.Use(ProcessRequest);
         }
 
-        public static void BindHost(ServiceStackHost appHost, IApplicationBuilder app)
+        public override void ConfigureLogging()
         {
-            var logFactory = app.ApplicationServices.GetService<ILoggerFactory>();
+            var logFactory = app?.ApplicationServices.GetService<ILoggerFactory>();
             if (logFactory != null)
             {
                 NetCoreLogFactory.FallbackLoggerFactory = logFactory;
                 if (LogManager.LogFactory.IsNullOrNullLogFactory())
                     LogManager.LogFactory = new NetCoreLogFactory(logFactory);
             }
+            base.ConfigureLogging();
+        }
+
+        public static void BindHost(ServiceStackHost appHost, IApplicationBuilder app)
+        {
+            appHost.ConfigureLogging();
 
             appHost.Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
 

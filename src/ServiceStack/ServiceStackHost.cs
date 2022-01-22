@@ -39,7 +39,7 @@ namespace ServiceStack
     public abstract partial class ServiceStackHost
         : IAppHost, IFunqlet, IHasContainer, IDisposable
     {
-        private readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
+        protected ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
         public bool IsDebugLogEnabled => Log.IsDebugEnabled;
 
         /// <summary>
@@ -313,6 +313,7 @@ namespace ServiceStack
 
             Configure(Container);
 
+            ConfigureLogging();
             AfterConfigure.Each(RunManagedAction);
             postStartupConfigs.ForEach(RunConfigure);
             GlobalAfterConfigure.Each(RunManagedAction);
@@ -379,6 +380,11 @@ namespace ServiceStack
             ReadyAt = DateTime.UtcNow;
 
             return this;
+        }
+
+        public virtual void ConfigureLogging()
+        {
+            Log = LogManager.GetLogger(typeof(ServiceStackHost));
         }
 
         protected virtual void RegisterLicenseKey(string licenseKeyText)

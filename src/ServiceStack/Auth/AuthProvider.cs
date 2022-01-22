@@ -14,7 +14,7 @@ namespace ServiceStack.Auth
 {
     public abstract class AuthProvider : IAuthProvider, IAuthPlugin
     {
-        protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
+        protected ILog Log;
 
         public virtual string Type => GetType().Name;
         public virtual Dictionary<string, string> Meta => null;
@@ -58,6 +58,7 @@ namespace ServiceStack.Auth
         protected AuthProvider()
         {
             PersistSession = !(GetType().HasInterface(typeof(IAuthWithRequest)) || GetType().HasInterface(typeof(IAuthWithRequestSync)));
+            Log = LogManager.GetLogger(GetType());
         }
 
         protected AuthProvider(IAppSettings appSettings, string authRealm, string authProvider)

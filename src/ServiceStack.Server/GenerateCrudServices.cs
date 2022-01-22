@@ -32,8 +32,6 @@ namespace ServiceStack
     //TODO: persist AutoCrud
     public class GenerateCrudServices : IGenerateCrudServices
     {
-        private static ILog log = LogManager.GetLogger(typeof(GenerateCrudServices));
-        
         public List<string> IncludeCrudOperations { get; set; } = new() {
             AutoCrudOperation.Query,
             AutoCrudOperation.Create,
@@ -779,6 +777,7 @@ namespace ServiceStack
             {
                 var tables = db.GetTableNames(schema);
                 var results = new List<TableSchema>();
+                ILog log = null;
 
                 var dialect = db.GetDialectProvider();
                 foreach (var table in tables)
@@ -802,6 +801,7 @@ namespace ServiceStack
                     {
                         to.ErrorType = e.GetType().Name;
                         to.ErrorMessage = e.Message;
+                        log ??= LogManager.GetLogger(typeof(GenerateCrudServices));
                         log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
 
                         if (db.State != System.Data.ConnectionState.Open)

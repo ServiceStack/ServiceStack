@@ -13,8 +13,6 @@ namespace ServiceStack.VirtualPath
     {
         public static HashSet<string> EmbeddedResourceTreatAsFiles { get; set; } = new();
 
-        private static ILog Log = LogManager.GetLogger(typeof(ResourceVirtualDirectory));
-
         protected Assembly backingAssembly;
         public string rootNamespace { get; set; }
 
@@ -115,7 +113,7 @@ namespace ServiceStack.VirtualPath
                 var mrInfo = resourceNames.FirstOrDefault(x => backingAssembly.GetManifestResourceInfo(x) != null);
                 if (mrInfo == null)
                 {
-                    Log.Warn("Virtual file not found: " + fullResourceName);
+                    LogManager.GetLogger(GetType()).Warn("Virtual file not found: " + fullResourceName);
                     return null;
                 }
 
@@ -123,7 +121,7 @@ namespace ServiceStack.VirtualPath
             }
             catch (Exception ex)
             {
-                Log.Warn(ex.Message, ex);
+                LogManager.GetLogger(GetType()).Warn(ex.Message, ex);
                 return null;
             }
         }

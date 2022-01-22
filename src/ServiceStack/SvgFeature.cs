@@ -199,8 +199,6 @@ namespace ServiceStack
 
     public static class Svg
     {
-        private static ILog log = LogManager.GetLogger(typeof(Svg));
-        
         public static string LightColor { get; set; } = "#dddddd";
         public static string[] FillColors { get; set; } = { "#ffffff", "#556080" };
 
@@ -378,6 +376,7 @@ namespace ServiceStack
                 }
             }.Init();
 
+            var log = LogManager.GetLogger(typeof(Svg));
             foreach (var svgGroupDir in svgDir.GetDirectories())
             {
                 foreach (var file in svgGroupDir.GetFiles())

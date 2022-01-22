@@ -23,7 +23,6 @@ namespace ServiceStack.Host
 
     public class ServiceController : IServiceController
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceController));
         private const string ResponseDtoSuffix = "Response";
         private readonly ServiceStackHost appHost;
 
@@ -99,7 +98,7 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 var msg = $"Failed loading types, last assembly '{assemblyName}', type: '{typeName}'";
-                Log.Error(msg, ex);
+                LogManager.GetLogger(GetType()).Error(msg, ex);
                 throw new Exception(msg, ex);
             }
         }
@@ -124,7 +123,7 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 appHost.NotifyStartupException(ex, serviceType.Name, nameof(RegisterService));
-                Log.Error(ex.Message, ex);
+                LogManager.GetLogger(GetType()).Error(ex.Message, ex);
             }
         }
 
@@ -146,6 +145,8 @@ namespace ServiceStack.Host
                 if (registeredServices.Contains(serviceType))
                     return;
                 registeredServices.Add(serviceType);
+
+                var log = LogManager.GetLogger(GetType());
                 
                 foreach (var mi in serviceType.GetActions())
                 {
@@ -191,8 +192,8 @@ namespace ServiceStack.Host
                         };
                     }
 
-                    if (Log.IsDebugEnabled)
-                        Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
+                    if (log.IsDebugEnabled)
+                        log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
                             responseType != null ? "Reply" : "OneWay", serviceType.GetOperationName(), requestType.GetOperationName());
                 }
             }

@@ -45,7 +45,6 @@ namespace ServiceStack.Host.Handlers
 {
     public class StaticFileHandler : HttpAsyncTaskHandler
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
         public static int DefaultBufferSize = 1024 * 1024;
 
         public static Action<IRequest, IResponse, IVirtualFile> ResponseFilter { get; set; }
@@ -98,7 +97,7 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                log.Error(ex.Message, ex);
+                LogManager.GetLogger(typeof(StaticFileHandler)).Error(ex.Message, ex);
             }
         }
 
@@ -146,7 +145,7 @@ namespace ServiceStack.Host.Handlers
                         if (file == null)
                         {
                             var msg = ErrorMessages.FileNotExistsFmt.LocalizeFmt(request, request.PathInfo.SafeInput());
-                            log.Warn($"{msg} in path: {originalFileName}");
+                            LogManager.GetLogger(GetType()).Warn($"{msg} in path: {originalFileName}");
                             response.StatusCode = 404;
                             response.StatusDescription = msg;
                             return;
@@ -276,7 +275,7 @@ namespace ServiceStack.Host.Handlers
                         return;
                     }
                     
-                    log.ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");
+                    LogManager.GetLogger(GetType()).ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");
                     throw new HttpException(403, "Forbidden.");
                 }
             }).ConfigAwait();
@@ -284,8 +283,9 @@ namespace ServiceStack.Host.Handlers
 
         static Dictionary<string, string> CreateFileIndex(string appFilePath)
         {
-            log.Debug("Building case-insensitive fileIndex for Mono at: "
-                      + appFilePath);
+            var log = LogManager.GetLogger(typeof(StaticFileHandler));
+            if (log.IsDebugEnabled)
+                log.Debug("Building case-insensitive fileIndex for Mono at: " + appFilePath);
 
             var caseInsensitiveLookup = new Dictionary<string, string>();
             foreach (var file in GetFiles(appFilePath))
