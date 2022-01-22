@@ -332,7 +332,7 @@ namespace ServiceStack
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            LogManager.LogFactory = null;
+            if (disposing) LogManager.LogFactory = null;
         }
 
         /// <summary>
