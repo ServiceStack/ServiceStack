@@ -375,6 +375,7 @@ namespace ServiceStack.Auth
                 else
                 {
                     LogManager.GetLogger(typeof(JwtAuthProvider)).Warn($"User '{session.UserAuthId}' ProfileUrl exceeds max JWT Cookie size, using default profile");
+                    jwtPayload["picture"] = HostContext.GetPlugin<AuthFeature>()?.ProfileImages?.RewriteImageUri(profileUrl);
                 }
             }
 

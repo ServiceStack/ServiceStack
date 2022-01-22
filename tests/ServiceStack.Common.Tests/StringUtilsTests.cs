@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -79,5 +80,24 @@ Werde Teil unseres Teams und gestalte aktiv die technische Zukunft der weltweit 
             Assert.That(StringUtils.SplitVarNames("A, B , C, "), Is.EqualTo(new[]{ "A","B","C" }));
         }
 
+        [Test]
+        public void Can_parse_base_datauri()
+        {
+            var utf8Bytes = "abc".ToUtf8Bytes();
+            var dataUri = "data:image/jpg;base64," + Convert.ToBase64String(utf8Bytes);
+            var content = StaticContent.CreateFromDataUri(dataUri);
+            Assert.That(content.MimeType, Is.EqualTo("image/jpg"));
+            Assert.That(content.Data, Is.EqualTo(utf8Bytes));
+        }
+
+        [Test]
+        public void Can_parse_svg_datauri()
+        {
+            var dataUri = Svg.GetDataUri(Svg.Icons.Male);
+            var content = StaticContent.CreateFromDataUri(dataUri);
+            Assert.That(content.MimeType, Is.EqualTo("image/svg+xml"));
+            content.Data.FromUtf8Bytes().Print();
+            Assert.That(content.Data.FromUtf8Bytes(), Is.EqualTo(Svg.GetImage(Svg.Icons.Male)));
+        }
     }
 }
