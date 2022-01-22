@@ -294,13 +294,10 @@ namespace ServiceStack.Auth
         {
             try
             {
-                using var origStream = MicrosoftGraphAuthProvider.PhotoUrl
+                using var imageStream = MicrosoftGraphAuthProvider.PhotoUrl(savePhotoSize)
                     .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
-                using var resizedImage = ImageProvider.Instance.Resize(origStream, savePhotoSize);
-                var base64 = resizedImage is MemoryStream ms 
-                    ? Convert.ToBase64String(ms.GetBuffer(), 0, (int) ms.Length)
-                    : Convert.ToBase64String(resizedImage.ReadFully());
-                return "data:image/png;base64," + base64;
+                var base64 = Convert.ToBase64String(imageStream.ReadFully());
+                return "data:image/jpg;base64," + base64;
             }
             catch (Exception ex)
             {
@@ -313,23 +310,10 @@ namespace ServiceStack.Auth
         {
             try
             {
-#if NET6_0_OR_GREATER
-                using var httpClient = new System.Net.Http.HttpClient();
-                var req = new System.Net.Http.HttpRequestMessage(
-                    System.Net.Http.HttpMethod.Get, MicrosoftGraphAuthProvider.PhotoUrl);
-                req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-                var result = await httpClient.SendAsync(req, token);
-                using var origStream = await result.Content.ReadAsStreamAsync(token);
-#else
-                using var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
+                using var imageStream = await MicrosoftGraphAuthProvider.PhotoUrl(savePhotoSize)
                     .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken), token: token);
-#endif
-
-                using var resizedImage = ImageProvider.Instance.Resize(origStream, savePhotoSize);
-                var base64 = resizedImage is MemoryStream ms 
-                    ? Convert.ToBase64String(ms.GetBuffer(), 0, (int) ms.Length)
-                    : Convert.ToBase64String(await resizedImage.ReadFullyAsync(token));
-                return "data:image/png;base64," + base64;
+                var base64 = Convert.ToBase64String(await imageStream.ReadFullyAsync(token));
+                return "data:image/jpg;base64," + base64;
             }
             catch (Exception ex)
             {

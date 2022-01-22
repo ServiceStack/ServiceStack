@@ -13,9 +13,11 @@ namespace MyApp.ServiceInterface;
 
 [Route("/profile-image")]
 [Route("/profile-image/{Type}")]
+[Route("/profile-image/{Type}/{Size}")]
 public class GetProfileImage : IReturn<byte[]>
 {
     public string Type { get; set; }
+    public string? Size { get; set; }
 }
 
 public class ImageServices : Service
@@ -29,7 +31,7 @@ public class ImageServices : Service
             ?? throw HttpError.NotFound("No profile image for userAuthId: " + userAuthId);
         
         async Task<Stream> GetImage() =>
-            await "https://graph.microsoft.com/beta/me/photo/$value"
+            await MicrosoftGraphAuthProvider.PhotoUrl(null)
                 .GetStreamFromUrlAsync(requestFilter: req => req.AddBearerToken(accessToken)).ConfigAwait();
 
         if (request.Type == "original")
@@ -48,7 +50,7 @@ public class ImageServices : Service
         else if (request.Type == "gateway")
         {
             var dataUri = await new AuthHttpGateway()
-                .CreateMicrosoftPhotoUrlAsync(accessToken, "64x64");
+                .CreateMicrosoftPhotoUrlAsync(accessToken, request.Size ?? "64x64");
             Response.ContentType = MimeTypes.PlainText;
             await Response.WriteAsync(dataUri);
         }

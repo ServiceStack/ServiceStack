@@ -22,7 +22,12 @@ namespace ServiceStack.Auth
 
         public const string DefaultUserProfileUrl = "https://graph.microsoft.com/v1.0/me";
         
-        public static string PhotoUrl { get; set; } = "https://graph.microsoft.com/beta/me/photo/$value";
+        // Valid Sizes: 48x48, 64x64, 96x96, 120x120, 240x240, 360x360, 432x432, 504x504, and 648x648
+        public static Func<string,string> DefaultPhotoUrl = size => size != null
+            ? $"https://graph.microsoft.com/v1.0/me/photos/{size}/$value"
+            : $"https://graph.microsoft.com/v1.0/me/photo/$value";
+        
+        public static Func<string,string> PhotoUrl { get; set; } = DefaultPhotoUrl;
 
         public bool SavePhoto { get; set; }
         

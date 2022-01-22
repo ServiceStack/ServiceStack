@@ -11,6 +11,7 @@ using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Html;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Auth
 {
@@ -24,7 +25,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool SetBearerTokenOnAuthenticateResponse { get; set; }
 
-        public static int MaxProfileUrlSize { get; set; } = 3900;
+        // Max Cookie size ss-tok={Base64 JWT} < 4096
+        public static int MaxProfileUrlSize { get; set; } = 2800; 
 
         public JwtAuthProvider() : this(null) {}
 
@@ -372,7 +374,7 @@ namespace ServiceStack.Auth
                 }
                 else
                 {
-                    Log.Warn($"User '{session.UserAuthId}' ProfileUrl exceeds max JWT Cookie size, using default profile");
+                    LogManager.GetLogger(typeof(JwtAuthProvider)).Warn($"User '{session.UserAuthId}' ProfileUrl exceeds max JWT Cookie size, using default profile");
                 }
             }
 
