@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Hosting;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
-using ServiceStack.ImageSharp;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAuth))]
 
@@ -51,7 +49,5 @@ public class ConfigureAuth : IHostingStartup
 
             //override the default registration validation with your own custom implementation
             appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
-
-            //ImageProvider.Instance = new ImageSharpImageProvider();
         });
 }
