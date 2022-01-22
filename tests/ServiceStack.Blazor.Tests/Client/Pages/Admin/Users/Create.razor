@@ -189,7 +189,7 @@
     async Task submit()
     {
         syncModel();
-        createUserApi.Reset();
+        createUserApi.ClearErrors();
         createUserApi = await ApiAsync(request);
 
         if (createUserApi.Succeeded)

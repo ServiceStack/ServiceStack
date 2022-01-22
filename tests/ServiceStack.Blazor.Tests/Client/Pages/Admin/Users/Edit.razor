@@ -214,7 +214,7 @@
     void syncModel()
     {
         successMessage = "";
-        updateUserApi.Reset();
+        updateUserApi.ClearErrors();
 
         request.Id = Id;
         foreach (var entry in Model)

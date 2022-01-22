@@ -55,11 +55,6 @@
 </CascadingValue>
 </form>
 
-
-@if (api.Succeeded) {
-    <h3 class="text-success mt-4">@api.Response!.Id</h3>
-}
-
 @code {
     [Parameter] public EventCallback<IdResponse> done { get; set; }
     [Parameter] public string? @class { get; set; }

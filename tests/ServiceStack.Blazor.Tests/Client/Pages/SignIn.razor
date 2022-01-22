@@ -56,7 +56,7 @@
 
     async Task submit()
     {
-        api.Reset();
+        api.ClearErrors();
 
         if (request.UserName.IsNullOrEmpty())
             api.AddFieldError(nameof(request.UserName), "Email is required");

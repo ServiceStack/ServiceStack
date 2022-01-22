@@ -57,6 +57,10 @@ public class ApiResult<TResponse> : IHasErrorStatus
     public string? ErrorSummary => Error != null && Errors.Length == 0
         ? Error.Message
         : null;
+
+    public ApiResult() { }
+    public ApiResult(TResponse response) => Response = response;
+    public ApiResult(ResponseStatus errorStatus) => Error = errorStatus;
     
     public string? FieldErrorMessage(string fieldName) => Error.FieldErrorMessage(fieldName);
 
@@ -64,19 +68,7 @@ public class ApiResult<TResponse> : IHasErrorStatus
 
     public bool HasFieldError(string fieldName) => Error.HasErrorField(fieldName);
 
-    public ApiResult(TResponse response)
-    {
-        Response = response;
-    }
-
-    public ApiResult(ResponseStatus errorStatus)
-    {
-        Error = errorStatus;
-    }
-
-    public ApiResult() { }
-
-    public void Reset() => Error = null;
+    public void ClearErrors() => Error = null;
 
     public void AddFieldError(string fieldName, string message, string? errorCode = ApiResult.FieldErrorCode)
     {

@@ -102,7 +102,7 @@ public class ServiceStackStateProvider : AuthenticationStateProvider
     {
         var logoutResult = await client.ApiAsync(new Authenticate { provider = "logout" });
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-        authApi.Reset();
+        authApi.ClearErrors();
         return logoutResult;
     }
 
