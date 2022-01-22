@@ -18,7 +18,7 @@ namespace ServiceStack
         
         public void Register(IAppHost appHost)
         {
-            if (appHost.Config.EnableJsonApiRoute && appHost.PathBase == null && JsonApiRoute != null)
+            if (appHost.PathBase == null && JsonApiRoute != null)
             {
                 appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
                 appHost.AddToAppMetadata(metadata => metadata.HttpHandlers["ApiHandlers.Json"] = JsonApiRoute);

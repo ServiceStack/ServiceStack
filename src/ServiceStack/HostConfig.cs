@@ -46,7 +46,6 @@ namespace ServiceStack
                 PreferredContentTypes = new List<string> {
                     MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv
                 },
-                EnableJsonApiRoute = true,
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 BufferSyncSerializers = Env.IsNetCore3,
@@ -220,7 +219,6 @@ namespace ServiceStack
             this.HandlerFactoryPath = instance.HandlerFactoryPath;
             this.DefaultContentType = instance.DefaultContentType;
             this.PreferredContentTypes = instance.PreferredContentTypes;
-            this.EnableJsonApiRoute = instance.EnableJsonApiRoute;
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
             this.BufferSyncSerializers = instance.BufferSyncSerializers;
@@ -299,7 +297,6 @@ namespace ServiceStack
         public string DefaultContentType { get; set; }
         public List<string> PreferredContentTypes { get; set; }
         internal string[] PreferredContentTypesArray = TypeConstants.EmptyStringArray; //use array at runtime
-        public bool EnableJsonApiRoute { get; set; }
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool BufferSyncSerializers { get; set; }
