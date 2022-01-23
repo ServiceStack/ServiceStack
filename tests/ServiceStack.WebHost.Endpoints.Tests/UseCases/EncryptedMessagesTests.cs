@@ -77,6 +77,16 @@ public class JsonHttpClientEncryptedMessagesTests : EncryptedMessagesTests
     }
 }
 
+#if NET6_0_OR_GREATER
+public class JsonApiClientEncryptedMessagesTests : EncryptedMessagesTests
+{
+    protected override IJsonServiceClient CreateClient()
+    {
+        return new JsonApiClient(Config.AbsoluteBaseUri);
+    }
+}
+#endif
+
 public abstract class EncryptedMessagesTests
 {
     private readonly ServiceStackHost appHost;

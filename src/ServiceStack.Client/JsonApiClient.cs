@@ -29,8 +29,6 @@ public interface IHasJsonApiClient
 /// </summary>
 public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceClientMeta
 {
-    static ILog Log = LogManager.GetLogger(typeof(JsonApiClient));
-    
     public static string DefaultBasePath { get; set; } = "/api/";
     public const string DefaultHttpMethod = HttpMethods.Post;
     public static string DefaultUserAgent = "ServiceStack JsonApiClient " + Env.VersionString;
@@ -81,7 +79,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     public string? BearerToken { get; set; }
     public string? RefreshToken { get; set; }
     public string? RefreshTokenUri { get; set; }
-    public bool EnableAutoRefreshToken { get; set; } = true;
+    public bool EnableAutoRefreshToken { get; set; }
 
     public bool UseCookies { get; set; } = true;
 
@@ -218,7 +216,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
-            using var zip = compressor.Compress(stream, leaveOpen:true);
+            await using var zip = compressor.Compress(stream, leaveOpen:true);
             await content.CopyToAsync(zip).ConfigAwait();
         }
 
@@ -229,25 +227,62 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
     }
 
+    public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
+    {
+        var elType = requests.GetType().GetCollectionType();
+        var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+        this.PopulateRequestMetadatas(requests);
+        return SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
+    }
+
+    public virtual Task PublishAsync(object request, CancellationToken token)
+    {
+        var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+        return SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), request, token);
+    }
+
+    public Task PublishAllAsync(IEnumerable<object> requests, CancellationToken token)
+    {
+        var elType = requests.GetType().GetCollectionType();
+        var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+        this.PopulateRequestMetadatas(requests);
+        return SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
+    }
+
+    public virtual Task<TResponse> SendAsync<TResponse>(object request) => SendAsync<TResponse>(request, default);
+    public virtual async Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
+    {
+        if (typeof(TResponse) == typeof(object))
+        {
+            var result = await this.SendAsync(this.GetResponseType(request), request, token).ConfigAwait();
+            return (TResponse) result;
+        }
+
+        var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
+        if (httpMethod != null)
+        {
+            return httpMethod switch {
+                HttpMethods.Get => await GetAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Post => await PostAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Put => await PutAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Delete => await DeleteAsync<TResponse>(request, token).ConfigAwait(),
+                HttpMethods.Patch => await PatchAsync<TResponse>(request, token).ConfigAwait(),
+                _ => throw new NotSupportedException("Unknown " + httpMethod),
+            };
+        }
+
+        httpMethod = DefaultHttpMethod;
+        var requestUri = ResolveUrl(httpMethod, UrlResolver == null
+            ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
+            : this.BasePath + request.GetType().Name);
+
+        return await SendAsync<TResponse>(httpMethod, requestUri, request, token).ConfigAwait();
+    }
+
     public async Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object? request, CancellationToken token = default)
     {
         var client = GetHttpClient();
-        if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
-        {
-            var queryString = QueryStringSerializer.SerializeToString(request);
-            if (!string.IsNullOrEmpty(queryString))
-                absoluteUrl += "?" + queryString;
-        }
-
-        try
-        {
-            absoluteUrl = new Uri(absoluteUrl).ToString();
-        }
-        catch (Exception ex)
-        {
-            if (Log.IsDebugEnabled)
-                Log.Debug("Could not parse URL: " + absoluteUrl, ex);
-        }
+        absoluteUrl = GetAbsoluteUrl(httpMethod, request, absoluteUrl);
 
         var filterResponse = ResultsFilter?.Invoke(typeof(TResponse), httpMethod, absoluteUrl, request);
         if (filterResponse is TResponse typedResponse)
@@ -295,7 +330,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                         else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
                             
                         var refreshTokenResponse = await client.SendAsync(refreshRequest, token).ConfigAwait();
-                        return await ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
+                        return await ConvertToResponseAsync<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
                     }
                     catch (Exception e)
                     {
@@ -311,17 +346,171 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                     AddBasicAuth(client);
                     httpReq = CreateRequest(httpMethod, absoluteUrl, request);
                     var response = await client.SendAsync(httpReq, token).ConfigAwait();
-                    return await ConvertToResponse<TResponse>(response, httpMethod, absoluteUrl, request, token).ConfigAwait();
+                    return await ConvertToResponseAsync<TResponse>(response, httpMethod, absoluteUrl, request, token).ConfigAwait();
                 }
             }
 
-            return await ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request, token).ConfigAwait();
+            return await ConvertToResponseAsync<TResponse>(httpRes, httpMethod, absoluteUrl, request, token).ConfigAwait();
         }
         catch (Exception e)
         {
-            Log.Error(e, "HttpClient Exception: " + e.Message);
+            LogManager.GetLogger(GetType()).Error(e, "SendAsync: " + e.Message);
             throw;
         }
+    }
+
+    public List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
+    {
+        var elType = requests.GetType().GetCollectionType();
+        var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+        this.PopulateRequestMetadatas(requests);
+        return Send<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
+    }
+    
+    public virtual void Publish(object request)
+    {
+        var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+        Send<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), request);
+    }
+
+    public void PublishAll(IEnumerable<object> requests)
+    {
+        var elType = requests.GetType().GetCollectionType();
+        var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+        this.PopulateRequestMetadatas(requests);
+        Send<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
+    }
+
+    public virtual TResponse Send<TResponse>(object request)
+    {
+        if (typeof(TResponse) == typeof(object))
+        {
+            var result = this.Send(this.GetResponseType(request), request);
+            return (TResponse) result;
+        }
+
+        var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
+        if (httpMethod != null)
+        {
+            return httpMethod switch {
+                HttpMethods.Get => Get<TResponse>(request),
+                HttpMethods.Post => Post<TResponse>(request),
+                HttpMethods.Put => Put<TResponse>(request),
+                HttpMethods.Delete => Delete<TResponse>(request),
+                HttpMethods.Patch => Patch<TResponse>(request),
+                _ => throw new NotSupportedException("Unknown " + httpMethod),
+            };
+        }
+
+        httpMethod = DefaultHttpMethod;
+        var requestUri = ResolveUrl(httpMethod, UrlResolver == null
+            ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
+            : this.BasePath + request.GetType().Name);
+
+        return Send<TResponse>(httpMethod, requestUri, request);
+    }
+
+    public TResponse Send<TResponse>(string httpMethod, string absoluteUrl, object? request)
+    {
+        var client = GetHttpClient();
+        absoluteUrl = GetAbsoluteUrl(httpMethod, request, absoluteUrl);
+
+        var filterResponse = ResultsFilter?.Invoke(typeof(TResponse), httpMethod, absoluteUrl, request);
+        if (filterResponse is TResponse typedResponse)
+            return typedResponse;
+
+        var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
+
+        try
+        {
+            var httpRes = client.Send(httpReq);
+
+            if (typeof(TResponse) == typeof(HttpResponseMessage))
+                return (TResponse)(object) httpRes;
+
+            if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                var hasRefreshToken = RefreshToken != null;
+                if (EnableAutoRefreshToken && hasRefreshToken)
+                {
+                    var refreshDto = new GetAccessToken {
+                        RefreshToken = RefreshToken,
+                    };
+                    var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
+
+                    this.BearerToken = null;
+                    this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
+
+                    try
+                    {
+                        var accessTokenResponse = this.Post<GetAccessTokenResponse>(uri, refreshDto);
+                            
+                        var accessToken = accessTokenResponse?.AccessToken;
+                        var tokenCookie = this.GetTokenCookie();
+                        var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
+
+                        if (!string.IsNullOrEmpty(accessToken))
+                        {
+                            refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                        }
+                        else if (tokenCookie != null)
+                        {
+                            this.SetTokenCookie(tokenCookie);
+                        }
+                        else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+                            
+                        var refreshTokenResponse = client.Send(refreshRequest);
+                        return ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.UnwrapIfSingleException() is WebServiceException refreshEx)
+                            throw new RefreshTokenException(refreshEx);
+
+                        throw;
+                    }
+                }
+
+                if (UserName != null && Password != null && client.DefaultRequestHeaders.Authorization == null)
+                {
+                    AddBasicAuth(client);
+                    httpReq = CreateRequest(httpMethod, absoluteUrl, request);
+                    var response = client.Send(httpReq);
+                    return ConvertToResponse<TResponse>(response, httpMethod, absoluteUrl, request);
+                }
+            }
+
+            return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
+        }
+        catch (Exception e)
+        {
+            LogManager.GetLogger(GetType()).Error(e, "SendAsync: " + e.Message);
+            throw;
+        }
+    }
+
+    private static string GetAbsoluteUrl(string httpMethod, object? request, string absoluteUrl)
+    {
+        if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
+        {
+            var queryString = QueryStringSerializer.SerializeToString(request);
+            if (!string.IsNullOrEmpty(queryString))
+                absoluteUrl += "?" + queryString;
+        }
+
+        try
+        {
+            absoluteUrl = new Uri(absoluteUrl).ToString();
+        }
+        catch (Exception ex)
+        {
+            var log = LogManager.GetLogger(typeof(JsonApiClient));
+            if (log.IsDebugEnabled)
+                log.Debug("Could not parse URL: " + absoluteUrl, ex);
+        }
+
+        return absoluteUrl;
     }
 
     private HttpRequestMessage CreateRequest(string httpMethod, string absoluteUrl, object? request)
@@ -378,7 +567,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return httpReq;
     }
 
-    private async Task<TResponse> ConvertToResponse<TResponse>(HttpResponseMessage httpRes, string httpMethod, string absoluteUrl, object? request, CancellationToken token=default)
+    private async Task<TResponse> ConvertToResponseAsync<TResponse>(HttpResponseMessage httpRes, string httpMethod, string absoluteUrl, object? request, CancellationToken token=default)
     {
         ApplyWebResponseFilters(httpRes);
 
@@ -391,27 +580,66 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
         if (typeof(TResponse) == typeof(string))
         {
-            var result = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
+            var result = await ThrowIfErrorAsync(() => httpRes.Content.ReadAsStringAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
             var response = (TResponse) (object) result;
             ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
             return response;
         }
         if (typeof(TResponse) == typeof(byte[]))
         {
-            var result = await ThrowIfError(() => httpRes.Content.ReadAsByteArrayAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
+            var result = await ThrowIfErrorAsync(() => httpRes.Content.ReadAsByteArrayAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
             var response = (TResponse) (object) result;
             ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
             return response;
         }
         if (typeof(TResponse) == typeof(Stream))
         {
-            var result = await ThrowIfError(() => httpRes.Content.ReadAsStreamAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
+            var result = await ThrowIfErrorAsync(() => httpRes.Content.ReadAsStreamAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
             var response = (TResponse) (object) result;
             ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
             return response;
         }
 
-        var json = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
+        var json = await ThrowIfErrorAsync(() => httpRes.Content.ReadAsStringAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
+        var obj = json.FromJson<TResponse>();
+        ResultsFilterResponse?.Invoke(httpRes, obj, httpMethod, absoluteUrl, request);
+        return obj;
+    }
+
+    private TResponse ConvertToResponse<TResponse>(HttpResponseMessage httpRes, string httpMethod, string absoluteUrl, object? request)
+    {
+        ApplyWebResponseFilters(httpRes);
+
+        if (!httpRes.IsSuccessStatusCode && ExceptionFilter != null)
+        {
+            var cachedResponse = ExceptionFilter(httpRes, absoluteUrl, typeof(TResponse));
+            if (cachedResponse is TResponse filterResponse)
+                return filterResponse;
+        }
+
+        if (typeof(TResponse) == typeof(string))
+        {
+            var result = ThrowIfError(() => httpRes.Content.ReadAsString(), httpRes, request, absoluteUrl);
+            var response = (TResponse) (object) result;
+            ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
+            return response;
+        }
+        if (typeof(TResponse) == typeof(byte[]))
+        {
+            var result = ThrowIfError(() => httpRes.Content.ReadAsByteArray(), httpRes, request, absoluteUrl);
+            var response = (TResponse) (object) result;
+            ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
+            return response;
+        }
+        if (typeof(TResponse) == typeof(Stream))
+        {
+            var result = ThrowIfError(() => httpRes.Content.ReadAsStream(), httpRes, request, absoluteUrl);
+            var response = (TResponse) (object) result;
+            ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
+            return response;
+        }
+
+        var json = ThrowIfError(() => httpRes.Content.ReadAsString(), httpRes, request, absoluteUrl);
         var obj = json.FromJson<TResponse>();
         ResultsFilterResponse?.Invoke(httpRes, obj, httpMethod, absoluteUrl, request);
         return obj;
@@ -429,7 +657,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         GlobalResponseFilter?.Invoke(httpRes);
     }
 
-    private async Task<TResponse> ThrowIfError<TResponse>(Func<Task<TResponse>> fn, HttpResponseMessage httpRes, object? request, string requestUri)
+    private async Task<TResponse> ThrowIfErrorAsync<TResponse>(Func<Task<TResponse>> fn, HttpResponseMessage httpRes, object? request, string requestUri)
     {
         Interlocked.Decrement(ref activeAsyncRequests);
 
@@ -437,6 +665,24 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         try
         {
             response = await fn().ConfigAwait();
+        }
+        catch (Exception e)
+        {
+            throw CreateException(httpRes, e);
+        }
+
+        if (!httpRes.IsSuccessStatusCode)
+            ThrowResponseTypeException<TResponse>(httpRes, request, requestUri, response);
+
+        return response;
+    }
+
+    private TResponse ThrowIfError<TResponse>(Func<TResponse> fn, HttpResponseMessage httpRes, object? request, string requestUri)
+    {
+        TResponse response;
+        try
+        {
+            response = fn();
         }
         catch (Exception e)
         {
@@ -500,10 +746,11 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     public static WebServiceException ToWebServiceException(
         HttpResponseMessage httpRes, object response, Func<Stream, object?> parseDtoFn)
     {
-        if (Log.IsDebugEnabled)
+        var log = LogManager.GetLogger(typeof(JsonApiClient));
+        if (log.IsDebugEnabled)
         {
-            Log.DebugFormat("Status Code : {0}", httpRes.StatusCode);
-            Log.DebugFormat("Status Description : {0}", httpRes.ReasonPhrase);
+            log.DebugFormat("Status Code : {0}", httpRes.StatusCode);
+            log.DebugFormat("Status Description : {0}", httpRes.ReasonPhrase);
         }
 
         var serviceEx = new WebServiceException(httpRes.ReasonPhrase)
@@ -563,84 +810,6 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         //    throw WebRequestUtils.CreateCustomException(requestUri, authEx);
         //}
     }
-
-    public virtual TResponse Send<TResponse>(object request)
-    {
-        return SendAsync<TResponse>(request).GetSyncResponse();
-    }
-
-    public virtual List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
-    {
-        return SendAllAsync<TResponse>(requests, default).GetSyncResponse();
-    }
-
-    public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
-    {
-        return SendAsync<TResponse>(httpMethod, relativeOrAbsoluteUrl, request).GetSyncResponse();
-    }
-
-    public virtual void Publish(object request)
-    {
-        PublishAsync(request, default).Wait();
-    }
-
-    public void PublishAll(IEnumerable<object> requestDtos)
-    {
-        PublishAllAsync(requestDtos, default).Wait();
-    }
-
-    public virtual Task<TResponse> SendAsync<TResponse>(object request) => SendAsync<TResponse>(request, default);
-    public virtual async Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
-    {
-        if (typeof(TResponse) == typeof(object))
-        {
-            var result = await this.SendAsync(this.GetResponseType(request), request, token).ConfigAwait();
-            return (TResponse) result;
-        }
-
-        var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
-        if (httpMethod != null)
-        {
-            return httpMethod switch {
-                HttpMethods.Get => await GetAsync<TResponse>(request, token).ConfigAwait(),
-                HttpMethods.Post => await PostAsync<TResponse>(request, token).ConfigAwait(),
-                HttpMethods.Put => await PutAsync<TResponse>(request, token).ConfigAwait(),
-                HttpMethods.Delete => await DeleteAsync<TResponse>(request, token).ConfigAwait(),
-                HttpMethods.Patch => await PatchAsync<TResponse>(request, token).ConfigAwait(),
-                _ => throw new NotSupportedException("Unknown " + httpMethod),
-            };
-        }
-
-        httpMethod = DefaultHttpMethod;
-        var requestUri = ResolveUrl(httpMethod, UrlResolver == null
-            ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
-            : this.BasePath + request.GetType().Name);
-
-        return await SendAsync<TResponse>(httpMethod, requestUri, request, token).ConfigAwait();
-    }
-
-    public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
-    {
-        var elType = requests.GetType().GetCollectionType();
-        var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
-        this.PopulateRequestMetadatas(requests);
-        return SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
-    }
-
-    public virtual Task PublishAsync(object request, CancellationToken token)
-    {
-        var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-        return SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), request, token);
-    }
-
-    public Task PublishAllAsync(IEnumerable<object> requests, CancellationToken token)
-    {
-        var elType = requests.GetType().GetCollectionType();
-        var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
-        this.PopulateRequestMetadatas(requests);
-        return SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
-    }
-
 
     public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto) =>
         SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);

@@ -3,6 +3,7 @@
 #if NET6_0_OR_GREATER
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -97,5 +98,23 @@ public static class JsonApiClientUtils
 
     public static Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this IHasJsonApiClient instance, bool reload=false) =>
         !reload ? instance.ApiCacheAsync(new MetadataApp()) : instance.Client!.ApiAsync(new MetadataApp());
+
+    public static string ReadAsString(this HttpContent content)
+    {
+        using var reader = new StreamReader(content.ReadAsStream());
+        return reader.ReadToEnd();        
+    }
+
+    public static byte[] ReadAsByteArray(this HttpContent content)
+    {
+        using var stream = content.ReadAsStream();
+        return stream.ReadFully();
+    }
+
+    public static ReadOnlyMemory<byte> ReadAsMemoryBytes(this HttpContent content)
+    {
+        using var stream = content.ReadAsStream();
+        return stream.ReadFullyAsMemory();
+    }
 }
 #endif

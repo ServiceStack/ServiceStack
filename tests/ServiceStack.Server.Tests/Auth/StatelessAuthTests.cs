@@ -110,6 +110,40 @@ namespace ServiceStack.Server.Tests.Auth
             return new JsonHttpClient(ListeningOn);
         }
     }
+    
+#if NET6_0_OR_GREATER
+    public class JsonApiClientStatelessAuthTests : StatelessAuthTests
+    {
+        protected override IJsonServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
+        {
+            return new JsonApiClient(ListeningOn)
+            {
+                UserName = userName ?? Username,
+                Password = Password,
+                AlwaysSendBasicAuthHeader = alwaysSend,
+            };
+        }
+
+        protected override IJsonServiceClient GetClientWithApiKey(string apiKey = null)
+        {
+            return new JsonApiClient(ListeningOn)
+            {
+                Credentials = new NetworkCredential(apiKey ?? ApiKey, ""),
+            };
+        }
+
+        protected override IJsonServiceClient GetClientWithBearerTokenCookie(string bearerToken)
+        {
+            return new JsonApiClient(ListeningOn).Apply(c => c.SetTokenCookie(bearerToken));
+        }
+
+        protected override IJsonServiceClient GetClient()
+        {
+            return new JsonApiClient(ListeningOn);
+        }
+    }
+    
+#endif
 
     public class DynamoDbAuthRepoStatelessAuthTests : StatelessAuthTests
     {
@@ -264,7 +298,7 @@ namespace ServiceStack.Server.Tests.Auth
         private readonly byte[] authKey;
         private readonly byte[] fallbackAuthKey;
 
-        class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
+        class JwtAuthProviderReaderAppHost : AppSelfHostBase
         {
             public JwtAuthProviderReaderAppHost() : base(nameof(FallbackAuthKeyTests), typeof(AppHost).Assembly) { }
 
@@ -400,7 +434,7 @@ namespace ServiceStack.Server.Tests.Auth
         private readonly RSAParameters privateKey;
         private readonly RSAParameters fallbackPrivakeKey;
 
-        class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
+        class JwtAuthProviderReaderAppHost : AppSelfHostBase
         {
             public JwtAuthProviderReaderAppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
