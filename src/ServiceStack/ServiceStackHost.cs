@@ -1205,7 +1205,8 @@ namespace ServiceStack
 
             RunAfterPluginsLoaded(specifiedContentType);
 
-            GetPlugin<MetadataFeature>()?.AddDebugLink("Templates/license.html", "License Info");
+            ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddDebugLink("Templates/license.html", "License Info"));
 
             if (!TestMode && Container.Exists<IAuthSession>())
                 throw new Exception(ErrorMessages.ShouldNotRegisterAuthSession);

@@ -135,7 +135,8 @@ namespace ServiceStack
             if (enableMetadataDebug)
             {
                 appHost.RegisterService(typeof(MetadataDebugService), MetadataDebugService.Route);
-                appHost.GetPlugin<MetadataFeature>().AddDebugLink(MetadataDebugService.Route, "Debug Inspector");
+                appHost.ConfigurePlugin<MetadataFeature>(
+                    feature => feature.AddDebugLink(MetadataDebugService.Route, "Debug Inspector"));
             }
 
             if (!string.IsNullOrEmpty(ScriptAdminRole))

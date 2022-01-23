@@ -180,8 +180,8 @@ namespace ServiceStack
                 }
             }
 
-            appHost.GetPlugin<MetadataFeature>()
-                .AddPluginLink("types/proto", "gRPC .proto APIs");
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddPluginLink("types/proto", "gRPC .proto APIs"));
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

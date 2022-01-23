@@ -64,8 +64,8 @@ namespace ServiceStack
                 }
             }
 
-            appHost.GetPlugin<MetadataFeature>()
-                .AddDebugLink(RoutePath, "SVG Images");
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddDebugLink(RoutePath, "SVG Images"));
         }
 
         static void AppendEntry(StringBuilder sb, string name, string dataUri)

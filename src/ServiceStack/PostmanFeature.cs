@@ -46,8 +46,8 @@ namespace ServiceStack
         {
             appHost.RegisterService<PostmanService>(AtRestPath);
 
-            appHost.GetPlugin<MetadataFeature>()
-                   .AddPluginLink(AtRestPath.TrimStart('/'), "Postman Metadata");
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddPluginLink(AtRestPath.TrimStart('/'), "Postman Metadata"));
 
             if (EnableSessionExport == null)
                 EnableSessionExport = appHost.Config.DebugMode;

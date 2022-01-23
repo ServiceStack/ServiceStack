@@ -14,8 +14,8 @@ namespace ServiceStack
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);
 
-            appHost.GetPlugin<MetadataFeature>()
-                .AddDebugLink($"?{Keywords.Debug}={Keywords.RequestInfo}", "Request Info");
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddDebugLink($"?{Keywords.Debug}={Keywords.RequestInfo}", "Request Info"));
         }
 
         public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
