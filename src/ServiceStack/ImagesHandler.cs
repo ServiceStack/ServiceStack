@@ -33,12 +33,10 @@ public class ImagesHandler : HttpAsyncTaskHandler
         if (content == null)
             return null;
 
-        var file = imageUri.ToMd5Hash() + '.' + GetExtension(content.MimeType);
+        var file = imageUri.ToMd5Hash() + '.' + MimeTypes.GetExtension(content.MimeType);
         Save(file, content);
         return Path.CombineWith(file);
     }
-
-    public virtual string GetExtension(string contentType) => contentType.RightPart('/').LeftPart('+').LeftPart(';');
 
     public virtual void Save(string path, StaticContent content) => 
         ImageContents[path] = content;
@@ -48,8 +46,8 @@ public class ImagesHandler : HttpAsyncTaskHandler
 
     public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
     {
-        var hash = httpReq.PathInfo.RightPart(Path);
-        var content = Get(hash) ?? Fallback;
+        var path = httpReq.PathInfo.RightPart(Path).TrimStart('/');
+        var content = Get(path) ?? Fallback;
         httpRes.ContentType = content.MimeType;
         await httpRes.OutputStream.WriteAsync(content.Data).ConfigAwait();
     }
