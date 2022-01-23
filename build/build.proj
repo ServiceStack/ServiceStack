@@ -251,16 +251,6 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.Skia -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Skia/ServiceStack.Skia.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.ImageSharp -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.ImageSharp/ServiceStack.ImageSharp.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
 
     <!-- Copy all *.nupkg to /NuGet -->
     <ItemGroup>
