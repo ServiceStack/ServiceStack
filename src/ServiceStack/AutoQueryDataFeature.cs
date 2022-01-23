@@ -111,10 +111,9 @@ namespace ServiceStack
             new CaseInsensitiveEqualCondition(),
         };
 
-        public Dictionary<string, QueryCondition> ConditionsAliases =
-            new Dictionary<string, QueryCondition>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, QueryCondition> ConditionsAliases = new(StringComparer.OrdinalIgnoreCase);
 
-        public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string>
+        public Dictionary<string, string> ImplicitConventions = new()
         {
             {"%Above%",         ConditionAlias.Greater},
             {"Begin%",          ConditionAlias.Greater},
@@ -162,8 +161,8 @@ namespace ServiceStack
             {"%EndsWith",       ConditionAlias.EndsWith },
         };
 
-        public Dictionary<string, QueryDataField> StartsWithConventions = new Dictionary<string, QueryDataField>();
-        public Dictionary<string, QueryDataField> EndsWithConventions = new Dictionary<string, QueryDataField>();
+        public Dictionary<string, QueryDataField> StartsWithConventions = new();
+        public Dictionary<string, QueryDataField> EndsWithConventions = new();
 
         public AutoQueryDataFeature()
         {

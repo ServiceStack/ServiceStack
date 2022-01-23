@@ -82,7 +82,7 @@ public class PublishTasks
         
         string[] ResolveTargetDirs(string name) => new[]
         {
-            $"../../tests/ServiceStack.Blazor.Tests/{name}/",
+            $"../../tests/ServiceStack.Blazor.Tests/" + (name == "ServiceModel" ? name : "Server/" + name) + "/",
             $"../../../NetCoreTemplates/blazor-wasm/MyApp.{name}/",
             $"../../../NetCoreTemplates/vue-vite/api/MyApp.{name}/",
             $"../../../NetCoreTemplates/vue-ssg/api/MyApp.{name}/",
@@ -103,7 +103,8 @@ public class PublishTasks
 
         CopyFile("ServiceModel/Bookings.cs", "Bookings.cs", ResolveTargetDirs("ServiceModel"));
         CopyFile("ServiceModel/Todos.cs", "Todos.cs", ResolveTargetDirs("ServiceModel"));
-        CopyFile("ServiceInterface/TodosServices.cs", "TodosServices.cs", ResolveTargetDirs("ServiceInterface"));
+        // TodosServices.cs specific to: Learn, Blazor, WASM
+        // CopyFile("ServiceInterface/TodosServices.cs", "TodosServices.cs", ResolveTargetDirs("ServiceInterface"));
     }
 
     class AppHost : AppSelfHostBase

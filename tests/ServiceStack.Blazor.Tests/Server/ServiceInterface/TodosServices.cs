@@ -7,7 +7,7 @@ namespace MyApp.ServiceInterface;
 
 public class TodosServices : Service
 {
-    public IAutoQueryData? AutoQuery { get; set; }
+    public IAutoQueryData AutoQuery { get; set; }
 
     static readonly PocoDataSource<Todo> Todos = PocoDataSource.Create(new Todo[]
     {
@@ -19,14 +19,11 @@ public class TodosServices : Service
     public object Get(QueryTodos query)
     {
         var db = Todos.ToDataSource(query, Request);
-        return AutoQuery!.Execute(query, AutoQuery.CreateQuery(query, Request, db), db);
+        return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request, db), db);
     }
 
     public Todo Post(CreateTodo request)
     {
-        if (request.Text.IsNullOrEmpty())
-            throw new ArgumentNullException(nameof(request.Text));
-
         var newTodo = new Todo { Id = Todos.NextId(), Text = request.Text };
         Todos.Add(newTodo);
         return newTodo;
