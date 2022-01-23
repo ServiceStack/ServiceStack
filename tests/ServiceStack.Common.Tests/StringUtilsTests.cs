@@ -87,7 +87,7 @@ Werde Teil unseres Teams und gestalte aktiv die technische Zukunft der weltweit 
             var dataUri = "data:image/jpg;base64," + Convert.ToBase64String(utf8Bytes);
             var content = StaticContent.CreateFromDataUri(dataUri);
             Assert.That(content.MimeType, Is.EqualTo("image/jpg"));
-            Assert.That(content.Data, Is.EqualTo(utf8Bytes));
+            Assert.That(content.Data.ToArray(), Is.EqualTo(utf8Bytes));
         }
 
         [Test]
@@ -96,8 +96,7 @@ Werde Teil unseres Teams und gestalte aktiv die technische Zukunft der weltweit 
             var dataUri = Svg.GetDataUri(Svg.Icons.Male);
             var content = StaticContent.CreateFromDataUri(dataUri);
             Assert.That(content.MimeType, Is.EqualTo("image/svg+xml"));
-            content.Data.FromUtf8Bytes().Print();
-            Assert.That(content.Data.FromUtf8Bytes(), Is.EqualTo(Svg.GetImage(Svg.Icons.Male)));
+            Assert.That(content.Data.FromUtf8().ToString(), Is.EqualTo(Svg.GetImage(Svg.Icons.Male)));
         }
     }
 }
