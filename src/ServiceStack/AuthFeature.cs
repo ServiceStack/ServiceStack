@@ -10,6 +10,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -142,7 +143,7 @@ namespace ServiceStack
 
         public bool IncludeDefaultLogin { get; set; } = true;
 
-        public ProfileImagesHandler ProfileImages { get; set; } = new(); 
+        public ImagesHandler ProfileImages { get; set; } = new("/auth-profiles", Svg.GetStaticContent(Svg.Icons.DefaultProfile)); 
 
         /// <summary>
         /// UI Layout for Authentication
@@ -335,7 +336,7 @@ namespace ServiceStack
 
             if (ProfileImages != null)
             {
-                appHost.RawHttpHandlers.Add(req => req.PathInfo.Contains(ProfileImages.MatchPath)
+                appHost.RawHttpHandlers.Add(req => req.PathInfo.Contains(ProfileImages.Path)
                     ? ProfileImages
                     : null);
             }
@@ -624,33 +625,4 @@ namespace ServiceStack
             });
         }
     }
-
-    public class ProfileImagesHandler : HttpAsyncTaskHandler
-    {
-        public string MatchPath { get; set; } = "/auth-profiles/";
-        public Dictionary<string, StaticContent> ImageContents { get; } = new();
-        
-        public StaticContent FallbackImage { get; set; } =
-            new(Svg.GetImage(Svg.Icons.DefaultProfile).ToUtf8Bytes(), MimeTypes.ImageSvg);
-        
-        public string RewriteImageUri(string imageUri)
-        {
-            var content = StaticContent.CreateFromDataUri(imageUri);
-            if (content == null)
-                return null;
-
-            var md5 = imageUri.ToMd5Hash();
-            ImageContents[md5] = content;
-            return MatchPath + md5;
-        }
-
-        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
-        {
-            var hash = httpReq.PathInfo.RightPart(MatchPath);
-            var content = ImageContents.TryGetValue(hash, out var imageUri) ? imageUri : FallbackImage;
-            httpRes.ContentType = content.MimeType;
-            await httpRes.OutputStream.WriteAsync(content.Data).ConfigAwait();
-        }
-    }
-
 }

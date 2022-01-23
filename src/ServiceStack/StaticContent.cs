@@ -7,7 +7,7 @@ namespace ServiceStack;
 
 public class StaticContent
 {
-    public byte[] Data { get; }
+    public ReadOnlyMemory<byte> Data { get; }
     public string MimeType { get; }
 
     public static StaticContent? CreateFromDataUri(string dataUri)
@@ -45,13 +45,13 @@ public class StaticContent
             }
             catch (Exception e)
             {
-                LogManager.GetLogger(typeof(StaticContent)).Warn($"Could not CreateFromDataUri: {dataUri.SafeSubstring(50)}...");
+                LogManager.GetLogger(typeof(StaticContent)).Warn($"Could not CreateFromDataUri: {dataUri.SafeSubstring(50)}...", e);
             }
         }
         return null;
     }
     
-    public StaticContent(byte[] data, string mimeType)
+    public StaticContent(ReadOnlyMemory<byte> data, string mimeType)
     {
         Data = data;
         MimeType = mimeType;

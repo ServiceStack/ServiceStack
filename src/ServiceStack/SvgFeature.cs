@@ -242,6 +242,8 @@ namespace ServiceStack
         public static string GetImage(string name) => Images.TryGetValue(name, out var svg) ? svg : null;
         public static string GetImage(string name, string fillColor) => Fill(GetImage(name), fillColor);
 
+        public static StaticContent GetStaticContent(string name) => new(GetImage(name).ToUtf8Bytes(), MimeTypes.ImageSvg);
+
         public static string GetDataUri(string name)
         {
             if (DataUris.TryGetValue(name, out var dataUri))

@@ -43,6 +43,8 @@ public class ConfigureAuth : IHostingStartup
                 })
             {
                 // IncludeDefaultLogin = false
+                ProfileImages = new PersistentImagesHandler("/auth-profiles", Svg.GetStaticContent(Svg.Icons.Female),
+                    appHost.VirtualFiles, "/App_Data/auth-profiles")
             });
 
             appHost.Plugins.Add(new RegistrationFeature()); //Enable /register Service
