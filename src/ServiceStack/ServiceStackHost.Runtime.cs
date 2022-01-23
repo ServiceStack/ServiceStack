@@ -1228,7 +1228,7 @@ namespace ServiceStack
         public virtual string GetCompressionType(IRequest request)
         {
             var isFireFox = request.UserAgent?.IndexOf("firefox", StringComparison.OrdinalIgnoreCase) > 0; 
-            if (isFireFox)
+            if (!isFireFox)
             {
                 //CompressionTypes.Brotli;
                 if (request.RequestPreferences.AcceptsBrotli && StreamCompressors.SupportsEncoding("br"))

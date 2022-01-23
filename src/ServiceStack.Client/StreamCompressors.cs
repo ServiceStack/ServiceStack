@@ -21,21 +21,35 @@ public static class StreamCompressors
         { CompressionTypes.GZip, GZipCompressor.Instance },
     };
 
+    /// <summary>
+    /// Register a new compressor for a specific encoding (defaults: gzip, deflate, br*) .NET6+ 
+    /// </summary>
     public static void Set(string encoding, IStreamCompressor compressor) =>
         Compressors[encoding] = compressor;
     
+    /// <summary>
+    /// Is there a compressor registered with this encoding?
+    /// </summary>
     public static bool SupportsEncoding(string? encoding) => encoding != null && Compressors.ContainsKey(encoding);
 
     /// <summary>
-    /// IStreamCompressor implementation for registered CompressionTypes 
+    /// return the registered IStreamCompressor implementation for for this  
     /// </summary>
-    public static IStreamCompressor? Get(string? type) => type != null && Compressors.TryGetValue(type, out var compressor)
+    public static IStreamCompressor? Get(string? encoding) => encoding != null && Compressors.TryGetValue(encoding, out var compressor)
         ? compressor
         : null;
     
-    public static IStreamCompressor GetRequired(string type) => Get(type)
-        ?? throw new NotSupportedException($"{type} is not a registered IStreamCompressor, only: "
+    /// <summary>
+    /// Assert there exists a IStreamCompressor for this encoding
+    /// </summary>
+    public static IStreamCompressor GetRequired(string encoding) => Get(encoding)
+        ?? throw new NotSupportedException($"{encoding} is not a registered IStreamCompressor, only: "
             + string.Join(", ", Compressors.Keys.ToString()));
+
+    /// <summary>
+    /// Remove compression support for this encoding
+    /// </summary>
+    public static bool Remove(string encoding) => Compressors.Remove(encoding);
 }
 
 
