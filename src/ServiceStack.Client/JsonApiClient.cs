@@ -445,7 +445,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                     {
                         var accessTokenResponse = this.Post<GetAccessTokenResponse>(uri, refreshDto);
                             
-                        var accessToken = accessTokenResponse?.AccessToken;
+                        var accessToken = accessTokenResponse.AccessToken;
                         var tokenCookie = this.GetTokenCookie();
                         var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
 
@@ -803,12 +803,6 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             stream => JsonSerializer.DeserializeFromStream<TResponse>(stream));
 
         throw webEx;
-
-        //var authEx = ex as AuthenticationException;
-        //if (authEx != null)
-        //{
-        //    throw WebRequestUtils.CreateCustomException(requestUri, authEx);
-        //}
     }
 
     public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto) =>
@@ -955,28 +949,22 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     }
 
 
-    public void SendOneWay(object request) => SendOneWay(request, default);
-    public void SendOneWay(object request, CancellationToken token)
-    {
-        PublishAsync(request, token).Wait(token);
-    }
+    public void SendOneWay(object request) => Publish(request);
 
-    public void SendOneWay(string relativeOrAbsoluteUrl, object request) => SendOneWay(relativeOrAbsoluteUrl, request, default);
-    public void SendOneWay(string relativeOrAbsoluteUrl, object request, CancellationToken token)
+    public void SendOneWay(string relativeOrAbsoluteUrl, object request)
     {
         var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType()) ?? DefaultHttpMethod;
         var absoluteUri = ToAbsoluteUrl(ResolveUrl(httpMethod, relativeOrAbsoluteUrl));
-        SendAsync<byte[]>(httpMethod, absoluteUri, request, token).Wait(token);
+        Send<byte[]>(httpMethod, absoluteUri, request);
     }
 
-    public void SendAllOneWay(IEnumerable<object> requests) => SendAllOneWay(requests, default);
-    public void SendAllOneWay(IEnumerable<object> requests, CancellationToken token)
+    public void SendAllOneWay(IEnumerable<object> requests)
     {
         var elType = requests.GetType().GetCollectionType();
         var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
         var absoluteUri = ToAbsoluteUrl(ResolveUrl(HttpMethods.Post, requestUri));
         this.PopulateRequestMetadatas(requests);
-        SendAsync<byte[]>(HttpMethods.Post, absoluteUri, requests, token).Wait(token);
+        Send<byte[]>(HttpMethods.Post, absoluteUri, requests);
     }
 
 
@@ -998,123 +986,132 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : null);
     }
 
-    public void Get(IReturnVoid request)
+    public TResponse Get<TResponse>(IReturn<TResponse> requestDto) =>
+        Send<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+    public TResponse Get<TResponse>(object requestDto) =>
+        Send<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+
+    public TResponse Get<TResponse>(string relativeOrAbsoluteUrl) =>
+        Send<TResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
+
+    public virtual IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
     {
-        GetAsync(request).WaitSyncResponse();
+        var query = (IQuery)queryDto;
+        if (query.Include == null || query.Include.IndexOf("total", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            if (!string.IsNullOrEmpty(query.Include))
+                query.Include += ",";
+            query.Include += "Total";
+        }
+
+        QueryResponse<TResponse> response;
+        do
+        {
+            response = Send<QueryResponse<TResponse>>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, queryDto), null);
+            foreach (var result in response.Results)
+            {
+                yield return result;
+            }
+            query.Skip = query.Skip.GetValueOrDefault(0) + response.Results.Count;
+        }
+        while (response.Results.Count + response.Offset < response.Total);
     }
 
-    public TResponse Get<TResponse>(IReturn<TResponse> request)
+
+    public void Get(IReturnVoid requestDto) =>
+        Send<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+
+
+    public TResponse Delete<TResponse>(IReturn<TResponse> requestDto) =>
+        Send<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+
+    public TResponse Delete<TResponse>(object requestDto) =>
+        Send<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+
+    public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl) =>
+        Send<TResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null);
+
+    public void Delete(IReturnVoid requestDto) =>
+        Send<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+
+
+    public TResponse Post<TResponse>(IReturn<TResponse> requestDto) =>
+        Send<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
+
+    public TResponse Post<TResponse>(object requestDto) =>
+        Send<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
+
+    public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request) =>
+        Send<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request);
+
+    public void Post(IReturnVoid requestDto) =>
+        Send<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
+
+
+    public TResponse Put<TResponse>(IReturn<TResponse> requestDto) =>
+        Send<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+
+    public TResponse Put<TResponse>(object requestDto) =>
+        Send<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+
+    public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request) =>
+        Send<TResponse>(HttpMethods.Put, ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), request);
+
+    public void Put(IReturnVoid requestDto) =>
+        Send<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+
+
+    public TResponse Patch<TResponse>(IReturn<TResponse> requestDto) =>
+        Send<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
+
+    public TResponse Patch<TResponse>(object requestDto) =>
+        Send<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
+
+    public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request) =>
+        Send<TResponse>(HttpMethods.Patch, ResolveUrl(HttpMethods.Patch, relativeOrAbsoluteUrl), request);
+
+    public void Patch(IReturnVoid requestDto) =>
+        Send<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
+        
+        
+    public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
     {
-        return GetAsync(request).GetSyncResponse();
+        if (!HttpMethods.Exists(httpVerb))
+            throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+        var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
+        return Send<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
     }
 
-    public TResponse Get<TResponse>(object request)
+    public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
     {
-        return GetAsync<TResponse>(request).GetSyncResponse();
+        if (!HttpMethods.Exists(httpVerb))
+            throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+        var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
+        return Send<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
     }
 
-    public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+    public void CustomMethod(string httpVerb, IReturnVoid requestDto)
     {
-        return GetAsync<TResponse>(relativeOrAbsoluteUrl).GetSyncResponse();
+        if (!HttpMethods.Exists(httpVerb))
+            throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+        var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
+        Send<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
     }
 
-    public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto) => throw new NotImplementedException();
-
-    public void Delete(IReturnVoid requestDto)
+    public TResponse CustomMethod<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
     {
-        DeleteAsync(requestDto).WaitSyncResponse();
+        if (!HttpMethods.Exists(httpVerb))
+            throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+        var requestBody = HttpUtils.HasRequestBody(httpVerb) ? request : null;
+        return Send<TResponse>(httpVerb, ResolveUrl(httpVerb, relativeOrAbsoluteUrl), requestBody);
     }
 
-    public TResponse Delete<TResponse>(IReturn<TResponse> request)
-    {
-        return DeleteAsync(request).GetSyncResponse();
-    }
-
-    public TResponse Delete<TResponse>(object request)
-    {
-        return DeleteAsync<TResponse>(request).GetSyncResponse();
-    }
-
-    public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
-    {
-        return DeleteAsync<TResponse>(relativeOrAbsoluteUrl).GetSyncResponse();
-    }
-
-    public void Post(IReturnVoid requestDto)
-    {
-        PostAsync(requestDto).WaitSyncResponse();
-    }
-
-    public TResponse Post<TResponse>(IReturn<TResponse> request)
-    {
-        return PostAsync(request).GetSyncResponse();
-    }
-
-    public TResponse Post<TResponse>(object request)
-    {
-        return PostAsync<TResponse>(request).GetSyncResponse();
-    }
-
-    public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
-    {
-        return PostAsync<TResponse>(relativeOrAbsoluteUrl, request).GetSyncResponse();
-    }
-
-    public void Put(IReturnVoid requestDto)
-    {
-        PutAsync(requestDto).WaitSyncResponse();
-    }
-
-    public TResponse Put<TResponse>(IReturn<TResponse> request)
-    {
-        return PutAsync(request).GetSyncResponse();
-    }
-
-    public TResponse Put<TResponse>(object request)
-    {
-        return PutAsync<TResponse>(request).GetSyncResponse();
-    }
-
-    public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
-    {
-        return PutAsync<TResponse>(relativeOrAbsoluteUrl, request).GetSyncResponse();
-    }
-
-    public void Patch(IReturnVoid request)
-    {
-        SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request).WaitSyncResponse();
-    }
-
-    public TResponse Patch<TResponse>(IReturn<TResponse> request)
-    {
-        return SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request).GetSyncResponse();
-    }
-
-    public TResponse Patch<TResponse>(object request)
-    {
-        return SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request).GetSyncResponse();
-    }
-
-    public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
-    {
-        return SendAsync<TResponse>(HttpMethods.Patch, relativeOrAbsoluteUrl, request).GetSyncResponse();
-    }
-
-    public void CustomMethod(string httpVerb, IReturnVoid request)
-    {
-        SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, request), request).WaitSyncResponse();
-    }
-
-    public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
-    {
-        return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), request).GetSyncResponse();
-    }
-
-    public TResponse CustomMethod<TResponse>(string httpVerb, object request)
-    {
-        return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null).GetSyncResponse();
-    }
-
+    
+    
     public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null, CancellationToken token = default)
     {
         using var content = new MultipartFormDataContent();
@@ -1132,20 +1129,28 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content, token).ConfigAwait();
         return result;
     }
-
-    public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+    
+    public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null)
     {
-        return PostFileAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, mimeType).GetSyncResponse();
+        using var content = new MultipartFormDataContent();
+        var fileBytes = fileToUpload.ReadFully();
+        using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
+        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "file",
+            FileName = fileName
+        };
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
+        content.Add(fileContent, "file", fileName);
+
+        var result = Send<TResponse>(HttpMethods.Post,
+            ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content);
+        return result;
     }
 
     public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload", CancellationToken token = default)
     {
         return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName, token);
-    }
-
-    public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
-    {
-        return PostFileWithRequestAsync<TResponse>(fileToUpload, fileName, request, fileName).GetSyncResponse();
     }
 
     public virtual async Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
@@ -1178,20 +1183,38 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return result;
     }
 
+    public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+    {
+        return PostFileWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName);
+    }
+
     public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
         object request, string fieldName = "upload")
     {
-        return PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName).GetSyncResponse();
-    }
+        var queryString = QueryStringSerializer.SerializeToString(request);
+        var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
 
-    public TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
-    {
-        return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray()).GetSyncResponse();
-    }
+        using var content = new MultipartFormDataContent();
 
-    public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
-    {
-        return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray()).GetSyncResponse();
+        foreach (string key in nameValueCollection)
+        {
+            var value = nameValueCollection[key];
+            if (value != null)
+                content.Add(new StringContent(value), $"\"{key}\"");
+        }
+
+        var fileBytes = fileToUpload.ReadFully();
+        using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
+        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "file",
+            FileName = fileName
+        };
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
+        content.Add(fileContent, "file", fileName);
+
+        var result = Send<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content);
+        return result;
     }
 
     public Task<TResponse> PostFilesWithRequestAsync<TResponse>(object request, IEnumerable<UploadFile> files, CancellationToken token = default)
@@ -1250,6 +1273,62 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
     }
 
+    public TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
+    {
+        return PostFilesWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray());
+    }
+
+    public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+    {
+        return PostFilesWithRequest<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray());
+    }
+
+    public virtual TResponse PostFilesWithRequest<TResponse>(string requestUri, object request, UploadFile[] files)
+    {
+        var queryString = QueryStringSerializer.SerializeToString(request);
+        var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
+
+        using var content = new MultipartFormDataContent();
+
+        foreach (string key in nameValueCollection)
+        {
+            var value = nameValueCollection[key];
+            if (value != null)
+                content.Add(new StringContent(value), $"\"{key}\"");
+        }
+
+        var disposables = new List<IDisposable>();
+        for (int i = 0; i < files.Length; i++)
+        {
+            var file = files[i];
+            var fileBytes = file.Stream.ReadFully();
+            var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
+            disposables.Add(fileContent);
+            var fieldName = file.FieldName ?? $"upload{i}";
+            var fileName = file.FileName ?? $"upload{i}";
+            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+            {
+                Name = fieldName,
+                FileName = fileName,
+            };
+
+            var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
+
+            content.Add(fileContent, fileName, fileName);
+        }
+
+        try
+        {
+            var result = Send<TResponse>(HttpMethods.Post, requestUri, content);
+            return result;
+        }
+        finally
+        {
+            foreach (var d in disposables) d.Dispose();
+        }
+    }
+
     public void CancelAsync() => throw new NotSupportedException("Pass CancellationToken when calling each async API");
 
     public void Dispose()
@@ -1259,30 +1338,4 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     }
 }
 
-internal static class InternalExtensions
-{
-    public static T GetSyncResponse<T>(this Task<T> task)
-    {
-        try
-        {
-            return task.GetAwaiter().GetResult();
-        }
-        catch (Exception ex)
-        {
-            throw ex.UnwrapIfSingleException();
-        }
-    }
-
-    public static void WaitSyncResponse(this Task task)
-    {
-        try
-        {
-            task.Wait();
-        }
-        catch (Exception ex)
-        {
-            throw ex.UnwrapIfSingleException();
-        }
-    }
-}
 #endif
