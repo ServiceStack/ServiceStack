@@ -156,10 +156,11 @@ namespace ServiceStack
                 {
                     { "/metadata/", "/metadata" },
                 },
-                IgnoreWarningsOnPropertyNames = new List<string> {
+                IgnoreWarningsOnPropertyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
-                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
-                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, "session_state", "s", "f"
+                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version,
+                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, 
+                    Keywords.SessionState, Keywords.OAuthSuccess, Keywords.OAuthFailed, Keywords.WithoutOptions,
                 },
                 IgnoreWarningsOnAutoQueryApis = true,
                 XmlWriterSettings = new XmlWriterSettings
@@ -310,7 +311,7 @@ namespace ServiceStack
 
         public bool IgnoreWarningsOnAllProperties { get; set; }
         public bool IgnoreWarningsOnAutoQueryApis { get; set; }
-        public List<string> IgnoreWarningsOnPropertyNames { get; private set; }
+        public HashSet<string> IgnoreWarningsOnPropertyNames { get; private set; }
 
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 

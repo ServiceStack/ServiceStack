@@ -6,9 +6,6 @@ using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 using ServiceStack.Text.Jsv;
-using System.Linq;
-using System.Threading;
-using ServiceStack.Web;
 
 namespace ServiceStack.Serialization
 {
@@ -83,7 +80,7 @@ namespace ServiceStack.Serialization
             }
         }
 
-        public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs, List<string> ignoredWarningsOnPropertyNames = null)
+        public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs, HashSet<string> ignoredWarningsOnPropertyNames = null)
         {
             var errors = new List<RequestBindingError>();
 
@@ -109,7 +106,7 @@ namespace ServiceStack.Serialization
             return instance;
         }
 
-        public object PopulateFromMap(object instance, NameValueCollection nameValues, List<string> ignoredWarningsOnPropertyNames = null)
+        public object PopulateFromMap(object instance, NameValueCollection nameValues, HashSet<string> ignoredWarningsOnPropertyNames = null)
         {
             var errors = new List<RequestBindingError>();
 
@@ -137,7 +134,8 @@ namespace ServiceStack.Serialization
         }
 
 
-        private object PopulateFromKeyValue(object instance, string propertyName, string propertyTextValue, out PropertySerializerEntry propertySerializerEntry,  List<RequestBindingError> errors, List<string> ignoredWarningsOnPropertyNames = null)
+        private object PopulateFromKeyValue(object instance, string propertyName, string propertyTextValue, out PropertySerializerEntry propertySerializerEntry,  List<RequestBindingError> errors, 
+            HashSet<string> ignoredWarningsOnPropertyNames = null)
         {
             propertySerializerEntry = null;
 
@@ -154,11 +152,10 @@ namespace ServiceStack.Serialization
                         return instance;
                     }
 
-                    var ignoredProperty = propertyName.ToLowerInvariant();
-                    if (ignoredWarningsOnPropertyNames != null && !ignoredWarningsOnPropertyNames.Contains(ignoredProperty)
+                    if (ignoredWarningsOnPropertyNames != null && !ignoredWarningsOnPropertyNames.Contains(propertyName)
                         && !type.HasAttributeCached<FallbackRouteAttribute>())
                     {
-                        Log.WarnFormat("Property '{0}' does not exist on type '{1}'", ignoredProperty, type.FullName);
+                        Log.WarnFormat("Property '{0}' does not exist on type '{1}'", propertyName, type.FullName);
                     }
                     return instance;
                 }

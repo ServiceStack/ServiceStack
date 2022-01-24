@@ -24,9 +24,13 @@ namespace ServiceStack
         public static string Redirect = "redirect";
         public static string NoRedirect = "noredirect";
         public static string ReturnUrl = nameof(ReturnUrl); //.NET Core default convention
-        public static string AutoBatchIndex = nameof(AutoBatchIndex);
-        public static string SoapMessage = nameof(SoapMessage);
-
+        
+        public const string AutoBatchIndex = nameof(AutoBatchIndex);
+        public const string SoapMessage = nameof(SoapMessage);
+        public const string WithoutOptions = nameof(WithoutOptions);
+        public const string SessionState = "session_state";
+        public const string OAuthSuccess = "s";
+        public const string OAuthFailed = "f";
         public const string Route = "__route";
         public const string InvokeVerb = "__verb";
         public const string DbInfo = "__dbinfo";
