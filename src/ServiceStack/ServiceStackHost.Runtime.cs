@@ -1244,7 +1244,7 @@ namespace ServiceStack
             return null;
         }
 
-        public virtual bool HasUi() => false; //HasPlugin<UiFeature>();
+        public virtual bool HasUi() => HasPlugin<UiFeature>();
     }
 
 }
