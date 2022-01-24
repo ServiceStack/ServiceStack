@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         static AutoQueryDataServiceTests()
         {
-#if NET45
+#if NETFX
             //https://githubengineering.com/crypto-removal-notice/
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override void Configure(Container container)
         {
-#if NET45
+#if NETFX
             //https://githubengineering.com/crypto-removal-notice/
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;

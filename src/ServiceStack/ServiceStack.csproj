@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack</PackageId>
     <AssemblyName>ServiceStack</AssemblyName>
-    <TargetFrameworks>net45;net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</Title>
     <PackageDescription>
     ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services and web apps that's intuitive and Easy to use!
@@ -12,7 +12,7 @@
     <PackageTags>Fast;JSON;XML;CSV;HTML;SOAP;JSV;REST;Web;Service;Framework;ServiceStack</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <DefineConstants>$(DefineConstants);NET45;NET472</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETFX;NET472</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
@@ -30,7 +30,7 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net472' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
     <Reference Include="System.ServiceModel" />

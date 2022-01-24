@@ -103,7 +103,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-#if NET45
+#if NETFX
     public partial class RequestInfoTests
     {
         private void DoesRedirectToRemoveTrailingSlash(string dirWIthoutSlash)

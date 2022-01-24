@@ -99,8 +99,6 @@ namespace ServiceStack.Host
             //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
             var nonCoreServicesCount = OperationsMap.Values
                 .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
-                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
-                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService"
                 && x.ServiceType.FullName != "ServiceStack.Api.OpenApi.OpenApiService"
                 && x.ServiceType.Name != "__AutoQueryServices"
                 && x.ServiceType.Name != "__AutoQueryDataServices");

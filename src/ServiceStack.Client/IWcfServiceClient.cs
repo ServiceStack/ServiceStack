@@ -1,4 +1,4 @@
-#if NET45
+#if NETFX
 using System;
 using System.ServiceModel.Channels;
 using System.Xml;

@@ -878,7 +878,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         //        [NUnit.Framework.Ignore("Debug Run"), Test]
         public void RunFor10Mins()
         {
-#if NET45
+#if NETFX
             Process.Start(Config.ListeningOn);
 #endif
             Thread.Sleep(TimeSpan.FromMinutes(10));

@@ -66,14 +66,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.OAuth2\ServiceStack.Authentication.OAuth2.csproj">
-      <Project>{c53331df-3690-4aea-ab57-70672bcfa086}</Project>
-      <Name>ServiceStack.Authentication.OAuth2</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.OpenId\ServiceStack.Authentication.OpenId.csproj">
-      <Project>{6E240294-9D93-4C09-9BB0-38D82A22DEEE}</Project>
-      <Name>ServiceStack.Authentication.OpenId</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
       <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
       <Name>ServiceStack.Client</Name>

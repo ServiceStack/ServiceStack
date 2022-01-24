@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.Logging.Tests</AssemblyName>
     <PackageId>ServiceStack.Logging.Tests</PackageId>
@@ -30,17 +30,16 @@
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Elmah\ServiceStack.Logging.Elmah.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Logging.EntLib5\ServiceStack.Logging.EntLib5.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.EventLog\ServiceStack.Logging.EventLog.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Log4Net\ServiceStack.Logging.Log4Net.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Serilog\ServiceStack.Logging.Serilog.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Slack\ServiceStack.Logging.Slack.csproj" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <DefineConstants>$(DefineConstants);NET45;NET472</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.Configuration" />
@@ -49,13 +48,5 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
 </Project>

@@ -27,7 +27,7 @@ using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-#if NET45
+#if NETFX
 using System.Web;
 #endif
 

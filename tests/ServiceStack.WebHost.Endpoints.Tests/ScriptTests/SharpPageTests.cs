@@ -212,7 +212,7 @@ title: We encode < & >
             Assert.That(html, Is.EqualTo(htmlOrig));
         }
 
-#if NET45
+#if NETFX
         [Test]
         public void Request_for_dir_index_page_without_trailing_slash_auto_redirects()
         {

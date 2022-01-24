@@ -1,4 +1,4 @@
-﻿#if NET45 || NET472
+﻿#if NETFX || NET472
 
 using System;
 using System.Collections.Specialized;

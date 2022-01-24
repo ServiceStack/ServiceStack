@@ -3,38 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{FA46AB18-F252-43F5-BEBC-12700EBC90A4}"
-	ProjectSection(SolutionItems) = preProject
-		..\lib\copy.bat = ..\lib\copy.bat
-		..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec = ..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec
-		..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec = ..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec
-		..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec = ..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec
-		..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec = ..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec
-		..\NuGet.Core\ServiceStack.HttpClient.Core\ServiceStack.HttpClient.Core.nuspec = ..\NuGet.Core\ServiceStack.HttpClient.Core\ServiceStack.HttpClient.Core.nuspec
-		..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec = ..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec
-		..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec = ..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec
-		..\NuGet.Core\ServiceStack.MsgPack.Core\ServiceStack.MsgPack.Core.nuspec = ..\NuGet.Core\ServiceStack.MsgPack.Core\ServiceStack.MsgPack.Core.nuspec
-		..\NuGet.Core\ServiceStack.Mvc.Core\ServiceStack.Mvc.Core.nuspec = ..\NuGet.Core\ServiceStack.Mvc.Core\ServiceStack.Mvc.Core.nuspec
-		..\NuGet.Core\ServiceStack.ProtoBuf.Core\ServiceStack.ProtoBuf.Core.nuspec = ..\NuGet.Core\ServiceStack.ProtoBuf.Core\ServiceStack.ProtoBuf.Core.nuspec
-		..\NuGet.Core\ServiceStack.RabbitMq.Core\ServiceStack.RabbitMq.Core.nuspec = ..\NuGet.Core\ServiceStack.RabbitMq.Core\ServiceStack.RabbitMq.Core.nuspec
-		..\NuGet.Core\ServiceStack.Server.Core\ServiceStack.Server.Core.nuspec = ..\NuGet.Core\ServiceStack.Server.Core\ServiceStack.Server.Core.nuspec
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{312EC6C7-3026-472C-85A1-8189207DA807}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Core.SelfHostTests", "..\tests\ServiceStack.Core.SelfHostTests\ServiceStack.Core.SelfHostTests.csproj", "{97002C10-48C4-4711-961B-F3E3D4FC3E4E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Core.Tests", "..\tests\Mvc.Core.Tests\Mvc.Core.Tests.csproj", "{F62296EA-27ED-46F7-8782-E84555AB4438}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatSelfHost", "..\tests\ChatSelfHost\ChatSelfHost.csproj", "{0848319C-7A4C-4135-B14E-8376AD7AD7CE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack", "ServiceStack\ServiceStack.csproj", "{2CBDA033-FD96-4875-973C-59F1EE410672}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Api.OpenApi", "ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj", "{97A23599-F3AE-4586-948E-8F0DC91F12E8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Api.Swagger", "ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj", "{FD13E822-6686-4DA3-81A5-555917ADB64E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Client", "ServiceStack.Client\ServiceStack.Client.csproj", "{3A9F5F61-B0CA-455D-9199-917F5A4C8ACC}"
 EndProject
@@ -54,9 +25,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Mvc", "Service
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Server", "ServiceStack.Server\ServiceStack.Server.csproj", "{C982D183-C545-4F6F-ABC4-F4EB75E44A1F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Wire", "ServiceStack.Wire\ServiceStack.Wire.csproj", "{867FACE8-26A1-426C-9450-5CD30ECEF745}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreWeb.Tests", "..\tests\NetCoreWeb.Tests\NetCoreWeb.Tests.csproj", "{CF9874FE-8937-44CF-98C4-88811DF88DF4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9E7B19A2-161E-40FE-B486-C8C0EA9ED61A}"
+	ProjectSection(SolutionItems) = preProject
+		..\build\build.bat = ..\build\build.bat
+		..\build\build.proj = ..\build\build.proj
+		..\build\build.tasks = ..\build\build.tasks
+		..\build\build-common.proj = ..\build\build-common.proj
+		..\build\build-common-core.proj = ..\build\build-common-core.proj
+		..\build\build-core.proj = ..\build\build-core.proj
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,18 +41,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{97002C10-48C4-4711-961B-F3E3D4FC3E4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{97002C10-48C4-4711-961B-F3E3D4FC3E4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{97002C10-48C4-4711-961B-F3E3D4FC3E4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{97002C10-48C4-4711-961B-F3E3D4FC3E4E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F62296EA-27ED-46F7-8782-E84555AB4438}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F62296EA-27ED-46F7-8782-E84555AB4438}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F62296EA-27ED-46F7-8782-E84555AB4438}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F62296EA-27ED-46F7-8782-E84555AB4438}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0848319C-7A4C-4135-B14E-8376AD7AD7CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0848319C-7A4C-4135-B14E-8376AD7AD7CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0848319C-7A4C-4135-B14E-8376AD7AD7CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0848319C-7A4C-4135-B14E-8376AD7AD7CE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2CBDA033-FD96-4875-973C-59F1EE410672}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2CBDA033-FD96-4875-973C-59F1EE410672}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CBDA033-FD96-4875-973C-59F1EE410672}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -84,10 +49,6 @@ Global
 		{97A23599-F3AE-4586-948E-8F0DC91F12E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97A23599-F3AE-4586-948E-8F0DC91F12E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97A23599-F3AE-4586-948E-8F0DC91F12E8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FD13E822-6686-4DA3-81A5-555917ADB64E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FD13E822-6686-4DA3-81A5-555917ADB64E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FD13E822-6686-4DA3-81A5-555917ADB64E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FD13E822-6686-4DA3-81A5-555917ADB64E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3A9F5F61-B0CA-455D-9199-917F5A4C8ACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3A9F5F61-B0CA-455D-9199-917F5A4C8ACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A9F5F61-B0CA-455D-9199-917F5A4C8ACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -124,22 +85,10 @@ Global
 		{C982D183-C545-4F6F-ABC4-F4EB75E44A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C982D183-C545-4F6F-ABC4-F4EB75E44A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C982D183-C545-4F6F-ABC4-F4EB75E44A1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{867FACE8-26A1-426C-9450-5CD30ECEF745}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{867FACE8-26A1-426C-9450-5CD30ECEF745}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{867FACE8-26A1-426C-9450-5CD30ECEF745}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{867FACE8-26A1-426C-9450-5CD30ECEF745}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{97002C10-48C4-4711-961B-F3E3D4FC3E4E} = {312EC6C7-3026-472C-85A1-8189207DA807}
-		{F62296EA-27ED-46F7-8782-E84555AB4438} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
-		{0848319C-7A4C-4135-B14E-8376AD7AD7CE} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
-		{CF9874FE-8937-44CF-98C4-88811DF88DF4} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 	EndGlobalSection
 EndGlobal

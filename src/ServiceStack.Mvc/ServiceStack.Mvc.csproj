@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Mvc</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
-    <TargetFrameworks>net45;net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
     <Title>MVC Adapters for integrating with ServiceStack webservices</Title>
     <PackageDescription>
     MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
@@ -28,7 +28,7 @@
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
   
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net472' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <ProjectReference Include="..\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />

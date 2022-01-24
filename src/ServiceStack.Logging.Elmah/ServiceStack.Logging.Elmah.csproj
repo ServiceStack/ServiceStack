@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Logging.Elmah</PackageId>
     <AssemblyName>ServiceStack.Logging.Elmah</AssemblyName>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <Title>ServiceStack.Logging.Elmah</Title>
     <PackageDescription>
       Provides Elmah logging integration for other ServiceStack projects

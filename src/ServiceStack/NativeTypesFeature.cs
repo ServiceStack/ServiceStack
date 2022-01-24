@@ -97,7 +97,7 @@ namespace ServiceStack
                     "ServiceStack.Web",
                     "ServiceStack.Admin",
                     "ServiceStack.NativeTypes",
-                    "ServiceStack.Api.Swagger",
+                    "ServiceStack.Api.OpenApi",
                 },
                 DefaultNamespaces = new List<string>
                 {

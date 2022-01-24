@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{CA7CF53F
 		ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj = ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Logging.EntLib5", "ServiceStack.Logging.EntLib5\ServiceStack.Logging.EntLib5.csproj", "{EDD72ADC-327C-4152-B84B-B48552311534}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Common", "ServiceStack.Common\ServiceStack.Common.csproj", "{982416DB-C143-4028-A0C3-CF41892D18D3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Interfaces", "ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}"
@@ -94,16 +92,6 @@ Global
 		{EE43BF1E-CF97-4215-A5A3-46D1C363F928}.Signed|Any CPU.Build.0 = Release|Any CPU
 		{EE43BF1E-CF97-4215-A5A3-46D1C363F928}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
 		{EE43BF1E-CF97-4215-A5A3-46D1C363F928}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.Signed|Any CPU.ActiveCfg = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.Signed|Any CPU.Build.0 = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
-		{EDD72ADC-327C-4152-B84B-B48552311534}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,7 +1,5 @@
 ﻿#define HTTP_LISTENER
 using Funq;
-using ServiceStack.Authentication.OAuth2;
-using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -83,18 +81,8 @@ namespace ServiceStack.AuthWeb.Tests
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
                     new BasicAuthProvider(),                    //Sign-in with Basic Auth
-                    new GoogleOpenIdOAuthProvider(appSettings), //Sign-in with Google OpenId
-                    new YahooOpenIdOAuthProvider(appSettings),  //Sign-in with Yahoo OpenId
-                    new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
-                    new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider
-                    new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
                     new GithubAuthProvider(appSettings),        //Sign-in with GitHub OAuth2 Provider
                 }));
-
-#if HTTP_LISTENER
-            //Required for DotNetOpenAuth in HttpListener 
-            OpenIdOAuthProvider.OpenIdApplicationStore = new InMemoryOpenIdApplicationStore();
-#endif
 
             //Provide service for new users to register so they can login with supplied credentials.
             Plugins.Add(new RegistrationFeature());

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ServiceStack.Host.Handlers;
-#if NET45
+#if NETFX
 using System.Web;
 #else
 using ServiceStack.Host;
