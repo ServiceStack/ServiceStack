@@ -32,12 +32,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
-    <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
-
     <!-- Include JsonApiClient in .NET6 builds -->
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
   </ItemGroup>
