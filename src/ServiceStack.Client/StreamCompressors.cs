@@ -16,8 +16,10 @@ public static class StreamCompressors
     {
 #if NET6_0_OR_GREATER
         { "br", BrotliCompressor.Instance }, //CompressionTypes.Brotli
-#endif
+        { CompressionTypes.Deflate, ZLibCompressor.Instance },
+#else        
         { CompressionTypes.Deflate, DeflateCompressor.Instance },
+#endif
         { CompressionTypes.GZip, GZipCompressor.Instance },
     };
 
@@ -93,8 +95,49 @@ public class BrotliCompressor : IStreamCompressor
         return zipStream.ReadFully();
     }
 }
-#endif
 
+public class ZLibCompressor : IStreamCompressor
+{
+    public string Encoding => CompressionTypes.Deflate; 
+    public static ZLibCompressor Instance { get; } = new();
+        
+    public byte[] Compress(string text, Encoding? encoding = null) => Compress((encoding ?? System.Text.Encoding.UTF8).GetBytes(text));
+
+    public byte[] Compress(byte[] bytes)
+    {
+        // In .NET FX incompatible, you can't access compressed bytes without closing DeflateStream
+        // Which means we must use MemoryStream since you have to use ToArray() on a closed Stream
+        using var ms = new MemoryStream();
+        using var zipStream = new ZLibStream(ms, CompressionMode.Compress);
+        zipStream.Write(bytes, 0, bytes.Length);
+        zipStream.Close();
+
+        return ms.ToArray();
+    }
+
+    public Stream Compress(Stream outputStream, bool leaveOpen=false) => 
+        new ZLibStream(outputStream, CompressionMode.Compress, leaveOpen);
+
+    public string Decompress(byte[] zipBuffer, Encoding? encoding = null)
+    {
+        using var uncompressedStream = MemoryStreamFactory.GetStream();
+        using var compressedStream = MemoryStreamFactory.GetStream(zipBuffer);
+        using var zipStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
+        zipStream.CopyTo(uncompressedStream);
+        return uncompressedStream.ReadToEnd(encoding ?? System.Text.Encoding.UTF8);
+    }
+
+    public Stream Decompress(Stream zipBuffer, bool leaveOpen=false) => 
+        new DeflateStream(zipBuffer, CompressionMode.Decompress, leaveOpen);
+
+    public byte[] DecompressBytes(byte[] zipBuffer)
+    {
+        using var compressedStream = zipBuffer.InMemoryStream();
+        using var zipStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
+        return zipStream.ReadFully();
+    }
+}
+#endif
 
 public class DeflateCompressor : IStreamCompressor
 {
