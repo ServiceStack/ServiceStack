@@ -373,7 +373,7 @@
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="SharpCompress" Version="0.23.0" />
+    <PackageReference Include="SharpCompress" Version="0.29.0" />
     <PackageReference Include="Snappy.NET" Version="1.1.1.8" />
     <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.113.3" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
