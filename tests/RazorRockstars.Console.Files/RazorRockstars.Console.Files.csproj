@@ -345,10 +345,6 @@
       <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
       <Name>ServiceStack.Server</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Wire\ServiceStack.Wire.csproj">
-      <Project>{0428d353-cd67-481f-877a-676e3bbcf903}</Project>
-      <Name>ServiceStack.Wire</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
