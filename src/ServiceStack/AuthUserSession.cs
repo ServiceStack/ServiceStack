@@ -20,71 +20,71 @@ namespace ServiceStack
             this.Meta = new Dictionary<string, string>();
         }
 
-        [DataMember(Order = 01, Name = nameof(ReferrerUrl))] public string ReferrerUrl { get; set; }
-        [DataMember(Order = 02, Name = nameof(Id))] public string Id { get; set; }
-        [DataMember(Order = 03, Name = nameof(UserAuthId))] public string UserAuthId { get; set; }
+        [DataMember(Order = 01, Name = AuthFields.ReferrerUrl)] public string ReferrerUrl { get; set; }
+        [DataMember(Order = 02, Name = AuthFields.Id)] public string Id { get; set; }
+        [DataMember(Order = 03, Name = AuthFields.UserAuthId)] public string UserAuthId { get; set; }
         /// <summary>
         /// User chosen Username when available or Email
         /// </summary>
-        [DataMember(Order = 04, Name = nameof(UserAuthName))] public string UserAuthName { get; set; }
-        [DataMember(Order = 05, Name = nameof(UserName))] public string UserName { get; set; }
-        [DataMember(Order = 06, Name = nameof(TwitterUserId))] public string TwitterUserId { get; set; }
-        [DataMember(Order = 07, Name = nameof(TwitterScreenName))] public string TwitterScreenName { get; set; }
-        [DataMember(Order = 08, Name = nameof(FacebookUserId))] public string FacebookUserId { get; set; }
-        [DataMember(Order = 09, Name = nameof(FacebookUserName))] public string FacebookUserName { get; set; }
-        [DataMember(Order = 10, Name = nameof(FirstName))] public string FirstName { get; set; }
-        [DataMember(Order = 11, Name = nameof(LastName))] public string LastName { get; set; }
-        [DataMember(Order = 12, Name = nameof(DisplayName))] public string DisplayName { get; set; }
-        [DataMember(Order = 13, Name = nameof(Company))] public string Company { get; set; }
-        [DataMember(Order = 14, Name = nameof(Email))] public string Email { get; set; }
-        [DataMember(Order = 15, Name = nameof(PrimaryEmail))] public string PrimaryEmail { get; set; }
-        [DataMember(Order = 16, Name = nameof(PhoneNumber))] public string PhoneNumber { get; set; }
-        [DataMember(Order = 17, Name = nameof(BirthDate))] public DateTime? BirthDate { get; set; }
-        [DataMember(Order = 18, Name = nameof(BirthDateRaw))] public string BirthDateRaw { get; set; }
-        [DataMember(Order = 19, Name = nameof(Address))] public string Address { get; set; }
-        [DataMember(Order = 20, Name = nameof(Address2))] public string Address2 { get; set; }
-        [DataMember(Order = 21, Name = nameof(City))] public string City { get; set; }
-        [DataMember(Order = 22, Name = nameof(State))] public string State { get; set; }
-        [DataMember(Order = 23, Name = nameof(Country))] public string Country { get; set; }
-        [DataMember(Order = 24, Name = nameof(Culture))] public string Culture { get; set; }
-        [DataMember(Order = 25, Name = nameof(FullName))] public string FullName { get; set; }
-        [DataMember(Order = 26, Name = nameof(Gender))] public string Gender { get; set; }
-        [DataMember(Order = 27, Name = nameof(Language))] public string Language { get; set; }
-        [DataMember(Order = 28, Name = nameof(MailAddress))] public string MailAddress { get; set; }
-        [DataMember(Order = 29, Name = nameof(Nickname))] public string Nickname { get; set; }
-        [DataMember(Order = 30, Name = nameof(PostalCode))] public string PostalCode { get; set; }
-        [DataMember(Order = 31, Name = nameof(TimeZone))] public string TimeZone { get; set; }
-        [DataMember(Order = 32, Name = nameof(RequestTokenSecret))] public string RequestTokenSecret { get; set; }
-        [DataMember(Order = 33, Name = nameof(CreatedAt))] public DateTime CreatedAt { get; set; }
-        [DataMember(Order = 34, Name = nameof(LastModified))] public DateTime LastModified { get; set; }
-        [DataMember(Order = 35, Name = nameof(Roles))] public List<string> Roles { get; set; }
-        [DataMember(Order = 36, Name = nameof(Permissions))] public List<string> Permissions { get; set; }
-        [DataMember(Order = 37, Name = nameof(IsAuthenticated))] public bool IsAuthenticated { get; set; }
-        [DataMember(Order = 38, Name = nameof(FromToken))] public bool FromToken { get; set; }
-        [DataMember(Order = 39, Name = nameof(ProfileUrl))] public string ProfileUrl { get; set; } //Avatar
-        [DataMember(Order = 40, Name = nameof(Sequence))] public string Sequence { get; set; }
-        [DataMember(Order = 41, Name = nameof(Tag))] public long Tag { get; set; }
-        [DataMember(Order = 42, Name = nameof(AuthProvider))] public string AuthProvider { get; set; }
-        [DataMember(Order = 43, Name = nameof(ProviderOAuthAccess))] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
-        [DataMember(Order = 44, Name = nameof(Meta))] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 04, Name = AuthFields.UserAuthName)] public string UserAuthName { get; set; }
+        [DataMember(Order = 05, Name = AuthFields.UserName)] public string UserName { get; set; }
+        [DataMember(Order = 06, Name = AuthFields.TwitterUserId)] public string TwitterUserId { get; set; }
+        [DataMember(Order = 07, Name = AuthFields.TwitterScreenName)] public string TwitterScreenName { get; set; }
+        [DataMember(Order = 08, Name = AuthFields.FacebookUserId)] public string FacebookUserId { get; set; }
+        [DataMember(Order = 09, Name = AuthFields.FacebookUserName)] public string FacebookUserName { get; set; }
+        [DataMember(Order = 10, Name = AuthFields.FirstName)] public string FirstName { get; set; }
+        [DataMember(Order = 11, Name = AuthFields.LastName)] public string LastName { get; set; }
+        [DataMember(Order = 12, Name = AuthFields.DisplayName)] public string DisplayName { get; set; }
+        [DataMember(Order = 13, Name = AuthFields.Company)] public string Company { get; set; }
+        [DataMember(Order = 14, Name = AuthFields.Email)] public string Email { get; set; }
+        [DataMember(Order = 15, Name = AuthFields.PrimaryEmail)] public string PrimaryEmail { get; set; }
+        [DataMember(Order = 16, Name = AuthFields.PhoneNumber)] public string PhoneNumber { get; set; }
+        [DataMember(Order = 17, Name = AuthFields.BirthDate)] public DateTime? BirthDate { get; set; }
+        [DataMember(Order = 18, Name = AuthFields.BirthDateRaw)] public string BirthDateRaw { get; set; }
+        [DataMember(Order = 19, Name = AuthFields.Address)] public string Address { get; set; }
+        [DataMember(Order = 20, Name = AuthFields.Address2)] public string Address2 { get; set; }
+        [DataMember(Order = 21, Name = AuthFields.City)] public string City { get; set; }
+        [DataMember(Order = 22, Name = AuthFields.State)] public string State { get; set; }
+        [DataMember(Order = 23, Name = AuthFields.Country)] public string Country { get; set; }
+        [DataMember(Order = 24, Name = AuthFields.Culture)] public string Culture { get; set; }
+        [DataMember(Order = 25, Name = AuthFields.FullName)] public string FullName { get; set; }
+        [DataMember(Order = 26, Name = AuthFields.Gender)] public string Gender { get; set; }
+        [DataMember(Order = 27, Name = AuthFields.Language)] public string Language { get; set; }
+        [DataMember(Order = 28, Name = AuthFields.MailAddress)] public string MailAddress { get; set; }
+        [DataMember(Order = 29, Name = AuthFields.Nickname)] public string Nickname { get; set; }
+        [DataMember(Order = 30, Name = AuthFields.PostalCode)] public string PostalCode { get; set; }
+        [DataMember(Order = 31, Name = AuthFields.TimeZone)] public string TimeZone { get; set; }
+        [DataMember(Order = 32, Name = AuthFields.RequestTokenSecret)] public string RequestTokenSecret { get; set; }
+        [DataMember(Order = 33, Name = AuthFields.CreatedAt)] public DateTime CreatedAt { get; set; }
+        [DataMember(Order = 34, Name = AuthFields.LastModified)] public DateTime LastModified { get; set; }
+        [DataMember(Order = 35, Name = AuthFields.Roles)] public List<string> Roles { get; set; }
+        [DataMember(Order = 36, Name = AuthFields.Permissions)] public List<string> Permissions { get; set; }
+        [DataMember(Order = 37, Name = AuthFields.IsAuthenticated)] public bool IsAuthenticated { get; set; }
+        [DataMember(Order = 38, Name = AuthFields.FromToken)] public bool FromToken { get; set; }
+        [DataMember(Order = 39, Name = AuthFields.ProfileUrl)] public string ProfileUrl { get; set; } //Avatar
+        [DataMember(Order = 40, Name = AuthFields.Sequence)] public string Sequence { get; set; }
+        [DataMember(Order = 41, Name = AuthFields.Tag)] public long Tag { get; set; }
+        [DataMember(Order = 42, Name = AuthFields.AuthProvider)] public string AuthProvider { get; set; }
+        [DataMember(Order = 43, Name = AuthFields.ProviderOAuthAccess)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 44, Name = AuthFields.Meta)] public Dictionary<string, string> Meta { get; set; }
         
         //Claims https://docs.microsoft.com/en-us/previous-versions/windows-identity-foundation/ee727097(v=msdn.10)
-        [DataMember(Order = 45, Name = nameof(Audiences))] public List<string> Audiences { get; set; }
-        [DataMember(Order = 46, Name = nameof(Scopes))] public List<string> Scopes { get; set; }
-        [DataMember(Order = 47, Name = nameof(Dns))] public string Dns { get; set; }
-        [DataMember(Order = 48, Name = nameof(Rsa))] public string Rsa { get; set; }
-        [DataMember(Order = 49, Name = nameof(Sid))] public string Sid { get; set; }
-        [DataMember(Order = 50, Name = nameof(Hash))] public string Hash { get; set; }
-        [DataMember(Order = 51, Name = nameof(HomePhone))] public string HomePhone { get; set; }
-        [DataMember(Order = 52, Name = nameof(MobilePhone))] public string MobilePhone { get; set; }
-        [DataMember(Order = 53, Name = nameof(Webpage))] public string Webpage { get; set; }
+        [DataMember(Order = 45, Name = AuthFields.Audiences)] public List<string> Audiences { get; set; }
+        [DataMember(Order = 46, Name = AuthFields.Scopes)] public List<string> Scopes { get; set; }
+        [DataMember(Order = 47, Name = AuthFields.Dns)] public string Dns { get; set; }
+        [DataMember(Order = 48, Name = AuthFields.Rsa)] public string Rsa { get; set; }
+        [DataMember(Order = 49, Name = AuthFields.Sid)] public string Sid { get; set; }
+        [DataMember(Order = 50, Name = AuthFields.Hash)] public string Hash { get; set; }
+        [DataMember(Order = 51, Name = AuthFields.HomePhone)] public string HomePhone { get; set; }
+        [DataMember(Order = 52, Name = AuthFields.MobilePhone)] public string MobilePhone { get; set; }
+        [DataMember(Order = 53, Name = AuthFields.Webpage)] public string Webpage { get; set; }
 
         //IdentityUser<TKey>
-        [DataMember(Order = 54, Name = nameof(EmailConfirmed))] public bool? EmailConfirmed { get; set; }
-        [DataMember(Order = 55, Name = nameof(PhoneNumberConfirmed))] public bool? PhoneNumberConfirmed { get; set; }
-        [DataMember(Order = 56, Name = nameof(TwoFactorEnabled))] public bool? TwoFactorEnabled { get; set; }
-        [DataMember(Order = 57, Name = nameof(SecurityStamp))] public string SecurityStamp { get; set; }
-        [DataMember(Order = 58, Name = nameof(Type))] public string Type { get; set; }
+        [DataMember(Order = 54, Name = AuthFields.EmailConfirmed)] public bool? EmailConfirmed { get; set; }
+        [DataMember(Order = 55, Name = AuthFields.PhoneNumberConfirmed)] public bool? PhoneNumberConfirmed { get; set; }
+        [DataMember(Order = 56, Name = AuthFields.TwoFactorEnabled)] public bool? TwoFactorEnabled { get; set; }
+        [DataMember(Order = 57, Name = AuthFields.SecurityStamp)] public string SecurityStamp { get; set; }
+        [DataMember(Order = 58, Name = AuthFields.Type)] public string Type { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
@@ -558,6 +558,5 @@ namespace ServiceStack
             }
             return false;
         }
-
     }
 }
