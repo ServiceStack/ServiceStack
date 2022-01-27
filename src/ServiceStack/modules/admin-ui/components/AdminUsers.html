@@ -23,7 +23,7 @@ App.component('AdminUsers', ({ store, routes, client }) => {
             this.request.skip = routes.page > 0 ? this.pageSize * Number(routes.page || 1) : 0
             this.request.take = this.pageSize
             let complete = delaySet(x => this.loading = x)
-            client.api(this.request)
+            client.api(this.request, { jsconfig: 'eccn' })
                 .then(api => {
                     this.api = api
                     complete()

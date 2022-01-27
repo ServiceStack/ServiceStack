@@ -30,7 +30,7 @@ App.component('AdminUsers', ({ store, routes, client }) => {
             this.request.take = this.pageSize
             
             let complete = delaySet(x => this.loading = x)
-            client.api(this.request)
+            client.api(this.request, { jsconfig: 'eccn' })
                 .then(api => {
                     this.api = api
                     complete()

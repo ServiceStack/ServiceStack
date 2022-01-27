@@ -205,7 +205,7 @@ let store = PetiteVue.reactive({
         } else {
             auth = new Authenticate({ provider, ...args })
         }
-        client.api(auth)
+        client.api(auth, { jsconfig: 'eccn' })
             .then(r => {
                 this.api = r
                 if (r.error && !r.error.message)
