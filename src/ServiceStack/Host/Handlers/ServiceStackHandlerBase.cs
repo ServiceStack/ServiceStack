@@ -127,7 +127,7 @@ namespace ServiceStack.Host.Handlers
                 return;
             }
 
-            if (doJsonp && !(response is CompressedResult))
+            if (doJsonp && response is not CompressedResult)
             {
                 await httpRes.WriteToResponse(httpReq, response, DataCache.CreateJsonpPrefix(callback), DataCache.JsonpSuffix).ConfigAwait();
                 return;

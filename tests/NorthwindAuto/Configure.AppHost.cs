@@ -4,6 +4,7 @@ using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using MyApp.ServiceInterface;
 using ServiceStack.HtmlModules;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
@@ -23,6 +24,8 @@ namespace MyApp
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
+            // JsConfig.Init(new Config { TextCase = TextCase.PascalCase });
+            
             SetConfig(new HostConfig
             {
                 //DebugMode = false,
@@ -56,11 +59,11 @@ namespace MyApp
             });
             
             // Not needed in `dotnet watch` and in /wwwroot/modules/ui which can use _framework/aspnetcore-browser-refresh.js"
-            Plugins.AddIfDebug(new HotReloadFeature
-            {
-                VirtualFiles = VirtualFiles,
-                DefaultPattern = "*.html;*.js;*.css"
-            });
+            // Plugins.AddIfDebug(new HotReloadFeature
+            // {
+            //     VirtualFiles = VirtualFiles,
+            //     DefaultPattern = "*.html;*.js;*.css"
+            // });
             
             //Plugins.Add(new PostmanFeature());
         }

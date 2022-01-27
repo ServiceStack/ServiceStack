@@ -491,6 +491,7 @@ namespace ServiceStack
             if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, httpRes.Dto, ex))
                 return;
 
+            var hostConfig = HostContext.Config;
             if (!httpRes.HasStarted)
             {
                 if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
@@ -498,7 +499,7 @@ namespace ServiceStack
                 {
                     httpRes.ContentType = contentType;
                 }
-                if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
+                if (hostConfig.AppendUtf8CharsetOnContentTypes.Contains(contentType))
                 {
                     httpRes.ContentType += ContentFormat.Utf8Suffix;
                 }
@@ -516,7 +517,7 @@ namespace ServiceStack
             }
 
             var callback = httpReq.GetJsonpCallback();
-            var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
+            var doJsonp = hostConfig.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
             if (doJsonp)
             {
                 httpRes.StatusCode = 200;
@@ -525,7 +526,13 @@ namespace ServiceStack
 
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType ?? httpRes.ContentType);
             if (serializer != null)
-                await serializer(httpReq, httpRes.Dto, httpRes.OutputStream);
+            {
+                var jsconfig = hostConfig.AllowJsConfig ? httpReq?.QueryString[Keywords.JsConfig] : null;
+                using (jsconfig != null ? JsConfig.CreateScope(jsconfig) : null)
+                {
+                    await serializer(httpReq, httpRes.Dto, httpRes.OutputStream);                    
+                }
+            }
             
             if (doJsonp)
                 await httpRes.OutputStream.WriteAsync(DataCache.JsonpSuffix);
