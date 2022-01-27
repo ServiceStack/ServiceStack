@@ -63,12 +63,6 @@ public class ConfigureAuthRepository : IHostingStartup
             CreateUser(authRepo, "manager@email.com", "The Manager", "p@55wOrd", roles: new[] { AppRoles.Employee, AppRoles.Manager });
             CreateUser(authRepo, "employee@email.com", "A Employee", "p@55wOrd", roles: new[] { AppRoles.Employee });
 
-            //Populate with lots of demo users
-            //for (var i = 1; i < 102; i++)
-            //{
-            //    CreateUser(authRepo, $"employee{i}@email.com", $"Employee {i}", "p@55wOrd", roles: new[] { AppRoles.Employee });
-            //}
-
             // Removing unused UserName in Admin Users UI 
             appHost.Plugins.Add(new ServiceStack.Admin.AdminUsersFeature {
                 

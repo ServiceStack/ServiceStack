@@ -22,25 +22,25 @@ are served by a different SEO friendly site or otherwise prohibits using Blazor 
 
 ### Improving Startup Performance
 
-The solution to both these problems is fairly straightforward, that's been utilized by 
-[Jamstack Frameworks](https://jamstack.org/generators/) for years, by prerendering content at build time.
+The solution to both issues is fairly straightforward, by utilizing the mainstay solution behind
+[Jamstack Frameworks](https://jamstack.org/generators/) and prerender content at build time.
 
-So we know what needs to be done, but how best to do it in Blazor WASM? Unfortunately the
+We know what needs to be done, but how best to do it in Blazor WASM? Unfortunately the
 [official Blazor WASM prerendering guide](https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration?view=aspnetcore-6.0&pivots=webassembly)
-isn't prerendering at all which is typically used to describe
+isn't actually a prerendering solution, as is typically used to describe
 [Static Site Generators (SSG)](https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/)
-prerendering static content at build-time, where as Blazor WASM prerendering instead describes
-[Server-Side-Rendering (SSR)](https://www.omnisci.com/technical-glossary/server-side-renderings) that mandates the additional complexity
-of forcing maintaining your Apps dependencies in both client and server projects, and doesn't yield an optimal result since prerendering
-is typically used so Apps can host their SSG content on static file hosts, instead SSR does the opposite and forces coupling of the
-.NET Server Host which prohibits Blazor WASM Apps from being served from a CDN.
+prerendering static content at build-time, whilst Blazor WASM prerendering docs instead describes
+a [Server-Side-Rendering (SSR)](https://www.omnisci.com/technical-glossary/server-side-renderings) solution mandating the additional 
+complexity of maintaining your Apps dependencies in both client and server projects. Unfortunately this approach also wont yield an 
+optimal result since prerendering is typically used so Apps can host their SSG content on static file hosts, instead SSR does the 
+opposite whose forced runtime coupling to the .NET Server Host prohibits Blazor WASM Apps from being served from a CDN.
 
-As this defeats [many of the benefits](hosting) of Blazor WASM in the first place we disregarded it & adopted
-a solution that doesn't compromise its CDN hostability.
+As this defeats [many of the benefits](hosting) of a Blazor WASM Jamstack App in the first place, we've instead opted for a more optimal 
+solution that doesn't compromise its CDN hostability.
 
 ### Increasing Perceived Performance
 
-We have little opportunity over improving the startup time of the real C# Blazor App beyond hosting its static assets on CDN edge caches,
+We've little opportunity over improving the startup time of the real C# Blazor App beyond hosting its static assets on CDN edge caches,
 but ultimately what matters is [perceived performance](https://marvelapp.com/blog/a-designers-guide-to-perceived-performance/) which
 we do have control over given the screen for a default Blazor WASM project is a glaring white screen flash:
 
