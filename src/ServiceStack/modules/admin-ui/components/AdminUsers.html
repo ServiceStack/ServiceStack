@@ -198,7 +198,7 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                 },
                 submit() {
                     let complete = delaySet(x => this.loading = x)
-                    client.api(this.request)
+                    client.api(this.request, { jsconfig: 'eccn' })
                         .then(api => {
                             complete()
                             this.api = api
@@ -251,7 +251,7 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                 send(request, success, error) {
                     this.loading = true
                     this.success = ''
-                    client.api(request)
+                    client.api(request, { jsconfig: 'eccn' })
                         .then(api => {
                             this.loading = false
                             this.api = api

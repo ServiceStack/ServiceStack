@@ -209,8 +209,8 @@ function apiSend(requestDto) {
     })
     let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
     let task = returnsVoid
-        ? newClient.apiVoid(requestDto)
-        : newClient.api(requestDto)
+        ? newClient.apiVoid(requestDto, { jsconfig: 'eccn' })
+        : newClient.api(requestDto, { jsconfig: 'eccn' })
     return task.then(api => ({ 
         api,
         json: JSON.stringify(api.response || api.error, undefined, 4),

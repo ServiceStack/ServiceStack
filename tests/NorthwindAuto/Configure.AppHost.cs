@@ -28,8 +28,8 @@ namespace MyApp
             
             SetConfig(new HostConfig
             {
-                //DebugMode = false,
-                DebugMode = true,
+                DebugMode = false,
+                //DebugMode = true,
                 AdminAuthSecret = "secret",
             });
 
