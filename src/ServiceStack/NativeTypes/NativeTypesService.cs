@@ -255,7 +255,7 @@ namespace ServiceStack.NativeTypes
                 return typeScript;
             }
 
-            if (request.Cache == true && !HostContext.DebugMode)
+            if (request.Cache != false && !HostContext.DebugMode)
                 return Request.ToOptimizedResultUsingCache(LocalCache, cacheKey:Request.AbsoluteUri, Generate);
             
             return Generate();
