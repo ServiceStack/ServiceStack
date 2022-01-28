@@ -71,7 +71,10 @@ namespace ServiceStack.NativeTypes
 
     [ExcludeMetadata]
     [Route("/types/js")]
-    public class TypesCommonJs : NativeTypesBase { }
+    public class TypesCommonJs : NativeTypesBase
+    {
+        public bool? Cache { get; set; }
+    }
 
     public class NativeTypesBase
     {
@@ -239,15 +242,23 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesCommonJs request)
         {
-            request.BaseUrl = GetBaseUrl(request.BaseUrl);
+            string Generate()
+            {
+                request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-            var typesConfig = NativeTypesMetadata.GetConfig(request);
-            typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
-            typesConfig.ExportAsTypes = true;
+                var typesConfig = NativeTypesMetadata.GetConfig(request);
+                typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+                typesConfig.ExportAsTypes = true;
 
-            var metadataTypes = ResolveMetadataTypes(typesConfig);
-            var typeScript = new CommonJsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
-            return typeScript;
+                var metadataTypes = ResolveMetadataTypes(typesConfig);
+                var typeScript = new CommonJsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+                return typeScript;
+            }
+
+            if (request.Cache == true && !HostContext.DebugMode)
+                return Request.ToOptimizedResultUsingCache(LocalCache, cacheKey:Request.AbsoluteUri, Generate);
+            
+            return Generate();
         }
 
         [AddHeader(ContentType = MimeTypes.PlainText)]
