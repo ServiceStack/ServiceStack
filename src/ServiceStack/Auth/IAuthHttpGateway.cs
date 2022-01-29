@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -224,10 +225,10 @@ namespace ServiceStack.Auth
                 throw new ArgumentNullException(nameof(accessToken));
 
             var json = url.GetJsonFromUrl(
-                requestFilter: httpReq => {
-                    PclExport.Instance.AddHeader(httpReq, HttpHeaders.Authorization, "token " + accessToken);
-                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
-                });
+                requestFilter: req => req.With(c => {
+                    c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                    c.Authorization = new("token", accessToken);
+                }));
 
             return json;
         }
@@ -238,10 +239,10 @@ namespace ServiceStack.Auth
                 throw new ArgumentNullException(nameof(accessToken));
 
             var json = await url.GetJsonFromUrlAsync(
-                requestFilter: httpReq => {
-                    PclExport.Instance.AddHeader(httpReq, HttpHeaders.Authorization, "token " + accessToken);
-                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
-                }, token: token).ConfigAwait();
+                requestFilter: req => req.With(c => {
+                    c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                    c.Authorization = new("token", accessToken);
+                }));
 
             return json;
         }

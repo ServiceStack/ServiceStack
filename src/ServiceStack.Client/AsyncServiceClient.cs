@@ -63,6 +63,10 @@ namespace ServiceStack
 
         public CookieContainer CookieContainer { get; set; }
 
+#if NET6_0_OR_GREATER
+        public System.Net.Http.HttpClient HttpClient { get; set; }
+#endif
+        
         /// <summary>
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
@@ -393,11 +397,16 @@ namespace ServiceStack
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
+#if NET6_0_OR_GREATER
+                                tokenResponse = (await HttpClient.SendStringToUrlAsync(uri, method:HttpMethods.Post, 
+                                    requestBody:refreshRequest.ToJson(), token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
+#else                                
                                 tokenResponse = (await uri.PostJsonToUrlAsync(refreshRequest, requestFilter: req => {
                                     if (hasRefreshTokenCookie) {
                                         req.CookieContainer = CookieContainer;
                                     }
                                 }, token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
+#endif                                
                             }
                             catch (WebException refreshEx)
                             {

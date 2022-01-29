@@ -77,7 +77,13 @@ namespace ServiceStack.Auth
             {
                 string payload = $"client_id={ApplicationId}&client_secret={SecretKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}&grant_type=authorization_code";
 
-                string contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl).PostToUrlAsync(payload, "*/*", RequestFilter).ConfigAwait();
+                string contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl)
+                    .PostToUrlAsync(formData:payload, requestFilter:req => 
+                        req.With(c => {
+                            c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                            c.Accept = "*/*";
+                        }), 
+                        token: token).ConfigAwait();
 
                 var authInfo = JsonObject.Parse(contents);
 
@@ -97,21 +103,16 @@ namespace ServiceStack.Auth
                 return await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait()
                     ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
-            catch (WebException webException)
+            catch (Exception ex)
             {
                 //just in case it starts throwing exceptions 
-                HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
+                var statusCode = ex.GetStatus();
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
                     return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
             return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
-        }
-
-        protected virtual void RequestFilter(HttpWebRequest request)
-        {
-            request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
         }
 
         protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
@@ -125,7 +126,13 @@ namespace ServiceStack.Auth
 
                 string payload = $"access_token={tokens.AccessTokenSecret}&sig={signature}&application_key={PublicKey}";
 
-                string json = await "http://api.odnoklassniki.ru/api/users/getCurrentUser".PostToUrlAsync(payload, "*/*", RequestFilter).ConfigAwait();
+                string json = await "http://api.odnoklassniki.ru/api/users/getCurrentUser"
+                    .PostToUrlAsync(formData:payload, requestFilter:req => 
+                            req.With(c => {
+                                c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                                c.Accept = "*/*";
+                            }), 
+                        token: token).ConfigAwait();
 
                 JsonObject obj = JsonObject.Parse(json);
 

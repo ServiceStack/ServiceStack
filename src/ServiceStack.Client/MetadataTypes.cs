@@ -698,7 +698,7 @@ namespace ServiceStack
                 try
                 {
                     ssMetadata = await baseUrl.CombineWith("/metadata")
-                        .GetStringFromUrlAsync(requestFilter:req => req.UserAgent = "ServiceStack");
+                        .GetStringFromUrlAsync(requestFilter:req => req.With(c => c.UserAgent = "ServiceStack"));
                 }
                 catch (Exception ssEx)
                 {

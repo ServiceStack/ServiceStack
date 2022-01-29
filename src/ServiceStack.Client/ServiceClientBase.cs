@@ -67,7 +67,11 @@ namespace ServiceStack
         public NameValueCollection Headers { get; private set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
-        public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.VersionString;
+        public static string DefaultUserAgent = "ServiceStackClient/" + Env.VersionString;
+
+#if NET6_0_OR_GREATER
+        public System.Net.Http.HttpClient HttpClient { get; set; } 
+#endif
 
         readonly AsyncServiceClient asyncClient;
 
@@ -75,6 +79,12 @@ namespace ServiceStack
         {
             this.HttpMethod = DefaultHttpMethod;
             this.Headers = new NameValueCollection();
+            var cookies = new CookieContainer();
+#if NET6_0_OR_GREATER
+            this.HttpClient = new System.Net.Http.HttpClient(new System.Net.Http.HttpClientHandler {
+                CookieContainer = cookies,
+            }, disposeHandler: true);
+#endif
 
             asyncClient = new AsyncServiceClient
             {
@@ -87,8 +97,11 @@ namespace ServiceStack
                 ResponseFilter = this.ResponseFilter,
                 ResultsFilter = this.ResultsFilter,
                 Headers = this.Headers,
+#if NET6_0_OR_GREATER
+                HttpClient = this.HttpClient,
+#endif
             };
-            this.CookieContainer = new CookieContainer();
+            this.CookieContainer = cookies;
             this.StoreCookies = true; //leave
             this.UserAgent = DefaultUserAgent;
             this.EnableAutoRefreshToken = true;
@@ -1839,7 +1852,46 @@ namespace ServiceStack
                 return response;
             }
         }
+        
+        private static byte[] GetHeaderBytes(string fileName, string mimeType, string field, string boundary)
+        {
+            var header = "\r\n--" + boundary +
+                         $"\r\nContent-Disposition: form-data; name=\"{field}\"; filename=\"{fileName}\"\r\nContent-Type: {mimeType}\r\n\r\n";
 
+            var headerBytes = header.ToAsciiBytes();
+            return headerBytes;
+        }
+
+        public static void UploadFile(WebRequest webRequest, Stream fileStream, string fileName, string mimeType,
+            string accept = null, Action<HttpWebRequest> requestFilter = null, string method = "POST",
+            string field = "file")
+        {
+            var httpReq = (HttpWebRequest)webRequest;
+            httpReq.Method = method;
+
+            if (accept != null)
+                httpReq.Accept = accept;
+
+            requestFilter?.Invoke(httpReq);
+
+            var boundary = Guid.NewGuid().ToString("N");
+
+            httpReq.ContentType = "multipart/form-data; boundary=\"" + boundary + "\"";
+
+            var boundaryBytes = ("\r\n--" + boundary + "--\r\n").ToAsciiBytes();
+
+            var headerBytes = GetHeaderBytes(fileName, mimeType, field, boundary);
+
+            var contentLength = fileStream.Length + headerBytes.Length + boundaryBytes.Length;
+            PclExport.Instance.InitHttpWebRequest(httpReq,
+                contentLength: contentLength, allowAutoRedirect: false, keepAlive: false);
+
+            using var outputStream = PclExport.Instance.GetRequestStream(httpReq);
+            outputStream.Write(headerBytes, 0, headerBytes.Length);
+            fileStream.CopyTo(outputStream, 4096);
+            outputStream.Write(boundaryBytes, 0, boundaryBytes.Length);
+            PclExport.Instance.CloseStream(outputStream);
+        }
 
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
@@ -1850,7 +1902,7 @@ namespace ServiceStack
             try
             {
                 var webRequest = createWebRequest();
-                webRequest.UploadFile(fileToUpload, fileName, mimeType);
+                UploadFile(webRequest, fileToUpload, fileName, mimeType);
                 var webResponse = PclExport.Instance.GetResponse(webRequest);
                 return HandleResponse<TResponse>(webResponse);
             }
@@ -1865,7 +1917,7 @@ namespace ServiceStack
                     createWebRequest,
                     c =>
                     {
-                        c.UploadFile(fileToUpload, fileName, mimeType);
+                        UploadFile(c, fileToUpload, fileName, mimeType);
                         return PclExport.Instance.GetResponse(c);
                     },
                     out TResponse response))

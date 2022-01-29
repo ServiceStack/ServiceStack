@@ -92,7 +92,7 @@ namespace ServiceStack.Auth
         {
             var accessTokenParams = $"code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
             var contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl)
-                .PostToUrlAsync(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded, token: token).ConfigAwait();
+                .SendStringToUrlAsync(method:HttpMethods.Post, requestBody:accessTokenParams, contentType: MimeTypes.FormUrlEncoded, token: token).ConfigAwait();
             return contents;
         }
 

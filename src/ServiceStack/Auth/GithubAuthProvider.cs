@@ -67,10 +67,11 @@ namespace ServiceStack.Auth
                 //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
 
                 var url = VerifyAccessTokenUrl.Fmt(ClientId, request.AccessToken);
-                var json = await url.GetJsonFromUrlAsync(requestFilter: httpReq => {
-                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
-                    httpReq.AddBasicAuth(ClientId, ClientSecret);
-                }).ConfigAwait();
+                var json = await url.GetJsonFromUrlAsync(requestFilter: req => 
+                    req.With(c => {
+                        c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                        c.AuthBasic = new(ClientId, ClientSecret);
+                    }), token: token).ConfigAwait();
 
                 var isHtml = authService.Request.IsHtml();
                 var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, token).ConfigAwait();

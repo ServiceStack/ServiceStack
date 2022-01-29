@@ -96,7 +96,7 @@ namespace ServiceStack.IO
                 if ((string.IsNullOrEmpty(file.Content) || file.Content.Length < file.Size) && file.Truncated)
                 {
                     file.Content = file.Raw_Url.GetStringFromUrl(
-                        requestFilter: req => req.UserAgent = nameof(GitHubGateway));
+                        requestFilter: req => req.With(c => c.UserAgent = nameof(GitHubGateway)));
                 }
 
                 text = file.Content;

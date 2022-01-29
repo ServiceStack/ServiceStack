@@ -1077,7 +1077,7 @@ namespace ServiceStack.Script
                 if (!force && cachedContents != null) 
                     return cachedContents.Value;
 
-                var text = url.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp));
+                var text = url.GetStringFromUrl(requestFilter: req => req.With(c => c.UserAgent = "Script" + nameof(Lisp)));
                 WriteCacheFile(scope, vfsCache, cachedPath, text.AsMemory());
                 return text.AsMemory();
             }
