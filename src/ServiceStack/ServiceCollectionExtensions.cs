@@ -3,12 +3,14 @@
 #if NET6_0
 
 using System;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ServiceStack.Host;
 
 namespace ServiceStack
 {
@@ -99,6 +101,14 @@ namespace ServiceStack
 
             return false;
         }
+
+        public static IHttpClientBuilder AddHttpUtilsClient(this IServiceCollection services)
+        {
+            HostContext.ConfigureAppHost(appHost => HttpUtils.CreateClient = () => 
+                appHost.TryResolve<IHttpClientFactory>().CreateClient(nameof(HttpUtils)));
+            return services.AddHttpClient(nameof(HttpUtils));
+        }
+
     }
 }
 

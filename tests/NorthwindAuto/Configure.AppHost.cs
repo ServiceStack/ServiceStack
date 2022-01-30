@@ -14,6 +14,7 @@ namespace MyApp
     public class AppHost : AppHostBase, IHostingStartup
     {
         public void Configure(IWebHostBuilder builder) => builder
+            .ConfigureServices(services => services.AddHttpUtilsClient())
             .Configure(app => {
                 if (!HasInit) 
                     app.UseServiceStack(new AppHost());
