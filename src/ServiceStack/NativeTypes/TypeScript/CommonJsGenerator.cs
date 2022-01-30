@@ -37,6 +37,8 @@ public class CommonJsGenerator : ILangGenerator
     
     public TypeScriptGenerator Gen { get; set; }
 
+    public Func<string, string> ReturnTypeFilter { get; set; } = type => type;
+
     public string Type(string type, string[] genericArgs)
     {
         var typeName = Gen.Type(type, genericArgs);
@@ -188,12 +190,15 @@ exports.__esModule = true;");
                                 if (operation?.ReturnsVoid == true)
                                     return nameof(IReturnVoid);
                                 if (operation?.ReturnType != null)
-                                    return Gen.Type("IReturn`1", new[]
+                                {
+                                    var returnType = Gen.Type("IReturn`1", new[]
                                     {
                                         TypeScriptGenerator.ReturnTypeAliases.TryGetValue(operation.ReturnType.Name, out var returnTypeAlias)
                                             ? returnTypeAlias
                                             : Type(operation.ReturnType.Name, operation.ReturnType.GenericArgs)
                                     });
+                                    return returnType;
+                                }
                                 return response != null
                                     ? Gen.Type("IReturn`1", new[] { Gen.Type(response.Name, response.GenericArgs) })
                                     : null;
@@ -323,15 +328,7 @@ exports.__esModule = true;");
                             var types = implStr.RightPart('<');
                             var returnType = types.Substring(0, types.Length - 1);
 
-                            // This is to avoid invalid syntax such as "return new string()"
-                            TypeScriptGenerator.primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType);
-
-                            if (returnType == "any")
-                                replaceReturnType = "{}";
-                            else if (returnType.EndsWith("[]"))
-                                replaceReturnType = $"new Array<{returnType.Substring(0, returnType.Length -2)}>()";
-                                
-                            var responseName = replaceReturnType ?? $"new {returnType}()";
+                            var responseName = GetReturnType(returnType);
                             responseTypeExpression = typeName + ".prototype.createResponse = function () { return " + responseName + "; };";
                         }
                         else if (implStr == "IReturnVoid")
@@ -355,6 +352,26 @@ exports.__esModule = true;");
         }
         
         return lastNS;
+    }
+
+    // Used in createResponse(){ return ... } 
+    // Needs to be typed erased
+    private string GetReturnType(string originalReturnType)
+    {
+        var returnType = ReturnTypeFilter(originalReturnType);
+        
+        // This is to avoid invalid syntax such as "return new string()"
+        TypeScriptGenerator.primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType);
+
+        if (returnType == "any")
+            replaceReturnType = "{}";
+        else if (returnType.EndsWith("[]"))
+            replaceReturnType = "[]";
+        else if (returnType.StartsWith("{")) // { [name:K]: V }
+            replaceReturnType = "{}";
+
+        var responseName = replaceReturnType ?? $"new {returnType}()";
+        return responseName;
     }
 
     public static string CreateEmptyClass(string name) => "var " + name + @" = /** @class */ (function () {

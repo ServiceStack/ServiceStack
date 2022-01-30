@@ -788,7 +788,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                             if (args.Length > 0)
                                 args.Append(", ");
 
-                            args.Append(GenericArg(arg));
+                            if (arg.StartsWith("{")) // { [name:T]: T }
+                                args.Append(arg);
+                            else
+                                args.Append(GenericArg(arg));
                         }
 
                         var typeName = TypeAlias(type);
