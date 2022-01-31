@@ -329,8 +329,8 @@ namespace ServiceStack
         public virtual void DownloadFile(string downloadUrl, string fileName)
         {
             downloadUrl.DownloadFileTo(fileName, headers:new() {
-                [HttpHeaders.UserAgent] = UserAgent,
-                [HttpHeaders.Authorization] = "token " + AccessToken
+                new(HttpHeaders.UserAgent, UserAgent),
+                new(HttpHeaders.Authorization, "token " + AccessToken),
             });
         }
 
