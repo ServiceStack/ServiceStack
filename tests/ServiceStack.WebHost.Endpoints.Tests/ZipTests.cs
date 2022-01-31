@@ -31,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_zip_and_unzip_bytes_using_BrotliStream()
         {
-            DoesCompress(StreamCompressors.Assert("br"), "hello zip"); //CompressionTypes.Brotli
+            DoesCompress(StreamCompressors.GetRequired(CompressionTypes.Brotli), "hello zip");
         }
 #endif
 
