@@ -94,7 +94,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
-            var webRequest = (HttpWebRequest)WebRequest.Create(ListeningOn + "/fileuploads");
+            var webRequest = WebRequest.CreateHttp(ListeningOn + "/fileuploads");
             webRequest.Accept = MimeTypes.Json;
             var webResponse = webRequest.UploadFile(uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
@@ -296,7 +296,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_GET_upload_file()
         {
             var uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-            var webRequest = (HttpWebRequest)WebRequest.Create(ListeningOn + "/fileuploads/TestExistingDir/upload.html");
+            var webRequest = WebRequest.CreateHttp(ListeningOn + "/fileuploads/TestExistingDir/upload.html");
             var expectedContents = uploadedFile.OpenRead().ReadToEnd();
 
             var webResponse = webRequest.GetResponse();

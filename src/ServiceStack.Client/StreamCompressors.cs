@@ -128,7 +128,7 @@ public class ZLibCompressor : IStreamCompressor
     }
 
     public Stream Decompress(Stream zipBuffer, bool leaveOpen=false) => 
-        new DeflateStream(zipBuffer, CompressionMode.Decompress, leaveOpen);
+        new ZLibStream(zipBuffer, CompressionMode.Decompress, leaveOpen);
 
     public byte[] DecompressBytes(byte[] zipBuffer)
     {

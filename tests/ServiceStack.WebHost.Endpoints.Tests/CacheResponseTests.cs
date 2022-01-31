@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
@@ -275,6 +276,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(actual.Value, Is.EqualTo(expected.Value));
         }
 
+        private static IJsonServiceClient CreateClient()
+        {
+#if NET6_0_OR_GREATER
+            return new JsonApiClient(Config.ListeningOn);
+#else
+            return new JsonServiceClient(Config.ListeningOn);
+#endif
+        }
+
         [Test]
         public void Does_cache_duplicate_requests()
         {
@@ -302,7 +312,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
-            var client = new JsonServiceClient(Config.ListeningOn);
+            var client = CreateClient();
             response = client.Get<ServerCacheOnly>(request);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1));
             AssertEquals(response, request);
@@ -336,7 +346,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(ServerCacheOnlyAsync.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
-            var client = new JsonServiceClient(Config.ListeningOn);
+            var client = CreateClient();
             response = await client.GetAsync<ServerCacheOnlyAsync>(request);
             Assert.That(ServerCacheOnlyAsync.Count, Is.EqualTo(1));
             AssertEquals(response, request);
@@ -440,7 +450,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AssertEquals(response, request);
 
             //JSON + No Accept-Encoding
-            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            var webReq = WebRequest.CreateHttp(url);
             webReq.Accept = MimeTypes.Json;
 #if !NETCORE            
             webReq.AutomaticDecompression = DecompressionMethods.None;
@@ -453,7 +463,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AssertEquals(response, request);
 
             //JSON + GZip
-            webReq = (HttpWebRequest)WebRequest.Create(url);
+            webReq = WebRequest.CreateHttp(url);
             webReq.Accept = MimeTypes.Json;
             webReq.Headers[HttpHeaders.AcceptEncoding] = CompressionTypes.GZip;
 #if !NETCORE            
@@ -658,10 +668,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(CacheStream.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
+#if NNETFX            
             var client = new JsvServiceClient(Config.ListeningOn);
             response = client.Get<CacheStream>(request);
             Assert.That(CacheStream.Count, Is.EqualTo(1));
             AssertEquals(response, request);
+#endif
         }
 
     }

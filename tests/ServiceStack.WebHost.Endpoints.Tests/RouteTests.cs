@@ -425,7 +425,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .GetStringFromUrl();
                 Assert.Fail("Existing route should be modified");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
             }
@@ -497,7 +497,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     var json = Config.AbsoluteBaseUri.CombineWith("/unknownroute").GetJsonFromUrl();
                     Assert.Fail("Should throw");
                 }
-                catch (WebException ex)
+                catch (Exception ex)
                 {
                     Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.MethodNotAllowed));
                 }

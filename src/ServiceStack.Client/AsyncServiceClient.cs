@@ -397,16 +397,14 @@ namespace ServiceStack
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
-#if NET6_0_OR_GREATER
-                                tokenResponse = (await HttpClient.SendStringToUrlAsync(uri, method:HttpMethods.Post, 
-                                    requestBody:refreshRequest.ToJson(), token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
-#else                                
-                                tokenResponse = (await uri.PostJsonToUrlAsync(refreshRequest, requestFilter: req => {
-                                    if (hasRefreshTokenCookie) {
-                                        req.CookieContainer = CookieContainer;
-                                    }
-                                }, token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
-#endif                                
+                                var httpReq = WebRequest.CreateHttp(uri);
+                                tokenResponse = (await ServiceClientBase.SendStringToUrlAsync(httpReq, method:HttpMethods.Post, 
+                                    requestFilter: req => {
+                                        if (hasRefreshTokenCookie) {
+                                            req.CookieContainer = CookieContainer;
+                                        }
+                                    }, requestBody:refreshRequest.ToJson(), accept:MimeTypes.Json, contentType:MimeTypes.Json, token: token)
+                                    .ConfigAwait()).FromJson<GetAccessTokenResponse>();
                             }
                             catch (WebException refreshEx)
                             {

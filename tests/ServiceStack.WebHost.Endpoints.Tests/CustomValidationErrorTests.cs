@@ -147,8 +147,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (Exception ex)
             {
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.BadRequest));
+#if NETFX                
                 var body = ex.GetResponseBody();
                 Assert.That(body, Is.EqualTo("{\"code\":\"GreaterThan\",\"error\":\"'Age' must be greater than '0'.\"}"));
+#endif
             }
         }
 
@@ -163,8 +166,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (Exception ex)
             {
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.BadRequest));
+#if NETFX                
                 var body = ex.GetResponseBody();
                 Assert.That(body, Is.EquivalentTo("{\"code\":\"Predicate\",\"error\":\"The specified condition was not met for 'Name'.\"}"));
+#endif
             }
         }
 
@@ -179,12 +185,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (Exception ex)
             {
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.BadRequest));
+#if NETFX                
                 var body = ex.GetResponseBody();
                 /**
                  * Need to add `Request = Request,` in all ValidationContext.Clone* APIs starting from L177 + GetFromNonGenericContext() L96
                  */
                 // body.Print();
                 Assert.That(body, Is.EqualTo("{\"code\":\"Predicate\",\"error\":\"The specified condition was not met for 'Name'.\"}"));
+#endif
             }
         }
 
@@ -223,7 +232,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 AssertErrorRequestBindingResponse(ex);
             }
@@ -238,7 +247,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .PostStringToUrl("Int=string&Decimal=string", contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 AssertErrorRequestBindingResponse(ex);
             }
@@ -253,14 +262,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .PostStringToUrl("Int=string&Decimal=string", contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 AssertErrorRequestBindingResponse(ex);
             }
         }
 
-        private static void AssertErrorRequestBindingResponse(WebException ex)
+        private static void AssertErrorRequestBindingResponse(Exception ex)
         {
+            Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.BadRequest));
+            
+#if NETFX            
             var responseBody = ex.GetResponseBody();
             var status = responseBody.FromJson<ErrorResponse>().ResponseStatus;
 
@@ -276,6 +288,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(fieldError2.FieldName, Is.EqualTo("Decimal"));
             Assert.That(fieldError2.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
             Assert.That(fieldError2.Message, Is.EqualTo("'string' is an Invalid value for 'Decimal'"));
+#endif
         }
     }
 

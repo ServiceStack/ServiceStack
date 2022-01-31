@@ -103,7 +103,7 @@ namespace ServiceStack
         }
 
         public virtual async Task ProxyRequestAsync(IHttpRequest httpReq, string url) => 
-            await ProxyRequestAsync(httpReq, (HttpWebRequest)WebRequest.Create(url));
+            await ProxyRequestAsync(httpReq, WebRequest.CreateHttp(url));
 
         public async Task ProxyRequestAsync(IHttpRequest httpReq, HttpWebRequest webReq)
         {

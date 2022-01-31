@@ -251,7 +251,7 @@ namespace ServiceStack
                 httpRes.EnsureSuccessStatusCode();
                 var stream = httpRes.Content.ReadAsStream();
 #else
-                httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
+                httpReq = WebRequest.CreateHttp(EventStreamUri);
                 //share auth cookies
                 httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
                 httpReq.AllowReadStreamBuffering = false;

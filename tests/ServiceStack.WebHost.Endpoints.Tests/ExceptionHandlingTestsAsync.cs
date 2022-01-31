@@ -83,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_override_global_exception_handling()
         {
-            var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<UncatchedException>());
+            var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedException>());
             var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("UncaughtException ArgumentException", res);
         }
@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_override_global_exception_handling_async()
         {
-            var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<UncatchedExceptionAsync>());
+            var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedExceptionAsync>());
             var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("UncaughtException ArgumentException", res);
         }
@@ -101,7 +101,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<CaughtException>());
+                var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtException>());
                 var res = req.GetResponse().ReadToEnd();
                 Assert.Fail("Should Throw");
             }
@@ -119,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<CaughtExceptionAsync>());
+                var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtExceptionAsync>());
                 var res = req.GetResponse().ReadToEnd();
                 Assert.Fail("Should Throw");
             }

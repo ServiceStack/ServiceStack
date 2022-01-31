@@ -1520,7 +1520,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 client.Start();
                 Assert.Fail("Should Throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Unauthorized));
             }

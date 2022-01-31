@@ -331,7 +331,7 @@ layout: alt/alt-layout
                 var response = url.GetStreamFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException e)
+            catch (Exception e)
             {
                 Assert.That(e.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
             }
@@ -703,7 +703,7 @@ StackTrace:
                 var contents = BaseUrl.AppendPath("plugins", "dll.txt").GetStringFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Forbidden));
             }

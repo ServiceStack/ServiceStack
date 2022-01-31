@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 
@@ -196,9 +197,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .GetStringFromUrl(accept: MimeTypes.Html);
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
-                Assert.That(ex.ToStatusCode(), Is.EqualTo(404));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
             }
         }
 

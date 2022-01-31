@@ -61,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             responseStr = baseUrl.PostToUrl("A");
             Assert.That(responseStr, Is.EqualTo(ValidResponse));
 
-            responseStr = baseUrl.GetStringFromUrl("A=B");
+            responseStr = baseUrl.PostStringToUrl("A=B");
             Assert.That(responseStr, Is.EqualTo(ValidResponse));
 
             responseStr = baseUrl.GetStringFromUrl();

@@ -963,9 +963,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 downloadBasicAuth(nameof(RequiresRole).AddQueryParam("Name", "test"));
                 Assert.Fail("Should throw");
             }
-            catch (WebException e)
+            catch (Exception e)
             {
-                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+                AssertStatus(e, HttpStatusCode.Forbidden);
             }
             
             try
@@ -973,9 +973,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 downloadBasicAuth(nameof(RequiresAnyRole).AddQueryParam("Name", "test"));
                 Assert.Fail("Should throw");
             }
-            catch (WebException e)
+            catch (Exception e)
             {
-                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+                AssertStatus(e, HttpStatusCode.Forbidden);
             }
 
             try
@@ -983,9 +983,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 downloadBasicAuth(nameof(RequiresPermission).AddQueryParam("Name", "test"));
                 Assert.Fail("Should throw");
             }
-            catch (WebException e)
+            catch (Exception e)
             {
-                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+                AssertStatus(e, HttpStatusCode.Forbidden);
             }
             
             try
@@ -993,10 +993,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 downloadBasicAuth(nameof(RequiresAnyPermission).AddQueryParam("Name", "test"));
                 Assert.Fail("Should throw");
             }
-            catch (WebException e)
+            catch (Exception e)
             {
-                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+                AssertStatus(e, HttpStatusCode.Forbidden);
             }
+        }
+
+        private static void AssertStatus(Exception e, HttpStatusCode statusCode)
+        {
+            Assert.That(e.GetStatus(), Is.EqualTo(statusCode));
+#if NETFX            
+            Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+#endif
         }
 
         [Test]

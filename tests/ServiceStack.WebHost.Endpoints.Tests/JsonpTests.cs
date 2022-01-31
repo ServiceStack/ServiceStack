@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var url = ListeningOn + "all-movies/1?callback=cb";
 			string response;
 
-			var webReq = (HttpWebRequest)WebRequest.Create(url);
+			var webReq = WebRequest.CreateHttp(url);
 			webReq.Accept = "*/*";
 			using (var webRes = webReq.GetResponse())
 			{

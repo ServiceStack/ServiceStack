@@ -715,7 +715,11 @@ namespace ServiceStack
                         GetAccessTokenResponse tokenResponse;
                         try
                         {
-                            tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                            var httpReq = WebRequest.CreateHttp(uri);
+                            tokenResponse = SendStringToUrl(httpReq, method:HttpMethods.Post, 
+                                requestFilter: req => req.CookieContainer = CookieContainer, 
+                                requestBody:refreshRequest.ToJson(), accept:MimeTypes.Json, contentType:MimeTypes.Json)
+                                .FromJson<GetAccessTokenResponse>();
                         }
                         catch (WebException refreshEx)
                         {
@@ -1002,7 +1006,7 @@ namespace ServiceStack
                 }
             }
 
-            var client = (HttpWebRequest)WebRequest.Create(requestUri);
+            var client = WebRequest.CreateHttp(requestUri);
 
             try
             {
@@ -1688,6 +1692,67 @@ namespace ServiceStack
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveUrl(HttpMethods.Head, relativeOrAbsoluteUrl), null);
         }
 
+        public static string SendStringToUrl(HttpWebRequest webReq, string method, string requestBody, string contentType,
+            string accept="*/*", Action<HttpWebRequest> requestFilter=null, Action<HttpWebResponse> responseFilter=null)
+        {
+            if (method != null)
+                webReq.Method = method;
+            if (contentType != null)
+                webReq.ContentType = contentType;
+
+            webReq.Accept = accept;
+            PclExport.Instance.AddCompression(webReq);
+
+            requestFilter?.Invoke(webReq);
+
+            if (requestBody != null)
+            {
+                using var reqStream = PclExport.Instance.GetRequestStream(webReq);
+                using var writer = new StreamWriter(reqStream, HttpUtils.UseEncoding);
+                writer.Write(requestBody);
+            }
+            else if (method != null && HttpUtils.HasRequestBody(method))
+            {
+                webReq.ContentLength = 0;
+            }
+
+            using var webRes = webReq.GetResponse();
+            using var stream = webRes.GetResponseStream();
+            responseFilter?.Invoke((HttpWebResponse)webRes);
+            return stream.ReadToEnd(HttpUtils.UseEncoding);
+        }
+        
+        public static async Task<string> SendStringToUrlAsync(HttpWebRequest webReq, 
+            string method, string requestBody, string contentType, string accept="*/*",
+            Action<HttpWebRequest> requestFilter=null, Action<HttpWebResponse> responseFilter=null, CancellationToken token=default)
+        {
+            if (method != null)
+                webReq.Method = method;
+            if (contentType != null)
+                webReq.ContentType = contentType;
+
+            webReq.Accept = accept;
+            PclExport.Instance.AddCompression(webReq);
+
+            requestFilter?.Invoke(webReq);
+
+            if (requestBody != null)
+            {
+                using var reqStream = PclExport.Instance.GetRequestStream(webReq);
+                using var writer = new StreamWriter(reqStream, HttpUtils.UseEncoding);
+                await writer.WriteAsync(requestBody).ConfigAwait();
+            }
+            else if (method != null && HttpUtils.HasRequestBody(method))
+            {
+                webReq.ContentLength = 0;
+            }
+
+            using var webRes = await webReq.GetResponseAsync().ConfigAwait();
+            responseFilter?.Invoke((HttpWebResponse)webRes);
+            using var stream = webRes.GetResponseStream();
+            return await stream.ReadToEndAsync().ConfigAwait();
+        }
+        
         public virtual TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
         {
             return PostFilesWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray());

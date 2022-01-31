@@ -574,7 +574,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_Process_OPTIONS_request_with_Cors_ActionFilter()
         {
-            var webReq = (HttpWebRequest)WebRequest.Create(Host + "/reqstars");
+            var webReq = WebRequest.CreateHttp(Host + "/reqstars");
             webReq.Method = "OPTIONS";
             using (var r = webReq.GetResponse())
             {

@@ -274,7 +274,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
+            var req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -318,7 +318,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create($"{ServiceClientBaseUri}{format}/reply/Insecure");
+            var req = WebRequest.CreateHttp($"{ServiceClientBaseUri}{format}/reply/Insecure");
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -360,7 +360,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
+            var req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -369,7 +369,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var cookie = res.Cookies["ss-session"];
             if (cookie != null)
             {
-                req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
+                req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
                 req.CookieContainer.Add(new Uri(ServiceClientBaseUri), new Cookie("ss-session", cookie.Value));
 
                 var dtoString = req.GetResponse().GetResponseStream().ReadToEnd();
@@ -384,7 +384,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
+            var req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.CookieContainer = new CookieContainer();
             req.CookieContainer.Add(new Uri("http://localhost"), new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));

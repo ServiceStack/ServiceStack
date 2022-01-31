@@ -168,7 +168,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             {
                 UseDefaultCredentials = Credentials == null,
                 Credentials = Credentials,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                AutomaticDecompression = DecompressionMethods.Brotli | DecompressionMethods.Deflate | DecompressionMethods.GZip,
             };
             if (CookieContainer != null)
                 useHandler.CookieContainer = CookieContainer;

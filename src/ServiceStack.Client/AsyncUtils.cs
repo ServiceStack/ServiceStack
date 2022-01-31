@@ -24,7 +24,7 @@ namespace ServiceStack
     {
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
-            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            var webRequest = WebRequest.CreateHttp(requestUri);
 
             PclExport.Instance.Config(webRequest);
 

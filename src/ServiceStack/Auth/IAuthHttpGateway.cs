@@ -116,7 +116,7 @@ namespace ServiceStack.Auth
             string url, string data = null)
         {
             var uri = new Uri(url);
-            var webReq = (HttpWebRequest)WebRequest.Create(uri);
+            var webReq = WebRequest.CreateHttp(uri);
             webReq.Accept = MimeTypes.Json;
 
             if (accessToken != null)
@@ -135,7 +135,7 @@ namespace ServiceStack.Auth
             string url, string data = null, CancellationToken token=default)
         {
             var uri = new Uri(url);
-            var webReq = (HttpWebRequest)WebRequest.Create(uri);
+            var webReq = WebRequest.CreateHttp(uri);
             webReq.Accept = MimeTypes.Json;
 
             if (accessToken != null)
