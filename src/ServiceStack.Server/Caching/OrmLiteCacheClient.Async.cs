@@ -380,7 +380,6 @@ namespace ServiceStack.Caching
             }, token).ConfigAwait();
         }
 
-#if NET472 || NETCORE
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
         {
             var results = await ExecAsync(async db =>
@@ -405,7 +404,6 @@ namespace ServiceStack.Caching
         }
 
         public ValueTask DisposeAsync() => default;
-#endif
 
         public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {

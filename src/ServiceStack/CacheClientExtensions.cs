@@ -516,7 +516,6 @@ namespace ServiceStack
             return cache.GetKeysByPattern(prefix + "*");
         }
         
-#if NET472 || NETCORE
         public static IAsyncEnumerable<string> GetKeysByPatternAsync(this ICacheClientAsync cache, string pattern)
         {
             return cache.GetKeysByPatternAsync(pattern);
@@ -537,7 +536,6 @@ namespace ServiceStack
                 yield return key;
             }
         }
-#endif
 
         public static T GetOrCreate<T>(this ICacheClient cache,
             string key, Func<T> createFn)

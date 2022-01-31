@@ -489,9 +489,7 @@ namespace ServiceStack.Host
                         appHost.Release(service);
                         return taskResponse.GetResult();
                     }
-#if NET472 || NETCORE
                     await using (service as IAsyncDisposable) {}
-#endif
                     appHost.Release(service);
                     return result;
                 }

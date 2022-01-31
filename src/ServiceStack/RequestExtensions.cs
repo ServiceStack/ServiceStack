@@ -310,11 +310,7 @@ namespace ServiceStack
             }
 
             var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(request);
-#if NET472 || NETCORE
             await using (userRepo as IAsyncDisposable)
-#else
-            using (userRepo as IDisposable)
-#endif
             {
                 var userAuth = await userRepo.GetUserAuthAsync(userAuthId, token).ConfigAwait();
                 if (userAuth == null)

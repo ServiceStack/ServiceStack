@@ -77,11 +77,7 @@ namespace ServiceStack.Auth
         public virtual async Task<bool> TryAuthenticateAsync(IServiceBase authService, string userName, string password, CancellationToken token=default)
         {
             var authRepo = GetUserAuthRepositoryAsync(authService.Request);
-#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 var session = await authService.GetSessionAsync(token: token).ConfigAwait();
                 var userAuth = await authRepo.TryAuthenticateAsync(userName, password, token).ConfigAwait();
@@ -182,11 +178,7 @@ namespace ServiceStack.Auth
             IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl, CancellationToken token=default)
         {
             var authRepo = GetUserAuthRepositoryAsync(authService.Request);
-#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 var userAuth = await authRepo.GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
                 if (userAuth == null)

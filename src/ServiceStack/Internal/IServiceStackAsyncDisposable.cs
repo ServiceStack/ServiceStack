@@ -18,10 +18,8 @@ namespace ServiceStack.Internal
             // so we lose nothing by doing this
             if (disposable is IServiceStackAsyncDisposable ssAsyncDisposable)
                 return ssAsyncDisposable.DisposeAsync();
-#if NET472 || NETCORE
             if (disposable is IAsyncDisposable asyncDisposable)
                 return asyncDisposable.DisposeAsync().AsTask();
-#endif
             disposable?.Dispose();
             return TypeConstants.EmptyTask;
         }

@@ -83,11 +83,7 @@ namespace ServiceStack
                 return true;
             
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
-#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 return await session.HasAllPermissionsAsync(requiredPermissions, authRepo, req, token).ConfigAwait();
             }

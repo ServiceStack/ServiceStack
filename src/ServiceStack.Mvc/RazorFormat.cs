@@ -1199,9 +1199,7 @@ namespace ServiceStack.Mvc
 
         public virtual IRedisClient Redis => ServiceStackProvider.Redis;
         
-#if NET472 || NETCORE
         public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => ServiceStackProvider.GetRedisAsync();
-#endif
 
         public virtual IMessageProducer MessageProducer => ServiceStackProvider.MessageProducer;
 

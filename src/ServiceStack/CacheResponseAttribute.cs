@@ -91,11 +91,7 @@ namespace ServiceStack
                 if (userSession != null)
                 {
                     var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
-#if NET472 || NETCORE
-            await using (authRepo as IAsyncDisposable)
-#else
-                    using (authRepo as IDisposable)
-#endif
+                    await using (authRepo as IAsyncDisposable)
                     {
                         var allRoles = await userSession.GetRolesAsync(authRepo).ConfigAwait();
                         foreach (var role in VaryByRoles)

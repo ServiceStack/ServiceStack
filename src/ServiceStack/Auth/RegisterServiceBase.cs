@@ -32,11 +32,7 @@ namespace ServiceStack.Auth
                         .MustAsync(async (x,token) =>
                         {
                             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETCORE
                             await using (authRepo as IAsyncDisposable)
-#else
-                            using (authRepo as IDisposable)
-#endif
                             {
                                 return await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                             }
@@ -48,11 +44,7 @@ namespace ServiceStack.Auth
                         .MustAsync(async (x,token) =>
                         {
                             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETCORE
                             await using (authRepo as IAsyncDisposable)
-#else
-                            using (authRepo as IDisposable)
-#endif
                             {
                                 return x.IsNullOrEmpty() || await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                             }

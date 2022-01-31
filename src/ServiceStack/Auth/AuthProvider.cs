@@ -183,11 +183,7 @@ namespace ServiceStack.Auth
             }
 
             var authRepo = GetAuthRepositoryAsync(authService.Request);
-#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 if (CustomValidationFilter != null)
                 {

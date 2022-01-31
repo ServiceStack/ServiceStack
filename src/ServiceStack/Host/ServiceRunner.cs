@@ -154,7 +154,6 @@ namespace ServiceStack.Host
                     await taskResponse.ConfigAwait();
                     response = taskResponse.GetResult();
                 }
-#if NET472 || NETCORE
                 else if (response is ValueTask<object> valueTaskResponse)
                 {
                     response = await valueTaskResponse;
@@ -164,7 +163,6 @@ namespace ServiceStack.Host
                     await valueTaskVoid;
                     response = null;
                 }
-#endif
                 
                 LogRequest(req, requestDto, response);
 

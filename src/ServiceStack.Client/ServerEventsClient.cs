@@ -234,6 +234,7 @@ namespace ServiceStack
 
 #if NET6_0_OR_GREATER
                 httpClient = new HttpClient(HttpClientHandlerFactory(ServiceClient), disposeHandler:true);
+                httpClient.Timeout = Timeout.InfiniteTimeSpan;
                 
                 var httpReq = new HttpRequestMessage(HttpMethod.Get, EventStreamUri)
                     .With(c => c.Accept = MimeTypes.Json);
@@ -246,10 +247,9 @@ namespace ServiceStack
                         apiClient.RequestFilter = AllRequestFilters;
                 }
 
-                var httpRes = httpClient.Send(httpReq);
+                var httpRes = httpClient.Send(httpReq, HttpCompletionOption.ResponseHeadersRead);
                 httpRes.EnsureSuccessStatusCode();
                 var stream = httpRes.Content.ReadAsStream();
-                
 #else
                 httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
                 //share auth cookies

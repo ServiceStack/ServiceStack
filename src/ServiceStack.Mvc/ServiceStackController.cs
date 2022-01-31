@@ -247,10 +247,8 @@ namespace ServiceStack.Mvc
         public static object ForwardRequestToServiceStack(this ServiceStackController controller, IRequest request = null) 
             => controller.ServiceStackProvider.Execute(request ?? controller.ServiceStackProvider.Request);
         
-#if NET472 || NETCORE
         public static ValueTask<IRedisClientAsync> GetRedisAsync(this ServiceStackController controller) => 
             controller.ServiceStackProvider.GetRedisAsync();
-#endif
         public static T TryResolve<T>(this ServiceStackController controller) => controller.ServiceStackProvider.TryResolve<T>();
         public static T ResolveService<T>(this ServiceStackController controller) => controller.ServiceStackProvider.ResolveService<T>();
     }

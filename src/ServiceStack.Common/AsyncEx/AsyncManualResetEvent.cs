@@ -1,5 +1,4 @@
 #nullable enable
-#if NET472 || NETCORE
 /*
 The MIT License (MIT)
 
@@ -515,4 +514,3 @@ namespace ServiceStack.AsyncEx
         }
     }
 }
-#endif

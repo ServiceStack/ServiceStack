@@ -868,7 +868,6 @@ namespace ServiceStack
             return Container.TryResolve<IRedisClientsManager>().GetClient();
         }
 
-#if NET472 || NETCORE
         /// <summary>
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
         /// Called by itself, <see cref="Service"></see> and ViewPageBase
@@ -887,7 +886,6 @@ namespace ServiceStack
 
             return default;
         }
-#endif
 
         /// <summary>
         /// If they don't have an ICacheClient configured use an In Memory one.
