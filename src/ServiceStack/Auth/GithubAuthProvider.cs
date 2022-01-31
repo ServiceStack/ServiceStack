@@ -70,7 +70,7 @@ namespace ServiceStack.Auth
                 var json = await url.GetJsonFromUrlAsync(requestFilter: req => 
                     req.With(c => {
                         c.UserAgent = ServiceClientBase.DefaultUserAgent;
-                        c.AuthBasic = new(ClientId, ClientSecret);
+                        c.SetAuthBasic(ClientId, ClientSecret);
                     }), token: token).ConfigAwait();
 
                 var isHtml = authService.Request.IsHtml();

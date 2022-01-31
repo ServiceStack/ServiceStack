@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using ServiceStack.DataAnnotations;
 
@@ -243,21 +244,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             return GetJson<List<GithubRelease>>("repos/{0}/{1}/releases", githubUser, githubRepo);
         }
 
-        protected virtual void RequestFilter(HttpWebRequest req)
-        {
-            req.SetUserAgent(UserAgent);
-
-            if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
-            {
-                req.Headers["Authorization"] = "Basic " +
-                    Convert.ToBase64String(Encoding.ASCII.GetBytes(Username + ":" + Password));
-            }
-        }
-
         public T GetJson<T>(string route, params object[] routeArgs)
         {
             return GithubApiBaseUrl.CombineWith(route.Fmt(routeArgs))
-                .GetJsonFromUrl(RequestFilter)
+                .GetJsonFromUrl(req => req.With(c => {
+                    c.UserAgent = UserAgent;
+                    if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
+                        c.SetAuthBasic(Username, Password);
+                }))
                 .FromJson<T>();
         }
 
@@ -270,9 +264,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             {
                 results = nextUrl
                     .GetJsonFromUrl(
-                        RequestFilter,
+                        req => req.With(c => {
+                            c.UserAgent = UserAgent;
+                            if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
+                                c.SetAuthBasic(Username, Password);
+                        }),
                         responseFilter: res => {
-                            var links = ParseLinkUrls(res.Headers["Link"]);
+                            var links = ParseLinkUrls(res.GetHeader("Link"));
                             links.TryGetValue("next", out nextUrl);
                         })
                     .FromJson<List<T>>();

@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public void Does_return_custom_result(string path, string expectedJson)
         {
             var response = Config.ListeningOn.CombineWith(path).GetStringFromUrl(
-                responseFilter:res => Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json)));
+                responseFilter:res => Assert.That(res.MatchesContentType(MimeTypes.Json)));
             
             Assert.That(response, Is.EqualTo(expectedJson));
         }

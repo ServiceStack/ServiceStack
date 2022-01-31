@@ -39,9 +39,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-#if NETCORE
-                ServiceStack.Memory.NetCoreMemory.Configure();
-#endif
             }
         }
 

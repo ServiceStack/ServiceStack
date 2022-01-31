@@ -162,7 +162,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var json = BaseUri.CombineWith("json", "reply", nameof(HeadTest))
                 .AddQueryParam("Id", 1)
                 .SendStringToUrl(method:HttpMethods.Head, responseFilter: res => {
-                    Assert.That(res.Headers["Id"], Is.EqualTo("1"));
+                    Assert.That(res.GetHeader("Id"), Is.EqualTo("1"));
                 });
             Assert.That(json, Is.Empty);
         }

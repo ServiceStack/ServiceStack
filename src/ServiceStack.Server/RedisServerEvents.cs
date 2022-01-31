@@ -493,14 +493,14 @@ namespace ServiceStack
 
         public void Stop()
         {
-            RedisPubSub.Stop();
-            Local.Stop();
+            RedisPubSub?.Stop();
+            Local?.Stop();
         }
 
         public async Task StopAsync()
         {
-            RedisPubSub.Stop();
-            await Local.StopAsync();
+            RedisPubSub?.Stop();
+            if (Local != null) await Local.StopAsync();
         }
 
         public Dictionary<string, string> GetStats() => Local.GetStats();

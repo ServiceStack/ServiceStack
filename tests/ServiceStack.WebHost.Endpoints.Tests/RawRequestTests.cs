@@ -180,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var requestUrl = Config.ServiceStackBaseUri + "/rawsvg/M";
             var svg = requestUrl.GetStringFromUrl(
                 accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-                responseFilter: res => Assert.That(res.ContentType, Does.StartWith(MimeTypes.ImageSvg)));
+                responseFilter: res => Assert.That(res.GetHeader(HttpHeaders.ContentType), Does.StartWith(MimeTypes.ImageSvg)));
 
             Assert.That(svg, Does.Contain(">M</text>"));
         }

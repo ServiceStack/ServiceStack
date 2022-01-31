@@ -1503,32 +1503,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public AuthMemoryServerEventsTests()
         {
             appHost = CreateAppHost();
+
+            var serverEvents = appHost.TryResolve<IServerEvents>();
+            serverEvents.Reset();
         }
 
         [OneTimeTearDown]
         public void TestFixtureTearDown() => appHost.Dispose();
 
-        [SetUp]
-        public void SetUp()
-        {
-            var serverEvents = appHost.TryResolve<IServerEvents>();
-            serverEvents.Reset();
-        }
-
         [Test]
         public void UnAuthenticated_User_throws_UnAuthorized()
         {
-            using (var client = CreateServerEventsClient())
+            using var client = CreateServerEventsClient();
+            try
             {
-                try
-                {
-                    client.Start();
-                    Assert.Fail("Should Throw");
-                }
-                catch (WebException ex)
-                {
-                    Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Unauthorized));
-                }
+                client.Start();
+                Assert.Fail("Should Throw");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Unauthorized));
             }
         }
 
@@ -1538,7 +1532,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using var client = CreateServerEventsClient();
             await client.AuthenticateAsync(new Authenticate
             {
-                provider = CustomCredentialsAuthProvider.Name,
+                provider = CredentialsAuthProvider.Name,
                 UserName = "user",
                 Password = "pass",
             });

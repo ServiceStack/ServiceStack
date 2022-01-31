@@ -37,11 +37,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var json = Config.ListeningOn.AppendPath("testcontenttype")
                 .GetStringFromUrl(
-                    requestFilter: req => {
-                        req.Accept = "text/xml,*/*";
-                    },
+                    requestFilter: req => req.With(c => c.Accept = "text/xml,*/*"),
                     responseFilter: res => {
-                        Assert.That(res.ContentType.MatchesContentType(MimeTypes.Json));
+                        Assert.That(res.GetHeader(HttpHeaders.ContentType).MatchesContentType(MimeTypes.Json));
                     });
         }
 
@@ -51,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 Config.ListeningOn.AppendPath("testcontenttype")
-                    .GetStringFromUrl(requestFilter: req => req.Accept = "text/xml");
+                    .GetStringFromUrl(requestFilter: req => req.With(c => c.Accept = "text/xml"));
             }
             catch (WebException ex)
             {

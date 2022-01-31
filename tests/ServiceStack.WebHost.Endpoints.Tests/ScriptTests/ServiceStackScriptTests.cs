@@ -154,20 +154,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
-        public void AssertHtmlContentType(HttpWebResponse res)
-        {
-            Assert.That(res.ContentType.MatchesContentType(MimeTypes.Html), $"Expected {MimeTypes.Html} got '{res.ContentType}'");
-        }
-
-        public void AssertJsonContentType(HttpWebResponse res)
-        {
-            Assert.That(res.ContentType.MatchesContentType(MimeTypes.Json), $"Expected {MimeTypes.Json} got '{res.ContentType}'");
-        }
-
         [Test]
         public void Can_call_AutoQuery_Data_services()
         {
-            var html = BaseUrl.CombineWith("autoquery-data-products").GetStringFromUrl(responseFilter:AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("autoquery-data-products").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -180,7 +171,8 @@ Aniseed Syrup".NormalizeNewLines()));
         [Test]
         public void Can_call_AutoQuery_Data_services_with_limit()
         {
-            var html = BaseUrl.CombineWith("autoquery-data-products?orderBy=ProductName&take=3").GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("autoquery-data-products?orderBy=ProductName&take=3").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -197,7 +189,8 @@ Boston Crab Meat
         [Test]
         public void Can_call_AutoQuery_Data_services_with_category()
         {
-            var html = BaseUrl.CombineWith("autoquery-data-products?category=Beverages").GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("autoquery-data-products?category=Beverages").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -223,7 +216,8 @@ Lakkalik&#246;&#246;ri
         [Test]
         public void Can_call_AutoQuery_Db_services()
         {
-            var html = BaseUrl.CombineWith("autoquery-rockstars").GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("autoquery-rockstars").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -244,7 +238,8 @@ Michael Jackson
         [Test]
         public void Can_call_AutoQuery_Db_services_with_limit()
         {
-            var html = BaseUrl.CombineWith("autoquery-rockstars?orderBy=FirstName&take=3").GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("autoquery-rockstars?orderBy=FirstName&take=3").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -261,7 +256,8 @@ Elvis Presley
         [Test]
         public void Can_call_AutoQuery_Db_services_by_age()
         {
-            var html = BaseUrl.CombineWith("autoquery-rockstars?age=27&orderBy=LastName").GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("autoquery-rockstars?age=27&orderBy=LastName").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -281,7 +277,7 @@ Jim Morrison
             var html = BaseUrl.CombineWith("autoquery-customers")
                 .AddQueryParam("countryIn","UK,Germany")
                 .AddQueryParam("orderBy","customerId")
-                .GetStringFromUrl(responseFilter: AssertHtmlContentType);
+                .GetStringFromUrl(responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             html.Print();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
@@ -313,7 +309,8 @@ WANDK: Die Wandernde Kuh, Germany
         [Test]
         public void Can_call_AutoQuery_QueryCustomer_top5_UK_Germany()
         {
-            var html = BaseUrl.CombineWith("autoquery-top5-de-uk").GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("autoquery-top5-de-uk").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             html.Print();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
@@ -334,7 +331,8 @@ CONSH: Consolidated Holdings, UK
         {
             var url = BaseUrl.CombineWith("sharpapi", "customers");
 
-            var json = url.GetJsonFromUrl(responseFilter:AssertJsonContentType);
+            var json = url.GetJsonFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Json));
             var customers = json.FromJson<List<Customer>>();
             Assert.That(customers.Count, Is.EqualTo(QueryData.Customers.Count));
         }
@@ -347,7 +345,8 @@ CONSH: Consolidated Holdings, UK
                 .AddQueryParam("city", "London")
                 .AddQueryParam("limit", 10);
 
-            var json = url.GetJsonFromUrl(responseFilter: AssertJsonContentType);
+            var json = url.GetJsonFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Json));
             var customers = json.FromJson<List<Customer>>();
 
             Assert.That(customers.Map(x => x.CustomerId), Is.EquivalentTo("AROUT,BSBEV,CONSH,EASTC,NORTS,SEVES".Split(',')));
@@ -358,7 +357,8 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_single_customer_with_path_args()
         {
-            var json = BaseUrl.CombineWith("sharpapi", "customers", "ALFKI").GetJsonFromUrl(responseFilter: AssertJsonContentType);
+            var json = BaseUrl.CombineWith("sharpapi", "customers", "ALFKI").GetJsonFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Json));
             var customer = json.FromJson<Customer>();
             Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
             Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));
@@ -369,10 +369,12 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_customer_with_csv_extension_to_force_ContentType()
         {
-            var json = BaseUrl.CombineWith("sharpapi", "customers").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertJsonContentType);
+            var json = BaseUrl.CombineWith("sharpapi", "customers").AddQueryParam("limit", 1).GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Json));
             Assert.That(json, Does.StartWith("["));
             
-            var html = BaseUrl.CombineWith("sharpapi", "customers.html").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("sharpapi", "customers.html").AddQueryParam("limit", 1).GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Html));
             Assert.That(html, Does.StartWith("<"));
             
             var csv = BaseUrl.CombineWith("sharpapi", "customers.csv").AddQueryParam("limit", 1).GetStringFromUrl();
@@ -382,7 +384,8 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_single_customer_with_json_extension_to_force_ContentType()
         {
-            var json = BaseUrl.CombineWith("sharpapi", "customers", "ALFKI.json").GetStringFromUrl(responseFilter: AssertJsonContentType);
+            var json = BaseUrl.CombineWith("sharpapi", "customers", "ALFKI.json").GetStringFromUrl(
+                responseFilter:res => res.MatchesContentType(MimeTypes.Json));
             var customer = json.FromJson<Customer>();
             Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
             Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));

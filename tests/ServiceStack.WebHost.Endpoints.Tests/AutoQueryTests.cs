@@ -13,6 +13,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Extensions;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
+using ServiceStack.Script;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using TestsConfig = ServiceStack.WebHost.Endpoints.Tests.Config;
@@ -34,6 +35,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         public override void Configure(Container container)
         {
+            ScriptContext.ScriptMethods.AddRange(new ScriptMethods[] {
+                new DbScriptsAsync(),
+                new MyValidators(), 
+            });
+
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
             container.Register<IDbConnectionFactory>(dbFactory);
 

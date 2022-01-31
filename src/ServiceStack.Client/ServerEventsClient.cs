@@ -236,7 +236,7 @@ namespace ServiceStack
                 httpClient = new HttpClient(HttpClientHandlerFactory(ServiceClient), disposeHandler:true);
                 
                 var httpReq = new HttpRequestMessage(HttpMethod.Get, EventStreamUri)
-                    .With(c => c.Accept = "*/*");
+                    .With(c => c.Accept = MimeTypes.Json);
 
                 EventStreamRequestFilter?.Invoke(httpReq);
                 if (AllRequestFilters != null)
@@ -255,6 +255,7 @@ namespace ServiceStack
                 //share auth cookies
                 httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
                 httpReq.AllowReadStreamBuffering = false;
+                httpReq.Accept = MimeTypes.Json;
 
                 EventStreamRequestFilter?.Invoke(httpReq);
                 if (AllRequestFilters != null)
@@ -264,7 +265,7 @@ namespace ServiceStack
                         scb.RequestFilter = AllRequestFilters;
                 }
 
-                response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
+                response = (HttpWebResponse)httpReq.GetResponse();
                 var stream = response.ResponseStream();
 #endif
 
