@@ -29,7 +29,7 @@
     <DefineConstants>$(DefineConstants);NETFX;NET45;NET472</DefineConstants>
     <SignAssembly>True</SignAssembly>
     <DelaySign>False</DelaySign>
-    <AssemblyOriginatorKeyFile>../servicestack.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>../../../servicestack.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
