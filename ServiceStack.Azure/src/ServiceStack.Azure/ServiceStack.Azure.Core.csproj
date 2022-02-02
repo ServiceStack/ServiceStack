@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Azure.Core</PackageId>
+    <AssemblyName>ServiceStack.Azure</AssemblyName>
+    <RootNamespace>ServiceStack.Azure</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <Title>ServiceStack.Azure .NET Standard 2.0</Title>
+    <PackageDescription>
+      .NET Standard 2.0 version of ServiceStack.Azure
+    </PackageDescription>
+    <PackageTags>Azure;Windows;ServiceBus;Blob;Table;Storage;WebServices;Cache;CacheClient</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack.Core" Version="$(Version)" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR  '$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
+    <PackageReference Include="Microsoft.Azure.Management.ServiceBus" Version="3.0.0" />
+  </ItemGroup>
+
+</Project>
