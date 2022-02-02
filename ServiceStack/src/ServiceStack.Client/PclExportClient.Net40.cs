@@ -17,12 +17,12 @@ namespace ServiceStack
 
     public class Net45PclExportClient : PclExportClient
     {
-        public static Net45PclExportClient Provider = new Net45PclExportClient();
+        public static Net45PclExportClient Provider = new();
 
         public static PclExportClient Configure()
         {
-            Configure(Provider ?? (Provider = new Net45PclExportClient()));
-            Net45PclExport.Configure();
+            Configure(Provider ??= new Net45PclExportClient());
+            NetFxPclExport.Configure();
             return Provider;
         }
 

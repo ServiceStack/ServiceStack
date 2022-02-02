@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     </ItemGroup>
 
     <Target Name="CombineTailwind" AfterTargets="Build" Condition=" '$(OS)' == 'Windows_NT' AND '$(MYTHZ_TOKEN)' != '' ">

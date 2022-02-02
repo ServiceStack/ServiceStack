@@ -25,7 +25,7 @@
     <DefineConstants>$(DefineConstants);ASYNC_MEMORY;NETCORE;NET6_0</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />

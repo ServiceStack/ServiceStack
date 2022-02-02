@@ -11,12 +11,15 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
         <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="5.*" />
+        <PackageReference Include="System.Memory" Version="4.5.4" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-        <ProjectReference Include="..\..\..\src\ServiceStack.Server\ServiceStack.Server.Source.csproj" />
-        <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
+        <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+        <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+        <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+        <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
         <ProjectReference Include="..\Client\MyApp.Client.csproj" />
         <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
     </ItemGroup>

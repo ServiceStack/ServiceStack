@@ -18,17 +18,15 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.*" />
     <PackageReference Include="coverlet.collector" Version="3.*" />
     <PackageReference Include="bunit" Version="1.4.*" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.Source.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.Source.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.Source.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <ProjectReference Include="..\Client\MyApp.Client.csproj" />
     <ProjectReference Include="..\Server\MyApp.Server.csproj" />
     <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
