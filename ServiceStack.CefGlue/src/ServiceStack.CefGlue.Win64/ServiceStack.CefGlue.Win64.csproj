@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>ServiceStack.CefGlue.Win64</AssemblyName>
+    <TrimUnusedDependencies>true</TrimUnusedDependencies>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <RuntimeFrameworkVersion>2.1.2</RuntimeFrameworkVersion>
+    <ContentTargetFolders>contentFiles</ContentTargetFolders>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Title>ServiceStack.CefGlue.Win64</Title>
+    <PackageDescription>
+      Create self-contained .NET Core Windows (x64) Chromium Embedded Desktop Apps.
+      Easily view and deploy any ServiceStack .NET Core Web App in a self-contained 
+      Chrome CEF Browser (Win64)
+    </PackageDescription>
+    <PackageTags>CEF;ServiceStack;.NET;Core;Desktop;Chromium;WebApps;CefGlue</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="locales\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="swiftshader\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="*.pak">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="*.lib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="*.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="*.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="*.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="*.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="favicon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.CefGlue\ServiceStack.CefGlue.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WinApi" Version="4.0.0" />
+  </ItemGroup>
+
+</Project>
