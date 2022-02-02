@@ -26,15 +26,20 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="RhinoMocks" Version="3.6.1" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />    
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Elmah\ServiceStack.Logging.Elmah.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.EventLog\ServiceStack.Logging.EventLog.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Log4Net\ServiceStack.Logging.Log4Net.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Serilog\ServiceStack.Logging.Serilog.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Slack\ServiceStack.Logging.Slack.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <DefineConstants>$(DefineConstants);NET45;NET472</DefineConstants>
