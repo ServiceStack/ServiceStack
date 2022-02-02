@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<!--
+	TFM choice reasons:
+	- net472 is .NET Framework without async
+	- net472 is .NET Framework with async
+	- netcoreapp2.1 is .NET Core with async, but without some features like memory/stream APIs
+	- net5.0 is .NET Core with all the bells and whistles
+	-->
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName>ServiceStack.Redis.Tests</AssemblyName>
+    <OutputType>Library</OutputType>
+    <PackageId>ServiceStack.Redis.Tests</PackageId>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="ServiceStack" Version="$(Version)" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net472'">
+    <Compile Remove="**/*.Async.cs" />
+    <None Include="**/*.Async.cs" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Threading" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  </ItemGroup>
+</Project>

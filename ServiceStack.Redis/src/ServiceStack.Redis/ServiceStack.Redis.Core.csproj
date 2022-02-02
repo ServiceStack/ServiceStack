@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>ServiceStack.Redis.Core</PackageId>
+    <AssemblyName>ServiceStack.Redis</AssemblyName>
+    <RootNamespace>ServiceStack.Redis</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <Title>ServiceStack.Redis .NET Standard 2.0</Title>
+    <PackageDescription>
+      .NET Standard 2.0 version of ServiceStack.Redis
+    </PackageDescription>
+    <PackageTags>Redis;NoSQL;Client;Distributed;Cache;PubSub;Messaging;Transactions</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <DefineConstants>$(DefineConstants);ASYNC_MEMORY</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <DefineConstants>$(DefineConstants);ASYNC_MEMORY;NET6_0</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ServiceStack.Common.Core" Version="$(Version)" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Net.Security" Version="4.3.2" />
+    <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
+    <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
+    <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <!-- note: not needed from netstandard2.1 or netcoreapp3.0 onwards -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  </ItemGroup>
+
+</Project>

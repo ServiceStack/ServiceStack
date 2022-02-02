@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
+    <LangVersion>8</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="RESPite" Version="0.1.43-alpha.gac6c2cb27c" />
+    <PackageReference Include="StackExchange.Redis" Version="2.1.30" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
+  </ItemGroup>
+
+</Project>

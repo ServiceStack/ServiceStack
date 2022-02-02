@@ -1,0 +1,3 @@
+﻿Host demiscache.redis.cache.windows.net
+Port 6380
+Password z9cjqvUqm3PAjgG/QPjfxOxqjrTo7YPe0At13kKJwG8=
