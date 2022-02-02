@@ -6,6 +6,7 @@ obj/
 latest/
 node_modules/
 /env-vars.bat
+*.txt
 *.suo
 #ignore thumbnails created by windows
 Thumbs.db
