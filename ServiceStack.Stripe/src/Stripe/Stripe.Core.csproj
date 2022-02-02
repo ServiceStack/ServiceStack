@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Stripe.Core</PackageId>
+    <AssemblyName>Stripe</AssemblyName>
+    <RootNamespace>Stripe</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <Title>ServiceStack.Stripe .NET Standard 2.0</Title>
+    <PackageDescription>
+      A typed message-based .NET client gateway for accessing Stripe's REST API.
+      Used by servicestack.net to process merchant payments and recurring subscriptions.
+    </PackageDescription>
+    <PackageTags>Stripe;Typed;REST;API;JSON;Gateway;Message</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack.Client.Core" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
+    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  </ItemGroup>
+
+</Project>

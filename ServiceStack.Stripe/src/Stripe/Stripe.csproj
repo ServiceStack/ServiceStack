@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Stripe</PackageId>
+    <AssemblyName>Stripe</AssemblyName>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <Title>Typed message-based .NET Client Gateway for Stripe's REST API</Title>
+    <TargetFrameworks>net472;net6.0;netstandard2.0</TargetFrameworks>
+    <PackageDescription>
+      A typed message-based .NET client gateway for accessing Stripe's REST API.
+      Used by servicestack.net to process merchant payments and recurring subscriptions.
+    </PackageDescription>
+    <PackageTags>Stripe;Typed;REST;API;JSON;Gateway;Message</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <DefineConstants>$(DefineConstants);NETFX;NET472</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack.Client" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
+    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  </ItemGroup>
+
+</Project>
