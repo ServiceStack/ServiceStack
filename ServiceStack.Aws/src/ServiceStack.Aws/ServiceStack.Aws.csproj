@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Aws</PackageId>
+    <AssemblyName>ServiceStack.Aws</AssemblyName>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <Title>ServiceStack integration for Amazon Web Services (AWS)</Title>
+    <PackageDescription>
+      ServiceStack integration for Amazon Web Services (AWS) including:
+      
+      - PocoDynamo - Declarative, code-first POCO client for DynamoDB with LINQ support
+      - SqsMqServer - MQ Server for invoking ServiceStack Services via Amazon SQS MQ Service
+      - S3VirtualFiles - A read/write Virtual FileSystem around Amazon's S3 Simple Storage Service
+      - DynamoDbAuthRepository - A UserAuth repository storing UserAuth info in DynamoDB
+      - DynamoDbAppSettings - An AppSettings provider storing App configuration in DynamoDB
+      - DynamoDbCacheClient - A Caching Provider for DynamoDB
+    </PackageDescription>
+    <PackageTags>ServiceStack;AWS;Amazon;WebServices;DynamoDb;S3;SQS;Cache;CacheClient</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack" Version="$(Version)" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.3.33" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.0.94" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.4" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.1.36" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Net" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>
