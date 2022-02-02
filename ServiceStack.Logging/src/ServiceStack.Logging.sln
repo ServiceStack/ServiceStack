@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{CA7CF53F
 		ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj = ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj
 		Directory.Build.props = Directory.Build.props
 		..\tests\Directory.Build.props = ..\tests\Directory.Build.props
+		..\build\build.proj = ..\build\build.proj
+		..\build\build-core.proj = ..\build\build-core.proj
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{671EE5B0-9B6E-4307-912E-C3E003AA04CC}"
