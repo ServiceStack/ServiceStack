@@ -6,6 +6,19 @@ obj/
 latest/
 node_modules/
 /env-vars.bat
+
+# CefGlue
+dist/
+coverage/
+# CEF Files
+GPUCache/
+*.pak
+*.lib
+*.dll
+*.bin
+*.dat
+*.exe
+
 *.txt
 *.suo
 #ignore thumbnails created by windows
@@ -56,8 +69,6 @@ requestlogs/
 *.DS_Store
 
 NuGet/
-
-#build/
 
 *.dotCover
 
