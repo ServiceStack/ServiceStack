@@ -1,5 +1,4 @@
-for /f "usebackq tokens=*" %%i in (`vswhere.exe -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`) do (
+for /f "usebackq tokens=*" %%i in (`..\..\scripts\vswhere.exe -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`) do (
   SET MSBUILD="%%i"
 )
-%MSBUILD% build.proj /property:Configuration=Release;MinorVersion=8;PatchVersion=1
-
+%MSBUILD% build.proj /property:Configuration=Release;MinorVersion=0;PatchVersion=3
