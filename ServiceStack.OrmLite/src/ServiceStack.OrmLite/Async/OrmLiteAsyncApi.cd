@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ServiceStack.OrmLite.Async.OrmLiteReadApiAsync">
+    <Position X="0.5" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>ACABEIAJAAQACAAJEAgCQCAAAAAAjAAAFAAMAQBAoRA=</HashCode>
+      <FileName>Async\OrmLiteReadApiAsync.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.Async.OrmLiteWriteApiAsync">
+    <Position X="3.75" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAACAEgAEAgQAABAAFAIIAAAAgAAAIBAAACAIA=</HashCode>
+      <FileName>Async\OrmLiteWriteApiAsync.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.Async.OrmLiteWriteExpressionsApiAsync">
+    <Position X="3.75" Y="5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQAAAQAAAAAAQAAhAAAAAAAQAAIA=</HashCode>
+      <FileName>Async\OrmLiteWriteExpressionsApiAsync.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.Async.OrmLiteReadExpressionsApiAsync">
+    <Position X="0.5" Y="7.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAIAAAACAAAIAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Async\OrmLiteReadExpressionsApiAsync.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.OrmLite.SqlServer.Core</PackageId>
+    <AssemblyName>ServiceStack.OrmLite.SqlServer</AssemblyName>
+    <RootNamespace>ServiceStack.OrmLite.SqlServer</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <Title>ServiceStack.OrmLite.SqlServer .NET Standard 2.0</Title>
+    <PackageDescription>
+      .NET Standard 2.0 version of ServiceStack.OrmLite.SqlServer
+    </PackageDescription>
+    <PackageTags>SQLServer;OrmLite;RDBMS;SQL;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+    <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.Core.csproj" />
+    <PackageReference Include="ServiceStack.Common.Core" Version="$(Version)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+  </ItemGroup>
+
+</Project>

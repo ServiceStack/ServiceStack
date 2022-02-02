@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.OrmLite.SqlServer</PackageId>
+    <AssemblyName>ServiceStack.OrmLite.SqlServer</AssemblyName>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <Title>OrmLite.SqlServer - Fast, code-first, config-free POCO ORM</Title>
+    <PackageDescription>
+      Light, simple and fast convention-based code-first POCO ORM for Sql Server.
+      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs in SQLServer.
+    </PackageDescription>
+    <PackageTags>SQLServer;OrmLite;RDBMS;SQL;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.Source.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <AssemblyName>ServiceStack.OrmLite.Sqlite</AssemblyName>
+    <PackageId>ServiceStack.OrmLite.Sqlite</PackageId>
+    <Title>OrmLite.Sqlite - Fast, code-first, config-free POCO ORM</Title>
+    <PackageDescription>
+      Light, simple and fast convention-based code-first POCO ORM for SQLite.
+      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs in SQLite.
+    </PackageDescription>
+    <PackageTags>SQLite;OrmLite;RDBMS;SQL;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.Source.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
+  </ItemGroup>
+
+</Project>

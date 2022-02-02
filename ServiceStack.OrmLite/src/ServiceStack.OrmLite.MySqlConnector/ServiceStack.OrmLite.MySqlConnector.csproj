@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <AssemblyName>ServiceStack.OrmLite.MySqlConnector</AssemblyName>
+    <PackageId>ServiceStack.OrmLite.MySqlConnector</PackageId>
+    <RootNamespace>ServiceStack.OrmLite.MySql</RootNamespace>
+    <Title>OrmLite.MySqlConnector - Fast, code-first, config-free POCO ORM</Title>
+    <PackageDescription>
+      MySQL Adapter for ServiceStack OrmLite using MySqlConnector ADO.NET Provider
+    </PackageDescription>
+    <PackageTags>MySqlConnector;MySQL;OrmLite;RDBMS;SQL;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+    <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\ServiceStack.OrmLite.MySql\Converters\MySqlBoolConverter.cs" Link="Converters\MySqlBoolConverter.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\Converters\MySqlDateTimeConverterBase.cs" Link="Converters\MySqlDateTimeConverterBase.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\Converters\MySqlDateTimeOffsetConverter.cs" Link="Converters\MySqlDateTimeOffsetConverter.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\Converters\MySqlFloatConverters.cs" Link="Converters\MySqlFloatConverters.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\Converters\MySqlGuidConverter.cs" Link="Converters\MySqlGuidConverter.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\Converters\MySqlIntegerConverters.cs" Link="Converters\MySqlIntegerConverters.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\Converters\MySqlStringConverters.cs" Link="Converters\MySqlStringConverters.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\DataAnnotations\TextAttribute.cs" Link="DataAnnotations\TextAttribute.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\MySqlDialectProviderBase.cs" Link="MySqlDialectProviderBase.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql\MySqlExpression.cs" Link="MySqlExpression.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <PackageReference Include="MySqlConnector" Version="1.3.11" />
+    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Net" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+</Project>

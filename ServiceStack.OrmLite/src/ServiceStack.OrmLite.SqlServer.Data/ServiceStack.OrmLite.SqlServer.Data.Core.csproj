@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.OrmLite.SqlServer.Data.Core</PackageId>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <AssemblyName>ServiceStack.OrmLite.SqlServer.Data</AssemblyName>
+    <RootNamespace>ServiceStack.OrmLite.SqlServer</RootNamespace>
+    <Title>ServiceStack.OrmLite.SqlServer.Data .NET Standard 2.0</Title>
+    <PackageDescription>
+      .NET Standard 2.0 version of ServiceStack.OrmLite.SqlServer.Data
+    </PackageDescription>
+    <PackageTags>SQLServer;OrmLite;RDBMS;SQL;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+    <DefineConstants>$(DefineConstants);ASYNC;MSDATA</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.Core.csproj" />
+    <PackageReference Include="ServiceStack.Common.Core" Version="$(Version)" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerBoolConverter.cs">
+      <Link>Converters\SqlServerBoolConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerByteArrayConverter.cs">
+      <Link>Converters\SqlServerByteArrayConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerDateTime2Converter.cs">
+      <Link>Converters\SqlServerDateTime2Converter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerDateTimeConverter.cs">
+      <Link>Converters\SqlServerDateTimeConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerFloatConverters.cs">
+      <Link>Converters\SqlServerFloatConverters.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerGuidConverter.cs">
+      <Link>Converters\SqlServerGuidConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerIntegerConverters.cs">
+      <Link>Converters\SqlServerIntegerConverters.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerJsonStringConverters.cs">
+      <Link>Converters\SqlServerJsonStringConverters.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerSpecialConverters.cs">
+      <Link>Converters\SqlServerSpecialConverters.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerStringConverters.cs">
+      <Link>Converters\SqlServerStringConverters.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\Converters\SqlServerTimeConverter.cs">
+      <Link>Converters\SqlServerTimeConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2008OrmLiteDialectProvider.cs">
+      <Link>SqlServer2008OrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2012OrmLiteDialectProvider.cs">
+      <Link>SqlServer2012OrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2014OrmLiteDialectProvider.cs">
+      <Link>SqlServer2014OrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2016Expression.cs">
+      <Link>SqlServer2016Expression.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2016OrmLiteDialectProvider.cs">
+      <Link>SqlServer2016OrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2017OrmLiteDialectProvider.cs">
+      <Link>SqlServer2017OrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2019OrmLiteDialectProvider.cs">
+      <Link>SqlServer2019OrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerDialect.cs">
+      <Link>SqlServerDialect.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerExpression.cs">
+      <Link>SqlServerExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerOrmLiteDialectProvider.cs">
+      <Link>SqlServerOrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerTableHint.cs">
+      <Link>SqlServerTableHint.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

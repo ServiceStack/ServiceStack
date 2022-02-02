@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Default"
+         xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="4.0">
+  <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
+
+  <PropertyGroup>
+    <MajorVersion Condition="$(MajorVersion) == ''">6</MajorVersion>
+    <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
+    <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
+    <SrcDir>$(BuildSolutionDir)/src</SrcDir>
+    <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DoBuildSolutionsDependsOn>
+      BeforeBuildSolutions;
+      BuildSolutions
+    </DoBuildSolutionsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="BeforeBuildSolutions">
+    <Message Text="*****Before building solution*****" Importance="high"/>
+    <CallTarget Targets="UpdateVersion" />
+  </Target>
+
+  <Target Name="BuildSolutions">
+    <CallTarget Targets="ClearNuGetRestoreCaches" />
+  </Target>
+
+  <!-- need to remove old caches from nuget restore from .Core csproj's -->
+  <Target Name="ClearNuGetRestoreCaches">
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer.Data/obj" />
+  </Target>
+
+  <Target Name="UpdateVersion">
+    <!-- Update Version -->
+    <ItemGroup>
+      <RegexTransform Include="$(BuildSolutionDir)/src/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
+        <Find>&lt;Version&gt;[^&lt;]*</Find>
+        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
+      </RegexTransform>
+    </ItemGroup>
+
+    <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
+  <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
+    
+    <!-- ServiceStack.OrmLite.SqlServer.Data.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj" Targets="Restore" />
+    <!--<MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj" Targets="Build" />-->
+    <!-- For reasons beyond explanation project fails to pack with <MSBuild> task, failing with: 
+         The type 'Object' is defined in an assembly that is not referenced. You must add a reference to assembly 'netstandard, Version=2.0.0.0 -->
+    <Exec Command="dotnet pack $(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj" />
+    <!--<MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj" Targets="Build;Pack" Properties="Configuration=$(Configuration)" />-->
+
+    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
+    <CallTarget Targets="ClearNuGetRestoreCaches" />
+
+  </Target>
+  
+</Project>

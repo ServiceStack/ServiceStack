@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Default"
+         xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="4.0">
+  <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
+
+  <PropertyGroup>
+    <MajorVersion Condition="$(MajorVersion) == ''">6</MajorVersion>
+    <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
+    <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
+    <SrcDir>$(BuildSolutionDir)/src</SrcDir>
+    <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DoBuildSolutionsDependsOn>
+      BeforeBuildSolutions;
+      BuildSolutions
+    </DoBuildSolutionsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="BeforeBuildSolutions">
+    <Message Text="*****Before building solution*****" Importance="high"/>
+    <CallTarget Targets="UpdateVersion" />
+  </Target>
+
+  <Target Name="BuildSolutions">
+    <CallTarget Targets="ClearNuGetRestoreCaches" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.sln" Targets="Restore" />
+
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.sln" Targets="Build"
+             Properties="Configuration=$(Configuration)" />
+  </Target>
+
+  <!-- need to remove old caches from nuget restore from .Core csproj's -->
+  <Target Name="ClearNuGetRestoreCaches">
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Firebird/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.MySql/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.MySqlConnector/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.PostgreSQL/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite.Data/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite.Cil/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer.Data/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer.Converters/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Oracle/obj" />
+  </Target>
+
+  <Target Name="UpdateVersion">
+    <!-- Update Version -->
+    <ItemGroup>
+      <RegexTransform Include="$(BuildSolutionDir)/src/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
+        <Find>&lt;Version&gt;[^&lt;]*</Find>
+        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
+      </RegexTransform>
+    </ItemGroup>
+
+    <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
+  <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
+
+    <!-- ServiceStack.OrmLite -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite/ServiceStack.OrmLite.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.Firebird -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Firebird/ServiceStack.OrmLite.Firebird.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.MySql -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.MySql/ServiceStack.OrmLite.MySql.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.MySqlConnector -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.MySqlConnector/ServiceStack.OrmLite.MySqlConnector.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.Oracle -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Oracle/ServiceStack.OrmLite.Oracle.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.PostgreSQL -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.PostgreSQL/ServiceStack.OrmLite.PostgreSQL.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.Sqlite -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Sqlite/ServiceStack.OrmLite.Sqlite.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.Sqlite.Data -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Sqlite.Data/ServiceStack.OrmLite.Sqlite.Data.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.Sqlite.Cil -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Sqlite.Cil/ServiceStack.OrmLite.Sqlite.Cil.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.Sqlite.Windows -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Sqlite.Windows/ServiceStack.OrmLite.Sqlite.Windows.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.SqlServer -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.SqlServer.Data -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.SqlServer.Converters -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Converters/ServiceStack.OrmLite.SqlServer.Converters.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.OrmLite.T4 -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.T4/ServiceStack.OrmLite.T4.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
+    <CallTarget Targets="ClearNuGetRestoreCaches" />
+
+  </Target>
+</Project>
