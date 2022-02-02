@@ -56,7 +56,7 @@ requestlogs/
 
 NuGet/
 
-build/
+#build/
 
 *.dotCover
 
