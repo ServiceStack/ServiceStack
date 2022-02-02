@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BookShelf10000BooksBenchmarks</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.10.14, OS=Windows 10.0.17134
+Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
+.NET Core SDK=2.1.301
+  [Host]     : .NET Core 2.1.1 (CoreCLR 4.6.26606.02, CoreFX 4.6.26606.05), 64bit RyuJIT
+  DefaultJob : .NET Core 2.1.1 (CoreCLR 4.6.26606.02, CoreFX 4.6.26606.05), 64bit RyuJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>                Method</th><th>N</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>DeserializeFromStream</td><td>10000</td><td>7.069 ms</td><td>0.0331 ms</td><td>0.0277 ms</td><td>226.5625</td><td>109.3750</td><td>39.0625</td><td>1.25 MB</td>
+</tr><tr><td>DeserializeFromStreamJsonNet</td><td>10000</td><td>8.432 ms</td><td>0.1628 ms</td><td>0.2059 ms</td><td>218.7500</td><td>109.3750</td><td>31.2500</td><td>1.25 MB</td>
+</tr><tr><td>SerializeToString</td><td>10000</td><td>2.649 ms</td><td>0.0200 ms</td><td>0.0167 ms</td><td>304.6875</td><td>156.2500</td><td>156.2500</td><td>1.21 MB</td>
+</tr><tr><td>SerializeToStringJsonNet</td><td>10000</td><td>4.632 ms</td><td>0.0664 ms</td><td>0.0621 ms</td><td>304.6875</td><td>257.8125</td><td>156.2500</td><td>1.45 MB</td>
+</tr></tbody></table>
+</body>
+</html>

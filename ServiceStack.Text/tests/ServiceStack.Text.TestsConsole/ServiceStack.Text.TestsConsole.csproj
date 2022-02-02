@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+<!--    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />-->
+<!--    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />-->
+<!--    <PackageReference Include="NUnit" Version="3.10.1" />-->
+    <ProjectReference Include="..\..\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\ServiceStack.Text.Tests\ServiceStack.Text.Tests.csproj" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="ServiceStack" Version="6.*" />
+<!--    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="6.*" />-->
+  </ItemGroup>
+</Project>

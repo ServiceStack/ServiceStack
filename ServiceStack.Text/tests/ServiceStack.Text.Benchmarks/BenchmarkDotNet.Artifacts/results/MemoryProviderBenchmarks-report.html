@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>MemoryProviderBenchmarks</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.10.14, OS=Windows 10.0.17134
+Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
+.NET Core SDK=2.1.301
+  [Host]     : .NET Core 2.1.1 (CoreCLR 4.6.26606.02, CoreFX 4.6.26606.05), 64bit RyuJIT  [AttachedDebugger]
+  DefaultJob : .NET Core 2.1.1 (CoreCLR 4.6.26606.02, CoreFX 4.6.26606.05), 64bit RyuJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>       Method</th><th>N</th><th>Mean</th><th>Error</th><th>StdDev</th>
+</tr>
+</thead><tbody><tr><td>DefaultParseBoolean</td><td>1000</td><td>30.00 ns</td><td>0.6018 ns</td><td>0.5911 ns</td>
+</tr><tr><td>NetCoreParseBoolean</td><td>1000</td><td>20.09 ns</td><td>0.1783 ns</td><td>0.1489 ns</td>
+</tr><tr><td>DefaulParseDecimal</td><td>1000</td><td>54.57 ns</td><td>1.3897 ns</td><td>1.7067 ns</td>
+</tr><tr><td>NetCoreParseDecimal</td><td>1000</td><td>189.92 ns</td><td>3.3742 ns</td><td>3.3139 ns</td>
+</tr><tr><td>DefaulParseFloat</td><td>1000</td><td>117.37 ns</td><td>0.9250 ns</td><td>0.8652 ns</td>
+</tr><tr><td>NetCoreParseFloat</td><td>1000</td><td>102.20 ns</td><td>0.6069 ns</td><td>0.5677 ns</td>
+</tr><tr><td>DefaulParseDouble</td><td>1000</td><td>118.04 ns</td><td>2.3821 ns</td><td>2.3395 ns</td>
+</tr><tr><td>NetCoreParseDouble</td><td>1000</td><td>101.87 ns</td><td>1.1663 ns</td><td>0.9739 ns</td>
+</tr><tr><td>DefaulParseInt32</td><td>1000</td><td>19.23 ns</td><td>0.0790 ns</td><td>0.0700 ns</td>
+</tr><tr><td>NetCoreParseInt32</td><td>1000</td><td>72.63 ns</td><td>1.4722 ns</td><td>1.8080 ns</td>
+</tr><tr><td>DefaulParseInt64</td><td>1000</td><td>18.35 ns</td><td>0.1577 ns</td><td>0.1231 ns</td>
+</tr><tr><td>NetCoreParseInt64</td><td>1000</td><td>69.79 ns</td><td>0.5492 ns</td><td>0.5138 ns</td>
+</tr><tr><td>DefaulParseUInt32</td><td>1000</td><td>18.66 ns</td><td>0.1509 ns</td><td>0.1260 ns</td>
+</tr><tr><td>NetCoreParseUInt32</td><td>1000</td><td>72.68 ns</td><td>0.3446 ns</td><td>0.3054 ns</td>
+</tr><tr><td>DefaultParseBoolean</td><td>10000</td><td>28.35 ns</td><td>0.1571 ns</td><td>0.1470 ns</td>
+</tr><tr><td>NetCoreParseBoolean</td><td>10000</td><td>19.39 ns</td><td>0.0590 ns</td><td>0.0552 ns</td>
+</tr><tr><td>DefaulParseDecimal</td><td>10000</td><td>57.40 ns</td><td>1.1499 ns</td><td>1.8239 ns</td>
+</tr><tr><td>NetCoreParseDecimal</td><td>10000</td><td>192.12 ns</td><td>2.7811 ns</td><td>2.6014 ns</td>
+</tr><tr><td>DefaulParseFloat</td><td>10000</td><td>126.15 ns</td><td>2.5386 ns</td><td>4.2414 ns</td>
+</tr><tr><td>NetCoreParseFloat</td><td>10000</td><td>106.11 ns</td><td>1.6362 ns</td><td>1.5305 ns</td>
+</tr><tr><td>DefaulParseDouble</td><td>10000</td><td>122.10 ns</td><td>1.9895 ns</td><td>1.8610 ns</td>
+</tr><tr><td>NetCoreParseDouble</td><td>10000</td><td>107.38 ns</td><td>2.0829 ns</td><td>1.9483 ns</td>
+</tr><tr><td>DefaulParseInt32</td><td>10000</td><td>19.97 ns</td><td>0.3522 ns</td><td>0.3122 ns</td>
+</tr><tr><td>NetCoreParseInt32</td><td>10000</td><td>72.41 ns</td><td>0.8461 ns</td><td>0.7500 ns</td>
+</tr><tr><td>DefaulParseInt64</td><td>10000</td><td>18.19 ns</td><td>0.0536 ns</td><td>0.0502 ns</td>
+</tr><tr><td>NetCoreParseInt64</td><td>10000</td><td>69.90 ns</td><td>0.8358 ns</td><td>0.6979 ns</td>
+</tr><tr><td>DefaulParseUInt32</td><td>10000</td><td>18.58 ns</td><td>0.1056 ns</td><td>0.0936 ns</td>
+</tr><tr><td>NetCoreParseUInt32</td><td>10000</td><td>72.05 ns</td><td>0.3941 ns</td><td>0.3291 ns</td>
+</tr><tr><td>DefaultParseBoolean</td><td>100000</td><td>28.40 ns</td><td>0.1632 ns</td><td>0.1447 ns</td>
+</tr><tr><td>NetCoreParseBoolean</td><td>100000</td><td>19.38 ns</td><td>0.1022 ns</td><td>0.0853 ns</td>
+</tr><tr><td>DefaulParseDecimal</td><td>100000</td><td>51.66 ns</td><td>0.2337 ns</td><td>0.2071 ns</td>
+</tr><tr><td>NetCoreParseDecimal</td><td>100000</td><td>185.71 ns</td><td>1.0153 ns</td><td>0.9000 ns</td>
+</tr><tr><td>DefaulParseFloat</td><td>100000</td><td>119.73 ns</td><td>2.4091 ns</td><td>3.0467 ns</td>
+</tr><tr><td>NetCoreParseFloat</td><td>100000</td><td>103.48 ns</td><td>0.9406 ns</td><td>0.8798 ns</td>
+</tr><tr><td>DefaulParseDouble</td><td>100000</td><td>117.82 ns</td><td>1.0134 ns</td><td>0.9480 ns</td>
+</tr><tr><td>NetCoreParseDouble</td><td>100000</td><td>102.38 ns</td><td>0.3972 ns</td><td>0.3316 ns</td>
+</tr><tr><td>DefaulParseInt32</td><td>100000</td><td>19.41 ns</td><td>0.2591 ns</td><td>0.2424 ns</td>
+</tr><tr><td>NetCoreParseInt32</td><td>100000</td><td>72.14 ns</td><td>0.7835 ns</td><td>0.7329 ns</td>
+</tr><tr><td>DefaulParseInt64</td><td>100000</td><td>18.33 ns</td><td>0.1323 ns</td><td>0.1237 ns</td>
+</tr><tr><td>NetCoreParseInt64</td><td>100000</td><td>70.20 ns</td><td>0.5148 ns</td><td>0.4815 ns</td>
+</tr><tr><td>DefaulParseUInt32</td><td>100000</td><td>19.11 ns</td><td>0.4070 ns</td><td>0.4180 ns</td>
+</tr><tr><td>NetCoreParseUInt32</td><td>100000</td><td>74.99 ns</td><td>1.3515 ns</td><td>1.1980 ns</td>
+</tr></tbody></table>
+</body>
+</html>
