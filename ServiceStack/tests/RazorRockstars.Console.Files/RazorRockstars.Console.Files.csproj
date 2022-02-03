@@ -391,5 +391,4 @@
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
 </Project>

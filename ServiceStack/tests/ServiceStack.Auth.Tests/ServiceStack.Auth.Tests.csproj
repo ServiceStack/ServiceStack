@@ -122,5 +122,4 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
 </Project>
