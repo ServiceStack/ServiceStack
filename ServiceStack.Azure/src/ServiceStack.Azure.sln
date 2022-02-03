@@ -11,12 +11,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{DCEE435D
 	ProjectSection(SolutionItems) = preProject
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
-		..\README.md = ..\README.md
 		ServiceStack.Azure\ServiceStack.Azure.Core.csproj = ServiceStack.Azure\ServiceStack.Azure.Core.csproj
 		Directory.Build.props = Directory.Build.props
 		..\build\build-core.proj = ..\build\build-core.proj
 		..\tests\Directory.Build.props = ..\tests\Directory.Build.props
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj", "{868D3D95-8642-4D03-92AB-4FF047AA9E41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces", "..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{57513456-0DD4-440E-9D81-38A3A0CB27B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client", "..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj", "{9F1DA3D4-89FC-4B2C-BABB-1C4FCA7CF6A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common", "..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj", "{E21E106A-0C68-4E02-81F5-762090CEF06D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj", "{B2917A3A-6A60-4438-A3E8-31305FB100AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,11 +43,38 @@ Global
 		{EB41D580-F1DA-4FEF-A3C7-9BE53238821E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB41D580-F1DA-4FEF-A3C7-9BE53238821E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB41D580-F1DA-4FEF-A3C7-9BE53238821E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{868D3D95-8642-4D03-92AB-4FF047AA9E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{868D3D95-8642-4D03-92AB-4FF047AA9E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{868D3D95-8642-4D03-92AB-4FF047AA9E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{868D3D95-8642-4D03-92AB-4FF047AA9E41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57513456-0DD4-440E-9D81-38A3A0CB27B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57513456-0DD4-440E-9D81-38A3A0CB27B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57513456-0DD4-440E-9D81-38A3A0CB27B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57513456-0DD4-440E-9D81-38A3A0CB27B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F1DA3D4-89FC-4B2C-BABB-1C4FCA7CF6A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F1DA3D4-89FC-4B2C-BABB-1C4FCA7CF6A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F1DA3D4-89FC-4B2C-BABB-1C4FCA7CF6A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F1DA3D4-89FC-4B2C-BABB-1C4FCA7CF6A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E21E106A-0C68-4E02-81F5-762090CEF06D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E21E106A-0C68-4E02-81F5-762090CEF06D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E21E106A-0C68-4E02-81F5-762090CEF06D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E21E106A-0C68-4E02-81F5-762090CEF06D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2917A3A-6A60-4438-A3E8-31305FB100AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2917A3A-6A60-4438-A3E8-31305FB100AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2917A3A-6A60-4438-A3E8-31305FB100AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2917A3A-6A60-4438-A3E8-31305FB100AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3D040C9-F182-4B33-88DC-D4AA591B7994}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{868D3D95-8642-4D03-92AB-4FF047AA9E41} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
+		{57513456-0DD4-440E-9D81-38A3A0CB27B0} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
+		{9F1DA3D4-89FC-4B2C-BABB-1C4FCA7CF6A2} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
+		{E21E106A-0C68-4E02-81F5-762090CEF06D} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
+		{B2917A3A-6A60-4438-A3E8-31305FB100AD} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
 	EndGlobalSection
 EndGlobal
