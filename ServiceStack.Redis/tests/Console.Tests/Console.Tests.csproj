@@ -7,10 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
-    </ItemGroup>
-
-    <ItemGroup>
+      <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
     </ItemGroup>
 
