@@ -12,11 +12,11 @@
         <PackageReference Include="System.Memory" Version="4.5.4" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     </ItemGroup>
 
 </Project>

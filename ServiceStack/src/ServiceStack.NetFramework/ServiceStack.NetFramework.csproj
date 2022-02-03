@@ -16,12 +16,12 @@
     <EmbeddedResource Include="MiniProfiler\UI\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />

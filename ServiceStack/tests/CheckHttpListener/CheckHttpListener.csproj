@@ -45,6 +45,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -67,6 +68,18 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">
+      <Project>{d5d2dc52-558a-4371-8d8e-a08c0f754a0b}</Project>
+      <Name>ServiceStack.OrmLite.Sqlite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{cec1251e-5d68-4b1f-a851-bbda04fb030b}</Project>
+      <Name>ServiceStack.OrmLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{a7070566-eee2-46d3-b8bf-a2c79873d267}</Project>
+      <Name>ServiceStack.Text</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
       <Project>{5e258282-86a6-4780-ab25-5e458f2e6f70}</Project>
       <Name>ServiceStack.Api.OpenApi</Name>
@@ -79,26 +92,24 @@
       <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj">
+      <Project>{c05de4a1-84c5-481b-8bd4-c837a1303b01}</Project>
+      <Name>ServiceStack.HttpClient</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
-      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
+      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
       <Name>ServiceStack.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Check.ServiceInterface\Check.ServiceInterface.csproj">
-      <Project>{9982317F-831C-478B-9CC3-57F888BCD97A}</Project>
-      <Name>Check.ServiceInterface</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Check.ServiceModel\Check.ServiceModel.csproj">
-      <Project>{213EF4BA-786A-432F-B147-5702B18DE3CC}</Project>
-      <Name>Check.ServiceModel</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Check.ServiceInterface\Check.ServiceInterface.csproj" />
+    <ProjectReference Include="..\Check.ServiceModel\Check.ServiceModel.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.html">
@@ -121,18 +132,6 @@
     <PackageReference Include="Autofac" Version="4.9.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="ServiceStack" Version="$(Version)" />
-<!--    <PackageReference Include="ServiceStack.Admin" Version="$(Version)" />-->
-    <PackageReference Include="ServiceStack.Client" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.HttpClient" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Interfaces" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Server" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
@@ -140,7 +139,6 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

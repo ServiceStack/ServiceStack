@@ -25,7 +25,6 @@
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
         <PackageReference Include="System.Memory" Version="4.5.4" />
     </ItemGroup>
 

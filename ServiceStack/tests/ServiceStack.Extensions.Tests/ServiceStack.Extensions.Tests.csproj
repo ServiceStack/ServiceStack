@@ -10,21 +10,12 @@
         <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>
     </PropertyGroup>
 
-
     <ItemGroup>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-        <PackageReference Include="NUnit" Version="3.13.2" />
-        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-        <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
-        <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
-        <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.40.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.41.1" />
-        <PackageReference Include="Grpc.Core" Version="2.41.1" />
-        <PackageReference Include="Google.Protobuf" Version="3.12.2" />
-        <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
-        
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -33,6 +24,17 @@
         <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.40.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.41.1" />
+        <PackageReference Include="Grpc.Core" Version="2.41.1" />
+        <PackageReference Include="Google.Protobuf" Version="3.12.2" />
+        <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
     </ItemGroup>
 
 </Project>

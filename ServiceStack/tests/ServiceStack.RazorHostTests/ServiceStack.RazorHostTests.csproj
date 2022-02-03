@@ -96,28 +96,18 @@
     <Folder Include="css\" />
     <Folder Include="js\" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
-      <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
-      <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>
-      <Name>ServiceStack.Razor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <Content Include="Views\Shared\SimplyLayout.cshtml" />
   </ItemGroup>
@@ -180,11 +170,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Interfaces" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />

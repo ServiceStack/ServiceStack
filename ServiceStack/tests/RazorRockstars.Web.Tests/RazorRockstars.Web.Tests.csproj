@@ -60,31 +60,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
-      <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
-      <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>
-      <Name>ServiceStack.MsgPack</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />

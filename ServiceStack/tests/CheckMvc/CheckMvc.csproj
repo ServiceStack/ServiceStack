@@ -176,7 +176,7 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNet.Mvc.FixedDisplayModes" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.7" />

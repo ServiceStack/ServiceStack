@@ -12,15 +12,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+
         <PackageReference Include="Grpc.Net.Client" Version="2.40.0" />
         <PackageReference Include="Grpc.Core" Version="2.41.1" />
         <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
         <!-- the transitive import of protobuf-net is lower; we need at least this -->
         <PackageReference Include="protobuf-net" Version="3.0.101" />
-        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-
-        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     </ItemGroup>
 
 </Project>

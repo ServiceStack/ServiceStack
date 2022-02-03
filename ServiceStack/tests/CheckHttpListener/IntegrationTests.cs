@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Threading.Tasks;
 using Check.ServiceModel;
 using NUnit.Framework;

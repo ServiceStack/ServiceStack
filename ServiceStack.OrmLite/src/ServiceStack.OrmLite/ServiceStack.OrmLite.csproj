@@ -21,8 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
@@ -50,10 +53,6 @@
     <PackageReference Include="System.Xml.XmlDocument" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
   </ItemGroup>
 
 </Project>

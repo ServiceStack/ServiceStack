@@ -7,7 +7,6 @@ using Check.ServiceInterface;
 using Check.ServiceModel;
 using Funq;
 using ServiceStack;
-// using ServiceStack.Admin;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Data;

@@ -20,7 +20,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack" Version="$(Version)" />
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
   </ItemGroup>

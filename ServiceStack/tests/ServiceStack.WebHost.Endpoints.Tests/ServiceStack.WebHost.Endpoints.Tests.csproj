@@ -21,31 +21,28 @@
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
 		<DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
 	</PropertyGroup>
-
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Authentication.RavenDb\ServiceStack.Authentication.RavenDb.csproj" />
+      <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
+    </ItemGroup>
 	<ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
-      <Project>{5E258282-86A6-4780-AB25-5E458F2E6F70}</Project>
-      <Name>ServiceStack.Api.OpenApi</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.RavenDb\ServiceStack.Authentication.RavenDb.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
-    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
-    
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.MySql" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Aws" Version="$(Version)" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />

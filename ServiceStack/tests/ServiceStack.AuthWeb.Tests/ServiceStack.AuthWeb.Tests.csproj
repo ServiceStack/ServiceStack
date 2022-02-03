@@ -107,38 +107,19 @@
     <Compile Include="Services.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.RavenDb\ServiceStack.Authentication.RavenDb.csproj">
-      <Project>{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3}</Project>
-      <Name>ServiceStack.Authentication.RavenDb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
-      <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj">
-      <Project>{22f8d050-2c96-4993-b221-da16ebc61f31}</Project>
-      <Name>ServiceStack.NetFramework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
-      <Project>{D73274AE-006B-4CEE-BA60-0ECF5873048D}</Project>
-      <Name>ServiceStack.Razor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
-      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
-      <Name>ServiceStack.Server</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.RavenDb\ServiceStack.Authentication.RavenDb.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.cshtml">
@@ -179,16 +160,7 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Npgsql" Version="4.1.9" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="RavenDB.Client" Version="5.2.1" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Interfaces" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.PostgreSQL" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />

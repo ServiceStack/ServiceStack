@@ -13,6 +13,13 @@
     <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <PackageReference Include="Npgsql" Version="4.1.9" />
   </ItemGroup>
@@ -21,11 +28,6 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Npgsql" Version="5.0.10" />
-  </ItemGroup>
-
-    <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
   </ItemGroup>
 
 </Project>

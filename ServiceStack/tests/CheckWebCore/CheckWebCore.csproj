@@ -12,6 +12,7 @@
     <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
@@ -20,7 +21,6 @@
     <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\assets\svg\app" />
