@@ -30,34 +30,11 @@
   </Target>
 
   <Target Name="BuildSolutions">
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
+    <ItemGroup>
+      <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    </ItemGroup>
+    <Delete Files="@(NugetPackageFilesToDelete)" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Build"
-             Properties="Configuration=$(Configuration)" />
-
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Logging.sln" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Logging.sln" Targets="Build"
-             Properties="Configuration=$(Configuration)" />
-  </Target>
-
-  <!-- need to remove old caches from nuget restore from .Core csproj's -->
-  <Target Name="ClearNuGetRestoreCaches">
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Api.OpenApi/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Client/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Blazor/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Interfaces/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.Log4Net/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.NLog/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.MsgPack/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Mvc/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.ProtoBuf/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.RabbitMq/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Server/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Kestrel/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Desktop/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -97,11 +74,6 @@
 
     <!-- ServiceStack.HttpClient -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Blazor -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Blazor/ServiceStack.Blazor.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
@@ -178,37 +150,6 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- Logging -->
-    <!-- ServiceStack.Logging.Elmah -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Elmah/ServiceStack.Logging.Elmah.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Logging.EventLog -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.EventLog/ServiceStack.Logging.EventLog.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Logging.Log4Net -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Log4Net/ServiceStack.Logging.Log4Net.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Logging.NLog -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.NLog/ServiceStack.Logging.NLog.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Logging.Serilog -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Serilog/ServiceStack.Logging.Serilog.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Logging.Slack -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Slack/ServiceStack.Logging.Slack.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
     <!-- ServiceStack.Desktop -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Desktop/ServiceStack.Desktop.csproj"
              Targets="Build;Pack"
@@ -220,10 +161,6 @@
       <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
     </ItemGroup>
     <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
-
-    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
-
   </Target>
 
 </Project>

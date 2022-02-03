@@ -34,27 +34,6 @@
       <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
     </ItemGroup>
     <Delete Files="@(NugetPackageFilesToDelete)" />
-    
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
-  </Target>
-
-  <!-- need to remove old caches from nuget restore from .Core csproj's -->
-  <Target Name="ClearNuGetRestoreCaches">
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Api.OpenApi/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Client/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Interfaces/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Kestrel/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.Log4Net/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.NLog/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.MsgPack/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Mvc/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.ProtoBuf/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.RabbitMq/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Server/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Authentication.MongoDb/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -166,9 +145,6 @@
       <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
     </ItemGroup>
     <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
-
-    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
 
   </Target>
 
