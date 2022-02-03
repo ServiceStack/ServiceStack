@@ -14,9 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FirebirdSql.Data.FirebirdClient" Version="7.10.1" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
   </ItemGroup>
 
 </Project>

@@ -6,14 +6,22 @@
     <RootNamespace>ServiceStack.OrmLite.SqlServerTests</RootNamespace>
     <LangVersion>default</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.OrmLite.SqlServer.Converters\ServiceStack.OrmLite.SqlServer.Converters.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\ServiceStack.OrmLite.Tests\ServiceStack.OrmLite.Tests.csproj" />
-    <PackageReference Include="ServiceStack" Version="$(Version)" />
+    <ProjectReference Include="..\..\src\ServiceStack.OrmLite.SqlServer.Converters\ServiceStack.OrmLite.SqlServer.Converters.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
   </ItemGroup>
+  
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

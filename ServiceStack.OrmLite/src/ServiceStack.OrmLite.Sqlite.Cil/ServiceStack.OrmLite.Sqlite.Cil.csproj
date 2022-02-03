@@ -14,8 +14,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
         <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
-        <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="5.0.2" />
         <PackageReference Include="SQLitePCLRaw.bundle_cil" Version="2.0.5-pre20210119130047" />
     </ItemGroup>

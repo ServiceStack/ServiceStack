@@ -12,9 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
     <ProjectReference Include="..\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
-    <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.SqlServer.Types" Version="14.0.1016.290" />
   </ItemGroup>
 

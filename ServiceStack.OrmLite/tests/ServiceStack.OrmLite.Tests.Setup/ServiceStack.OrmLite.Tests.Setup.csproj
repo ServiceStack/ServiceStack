@@ -11,14 +11,9 @@
 
         <LangVersion>default</LangVersion>
     </PropertyGroup>
-
+    
     <ItemGroup>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-        <PackageReference Include="NUnit" Version="3.13.2" />
-        <PackageReference Include="ServiceStack" Version="$(Version)" />
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
-
+        <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.OrmLite.MySqlConnector\ServiceStack.OrmLite.MySqlConnector.csproj" />
@@ -27,6 +22,13 @@
         <ProjectReference Include="..\..\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.OrmLite.Oracle\ServiceStack.OrmLite.Oracle.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.OrmLite.Firebird\ServiceStack.OrmLite.Firebird.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
     </ItemGroup>
 
 </Project>
