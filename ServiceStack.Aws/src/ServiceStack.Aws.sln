@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{91F39E88-36DC-41BA-9B0A-27B7818F76C2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{91F39E88-36DC-41BA-9B0A-27B7818F76C2}"
 	ProjectSection(SolutionItems) = preProject
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
@@ -19,6 +19,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Aws.Tests", "..\tests\ServiceStack.Aws.Tests\ServiceStack.Aws.Tests.csproj", "{C4842353-FB4B-4ECE-80EF-1247BBF5AE2B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Aws.DynamoDbTests", "..\tests\ServiceStack.Aws.DynamoDbTests\ServiceStack.Aws.DynamoDbTests.csproj", "{24709E60-D226-4A9C-9561-F3844DCD05E9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{E7797C2E-79F5-4788-B437-981ADB1B10D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj", "{6ECA4A57-9A13-4BC8-BBD9-C72BBF0D8890}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces", "..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{E3F8759A-D388-469B-9F30-3474C855613D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client", "..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj", "{9EFC62B5-596E-4BB8-8B50-7F1D1F67E810}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj", "{E0BDA37B-F2A9-4E8D-B194-58C44CD0ED37}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,11 +48,33 @@ Global
 		{24709E60-D226-4A9C-9561-F3844DCD05E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24709E60-D226-4A9C-9561-F3844DCD05E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24709E60-D226-4A9C-9561-F3844DCD05E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ECA4A57-9A13-4BC8-BBD9-C72BBF0D8890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ECA4A57-9A13-4BC8-BBD9-C72BBF0D8890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ECA4A57-9A13-4BC8-BBD9-C72BBF0D8890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ECA4A57-9A13-4BC8-BBD9-C72BBF0D8890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3F8759A-D388-469B-9F30-3474C855613D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3F8759A-D388-469B-9F30-3474C855613D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3F8759A-D388-469B-9F30-3474C855613D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3F8759A-D388-469B-9F30-3474C855613D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EFC62B5-596E-4BB8-8B50-7F1D1F67E810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EFC62B5-596E-4BB8-8B50-7F1D1F67E810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EFC62B5-596E-4BB8-8B50-7F1D1F67E810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EFC62B5-596E-4BB8-8B50-7F1D1F67E810}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0BDA37B-F2A9-4E8D-B194-58C44CD0ED37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0BDA37B-F2A9-4E8D-B194-58C44CD0ED37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0BDA37B-F2A9-4E8D-B194-58C44CD0ED37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0BDA37B-F2A9-4E8D-B194-58C44CD0ED37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BFC6E2EF-D5F3-4D43-A2DE-0BBAAC149BBA}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6ECA4A57-9A13-4BC8-BBD9-C72BBF0D8890} = {E7797C2E-79F5-4788-B437-981ADB1B10D1}
+		{E3F8759A-D388-469B-9F30-3474C855613D} = {E7797C2E-79F5-4788-B437-981ADB1B10D1}
+		{9EFC62B5-596E-4BB8-8B50-7F1D1F67E810} = {E7797C2E-79F5-4788-B437-981ADB1B10D1}
+		{E0BDA37B-F2A9-4E8D-B194-58C44CD0ED37} = {E7797C2E-79F5-4788-B437-981ADB1B10D1}
 	EndGlobalSection
 EndGlobal
