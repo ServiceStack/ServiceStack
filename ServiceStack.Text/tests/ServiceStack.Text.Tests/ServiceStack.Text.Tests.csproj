@@ -20,6 +20,9 @@
     <DebugType Condition="'$(TargetFramework)' != '' AND '$(TargetFramework)' != 'net6.0'">Full</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\Northwind.Common\Northwind.Common.csproj" />
   </ItemGroup>
@@ -35,7 +38,6 @@
     <PackageReference Include="System.Runtime.Serialization.Json" Version="4.3.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="ServiceStack" Version="6.*" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <DefineConstants>$(DefineConstants);NETFX</DefineConstants>

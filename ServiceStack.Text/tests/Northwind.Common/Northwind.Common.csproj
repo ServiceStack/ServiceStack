@@ -25,13 +25,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="protobuf-net" Version="3.0.101" />
-    <PackageReference Include="ServiceStack.Interfaces" Version="6.*" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Configuration" />
     <Reference Include="System.Threading" />
