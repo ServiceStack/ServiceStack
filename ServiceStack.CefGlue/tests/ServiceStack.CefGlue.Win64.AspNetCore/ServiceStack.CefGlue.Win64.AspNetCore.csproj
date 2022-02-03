@@ -13,15 +13,21 @@
 <!--    <RuntimeFrameworkVersion>2.1.2</RuntimeFrameworkVersion>-->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-
+  
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.CefGlue\ServiceStack.CefGlue.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.CefGlue.Win64\ServiceStack.CefGlue.Win64.csproj" />
+  </ItemGroup>
 
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.*" />
 <!--    <PackageReference Include="ServiceStack.CefGlue.Win64" Version="5.*" />-->
     <PackageReference Include="WinApi" Version="4.0.0" />
-    <PackageReference Include="ServiceStack" Version="6.*" />
   </ItemGroup>
 
   <ItemGroup>
