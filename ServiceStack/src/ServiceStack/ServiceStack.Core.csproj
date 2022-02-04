@@ -24,10 +24,10 @@
     <EmbeddedResource Include="Templates\*.*;modules\**\*.*;js\*.*;css\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Memory" Version="4.5.4" />

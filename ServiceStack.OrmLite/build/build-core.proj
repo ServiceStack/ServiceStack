@@ -14,6 +14,7 @@
     <SrcDir>$(BuildSolutionDir)/src</SrcDir>
     <TestsDir>$(BuildSolutionDir)/tests</TestsDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
   </PropertyGroup>
 
@@ -34,26 +35,6 @@
       <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
     </ItemGroup>
     <Delete Files="@(NugetPackageFilesToDelete)" />
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
-  </Target>
-
-  <!-- need to remove old caches from nuget restore from .Core csproj's -->
-  <Target Name="ClearNuGetRestoreCaches">
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Firebird/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.MySql/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.MySqlConnector/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.PostgreSQL/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite.Data/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite.Cil/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer.Data/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer.Converters/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Oracle/obj" />
-    <RemoveDir Directories="$(TestsDir)/ServiceStack.OrmLite.Tests/obj" />
-    <RemoveDir Directories="$(TestsDir)/ServiceStack.OrmLite.SqliteTests/obj" />
-    <RemoveDir Directories="$(TestsDir)/ServiceStack.OrmLite.Tests.Setup/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -112,8 +93,17 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
+    <!-- ServiceStack.OrmLite.SqlServer.Data.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- Copy all *.nupkg to /NuGet -->
+    <ItemGroup>
+      <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
+    </ItemGroup>
+    <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
 
   </Target>
 </Project>

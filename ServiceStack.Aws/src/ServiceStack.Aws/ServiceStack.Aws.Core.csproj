@@ -11,9 +11,15 @@
     </PackageDescription>
     <PackageTags>ServiceStack;AWS;Amazon;WebServices;DynamoDb;S3;SQS;Cache;CacheClient</PackageTags>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Core" Version="$(Version)" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.Core.csproj" />
     <PackageReference Include="AWSSDK.Core" Version="3.7.3.33" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.0.94" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.4" />

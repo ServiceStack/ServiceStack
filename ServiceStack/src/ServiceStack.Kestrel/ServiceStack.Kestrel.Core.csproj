@@ -13,13 +13,19 @@
     </PackageDescription>
     <PackageTags>ServiceStack;SelfHost;Host;Kestrel;HTTP;Server</PackageTags>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj"/>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Core.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
