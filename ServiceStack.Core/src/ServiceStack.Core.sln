@@ -58,7 +58,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis.Core", "..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.Core.csproj", "{A6ACA9FB-BFAA-4905-8A62-411B6A30C825}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stripe.Core", "..\..\ServiceStack.Stripe\src\Stripe\Stripe.Core.csproj", "{91FBD544-A18C-4D8B-B6FB-B775DACC0377}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Stripe.Core", "..\..\ServiceStack.Stripe\src\Stripe\ServiceStack.Stripe.Core.csproj", "{91FBD544-A18C-4D8B-B6FB-B775DACC0377}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

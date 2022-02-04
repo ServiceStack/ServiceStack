@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stripe.Tests", "..\tests\Stripe.Tests\Stripe.Tests.csproj", "{B2AA6A86-8B15-47B4-ACDE-DDABC7F5DBB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stripe.Tests", "..\tests\ServiceStack.Stripe.Tests\ServiceStack.Stripe.Tests.csproj", "{B2AA6A86-8B15-47B4-ACDE-DDABC7F5DBB3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{8336FEA3-D52A-48CC-9EC3-604C8ACAFBB0}"
 	ProjectSection(SolutionItems) = preProject
@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{8336FEA3
 		..\tests\Directory.Build.props = ..\tests\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stripe", "Stripe\Stripe.csproj", "{34E0CAC2-14C6-492A-AA02-DAFBF873F6FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stripe", "ServiceStack.Stripe\ServiceStack.Stripe.csproj", "{34E0CAC2-14C6-492A-AA02-DAFBF873F6FA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{044EAB77-718E-4755-8C71-8FD507CCAAA4}"
 EndProject

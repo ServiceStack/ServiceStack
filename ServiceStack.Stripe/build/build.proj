@@ -31,17 +31,11 @@
   </Target>
 
   <Target Name="BuildSolutions">
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/Stripe.sln" Targets="Restore" />
-
-    <MSBuild Projects="$(BuildSolutionDir)/src/Stripe.sln" Targets="Build"
-             Properties="Configuration=$(Configuration)" />
-  </Target>
-
-  <!-- need to remove old caches from nuget restore from .Core csproj's -->
-  <Target Name="ClearNuGetRestoreCaches">
-    <RemoveDir Directories="$(SrcDir)/Stripe/obj" />
-    <RemoveDir Directories="$(TestsDir)/Stripe.Tests/obj" />
+    <ItemGroup>
+      <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    </ItemGroup>
+    <Delete Files="@(NugetPackageFilesToDelete)" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Stripe.sln" Targets="Restore" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -59,7 +53,7 @@
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
 
     <!-- Stripe -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/Stripe/Stripe.csproj"
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Stripe/ServiceStack.Stripe.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
@@ -69,9 +63,6 @@
       <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
     </ItemGroup>
     <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
-
-    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
 
   </Target>
 </Project>
