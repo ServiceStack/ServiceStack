@@ -1,6 +1,11 @@
 name: Package Core
 
 on:
+  workflow_run:
+    workflows: [ "build-servicestack" ]
+    branches: [ main ]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       noop:
@@ -20,7 +25,10 @@ jobs:
           include-prerelease: true
           
       - name: Build
-        run: dotnet build --framework net6.0 ./ServiceStack.Core/src/ServiceStack.Core.sln
+        if: ${{ github.event.workflow_run.conclusion != 'failure' }}
+        run: |
+          chmod +x ./ServiceStack.Core/build/build.sh
+          ./ServiceStack.Core/build/build.sh
         
 #      TODO package
     
