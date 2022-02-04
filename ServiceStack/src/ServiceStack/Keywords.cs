@@ -9,6 +9,7 @@ namespace ServiceStack
         public static string Debug = "debug";
         public static string Version = "version";
         public static string VersionAbbr = "v";
+        public static string VersionFxAbbr = "vfx";
         public static string Ignore = "ignore";
         public static string IgnorePlaceHolder = "_";
         public static string Bare = "bare";

@@ -158,9 +158,9 @@ namespace ServiceStack
                 },
                 IgnoreWarningsOnPropertyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
-                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version,
-                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, 
-                    Keywords.SessionState, Keywords.OAuthSuccess, Keywords.OAuthFailed, Keywords.WithoutOptions,
+                    Keywords.IgnorePlaceHolder, Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, 
+                    Keywords.SessionState, Keywords.Version, Keywords.Version, Keywords.VersionAbbr, Keywords.VersionFxAbbr,
+                    Keywords.OAuthSuccess, Keywords.OAuthFailed, Keywords.WithoutOptions,
                 },
                 IgnoreWarningsOnAutoQueryApis = true,
                 XmlWriterSettings = new XmlWriterSettings
