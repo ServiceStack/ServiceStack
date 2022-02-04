@@ -1,0 +1,26 @@
+name: Package Core
+
+on:
+  workflow_dispatch:
+    inputs:
+      noop:
+        default: noop # Might want to use for versions/tags
+        description: noop
+        required: false
+
+jobs:
+  build-servicestack-core:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+          
+      - name: Build
+        run: dotnet build --framework net6.0 ./ServiceStack.Core/src/ServiceStack.Core.sln
+        
+#      TODO package
+    
