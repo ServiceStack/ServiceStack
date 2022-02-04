@@ -1,6 +1,10 @@
 ﻿name: Build ServiceStack.OrmLite
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'ServiceStack.OrmLite/**'
+      - 'ServiceStack.Text/**'
 
 jobs:
   build-ormlite:
@@ -45,7 +49,7 @@ jobs:
           include-prerelease: true
           
       - name: Build
-        run: dotnet build ./ServiceStack.OrmLite/src/ServiceStack.OrmLite.sln
+        run: dotnet build --framework net6.0 ./ServiceStack.OrmLite/src/ServiceStack.OrmLite.sln
         
       - name: Test Setup
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
