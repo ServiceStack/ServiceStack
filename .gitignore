@@ -6,6 +6,7 @@ obj/
 latest/
 node_modules/
 /env-vars.bat
+ServiceStack/tests/NorthwindAuto/shared/css/ui.css
 
 # CefGlue
 dist/
