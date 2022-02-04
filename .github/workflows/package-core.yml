@@ -1,17 +1,17 @@
 name: Package Core
 
-on:
-  workflow_run:
-    workflows: [ "build-servicestack" ]
-    branches: [ main ]
-    types:
-      - completed
-  workflow_dispatch:
-    inputs:
-      noop:
-        default: noop # Might want to use for versions/tags
-        description: noop
-        required: false
+on: [push]
+#  workflow_run:
+#    workflows: [ "build-servicestack" ]
+#    branches: [ main ]
+#    types:
+#      - completed
+#  workflow_dispatch:
+#    inputs:
+#      noop:
+#        default: noop # Might want to use for versions/tags
+#        description: noop
+#        required: false
 
 jobs:
   build-servicestack-core:
