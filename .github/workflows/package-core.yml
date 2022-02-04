@@ -1,16 +1,21 @@
 name: Package Core
 
-on:
-  workflow_dispatch:
-    inputs:
-      noop:
-        default: noop # Might want to use for versions/tags
-        description: noop
-        required: false
+on: [push]
+#  workflow_run:
+#    workflows: [ "build-servicestack" ]
+#    branches: [ main ]
+#    types:
+#      - completed
+#  workflow_dispatch:
+#    inputs:
+#      noop:
+#        default: noop # Might want to use for versions/tags
+#        description: noop
+#        required: false
 
 jobs:
   build-servicestack-core:
-    runs-on: windows-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Setup dotnet
@@ -20,7 +25,12 @@ jobs:
           include-prerelease: true
           
       - name: Build
-        run: dotnet build --framework net6.0 ./ServiceStack.Core/src/ServiceStack.Core.sln
-        
-#      TODO package
+        working-directory: ServiceStack.Core/build
+        run: |
+          # chmod +x ./ServiceStack.Core/build/build.sh
+          # ./ServiceStack.Core/build/build.sh
+          # Using straight dotnet build for now, deal with correct piping of output to GH actions later from script.
+          dotnet build ./build.proj /property:Configuration=Release /property:MinorVersion=0 /property:PatchVersion=3    
+    
+    #      TODO package
     
