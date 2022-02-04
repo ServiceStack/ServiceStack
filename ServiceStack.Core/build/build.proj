@@ -11,14 +11,14 @@
 
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
-    <ServiceStackSrcDir>$(BuildSolutionDir)/src</ServiceStackSrcDir>
-    <AwsSrcDir>$(BuildSolutionDir)../ServiceStack.Aws/src</AwsSrcDir>
-    <AzureSrcDir>$(BuildSolutionDir)../ServiceStack.Azure/src</AzureSrcDir>
-    <LoggingSrcDir>$(BuildSolutionDir)../ServiceStack.Logging/src</LoggingSrcDir>
-    <OrmLiteSrcDir>$(BuildSolutionDir)../ServiceStack.OrmLite/src</OrmLiteSrcDir>
-    <RedisSrcDir>$(BuildSolutionDir)../ServiceStack.Redis/src</RedisSrcDir>
-    <StripeSrcDir>$(BuildSolutionDir)../ServiceStack.Stripe/src</StripeSrcDir>
-    <TextSrcDir>$(BuildSolutionDir)../ServiceStack.Text/src</TextSrcDir>
+    <ServiceStackSrcDir>$(BuildSolutionDir)/../ServiceStack/src</ServiceStackSrcDir>
+    <AwsSrcDir>$(BuildSolutionDir)/../ServiceStack.Aws/src</AwsSrcDir>
+    <AzureSrcDir>$(BuildSolutionDir)/../ServiceStack.Azure/src</AzureSrcDir>
+    <LoggingSrcDir>$(BuildSolutionDir)/../ServiceStack.Logging/src</LoggingSrcDir>
+    <OrmLiteSrcDir>$(BuildSolutionDir)/../ServiceStack.OrmLite/src</OrmLiteSrcDir>
+    <RedisSrcDir>$(BuildSolutionDir)/../ServiceStack.Redis/src</RedisSrcDir>
+    <StripeSrcDir>$(BuildSolutionDir)/../ServiceStack.Stripe/src</StripeSrcDir>
+    <TextSrcDir>$(BuildSolutionDir)/../ServiceStack.Text/src</TextSrcDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
@@ -220,7 +220,7 @@
     <!--
       ServiceStack.Text
     -->
-    <MSBuild Projects="$(StripeSrcDir)/ServiceStack.Text/ServiceStack.Text.Core.csproj"
+    <MSBuild Projects="$(TextSrcDir)/ServiceStack.Text/ServiceStack.Text.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
