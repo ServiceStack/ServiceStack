@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis.Core", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Stripe.Core", "..\..\ServiceStack.Stripe\src\ServiceStack.Stripe\ServiceStack.Stripe.Core.csproj", "{59AFE593-45BA-4164-90D5-2CF3BD524E2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RabbitMq.Core", "..\..\ServiceStack\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.Core.csproj", "{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -170,6 +172,10 @@ Global
 		{59AFE593-45BA-4164-90D5-2CF3BD524E2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59AFE593-45BA-4164-90D5-2CF3BD524E2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59AFE593-45BA-4164-90D5-2CF3BD524E2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
