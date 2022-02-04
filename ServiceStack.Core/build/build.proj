@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
-    <ServiceStackSrcDir>$(BuildSolutionDir)/src</ServiceStackSrcDir>
+    <ServiceStackSrcDir>$(BuildSolutionDir)/../ServiceStack/src</ServiceStackSrcDir>
     <AwsSrcDir>$(BuildSolutionDir)/../ServiceStack.Aws/src</AwsSrcDir>
     <AzureSrcDir>$(BuildSolutionDir)/../ServiceStack.Azure/src</AzureSrcDir>
     <LoggingSrcDir>$(BuildSolutionDir)/../ServiceStack.Logging/src</LoggingSrcDir>
