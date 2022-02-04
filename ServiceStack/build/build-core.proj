@@ -98,18 +98,6 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.Logging.Log4Net.Core -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Logging.Log4Net/ServiceStack.Logging.Log4Net.Core.csproj" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Logging.Log4Net/ServiceStack.Logging.Log4Net.Core.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Logging.Log4Net.Core -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Logging.NLog/ServiceStack.Logging.NLog.Core.csproj" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Logging.NLog/ServiceStack.Logging.NLog.Core.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
     <!-- ServiceStack.MsgPack.Core -->
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.MsgPack/ServiceStack.MsgPack.Core.csproj" Targets="Restore" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.MsgPack/ServiceStack.MsgPack.Core.csproj"
