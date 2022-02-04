@@ -31,17 +31,11 @@
   </Target>
 
   <Target Name="BuildSolutions">
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
+    <ItemGroup>
+      <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    </ItemGroup>
+    <Delete Files="@(NugetPackageFilesToDelete)" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Aws.sln" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Aws.sln" Targets="Build"
-             Properties="Configuration=$(Configuration)" />
-  </Target>
-
-  <!-- need to remove old caches from nuget restore from .Core csproj's -->
-  <Target Name="ClearNuGetRestoreCaches">
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Aws/obj" />
-    <RemoveDir Directories="$(TestsDir)/ServiceStack.Aws.DynamoDbTests/obj" />
-    <RemoveDir Directories="$(TestsDir)/ServiceStack.Aws.Tests/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -69,9 +63,6 @@
       <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
     </ItemGroup>
     <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
-
-    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
 
   </Target>
 </Project>

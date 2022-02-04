@@ -13,6 +13,7 @@
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
     <SrcDir>$(BuildSolutionDir)/src</SrcDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
   </PropertyGroup>
 
@@ -29,27 +30,11 @@
   </Target>
 
   <Target Name="BuildSolutions">
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
+    <ItemGroup>
+      <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    </ItemGroup>
+    <Delete Files="@(NugetPackageFilesToDelete)" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.sln" Targets="Restore" />
-
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.sln" Targets="Build"
-             Properties="Configuration=$(Configuration)" />
-  </Target>
-
-  <!-- need to remove old caches from nuget restore from .Core csproj's -->
-  <Target Name="ClearNuGetRestoreCaches">
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Firebird/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.MySql/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.MySqlConnector/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.PostgreSQL/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite.Data/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Sqlite.Cil/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer.Data/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.SqlServer.Converters/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.OrmLite.Oracle/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -136,8 +121,11 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
-    <CallTarget Targets="ClearNuGetRestoreCaches" />
+    <!-- Copy all *.nupkg to /NuGet -->
+    <ItemGroup>
+      <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
+    </ItemGroup>
+    <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
 
   </Target>
 </Project>

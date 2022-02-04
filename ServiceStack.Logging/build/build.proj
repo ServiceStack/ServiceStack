@@ -31,6 +31,10 @@
   </Target>
 
   <Target Name="BuildSolutions">
+    <ItemGroup>
+      <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    </ItemGroup>
+    <Delete Files="@(NugetPackageFilesToDelete)" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Logging.sln" Targets="Restore" />
   </Target>
 
