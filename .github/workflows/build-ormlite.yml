@@ -1,0 +1,64 @@
+﻿name: Build ServiceStack.OrmLite
+
+on: [push]
+
+jobs:
+  build-ormlite:
+    runs-on: ubuntu-20.04
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 48301:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: Test!tesT
+          MSSQL_PID: Developer
+        ports:
+          - 48501:1433
+      mysql:
+        image: mysql:8.0.28
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: test
+          MYSQL_USER: root
+        ports:
+          - 48201:3306
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+          
+      - name: Build
+        run: dotnet build ./ServiceStack.OrmLite/src/ServiceStack.OrmLite.sln
+        
+      - name: Test Setup
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
+        
+      - name: Test PostgreSQL
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.PostgreSQL.Tests/ServiceStack.OrmLite.PostgreSQL.Tests.csproj
+        
+      - name: Test Sqlite
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj
+        
+      - name: Test SqlServer
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqlServer.Tests/ServiceStack.OrmLite.SqlServer.Tests.csproj
+        
+      - name: Test MySQL
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.MySql.Tests/ServiceStack.OrmLite.MySql.Tests.csproj
+        

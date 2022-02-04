@@ -1,0 +1,35 @@
+name: Build ServiceStack
+
+on: [push]
+
+jobs:
+  build-servicestack:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+          
+      - name: Build
+        run: dotnet build --framework net6.0 ./ServiceStack/src/ServiceStack/ServiceStack.csproj
+        
+      - name: Test Common
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj
+      - name: Test Extensions
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Extensions.Tests/ServiceStack.Extensions.Tests.csproj
+      - name: Test OpenApi
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.OpenApi.Tests/ServiceStack.OpenApi.Tests.csproj
+      - name: Test Server
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Server.Tests/ServiceStack.Server.Tests.csproj
+      - name: Test ServiceHosts
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.ServiceHost.Tests/ServiceStack.ServiceHost.Tests.csproj
+      - name: Test ServiceModels
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/ServiceStack.ServiceModel.Tests.csproj
+      - name: Test WebHost Endpoints
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj
+        
+        
+    
