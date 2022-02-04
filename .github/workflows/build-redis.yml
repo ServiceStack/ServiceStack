@@ -1,0 +1,35 @@
+name: Build ServiceStack.Redis
+
+on:
+  push:
+    paths:
+      - 'ServiceStack.Redis/**'
+      - 'ServiceStack.Text/**'
+
+jobs:
+  build-redis:
+    runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+          
+      - name: Build
+        run: dotnet build --framework net6.0 ./ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj
+        
+      - name: Test Without Integration
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration
+      - name: Test With Integration
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration
+    

@@ -1,6 +1,12 @@
 name: Build ServiceStack
 
-on: [push]
+on: 
+  push:
+    paths:
+      - 'ServiceStack/**'
+      - 'ServiceStack.OrmLite/**'
+      - 'ServiceStack.Redis/**'
+      - 'ServiceStack.Text/**'
 
 jobs:
   build-servicestack:

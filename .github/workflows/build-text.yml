@@ -1,0 +1,24 @@
+name: Build ServiceStack.Text
+
+on:
+  push:
+    paths:
+      - 'ServiceStack.Text/**'
+
+jobs:
+  build-text:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+          
+      - name: Build
+        run: dotnet build --framework net6.0 ./ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj
+        
+      - name: Tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj
+    
