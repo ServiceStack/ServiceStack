@@ -220,7 +220,7 @@
     <!--
       ServiceStack.Text
     -->
-    <MSBuild Projects="$(StripeSrcDir)/ServiceStack.Text/ServiceStack.Text.Core.csproj"
+    <MSBuild Projects="$(TextSrcDir)/ServiceStack.Text/ServiceStack.Text.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
