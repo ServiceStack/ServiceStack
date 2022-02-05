@@ -18,7 +18,8 @@ namespace ServiceStack
 
         public static Dictionary<string, ApplyTo> VerbsApplyTo;
 
-        public static readonly Dictionary<ApplyTo, string> ApplyToVerbs = new Dictionary<ApplyTo, string> {
+        public static readonly Dictionary<ApplyTo, string> ApplyToVerbs = new()
+        {
             {ApplyTo.Get, HttpMethods.Get},
             {ApplyTo.Post, HttpMethods.Post},
             {ApplyTo.Put, HttpMethods.Put},

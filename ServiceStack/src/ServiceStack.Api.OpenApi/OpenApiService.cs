@@ -731,12 +731,7 @@ namespace ServiceStack.Api.OpenApi
                 foreach (var verb in verbs)
                 {
                     var needAuth = op.RequiresAuthentication;
-
-                    var userTags = new List<string>();
-                    if (ApplyToUtils.VerbsApplyTo.TryGetValue(verb, out var applyToVerb))
-                    {
-                        userTags = annotatingTagAttributes.Where(x => x.ApplyTo.HasFlag(applyToVerb)).Select(x => x.Name).ToList();
-                    }
+                    var userTags = annotatingTagAttributes.Select(x => x.Name).ToList();
 
                     var operation = new OpenApiOperation
                     {
