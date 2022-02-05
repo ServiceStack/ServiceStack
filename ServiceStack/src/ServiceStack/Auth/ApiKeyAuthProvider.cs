@@ -219,7 +219,7 @@ namespace ServiceStack.Auth
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
             await using (authRepo as IAsyncDisposable)
             {
-                var apiKey = GetApiKey(authService.Request, request.Password);
+                var apiKey = await GetApiKeyAsync(authService.Request, request.Password).ConfigAwait();
                 ValidateApiKey(authService.Request, apiKey);
                 
                 if (string.IsNullOrEmpty(apiKey.UserAuthId))
@@ -262,13 +262,13 @@ namespace ServiceStack.Auth
             var userPass = req.GetBasicAuthUserAndPassword();
             if (userPass != null && string.IsNullOrEmpty(userPass.Value.Value))
             {
-                var apiKey = GetApiKey(req, userPass.Value.Key);
+                var apiKey = await GetApiKeyAsync(req, userPass.Value.Key).ConfigAwait();
                 await PreAuthenticateWithApiKeyAsync(req, res, apiKey).ConfigAwait();
             }
             var bearerToken = req.GetBearerToken();
             if (bearerToken != null)
             {
-                var apiKey = GetApiKey(req, bearerToken);
+                var apiKey = await GetApiKeyAsync(req, bearerToken).ConfigAwait();
                 if (apiKey != null)
                 {
                     await PreAuthenticateWithApiKeyAsync(req, res, apiKey).ConfigAwait();
@@ -280,17 +280,17 @@ namespace ServiceStack.Auth
                 var apiKey = req.QueryString[Keywords.ApiKeyParam] ?? req.FormData[Keywords.ApiKeyParam];
                 if (apiKey != null)
                 {
-                    await PreAuthenticateWithApiKeyAsync(req, res, GetApiKey(req, apiKey)).ConfigAwait();
+                    await PreAuthenticateWithApiKeyAsync(req, res, await GetApiKeyAsync(req, apiKey).ConfigAwait()).ConfigAwait();
                 }
             }
         }
 
-        protected virtual ApiKey GetApiKey(IRequest req, string apiKey)
+        protected virtual async Task<ApiKey> GetApiKeyAsync(IRequest req, string apiKey)
         {
-            var authRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(req);
-            using (authRepo as IDisposable)
+            var manageApiKeys = HostContext.AppHost.AssertManageApiKeysAsync(req);
+            using (manageApiKeys as IDisposable)
             {
-                return authRepo.GetApiKey(apiKey);
+                return await manageApiKeys.GetApiKeyAsync(apiKey).ConfigAwait();
             }
         }
 
@@ -323,7 +323,7 @@ namespace ServiceStack.Auth
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
-            using var authService = HostContext.ResolveService<AuthenticateService>(req);
+            await using var authService = HostContext.ResolveService<AuthenticateService>(req);
             var response = await authService.PostAsync(new Authenticate
             {
                 provider = Name,
@@ -366,24 +366,16 @@ namespace ServiceStack.Auth
         public override void Register(IAppHost appHost, AuthFeature feature)
         {
             base.Register(appHost, feature);
-            var authRepo = HostContext.AppHost.GetAuthRepository();
-            if (authRepo == null)
-                throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
-
-            if (!(authRepo is IManageApiKeys apiRepo))
-                throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
+            var manageApiKeys = HostContext.AppHost.AssertManageApiKeysAsync();
+            using (manageApiKeys as IDisposable)
+            {
+                if (InitSchema)
+                    manageApiKeys.InitApiKeySchema();
+            }
 
             appHost.RegisterServices(ServiceRoutes);
 
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
-
-            if (InitSchema)
-            {
-                using (apiRepo as IDisposable)
-                {
-                    apiRepo.InitApiKeySchema();
-                }
-            }
         }
 
         public override Task OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
@@ -436,13 +428,14 @@ namespace ServiceStack.Auth
             this.apiKeyProvider = apiKeyProvider;
         }
 
-        public override void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService)
+        public override async Task OnRegisteredAsync(IRequest httpReq, IAuthSession session, IServiceBase registrationService,
+            CancellationToken token = default)
         {
             var apiKeys = apiKeyProvider.GenerateNewApiKeys(session.UserAuthId);
-            var authRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(httpReq);
-            using (authRepo as IDisposable)
+            var manageApiKeys = HostContext.AppHost.AssertManageApiKeysAsync(httpReq);
+            using (manageApiKeys as IDisposable)
             {
-                authRepo.StoreAll(apiKeys);
+                await manageApiKeys.StoreAllAsync(apiKeys, token).ConfigAwait();
             }
         }
     }
@@ -451,20 +444,21 @@ namespace ServiceStack.Auth
     [DefaultRequest(typeof(GetApiKeys))]
     public class GetApiKeysService : Service
     {
-        public object Any(GetApiKeys request)
+        public async Task<object> Any(GetApiKeys request)
         {
             var apiKeyAuth = this.Request.AssertValidApiKeyRequest();
             if (string.IsNullOrEmpty(request.Environment) && apiKeyAuth.Environments.Length != 1)
-                throw new ArgumentNullException("Environment");
+                throw new ArgumentNullException(nameof(request.Environment));
 
             var env = request.Environment ?? apiKeyAuth.Environments[0];
 
-            var apiRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(base.Request);
-            using (apiRepo as IDisposable)
+            var manageApiKeys = HostContext.AppHost.AssertManageApiKeysAsync(Request);
+            using (manageApiKeys as IDisposable)
             {
+                var userId = (await GetSessionAsync().ConfigAwait()).UserAuthId;
                 return new GetApiKeysResponse
                 {
-                    Results = apiRepo.GetUserApiKeys(GetSession().UserAuthId)
+                    Results = (await manageApiKeys.GetUserApiKeysAsync(userId).ConfigAwait())
                         .Where(x => x.Environment == env)
                         .Map(k => new UserApiKey {
                             Key = k.Id,
@@ -480,7 +474,7 @@ namespace ServiceStack.Auth
     [DefaultRequest(typeof(RegenerateApiKeys))]
     public class RegenerateApiKeysService : Service
     {
-        public object Any(RegenerateApiKeys request)
+        public async Task<object> Any(RegenerateApiKeys request)
         {
             var apiKeyAuth = this.Request.AssertValidApiKeyRequest();
             if (string.IsNullOrEmpty(request.Environment) && apiKeyAuth.Environments.Length != 1)
@@ -488,11 +482,11 @@ namespace ServiceStack.Auth
 
             var env = request.Environment ?? apiKeyAuth.Environments[0];
 
-            var apiRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(base.Request);
-            using (apiRepo as IDisposable)
+            var manageApiKeys = HostContext.AppHost.AssertManageApiKeysAsync(Request);
+            using (manageApiKeys as IDisposable)
             {
-                var userId = GetSession().UserAuthId;
-                var updateKeys = apiRepo.GetUserApiKeys(userId)
+                var userId = (await GetSessionAsync().ConfigAwait()).UserAuthId;
+                var updateKeys = (await manageApiKeys.GetUserApiKeysAsync(userId).ConfigAwait())
                     .Where(x => x.Environment == env)
                     .ToList();
 
@@ -501,7 +495,7 @@ namespace ServiceStack.Auth
                 var newKeys = apiKeyAuth.GenerateNewApiKeys(userId, env);
                 updateKeys.AddRange(newKeys);
 
-                apiRepo.StoreAll(updateKeys);
+                await manageApiKeys.StoreAllAsync(updateKeys).ConfigAwait();
 
                 return new RegenerateApiKeysResponse
                 {
@@ -539,5 +533,39 @@ namespace ServiceStack
 
             return apiKeyAuth;
         }
+
+        public static IManageApiKeysAsync AssertManageApiKeysAsync(this ServiceStackHost appHost, IRequest req=null)
+        {
+            var authRepo = appHost.GetAuthRepositoryAsync(req);
+            if (authRepo == null)
+                throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
+
+            if (authRepo is IManageApiKeysAsync manageApiKeysAsync)
+                return manageApiKeysAsync;
+            if (authRepo is IManageApiKeys manageApiKeys)
+                return new ManageApiKeysAsyncWrapper(manageApiKeys);
+            
+            throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
+        }
+    }
+
+    public class ManageApiKeysAsyncWrapper : IManageApiKeysAsync
+    {
+        private readonly IManageApiKeys manageApiKeys;
+        public ManageApiKeysAsyncWrapper(IManageApiKeys manageApiKeys) => this.manageApiKeys = manageApiKeys;
+        public void InitApiKeySchema() => manageApiKeys.InitApiKeySchema();
+
+        public Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token = default) => 
+            Task.FromResult(manageApiKeys.ApiKeyExists(apiKey));
+        public Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token = default) => 
+            Task.FromResult(manageApiKeys.GetApiKey(apiKey));
+        public Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token = default) => 
+            Task.FromResult(manageApiKeys.GetUserApiKeys(userId));
+        public Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token = default)
+        {
+            manageApiKeys.StoreAll(apiKeys);
+            return Task.CompletedTask;
+        }
+        
     }
 }
