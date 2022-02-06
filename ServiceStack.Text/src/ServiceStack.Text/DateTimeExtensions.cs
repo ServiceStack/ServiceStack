@@ -46,6 +46,9 @@ namespace ServiceStack.Text
             return (dateTime.ToStableUniversalTime().Ticks - UnixEpoch) / TimeSpan.TicksPerMillisecond;
         }
 
+        public static long ToUnixTimeMs(this DateTimeOffset dateTimeOffset) => 
+            (long)ToDateTimeSinceUnixEpoch(dateTimeOffset.UtcDateTime).TotalMilliseconds;
+
         public static long ToUnixTimeMs(this DateTime dateTime)
         {
             var universal = ToDateTimeSinceUnixEpoch(dateTime);
