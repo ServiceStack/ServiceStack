@@ -1,10 +1,10 @@
 ﻿name: Build ServiceStack.OrmLite
 
-on:
-  push:
-    paths:
-      - 'ServiceStack.OrmLite/**'
-      - 'ServiceStack.Text/**'
+on: [push]
+#  push:
+#    paths:
+#      - 'ServiceStack.OrmLite/**'
+#      - 'ServiceStack.Text/**'
 
 jobs:
   build-ormlite:
