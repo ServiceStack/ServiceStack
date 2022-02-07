@@ -3,7 +3,7 @@ using ServiceStack;
 using ServiceStack.Data;
 
 // In Configure.AppHost
-// [assembly: HostingStartup(typeof(MyApp.ConfigureAutoQuery))]
+[assembly: HostingStartup(typeof(MyApp.ConfigureAutoQuery))]
 
 namespace MyApp
 {
@@ -16,14 +16,19 @@ namespace MyApp
                     new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
             })
             .ConfigureAppHost(appHost => {
-
                 // For TodosService
                 appHost.Plugins.Add(new AutoQueryDataFeature());
 
-                // For Bookings https://github.com/NetCoreApps/BookingsCrud
+                // For NorthwindAuto + Bookings
                 appHost.Plugins.Add(new AutoQueryFeature {
                     MaxLimit = 1000,
-                    //IncludeTotal = true,
+                    GenerateCrudServices = new GenerateCrudServices {
+                        AutoRegister = true,
+                        ServiceFilter = (op, req) =>
+                        {
+                            op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));
+                        }
+                    }
                 });
 
                 appHost.Resolve<ICrudEvents>().InitSchema();

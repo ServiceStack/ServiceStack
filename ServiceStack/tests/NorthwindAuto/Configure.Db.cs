@@ -11,13 +11,14 @@ namespace MyApp
     public class ConfigureDb : IHostingStartup
     {
         public void Configure(IWebHostBuilder builder) => builder
-            .ConfigureServices((context,services) => services.AddSingleton<IDbConnectionFactory>(new OrmLiteConnectionFactory(
-                context.Configuration.GetConnectionString("DefaultConnection") ?? ":memory:",
-                SqliteDialect.Provider)))
+            .ConfigureServices((context, services) => services.AddSingleton<IDbConnectionFactory>(
+                new OrmLiteConnectionFactory(
+                    context.Configuration.GetConnectionString("DefaultConnection") ?? ":memory:",
+                    SqliteDialect.Provider)))
             .ConfigureAppHost(appHost =>
             {
                 // Create non-existing Table and add Seed Data Example
-                using var db = appHost.Resolve<IDbConnectionFactory>().Open();                
+                using var db = appHost.Resolve<IDbConnectionFactory>().Open();
                 if (db.CreateTableIfNotExists<Booking>())
                 {
                     db.CreateBooking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
@@ -30,6 +31,7 @@ namespace MyApp
     public static class ConfigureDbUtils
     {
         static int bookingId = 0;
+
         public static void CreateBooking(this IDbConnection db, string name, RoomType type, int roomNo, decimal cost, string by) =>
             db.Insert(new Booking
             {
@@ -45,6 +47,5 @@ namespace MyApp
                 ModifiedBy = by,
                 ModifiedDate = DateTime.UtcNow,
             });
-
     }
 }

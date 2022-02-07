@@ -29,23 +29,14 @@ namespace MyApp
             
             SetConfig(new HostConfig
             {
-                DebugMode = false,
-                //DebugMode = true,
+                //DebugMode = false,
+                DebugMode = true,
                 AdminAuthSecret = "secret",
             });
 
             // Register Database Connection, see: https://github.com/ServiceStack/ServiceStack.OrmLite#usage
-            container.AddSingleton<IDbConnectionFactory>(c =>
-                new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider));
-
-            // For TodosService
-            Plugins.Add(new AutoQueryDataFeature());
-
-            // For NorthwindAuto + Bookings
-            Plugins.Add(new AutoQueryFeature {
-                MaxLimit = 100,
-                GenerateCrudServices = new GenerateCrudServices {}
-            });
+            // container.AddSingleton<IDbConnectionFactory>(c =>
+            //     new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider));
 
             ConfigurePlugin<UiFeature>(feature => {
                 Console.WriteLine("ConfigurePlugin<UiFeature>...");
@@ -60,11 +51,11 @@ namespace MyApp
             });
             
             // Not needed in `dotnet watch` and in /wwwroot/modules/ui which can use _framework/aspnetcore-browser-refresh.js"
-            // Plugins.AddIfDebug(new HotReloadFeature
-            // {
-            //     VirtualFiles = VirtualFiles,
-            //     DefaultPattern = "*.html;*.js;*.css"
-            // });
+            Plugins.AddIfDebug(new HotReloadFeature
+            {
+                VirtualFiles = VirtualFiles,
+                DefaultPattern = "*.html;*.js;*.css"
+            });
             
             //Plugins.Add(new PostmanFeature());
         }
