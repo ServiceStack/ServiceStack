@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Default"
          xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="4.0">
-  <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
-
-  <PropertyGroup>
-    <MajorVersion Condition="$(MajorVersion) == ''">6</MajorVersion>
-    <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
-    <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
-  </PropertyGroup>
 
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
@@ -15,7 +8,6 @@
     <TestsDir>$(BuildSolutionDir)/tests</TestsDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
-    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,7 +19,6 @@
 
   <Target Name="BeforeBuildSolutions">
     <Message Text="*****Before building solution*****" Importance="high"/>
-    <CallTarget Targets="UpdateVersion" />
   </Target>
 
   <Target Name="BuildSolutions">
@@ -36,18 +27,6 @@
     </ItemGroup>
     <Delete Files="@(NugetPackageFilesToDelete)" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Blazor.sln" Targets="Restore" />
-  </Target>
-
-  <Target Name="UpdateVersion">
-    <!-- Update Version -->
-    <ItemGroup>
-      <RegexTransform Include="$(BuildSolutionDir)/src/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
-      </RegexTransform>
-    </ItemGroup>
-
-    <RegexTransform Items="@(RegexTransform)" />
   </Target>
 
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">

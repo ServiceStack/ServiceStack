@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Default"
          xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="4.0">
-  <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
-
-  <PropertyGroup>
-    <MajorVersion Condition="$(MajorVersion) == ''">6</MajorVersion>
-    <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
-    <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
-  </PropertyGroup>
 
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
@@ -21,7 +14,6 @@
     <TextSrcDir>$(BuildSolutionDir)/../ServiceStack.Text/src</TextSrcDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
-    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -45,39 +37,14 @@
   </Target>
 
   <Target Name="UpdateVersion">
-    <!-- Update Version -->
     <ItemGroup>
-      <RegexTransform Include="$(ServiceStackSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
+      <RegexTransform Include="$(TextSrcDir)/ServiceStack.Text/Env.cs">
+          <Find>ServiceStackVersion = \d+\.\d+m;</Find>
+          <ReplaceWith>ServiceStackVersion = $(MajorVersion).$(MinorVersion)$(PatchVersion)m;</ReplaceWith>
       </RegexTransform>
-      <RegexTransform Include="$(AwsSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
-      </RegexTransform>
-      <RegexTransform Include="$(AzureSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
-      </RegexTransform>
-      <RegexTransform Include="$(LoggingSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
-      </RegexTransform>
-      <RegexTransform Include="$(OrmLiteSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
-      </RegexTransform>
-      <RegexTransform Include="$(RedisSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
-      </RegexTransform>
-      <RegexTransform Include="$(StripeSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
-      </RegexTransform>
-      <RegexTransform Include="$(TextSrcDir)/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-        <Find>&lt;Version&gt;[^&lt;]*</Find>
-        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
+      <RegexTransform Include="$(TextSrcDir)/ServiceStack.Text/Env.cs">
+          <Find>new DateTime.*</Find>
+          <ReplaceWith>new DateTime($([System.DateTime]::Now.ToString(`yyyy,MM,dd`)));</ReplaceWith>
       </RegexTransform>
     </ItemGroup>
 

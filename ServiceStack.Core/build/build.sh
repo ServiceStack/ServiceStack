@@ -1,1 +1,1 @@
-dotnet build ./build.proj /property:Configuration=Release /property:MinorVersion=0 /property:PatchVersion=3
+dotnet build ./build.proj /property:Configuration=Release

@@ -4,18 +4,11 @@
     <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
 
     <PropertyGroup>
-        <MajorVersion Condition="$(MajorVersion) == ''">6</MajorVersion>
-        <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
-        <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
         <SrcDir>$(BuildSolutionDir)/src</SrcDir>
         <TestsDir>$(BuildSolutionDir)/tests</TestsDir>
         <Configuration Condition="$(Configuration) == ''">Release</Configuration>
         <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
-        <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -31,7 +24,6 @@
     </Target>
 
     <Target Name="BuildSolutions">
-        <CallTarget Targets="ClearNuGetRestoreCaches" />
         <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Text.sln" Targets="Restore" />
 
         <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Text.sln" Targets="Build"
@@ -42,13 +34,6 @@
         <MSBuild Projects="$(BuildSolutionDir)/tests/Northwind.Common/Northwind.Common.csproj"
                  Targets="Build"
                  Properties="Configuration=$(Configuration)" />
-    </Target>
-
-    <!-- need to remove old caches from nuget restore from .Core csproj's -->
-    <Target Name="ClearNuGetRestoreCaches">
-        <RemoveDir Directories="$(SrcDir)/ServiceStack.Text/obj" />
-        <RemoveDir Directories="$(TestsDir)/ServiceStack.Text.Tests/obj" />
-        <RemoveDir Directories="$(TestsDir)/ServiceStack.Text.TestsConsole/obj" />
     </Target>
 
     <Target Name="UpdateVersion">
@@ -62,12 +47,6 @@
             <RegexTransform Include="$(SrcDir)/ServiceStack.Text/Env.cs">
                 <Find>new DateTime.*</Find>
                 <ReplaceWith>new DateTime($([System.DateTime]::Now.ToString(`yyyy,MM,dd`)));</ReplaceWith>
-            </RegexTransform>
-
-            <!--Update Min Dependency Version -->
-            <RegexTransform Include="$(BuildSolutionDir)/src/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
-                <Find>&lt;Version&gt;[^&lt;]*</Find>
-                <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
             </RegexTransform>
         </ItemGroup>
 
