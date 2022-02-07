@@ -14,8 +14,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Client.Core" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Core.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.Core.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
