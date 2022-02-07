@@ -15,10 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
-    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
     <PackageReference Include="MongoDB.Bson" Version="2.13.1" />
     <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />

@@ -62,6 +62,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Stripe.Core", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RabbitMq.Core", "..\..\ServiceStack\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.Core.csproj", "{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication.MongoDb.Core", "..\..\ServiceStack\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.Core.csproj", "{A1D681C1-864D-4746-A787-8E539B57B843}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,10 @@ Global
 		{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EB7E75A-1DBC-4A30-BAC7-AD43BC176E0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1D681C1-864D-4746-A787-8E539B57B843}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1D681C1-864D-4746-A787-8E539B57B843}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1D681C1-864D-4746-A787-8E539B57B843}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1D681C1-864D-4746-A787-8E539B57B843}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
