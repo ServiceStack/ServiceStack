@@ -49,20 +49,15 @@ jobs:
           include-prerelease: true
           
       - name: Build
-        run: dotnet build --framework net6.0 ./ServiceStack.OrmLite/src/ServiceStack.OrmLite.sln
+        working-directory: ServiceStack.OrmLite/build
+        run: dotnet build ./build.proj
         
       - name: Test Setup
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
-        
-      - name: Test PostgreSQL
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.PostgreSQL.Tests/ServiceStack.OrmLite.PostgreSQL.Tests.csproj
-        
+        working-directory: ServiceStack.OrmLite/tests
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
+
       - name: Test Sqlite
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj
-        
-      - name: Test SqlServer
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqlServer.Tests/ServiceStack.OrmLite.SqlServer.Tests.csproj
-        
-      - name: Test MySQL
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.MySql.Tests/ServiceStack.OrmLite.MySql.Tests.csproj
-        
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: Sqlite
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj

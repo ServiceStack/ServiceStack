@@ -28,10 +28,14 @@ jobs:
           include-prerelease: true
           
       - name: Build
-        run: dotnet build --framework net6.0 ./ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj
+        working-directory: ServiceStack.Redis/build
+        run: dotnet build ./build.proj
         
       - name: Test Without Integration
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration
+        working-directory: ServiceStack.Redis/tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration
+      
       - name: Test With Integration
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration
+        working-directory: ServiceStack.Redis/tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration
     
