@@ -15,7 +15,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.12" />
     </ItemGroup>
     <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,15 +26,15 @@
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
         <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
 
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.40.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.41.1" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.42.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.43.0" />
         <PackageReference Include="protobuf-net" Version="3.0.101" />
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.152" />
         
         <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
 
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.14.1" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.1" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.15.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
     </ItemGroup>
 
 </Project>
