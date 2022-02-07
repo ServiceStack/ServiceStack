@@ -3,7 +3,7 @@
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
     <PropertyGroup>
-        <TargetFramework>netstandard1.0</TargetFramework>
+        <TargetFrameworks>net472;net6.0</TargetFrameworks>
         <PackageId>ServiceStack.OrmLite.T4</PackageId>
         <Title>OrmLite.T4 - T4 schema-generation templates for OrmLite</Title>
         <PackageDescription>
@@ -33,9 +33,5 @@
 
     <Target Name="Compile" />
     <Target Name="CopyFilesToOutputDirectory" />
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All"/>
-    </ItemGroup>
 
 </Project>

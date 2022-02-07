@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{6CEB3EDE
 		ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.Source.csproj = ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.Source.csproj
 		ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.Source.csproj = ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.Source.csproj
 		ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.Source.csproj = ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.Source.csproj
+		ServiceStack.OrmLite.Oracle\ServiceStack.OrmLite.Oracle.csproj = ServiceStack.OrmLite.Oracle\ServiceStack.OrmLite.Oracle.csproj
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.Sqlite", "ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj", "{CF68A37D-D071-469D-AE04-68594CB95382}"
