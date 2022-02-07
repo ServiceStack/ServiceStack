@@ -483,7 +483,7 @@ namespace ServiceStack.Api.OpenApi
             return InlineSchemaTypesInNamespaces.Contains(schemaType.Namespace);
         }
 
-        public Dictionary<string, Type> SchemaIdToClrType { get; } = new Dictionary<string, Type>();
+        public Dictionary<string, Type> SchemaIdToClrType { get; } = new();
         
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
@@ -718,7 +718,7 @@ namespace ServiceStack.Api.OpenApi
                     {
                         Parameters = new List<OpenApiParameter>
                         {
-                            new OpenApiParameter { Ref = "#/parameters/Accept" }
+                            new() { Ref = "#/parameters/Accept" }
                         }
                     };
                     apiPaths.Add(restPath.Path, curPath);
@@ -741,8 +741,8 @@ namespace ServiceStack.Api.OpenApi
                         OperationId = GetOperationName(requestType.Name, routePath, verb),
                         Parameters = ParseParameters(schemas, requestType, routePath, verb),
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
-                        Consumes = new List<string> { "application/json" },
-                        Produces = new List<string> { "application/json" },
+                        Consumes = new List<string> { MimeTypes.Json },
+                        Produces = new List<string> { MimeTypes.Json },
                         Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
                         Security = needAuth ? new List<Dictionary<string, List<string>>> {
@@ -797,7 +797,7 @@ namespace ServiceStack.Api.OpenApi
             return (verb == HttpMethods.Post || verb == HttpMethods.Put) && parameters.Any(p => p.In == "formData");
         }
 
-        static readonly Dictionary<string, string> postfixes = new Dictionary<string, string>()
+        static readonly Dictionary<string, string> postfixes = new()
         {
             { HttpMethods.Get, "_Get" },      //'Get' or 'List' to pass Autorest validation
             { HttpMethods.Put, "_Create" },   //'Create' to pass Autorest validation
@@ -809,7 +809,7 @@ namespace ServiceStack.Api.OpenApi
 
         HashSet<string> operationIds = new();
 
-        /// Returns operation postfix to make operationId unique and swagger json be validable
+        /// Returns operation postfix to make operationId unique and swagger json be validatable
         private string GetOperationName(string name, string route, string verb)
         {
             string pathPostfix = string.Empty;
