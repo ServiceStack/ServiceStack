@@ -40,11 +40,6 @@
         <!-- Update Version -->
         <ItemGroup>
             <RegexTransform Include="$(SrcDir)/ServiceStack.Text/Env.cs">
-                <Find>ServiceStackVersion = \d+\.\d+m;</Find>
-                <ReplaceWith>ServiceStackVersion = $(MajorVersion).$(MinorVersion)$(PatchVersion)m;</ReplaceWith>
-            </RegexTransform>
-
-            <RegexTransform Include="$(SrcDir)/ServiceStack.Text/Env.cs">
                 <Find>new DateTime.*</Find>
                 <ReplaceWith>new DateTime($([System.DateTime]::Now.ToString(`yyyy,MM,dd`)));</ReplaceWith>
             </RegexTransform>
