@@ -23,7 +23,6 @@
   <ItemGroup>
     <Folder Include="admin-ui\assets" />
     <Folder Include="shared\css" />
-    <Folder Include="ui\assets" />
   </ItemGroup>
 
 </Project>
