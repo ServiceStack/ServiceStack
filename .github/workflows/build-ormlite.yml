@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
         
-      - name: Test Setup
+      - name: Tests Setup
         working-directory: ServiceStack.OrmLite/tests
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
 
