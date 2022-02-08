@@ -43,7 +43,6 @@ jobs:
         if: success() || failure()
         with:
           name: Extensions Tests
-          only-summary: 'true'
           path: ./ServiceStack/tests/ServiceStack.Extensions.Tests/TestResults/results.trx
           reporter: dotnet-trx
 
