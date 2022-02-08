@@ -5,6 +5,7 @@ on:
     paths:
       - 'ServiceStack.Redis/**'
       - 'ServiceStack.Text/**'
+      - '.github/workflows/build-redis.yml'
 
 jobs:
   build-redis:
@@ -31,11 +32,34 @@ jobs:
         working-directory: ServiceStack.Redis/build
         run: dotnet build ./build.proj
         
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+        
       - name: Test Without Integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration
-      
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
+
+      - name: Non-Integration Tests Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Redis Non-Integration Tests 
+          path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/non-integration-results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+          
+
       - name: Test With Integration
+        id: test_integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration
-    
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
+
+      - name: Integration Tests Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped' 
+        with:
+          name: Redis Integration Tests
+          path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/integration-results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
