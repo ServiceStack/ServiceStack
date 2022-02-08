@@ -5,7 +5,7 @@ on:
     paths:
       - 'ServiceStack.OrmLite/**'
       - 'ServiceStack.Text/**'
-      - '.github/**'
+      - '.github/workflows/build-ormlite.yml'
 
 jobs:
   build-ormlite:
