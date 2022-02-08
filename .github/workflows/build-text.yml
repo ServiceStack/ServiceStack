@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'ServiceStack.Text/**'
+      - '.github/workflows/build-text.yml'
 
 jobs:
   build-text:
@@ -17,8 +18,17 @@ jobs:
           include-prerelease: true
           
       - name: Build
-        run: dotnet build --framework net6.0 ./ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj
+        working-directory: ServiceStack.Text/build
+        run: dotnet build ./build.proj
         
-      - name: Tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj
-    
+      - name: Text tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj  --logger 'trx;LogFileName=test-results.trx'
+
+      - name: Text Tests Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
+        with:
+          name: Text Tests
+          path: ./ServiceStack.Text/tests/ServiceStack.Text.Tests/TestResults/test-results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
