@@ -69,8 +69,9 @@ jobs:
 
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: success() || failure() # run this step even if previous step failed
+        if: success() || failure()
         with:
-          name: OrmLite Tests                                                         # Name of the check run which will be created
-          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqliteTests/TestResults/test-results.trx       # Path to test results
-          reporter: dotnet-trx                                                        # Format of test results
+          name: OrmLite Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqliteTests/TestResults/test-results.trx
+          reporter: dotnet-trx
