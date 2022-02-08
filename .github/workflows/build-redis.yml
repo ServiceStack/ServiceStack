@@ -44,7 +44,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure() # run this step even if previous step failed
         with:
-          name: OrmLite Tests                                                         # Name of the check run which will be created
+          name: Redis Non-Integration Tests                                                         # Name of the check run which will be created
           path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/non-integration-results.trx       # Path to test results
           reporter: dotnet-trx                                                        # Format of test results
           
@@ -58,6 +58,6 @@ jobs:
         uses: dorny/test-reporter@v1
         if: (success() || failure()) && steps.test_integration.outcome != 'skipped' # run this step even if previous step failed
         with:
-          name: OrmLite Tests                                                         # Name of the check run which will be created
+          name: Redis Integration Tests                                                      # Name of the check run which will be created
           path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/integration-results.trx       # Path to test results
           reporter: dotnet-trx                                                        # Format of test results
