@@ -57,3 +57,12 @@ jobs:
           ORMLITE_DIALECT: PostgreSql11
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.PostgreSQL.Tests/ServiceStack.OrmLite.PostgreSQL.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.PostgreSQL.Tests/TestResults/results.trx
+          reporter: dotnet-trx
