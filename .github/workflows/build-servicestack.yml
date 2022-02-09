@@ -44,7 +44,7 @@ jobs:
         with:
           name: ServiceModels Tests
           only-summary: 'true'
-          path: ./ServiceStack/tests/ServiceStack.ServiceModels.Tests/TestResults/results.trx
+          path: ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/TestResults/results.trx
           reporter: dotnet-trx
 
       - name: Test WebHost Endpoints
