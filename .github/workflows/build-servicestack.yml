@@ -76,22 +76,20 @@ jobs:
           path: ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/TestResults/results.trx
           reporter: dotnet-trx
 
-      - name: Test WebHost Endpoints
-        env:
-          MSSQL_CONNECTION: Server=localhost;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
-
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: WebHost.Endpoints Tests
-          only-summary: 'true'
-          path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
-          reporter: dotnet-trx
+#      - name: Test WebHost Endpoints
+#        env:
+#          MSSQL_CONNECTION: Server=localhost;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+#        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
+#
+#      - name: Test Report
+#        uses: dorny/test-reporter@v1
+#        if: success() || failure()
+#        with:
+#          name: WebHost.Endpoints Tests
+#          only-summary: 'true'
+#          path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
+#          reporter: dotnet-trx
           
-
-
 
 #      - name: Test OpenApi
 #        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.OpenApi.Tests/ServiceStack.OpenApi.Tests.csproj --logger 'trx;LogFileName=results.trx'
