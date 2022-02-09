@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-<!--    <TargetFrameworks>net472;net6.0</TargetFrameworks>-->
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.OrmLite.PostgreSQL.Tests</AssemblyName>
     <OutputType>Library</OutputType>
