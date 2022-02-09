@@ -68,7 +68,7 @@ jobs:
       - name: Test WebHost Endpoints
         env:
           MSSQL_CONNECTION: Server=build.servicestack.net,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx' -p:ParallelizeTestCollections=false
 
       - name: Test Report
         uses: dorny/test-reporter@v1
