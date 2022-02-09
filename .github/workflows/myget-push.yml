@@ -1,0 +1,25 @@
+﻿name: MyGet Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      noop:
+        default: noop # Might want to use for versions/tags
+        description: noop
+        required: false
+
+jobs:
+  myget-push:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Build All
+        working-directory: build
+        run: ./build-all.sh
+          
