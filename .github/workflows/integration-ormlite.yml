@@ -1,0 +1,60 @@
+﻿name: ServiceStack.OrmLite Integration Tests 
+
+on:
+  push:
+    paths:
+      - '.github/workflows/integration-ormlite.yml'
+
+jobs:
+  integration-ormlite:
+    runs-on: ubuntu-20.04
+      services:
+        redis:
+          image: redis
+          options: >-
+            --health-cmd "redis-cli ping"
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 6379:6379
+        postgres:
+          image: postgres
+          env:
+            POSTGRES_USER: test
+            POSTGRES_PASSWORD: test
+            POSTGRES_DB: test
+          ports:
+            - 48301:5432
+          # Set health checks to wait until postgres has started
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Build
+        working-directory: ServiceStack.OrmLite/build
+        run: dotnet build ./build.proj
+
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+
+      - name: Tests Setup
+        working-directory: ServiceStack.OrmLite/tests
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
+
+      - name: Test PostgreSQL
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: PostgreSql11
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.PostgreSQL.Tests/ServiceStack.OrmLite.PostgreSQL.Tests.csproj --logger 'trx;LogFileName=results.trx'
