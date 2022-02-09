@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-<!--    <TargetFramework>net6.0</TargetFramework>-->
-<!--    <TargetFrameworks>net472;net6.0</TargetFrameworks>-->
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <AssemblyName>ServiceStack.WebHost.Endpoints.Tests</AssemblyName>
     <PackageId>ServiceStack.WebHost.Endpoints.Tests</PackageId>
