@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472</TargetFrameworks>
-<!--    <TargetFrameworks>net472;net6.0</TargetFrameworks>-->
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <DebugType>full</DebugType>
     <AssemblyName>ServiceStack.Server.Tests</AssemblyName>
     <OutputType>Library</OutputType>
