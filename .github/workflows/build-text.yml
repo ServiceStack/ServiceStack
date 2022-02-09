@@ -36,3 +36,16 @@ jobs:
           path: ./ServiceStack.Text/tests/ServiceStack.Text.Tests/TestResults/test-results.trx
           reporter: dotnet-trx
           only-summary: 'true'
+          
+      - name: Test
+        run: |
+          cd ./ServiceStack.Text
+          ls -l
+          cd NuGet
+          ls -l
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ServiceStack.Text
+          retention-days: 1
+          path: ./ServiceStack.Text/NuGet/*.nupkg

@@ -22,6 +22,14 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: Test!tesT
+          MSSQL_PID: Developer
+        ports:
+          - 48501:1433
     steps:
       - uses: actions/checkout@v2
       - name: Setup dotnet
@@ -32,6 +40,10 @@ jobs:
           
       - name: Build
         run: dotnet build --framework net6.0 ./ServiceStack/src/ServiceStack/ServiceStack.csproj
+        
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
         
       - name: Test Common
         run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
@@ -58,6 +70,8 @@ jobs:
           reporter: dotnet-trx
 
       - name: Test WebHost Endpoints
+        env:
+          MSSQL_CONNECTION: Server=localhost;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
         run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
@@ -68,6 +82,13 @@ jobs:
           only-summary: 'true'
           path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
           reporter: dotnet-trx
+          
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ServiceStack
+          retention-days: 1
+          path: ./ServiceStack/NuGet/*.nupkg
 
 #      - name: Test OpenApi
 #        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.OpenApi.Tests/ServiceStack.OpenApi.Tests.csproj --logger 'trx;LogFileName=results.trx'
