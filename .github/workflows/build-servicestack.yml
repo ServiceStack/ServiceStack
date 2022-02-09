@@ -39,8 +39,9 @@ jobs:
           include-prerelease: true
           
       - name: Build
-        run: dotnet build --framework net6.0 ./ServiceStack/src/ServiceStack/ServiceStack.csproj
-        
+        working-directory: ServiceStack/build
+        run: dotnet build ./build.proj
+
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
