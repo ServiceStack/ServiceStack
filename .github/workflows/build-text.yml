@@ -21,6 +21,12 @@ jobs:
         working-directory: ServiceStack.Text/build
         run: dotnet build ./build.proj
         
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ServiceStack.Text
+          retention-days: 1
+          path: ./ServiceStack.Text/NuGet/*.nupkg
+        
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
@@ -37,15 +43,3 @@ jobs:
           reporter: dotnet-trx
           only-summary: 'true'
           
-      - name: Test
-        run: |
-          cd ./ServiceStack.Text
-          ls -l
-          cd NuGet
-          ls -l
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ServiceStack.Text
-          retention-days: 1
-          path: ./ServiceStack.Text/NuGet/*.nupkg
