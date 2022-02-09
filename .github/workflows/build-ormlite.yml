@@ -75,3 +75,9 @@ jobs:
           only-summary: 'true'
           path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqliteTests/TestResults/test-results.trx
           reporter: dotnet-trx
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ServiceStack.OrmLite
+          retention-days: 1
+          path: ./ServiceStack.OrmLite/NuGet/*.nupkg

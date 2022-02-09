@@ -63,3 +63,9 @@ jobs:
           path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/integration-results.trx
           reporter: dotnet-trx
           only-summary: 'true'
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ServiceStack.Redis
+          retention-days: 1
+          path: ./ServiceStack.Redis/NuGet/*.nupkg

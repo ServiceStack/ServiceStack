@@ -46,4 +46,6 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ./ServiceStack.Text/NuGet/ServiceStack.Text.6.*.nupkg
+          name: ServiceStack.Text
+          retention-days: 1
+          path: ./ServiceStack.Text/NuGet/*.nupkg

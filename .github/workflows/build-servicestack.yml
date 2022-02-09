@@ -82,6 +82,13 @@ jobs:
           only-summary: 'true'
           path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
           reporter: dotnet-trx
+          
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ServiceStack
+          retention-days: 1
+          path: ./ServiceStack/NuGet/*.nupkg
 
 #      - name: Test OpenApi
 #        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.OpenApi.Tests/ServiceStack.OpenApi.Tests.csproj --logger 'trx;LogFileName=results.trx'

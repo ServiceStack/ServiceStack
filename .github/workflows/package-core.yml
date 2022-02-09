@@ -34,6 +34,7 @@ jobs:
           
       - uses: actions/upload-artifact@v2
         with:
-          name: ServiceStack.Core.zip
+          name: ServiceStack.Core
+          retention-days: 1
           path: ./ServiceStack.Core/NuGet/*.nupkg
     
