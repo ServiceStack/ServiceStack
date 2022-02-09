@@ -31,6 +31,9 @@ jobs:
           # ./ServiceStack.Core/build/build.sh
           # Using straight dotnet build for now, deal with correct piping of output to GH actions later from script.
           dotnet build ./build.proj /property:Configuration=Release /property:MinorVersion=0 /property:PatchVersion=3    
-    
-    #      TODO package
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ServiceStack.Core.zip
+          path: ./ServiceStack.Core/NuGet/*.nupkg
     
