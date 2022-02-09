@@ -433,6 +433,9 @@ namespace ServiceStack.OrmLite.Tests
         {
             db.ExecuteSql("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";");
             db.ExecuteSql("CREATE EXTENSION IF NOT EXISTS hstore");
+            db.ExecuteSql("CREATE EXTENSION IF NOT EXISTS pgcrypto");
+            // To avoid "Too many connections" issues during full test.
+            db.ExecuteSql("ALTER SYSTEM SET max_connections = 500;");
 
             var dialectProvider = db.GetDialectProvider();
             var schemaName = dialectProvider.NamingStrategy.GetSchemaName("Schema");
