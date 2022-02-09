@@ -41,6 +41,8 @@ jobs:
         run: |
           cd ./ServiceStack.Text
           ls -l
+          cd NuGet
+          ls -l
 
       - uses: actions/upload-artifact@v2
         with:
