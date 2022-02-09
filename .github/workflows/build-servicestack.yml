@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-servicestack:
-    runs-on: ubuntu-20.04
+    runs-on: windows-latest
     services:
       redis:
         image: redis
