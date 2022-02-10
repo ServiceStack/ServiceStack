@@ -1,12 +1,12 @@
 ﻿name: MyGet Publish
 
-on:
-  workflow_dispatch:
-    inputs:
-      noop:
-        default: noop # Might want to use for versions/tags
-        description: noop
-        required: false
+on: [push]
+#  workflow_dispatch:
+#    inputs:
+#      noop:
+#        default: noop # Might want to use for versions/tags
+#        description: noop
+#        required: false
 
 jobs:
   myget-push:
