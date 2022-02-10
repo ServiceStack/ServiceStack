@@ -35,7 +35,7 @@ jobs:
           # Check if more than 72 packages 
           if [[ ${number_of_packages} -gt 72 ]]; then
             echo "Pushing to MyGet"
-            dotnet nuget push '*.nupkg' -s '${{ secrets.MYGET_FEEDURL }}' -k '${{ secrets.MYGET_APIKEY }}'
+            dotnet nuget push '*.nupkg' -s 'https://www.myget.org/F/servicestack/api/v2/package' -k '${{ secrets.MYGET_APIKEY }}'
           else
             echo 'Less files than expected, skipping push'
             exit 1
