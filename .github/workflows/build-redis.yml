@@ -1,10 +1,9 @@
-name: Build ServiceStack.Redis
+name: Build Redis
 
 on:
   push:
     paths:
       - 'ServiceStack.Redis/**'
-      - 'ServiceStack.Text/**'
       - '.github/workflows/build-redis.yml'
 
 jobs:

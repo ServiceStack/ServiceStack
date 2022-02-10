@@ -1,10 +1,9 @@
-﻿name: Build ServiceStack.OrmLite
+﻿name: Build OrmLite
 
 on:
   push:
     paths:
       - 'ServiceStack.OrmLite/**'
-      - 'ServiceStack.Text/**'
       - '.github/workflows/build-ormlite.yml'
 
 jobs:

@@ -4,9 +4,6 @@ on:
   push:
     paths:
       - 'ServiceStack/**'
-      - 'ServiceStack.OrmLite/**'
-      - 'ServiceStack.Redis/**'
-      - 'ServiceStack.Text/**'
       - '.github/workflows/build-servicestack.yml'
 
 jobs:
