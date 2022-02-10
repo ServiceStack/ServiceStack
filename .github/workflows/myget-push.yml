@@ -25,6 +25,13 @@ jobs:
           commit: bd31d2c2cf1d8f7a6b26a8771cf224d819c1ad9c
           path: ./build/staging
           
+      - name: Check output
+        working-directory: ./build
+        run: |
+          cd staging
+          export number_of_packages=$(ls -1 | wc -l)
+          echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
+          
       - name: Push to MyGet
         working-directory: ./build/staging
         run: |
