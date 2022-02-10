@@ -43,7 +43,7 @@ jobs:
         working-directory: ./build/staging
         run: |
           # Check if more than 74 packages 
-          if [[ $(number_of_packages) -gt 74 ]]; then
+          if [[ ${number_of_packages} -gt 74 ]]; then
             echo "Pushing to MyGet"
             dotnet nuget push '*.nupkg' -s '${{ secrets.MYGET_FEEDURL }}' -k '${{ secrets.MYGET_APIKEY }}'
           else
