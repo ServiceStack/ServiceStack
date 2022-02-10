@@ -30,11 +30,12 @@ jobs:
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
-
-      - name: Text tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Logging/tests/ServiceStack.Logging.Tests/ServiceStack.Logging.Tests.csproj  --logger 'trx;LogFileName=results.trx'
-
+          
 # net472 only package, need to upgrade if possible to run tests or use different runner.
+#      - name: Text tests
+#        run: dotnet test --framework net6.0 ./ServiceStack.Logging/tests/ServiceStack.Logging.Tests/ServiceStack.Logging.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+
+
 #      - name: Test Report
 #        uses: dorny/test-reporter@v1
 #        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'

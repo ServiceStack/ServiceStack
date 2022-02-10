@@ -1,10 +1,10 @@
-﻿name: Build Aws
+﻿name: Build CefGlue
 
 on:
   push:
     paths:
-      - 'ServiceStack.Aws/**'
-      - '.github/workflows/build-aws.yml'
+      - 'ServiceStack.CefGlue/**'
+      - '.github/workflows/build-cefglue.yml'
 
 jobs:
   build-text:
@@ -18,28 +18,28 @@ jobs:
           include-prerelease: true
 
       - name: Build
-        working-directory: ServiceStack.Aws/build
+        working-directory: ServiceStack.CefGlue/build
         run: dotnet build ./build.proj
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ServiceStack.Aws
+          name: ServiceStack.CefGlue
           retention-days: 1
-          path: ./ServiceStack.Aws/NuGet/*.nupkg
+          path: ./ServiceStack.CefGlue/NuGet/*.nupkg
 
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
 
       - name: Text tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/ServiceStack.Aws.Tests.csproj  --logger 'trx;LogFileName=results.trx'
-          
+        run: dotnet test --framework net6.0 ./ServiceStack.CefGlue/tests/ServiceStack.CefGlue.Tests/ServiceStack.CefGlue.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
         with:
           name: Text Tests
-          path: ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/TestResults/results.trx
+          path: ./ServiceStack.CefGlue/tests/ServiceStack.CefGlue.Tests/TestResults/results.trx
           reporter: dotnet-trx
           only-summary: 'true'
           
