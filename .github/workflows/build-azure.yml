@@ -7,7 +7,7 @@ on:
       - '.github/workflows/build-azure.yml'
 
 jobs:
-  build-text:
+  build-azure:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

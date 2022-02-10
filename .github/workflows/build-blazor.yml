@@ -7,7 +7,7 @@ on:
       - '.github/workflows/build-blazor.yml'
 
 jobs:
-  build-text:
+  build-blazor:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

@@ -110,7 +110,7 @@ namespace ServiceStack.Text
                                 + (IsIOS ? "/iOS" : IsAndroid ? "/Android" : IsUWP ? "/UWP" : "")
                             + (IsNet6 ? "/net6" : IsNetStandard20 ? "/std2.0" : IsNetFramework ? "/netfx" : "") + (IsMono ? "/Mono" : "")
                             + $"/{LicenseUtils.Info}";
-            __releaseDate = new DateTime(2001,01,01);
+            __releaseDate = new DateTime(2022,02,10);
         }
 
         public static string VersionString { get; set; }

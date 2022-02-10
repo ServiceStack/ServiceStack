@@ -7,7 +7,7 @@ on:
       - '.github/workflows/build-stripe.yml'
 
 jobs:
-  build-text:
+  build-stripe:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

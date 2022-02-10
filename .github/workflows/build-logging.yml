@@ -7,7 +7,7 @@ on:
       - '.github/workflows/build-logging.yml'
 
 jobs:
-  build-text:
+  build-logging:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
