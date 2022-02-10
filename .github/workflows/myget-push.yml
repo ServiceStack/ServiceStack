@@ -1,4 +1,4 @@
-﻿name: MyGet Publish
+﻿name: Publish MyGet
 
 on: #workflow_dispatch
   push:

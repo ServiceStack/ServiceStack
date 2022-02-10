@@ -42,6 +42,13 @@ jobs:
           export number_of_packages=$(ls -1 | wc -l)
           echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
 
+
+      - name: Check number of packages
+        if: env.number_of_packages < 74
+        run: |
+          echo "Less packages produced than expected, failing."
+          exit 1
+
       - uses: actions/upload-artifact@v2
         with:
           name: ServiceStack Packages
