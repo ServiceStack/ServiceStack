@@ -1,6 +1,6 @@
 ﻿name: MyGet Publish
 
-on: [push]
+on: workflow_dispatch
 
 jobs:
   myget-push:
