@@ -21,6 +21,7 @@ jobs:
         with:
           workflow: pack-myget.yml
           workflow_conclusion: success
+          name: ServiceStack Packages
           commit: bd31d2c2cf1d8f7a6b26a8771cf224d819c1ad9c
           path: ./build/staging
           
