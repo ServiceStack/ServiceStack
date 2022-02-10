@@ -1,9 +1,6 @@
-﻿name: ServiceStack.OrmLite Integration Tests 
+﻿name: Integration Tests OrmLite 
 
-on:
-  push:
-    paths:
-      - '.github/workflows/integration-ormlite.yml'
+on: workflow_dispatch
 
 jobs:
   integration-ormlite:
