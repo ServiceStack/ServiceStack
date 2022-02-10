@@ -1,6 +1,6 @@
 ﻿name: MyGet Publish
 
-on: workflow_dispatch
+on: [push] #workflow_dispatch
 
 jobs:
   myget-push:
@@ -17,6 +17,7 @@ jobs:
         working-directory: ./build
         run: |
           chmod +x ./build-all.sh
+          chmod +x ../ServiceStack/build/build.sh
           chmod +x ../ServiceStack.Aws/build/build.sh
           chmod +x ../ServiceStack.Azure/build/build.sh
           chmod +x ../ServiceStack.Blazor/build/build.sh
@@ -34,10 +35,18 @@ jobs:
         run: |
           chmod +x ./stage-output.sh
           ./stage-output.sh
-          cd staging && ls -l
+          cd staging
+          echo "number_of_packages=$(ls -1 | wc -l)" >> $GITHUB_ENV
           
       - name: Push to MyGet
         working-directory: ./build/staging
         run: |
-          dotnet nuget push '*.nupkg' -s '${{ secrets.MYGET_FEEDURL }}' -k '${{ secrets.MYGET_APIKEY }}'
+          # Check if more than 74 packages 
+          if [[ ${{number_of_packages}} -gt 74 ]]; then
+            dotnet nuget push '*.nupkg' -s '${{ secrets.MYGET_FEEDURL }}' -k '${{ secrets.MYGET_APIKEY }}'
+          else
+            echo 'Less files than expected, skipping push'
+            exit 1
+          fi
+          
           
