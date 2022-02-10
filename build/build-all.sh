@@ -19,5 +19,5 @@ cd ../../ServiceStack.Stripe/build
 ./build.sh
 cd ../../ServiceStack.Text/build
 ./build.sh
-cd ../ServiceStack.Core/build
+cd ../../ServiceStack.Core/build
 ./build.sh

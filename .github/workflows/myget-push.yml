@@ -23,5 +23,15 @@ jobs:
         working-directory: build
         run: |
           chmod +x ./build-all.sh
+          chmod +x ../../ServiceStack.Aws/build/build.sh
+          chmod +x ../../ServiceStack.Azure/build/build.sh
+          chmod +x ../../ServiceStack.Blazor/build/build.sh
+          chmod +x ../../ServiceStack.CefGlue/build/build.sh
+          chmod +x ../../ServiceStack.Logging/build/build.sh
+          chmod +x ../../ServiceStack.OrmLite/build/build.sh
+          chmod +x ../../ServiceStack.Redis/build/build.sh
+          chmod +x ../../ServiceStack.Stripe/build/build.sh
+          chmod +x ../../ServiceStack.Text/build/build.sh
+          chmod +x ../../ServiceStack.Core/build/build.sh
           ./build-all.sh
           
