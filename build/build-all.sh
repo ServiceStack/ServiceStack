@@ -7,8 +7,8 @@ cd ../../ServiceStack.Azure/build
 ./build.sh
 cd ../../ServiceStack.Blazor/build
 ./build.sh
-cd ../../ServiceStack.CefGlue/build
-./build.sh
+# cd ../../ServiceStack.CefGlue/build
+# ./build.sh
 cd ../../ServiceStack.Logging/build
 ./build.sh
 cd ../../ServiceStack.OrmLite/build
