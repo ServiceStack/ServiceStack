@@ -29,3 +29,15 @@ jobs:
           chmod +x ../ServiceStack.Core/build/build.sh
           ./build-all.sh
           
+      - name: Stage output
+        working-directory: ./build
+        run: |
+          chmod +x ./stage-output.sh
+          ./stage-output.sh
+          cd staging && ls -l
+          
+      - name: Push to MyGet
+        working-directory: ./build/staging
+        run: |
+          dotnet nuget push '*.nupkg' -s '${{ secrets.MYGET_FEEDURL }}' -k '${{ secrets.MYGET_APIKEY }}'
+          
