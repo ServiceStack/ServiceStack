@@ -1,9 +1,6 @@
 ﻿name: Publish MyGet
 
-on: #workflow_dispatch
-  push:
-    paths:
-      - '.github/workflows/myget-push.yml'
+on: workflow_dispatch
 
 jobs:
   myget-push:
@@ -22,7 +19,7 @@ jobs:
           workflow: pack-myget.yml
           workflow_conclusion: success
           name: ServiceStack Packages
-          commit: bd31d2c2cf1d8f7a6b26a8771cf224d819c1ad9c
+          commit: ${{ github.sha }}
           path: ./build/staging
           
       - name: Check output

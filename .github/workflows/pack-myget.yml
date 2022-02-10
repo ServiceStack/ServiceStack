@@ -1,9 +1,6 @@
 ﻿name: Pack MyGet
 
-on: #workflow_dispatch
-  push:
-    paths:
-      - '.github/workflows/pack-myget.yml'
+on: workflow_dispatch
 
 jobs:
   myget-push:
