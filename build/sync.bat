@@ -14,10 +14,6 @@ COPY src\*.* ..\ServiceStack.Blazor\src\
 COPY tests\*.* ..\ServiceStack.Blazor\tests\
 COPY build\*.* ..\ServiceStack.Blazor\build\
 
-COPY src\*.* ..\ServiceStack.CefGlue\src\
-COPY tests\*.* ..\ServiceStack.CefGlue\tests\
-COPY build\*.* ..\ServiceStack.CefGlue\build\
-
 COPY src\*.* ..\ServiceStack.Logging\src\
 COPY tests\*.* ..\ServiceStack.Logging\tests\
 COPY build\*.* ..\ServiceStack.Logging\build\
