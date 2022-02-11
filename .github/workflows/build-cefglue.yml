@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
 
-      - name: Text tests
+      - name: CefGlue Tests
         run: dotnet test --framework net6.0 ./ServiceStack.CefGlue/tests/ServiceStack.CefGlue.Tests/ServiceStack.CefGlue.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report

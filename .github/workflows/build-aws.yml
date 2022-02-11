@@ -33,7 +33,7 @@ jobs:
           echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> $GITHUB_ENV
 
-      - name: Text tests
+      - name: Aws Tests
         run: dotnet test --framework net6.0 ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/ServiceStack.Aws.Tests.csproj  --logger 'trx;LogFileName=results.trx'
           
       - name: Test Report

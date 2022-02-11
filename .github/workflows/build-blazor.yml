@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
 
-      - name: Text tests
+      - name: Blazor Tests
         run: dotnet test --framework net6.0 ./ServiceStack.Blazor/tests/ServiceStack.Blazor.Tests/ServiceStack.Blazor.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
