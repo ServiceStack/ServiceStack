@@ -20,10 +20,4 @@ jobs:
       - name: Build
         working-directory: ServiceStack.CefGlue/build
         run: dotnet build ./build.proj
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ServiceStack.CefGlue
-          retention-days: 1
-          path: ./ServiceStack.CefGlue/NuGet/*.nupkg
           

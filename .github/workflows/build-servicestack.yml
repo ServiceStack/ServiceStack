@@ -38,12 +38,6 @@ jobs:
       - name: Build
         working-directory: ServiceStack/build
         run: dotnet build ./build.proj
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ServiceStack
-          retention-days: 1
-          path: ./ServiceStack/NuGet/*.nupkg
 
       - name: Env setup
         run: |

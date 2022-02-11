@@ -21,12 +21,6 @@ jobs:
         working-directory: ServiceStack.Aws/build
         run: dotnet build ./build.proj
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ServiceStack.Aws
-          retention-days: 1
-          path: ./ServiceStack.Aws/NuGet/*.nupkg
-
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV

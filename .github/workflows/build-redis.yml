@@ -30,13 +30,7 @@ jobs:
       - name: Build
         working-directory: ServiceStack.Redis/build
         run: dotnet build ./build.proj
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ServiceStack.Redis
-          retention-days: 1
-          path: ./ServiceStack.Redis/NuGet/*.nupkg
-        
+                
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
