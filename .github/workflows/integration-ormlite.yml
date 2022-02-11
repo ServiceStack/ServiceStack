@@ -62,7 +62,8 @@ jobs:
 
       - name: Tests Setup
         working-directory: ServiceStack.OrmLite/tests
-        ORMLITE_DIALECT: PostgreSql11
+        env:
+          ORMLITE_DIALECT: PostgreSql11
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
 
       - name: Test Sqlite
