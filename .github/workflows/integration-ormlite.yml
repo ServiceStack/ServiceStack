@@ -66,6 +66,15 @@ jobs:
           ORMLITE_DIALECT: Sqlite
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite Sqlite Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
       - name: Tests Postgres Setup
         working-directory: ServiceStack.OrmLite/tests
         env:
@@ -79,6 +88,15 @@ jobs:
           ORMLITE_DIALECT: PostgreSql11
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite PG Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
 
       - name: Tests SQL Server Setup
         working-directory: ServiceStack.OrmLite/tests
@@ -95,6 +113,15 @@ jobs:
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite MS SQL Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
       - name: Tests MySql Setup
         working-directory: ServiceStack.OrmLite/tests
         env:
@@ -109,6 +136,15 @@ jobs:
           MSSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite MySql Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
 #      - name: Test PostgreSQL
 #        working-directory: ServiceStack.OrmLite/tests
 #        env:
@@ -116,11 +152,3 @@ jobs:
 #          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
 #        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.PostgreSQL.Tests/ServiceStack.OrmLite.PostgreSQL.Tests.csproj --logger 'trx;LogFileName=results.trx'
 #
-#      - name: Test Report
-#        uses: dorny/test-reporter@v1
-#        if: success() || failure()
-#        with:
-#          name: OrmLite Tests
-#          only-summary: 'true'
-#          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.PostgreSQL.Tests/TestResults/results.trx
-#          reporter: dotnet-trx
