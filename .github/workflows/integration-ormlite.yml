@@ -64,19 +64,25 @@ jobs:
         working-directory: ServiceStack.OrmLite/tests
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
 
+      - name: Test Sqlite
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: Sqlite
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
       - name: Test Postgres OrmLite
         working-directory: ServiceStack.OrmLite/tests
         env:
           ORMLITE_DIALECT: PostgreSql11
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test SQL Server OrmLite
         working-directory: ServiceStack.OrmLite/tests
         env:
           ORMLITE_DIALECT: SqlServer2017
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
 
       - name: Test MySql OrmLite
@@ -84,7 +90,7 @@ jobs:
         env:
           ORMLITE_DIALECT: MySql
           MSSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
 #      - name: Test PostgreSQL
 #        working-directory: ServiceStack.OrmLite/tests
