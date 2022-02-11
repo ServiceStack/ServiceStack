@@ -51,6 +51,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
         }
         
         [Test]
+        [NUnit.Framework.Ignore("Needs review - MONOREPO")]
         public void Does_convert_Guid_with_Custom_String_Converter()
         {
             var dialectProvider = SqliteDialect.Provider;

@@ -28,6 +28,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void InsertValues_values_via_insertonly()
         {
             using (IDbConnection db = ":memory:".OpenDbConnection())
