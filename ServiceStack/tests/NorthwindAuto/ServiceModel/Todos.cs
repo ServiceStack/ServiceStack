@@ -18,7 +18,7 @@ public class QueryTodos : QueryData<Todo>
 public class CreateTodo : IPost, IReturn<Todo>
 {
     [ValidateNotEmpty]
-    public string Text { get; set; }
+    public string Text { get; set; } = string.Empty;
 }
 
 [Tag("todos")]
@@ -27,7 +27,7 @@ public class UpdateTodo : IPut, IReturn<Todo>
 {
     public long Id { get; set; }
     [ValidateNotEmpty]
-    public string Text { get; set; }
+    public string Text { get; set; } = string.Empty;
     public bool IsFinished { get; set; }
 }
 
@@ -42,12 +42,12 @@ public class DeleteTodo : IDelete, IReturnVoid
 [Route("/todos", "DELETE")]
 public class DeleteTodos : IDelete, IReturnVoid
 {
-    public List<long> Ids { get; set; }
+    public List<long> Ids { get; set; } = new();
 }
 
 public class Todo : IHasId<long>
 {
     public long Id { get; set; }
-    public string Text { get; set; }
+    public string Text { get; set; } = string.Empty;
     public bool IsFinished { get; set; }
 }

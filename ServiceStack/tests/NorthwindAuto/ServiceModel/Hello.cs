@@ -11,7 +11,7 @@ public class Greet : IReturn<HelloResponse> {}
 [ValidateHasRole("Employee")]
 public class Hello : IReturn<HelloResponse>
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 [Tag("hello")]
@@ -19,7 +19,7 @@ public class Hello : IReturn<HelloResponse>
 [ValidateIsAuthenticated]
 public class HelloSecure : IReturn<HelloResponse>
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 [Tag("hello")]
@@ -30,9 +30,9 @@ public class HelloSecure : IReturn<HelloResponse>
 [ValidateIsAuthenticated]
 public class HelloVeryLongOperationNameVersions : IReturn<HelloResponse>, IGet, IPost, IPut, IPatch
 {
-    public string Name { get; set; }
-    public string[] Names { get; set; }
-    public int[] Ids { get; set; }
+    public string? Name { get; set; }
+    public string[]? Names { get; set; }
+    public int[]? Ids { get; set; }
 }
 
 [Tag("hello")]
@@ -40,11 +40,11 @@ public class HelloVeryLongOperationNameVersions : IReturn<HelloResponse>, IGet, 
 [ValidateIsAuthenticated]
 public class HelloVeryLongOperationNameVersionsAndThenSome : IReturn<HelloResponse>
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 public class HelloResponse
 {
-    public string Result { get; set; }
-    public ResponseStatus ResponseStatus { get; set; }
+    public string Result { get; set; } = string.Empty;
+    public ResponseStatus? ResponseStatus { get; set; }
 }
