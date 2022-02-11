@@ -197,6 +197,10 @@ public class FilesTransformer
         // Enable static typing during dev, strip from browser to run
         new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
         new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
+        new RemoveLineStartingWith("/** @param", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineStartingWith("@param", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineStartingWith("/** @return", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineStartingWith("@return", ignoreWhiteSpace:true, behaviour:Run.Always),
         new RemoveLineEndingWith(new[]{ "/*debug*/", "<!--debug-->" }, ignoreWhiteSpace:true, Run.IgnoreInDebug),
         // Hide dev comments from browser
         new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
@@ -209,6 +213,10 @@ public class FilesTransformer
     {
         new RemoveLineStartingWith(new[] { "import ", "declare " }, ignoreWhiteSpace:false, Run.Always),
         new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always),
+        new RemoveLineStartingWith("/** @param", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineStartingWith("@param", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineStartingWith("/** @return", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineStartingWith("@return", ignoreWhiteSpace:true, behaviour:Run.Always),
         new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
         // Hide dev comments from browser
         new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
