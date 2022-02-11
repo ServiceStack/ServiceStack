@@ -26,20 +26,4 @@ jobs:
           name: ServiceStack.Blazor
           retention-days: 1
           path: ./ServiceStack.Blazor/NuGet/*.nupkg
-
-      - name: Env setup
-        run: |
-          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
-
-      - name: Blazor Tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Blazor/tests/ServiceStack.Blazor.Tests/ServiceStack.Blazor.Tests.csproj  --logger 'trx;LogFileName=results.trx'
-
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
-        with:
-          name: Text Tests
-          path: ./ServiceStack.Blazor/tests/ServiceStack.Blazor.Tests/TestResults/results.trx
-          reporter: dotnet-trx
-          only-summary: 'true'
           
