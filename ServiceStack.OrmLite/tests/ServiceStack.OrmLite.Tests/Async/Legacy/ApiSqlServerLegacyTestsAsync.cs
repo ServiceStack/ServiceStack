@@ -47,8 +47,16 @@ namespace ServiceStack.OrmLite.Tests.Async.Legacy
             Assert.That(db.GetLastSql(), Is.EqualTo("SELECT \"Id\" FROM \"Person\" WHERE Age > 40"));
 
             await db.SingleFmtAsync<Person>("Age = {0}", 42);
-            Assert.That(db.GetLastSql(), Is.EqualTo("SELECT \"Id\", \"FirstName\", \"LastName\", \"Age\" FROM \"Person\" WHERE Age = 42"));
 
+            if (DialectFeatures.RowOffset)
+            {
+                Assert.That(db.GetLastSql(), Is.EqualTo("SELECT TOP 1 \"Id\", \"FirstName\", \"LastName\", \"Age\" FROM \"Person\" WHERE Age = 42"));
+            }
+            else
+            {
+                Assert.That(db.GetLastSql(), Is.EqualTo("SELECT \"Id\", \"FirstName\", \"LastName\", \"Age\" FROM \"Person\" WHERE Age = 42"));
+            }
+            
             await db.ScalarFmtAsync<int>("SELECT COUNT(*) FROM Person WHERE Age > {0}", 40);
             Assert.That(db.GetLastSql(), Is.EqualTo("SELECT COUNT(*) FROM Person WHERE Age > 40"));
 
