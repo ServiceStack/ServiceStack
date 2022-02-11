@@ -12,7 +12,7 @@ namespace ServiceStack.Redis.Tests
     public class RetryCommandTests
     {
         [Test]
-        [Ignore("Needs review.")]
+        [Ignore("Needs review - MONOREPO")]
         public void Does_retry_failed_commands()
         {
             // warning: this test looks brittle; is often failing "Expected: 3 But was:  2" (on main branch);

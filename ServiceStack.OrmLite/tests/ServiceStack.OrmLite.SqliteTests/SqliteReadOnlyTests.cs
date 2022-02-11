@@ -13,6 +13,7 @@ namespace ServiceStack.OrmLite.SqliteTests
     class SqliteReadOnlyTests : OrmLiteTestBase
     {
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Can_open_readonly_connection_to_file_database()
         {
             var dbPath = "~/App_Data/northwind.sqlite".MapProjectPlatformPath();
