@@ -60,19 +60,19 @@ jobs:
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
 
-      - name: Tests Setup
-        working-directory: ServiceStack.OrmLite/tests
-        env:
-          ORMLITE_DIALECT: PostgreSql11
-          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
-
       - name: Test Sqlite
         working-directory: ServiceStack.OrmLite/tests
         env:
           ORMLITE_DIALECT: Sqlite
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
+      - name: Tests Postgres Setup
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: PostgreSql11
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+      
       - name: Test Postgres OrmLite
         working-directory: ServiceStack.OrmLite/tests
         env:
@@ -80,6 +80,14 @@ jobs:
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
+      - name: Tests SQL Server Setup
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: SqlServer2017
+          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+      
+      
       - name: Test SQL Server OrmLite
         working-directory: ServiceStack.OrmLite/tests
         env:
@@ -87,7 +95,13 @@ jobs:
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
-
+      - name: Tests MySql Setup
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: MySql
+          MSSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+      
       - name: Test MySql OrmLite
         working-directory: ServiceStack.OrmLite/tests
         env:
