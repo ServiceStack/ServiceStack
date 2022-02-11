@@ -43,7 +43,7 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_USER: root
         ports:
-          - 48201:3306
+          - 48205:3306
     steps:
       - uses: actions/checkout@v2
       - name: Setup dotnet
@@ -76,6 +76,14 @@ jobs:
         env:
           ORMLITE_DIALECT: SqlServer2017
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
+
+
+      - name: Test MySql OrmLite
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: MySql
+          MSSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
 
 #      - name: Test PostgreSQL
