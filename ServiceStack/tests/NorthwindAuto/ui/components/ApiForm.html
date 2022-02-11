@@ -1,5 +1,7 @@
 <script minify>
-import { resolve, delaySet } from "@servicestack/client"
+import { $1, resolve, delaySet, humanify } from "@servicestack/client"
+import { createDto, apiSend, Types } from "../../shared/js/core"
+import { createClient } from "../js/appInit"
 
 let OP_STATE = {}
 App.component('ApiForm', ({ store, routes }) => {
@@ -107,7 +109,7 @@ App.component('ApiForm', ({ store, routes }) => {
             state.jsonError = null
             state.apiResult = null
             let complete = delaySet(x => state.apiLoading = x)
-            apiSend(state.requestDto).then(r => {
+            apiSend(createClient, state.requestDto).then(r => {
                 state.apiResult = r
                 complete()
             })
@@ -159,69 +161,16 @@ function formValues(form) {
         let value = el.type === 'checkbox'
             ? el.checked
             : el.value
-        if (isNumberType(dataType) || (dataType === 'Nullable`1' && isNumberType(dataArg))) {
+        if (Types.isNumber(dataType) || (dataType === 'Nullable`1' && Types.isNumber(dataArg))) {
             value = Number(value)
         } else if (dataType === 'List`1') {
-            value = value.split(',').map(x => isNumberType(dataArg)
+            value = value.split(',').map(x => Types.isNumber(dataArg)
                 ? Number(x)
                 : x)
         }
         obj[el.id] = value
     })
     return obj
-}
-
-function createDto(name, obj) {
-    let dtoCtor = window[name]
-    if (!dtoCtor) {
-        console.log(`Couldn't find Request DTO for ${name}`) /*debug*/
-        let AnonResponse = /** @class */ (function () { return function (init) { Object.assign(this, init) } }())
-        dtoCtor = /** @class */ (function () {
-            function AnonRequest(init) { Object.assign(this, init) }
-            AnonRequest.prototype.createResponse = function () { return new AnonResponse() }
-            AnonRequest.prototype.getTypeName = function () { return name }
-            AnonRequest.prototype.getMethod = function () { return 'POST' }
-            return AnonRequest
-        }())
-    }
-    return new dtoCtor(obj)
-}
-
-function parseCookie(str) {
-    return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
-            let key = v[0] && v[0].trim() && decodeURIComponent(v[0].trim())
-            if (key) acc[key] = decodeURIComponent((v[1]||'').trim())
-            return acc
-        }, {});
-}
-
-function apiSend(requestDto) {
-    if (!requestDto) throw new Error('!requestDto')
-    let opName = requestDto.getTypeName()
-    let httpReq = null, httpRes = null, headers = null
-    let cookies = parseCookie(document.cookie)
-    let newClient = createClient(c => {
-        c.requestFilter = req => httpReq = req
-        c.responseFilter = res => {
-            httpRes = res
-            headers = Object.fromEntries(res.headers)
-        }
-    })
-    let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
-    let task = returnsVoid
-        ? newClient.apiVoid(requestDto, { jsconfig: 'eccn' })
-        : newClient.api(requestDto, { jsconfig: 'eccn' })
-    return task.then(api => ({ 
-        api,
-        json: JSON.stringify(api.response || api.error, undefined, 4),
-        text: JSON.stringify(api.response || api.error),
-        opName,
-        requestDto, 
-        httpReq, 
-        httpRes,
-        headers,
-        cookies,
-    }))
 }
 
 function groupTypes(allTypes) {
@@ -256,7 +205,7 @@ function groupTypes(allTypes) {
 
 function inputProp(prop) {
     let id = toCamelCase(prop.name), idLower = id.toLowerCase()
-    let propType = unwrap(typeName2(prop.type, prop.genericArgs))
+    let propType = Types.unwrap(Types.typeName2(prop.type, prop.genericArgs))
     let input = { id, type:inputType(propType), 'data-type': prop.type }
     if (prop.genericArgs) input['data-args'] = prop.genericArgs.join(',')
     let type = TypesMap[propType]
@@ -283,11 +232,11 @@ function inputProp(prop) {
 }
 function inputType(typeName) {
     if (!typeName) return null
-    typeName = unwrap(typeAlias(typeName))
+    typeName = Types.unwrap(Types.alias(typeName))
     return InputTypes[typeName]
 }
 function supportsProp(prop) {
-    let propType = typeName2(prop.type, prop.genericArgs)
+    let propType = Types.typeName2(prop.type, prop.genericArgs)
     if (prop.isValueType || prop.isEnum || inputType(propType))
         return true
     if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))

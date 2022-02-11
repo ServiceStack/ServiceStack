@@ -32,7 +32,7 @@ namespace ServiceStack
         public IQueryResponse Response { get; set; }
     }
 
-    public partial class AutoQueryFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
+    public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.AutoQuery;
         private static readonly string[] DefaultIgnoreProperties = 
@@ -135,13 +135,21 @@ namespace ServiceStack
             new() {Name = "Starts With", Value = "%StartsWith", Types = "string"},
             new() {Name = "Contains", Value = "%Contains", Types = "string"},
             new() {Name = "Ends With", Value = "%EndsWith", Types = "string"},
-            new() {Name = "Is Null", Value = "%IsNull", ValueType = "none"},
-            new() {Name = "Not Null", Value = "%IsNotNull", ValueType = "none"},
+            new() {Name = "Is Empty", Value = "%IsNull", ValueType = "none"},
+            new() {Name = "Not Empty", Value = "%IsNotNull", ValueType = "none"},
         };
+
+        public HtmlModule HtmlModule { get; set; } = new("/modules/query-ui", "/query-ui");
 
         public AutoQueryFeature()
         {
             ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
+        }
+        
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            if (HtmlModule != null)
+                appHost.ConfigurePlugin<UiFeature>(feature => feature.HtmlModules.Add(HtmlModule));
         }
 
         public void Register(IAppHost appHost)

@@ -1,6 +1,5 @@
 <script minify>
 import { humanify } from "@servicestack/client"
-import { inputClass } from "../../shared/js/core"
 
 App.component('AutoForm', ({ state, onsubmit, oninput }) => {
     let emptyState = { model:{} }
@@ -44,7 +43,11 @@ App.component('AutoForm', ({ state, onsubmit, oninput }) => {
             return fieldError && fieldError.message
         },
         hasError(id) { return !!this.fieldError(id) },
-        inputClass(input) { return inputClass(this.fieldError(input.id)) },
+        inputClass(input) {
+            return ['block w-full sm:text-sm rounded-md', !this.fieldError(input.id)
+                ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300'
+                : 'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500'].join(' ')
+        },
         ariaDescribedby(input) {
             return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
         },

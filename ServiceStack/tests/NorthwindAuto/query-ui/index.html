@@ -38,18 +38,8 @@ DEBUG = true /*debug*/
             <div class="pt-2.5 pb-6">
                 <div v-if="plugins.auth" v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })" class="absolute top-1 right-2"></div>
                 <div v-if="store.op">
-                    <div class="fixed w-full md:w-sidebar border-b border-gray-200 bg-white top-sm-nav" style="padding-top:2.5px">
-                        <nav class="flex max-w-screen-sm lg:max-w-screen-md" aria-label="Tabs">
-                            <a v-for="(tab,name) in store.opTabs" v-href="{tab}" :title="name"
-                               :class="[tab == routes.tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300','w-1/3 py-5 px-1 text-center border-b-2 font-medium text-sm overflow-hidden']">
-                                {{name}}
-                            </a>
-                        </nav>
-                    </div>
-                    <div class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto">
-                        <div v-if="routes.tab === ''" v-scope="ApiForm({ store, routes })"></div>
-                        <div v-else-if="routes.tab === 'details'" class="flex" v-scope="ApiDetails({ store, routes, breakpoints })"></div>
-                        <div v-else-if="routes.tab === 'code'" v-scope="ApiCode({ store, routes })"></div>
+                    <div class="w-body md:w-body overflow-auto">
+                        <div v-scope="AutoQuery({ store, routes, settings })"></div>
                     </div>
                 </div>
                 <div class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto" v-else v-scope="Welcome({ store })"></div>
@@ -57,7 +47,7 @@ DEBUG = true /*debug*/
         </main>
     </div>
 </div>
-    
+
 </div>
 
 <script src="../js/require.js?vfx=hash"></script>
@@ -68,7 +58,7 @@ Object.assign(window, exports)
 
 /*shared/js:core */
 import { $1, $$, humanify, combinePaths } from "@servicestack/client"
-import { setBodyClass, styleProperty, setStyleProperty, setFavIcon, Types } from "../shared/js/core"
+import {setBodyClass, styleProperty, setStyleProperty, setFavIcon} from "../shared/js/core"
 
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { 
@@ -91,64 +81,19 @@ let App = new PetiteVueApp()
 /*files:js/*.js */
 </script>
 
-<!--shared:Alert,AuthNav,Brand,CloseButton,CopyIcon,CopyLine,Image,Input,Loading,PreviewObject,SignIn,ErrorSummary-->
+<!--shared:Alert,AuthNav,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,ModalDialog-->
 <!--files:components/*.html-->
-<!--files:docs/*.html-->
 
-<script minify>
-/**: crude workaround for PetiteVue's lack of dynamic components */
-let docComponents = window.APP.api.operations.map(op => op.request.name).filter(name => window[name + 'Docs'])
-document.write(`<template id='doc-component-template'><div v-if="false"></div>`)
-docComponents.forEach(x => {
-    document.write(`<div v-else-if="routes.op === '${x}'" v-scope="${x}Docs({ op:() => op, store, routes, breakpoints })"></div>`)
-})
-document.write(`</template>`)
-App.components({
-    DocComponent() {
-        return {
-            $template: '#doc-component-template',
-            store, routes, breakpoints,
-            get op() { return APP.api.operations.find(op => op.request.name === routes.op) }
-        }
-    }
-})
-</script>
-
-<script src="../js/highlight.js?vfx=hash"></script>
 <script>
-App.directive('highlightjs', ({ effect, get, el}) => {
-    effect(() => {
-        let src = get()
-        if (src) {
-            el.className = '' // remove existing stale class
-            el.innerHTML = enc(src)
-            hljs.highlightElement(el)
-        }
-    })
-})
-
 App.build({
     app: APP.app,
     ui: APP.ui,
     serviceName: APP.app.serviceName,
     get plugins() { return APP.plugins },
     get api() { return APP.api },
-    langs: {
-        csharp: "C#",
-        typescript: "TypeScript",
-        dart: "Dart",
-        java: "Java",
-        kotlin: "Kotlin",
-        python: "Python",
-        swift: "Swift",
-        vbnet: "VB.NET",
-        fsharp: "F#",
-    },
     store,
     get request() { return this.store.op && this.store.op.request },
     humanify,
-    typeName: Types.typeName,
-    typeName2: Types.typeName2,
 }).mount()
 
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))

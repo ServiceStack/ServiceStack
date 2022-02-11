@@ -1,0 +1,360 @@
+<script minify>
+import { resolve, delaySet, humanify, apiValueFmt } from "@servicestack/client"
+import { canAccess, createDto, isCrud, isQuery, matchesType, Types, apiSend } from "../../shared/js/core"
+import { typeProperties } from "../js/stores"
+
+let OP_STATE = {}
+App.component('AutoQuery', ({ store, routes, settings }) => {
+    let dataModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).dataModel
+    let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
+    let refreshPrefs = () => settings.op(routes.op)
+    
+    return {
+        $template: `#autoquery-template`,
+        store, routes, settings,
+        skip: routes.skip,
+        orderBy: '',
+        open: null,
+        filter: null,
+        filters: [],
+        filtersCount: 0,
+        prefs: refreshPrefs(),
+        get take() { return parseInt(this.prefs && this.prefs.take || 25) },
+        get results() { return this.apiResult && resolve(this.apiResult.api.response, x => x && x.results) || [] },
+        get total() { return this.apiResult && resolve(this.apiResult.api.response, x => x && x.total) || 0 },
+        get canFirst() { return this.skip > 0 },
+        get canPrev() { return this.skip > 0 },
+        get canNext() { return this.results.length >= this.take },
+        get canLast() { return this.results.length >= this.take },
+        min(num1,num2) { return Math.min(num1, num2) },
+        
+        filterOperations(fn) {
+            const to = []
+            const existingKeys = {}
+    
+            APP.api.operations.forEach(op => {
+                if (!op.dataModel)
+                    return
+    
+                const key = Types.key(op.request)
+                if (existingKeys[key])
+                    return
+                existingKeys[key] = true
+
+                if (!fn || fn(op,op.request))
+                    to.push(op)
+            })
+            to.sort((x,y) => x.dataModel.name.localeCompare(y.dataModel.name))
+            return to
+        },
+        
+        get columns() {
+            let opColumns = this.state ? this.state.viewModelColumns : []
+            if (this.prefs.selectedColumns.length > 0) opColumns = opColumns.filter(x => this.prefs.selectedColumns.indexOf(x.name) >= 0)
+            return opColumns
+        },
+        
+        get accessibleAutoQueryTables() {
+            return this.filterOperations((op, table) => isQuery(op) && canAccess(routes.op,op))
+        },
+
+        hasMultiple(dataModel) {
+            return this.accessibleAutoQueryTables.filter(x => x.dataModel?.name === dataModel).length > 1
+        },
+
+        get crudOperations() {
+            let modelRef = dataModelRef()
+            return this.filterOperations((op, table) => isCrud(op) && matchesType(op.dataModel, modelRef))
+        },
+
+        get canQuery() { return this.accessibleAutoQueryTables.some(op => routes.op === op.request.name) },
+        
+        get state() {
+            let s = this.store
+            let opName = s.op && s.op.request && s.op.request.name
+            if (!opName) {
+                console.log('!state.opName') /*debug*/
+                return null
+            }
+            let ret = OP_STATE[opName] || (OP_STATE[opName] = ({
+                opName,
+                op: s.op,
+                formJson: '',
+                jsonError: '',
+                createRequest(args) { return createDto(opName, args) },
+                get dataModel() { return store.getType(dataModelRef()) },
+                get viewModel() { return store.getType(viewModelRef()) },
+                get viewModelColumns() { return typeProperties(this.viewModel) },
+                apiLoading: false,
+                apiResult: null,
+                get error(){ return this.apiResult && this.apiResult.api.error },
+                get errorSummary() {
+                    let except = this.formLayout.flatMap(group => group.map(input => input.id)).filter(x => x)
+                    return this.apiResult && this.apiResult.api.summaryMessage(except)
+                },
+                title: s.op.request.description || humanify(s.op.request.name),
+                //formLayout: resolveFormLayout(s.op),
+            }))
+            if (ret.opName !== opName) throw new Error('!!state.opName')
+            return ret
+        },
+        get apiLoading() { return resolve(this.state, x => x && x.apiLoading || false) },
+        get apiResult() { return resolve(this.state, x => x && x.apiResult) },
+        get hasState() { return resolve(this.state, x => x && x.op || false) },
+        get showForm() {
+            if (!this.hasState) return false
+            return !this.state.op.requiresAuth || this.store.auth
+        },
+        apiSend() {
+            if (!this.hasState) return
+            let state = this.state
+            let requestDto = state.createRequest({
+                include:'total',
+                skip:this.skip, 
+                take:this.take, 
+            })
+            
+            state.jsonError = null
+            state.apiResult = null
+            let complete = delaySet(x => state.apiLoading = x)
+            return apiSend(createClient, requestDto).then(r => {
+                state.apiResult = r
+                complete()
+            })
+        },
+        search() {
+            if (!routes.op) return;
+            if (!this.canQuery) return;
+            return this.apiSend()
+        },
+
+        nextSkip(skip) {
+            skip += this.skip
+            if (typeof this.total == 'number') {
+                const lastPage = Math.floor(this.total / this.take) * this.take
+                if (skip > lastPage) return lastPage
+            } 
+            if (skip < 0) return 0
+            return skip
+        },
+        
+        updated() {
+            this.skip = parseInt(routes.skip) || 0
+            this.prefs = refreshPrefs()
+            this.filters = this.columns
+                .map(column => ({ column, filters:settings.opProp(routes.op, column.name).filters }))
+                .filter(x => x.filters.length > 0)
+            this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
+            this.search()
+        },
+        
+        sub:null,
+        unmounted:App.unsubscribe,
+        mounted() {
+            this.sub = App.events.subscribe('route:nav', args => this.updated())
+            this.updated()
+        },
+        
+        closeModal() {
+            routes.select=''
+            transition('sidebar')
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="autoquery-template">
+    <div class="w-full md:w-sidebar border-b border-gray-200 bg-white" @vue:mounted="mounted" @vue:unmounted="unmounted">
+        <h1 class="flex max-w-screen-sm lg:max-w-screen-md py-2.5 px-4 text-2xl" aria-label="Tabs" :title="store.opName">
+            {{store.opDesc}}
+        </h1>
+    </div>
+    <div v-if="!showForm" class="w-body md:w-body overflow-auto">
+        <div class="md:p-4">
+            <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
+            <div v-scope="store.SignIn()"></div>
+        </div>
+    </div>
+    <div v-else-if="hasState" class="pt-1">
+        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => state.viewModelColumns, done:updated })"></div>
+        <div class="p-1 flex">
+            <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title="View Columns" @click="Modal.show('query-prefs')">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
+            </button>
+            <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']" 
+                    title="First page" :disabled="!canFirst" v-href="{ skip:nextSkip(-total) }">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
+            </button>
+            <button type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                    title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+            </button>
+            <button type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                    title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+            </button>
+            <button type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                    title="Last page" :disabled="!canLast" v-href="{ skip:nextSkip(total) }">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
+            </button>
+            <div class="px-4 text-lg">
+                <span v-if="apiLoading">Querying...</span>
+                <span v-else-if="results.length">Showing Results {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
+                <span v-else-if="apiResult">No Results</span>
+            </div>
+            <div class="pl-2">
+                <button type="button" title="Download CSV" 
+                        class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd"/><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z"/><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z"/></svg>
+                    <span class="text-green-900">Excel</span>
+                </button>
+            </div>
+            <div class="pl-2">
+                <button type="button" title="Copy API URL"
+                        class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+                    <span>Copy URL</span>
+                </button>
+            </div>
+            <div v-if="filters.length" class="pl-2">
+                <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
+                        class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                    <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="mr-1">
+                        {{filtersCount}} {{ filtersCount === 1 ? 'Filter' : 'Filters' }}
+                    </span>
+                    <svg v-if="open!=='filters'" 
+                         class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    <svg v-else 
+                         class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, updated, done:() => { open=''; updated() } })"></div>
+        <div v-if="apiLoading" v-scope="Loading()"></div>
+        <div v-else-if="results.length">
+            <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, done:() => { filter=null; updated() } })" class="relative"></div>
+            <div v-scope="Results({ store, routes, settings, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
+        </div>
+        <div class="p-4 flex items-center">
+            <div class="flex justify-between w-full">
+                <div class="flex">
+                    <button type="button"
+                            class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
+                        <span>New {{store.opDataModel}}</span>
+                    </button>
+                    <button v-if="canFirst"  type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="First page" v-href="{ skip:nextSkip(-total) }">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
+                    </button>
+                    <button v-if="canPrev" type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="Previous page" v-href="{ skip:nextSkip(-take) }">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+                    </button>
+                </div>
+                <div class="flex">
+                    <button v-if="canNext" type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="Next page" v-href="{ skip:nextSkip(take) }">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+                    </button>
+                    <button v-if="canLast" type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="Last page" v-href="{ skip:nextSkip(total) }">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+App.components({
+    Results({ store, routes, settings, columns, results, onFilter }) {
+        return {
+            $template: `#results-template`,
+            store, routes, settings,
+            get columns() { return columns() || [] },
+            get results() { return results() || [] },
+            selectColumn(column,e) {
+                let div = e.target.tagName === 'DIV' ? e.target : e.target.closest('DIV')
+                let rect = div.getBoundingClientRect()
+                let args = { column, topRight:{ x:Math.floor(rect.x + rect.width), y:Math.floor(rect.y + rect.height + 1) } }
+                onFilter(args)
+            },
+            fieldName(name) { return humanify(name) },
+            apiValueFmt,
+        }
+    },
+    SettingsIcons({ routes, settings, name }) {
+        let refresh = () => settings.opProp(routes.op, name())
+        return {
+            $template: `#settings-icons-template`,
+            prefs: null,
+            get sort() { return resolve(this.prefs, x => x && x.sort) },
+            get filters() { return resolve(this.prefs, x => x && x.filters || []) },
+
+            sub:null,
+            unmounted: App.unsubscribe,
+            mounted() {
+                this.prefs = refresh()
+                this.sub = App.events.subscribe(settings.events.opProp(routes.op,name()), () => this.prefs = refresh())
+            },
+        }
+    },
+})
+</script>
+<template id="results-template">
+<div v-if="results.length" class="flex flex-col">
+    <div class="overflow-x-auto pb-4">
+        <div class="py-2 align-middle inline-block min-w-full sm:px-2 lg:px-4">
+            <div class="md:shadow overflow-hidden border-b border-gray-200 md:rounded-lg">
+                <table class="table-array min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th class="pl-2 pt-2 w-6">
+                            <button type="button" :title="`New ${store.opDataModel}`">
+                                <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
+                            </button>
+                        </th>
+                        <th v-for="c in columns" :key="c.name" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            <div @click="selectColumn(c,$event)" class="flex justify-between items-center text-sm cursor-pointer hover:text-gray-900">
+                                <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
+                                <div v-scope="SettingsIcons({ routes, settings, name:() => c.name })"></div>
+                            </div>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(row,index) in results" :class="`${index % 2 == 0 ? 'bg-white' : 'bg-gray-50'}`">
+                        <td class="pl-2 pt-2 w-6">
+                            <button type="button" :title="`Edit ${store.opDataModel}`">
+                                <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+                            </button>
+                        </td>
+                        <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ apiValueFmt(mapGet(row,c.name)) }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+<template id="settings-icons-template">
+<div class="flex" @vue:mounted="mounted" @vue:unmounted="unmounted">
+    <svg class="w-4 h-4" v-if="filters.length" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.586a1 1 0 0 1-.293.707l-6.414 6.414a1 1 0 0 0-.293.707V17l-4 4v-6.586a1 1 0 0 0-.293-.707L3.293 7.293A1 1 0 0 1 3 6.586V4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+    <svg class="w-4 h-4" v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path d="M505.5 658.7c3.2 4.4 9.7 4.4 12.9 0l178-246c3.8-5.3 0-12.7-6.5-12.7H643c-10.2 0-19.9 4.9-25.9 13.2L512 558.6L406.8 413.2c-6-8.3-15.6-13.2-25.9-13.2H334c-6.5 0-10.3 7.4-6.5 12.7l178 246z" fill="currentColor"/><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z" fill="currentColor"/></svg>
+    <svg class="w-4 h-4" v-if="sort==='ASC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor"/></g></svg>
+    <svg class="w-4 h-4" v-else-if="sort==='DESC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor"/></g></svg>
+</div>
+</template>
+<!--/minify-->

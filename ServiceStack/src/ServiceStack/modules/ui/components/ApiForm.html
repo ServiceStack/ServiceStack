@@ -1,4 +1,7 @@
 <script minify>
+import { humanify, $1 } from "@servicestack/client"
+import { createDto } from "../../shared/js/core"
+
 let OP_STATE = {}
 App.component('ApiForm', ({ store, routes }) => {
     return {
@@ -165,21 +168,7 @@ function formValues(form) {
     })
     return obj
 }
-function createDto(name, obj) {
-    let dtoCtor = window[name]
-    if (!dtoCtor) {
-        console.log(`Couldn't find Request DTO for ${name}`) /*debug*/
-        let AnonResponse = /** @class */ (function () { return function (init) { Object.assign(this, init) } }())
-        dtoCtor = /** @class */ (function () {
-            function AnonRequest(init) { Object.assign(this, init) }
-            AnonRequest.prototype.createResponse = function () { return new AnonResponse() }
-            AnonRequest.prototype.getTypeName = function () { return name }
-            AnonRequest.prototype.getMethod = function () { return 'POST' }
-            return AnonRequest
-        }())
-    }
-    return new dtoCtor(obj)
-}
+
 function parseCookie(str) {
     return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
             let key = v[0] && v[0].trim() && decodeURIComponent(v[0].trim())
