@@ -64,6 +64,7 @@ jobs:
         working-directory: ServiceStack.OrmLite/tests
         env:
           ORMLITE_DIALECT: PostgreSql11
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
 
       - name: Test Sqlite
