@@ -1,4 +1,4 @@
-import { apiValue, isDate, mapGet, padInt, $1, leftPart } from "@servicestack/client"
+import { apiValue, isDate, mapGet, padInt, $1, leftPart, enc } from "@servicestack/client"
 import { MetadataOperationType, AuthenticateResponse } from "../../lib/types"
 /*minify:*/
 
@@ -240,6 +240,20 @@ export function apiSend(createClient, requestDto) {
         headers,
         cookies,
     }))
+}
+
+/** @param {string} text
+    @param {number} [timeout=3000] */
+export function copy(text,timeout) {
+    if (typeof timeout != 'number') timeout = 3000
+    this.copied = true
+    let $el = document.createElement("textarea")
+    $el.innerHTML = enc(text)
+    document.body.appendChild($el)
+    $el.select()
+    document.execCommand("copy")
+    document.body.removeChild($el)
+    setTimeout(() => this.copied = false, timeout)
 }
 
 /*:minify*/

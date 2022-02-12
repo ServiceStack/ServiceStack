@@ -1,4 +1,4 @@
-import { JsonServiceClient, lastLeftPart, leftPart, resolve, trimEnd } from "@servicestack/client"
+import { combinePaths, JsonServiceClient, lastLeftPart, leftPart, resolve, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 import { isQuery, Types } from "../../shared/js/core"
 /*minify:*/
@@ -7,7 +7,7 @@ let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
 
-function createClient(fn) {
+export function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
         c.bearerToken = bearerToken
         c.enableAutoRefreshToken = false
@@ -18,7 +18,10 @@ function createClient(fn) {
         if (fn) fn(c)
     })
 }
-let client = createClient()
+export let client = createClient()
+
+/** @param {string} op */
+export let resolveApiUrl = (op) => combinePaths(client.replyBaseUrl,op) 
 
 APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []

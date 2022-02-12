@@ -20,7 +20,7 @@ function filterValue(rule,type,filter) {
 }
 
 App.components({
-    FilterColumn({ store, routes, settings, filter, done }) {
+    FilterColumn({ store, routes, settings, filter, save, done }) {
         let refresh = () => settings.opProp(routes.op, resolve(filter(), x => x && x.column.name))
         let refreshEnums = () => resolve(refresh(), x => x && x.filters[0] && x.filters[0].value.split(',') || [])
 
@@ -71,25 +71,37 @@ App.components({
                     this.prefs.filters = [{ key:'%In', name:'In', value:this.selectedEnums.join(',')}]
                 }
                 settings.saveOpProp(routes.op, this.columnName, x => Object.assign(x, this.prefs))
+                save()
                 done()
             },
         }
     },
-    FilterViews({ store, routes, settings, filters, updated, done }) {
+    FilterViews({ store, routes, settings, filters, save, done }) {
         return {
             $template: '#filter-views-template',
             store, routes, settings,
-            get filters() { return filters() },
-            get columnType(){ return resolve(this.filters, x => x && x.column && x.column.type) },
+            get filters() { return filters().filter(f => f.filters.length > 0) },
+            get columnType() { return resolve(this.filters, x => x && x.column && x.column.type) },
             done,
             filterValue(column,filter) {
                 return filterValue(filterRule(column.type, filter.key), column.type, filter)
+            },
+            save() {
+                save()
+                let filtersCount = filters().reduce((acc,x) => acc + x.filters.length,0)
+                if (filtersCount === 0) done()
+            },
+            removeFilters(column) {
+                let prefs = settings.opProp(routes.op, column.name)
+                prefs.filters = []
+                settings.saveOpProp(routes.op, column.name, x => Object.assign(x,prefs))
+                this.save()
             },
             removeFilter(column,index) {
                 let prefs = settings.opProp(routes.op, column.name)
                 prefs.filters.splice(index,1)
                 settings.saveOpProp(routes.op, column.name, x => Object.assign(x,prefs))
-                updated()
+                this.save()
             },
             isEnum,
             enumValues(filters) {
@@ -98,6 +110,7 @@ App.components({
             clearAll() {
                 filters().forEach(f =>
                     settings.saveOpProp(routes.op, f.column.name, x => x.filters=[]))
+                save()
                 done()
             }
         }
@@ -178,8 +191,20 @@ App.components({
 <template id="filter-views-template">
 <div class="px-4 sm:px-6 lg:px-8 text-sm">
     <div class="flex flex-wrap">
-        <fieldset v-for="f in filters" class="pr-4 sm:pr-6 lg:pr-8">
-            <legend class="block font-medium">{{humanize(f.column.name)}}</legend>
+        <fieldset v-for="f in filters" class="group pr-4 sm:pr-6 lg:pr-8">
+            <legend class="block font-medium flex justify-between w-full">
+                <span>{{humanize(f.column.name)}}</span>
+                <span class="block w-6 flex justify-end">
+                    <span class="hidden group-hover:inline">
+                        <button @click="removeFilters(f.column)" :title="`Clear all ${humanize(f.column.name)} filters`"
+                                class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-red-600 hover:bg-red-200 hover:text-red-500 focus:outline-none focus:bg-red-500 focus:text-white">
+                            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+                            </svg>
+                        </button>
+                    </span>
+                </span>
+            </legend>
             <div v-if="isEnum(f.column.type)" class="pt-2">
                 <div v-for="value in enumValues(f.filters)" :key="value" class="flex items-center">
                     <label class="ml-2">{{value}}</label>

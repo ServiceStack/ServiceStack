@@ -1,6 +1,6 @@
 <script minify>
 App.components({
-    QueryPrefs({ id, store, routes, columns, settings, done }) {
+    QueryPrefs({ id, store, routes, columns, settings, save }) {
         let refreshPrefs = () => settings.op(routes.op)
         let maxLimit = APP.plugins.autoQuery.maxLimit
         let allTakes = [10,25,50,100,250,500,1000]
@@ -12,11 +12,11 @@ App.components({
             get takes() { return allTakes.filter(x => x <= maxLimit) },
             save() {
                 settings.saveOp(routes.op, x => Object.assign(x, this.prefs))
-                this.close()  
+                this.close()
+                save()
             },
             close() {
                 Modal.hide(id)
-                done()
             },
             sub:null,
             unmounted: App.unsubscribe,

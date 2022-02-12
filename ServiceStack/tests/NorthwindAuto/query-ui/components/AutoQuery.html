@@ -1,7 +1,8 @@
 <script minify>
-import { resolve, delaySet, humanify, apiValueFmt } from "@servicestack/client"
+import { resolve, delaySet, humanify, apiValueFmt, createUrl } from "@servicestack/client"
 import { canAccess, createDto, isCrud, isQuery, matchesType, Types, apiSend } from "../../shared/js/core"
 import { typeProperties } from "../js/stores"
+import { resolveApiUrl } from "../js/appInit"
 
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
@@ -105,27 +106,65 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             if (!this.hasState) return false
             return !this.state.op.requiresAuth || this.store.auth
         },
-        apiSend() {
-            if (!this.hasState) return
-            let state = this.state
-            let requestDto = state.createRequest({
+
+        createRequestArgs() {
+            let args = {
                 include:'total',
-                skip:this.skip, 
-                take:this.take, 
+                take:this.take,
+            }
+            if (this.skip > 0) args.skip = this.skip
+            if (this.prefs.selectedColumns.length > 0) {
+                args.fields = this.prefs.selectedColumns.join(',')
+            }
+            let orderBy = []
+            this.filters.forEach(f => {
+                if (f.sort) orderBy.push((f.sort === 'DESC' ? '-' : '') + f.column.name)
+                f.filters.forEach(filter => {
+                    let k = filter.key.replace('%', f.column.name)
+                    args[k] = filter.value
+                })
             })
-            
-            state.jsonError = null
-            state.apiResult = null
-            let complete = delaySet(x => state.apiLoading = x)
-            return apiSend(createClient, requestDto).then(r => {
-                state.apiResult = r
-                complete()
-            })
+            if (orderBy.length > 0) {
+                args.orderBy = orderBy.join(',')
+            }
+            return args
         },
+
+        copy,        
+        copied:false,
+        copyApiUrl() {
+            let args = this.createRequestArgs()
+            let apiUrl = createUrl(resolveApiUrl(routes.op), { ...args, jsconfig:'edv' })
+            this.copy(apiUrl)
+        },
+        downloadCsv() {
+            let args = this.createRequestArgs()
+            let csvUrl = createUrl(resolveApiUrl(routes.op), { ...args, format:'csv', jsconfig:'edv' })
+            window.open(csvUrl)
+        },
+        
         search() {
             if (!routes.op) return;
             if (!this.canQuery) return;
             return this.apiSend()
+        },
+        apiSend() {
+            if (!this.hasState) return
+            let state = this.state
+            
+            let requestDto = state.createRequest(this.createRequestArgs())
+            if (!requestDto) return
+            console.log('AutoQuery.apiSend()', requestDto) /*debug*/
+
+            state.jsonError = null
+            let complete = delaySet(x => {
+                state.apiResult = null
+                state.apiLoading = x
+            })
+            return apiSend(createClient, requestDto).then(r => {
+                complete()
+                state.apiResult = r
+            })
         },
 
         nextSkip(skip) {
@@ -142,8 +181,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             this.skip = parseInt(routes.skip) || 0
             this.prefs = refreshPrefs()
             this.filters = this.columns
-                .map(column => ({ column, filters:settings.opProp(routes.op, column.name).filters }))
-                .filter(x => x.filters.length > 0)
+                .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
             this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
             this.search()
         },
@@ -176,7 +214,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         </div>
     </div>
     <div v-else-if="hasState" class="pt-1">
-        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => state.viewModelColumns, done:updated })"></div>
+        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => state.viewModelColumns, save:updated })"></div>
         <div class="p-1 flex">
             <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title="View Columns" @click="Modal.show('query-prefs')">
                 <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
@@ -203,20 +241,21 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 <span v-else-if="apiResult">No Results</span>
             </div>
             <div class="pl-2">
-                <button type="button" title="Download CSV" 
+                <button type="button" @click="downloadCsv" title="Download CSV" 
                         class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd"/><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z"/><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z"/></svg>
                     <span class="text-green-900">Excel</span>
                 </button>
             </div>
             <div class="pl-2">
-                <button type="button" title="Copy API URL"
+                <button type="button" @click="copyApiUrl" title="Copy API URL"
                         class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+                    <svg v-if="copied" class="w-5 h-5 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
                     <span>Copy URL</span>
                 </button>
             </div>
-            <div v-if="filters.length" class="pl-2">
+            <div v-if="filtersCount" class="pl-2">
                 <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
                         class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
                     <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -236,10 +275,10 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 </button>
             </div>
         </div>
-        <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, updated, done:() => { open=''; updated() } })"></div>
+        <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
         <div v-else-if="results.length">
-            <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, done:() => { filter=null; updated() } })" class="relative"></div>
+            <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save:updated, done:() => filter=null })" class="relative"></div>
             <div v-scope="Results({ store, routes, settings, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
         </div>
         <div class="p-4 flex items-center">
