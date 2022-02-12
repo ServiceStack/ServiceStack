@@ -38,7 +38,7 @@ public static class InspectUtils
         return lambdaExpr.Compile();
     }
 
-    public static string[] GetFieldNames<T>(this Expression<Func<T, object>> expr)
+    public static string[] GetFieldNames<T>(this Expression<Func<T, object?>> expr)
     {
         if (expr.Body is MemberExpression member)
         {

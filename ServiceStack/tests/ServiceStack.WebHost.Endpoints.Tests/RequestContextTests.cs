@@ -69,9 +69,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			try
 			{
-				var webRequest = WebRequest.CreateHttp(url);
+#pragma warning disable CS0618, SYSLIB0014
+				var webReq = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618, SYSLIB0014
 
-				var webResponse = webRequest.GetResponse();
+				var webResponse = webReq.GetResponse();
 
 				var map = new Dictionary<string, string>();
 				for (var i = 0; i < webResponse.Headers.Count; i++)
@@ -92,8 +94,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_resolve_CustomHeader()
 		{
+#pragma warning disable CS0618, SYSLIB0014
 			var webRequest = WebRequest.CreateHttp(
 				Config.ListeningOn + "json/reply/Headers?Name=X-CustomHeader");
+#pragma warning restore CS0618, SYSLIB0014
 			webRequest.Headers["X-CustomHeader"] = "CustomValue";
 
 			var response = JsonSerializer.DeserializeFromStream<HeadersResponse>(
@@ -115,8 +119,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			try
 			{
+#pragma warning disable CS0618, SYSLIB0014
 				var webRequest = WebRequest.CreateHttp(
 					Config.ListeningOn + "json/reply/RequestFilter?StatusCode=401");
+#pragma warning restore CS0618, SYSLIB0014
 
 				webRequest.GetResponse();
 
@@ -125,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			catch (WebException ex)
 			{
 				var httpResponse = (HttpWebResponse)ex.Response;
-				Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+				Assert.That(httpResponse!.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 			}
 		}
 
@@ -134,10 +140,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			try
 			{
+#pragma warning disable CS0618, SYSLIB0014
 				var webRequest = WebRequest.CreateHttp(Config.ListeningOn 
-					+ "json/reply/RequestFilter?StatusCode=401"
-					+ "&HeaderName=" + HttpHeaders.WwwAuthenticate
-					+ "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());
+                   + "json/reply/RequestFilter?StatusCode=401"
+                   + "&HeaderName=" + HttpHeaders.WwwAuthenticate
+                   + "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());
+#pragma warning restore CS0618, SYSLIB0014
 
 				webRequest.GetResponse();
 
@@ -146,9 +154,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			catch (WebException ex)
 			{
 				var httpResponse = (HttpWebResponse)ex.Response;
-				Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+				Assert.That(httpResponse!.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 
-				Assert.That(ex.Response.Headers[HttpHeaders.WwwAuthenticate],
+				Assert.That(ex.Response!.Headers[HttpHeaders.WwwAuthenticate],
 					Is.EqualTo("Basic realm=\"Auth Required\""));
 			}
 		}

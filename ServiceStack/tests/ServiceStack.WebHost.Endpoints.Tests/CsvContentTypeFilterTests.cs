@@ -9,7 +9,6 @@ using ServiceStack.Common;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
-#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -86,7 +85,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_movies_using_csv_reply_endpoint()
         {
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ListeningOn + "csv/reply/Movies");
+#pragma warning restore CS0618, SYSLIB0014
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
@@ -103,12 +104,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_movies_using_csv_Accept_and_RestPath()
         {
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ListeningOn + "all-movies");
+#pragma warning restore CS0618, SYSLIB0014
             req.Accept = MimeTypes.Csv;
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Movies.csv\""));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition]!.Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Movies.csv\""));
 
             var csvRows = res.ReadLines().ToList();
 
@@ -119,11 +122,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_Hello_using_csv_reply_endpoint()
         {
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ListeningOn + "csv/reply/Hello?Name=World!");
+#pragma warning restore CS0618, SYSLIB0014
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Hello.csv\""));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition]!.Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Hello.csv\""));
 
             var csv = res.ReadToEnd();
             Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
@@ -134,12 +139,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_Hello_using_csv_Accept_and_RestPath()
         {
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ListeningOn + "hello/World!");
+#pragma warning restore CS0618, SYSLIB0014
             req.Accept = MimeTypes.Csv;
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Hello.csv\""));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition]!.Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Hello.csv\""));
 
             var csv = res.ReadToEnd();
             Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
@@ -150,12 +157,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_movies_using_csv_reply_Path()
         {
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ListeningOn + "csv/reply/Movies");
+#pragma warning restore CS0618, SYSLIB0014
             req.Accept = "application/xml";
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Movies.csv\""));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition]!.Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Movies.csv\""));
 
             var csvRows = res.ReadLines().ToList();
 

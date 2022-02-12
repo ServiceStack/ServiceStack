@@ -665,7 +665,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_override_global_exception_handling()
         {
-            var req = (HttpWebRequest) WebRequest.Create(PredefinedJsonUrl<UncatchedException>());
+#pragma warning disable CS0618, SYSLIB0014
+            var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedException>());
+#pragma warning restore CS0618, SYSLIB0014
             var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("UncaughtException ArgumentException", res);
         }
@@ -673,7 +675,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_override_global_exception_handling_async()
         {
-            var req = (HttpWebRequest) WebRequest.Create(PredefinedJsonUrl<UncatchedExceptionAsync>());
+#pragma warning disable CS0618, SYSLIB0014
+            var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedExceptionAsync>());
+#pragma warning restore CS0618, SYSLIB0014
             var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("UncaughtException ArgumentException", res);
         }
@@ -683,7 +687,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var req = (HttpWebRequest) WebRequest.Create(PredefinedJsonUrl<CaughtException>());
+#pragma warning disable CS0618, SYSLIB0014
+                var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtException>());
+#pragma warning restore CS0618, SYSLIB0014
                 var res = req.GetResponse().ReadToEnd();
                 Assert.Fail("Should Throw");
             }
@@ -701,7 +707,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var req = (HttpWebRequest) WebRequest.Create(PredefinedJsonUrl<CaughtExceptionAsync>());
+#pragma warning disable CS0618, SYSLIB0014
+                var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtExceptionAsync>());
+#pragma warning restore CS0618, SYSLIB0014
                 var res = req.GetResponse().ReadToEnd();
                 Assert.Fail("Should Throw");
             }

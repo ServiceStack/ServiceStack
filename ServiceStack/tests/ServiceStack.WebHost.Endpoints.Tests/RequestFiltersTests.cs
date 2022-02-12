@@ -274,7 +274,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
+#pragma warning restore CS0618, SYSLIB0014
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -318,7 +320,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp($"{ServiceClientBaseUri}{format}/reply/Insecure");
+#pragma warning restore CS0618, SYSLIB0014
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -360,7 +364,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
+#pragma warning restore CS0618, SYSLIB0014
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -369,8 +375,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var cookie = res.Cookies["ss-session"];
             if (cookie != null)
             {
+#pragma warning disable CS0618, SYSLIB0014
                 req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
-                req.CookieContainer.Add(new Uri(ServiceClientBaseUri), new Cookie("ss-session", cookie.Value));
+#pragma warning restore CS0618, SYSLIB0014
+                req.CookieContainer!.Add(new Uri(ServiceClientBaseUri), new Cookie("ss-session", cookie.Value));
 
                 var dtoString = req.GetResponse().GetResponseStream().ReadToEnd();
                 Assert.That(dtoString.Contains("Confidential"));
@@ -384,7 +392,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
+#pragma warning restore CS0618, SYSLIB0014
 
             req.CookieContainer = new CookieContainer();
             req.CookieContainer.Add(new Uri("http://localhost"), new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));

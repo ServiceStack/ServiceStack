@@ -17,8 +17,6 @@ namespace ServiceStack.Server.Tests.Async
     {
         class AppHost : AppSelfHostBase
         {
-            public static ApiKey LastApiKey;
-
             public AppHost() : base(nameof(ApiKeyAuthTests), typeof(AppHost).Assembly) { }
 
             public override void Configure(Container container)

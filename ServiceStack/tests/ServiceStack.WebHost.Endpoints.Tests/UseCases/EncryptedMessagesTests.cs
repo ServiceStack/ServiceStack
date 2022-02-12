@@ -184,7 +184,7 @@ public abstract class EncryptedMessagesTests
             encryptedClientCookies = client.GetCookieValues();
             Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }

@@ -1,5 +1,3 @@
-#pragma warning disable SYSLIB0014
-
 // Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
@@ -423,7 +421,9 @@ namespace ServiceStack
                             }
 
                             var accessToken = tokenResponse?.AccessToken;
-                            var refreshClient = webReq = (HttpWebRequest) WebRequest.Create(requestUri);
+#pragma warning disable CS0618, SYSLIB0014
+                            var refreshClient = webReq = WebRequest.CreateHttp(requestUri);
+#pragma warning restore CS0618, SYSLIB0014
                             var tokenCookie = this.CookieContainer.GetTokenCookie(BaseUri);
 
                             if (!string.IsNullOrEmpty(accessToken))
@@ -442,7 +442,9 @@ namespace ServiceStack
 
                         OnAuthenticationRequired?.Invoke();
 
-                        var newReq = (HttpWebRequest) WebRequest.Create(requestUri);
+#pragma warning disable CS0618, SYSLIB0014
+                        var newReq = WebRequest.CreateHttp(requestUri);
+#pragma warning restore CS0618, SYSLIB0014
 
                         if (StoreCookies)
                             newReq.CookieContainer = CookieContainer;

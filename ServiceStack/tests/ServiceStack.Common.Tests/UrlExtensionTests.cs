@@ -270,9 +270,9 @@ namespace ServiceStack.Common.Tests
 
             var data = "amp&mod%space comma,dot.colon:semicolon;slash/";
 
-#pragma warning disable CS0618
+#pragma warning disable CS0618, SYSLIB0013
             Assert.That(Uri.EscapeUriString(data), Is.EqualTo("amp&mod%25space%20comma,dot.colon:semicolon;slash/"));
-#pragma warning restore CS0618
+#pragma warning restore CS0618, SYSLIB0013
             Assert.That(Uri.EscapeDataString(data), Is.EqualTo("amp%26mod%25space%20comma%2Cdot.colon%3Asemicolon%3Bslash%2F"));
         }
 

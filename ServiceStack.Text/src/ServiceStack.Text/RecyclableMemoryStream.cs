@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -459,8 +458,9 @@ namespace ServiceStack.Text //Internalize to avoid conflicts
 
             this.smallPool = new ConcurrentStack<byte[]>();
             var numLargePools = useExponentialLargeBuffer
-                                    ? ((int)Math.Log(maximumBufferSize / largeBufferMultiple, 2) + 1)
-                                    : (maximumBufferSize / largeBufferMultiple);
+                // ReSharper disable once PossibleLossOfFraction
+                ? ((int)Math.Log(maximumBufferSize / largeBufferMultiple, 2) + 1)
+                : (maximumBufferSize / largeBufferMultiple);
 
             // +1 to store size of bytes in use that are too large to be pooled
             this.largeBufferInUseSize = new long[numLargePools + 1];
@@ -1400,16 +1400,14 @@ namespace ServiceStack.Text //Internalize to avoid conflicts
 
                 RecyclableMemoryStreamManager.Events.Writer.MemoryStreamFinalized(this.id, this.tag, this.AllocationStack);
 
-#if !NETSTANDARD1_4
                 if (AppDomain.CurrentDomain.IsFinalizingForUnload())
                 {
                     // If we're being finalized because of a shutdown, don't go any further.
                     // We have no idea what's already been cleaned up. Triggering events may cause
                     // a crash.
-                    base.Dispose(disposing);
+                    base.Dispose(false);
                     return;
                 }
-#endif
 
                 this.memoryManager.ReportStreamFinalized();
             }
@@ -1438,11 +1436,7 @@ namespace ServiceStack.Text //Internalize to avoid conflicts
         /// <summary>
         /// Equivalent to Dispose
         /// </summary>
-#if NETSTANDARD1_4
-        public void Close()
-#else
         public override void Close()
-#endif
         {
             this.Dispose(true);
         }
@@ -1599,11 +1593,7 @@ namespace ServiceStack.Text //Internalize to avoid conflicts
         /// <returns>Always returns true.</returns>
         /// <remarks>GetBuffer has no failure modes (it always returns something, even if it's an empty buffer), therefore this method
         /// always returns a valid ArraySegment to the same buffer returned by GetBuffer.</remarks>
-#if NET40 || NET45
-        public bool TryGetBuffer(out ArraySegment<byte> buffer)  
-#else
         public override bool TryGetBuffer(out ArraySegment<byte> buffer)
-#endif
         {
             this.CheckDisposed();
             buffer = new ArraySegment<byte>(this.GetBuffer(), 0, (int)this.Length);
