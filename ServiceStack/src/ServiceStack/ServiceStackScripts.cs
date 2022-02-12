@@ -282,13 +282,17 @@ namespace ServiceStack
         public bool isAuthenticated(ScriptScopeContext scope)
         {
             var request = scope.GetRequest();
+#pragma warning disable CS0618
             return request != null && AuthenticateAttribute.Authenticate(request, request.GetSession());
+#pragma warning restore CS0618
         }
 
         public bool isAuthenticated(ScriptScopeContext scope, string provider)
         {
             var request = scope.GetRequest();
+#pragma warning disable CS0618
             return request != null && AuthenticateAttribute.Authenticate(request);
+#pragma warning restore CS0618
         }
 
         public object redirectTo(ScriptScopeContext scope, string path)

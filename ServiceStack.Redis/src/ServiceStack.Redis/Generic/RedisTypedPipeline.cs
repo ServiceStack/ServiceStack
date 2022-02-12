@@ -6,7 +6,6 @@ namespace ServiceStack.Redis
     /// <summary>
     /// Pipeline for redis typed client
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public partial class RedisTypedPipeline<T> : RedisTypedCommandQueue<T>, IRedisTypedPipeline<T>
     {
         internal RedisTypedPipeline(RedisTypedClient<T> redisClient)

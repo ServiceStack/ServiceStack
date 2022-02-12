@@ -18,7 +18,7 @@
 		/// exact decimal value.
 		/// </summary>
 		/// <param name="d">The double to convert.</param>
-		/// <returns>A string representation of the double's exact decimal value.</return>
+		/// <returns>A string representation of the double's exact decimal value.</returns>
 		public static string ToExactString(double d)
 		{
 			if (double.IsPositiveInfinity(d))
@@ -65,7 +65,7 @@
 				exponent++;
 			}
 
-			/// Construct a new decimal expansion with the mantissa
+			// Construct a new decimal expansion with the mantissa
 			ArbitraryDecimal ad = new ArbitraryDecimal(mantissa);
 
 			// If the exponent is less than 0, we need to repeatedly
@@ -91,14 +91,13 @@
 				return ad.ToString();
 		}
 
-		/// <summary>Private class used for manipulating
+		/// <summary>Private class used for manipulating</summary>
 		class ArbitraryDecimal
 		{
-			/// <summary>Digits in the decimal expansion, one byte per digit
+			/// <summary>Digits in the decimal expansion, one byte per digit</summary>
 			byte[] digits;
-			/// <summary> 
-			/// How many digits are *after* the decimal point
-			/// </summary>
+
+			/// <summary>How many digits are *after* the decimal point</summary>
 			int decimalPoint = 0;
 
 			/// <summary> 

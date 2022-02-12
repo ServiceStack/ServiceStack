@@ -1,4 +1,5 @@
-﻿using ServiceStack.Web;
+﻿#pragma warning disable CS0618
+using ServiceStack.Web;
 using System;
 using System.IO;
 using System.Threading.Tasks;

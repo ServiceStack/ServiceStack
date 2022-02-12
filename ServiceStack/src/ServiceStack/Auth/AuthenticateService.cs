@@ -53,7 +53,9 @@ namespace ServiceStack.Auth
         public static Func<AuthFilterContext, object> AuthResponseDecorator { get; internal set; }
         internal static IAuthProvider[] AuthProviders;
         internal static IAuthWithRequest[] AuthWithRequestProviders;
+#pragma warning disable CS0618
         internal static IAuthWithRequestSync[] AuthWithRequestSyncProviders;
+#pragma warning restore CS0618
         internal static IAuthResponseFilter[] AuthResponseFilters;
 
         static AuthenticateService()
@@ -103,6 +105,7 @@ namespace ServiceStack.Auth
             {
                 foreach (var authProvider in AuthProviders)
                 {
+                    // ReSharper disable once SuspiciousTypeConversion.Global
                     if (authProvider is IUserSessionSource sessionSource) //don't remove
                         return sessionSource;
                 }
@@ -121,6 +124,7 @@ namespace ServiceStack.Auth
             {
                 foreach (var authProvider in AuthProviders)
                 {
+                    // ReSharper disable once SuspiciousTypeConversion.Global
                     if (authProvider is IUserSessionSourceAsync sessionSource) //don't remove
                         return sessionSource;
                 }
@@ -190,7 +194,9 @@ namespace ServiceStack.Auth
 
             AuthProviders = authProviders;
             AuthWithRequestProviders = authProviders.OfType<IAuthWithRequest>().ToArray();
+#pragma warning disable CS0618
             AuthWithRequestSyncProviders = authProviders.OfType<IAuthWithRequestSync>().ToArray();
+#pragma warning restore CS0618
             AuthResponseFilters = authProviders.OfType<IAuthResponseFilter>().ToArray();
 
             if (sessionFactory != null)
@@ -249,7 +255,7 @@ namespace ServiceStack.Auth
                     ? SessionOptions.Permanent
                     : SessionOptions.Temporary;
 
-                base.Request.AddSessionOptions(opt);
+                Request.AddSessionOptions(opt);
             }
 
             var provider = request.provider ?? AuthProviders[0].Provider;
@@ -471,7 +477,7 @@ namespace ServiceStack.Auth
                 && request.oauth_token == null && request.State == null; //keep existing session during OAuth flow
 
             if (generateNewCookies)
-                await this.Request.GenerateNewSessionCookiesAsync(session, token).ConfigAwait();
+                await Request.GenerateNewSessionCookiesAsync(session, token).ConfigAwait();
 
             var response = await oAuthConfig.AuthenticateAsync(this, session, request, token).ConfigAwait();
 

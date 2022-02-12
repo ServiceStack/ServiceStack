@@ -15,18 +15,17 @@ namespace ServiceStack.Redis.Support.Queue
 		void Enqueue(string workItemId, T workItem);
 
         /// <summary>
-        /// Preprare next work item id for dequeueing
+        /// Prepare next work item id for dequeuing
         /// </summary>
         bool PrepareNextWorkItem();
 
 
         /// <summary>
         /// Dequeue up to maxBatchSize items from queue corresponding to workItemId identifier.
-        /// Once this method is called, <see cref="Dequeue"/> or <see cref="Peek"/> will not
+        /// Once this method is called, <see cref="Dequeue"/> will not
         /// return any items for workItemId until the dequeue lock returned is unlocked.
         /// </summary>
         /// <param name="maxBatchSize"></param>
-        /// <param name="defer"></param>
         /// <returns></returns>
         ISequentialData<T> Dequeue(int maxBatchSize);
 
@@ -40,7 +39,5 @@ namespace ServiceStack.Redis.Support.Queue
 	    void Update(string workItemId, int index, T newWorkItem);
 
 	    bool HarvestZombies();
-
-
     }
 }

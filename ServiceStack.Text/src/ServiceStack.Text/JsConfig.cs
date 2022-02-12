@@ -26,7 +26,6 @@ namespace ServiceStack.Text
         /// <summary>
         /// Mark JsConfig global config as initialized and assert it's no longer mutated
         /// </summary>
-        /// <param name="config"></param>
         public static void Init() => Config.Init();
         
         /// <summary>

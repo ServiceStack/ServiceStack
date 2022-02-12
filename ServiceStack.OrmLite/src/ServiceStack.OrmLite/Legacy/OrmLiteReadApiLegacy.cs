@@ -29,7 +29,7 @@ namespace ServiceStack.OrmLite.Legacy
         }
 
         /// <summary>
-        /// Returns a lazyily loaded stream of results using an SqlFilter query. E.g:
+        /// Returns a lazily loaded stream of results using an SqlFilter query. E.g:
         /// <para>db.SelectLazyFmt&lt;Person&gt;("Age &gt; {0}", 40)</para>
         /// </summary>
         [Obsolete(Messages.LegacyApi)]

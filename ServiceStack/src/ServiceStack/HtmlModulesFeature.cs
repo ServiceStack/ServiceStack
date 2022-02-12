@@ -14,7 +14,7 @@ using ServiceStack.Web;
 namespace ServiceStack;
 
 /// <summary>
-/// Simple, lightweight & high-performant HTML templating solution 
+/// Simple, lightweight and high-performant HTML templating solution 
 /// </summary>
 public class HtmlModulesFeature : IPlugin, Model.IHasStringId
 {

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS1734
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -60,7 +62,7 @@ namespace ServiceStack.Api.OpenApi.Support
         public OrderedDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
             if (0 > capacity)
-                throw new ArgumentOutOfRangeException("capacity", "'capacity' must be non-negative");
+                throw new ArgumentOutOfRangeException(nameof(capacity), @"'capacity' must be non-negative");
 
             initialCapacity = capacity;
             this.comparer = comparer;
@@ -77,14 +79,14 @@ namespace ServiceStack.Api.OpenApi.Support
         {
             if (null == keyObject)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(keyObject));
             }
             else
             {
                 if (keyObject is TKey)
                     return (TKey)keyObject;
             }
-            throw new ArgumentException("'key' must be of type " + KeyTypeName, "key");
+            throw new ArgumentException(@"'key' must be of type " + KeyTypeName, nameof(keyObject));
         }
 
         /// <summary>
@@ -101,14 +103,14 @@ namespace ServiceStack.Api.OpenApi.Support
                 if (ValueTypeIsReferenceType)
                     return default(TValue);
                 else
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
             }
             else
             {
                 if (value is TValue)
                     return (TValue)value;
             }
-            throw new ArgumentException("'value' must be of type " + ValueTypeName, "value");
+            throw new ArgumentException(@"'value' must be of type " + ValueTypeName, nameof(value));
         }
 
         /// <summary>
@@ -217,7 +219,7 @@ namespace ServiceStack.Api.OpenApi.Support
         public void RemoveAt(int index)
         {
             if (index >= Count || index < 0)
-                throw new ArgumentOutOfRangeException("index", "'index' must be non-negative and less than the size of the collection");
+                throw new ArgumentOutOfRangeException(nameof(index), @"'index' must be non-negative and less than the size of the collection");
 
             TKey key = List[index].Key;
 
@@ -235,15 +237,11 @@ namespace ServiceStack.Api.OpenApi.Support
         /// index is equal to or greater than <see cref="Count"/>.</exception>
         public TValue this[int index]
         {
-            get
-            {
-                return List[index].Value;
-            }
-
+            get => List[index].Value;
             set
             {
                 if (index >= Count || index < 0)
-                    throw new ArgumentOutOfRangeException("index", "'index' must be non-negative and less than the size of the collection");
+                    throw new ArgumentOutOfRangeException(nameof(index), @"'index' must be non-negative and less than the size of the collection");
 
                 TKey key = List[index].Key;
 
@@ -633,7 +631,7 @@ namespace ServiceStack.Api.OpenApi.Support
         /// Removes a key and value from the dictionary.
         /// </summary>
         /// <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure representing the key and value to remove from the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
-        /// <returns><see langword="true"/> if the key and value represented by <paramref name="item"/> is successfully found and removed; otherwise, <see langword="false"/>. This method returns <see langword="false"/> if <paramref name="keyValuePair"/> is not found in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>.</returns>
+        /// <returns><see langword="true"/> if the key and value represented by <paramref name="item"/> is successfully found and removed; otherwise, <see langword="false"/>. This method returns <see langword="false"/> if <paramref name="item"/> is not found in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>.</returns>
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
             return Remove(item.Key);

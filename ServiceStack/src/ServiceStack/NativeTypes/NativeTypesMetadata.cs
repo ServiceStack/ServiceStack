@@ -968,23 +968,11 @@ namespace ServiceStack.NativeTypes
             }
             else
             {
-                static bool CheckForIdField(IEnumerable<PropertyInfo> objProperties)
-                {
-                    // Not using Linq.Where() and manually iterating through objProperties just to avoid dependencies on System.Xml??
-                    foreach (var objProperty in objProperties)
-                    {
-                        if (objProperty.Name != Keywords.Id) continue;
-                        return true;
-                    }
-                    return false;
-                }
-
                 var objProperties = props
                     .Where(x => x.PropertyInfo != null).Map(x => x.PropertyInfo);
                 if (objProperties.Count == 0)
                     return props;
 
-                var i = 0;
                 foreach (var prop in props)
                 {
                     var propertyInfo = prop.PropertyInfo;

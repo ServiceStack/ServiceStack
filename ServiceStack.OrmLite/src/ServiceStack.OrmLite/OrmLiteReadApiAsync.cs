@@ -237,7 +237,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns the distinct first column values in a HashSet using an SqlExpression. E.g:
-        /// <para>db.ColumnDistinctAsync&lt;int&gt;(db.From&lt;Person&gt;().Select(x => x.Age).Where(q => q.Age < 50))</para>
+        /// <para>db.ColumnDistinctAsync&lt;int&gt;(db.From&lt;Person&gt;().Select(x => x.Age).Where(q => q.Age &lt; 50))</para>
         /// </summary>
         public static Task<HashSet<T>> ColumnDistinctAsync<T>(this IDbConnection dbConn, ISqlExpression query, CancellationToken token = default)
         {
@@ -264,7 +264,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an Sql Expression. E.g:
-        /// <para>db.LookupAsync&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Age, x.LastName }).Where(q => q.Age < 50))</para>
+        /// <para>db.LookupAsync&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Age, x.LastName }).Where(q => q.Age &lt; 50))</para>
         /// </summary>
         public static Task<Dictionary<K, List<V>>> LookupAsync<K, V>(this IDbConnection dbConn, ISqlExpression sqlExpression, CancellationToken token = default)
         {
@@ -291,7 +291,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using an SqlExpression. E.g:
-        /// <para>db.DictionaryAsync&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age < 50))</para>
+        /// <para>db.DictionaryAsync&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age &lt; 50))</para>
         /// </summary>
         public static Task<Dictionary<K, V>> DictionaryAsync<K, V>(this IDbConnection dbConn, ISqlExpression query, CancellationToken token = default)
         {
@@ -318,7 +318,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns a list of KeyValuePairs from the first 2 columns: Column 1 (Keys), Column 2 (Values) using an SqlExpression. E.g:
-        /// <para>db.KeyValuePairsAsync&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age < 50))</para>
+        /// <para>db.KeyValuePairsAsync&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age &lt; 50))</para>
         /// </summary>
         public static Task<List<KeyValuePair<K, V>>> KeyValuePairsAsync<K, V>(this IDbConnection dbConn, ISqlExpression query, CancellationToken token = default)
         {
@@ -426,7 +426,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns the first column in a List using an SqlExpression. E.g:
-        /// <para>db.SqlColumnAsync&lt;string&gt;(db.From&lt;Person&gt;().Select(x => x.LastName).Where(q => q.Age < 50))</para>
+        /// <para>db.SqlColumnAsync&lt;string&gt;(db.From&lt;Person&gt;().Select(x => x.LastName).Where(q => q.Age &lt; 50))</para>
         /// </summary>
         public static Task<List<T>> SqlColumnAsync<T>(this IDbConnection dbConn, ISqlExpression sqlExpression, CancellationToken token = default)
         {
@@ -545,7 +545,7 @@ namespace ServiceStack.OrmLite
         /// Returns the first result with all its references loaded, using a primary key id. E.g:
         /// <para>db.LoadSingleByIdAsync&lt;Person&gt;(1)</para>
         /// </summary>
-        public static Task<T> LoadSingleByIdAsync<T>(this IDbConnection dbConn, object idValue, string[] include = null, CancellationToken token=default(CancellationToken))
+        public static Task<T> LoadSingleByIdAsync<T>(this IDbConnection dbConn, object idValue, string[] include = null, CancellationToken token=default)
         {
             return dbConn.Exec(dbCmd => dbCmd.LoadSingleByIdAsync<T>(idValue, include, token));
         }

@@ -116,7 +116,9 @@ namespace ServiceStack.Auth
             string url, string data = null)
         {
             var uri = new Uri(url);
+#pragma warning disable CS0618, SYSLIB0014
             var webReq = WebRequest.CreateHttp(uri);
+#pragma warning restore CS0618, SYSLIB0014
             webReq.Accept = MimeTypes.Json;
 
             if (accessToken != null)
@@ -135,7 +137,9 @@ namespace ServiceStack.Auth
             string url, string data = null, CancellationToken token=default)
         {
             var uri = new Uri(url);
+#pragma warning disable CS0618, SYSLIB0014
             var webReq = WebRequest.CreateHttp(uri);
+#pragma warning restore CS0618, SYSLIB0014
             webReq.Accept = MimeTypes.Json;
 
             if (accessToken != null)

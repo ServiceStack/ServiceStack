@@ -131,7 +131,7 @@ namespace ServiceStack.OrmLite
         {
             var uniqueExpr = Dump(includeParams);
             // fastest up to 500 chars https://wintermute79.wordpress.com/2014/10/10/c-sha-1-benchmark/
-            using var sha1 = new System.Security.Cryptography.SHA1Managed();
+            using var sha1 = System.Security.Cryptography.SHA1.Create();
             var hash = sha1.ComputeHash(Encoding.ASCII.GetBytes(uniqueExpr));
             var hexFormat = hash.ToHex();
             
@@ -1237,7 +1237,7 @@ namespace ServiceStack.OrmLite
         /// <summary>
         /// Fields to be updated.
         /// </summary>
-        /// <param name='updatefields'>
+        /// <param name='updateFields'>
         /// List&lt;string&gt; containing Names of properties to be updated
         /// </param>
         public virtual SqlExpression<T> Update(List<string> updateFields)
@@ -1249,7 +1249,7 @@ namespace ServiceStack.OrmLite
         /// <summary>
         /// Fields to be updated.
         /// </summary>
-        /// <param name='updatefields'>
+        /// <param name='updateFields'>
         /// IEnumerable&lt;string&gt; containing Names of properties to be updated
         /// </param>
         public virtual SqlExpression<T> Update(IEnumerable<string> updateFields)

@@ -96,11 +96,11 @@ namespace ServiceStack.Auth
             return bytes == null || bytes.Length == 0 ? null : _.ComputeHash(bytes).ToHex();
         }
 
-        public static string ToSha1Hash(this string value) => HexHash(new SHA1Managed(), value);
+        public static string ToSha1Hash(this string value) => HexHash(SHA1.Create(), value);
 
         public static byte[] ToSha1HashBytes(this byte[] bytes)
         {
-            using var hash = new SHA1Managed();
+            using var hash = SHA1.Create();
             return hash.ComputeHash(bytes);
         }
 

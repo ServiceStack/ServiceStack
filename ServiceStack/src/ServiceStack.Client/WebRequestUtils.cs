@@ -1,3 +1,4 @@
+#pragma warning disable SYSLIB0014
 using System;
 using System.Collections.Generic;
 using System.Net;

@@ -122,7 +122,7 @@ namespace ServiceStack.OrmLite
         }
 
         /// <summary>
-        /// Returns a lazyily loaded stream of results. E.g:
+        /// Returns a lazily loaded stream of results. E.g:
         /// <para>db.SelectLazy&lt;Person&gt;()</para>
         /// </summary>
         public static IEnumerable<T> SelectLazy<T>(this IDbConnection dbConn)
@@ -131,7 +131,7 @@ namespace ServiceStack.OrmLite
         }
 
         /// <summary>
-        /// Returns a lazyily loaded stream of results using a parameterized query. E.g:
+        /// Returns a lazily loaded stream of results using a parameterized query. E.g:
         /// <para>db.SelectLazy&lt;Person&gt;("Age &gt; @age", new { age = 40 })</para>
         /// </summary>
         public static IEnumerable<T> SelectLazy<T>(this IDbConnection dbConn, string sql, object anonType = null)
@@ -140,7 +140,7 @@ namespace ServiceStack.OrmLite
         }
 
         /// <summary>
-        /// Returns a lazyily loaded stream of results using a parameterized query. E.g:
+        /// Returns a lazily loaded stream of results using a parameterized query. E.g:
         /// <para>db.SelectLazy(db.From&lt;Person&gt;().Where(x =&gt; x == 40))</para>
         /// </summary>
         public static IEnumerable<T> SelectLazy<T>(this IDbConnection dbConn, SqlExpression<T> expression)
@@ -285,7 +285,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns the distinct first column values in a HashSet using an SqlExpression. E.g:
-        /// <para>db.ColumnDistinct&lt;int&gt;(db.From&lt;Person&gt;().Select(x => x.Age).Where(q => q.Age < 50))</para>
+        /// <para>db.ColumnDistinct&lt;int&gt;(db.From&lt;Person&gt;().Select(x => x.Age).Where(q => q.Age &lt; 50))</para>
         /// </summary>
         public static HashSet<T> ColumnDistinct<T>(this IDbConnection dbConn, ISqlExpression query)
         {
@@ -339,7 +339,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using an SqlExpression. E.g:
-        /// <para>db.Dictionary&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age < 50))</para>
+        /// <para>db.Dictionary&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age &lt; 50))</para>
         /// </summary>
         public static Dictionary<K, V> Dictionary<K, V>(this IDbConnection dbConn, ISqlExpression query)
         {
@@ -357,7 +357,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns a list KeyValuePairs from the first 2 columns: Column 1 (Keys), Column 2 (Values) using an SqlExpression. E.g:
-        /// <para>db.KeyValuePairs&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age < 50))</para>
+        /// <para>db.KeyValuePairs&lt;int, string&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, x.LastName }).Where(x => x.Age &lt; 50))</para>
         /// </summary>
         public static List<KeyValuePair<K, V>> KeyValuePairs<K, V>(this IDbConnection dbConn, ISqlExpression query)
         {
@@ -465,7 +465,7 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Returns the first column in a List using an SqlExpression. E.g:
-        /// <para>db.SqlColumn&lt;string&gt;(db.From&lt;Person&gt;().Select(x => x.LastName).Where(q => q.Age < 50))</para>
+        /// <para>db.SqlColumn&lt;string&gt;(db.From&lt;Person&gt;().Select(x => x.LastName).Where(q => q.Age &lt; 50))</para>
         /// </summary>
         public static List<T> SqlColumn<T>(this IDbConnection dbConn, ISqlExpression sqlExpression)
         {

@@ -1,3 +1,5 @@
+#pragma warning disable CS0672, SYSLIB0010
+
 using System;
 using System.Collections;
 using System.Data;

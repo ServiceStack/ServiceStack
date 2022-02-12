@@ -103,7 +103,9 @@ namespace ServiceStack
         }
 
         public virtual async Task ProxyRequestAsync(IHttpRequest httpReq, string url) => 
+#pragma warning disable CS0618, SYSLIB0014
             await ProxyRequestAsync(httpReq, WebRequest.CreateHttp(url));
+#pragma warning restore CS0618, SYSLIB0014
 
         public async Task ProxyRequestAsync(IHttpRequest httpReq, HttpWebRequest webReq)
         {
@@ -151,7 +153,7 @@ namespace ServiceStack
 
             foreach (var header in httpReq.Headers.AllKeys)
             {
-                if (HttpHeaders.RestrictedHeaders.Contains(header))
+                if (header == null || HttpHeaders.RestrictedHeaders.Contains(header))
                     continue;
 
                 try

@@ -15,6 +15,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="compressionType">Type of the compression.</param>
+        /// <param name="encoding"></param>
         /// <returns></returns>
         public static byte[] Compress(this string text, string compressionType, Encoding? encoding=null) =>
             StreamCompressors.GetRequired(compressionType).Compress(text, encoding);

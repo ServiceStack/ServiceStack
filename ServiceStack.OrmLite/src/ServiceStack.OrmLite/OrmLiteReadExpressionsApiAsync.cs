@@ -211,13 +211,10 @@ namespace ServiceStack.OrmLite
         {
             return dbConn.Exec(dbCmd => dbCmd.LoadSelectAsync<Into, From>(expression, include.GetFieldNames()));
         }
-        
+
         /// <summary>
         /// Return ADO.NET reader.GetSchemaTable() in a DataTable
         /// </summary>
-        /// <param name="dbConn"></param>
-        /// <param name="sql"></param>
-        /// <returns></returns>
         public static Task<DataTable> GetSchemaTableAsync(this IDbConnection dbConn, string sql, CancellationToken token=default) => 
             dbConn.Exec(dbCmd => dbCmd.GetSchemaTableAsync(sql, token));
         

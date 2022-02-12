@@ -358,6 +358,7 @@ namespace ServiceStack
     {
         /// <summary>
         /// Register static callbacks fired just after AppHost.Configure()
+        /// <param name="builder"></param>
         /// <param name="beforeConfigure">Register static callbacks fired just before AppHost.Configure()</param> 
         /// <param name="afterConfigure">Register static callbacks fired just after AppHost.Configure()</param> 
         /// <param name="afterPluginsLoaded">Register static callbacks fired just after plugins are loaded</param> 
