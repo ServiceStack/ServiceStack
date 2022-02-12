@@ -8,6 +8,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
+#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -28,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 

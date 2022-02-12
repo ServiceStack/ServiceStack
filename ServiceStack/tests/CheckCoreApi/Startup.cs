@@ -45,9 +45,9 @@ namespace CheckCoreApi
                 AppSettings = new NetCoreAppSettings(Configuration)
             });
 
-            app.Run(async context => {
-               context.Response.Redirect("/api/metadata"); 
-            });
+#pragma warning disable CS1998
+            app.Run(async context => context.Response.Redirect("/api/metadata"));
+#pragma warning restore CS1998
         }
     }
 

@@ -308,7 +308,9 @@ namespace ServiceStack.RabbitMq
                         if (!bgThread.Join(TimeSpan.FromSeconds(3)))
                         {
                             Log.Warn(bgThread.Name + " just wont die, so we're now aborting it...");
+#pragma warning disable CS0618, SYSLIB0014, SYSLIB0006
                             bgThread.Abort();
+#pragma warning restore CS0618, SYSLIB0014, SYSLIB0006
                         }
                     }
                 }

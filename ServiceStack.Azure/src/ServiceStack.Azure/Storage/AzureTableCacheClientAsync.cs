@@ -259,6 +259,7 @@ namespace ServiceStack.Azure.Storage
             return null;
         }
 
+#pragma warning disable CS8425
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token=default)
         {
             // Very inefficient - query all keys and do client-side filter
@@ -273,6 +274,7 @@ namespace ServiceStack.Azure.Storage
                 yield return key;
             }
         }
+#pragma warning restore CS8425
 
         public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {
@@ -282,6 +284,7 @@ namespace ServiceStack.Azure.Storage
             }
         }
 
+#pragma warning disable CS8425
         public async IAsyncEnumerable<string> GetKeysByRegexAsync(string regex, CancellationToken token=default)
         {
             // Very inefficient - query all keys and do client-side filter
@@ -298,6 +301,7 @@ namespace ServiceStack.Azure.Storage
                 yield return key;
             }
         }
+#pragma warning restore CS8425
 
         public async Task RemoveByPatternAsync(string pattern, CancellationToken token=default)
         {

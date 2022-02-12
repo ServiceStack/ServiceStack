@@ -118,7 +118,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     {
         public UserValidator()
         {
+#pragma warning disable CS0618
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
+#pragma warning restore CS0618
 
             RuleFor(x => x.Name).NotEmpty();
         }
@@ -128,7 +130,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     {
         public SaveUserValidator()
         {
+#pragma warning disable CS0618
             this.CascadeMode = CascadeMode.StopOnFirstFailure;
+#pragma warning restore CS0618
 
             RuleFor(x => x.Id)
                 .Must(ThrowException);

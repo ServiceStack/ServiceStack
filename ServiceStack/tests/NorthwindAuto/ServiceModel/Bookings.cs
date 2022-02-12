@@ -13,7 +13,8 @@ public class Booking : AuditBase
 {
     [AutoIncrement]
     public int Id { get; set; }
-    public string Name { get; set; }
+
+    public string Name { get; set; } = string.Empty;
     public RoomType RoomType { get; set; }
     public int RoomNumber { get; set; }
     public DateTime BookingStartDate { get; set; }
@@ -54,7 +55,7 @@ public class QueryBookings : QueryDb<Booking>
 public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
     [Description("Name this Booking is for"), ValidateNotEmpty]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public RoomType RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int RoomNumber { get; set; }

@@ -16,7 +16,7 @@ public class MyServices : Service
         new HelloResponse { Result = $"Hello, {AssertName(request.Name)}!" };
 
     public object Any(HelloVeryLongOperationNameVersions request) =>
-        new HelloResponse { Result = $"Hello, {AssertName(request.Name)}!" };
+        new HelloResponse { Result = $"Hello, {AssertName(request.Name!)}!" };
 
     // public object Any(HelloVeryLongOperationNameVersionsAndThenSome request) =>
     //     new HelloResponse { Result = $"Hello, {AssertName(request.Name)}!" };

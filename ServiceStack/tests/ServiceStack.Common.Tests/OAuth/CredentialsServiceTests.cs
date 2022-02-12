@@ -36,7 +36,9 @@ namespace ServiceStack.Common.Tests.OAuth
             public ValidateServiceRunner(IAppHost appHost, ActionContext actionContext)
                 : base(appHost, actionContext) { }
 
+#pragma warning disable CS0672
             public override Task<object> HandleExceptionAsync(IRequest req, T requestDto, System.Exception ex)
+#pragma warning restore CS0672
             {
                 return DtoUtils.CreateErrorResponse(requestDto, ex).InTask();
             }

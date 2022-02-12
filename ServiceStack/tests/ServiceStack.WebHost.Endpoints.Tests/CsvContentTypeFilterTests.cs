@@ -9,6 +9,7 @@ using ServiceStack.Common;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
+#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -90,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
             Console.WriteLine(res.Headers);
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Movies.csv\""));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition]!.Replace("; ", ";"), Is.EqualTo("attachment;filename=\"Movies.csv\""));
 
             var csvRows = res.ReadLines().ToList();
 

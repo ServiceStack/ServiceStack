@@ -21,13 +21,13 @@ namespace CheckIdentity.Areas.Identity.Pages.Account
             _sender = sender;
         }
 
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         public bool DisplayConfirmAccountLink { get; set; }
 
-        public string EmailConfirmationUrl { get; set; }
+        public string? EmailConfirmationUrl { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
+        public async Task<IActionResult> OnGetAsync(string? email, string? returnUrl = null)
         {
             if (email == null)
             {

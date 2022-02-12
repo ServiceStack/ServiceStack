@@ -88,7 +88,9 @@ namespace ServiceStack.Common.Tests.OAuth
 
         private static HttpError PostRegistrationError(RegisterService service, Register register)
         {
+#pragma warning disable CS0618
             var response = (HttpError)service.RunAction(register, (svc, req) => svc.Post(req));
+#pragma warning restore CS0618
             return response;
         }
 

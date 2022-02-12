@@ -450,7 +450,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AssertEquals(response, request);
 
             //JSON + No Accept-Encoding
+#pragma warning disable CS0618
             var webReq = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618
             webReq.Accept = MimeTypes.Json;
 #if !NETCORE            
             webReq.AutomaticDecompression = DecompressionMethods.None;
@@ -463,7 +465,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AssertEquals(response, request);
 
             //JSON + GZip
+#pragma warning disable CS0618
             webReq = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618
             webReq.Accept = MimeTypes.Json;
             webReq.Headers[HttpHeaders.AcceptEncoding] = CompressionTypes.GZip;
 #if !NETCORE            

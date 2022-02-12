@@ -106,7 +106,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
         
         [Test]
-        public async Task Can_AdminCreateUser()
+        public void Can_AdminCreateUser()
         {
             var createUserRequest = CreateUserRequest();
 
@@ -136,7 +136,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Can_AdminUpdateUser()
+        public void Can_AdminUpdateUser()
         {
             var createUserRequest = CreateUserRequest();
 
@@ -175,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Can_AdminDeleteUser()
+        public void Can_AdminDeleteUser()
         {
             var createUserRequest = CreateUserRequest();
 
@@ -196,7 +196,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Can_AdminQueryUsers()
+        public void Can_AdminQueryUsers()
         {
             var createUserRequest = CreateUserRequest();
 

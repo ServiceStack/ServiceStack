@@ -47,16 +47,16 @@ namespace ServiceStack.Common.Tests.OAuth
 
             public override IUserAuth GetUserAuthByUserName(string userNameOrEmail) => null;
 
-            public override async Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token = default)
-                => GetUserAuthByUserName(userNameOrEmail);
+            public override Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token = default)
+                => GetUserAuthByUserName(userNameOrEmail).InTask();
 
             public override IUserAuth CreateUserAuth(IUserAuth newUser, string password) => userAuth;
-            public override async Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token = default) 
-                => CreateUserAuth(newUser, password);
+            public override Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token = default) 
+                => CreateUserAuth(newUser, password).InTask();
 
             public override IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens) => userAuth;
-            public override async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default) 
-                => GetUserAuth(authSession, tokens);
+            public override Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default) 
+                => GetUserAuth(authSession, tokens).InTask();
 
             public override bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
             {
@@ -64,8 +64,8 @@ namespace ServiceStack.Common.Tests.OAuth
                 return true;
             }
 
-            public override async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default) => 
-                this.userAuth;
+            public override Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default) =>
+                ((IUserAuth)this.userAuth).InTask();
         }
 
         private MockUserAuthRepository userAuth;

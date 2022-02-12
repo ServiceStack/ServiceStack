@@ -186,7 +186,7 @@ public abstract class EncryptedMessagesTests
         }
         catch (Exception ex)
         {
-            throw ex;
+            throw;
         }
     }
 

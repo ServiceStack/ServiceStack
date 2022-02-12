@@ -8,6 +8,7 @@ using ServiceStack.Common;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
+#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

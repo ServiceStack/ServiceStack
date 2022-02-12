@@ -8,6 +8,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Server.Tests.Auth;
 using ServiceStack.Server.Tests.Services;
+#pragma warning disable CS0169
 
 namespace ServiceStack.Server.Tests.Async
 {

@@ -19,7 +19,7 @@ namespace ServiceStack.Auth.Tests
         /// <remarks>
         /// The key is the bucket name.  The value is a dictionary whose key is the handle and whose value is the cached key.
         /// </remarks>
-        private readonly Dictionary<string, Dictionary<string, CryptoKey>> store = new Dictionary<string, Dictionary<string, CryptoKey>>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Dictionary<string, CryptoKey>> store = new(StringComparer.Ordinal);
 
         /// <summary>
         /// The last time the cache had expired keys removed from it.
@@ -187,12 +187,12 @@ namespace ServiceStack.Auth.Tests
         /// <remarks>
         /// This is useful for knowing how long used nonces must be retained.
         /// </remarks>
-        private readonly TimeSpan maximumMessageAge;
+        private readonly TimeSpan maximumMessageAge = TimeSpan.MaxValue;
 
         /// <summary>
         /// A list of the consumed nonces.
         /// </summary>
-        private readonly SortedDictionary<DateTime, List<string>> usedNonces = new SortedDictionary<DateTime, List<string>>();
+        private readonly SortedDictionary<DateTime, List<string>> usedNonces = new();
 
         /// <summary>
         /// A lock object used around accesses to the <see cref="usedNonces"/> field.

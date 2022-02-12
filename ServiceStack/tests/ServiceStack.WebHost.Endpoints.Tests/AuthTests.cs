@@ -199,7 +199,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var session = SessionAs<CustomUserSession>();
             session.Counter += request.By.GetValueOrDefault(1);
+#pragma warning disable CS0618
             Request.SaveSession(session);
+#pragma warning restore CS0618
             return session;
         }
 

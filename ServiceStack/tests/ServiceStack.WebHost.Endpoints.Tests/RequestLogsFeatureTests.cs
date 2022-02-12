@@ -191,7 +191,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var response = client.SendAll(request);
             }
-            catch (WebServiceException ex)
+            catch (WebServiceException)
             {
 
                 var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();

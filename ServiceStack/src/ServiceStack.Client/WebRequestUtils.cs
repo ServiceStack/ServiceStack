@@ -1,4 +1,4 @@
-#pragma warning disable SYSLIB0014
+#pragma warning disable CS0618, SYSLIB0014
 using System;
 using System.Collections.Generic;
 using System.Net;

@@ -496,15 +496,15 @@ namespace CheckWebCore
 
         public object Any(ImpersonateUser request)
         {
-            using (var service = base.ResolveService<AuthenticateService>()) //In Process
-            {
-                service.Post(new Authenticate { provider = "logout" });
+            using var service = base.ResolveService<AuthenticateService>();
+#pragma warning disable CS0618
+            service.Post(new Authenticate { provider = "logout" });
                 
-                return service.Post(new Authenticate {
-                    provider = AuthenticateService.CredentialsProvider,
-                    UserName = request.UserName,
-                });
-            }
+            return service.Post(new Authenticate {
+                provider = AuthenticateService.CredentialsProvider,
+                UserName = request.UserName,
+            });
+#pragma warning restore CS0618
         }
         
         public object Any(SwaggerSearch request) => new EmptyResponse();

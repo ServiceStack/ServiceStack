@@ -24,8 +24,6 @@ namespace ServiceStack.Host.HttpListener
     /// </summary>
     public abstract class HttpListenerBase : ServiceStackHost
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
-
         private const int RequestThreadAbortedException = 995;
 
         protected System.Net.HttpListener Listener;
@@ -256,11 +254,12 @@ namespace ServiceStack.Host.HttpListener
 
         public static void HandleError(Exception ex, HttpListenerContext context)
         {
+            var log = LogManager.GetLogger(typeof(HttpListenerBase));
             try
             {
                 ex = ex.UnwrapIfSingleException();
                 var httpReq = CreateHttpRequest(context);
-                Log.Error("Error this.ProcessRequest(context): [{0}]: {1}".Fmt(ex.GetType().GetOperationName(), ex.Message), ex);
+                log.Error("Error this.ProcessRequest(context): [{0}]: {1}".Fmt(ex.GetType().GetOperationName(), ex.Message), ex);
 
                 WriteUnhandledErrorResponse(httpReq, ex);
             }
@@ -268,7 +267,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}\n{2}"
                             .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message, ex);
-                Log.Error(error, errorEx);
+                log.Error(error, errorEx);
                 context.Response.Close();
             }
         }

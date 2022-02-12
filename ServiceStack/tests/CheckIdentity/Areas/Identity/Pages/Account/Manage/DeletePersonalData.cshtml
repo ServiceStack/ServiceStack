@@ -19,9 +19,9 @@
         @if (Model.RequirePassword)
         {
             <div class="form-group">
-                <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" class="form-control" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <label asp-for="Input!.Password"></label>
+                <input asp-for="Input!.Password" class="form-control" />
+                <span asp-validation-for="Input!.Password" class="text-danger"></span>
             </div>
         }
         <button class="btn btn-danger" type="submit">Delete data and close my account</button>

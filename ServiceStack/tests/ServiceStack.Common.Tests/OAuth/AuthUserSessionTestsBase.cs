@@ -216,7 +216,9 @@ namespace ServiceStack.Common.Tests.OAuth
                 register = RegisterDto;
 
             var registrationService = GetRegistrationService(userAuthRepository, oAuthUserSession, requestContext);
+#pragma warning disable CS0618
             var response = registrationService.Post(register);
+#pragma warning restore CS0618
             Assert.That(response as IHttpError, Is.Null);
             return response;
         }
@@ -227,7 +229,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var facebookAuth = GetFacebookAuthProvider();
             facebookAuth.OnAuthenticatedAsync(service, oAuthUserSession, facebookAuthTokens,
                 JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode"))).Wait();
-            Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
+            Console.WriteLine(@"UserId: " + oAuthUserSession.UserAuthId);
         }
     }
 }

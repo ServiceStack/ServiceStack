@@ -1,3 +1,4 @@
+#pragma warning disable CS0618, SYSLIB0014
 #if !NETCORE
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)

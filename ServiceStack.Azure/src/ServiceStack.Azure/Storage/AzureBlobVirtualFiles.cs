@@ -152,7 +152,7 @@ namespace ServiceStack.Azure.Storage
                 .Select(q => new AzureBlobVirtualFile(this, dir).Init(q as CloudBlockBlob));
         }
 
-        public string SanitizePath(string filePath)
+        public override string SanitizePath(string filePath)
         {
             var sanitizedPath = string.IsNullOrEmpty(filePath)
                 ? null

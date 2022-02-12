@@ -41,7 +41,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_parse_custom_form_data()
 		{
+#pragma warning disable CS0618
 			var webReq = WebRequest.CreateHttp("http://localhost:1337/customformdata?format=json");
+#pragma warning restore CS0618
 			webReq.Method = HttpMethods.Post;
             webReq.ContentType = MimeTypes.FormUrlEncoded;
 

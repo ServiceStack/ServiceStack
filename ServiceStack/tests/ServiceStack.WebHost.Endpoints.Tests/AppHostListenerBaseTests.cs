@@ -155,7 +155,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var url = ListeningOn + "gethttpresult?callback=cb";
             string response;
 
+#pragma warning disable CS0618
             var webReq = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {

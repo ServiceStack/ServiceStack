@@ -6,6 +6,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
+#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

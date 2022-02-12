@@ -8,6 +8,7 @@ using Funq;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
 using ServiceStack.Web;
+#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

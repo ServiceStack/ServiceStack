@@ -34,7 +34,7 @@ namespace ServiceStack.Azure.Messaging
         }
 
 #if NETCORE
-        public async Task HandleMessageAsync(Microsoft.Azure.ServiceBus.Message msg, CancellationToken token)
+        public Task HandleMessageAsync(Microsoft.Azure.ServiceBus.Message msg, CancellationToken token)
         {
             var strMessage = msg.Body.FromMessageBody();
             IMessage iMessage = (IMessage)JsonSerializer.DeserializeFromString(strMessage, typeof(IMessage));
@@ -52,6 +52,7 @@ namespace ServiceStack.Azure.Messaging
             var messageHandler = messageHandlerFactory.CreateMessageHandler();
 
             messageHandler.ProcessMessage(mqClient, iMessage);
+            return Task.CompletedTask;
         }
 #else
         public void HandleMessage(BrokeredMessage msg)

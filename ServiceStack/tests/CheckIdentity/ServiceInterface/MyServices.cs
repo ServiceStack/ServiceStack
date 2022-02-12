@@ -8,7 +8,7 @@ namespace CheckIdentity.ServiceInterface
 {
     public class MyServices : Service
     {
-        HelloResponse CreateResponse(object request, string name) =>
+        HelloResponse CreateResponse(object request, string? name) =>
             new() { Result = $"{request.GetType().Name}, {name}!" };
         
         public object Any(Hello request) => CreateResponse(request, request.Name);
@@ -19,14 +19,14 @@ namespace CheckIdentity.ServiceInterface
     [ValidateIsAdmin]
     public class CreateRole : IReturn<CreateRole>
     {
-        public string Role { get; set; }
+        public string? Role { get; set; }
     }
 
     
     [ValidateIsAdmin]
     public class DeleteUser : IReturn<DeleteUser>
     {
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
     }
 
     public class AdminServices : Service
