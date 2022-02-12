@@ -135,8 +135,8 @@ namespace ServiceStack
             new() {Name = "Starts With", Value = "%StartsWith", Types = "string"},
             new() {Name = "Contains", Value = "%Contains", Types = "string"},
             new() {Name = "Ends With", Value = "%EndsWith", Types = "string"},
-            new() {Name = "Is Empty", Value = "%IsNull", ValueType = "none"},
-            new() {Name = "Not Empty", Value = "%IsNotNull", ValueType = "none"},
+            new() {Name = "Exists", Value = "%IsNotNull", ValueType = "none"},
+            new() {Name = "Not Exists", Value = "%IsNull", ValueType = "none"},
         };
 
         public HtmlModule HtmlModule { get; set; } = new("/modules/query-ui", "/query-ui");
