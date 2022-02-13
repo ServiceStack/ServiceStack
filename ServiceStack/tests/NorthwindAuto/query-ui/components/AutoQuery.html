@@ -50,8 +50,12 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         },
         
         get columns() {
-            let opColumns = this.state ? this.state.viewModelColumns : []
-            if (this.prefs.selectedColumns.length > 0) opColumns = opColumns.filter(x => this.prefs.selectedColumns.indexOf(x.name) >= 0)
+            let only = this.prefs.selectedColumns.length > 0 ? this.prefs.selectedColumns : null   
+            let opColumns = this.state 
+                ? only
+                    ? only.map(name => this.state.viewModelColumns.find(x => x.name === name))
+                    : this.state.viewModelColumns
+                : []
             return opColumns
         },
         
