@@ -206,10 +206,11 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 </script>
 <!--minify-->
 <template id="autoquery-template">
-    <div class="w-full md:w-sidebar border-b border-gray-200 bg-white" @vue:mounted="mounted" @vue:unmounted="unmounted">
+    <div class="w-full md:w-sidebar border-b border-gray-200 bg-white flex" @vue:mounted="mounted" @vue:unmounted="unmounted">
         <h1 class="flex max-w-screen-sm lg:max-w-screen-md py-2.5 px-4 text-2xl" aria-label="Tabs" :title="store.opName">
             {{store.opDesc}}
         </h1>
+        <div v-if="routes.uiHref()" class="flex items-center pt-1" v-scope="UiButton({ routes })"></div>
     </div>
     <div v-if="!showForm" class="w-body md:w-body overflow-auto">
         <div class="md:p-4">

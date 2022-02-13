@@ -73,7 +73,7 @@ APP.api.types.forEach(type => FullTypesMap[Types.key(type)] = type)
 /** @param {{namespace:string?,name:string}} typeRef 
     @return {MetadataType} */
 export function getType(typeRef) {
-    return FullTypesMap[Types.key(typeRef)] || TypesMap[typeRef.name]
+    return !typeRef ? null : FullTypesMap[Types.key(typeRef)] || TypesMap[typeRef.name]
 }
 
 /** @param {string} type */

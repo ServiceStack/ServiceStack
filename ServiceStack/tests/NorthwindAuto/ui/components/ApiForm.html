@@ -1,6 +1,6 @@
 <script minify>
 import { $1, resolve, delaySet, humanify } from "@servicestack/client"
-import { createDto, apiSend, Types } from "../../shared/js/core"
+import { createDto, apiSend, Types, isQuery } from "../../shared/js/core"
 import { createClient } from "../js/appInit"
 
 let OP_STATE = {}
@@ -182,13 +182,13 @@ function groupTypes(allTypes) {
         let addTypeDef = typeDef => {
             if (!typeDef || allTypesMap[typeDef.name]) return
             allTypesMap[typeDef.name] = typeDef
-            group.push({ type: typeDef, typeName: typeName(typeDef) })
+            group.push({ type: typeDef, typeName: Types.typeName(typeDef) })
         }
         let addTypeRef = typeRef => {
             if (!typeRef || allTypesMap[typeRef.name]) return
             let typeDef = TypesMap[typeRef.name]
             allTypesMap[typeDef.name] = typeDef
-            group.push({ type: typeDef, typeName: typeName(typeRef) })
+            group.push({ type: typeDef, typeName: Types.typeName(typeRef) })
             return typeDef
         }
         addTypeDef(type)
@@ -255,12 +255,15 @@ function supportsProp(prop) {
     </div>
 </div>
 <div v-else-if="hasState">
-    <nav class="w-body md:w-body fixed flex space-x-4 pl-2 py-2 border-b bg-white" aria-label="Tabs">
-        <a v-for="(tab,name) in tabs" v-href="{ form:tab, $on:formNav }"
-           :class="[routes.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
-            {{name}}
-        </a>
+    <nav class="w-body md:w-body fixed flex space-x-4 pl-2 py-2.5 border-b bg-white" aria-label="Tabs">
+        <div>
+            <a v-for="(tab,name) in tabs" v-href="{ form:tab, $on:formNav }"
+               :class="[routes.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
+                {{name}}
+            </a>
+        </div>
     </nav>
+    <div v-if="routes.queryHref()" class="absolute right-1.5 mt-[5px]" v-scope="QueryUiButton({ routes })"></div>
     <div class="w-body md:w-body fixed top-sub-nav h-sub-nav overflow-auto md:pb-scroll">
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
  

@@ -1,6 +1,7 @@
 import { leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
-import { setBodyClass } from "../../shared/js/core"
+import { isCrud, isQuery, setBodyClass } from "../../shared/js/core"
+import { Types } from "../../shared/js/Types"
 
 /*minify:*/
 App.useTransitions({ sidebar: true })
@@ -15,6 +16,21 @@ let routes = App.usePageRoutes({
     queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider,doc'.split(','),
     handlers: {
         nav(state) { console.log('nav', state) } /*debug*/
+    },
+    extend: {
+        queryHref() {
+            let op = this.op && OpsMap[this.op]
+            if (op && APP.ui.modules.indexOf('/query-ui') >= 0) {
+                if (isQuery(op))
+                    return `/query-ui/${this.op}`
+                if (isCrud(op)) {
+                    let queryOp = APP.api.operations.find(x => isQuery(x) && Types.equals(op.dataModel,x.dataModel))
+                    if (queryOp)
+                        return `/query-ui/${queryOp.request.name}`
+                }
+            }
+            return ''
+        },
     }
 })
 

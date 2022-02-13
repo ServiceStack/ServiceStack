@@ -1,6 +1,6 @@
-import { humanify, leftPart } from "@servicestack/client"
+import { appendQueryString, createUrl, humanify, leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
-import { setBodyClass } from "../../shared/js/core"
+import { isCrud, isQuery, setBodyClass } from "../../shared/js/core"
 import { getType } from "./appInit"
 
 /*minify:*/
@@ -16,6 +16,13 @@ let routes = App.usePageRoutes({
     queryKeys:'tab,preview,body,doc,skip'.split(','),
     handlers: {
         nav(state) { console.log('nav', state) } /*debug*/
+    },
+    extend: {
+        uiHref(args) {
+            return this.op && APP.ui.modules.indexOf('/ui') >= 0
+                ? appendQueryString(`/ui/${this.op}`, args || {})
+                : ''
+        },
     }
 })
 
