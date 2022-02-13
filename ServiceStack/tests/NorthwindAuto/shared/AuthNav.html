@@ -19,7 +19,7 @@ App.component('AuthNav', ({ auth, logout }) => {
 </script>
 <!--minify-->
 <template id="auth-nav-template">
-<div class="ml-3 mt-1 relative z-10 bg-gray-50" @vue:mounted="mounted">
+<div class="ml-3 mt-1 relative bg-gray-50" @vue:mounted="mounted">
     <div v-if="auth">
         <div>
             <button type="button" @click.stop="showPopup = true"  

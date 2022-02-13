@@ -263,7 +263,6 @@ function supportsProp(prop) {
             </a>
         </div>
     </nav>
-    <div v-if="routes.queryHref()" class="absolute right-1.5 mt-[5px]" v-scope="QueryUiButton({ routes })"></div>
     <div class="w-body md:w-body fixed top-sub-nav h-sub-nav overflow-auto md:pb-scroll">
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
  

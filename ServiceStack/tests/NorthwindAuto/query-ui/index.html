@@ -36,7 +36,10 @@ DEBUG = true /*debug*/
         </div>
         <main class="flex-1">
             <div class="pt-2.5 pb-6">
-                <div v-if="plugins.auth" v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })" class="absolute top-1 right-2"></div>
+                <div class="absolute top-1 right-2 flex">
+                    <div v-if="routes.uiHref()" class="flex items-center" v-scope="UiButton({ routes })"></div>
+                    <div v-if="plugins.auth" v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })"></div>
+                </div>
                 <div v-if="store.op">
                     <div class="w-body md:w-body overflow-auto">
                         <div v-scope="AutoQuery({ store, routes, settings })"></div>

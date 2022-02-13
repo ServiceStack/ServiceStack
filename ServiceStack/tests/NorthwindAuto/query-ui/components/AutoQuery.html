@@ -210,7 +210,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         <h1 class="flex max-w-screen-sm lg:max-w-screen-md py-2.5 px-4 text-2xl" aria-label="Tabs" :title="store.opName">
             {{store.opDesc}}
         </h1>
-        <div v-if="routes.uiHref()" class="flex items-center pt-1" v-scope="UiButton({ routes })"></div>
     </div>
     <div v-if="!showForm" class="w-body md:w-body overflow-auto">
         <div class="md:p-4">
