@@ -548,8 +548,7 @@ id 1
 
             result = context.EvaluateLisp(@"(setq doc (System.Xml.Linq.XDocument/Parse ""<root>orig</root>""))
 (setq root (.Root doc))
-(.Value root)
-(.set_Value root ""updated"")
+(.Value root ""updated"")
 (return (.Value root))");
             Assert.That(result, Is.EqualTo("updated"));
         }
