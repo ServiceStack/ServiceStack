@@ -52,6 +52,7 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
     {
         if (HtmlModules.Count > 0)
         {
+            Info.Modules = HtmlModules.Map(x => x.BasePath);
             Configure?.Invoke(appHost);
             Module.Modules.AddRange(HtmlModules);
             Module.Handlers.AddRange(Handlers);

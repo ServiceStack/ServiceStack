@@ -424,6 +424,11 @@ namespace ServiceStack
         /// Hide APIs with tags 
         /// </summary>
         public List<string> HideTags { get; set; }
+        
+        /// <summary>
+        /// The module paths that are loaded
+        /// </summary>
+        public List<string> Modules { get; set; }
 
         /// <summary>
         /// Always hide APIs with tags (inc DebugMode) 
