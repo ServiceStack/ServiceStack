@@ -487,7 +487,8 @@ namespace ServiceStack.Script
             MethodInfo targetMethod = null;
             if (methods.Length == 0)
             {
-                if ((argTypes?.Length ?? 0) == 0)
+                var argsTypesCount = argTypes?.Length ?? 0;
+                if (argsTypesCount == 0)
                 {
                     var prop = type.GetProperty(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
@@ -516,6 +517,15 @@ namespace ServiceStack.Script
                                 return null;
                             }
                         }
+                    }
+                }
+                else if (argsTypesCount == 1)
+                {
+                    var prop = type.GetProperty(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                    if (prop != null)
+                    {
+                        targetMethod = prop.SetMethod ?? 
+                            throw new NotSupportedException($"Property {typeQualifiedName(type)}.{name} does not have a setter");
                     }
                 }
 
