@@ -41,7 +41,6 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: test
           MYSQL_DATABASE: test
-          MYSQL_USER: root
         ports:
           - 48205:3306
     steps:
