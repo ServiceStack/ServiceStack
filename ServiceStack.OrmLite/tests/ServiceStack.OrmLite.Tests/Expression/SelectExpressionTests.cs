@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
@@ -16,8 +17,32 @@ namespace ServiceStack.OrmLite.Tests.Expression
         [Test]
         public void Can_select_where_and_limit_expression()
         {
-            Init(20);
+            var testObjs = new List<TestType>();
+            for (var i = 0; i < 5; i++)
+            {
+                testObjs.Add(new TestType
+                {
+                    BoolColumn = true,
+                    IntColumn = 99,
+                    StringColumn = Guid.NewGuid().ToString()
+                });
+            }
+            
+            for (var i = 0; i < 5; i++)
+            {
+                testObjs.Add(new TestType
+                {
+                    BoolColumn = false,
+                    IntColumn = 98,
+                    StringColumn = Guid.NewGuid().ToString()
+                });
+            }
 
+            using (var db = OpenDbConnection())
+            {
+                db.InsertAll(testObjs);
+            }
+            
             using (var db = OpenDbConnection())
             {
                 var rows = db.Select(db.From<TestType>().Where(x => x.BoolColumn).Limit(5));
