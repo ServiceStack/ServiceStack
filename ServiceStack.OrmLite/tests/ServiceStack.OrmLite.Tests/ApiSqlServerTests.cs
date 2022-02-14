@@ -11,6 +11,7 @@ namespace ServiceStack.OrmLite.Tests
         public ApiSqlServerTests(DialectContext context) : base(context) {}
         
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void API_SqlServer_Examples()
         {
             using var db = OpenDbConnection();

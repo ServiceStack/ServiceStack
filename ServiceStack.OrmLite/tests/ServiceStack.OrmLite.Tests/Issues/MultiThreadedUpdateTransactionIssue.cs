@@ -17,6 +17,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
         }
 
         [Test]
+        [NUnit.Framework.Ignore("Needs review - MONOREPO")]
         public void Can_Insert_Update_record_across_multiple_threads()
         {
             using (var db = OpenDbConnection())

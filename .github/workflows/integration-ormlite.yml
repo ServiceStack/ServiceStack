@@ -39,9 +39,8 @@ jobs:
       mysql:
         image: mysql:8.0.28
         env:
-          MYSQL_PASSWORD: test
+          MYSQL_ROOT_PASSWORD: Test!tesT
           MYSQL_DATABASE: test
-          MYSQL_USER: test
         ports:
           - 48205:3306
     steps:
@@ -131,7 +130,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: MySql
-          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=test;Password=test
+          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
       
       - name: Test MySql OrmLite
@@ -139,7 +138,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: MySql
-          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=test;Password=test
+          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report

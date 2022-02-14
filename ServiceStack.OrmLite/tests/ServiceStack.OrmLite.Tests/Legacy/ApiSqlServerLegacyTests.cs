@@ -29,6 +29,7 @@ namespace ServiceStack.OrmLite.Tests.Legacy
 
 #pragma warning disable 618
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void API_SqlServer_Legacy_Examples()
         {
             db.Select<Person>(q => q.Where(x => x.Age > 40).OrderBy(x => x.Id));

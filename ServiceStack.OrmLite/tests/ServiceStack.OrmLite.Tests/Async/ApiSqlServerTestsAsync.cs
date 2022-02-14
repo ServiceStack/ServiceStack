@@ -28,6 +28,7 @@ namespace ServiceStack.OrmLite.Tests.Async
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public async Task API_SqlServer_Examples_Async()
         {
             await db.InsertAsync(Person.Rockstars);

@@ -12,6 +12,7 @@ namespace ServiceStack.OrmLite.Tests.Async.Legacy
         
 #pragma warning disable 618
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public async Task API_SqlServer_Legacy_Examples_Async()
         {
             var db = OpenDbConnection();

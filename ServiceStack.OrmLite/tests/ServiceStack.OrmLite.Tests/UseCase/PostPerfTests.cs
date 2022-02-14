@@ -37,6 +37,13 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 //            Dialect = Dialect.SqlServer2012;
 //        }
 
+        
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            EnsureDBSetup();
+        }
+        
         private void EnsureDBSetup()
         {
             using (var cnn = OpenDbConnection().ToDbConnection())
@@ -108,6 +115,7 @@ end
         }
 
         [Test]
+        [NUnit.Framework.Ignore("Needs review - MONOREPO")]
         public void Run_multi_select_Dapper()
         {
             var tester = new Tester();
@@ -157,6 +165,20 @@ end
 //            db = dbFactory.Open();
 //        }
 
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            db = OpenDbConnection();
+            db.CreateSchema("Sales");
+            db.CreateTableIfNotExists<SalesOrderHeader>();
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            db?.Dispose();
+        }
+
         [SetUp]
         public void Setup()
         {
@@ -172,6 +194,7 @@ end
         private static string SqlSelectCommandText = @"SELECT [SalesOrderID],[RevisionNumber],[OrderDate],[DueDate],[ShipDate],[Status],[OnlineOrderFlag],[SalesOrderNumber],[PurchaseOrderNumber],[AccountNumber],[CustomerID],[SalesPersonID],[TerritoryID],[BillToAddressID],[ShipToAddressID],[ShipMethodID],[CreditCardID],[CreditCardApprovalCode],[CurrencyRateID],[SubTotal],[TaxAmt],[Freight],[TotalDue],[Comment],[rowguid],[ModifiedDate]	FROM [Sales].[SalesOrderHeader]";
 
         [Test]
+        [NUnit.Framework.Ignore("Needs review - MONOREPO")]
         public void Select_all_SalesOrderHeader_Dapper()
         {
             db.Query<SalesOrderHeader>(SqlSelectCommandText).AsList();
@@ -184,6 +207,7 @@ end
         }
 
         [Test]
+        [NUnit.Framework.Ignore("Needs review - MONOREPO")]
         public void Select_all_SalesOrderHeader_OrmLite()
         {
             var tester = new Tester();

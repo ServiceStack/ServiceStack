@@ -172,6 +172,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Can_use_Custom_Select_with_Tuples()
         {
             using var db = OpenDbConnection();
@@ -217,6 +218,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public async Task Can_use_Custom_Select_with_Tuples_Async()
         {
             using var db = await OpenDbConnectionAsync();
