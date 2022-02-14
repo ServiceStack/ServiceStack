@@ -17,7 +17,7 @@ namespace ServiceStack.OrmLite.Tests.Async
         private IDbConnection db;
 
         [OneTimeSetUp]
-        public new void TestFixtureSetUp()
+        public void TestFixtureSetUp()
         {
             db = base.OpenDbConnection();
             ResetTables();

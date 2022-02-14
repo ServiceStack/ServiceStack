@@ -49,7 +49,7 @@ namespace ServiceStack.OrmLite.Tests
         }
 
         [OneTimeTearDown]
-        public new void TestFixtureTearDown()
+        public void TestFixtureTearDown()
         {
             db.Dispose();
         }
@@ -84,7 +84,6 @@ namespace ServiceStack.OrmLite.Tests
             var q = db.From<Customer>()
                 .OrderByFields("Id");
 
-            string[] include = null; 
             var results = await db.LoadSelectAsync(q);
             
             Assert.That(results.Count, Is.GreaterThan(1));
