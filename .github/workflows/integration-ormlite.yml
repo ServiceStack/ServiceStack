@@ -178,7 +178,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: OrmLite MySql Tests
+          name: OrmLite Firebird Tests
           only-summary: 'true'
           path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
           reporter: dotnet-trx
