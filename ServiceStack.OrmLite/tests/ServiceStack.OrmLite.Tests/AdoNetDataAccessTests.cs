@@ -26,6 +26,7 @@ namespace ServiceStack.OrmLite.Tests
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Can_read_from_existing_database()
         {
             using var db = OpenDbConnection();
