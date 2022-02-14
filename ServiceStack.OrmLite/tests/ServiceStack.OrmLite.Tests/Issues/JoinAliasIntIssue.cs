@@ -80,6 +80,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
         }
 
         [Test]
+        [IgnoreDialect(Dialect.MySql,"Needs review - MONOREPO")]
         public void Can_create_query_with_int_TableAlias()
         {
             using (var db = OpenDbConnection())
