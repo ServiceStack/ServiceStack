@@ -44,7 +44,7 @@ jobs:
         ports:
           - 48205:3306
       firebird:
-        image: jacobalberty/firebird:v3.0.8
+        image: jacobalberty/firebird:v4.0.0
         env:
           FIREBIRD_USER: test
           FIREBIRD_PASSWORD: Test!tesT
