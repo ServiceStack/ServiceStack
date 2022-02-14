@@ -46,8 +46,7 @@ jobs:
       firebird:
         image: jacobalberty/firebird:v4.0.0
         env:
-          FIREBIRD_USER: test
-          FIREBIRD_PASSWORD: Test!tesT
+          ISC_PASSWORD: Test!tesT
           FIREBIRD_DATABASE: test
         ports:
           - 48101:3050
@@ -163,7 +162,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: Firebird
-          FIREBIRD_CONNECTION: User=test;Password=Test!tesT;Database=test;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
+          FIREBIRD_CONNECTION: User=sysdba;Password=Test!tesT;Database=test;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
 
       - name: Test Firebird OrmLite
@@ -171,7 +170,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: Firebird
-          FIREBIRD_CONNECTION: User=test;Password=Test!tesT;Database=test;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
+          FIREBIRD_CONNECTION: User=sysdba;Password=Test!tesT;Database=test;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
         run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
