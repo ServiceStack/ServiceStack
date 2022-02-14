@@ -1,0 +1,67 @@
+﻿name: Integration Tests OrmLite Community Providers
+
+on: workflow_dispatch
+
+jobs:
+  integration-ormlite-community:
+    runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      firebird:
+        image: jacobalberty/firebird:v4.0.0
+        env:
+          ISC_PASSWORD: Test!tesT
+          FIREBIRD_DATABASE: test.gdb
+        ports:
+          - 48101:3050
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Build
+        working-directory: ServiceStack.OrmLite/build
+        run: dotnet build ./build.proj
+
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+                
+      - name: Tests Firebird Setup
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: Firebird
+          FIREBIRD_CONNECTION: User=test;Password=Test!tesT;Database=/firebird/data/test.gdb;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
+          EnableLegacyClientAuth: true
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+
+      - name: Test Firebird OrmLite
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: Firebird
+          FIREBIRD_CONNECTION: User=test;Password=Test!tesT;Database=/firebird/data/test.gdb;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
+          EnableLegacyClientAuth: true
+        run: |
+          dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx' --filter "FullyQualifiedName=ServiceStack.OrmLite.Tests.OrderByTests"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite Firebird Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
