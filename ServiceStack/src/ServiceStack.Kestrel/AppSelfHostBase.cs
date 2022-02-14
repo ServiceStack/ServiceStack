@@ -20,7 +20,6 @@ using ServiceStack.IO;
 using ServiceStack.Web;
 
 #if NETSTANDARD2_0
-using Microsoft.AspNetCore.Hosting;
 using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 #else

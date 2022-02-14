@@ -1,4 +1,5 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+﻿#pragma warning disable SYSLIB0014
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 /*

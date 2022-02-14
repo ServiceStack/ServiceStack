@@ -16,7 +16,7 @@ namespace MyApp.ServiceInterface;
 [Route("/profile-image/{Type}/{Size}")]
 public class GetProfileImage : IReturn<byte[]>
 {
-    public string Type { get; set; }
+    public string? Type { get; set; }
     public string? Size { get; set; }
 }
 

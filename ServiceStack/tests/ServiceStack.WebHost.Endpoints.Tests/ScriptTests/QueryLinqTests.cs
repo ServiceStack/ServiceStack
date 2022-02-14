@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             return new string(wordChars);
         }
 
-        public bool Equals(object x, object y) => Equals((string) x, (string) y);
+        bool IEqualityComparer<object>.Equals(object x, object y) => Equals((string) x, (string) y);
 
         public int GetHashCode(object obj) => GetHashCode((string)obj);
     }

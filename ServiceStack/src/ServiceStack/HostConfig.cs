@@ -72,7 +72,9 @@ namespace ServiceStack
                     {"AcceptsXml", req => req.Accept?.IndexOf(MimeTypes.Xml, StringComparison.Ordinal) >= 0 },
                     {"AcceptsJsv", req => req.Accept?.IndexOf(MimeTypes.Jsv, StringComparison.Ordinal) >= 0 },
                     {"AcceptsCsv", req => req.Accept?.IndexOf(MimeTypes.Csv, StringComparison.Ordinal) >= 0 },
+#pragma warning disable CS0618
                     {"IsAuthenticated", req => req.IsAuthenticated() },
+#pragma warning restore CS0618
                     {"IsMobile", req => Instance.IsMobileRegex.IsMatch(req.UserAgent) },
                     {"{int}/**", req => int.TryParse(req.PathInfo.Substring(1).LeftPart('/'), out _) },
                     {"path/{int}/**", req => {

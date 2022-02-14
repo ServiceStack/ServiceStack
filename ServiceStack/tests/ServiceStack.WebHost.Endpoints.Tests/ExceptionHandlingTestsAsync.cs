@@ -83,7 +83,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_override_global_exception_handling()
         {
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedException>());
+#pragma warning restore CS0618, SYSLIB0014
             var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("UncaughtException ArgumentException", res);
         }
@@ -91,7 +93,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_override_global_exception_handling_async()
         {
+#pragma warning disable CS0618, SYSLIB0014
             var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedExceptionAsync>());
+#pragma warning restore CS0618, SYSLIB0014
             var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("UncaughtException ArgumentException", res);
         }
@@ -101,7 +105,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
+#pragma warning disable CS0618, SYSLIB0014
                 var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtException>());
+#pragma warning restore CS0618, SYSLIB0014
                 var res = req.GetResponse().ReadToEnd();
                 Assert.Fail("Should Throw");
             }
@@ -119,7 +125,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
+#pragma warning disable CS0618, SYSLIB0014
                 var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtExceptionAsync>());
+#pragma warning restore CS0618, SYSLIB0014
                 var res = req.GetResponse().ReadToEnd();
                 Assert.Fail("Should Throw");
             }

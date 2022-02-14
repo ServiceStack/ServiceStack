@@ -397,7 +397,9 @@ namespace ServiceStack
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
+#pragma warning disable CS0618, SYSLIB0014
                                 var httpReq = WebRequest.CreateHttp(uri);
+#pragma warning restore CS0618, SYSLIB0014
                                 tokenResponse = (await ServiceClientBase.SendStringToUrlAsync(httpReq, method:HttpMethods.Post, 
                                     requestFilter: req => {
                                         if (hasRefreshTokenCookie) {
@@ -419,7 +421,9 @@ namespace ServiceStack
                             }
 
                             var accessToken = tokenResponse?.AccessToken;
-                            var refreshClient = webReq = (HttpWebRequest) WebRequest.Create(requestUri);
+#pragma warning disable CS0618, SYSLIB0014
+                            var refreshClient = webReq = WebRequest.CreateHttp(requestUri);
+#pragma warning restore CS0618, SYSLIB0014
                             var tokenCookie = this.CookieContainer.GetTokenCookie(BaseUri);
 
                             if (!string.IsNullOrEmpty(accessToken))
@@ -438,7 +442,9 @@ namespace ServiceStack
 
                         OnAuthenticationRequired?.Invoke();
 
-                        var newReq = (HttpWebRequest) WebRequest.Create(requestUri);
+#pragma warning disable CS0618, SYSLIB0014
+                        var newReq = WebRequest.CreateHttp(requestUri);
+#pragma warning restore CS0618, SYSLIB0014
 
                         if (StoreCookies)
                             newReq.CookieContainer = CookieContainer;

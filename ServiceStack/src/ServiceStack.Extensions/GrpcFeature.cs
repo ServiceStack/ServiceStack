@@ -473,7 +473,9 @@ namespace ServiceStack
     [Restrict(VisibilityTo = RequestAttributes.Grpc)]
     public class StreamFileService : Service, IStreamService<StreamFiles,FileContent>
     {
+#pragma warning disable CS1998
         public async IAsyncEnumerable<FileContent> Stream(StreamFiles request, [EnumeratorCancellation] CancellationToken cancel = default)
+#pragma warning restore CS1998
         {
             var i = 0;
             var paths = request.Paths ?? TypeConstants.EmptyStringList;

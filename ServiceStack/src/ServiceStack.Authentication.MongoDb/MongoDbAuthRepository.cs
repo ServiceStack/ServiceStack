@@ -104,7 +104,7 @@ namespace ServiceStack.Authentication.MongoDb
                 userAuth.Id = IncUserAuthCounter();
             var usersCollection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             usersCollection.ReplaceOne(u => u.Id == userAuth.Id, (UserAuth)userAuth, 
-                new UpdateOptions() {IsUpsert = true});
+                new ReplaceOptions { IsUpsert = true });
         }
 
         private int IncUserAuthCounter()
@@ -394,7 +394,7 @@ namespace ServiceStack.Authentication.MongoDb
                 authDetails.CreatedDate = userAuth.ModifiedDate;
             authDetails.ModifiedDate = userAuth.ModifiedDate;
 
-            providerCollection.ReplaceOne(ud => ud.Id == authDetails.Id, authDetails, new UpdateOptions() {IsUpsert = true});
+            providerCollection.ReplaceOne(ud => ud.Id == authDetails.Id, authDetails, new ReplaceOptions { IsUpsert = true });
 
             return authDetails;
         }
@@ -418,7 +418,7 @@ namespace ServiceStack.Authentication.MongoDb
             if (string.IsNullOrEmpty(apiKey))
                 return false;
             var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
-            return collection.Count(key => key.Id == apiKey) > 0;
+            return collection.CountDocuments(key => key.Id == apiKey) > 0;
         }
 
         public ApiKey GetApiKey(string apiKey)

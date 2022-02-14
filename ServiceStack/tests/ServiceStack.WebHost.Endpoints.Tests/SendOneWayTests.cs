@@ -107,7 +107,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static string GetResponse(String url, string json)
         {
+#pragma warning disable CS0618, SYSLIB0014
             var webRequest = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618, SYSLIB0014
             webRequest.Method = "PUT";
             var formDataBytes = Encoding.UTF8.GetBytes(json);
             webRequest.SetContentLength(formDataBytes.Length);

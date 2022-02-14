@@ -35,9 +35,9 @@
                 <div class="col-md-6">
                     <form id="send-code" method="post">
                         <div class="form-group">
-                            <label asp-for="Input.Code" class="control-label">Verification Code</label>
-                            <input asp-for="Input.Code" class="form-control" autocomplete="off" />
-                            <span asp-validation-for="Input.Code" class="text-danger"></span>
+                            <label asp-for="Input!.Code" class="control-label">Verification Code</label>
+                            <input asp-for="Input!.Code" class="form-control" autocomplete="off" />
+                            <span asp-validation-for="Input!.Code" class="text-danger"></span>
                         </div>
                         <button type="submit" class="btn btn-primary">Verify</button>
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>

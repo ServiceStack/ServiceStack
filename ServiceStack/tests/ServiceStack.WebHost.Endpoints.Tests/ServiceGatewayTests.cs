@@ -183,7 +183,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 return Gateway.Send(request.ConvertTo<SGSyncPostValidationInternal>());
             }
-            catch (WebServiceException e)
+            catch (WebServiceException)
             {
                 throw;
             }
@@ -201,7 +201,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 return await Gateway.SendAsync(request.ConvertTo<SGSyncPostValidationAsyncInternal>());
             }
-            catch (WebServiceException e)
+            catch (WebServiceException)
             {
                 throw;
             }

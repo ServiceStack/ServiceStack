@@ -139,6 +139,7 @@ public class PublishTasks
         var dtos = baseUrl.CombineWith("/types/typescript").GetStringFromUrl();
         dtos += @"
 // declare Types used in /ui 
+// @ts-ignore
 export declare var APP:AppMetadata
 ";
         

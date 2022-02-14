@@ -52,8 +52,6 @@ namespace ServiceStack.Text.Common
         /// <summary>
         /// If AlwaysUseUtc is set to true then convert all DateTime to UTC. If PreserveUtc is set to true then UTC dates will not convert to local
         /// </summary>
-        /// <param name="dateTime"></param>
-        /// <returns></returns>
         public static DateTime Prepare(this DateTime dateTime, bool parsedAsUtc = false)
         {
             var config = JsConfig.GetConfig();

@@ -9,7 +9,7 @@ import { queryString, leftPart, each } from "@servicestack/client"
  *   route:nav  - fired for both
  */
 App.plugin({
-    usePageRoutes({ page, queryKeys, handlers }) {
+    usePageRoutes({ page, queryKeys, handlers, extend }) {
         if (typeof page  != 'string' || page === '')
             throw new Error('page is required')
         if (typeof queryKeys == 'undefined' || !queryKeys.length)
@@ -62,7 +62,8 @@ App.plugin({
                 let qs = queryKeys.filter(k => s[k]).map(k =>
                     `${encodeURIComponent(k)}=${encodeURIComponent(s[k])}`).join('&')
                 return path + (qs ? '?' + qs : '')
-            }
+            },
+            ...extend
         })
         
         this.directive('href',  ({ effect, get, el }) => {

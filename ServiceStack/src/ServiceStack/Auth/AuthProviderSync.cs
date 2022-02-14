@@ -51,7 +51,9 @@ namespace ServiceStack.Auth
 
         protected AuthProviderSync()
         {
+#pragma warning disable CS0618
             PersistSession = !(GetType().HasInterface(typeof(IAuthWithRequest)) || GetType().HasInterface(typeof(IAuthWithRequestSync)));
+#pragma warning restore CS0618
         }
 
         protected AuthProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider)

@@ -77,6 +77,7 @@ namespace ServiceStack.Caching
             return TypeConstants.EmptyTask;
         }
 
+#pragma warning disable CS1998
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
         {
             foreach (var key in Cache.GetKeysByPattern(pattern))
@@ -86,6 +87,7 @@ namespace ServiceStack.Caching
                 yield return key;
             }
         }
+#pragma warning restore CS1998
 
         public ValueTask DisposeAsync()
         {

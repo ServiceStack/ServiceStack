@@ -1,4 +1,5 @@
-﻿#if !NETCORE
+﻿#pragma warning disable CS0618, SYSLIB0014
+#if !NETCORE
 namespace ServiceStack.FluentValidation.Mvc {
     using System.Web.Mvc;
     using Internal;

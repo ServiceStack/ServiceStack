@@ -31,18 +31,18 @@ namespace CheckIdentity.Areas.Identity.Pages.Account.Manage
             _urlEncoder = urlEncoder;
         }
 
-        public string SharedKey { get; set; }
+        public string? SharedKey { get; set; }
 
-        public string AuthenticatorUri { get; set; }
-
-        [TempData]
-        public string[] RecoveryCodes { get; set; }
+        public string? AuthenticatorUri { get; set; }
 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string[]? RecoveryCodes { get; set; }
+
+        [TempData]
+        public string? StatusMessage { get; set; }
 
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel? Input { get; set; }
 
         public class InputModel
         {
@@ -50,7 +50,7 @@ namespace CheckIdentity.Areas.Identity.Pages.Account.Manage
             [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Text)]
             [Display(Name = "Verification Code")]
-            public string Code { get; set; }
+            public string? Code { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -81,7 +81,7 @@ namespace CheckIdentity.Areas.Identity.Pages.Account.Manage
             }
 
             // Strip spaces and hypens
-            var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+            var verificationCode = Input!.Code!.Replace(" ", string.Empty).Replace("-", string.Empty);
 
             var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
                 user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
@@ -95,7 +95,7 @@ namespace CheckIdentity.Areas.Identity.Pages.Account.Manage
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
             var userId = await _userManager.GetUserIdAsync(user);
-            _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
+            _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app", userId);
 
             StatusMessage = "Your authenticator app has been verified.";
 

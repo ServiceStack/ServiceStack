@@ -19,7 +19,7 @@ class MultiTypes
     public DateTime Date { get; set; }
     public DateTime? NDate { get; set; }
     public bool Bool { get; set; }
-    public string String { get; set; }
+    public string? String { get; set; }
 }
 
 public class InputTests

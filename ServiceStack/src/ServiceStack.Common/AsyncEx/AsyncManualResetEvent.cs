@@ -71,7 +71,7 @@ namespace ServiceStack.AsyncEx
             _mutex = new object();
             _tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
             if (set)
-                _tcs.TrySetResult(null);
+                _tcs.TrySetResult(null!);
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace ServiceStack.AsyncEx
         {
             lock (_mutex)
             {
-                _tcs.TrySetResult(null);
+                _tcs.TrySetResult(null!);
             }
         }
 
@@ -302,7 +302,7 @@ namespace ServiceStack.AsyncEx
                 throw new ArgumentNullException(nameof(task));
 
             if (task.IsFaulted)
-                return @this.TrySetException(task.Exception.InnerExceptions);
+                return @this.TrySetException(task.Exception!.InnerExceptions);
             if (task.IsCanceled)
             {
                 try
@@ -338,7 +338,7 @@ namespace ServiceStack.AsyncEx
                 throw new ArgumentNullException(nameof(resultFunc));
 
             if (task.IsFaulted)
-                return @this.TrySetException(task.Exception.InnerExceptions);
+                return @this.TrySetException(task.Exception!.InnerExceptions);
             if (task.IsCanceled)
             {
                 try
@@ -420,7 +420,7 @@ namespace ServiceStack.AsyncEx
             }
             catch (AggregateException ex)
             {
-                throw ExceptionHelpers.PrepareForRethrow(ex.InnerException);
+                throw ExceptionHelpers.PrepareForRethrow(ex.InnerException!);
             }
         }
 
@@ -457,7 +457,7 @@ namespace ServiceStack.AsyncEx
             }
             catch (AggregateException ex)
             {
-                throw ExceptionHelpers.PrepareForRethrow(ex.InnerException);
+                throw ExceptionHelpers.PrepareForRethrow(ex.InnerException!);
             }
         }
 

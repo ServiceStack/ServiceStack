@@ -9,6 +9,7 @@ function PetiteVueApp() {
     let Directives = {}
     let Props = {}
     let OnStart = []
+    let Instances = {}
     this.petite = null
     this.events = new EventBus()
     
@@ -90,6 +91,13 @@ function PetiteVueApp() {
         })
     }
     
+    this.unsubscribe = function() {
+        if (this.sub) {
+            this.sub.unsubscribe()
+            this.sub = null
+        }
+    }
+    
     this.import = function (src) {
         return new Promise((resolve, reject) => {
             let s = document.createElement('script')
@@ -106,7 +114,7 @@ function PetiteVueApp() {
     this.start = function () {
         OnStart.forEach(f => f(this))
     }
-
+    
     Object.assign(this, window.PetiteVue||{})
 }
 /*:minify*/

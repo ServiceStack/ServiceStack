@@ -394,8 +394,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class UpdateRockstarAudit : RockstarBase, IPatchDb<RockstarAudit>, IReturn<EmptyResponse>
     {
         public int Id { get; set; }
-        public string FirstName { get; set; }
-        public LivingStatus? LivingStatus { get; set; }
+        public new string FirstName { get; set; }
+        public new LivingStatus? LivingStatus { get; set; }
     }
 
     [Authenticate]

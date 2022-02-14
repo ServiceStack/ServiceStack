@@ -10,7 +10,7 @@ namespace ServiceStack.Messaging.Redis
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MessageHandlerWorker));
 
-        readonly object msgLock = new object();
+        readonly object msgLock = new();
 
         private readonly IMessageHandler messageHandler;
         private readonly IRedisClientsManager clientsManager;
@@ -179,7 +179,9 @@ namespace ServiceStack.Messaging.Redis
                         if (!bgThread.Join(TimeSpan.FromSeconds(3)))
                         {
                             Log.Warn(bgThread.Name + " just wont die, so we're now aborting it...");
+#pragma warning disable CS0618, SYSLIB0014, SYSLIB0006
                             bgThread.Abort();
+#pragma warning restore CS0618, SYSLIB0014, SYSLIB0006
                         }
                     }
                 }

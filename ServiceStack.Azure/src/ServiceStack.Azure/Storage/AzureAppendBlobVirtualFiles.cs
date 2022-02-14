@@ -150,7 +150,7 @@ namespace ServiceStack.Azure.Storage
                 .Select(q => new AzureAppendBlobVirtualFile(this, dir).Init(q));
         }
 
-        public string SanitizePath(string filePath)
+        public override string SanitizePath(string filePath)
         {
             var sanitizedPath = string.IsNullOrEmpty(filePath)
                 ? null

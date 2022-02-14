@@ -6,7 +6,7 @@ let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
 
-function createClient(fn) {
+export function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
         c.bearerToken = bearerToken
         c.enableAutoRefreshToken = false

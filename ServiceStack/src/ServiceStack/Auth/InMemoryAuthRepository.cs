@@ -35,7 +35,7 @@ namespace ServiceStack.Auth
 
         internal class TypedData<T> : IClearable
         {
-            internal static TypedData<T> Instance = new TypedData<T>();
+            internal static TypedData<T> Instance = new();
 
             private TypedData()
             {
@@ -43,7 +43,7 @@ namespace ServiceStack.Auth
                     InMemoryAuthRepository.Instance.TrackedTypes.Add(this);
             }
 
-            internal readonly List<T> Items = new List<T>();
+            internal readonly List<T> Items = new();
             internal int Sequence = 0;
 
             public void Clear()
@@ -404,7 +404,7 @@ namespace ServiceStack.Auth
                 return TypeConstants.EmptyTask;
             }
 
-            public async Task<string> GetValueFromHashAsync(string hashId, string key, CancellationToken token = default)
+            public Task<string> GetValueFromHashAsync(string hashId, string key, CancellationToken token = default)
             {
                 if (hashId == null)
                     throw new ArgumentNullException(nameof(hashId));
@@ -417,7 +417,7 @@ namespace ServiceStack.Auth
                         return null;
 
                     hash.TryGetValue(key, out var value);
-                    return value;
+                    return Task.FromResult(value);
                 }
             }
 

@@ -22,7 +22,7 @@ public static class InspectUtils
     }
 
     // Evaluates an expression (not a LambdaExpression), e.g. 2 + 2.
-    public static object Evaluate(Expression arg)
+    public static object? Evaluate(Expression arg)
     {
         if (arg == null)
             throw new ArgumentNullException(nameof(arg));
@@ -38,7 +38,7 @@ public static class InspectUtils
         return lambdaExpr.Compile();
     }
 
-    public static string[] GetFieldNames<T>(this Expression<Func<T, object>> expr)
+    public static string[] GetFieldNames<T>(this Expression<Func<T, object?>> expr)
     {
         if (expr.Body is MemberExpression member)
         {
@@ -60,7 +60,7 @@ public static class InspectUtils
         {
             var constantExprs = newArray.Expressions.OfType<ConstantExpression>().ToList();
             if (newArray.Expressions.Count == constantExprs.Count)
-                return constantExprs.Select(x => x.Value.ToString()).ToArray();
+                return constantExprs.Select(x => $"{x.Value}").ToArray();
 
             var array = Evaluate(newArray);
             if (array is string[] strArray)

@@ -175,7 +175,6 @@ namespace RazorRockstars.Console.Files
         static string ViewMPage1 = "<!--view:MPage1.md-->";
         static string ViewMPage2 = "<!--view:MPage2.md-->";
         static string ViewMPage3 = "<!--view:MPage3.md-->";
-        static string ViewMPage4 = "<!--view:MPage4.md-->";
         static string ViewRazorPartial = "<!--view:RazorPartial.cshtml-->";
         static string ViewMarkdownPartial = "<!--view:MarkdownPartial.md-->";
         static string ViewRazorPartialModel = "<!--view:RazorPartialModel.cshtml-->";

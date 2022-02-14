@@ -375,7 +375,9 @@ namespace ServiceStack.Script
         }
         
         public Type typeofProgId(string name) => Env.IsWindows
+#pragma warning disable CA1416
             ? Type.GetTypeFromProgID(name) // .NET Core throws TargetInvocationException CoreCLR_REMOVED -- Unmanaged activation removed
+#pragma warning restore CA1416
             : null;
 
         public object call(object instance, string name) => call(instance, name, null);
@@ -485,7 +487,8 @@ namespace ServiceStack.Script
             MethodInfo targetMethod = null;
             if (methods.Length == 0)
             {
-                if ((argTypes?.Length ?? 0) == 0)
+                var argsTypesCount = argTypes?.Length ?? 0;
+                if (argsTypesCount == 0)
                 {
                     var prop = type.GetProperty(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
@@ -514,6 +517,15 @@ namespace ServiceStack.Script
                                 return null;
                             }
                         }
+                    }
+                }
+                else if (argsTypesCount == 1)
+                {
+                    var prop = type.GetProperty(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                    if (prop != null)
+                    {
+                        targetMethod = prop.SetMethod ?? 
+                            throw new NotSupportedException($"Property {typeQualifiedName(type)}.{name} does not have a setter");
                     }
                 }
 
@@ -978,7 +990,9 @@ namespace ServiceStack.Script
 
         private static HttpWebRequest initWebRequest(string url, Dictionary<string, object> scopedParams)
         {
+#pragma warning disable CS0618, SYSLIB0014
             var webReq = (HttpWebRequest) WebRequest.Create(url);
+#pragma warning restore CS0618, SYSLIB0014
             var dataType = scopedParams.TryGetValue("dataType", out object value)
                 ? ConvertDataTypeToContentType((string) value)
                 : null;
@@ -1636,7 +1650,9 @@ namespace ServiceStack.Script
         }
         public IgnoreResult Decrypt(string path)
         {
+#pragma warning disable CA1416
             File.Decrypt(path);
+#pragma warning restore CA1416
             return IgnoreResult.Value;
         }
         public IgnoreResult Delete(string path)
@@ -1646,7 +1662,9 @@ namespace ServiceStack.Script
         }
         public IgnoreResult Encrypt(string path)
         {
+#pragma warning disable CA1416
             File.Encrypt(path);
+#pragma warning restore CA1416
             return IgnoreResult.Value;
         }
         public bool Exists(string path) => File.Exists(path);

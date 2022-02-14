@@ -333,7 +333,7 @@ import { mapGet, resolve } from "@servicestack/client"
     <form @submit.prevent="submit" autocomplete="off">
     <div class="relative px-4 py-5 bg-white sm:p-6">
         <div v-scope="CloseButton({ onclick:() => routes.to({ new:null }) })" title="Close"></div>
-            <div class="text-xl text-gray-900 text-center mb-4">New User</div>
+        <div class="text-xl text-gray-900 text-center mb-4">New User</div>
             <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
             <div class="flex flex-wrap sm:flex-nowrap">
                 <fieldset class="flex-grow mb-3 sm:mb-0">

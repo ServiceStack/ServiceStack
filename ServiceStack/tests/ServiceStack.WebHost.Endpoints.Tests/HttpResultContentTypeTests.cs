@@ -142,7 +142,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var text = "Some text";
             var url = $"{Config.ListeningOn}/test/plaintext?SetContentType={setContentTypeBrutally}&Text={text}";
-            var req = WebRequest.Create(url) as HttpWebRequest;
+#pragma warning disable CS0618, SYSLIB0014
+            var req = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618, SYSLIB0014
 
             HttpWebResponse res = null;
             try

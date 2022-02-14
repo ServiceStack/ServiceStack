@@ -618,7 +618,7 @@ namespace ServiceStack.Auth
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.RefreshTokenCookie))
                     (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.RefreshTokenCookie);

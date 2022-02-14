@@ -6,8 +6,6 @@ cd ..\..\ServiceStack.Azure\build
 call build.bat
 cd ..\..\ServiceStack.Blazor\build
 call build.bat
-cd ..\..\ServiceStack.CefGlue\build
-call build.bat
 cd ..\..\ServiceStack.Logging\build
 call build.bat
 cd ..\..\ServiceStack.OrmLite\build

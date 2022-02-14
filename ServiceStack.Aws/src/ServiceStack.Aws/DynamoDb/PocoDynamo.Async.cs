@@ -489,7 +489,9 @@ namespace ServiceStack.Aws.DynamoDb
             return ScanAsync(request, r => r.ConvertAll<T>(), token);
         }
 
+#pragma warning disable CS8425
         public async IAsyncEnumerable<T> ScanAsync<T>(ScanRequest request, Func<ScanResponse, IEnumerable<T>> converter, CancellationToken token = default)
+#pragma warning restore CS8425
         {
             ScanResponse response = null;
             do

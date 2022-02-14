@@ -64,7 +64,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var session = base.SessionAs<AuthUserSession>();
             session.Tag++;
 
+#pragma warning disable CS0618
             this.SaveSession(session);
+#pragma warning restore CS0618
 
             return session;
         }

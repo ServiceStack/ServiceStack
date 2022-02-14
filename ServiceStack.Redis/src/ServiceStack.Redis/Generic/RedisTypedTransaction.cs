@@ -45,7 +45,6 @@ namespace ServiceStack.Redis.Generic
         /// <summary>
         /// Put "QUEUED" messages at back of queue
         /// </summary>
-        /// <param name="queued"></param>
         private void QueueExpectQueued()
         {
             QueuedCommands.Insert(0, new QueuedRedisOperation()

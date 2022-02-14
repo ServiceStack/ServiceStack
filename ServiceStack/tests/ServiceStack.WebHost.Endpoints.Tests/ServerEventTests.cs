@@ -222,9 +222,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class CustomCredentialsAuthProvider : CredentialsAuthProvider
     {
-        public override async Task<bool> TryAuthenticateAsync(IServiceBase authService, string userName, string password, CancellationToken token=default)
+        public override Task<bool> TryAuthenticateAsync(IServiceBase authService, string userName, string password, CancellationToken token=default)
         {
-            return userName == "user" && password == "pass";
+            return Task.FromResult(userName == "user" && password == "pass");
         }
     }
     

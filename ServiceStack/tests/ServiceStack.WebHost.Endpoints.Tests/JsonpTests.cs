@@ -42,7 +42,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var url = ListeningOn + "all-movies/1?callback=cb";
 			string response;
 
+#pragma warning disable CS0618, SYSLIB0014
 			var webReq = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618, SYSLIB0014
 			webReq.Accept = "*/*";
 			using (var webRes = webReq.GetResponse())
 			{

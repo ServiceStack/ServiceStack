@@ -642,8 +642,6 @@ C
                 ["o1"] = new StaticLog.Inner1(),
             });
 
-            string result = null;
-
             Assert.That(context.EvaluateLisp<string>("(return (StaticLog/Prop))"), Is.EqualTo("StaticLog.Prop"));
             Assert.That(context.EvaluateLisp<string>("(return (StaticLog/Field))"), Is.EqualTo("StaticLog.Field"));
             Assert.That(context.EvaluateLisp<string>("(return (StaticLog/Const))"), Is.EqualTo("StaticLog.Const"));
@@ -872,7 +870,7 @@ C
                 lispCtx.Eval(SExprs);
                 Assert.Fail("should throw");
             }
-            catch (LispEvalException e) {}
+            catch (LispEvalException) {}
             
             Lisp.Import(@"
 (defun fib (n)
@@ -894,7 +892,7 @@ C
                 lispCtx.Eval(SExprs);
                 Assert.Fail("should throw");
             }
-            catch (LispEvalException e) {}
+            catch (LispEvalException) {}
         }
 
         // https://news.ycombinator.com/rss

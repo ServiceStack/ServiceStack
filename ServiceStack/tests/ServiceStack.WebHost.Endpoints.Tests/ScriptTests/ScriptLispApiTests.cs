@@ -530,6 +530,28 @@ id 1
             result = eval(@"(load-src ""index:parse-rss"")");
             result.ToString().Print();
         }
+
+        [Test]
+        public void Can_set_property_using_property_Name()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+                ScriptMethods = { new ProtectedScripts() },
+                ScriptAssemblies = {
+                    typeof(Property).Assembly,
+                    typeof(XDocument).Assembly,
+                },
+            }.Init();
+            
+            var result = context.EvaluateLisp("(setq a (Property.)) (.Name a \"foo\") (return (.Name a))");
+            Assert.That(result, Is.EqualTo("foo"));
+
+            result = context.EvaluateLisp(@"(setq doc (System.Xml.Linq.XDocument/Parse ""<root>orig</root>""))
+(setq root (.Root doc))
+(.Value root ""updated"")
+(return (.Value root))");
+            Assert.That(result, Is.EqualTo("updated"));
+        }
     }
     
 /* If LISP integration tests are needed in future

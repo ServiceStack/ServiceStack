@@ -1,3 +1,5 @@
+#pragma warning disable CS0618
+
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;

@@ -105,7 +105,9 @@ namespace ServiceStack.Extensions.Tests.Protoc
             var client1 = GetClient();
             var client2 = GetClient();
 
+#pragma warning disable CS4014
             Task.Factory.StartNew(async () => {
+#pragma warning restore CS4014
                 await Task.Delay(500);
                 await client2.CallPostChatToChannelAsync(new PostChatToChannel {
                     Channel = "send",

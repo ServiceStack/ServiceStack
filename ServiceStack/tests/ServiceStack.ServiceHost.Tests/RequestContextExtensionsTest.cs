@@ -50,7 +50,9 @@ namespace ServiceStack.ServiceHost.Tests
 
             if (pluginFormat != null) pluginFormat.Register(appHost);
 
+#pragma warning disable CS0618
             object result = httpReq.ToOptimizedResult(dto);
+#pragma warning restore CS0618
             Assert.IsNotNull(result);
             Assert.IsTrue(result is CompressedResult);
         }

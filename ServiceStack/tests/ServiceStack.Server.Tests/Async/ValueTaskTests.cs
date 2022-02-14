@@ -8,6 +8,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Server.Tests.Auth;
 using ServiceStack.Server.Tests.Services;
+#pragma warning disable CS0169
 
 namespace ServiceStack.Server.Tests.Async
 {
@@ -16,8 +17,6 @@ namespace ServiceStack.Server.Tests.Async
     {
         class AppHost : AppSelfHostBase
         {
-            public static ApiKey LastApiKey;
-
             public AppHost() : base(nameof(ApiKeyAuthTests), typeof(AppHost).Assembly) { }
 
             public override void Configure(Container container)

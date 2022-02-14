@@ -136,7 +136,9 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
+#pragma warning disable CS0618
                 var consumer = new QueueingBasicConsumer(channel);
+#pragma warning restore CS0618
                 var consumerTag = channel.BasicConsume(QueueNames<HelloRabbit>.In, autoAck: false, consumer: consumer);
                 string recvMsg = null;
 
@@ -266,7 +268,9 @@ namespace ServiceStack.Common.Tests.Messaging
                 {
                     try
                     {
+#pragma warning disable CS0618
                         var consumer = new QueueingBasicConsumer(channel);
+#pragma warning restore CS0618
                         channel.BasicConsume(QueueNames<HelloRabbit>.In, autoAck: false, consumer: consumer);
 
                         while (true)

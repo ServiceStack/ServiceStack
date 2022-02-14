@@ -1,6 +1,7 @@
 import { leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
-import { setBodyClass } from "../../shared/js/core"
+import { isCrud, isQuery, setBodyClass } from "../../shared/js/core"
+import { Types } from "../../shared/js/Types"
 
 /*minify:*/
 App.useTransitions({ sidebar: true })
@@ -15,6 +16,21 @@ let routes = App.usePageRoutes({
     queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider,doc'.split(','),
     handlers: {
         nav(state) { console.log('nav', state) } /*debug*/
+    },
+    extend: {
+        queryHref() {
+            let op = this.op && OpsMap[this.op]
+            if (op && APP.ui.modules.indexOf('/query-ui') >= 0) {
+                if (isQuery(op))
+                    return `/query-ui/${this.op}`
+                if (isCrud(op)) {
+                    let queryOp = APP.api.operations.find(x => isQuery(x) && Types.equals(op.dataModel,x.dataModel))
+                    if (queryOp)
+                        return `/query-ui/${queryOp.request.name}`
+                }
+            }
+            return ''
+        },
     }
 })
 
@@ -269,42 +285,5 @@ function typeProperties(type) {
         ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
         : prop)
 }
-let NumTypesMap = {
-    Byte: 'byte',
-    Int16: 'short',
-    Int32: 'int',
-    Int64: 'long',
-    UInt16: 'ushort',
-    Unt32: 'uint',
-    UInt64: 'ulong',
-    Single: 'float',
-    Double: 'double',
-    Decimal: 'decimal',
-}
-let NumTypes = [ ...Object.keys(NumTypesMap), ...Object.values(NumTypesMap) ]
-let TypeAliases = {
-    String: 'string',
-    Boolean: 'bool',
-    ...NumTypesMap,
-}
-function isNumberType(type) {
-    return type && NumTypes.indexOf(type) >= 0
-}
-function typeAlias(typeName) {
-    return TypeAliases[typeName] || typeName
-}
-function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
-function typeName2(name, genericArgs) {
-    if (!name) return ''
-    if (!genericArgs)
-        genericArgs = []
-    if (name === 'Nullable`1')
-        return typeAlias(genericArgs[0]) + '?'
-    if (name.endsWith('[]'))
-        return `List<${typeAlias(name.substring(0,name.length-2))}>`
-    ;if (genericArgs.length === 0)
-        return typeAlias(name)
-    return leftPart(typeAlias(name), '`') + '<' + genericArgs.join(',') + '>'
-}
-function typeName(metaType) { return metaType && typeName2(metaType.name, metaType.genericArgs) }
+
 /*:minify*/

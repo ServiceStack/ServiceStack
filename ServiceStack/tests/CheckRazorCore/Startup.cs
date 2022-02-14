@@ -26,7 +26,9 @@ namespace CheckRazorCore
 #endif
         }
 
+#pragma warning disable CS0618
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+#pragma warning restore CS0618
         {
             if (env.IsDevelopment())
             {

@@ -1,3 +1,5 @@
+#pragma warning disable CS0618
+
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;

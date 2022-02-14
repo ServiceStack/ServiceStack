@@ -85,8 +85,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			HostContext.Config.WriteErrorsToResponse = writeErrorsToResponse;
 
 			const int sleepMs = 1000;
-			var url = string.Format("{0}test/timed?Milliseconds={1}", ListeningOn, sleepMs);
-			var req = WebRequest.Create(url) as HttpWebRequest;
+			var url = $"{ListeningOn}test/timed?Milliseconds={sleepMs}";
+#pragma warning disable CS0618, SYSLIB0014
+			var req = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618, SYSLIB0014
 			//Set a short timeout so we'll give up before the request is processed
 #if !NETCORE			
 			req.Timeout = 100;

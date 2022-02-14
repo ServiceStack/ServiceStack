@@ -113,14 +113,15 @@ namespace ServiceStack.Caching
 
         public async Task RemoveByPatternAsync(string pattern, CancellationToken token=default)
         {
-            await (cache as IRemoveByPatternAsync).RemoveByPatternAsync(EnsurePrefix(pattern), token).ConfigAwait();
+            await ((IRemoveByPatternAsync)cache).RemoveByPatternAsync(EnsurePrefix(pattern), token).ConfigAwait();
         }
 
         public async Task RemoveByRegexAsync(string regex, CancellationToken token=default)
         {
-            await (cache as IRemoveByPatternAsync).RemoveByRegexAsync(EnsurePrefix(regex), token).ConfigAwait();
+            await ((IRemoveByPatternAsync)cache).RemoveByRegexAsync(EnsurePrefix(regex), token).ConfigAwait();
         }
 
+#pragma warning disable CS8425
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
         {
             await foreach (var key in cache.GetKeysByPatternAsync(EnsurePrefix(pattern), token))
@@ -128,6 +129,7 @@ namespace ServiceStack.Caching
                 yield return key;
             }
         }
+#pragma warning restore CS8425
 
         public ValueTask DisposeAsync() => cache.DisposeAsync();
 

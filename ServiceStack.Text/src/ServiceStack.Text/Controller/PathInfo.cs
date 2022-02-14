@@ -58,7 +58,7 @@ namespace ServiceStack.Text.Controller
 		/// <summary>
 		/// Parses the specified path info.
 		/// e.g.
-		///		MusicPage/arg1/0/true?debug&showFlows=3 => PathInfo
+		///		MusicPage/arg1/0/true?debug&amp;showFlows=3 => PathInfo
 		///			.ActionName = 'MusicPage'
 		///			.Arguments = ['arg1','0','true']
 		///			.Options = { debug:'True', showFlows:'3' }

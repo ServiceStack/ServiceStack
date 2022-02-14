@@ -21,7 +21,7 @@ namespace MyApp
 
                 // For NorthwindAuto + Bookings
                 appHost.Plugins.Add(new AutoQueryFeature {
-                    MaxLimit = 1000,
+                    MaxLimit = 100,
                     GenerateCrudServices = new GenerateCrudServices {
                         AutoRegister = true,
                         ServiceFilter = (op, req) =>

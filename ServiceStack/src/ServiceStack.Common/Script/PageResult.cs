@@ -1144,7 +1144,11 @@ namespace ServiceStack.Script
                                                 ? InvokeFilter(invoker, filter, new object[0], name)
                                                 : (invoker = GetContextFilterAsBinding(name, out filter)) != null
                                                     ? InvokeFilter(invoker, filter, new object[] {scope}, name)
-                                                    : ((ret = false) ? (object) null : null);
+                                                    // ReSharper disable once ExpressionIsAlwaysNull
+                                                    // ReSharper disable once ConditionalTernaryEqualBranch
+#pragma warning disable CS0665
+                                                    : ((ret = false) ? null : null);
+#pragma warning restore CS0665
             return ret;
         }
         

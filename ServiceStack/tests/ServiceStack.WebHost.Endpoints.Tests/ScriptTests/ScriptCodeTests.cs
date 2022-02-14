@@ -407,7 +407,6 @@ range(5) |> map => it + 1 |> to => nums
             var context = new ScriptContext().Init();
 
             string result = null;
-            string code = null;
 
             result = context.RenderCode(@"
 {{#if a > 1}}
@@ -630,7 +629,6 @@ text |> markdown
             }.Init();
 
             string code = null;
-            string output = null;
             object result = null;
 
             code = @"

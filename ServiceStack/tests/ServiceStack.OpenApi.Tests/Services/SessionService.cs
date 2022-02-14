@@ -68,7 +68,9 @@ namespace ServiceStack.OpenApi.Tests.Services
             unAuthInfo.CustomInfo = request.CustomName + " - CustomInfo";
             SessionBag.Set(unAuthInfo);
 
+#pragma warning disable CS0618
             this.SaveSession(session);
+#pragma warning restore CS0618
 
             return new GetSessionResponse
             {

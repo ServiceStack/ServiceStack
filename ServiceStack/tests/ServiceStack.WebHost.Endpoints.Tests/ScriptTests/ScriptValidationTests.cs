@@ -3,6 +3,7 @@ using System.IO;
 using NUnit.Framework;
 using ServiceStack.Script;
 using ServiceStack.Text;
+#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {

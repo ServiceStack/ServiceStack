@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new EmptyResponse();
         }
         
-        public async Task<object> Put(MyRegister request)
+        public object Put(MyRegister request)
         {
             var validator = new MyRegisterValidator { Request = Request };
             var validationResult = validator.Validate(Request, request);

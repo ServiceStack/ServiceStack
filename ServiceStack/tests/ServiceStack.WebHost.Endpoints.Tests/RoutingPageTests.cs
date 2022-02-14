@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost.VirtualFileSources.GetMemoryVirtualFiles().Clear();
                 appHost.VirtualFileSources.GetFileSystemVirtualFiles().DeleteFolder("dir");
             }
-            catch (IOException e)
+            catch (IOException)
             {
                 //sometimes throws The process cannot access the file 'bundle.js' because it is being used by another process.
             }

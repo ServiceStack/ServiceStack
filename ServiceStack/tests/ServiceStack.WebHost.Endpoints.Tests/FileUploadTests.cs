@@ -8,6 +8,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
+#pragma warning disable CS0618
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -26,9 +27,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost.Init();
                 appHost.Start(ListeningOn);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -296,7 +297,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_GET_upload_file()
         {
             var uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+#pragma warning disable CS0618, SYSLIB0014
             var webRequest = WebRequest.CreateHttp(ListeningOn + "/fileuploads/TestExistingDir/upload.html");
+#pragma warning restore CS0618, SYSLIB0014
             var expectedContents = uploadedFile.OpenRead().ReadToEnd();
 
             var webResponse = webRequest.GetResponse();

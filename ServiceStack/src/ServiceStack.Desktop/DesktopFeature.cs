@@ -173,7 +173,9 @@ namespace ServiceStack.Desktop
             var url = request.Url.IndexOf("://", StringComparison.Ordinal) >= 0
                 ? request.Url.UrlDecode()
                 : Request.GetBaseUrl().CombineWith(request.Url.UrlDecode());
-            var webReq = (HttpWebRequest) WebRequest.Create(url);
+#pragma warning disable CS0618, SYSLIB0014
+            var webReq = WebRequest.CreateHttp(url);
+#pragma warning restore CS0618, SYSLIB0014
             var httpReq = (IHttpRequest) base.Request;
             ProxyFeatureHandler.InitWebRequest(httpReq, webReq);
             if (httpReq.ContentLength > 0)

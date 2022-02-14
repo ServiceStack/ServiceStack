@@ -18,7 +18,7 @@ public class MediaRuleCreator
     }
     public string Size { get; }
 
-    public MediaRule Show<T>(Expression<Func<T,object>> expr)
+    public MediaRule Show<T>(Expression<Func<T,object?>> expr)
     {
         var fieldNames = expr.GetFieldNames();
         return new() { Rule = nameof(Show), Size = Size, ApplyTo = fieldNames };

@@ -75,11 +75,11 @@ function addReferencedTypes(allTypesMap, type) {
     <div v-if="request && !(routes.detailSrc && !breakpoints.lg)" id="detail-info" class="flex-1 w-full lg:w-1/2 pt-2 sm:px-4 bg-white overflow-auto md:pb-scroll">
         <div class="flex px-2 sm:px-0">
             <div class="flex-grow">
-                <h2 class="mb-3">
-                <span v-if="op.method" title="HTTP Method"
-                      class="mr-1 inline-flex items-center text-md px-2.5 py-0.5 bg-gray-100 text-gray-600">
-                  {{op.method}}
-                </span>
+                <h2 class="mt-1 mb-3 flex items-center">
+                    <span v-if="op.method" title="HTTP Method"
+                          class="mr-2 inline-flex items-center text-md px-2.5 py-0.5 bg-gray-100 text-gray-600">
+                      {{op.method}}
+                    </span>
                     <a v-href="{ detailSrc: opName }" class="text-xl text-blue-800">
                         {{opName}}
                     </a>

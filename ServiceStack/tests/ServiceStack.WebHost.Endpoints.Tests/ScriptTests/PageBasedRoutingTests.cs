@@ -2,10 +2,6 @@
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
-using System.Collections.Generic;
-using Funq;
-using NUnit.Framework;
-using ServiceStack.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
