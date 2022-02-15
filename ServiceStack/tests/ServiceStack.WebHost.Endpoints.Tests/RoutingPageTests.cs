@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -152,9 +154,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_get_Routing_Page_after_in_Memory_js_Bundle()
         {
             var fs = appHost.VirtualFileSources.GetFileSystemVirtualFiles();
-            BundledJsFiles.ForEach(fs.WriteFile);
+            BundledJsFiles.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary().ForEach(fs.WriteFile);
             
-            foreach (var entry in BundledJsExpected.ToImmutableSortedDictionary())
+            foreach (var entry in BundledJsExpected.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary())
             {
                 entry.Key.Print();
                 var html = Config.ListeningOn.CombineWith(entry.Key).GetStringFromUrl(accept: MimeTypes.Html);
@@ -177,12 +179,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_get_Routing_Page_after_on_disk_js_Bundle()
         {
             var fs = appHost.VirtualFileSources.GetFileSystemVirtualFiles();
-            var files = BundledJsFiles;
+            var files = BundledJsFiles.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary();
             files["dir/contacts/_layout.html"] = files["dir/contacts/_layout.html"]
                 .Replace("disk:false", "disk:true,minify:false"); 
             files.ForEach(fs.WriteFile);
             
-            foreach (var entry in BundledJsExpected.ToImmutableSortedDictionary())
+            foreach (var entry in BundledJsExpected.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary())
             {
                 entry.Key.Print();
                 var html = Config.ListeningOn.CombineWith(entry.Key).GetStringFromUrl(accept: MimeTypes.Html);

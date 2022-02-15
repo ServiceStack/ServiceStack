@@ -147,7 +147,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebException ex) //JsonServiceClient
             {
-                Assert.That(ex.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
+                Assert.That(ex.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure)
+                                         .Or.EqualTo(WebExceptionStatus.UnknownError));
             }
             catch (Exception ex) //JsonHttpClient
             {
@@ -158,6 +159,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(innerEx.Message, Is.EqualTo("Couldn't resolve host name")
                                             .Or.EqualTo("No such host is known.")                           // .NET Core 3.1
                                             .Or.EqualTo("The server name or address could not be resolved") // .NET Core 2.0
+                                            .Or.EqualTo("Resource temporarily unavailable")                 // GitHub Actions
                                             .Or.EqualTo("Name or service not known"));                      // .NET 6
 #endif        
             }
