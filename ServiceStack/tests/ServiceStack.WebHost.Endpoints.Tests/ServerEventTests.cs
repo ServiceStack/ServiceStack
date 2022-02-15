@@ -1429,6 +1429,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TestFixtureTearDown() => appHost.Dispose();
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Only_allows_one_Thread_through_at_a_time()
         {
             using (var client = CreateServerEventsClient())
