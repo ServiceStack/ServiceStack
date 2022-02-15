@@ -7,9 +7,8 @@ on:
       - '.github/workflows/build-redis.yml'
 
 jobs:
+  runs-on: ubuntu-20.04
   build-redis:
-    runs-on: ubuntu-20.04
-    integration-ormlite:
-      uses: ServiceStack/ServiceStack/.github/workflows/reuse-build-redis.yml@main
+    uses: ServiceStack/ServiceStack/.github/workflows/reuse-build-redis.yml@main
       secrets:
         SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}

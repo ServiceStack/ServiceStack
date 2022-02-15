@@ -7,8 +7,8 @@ on:
       - '.github/workflows/build-ormlite.yml'
 
 jobs:
+  runs-on: ubuntu-20.04
   build-ormlite:
-    runs-on: ubuntu-20.04
     uses: ServiceStack/ServiceStack/.github/workflows/reuse-build-ormlite.yml@main
     secrets:
       SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}
