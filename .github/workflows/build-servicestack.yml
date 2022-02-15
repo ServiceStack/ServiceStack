@@ -27,6 +27,14 @@ jobs:
           MSSQL_PID: Developer
         ports:
           - 48501:1433
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 48303:5432
     steps:
       - uses: actions/checkout@v2
       - name: Setup dotnet
@@ -42,6 +50,8 @@ jobs:
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+          echo "CI_RABBITMQ=gistlyn.com:45672" >> $GITHUB_ENV
+          echo "CI_DYNAMODB=http://gistlyn.com:48000" >> $GITHUB_ENV
         
       - name: Test Common
         run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
@@ -69,6 +79,7 @@ jobs:
 
       - name: Test WebHost Endpoints
         env:
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
         run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
