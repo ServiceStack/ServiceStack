@@ -7,9 +7,9 @@ on:
       - '.github/workflows/build-servicestack.yml'
 
 jobs:
-  runs-on: ubuntu-20.04
   build-servicestack:
+    runs-on: ubuntu-20.04
     uses: ServiceStack/ServiceStack/.github/workflows/reuse-build-servicestack.yml@main
-      secrets:
-        SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}
+    secrets:
+      SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}
     
