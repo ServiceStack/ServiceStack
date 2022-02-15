@@ -415,7 +415,7 @@ namespace ServiceStack.Redis.Tests
 
                 var timeTaken = DateTime.Now - now;
                 Assert.That(timeTaken.TotalMilliseconds > waitFor.TotalMilliseconds, Is.True);
-                Assert.That(timeTaken.TotalMilliseconds < waitFor.TotalMilliseconds + 1000, Is.True);
+                Assert.That(timeTaken.TotalMilliseconds < waitFor.TotalMilliseconds + 2000, Is.True);
                 return;
             }
             finally
