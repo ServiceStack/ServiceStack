@@ -1,4 +1,4 @@
-﻿name: Z_Integration Tests OrmLite 
+﻿name: Reusable Integration Tests OrmLite 
 
 on:
   workflow_call:
