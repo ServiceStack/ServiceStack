@@ -5,7 +5,6 @@ on:
     secrets:
       SERVICESTACK_LICENSE:
         required: true
-        type: string
 
 jobs:
   integration-ormlite-job:
