@@ -414,7 +414,7 @@ namespace ServiceStack.Auth
                 lock (root.Hashes)
                 {
                     if (!root.Hashes.TryGetValue(hashId, out var hash)) 
-                        return null;
+                        return Task.FromResult<string>(null);
 
                     hash.TryGetValue(key, out var value);
                     return Task.FromResult(value);

@@ -20,13 +20,21 @@ jobs:
         ports:
           - 6379:6379
       sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-latest
+        image: mcr.microsoft.com/mssql/server:2017-latest
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: Test!tesT
           MSSQL_PID: Developer
         ports:
           - 48501:1433
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 48303:5432
     steps:
       - uses: actions/checkout@v2
       - name: Setup dotnet
@@ -42,6 +50,8 @@ jobs:
       - name: Env setup
         run: |
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+          echo "CI_RABBITMQ=gistlyn.com:45672" >> $GITHUB_ENV
+          echo "CI_DYNAMODB=http://gistlyn.com:48000" >> $GITHUB_ENV
         
       - name: Test Common
         run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
@@ -67,30 +77,18 @@ jobs:
           path: ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/TestResults/results.trx
           reporter: dotnet-trx
 
-#      - name: Test WebHost Endpoints
-#        env:
-#          MSSQL_CONNECTION: Server=localhost;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-#        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
-#
-#      - name: Test Report
-#        uses: dorny/test-reporter@v1
-#        if: success() || failure()
-#        with:
-#          name: WebHost.Endpoints Tests
-#          only-summary: 'true'
-#          path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
-#          reporter: dotnet-trx
-          
+      - name: Test WebHost Endpoints
+        env:
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
-#      - name: Test OpenApi
-#        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.OpenApi.Tests/ServiceStack.OpenApi.Tests.csproj --logger 'trx;LogFileName=results.trx'
-#
-#      - name: Test Report
-#        uses: dorny/test-reporter@v1
-#        if: success() || failure()
-#        with:
-#          name: OpenApi Tests
-#          path: ./ServiceStack/tests/ServiceStack.OpenApi.Tests/TestResults/results.trx
-#          reporter: dotnet-trx
-        
-    
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: WebHost.Endpoints Tests
+          only-summary: 'true'
+          path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+          
