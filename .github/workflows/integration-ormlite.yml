@@ -4,6 +4,6 @@ on: [workflow_dispatch]
 
 jobs:
   integration-ormlite:
-    uses: ServiceStack/ServiceStack/.github/workflows/reuse-integration-ormlite.yml@main
+    uses: ServiceStack/ServiceStack/.github/actions/reuse-integration-ormlite.yml@main
     with:
       SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}
