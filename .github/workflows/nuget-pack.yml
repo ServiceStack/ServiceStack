@@ -183,7 +183,7 @@ jobs:
           only-summary: 'true'
  
   nuget-pack:
-    needs: build-package-all
+    needs: build-test-all
     runs-on: ubuntu-20.04
     steps:
     - name: Rebuild All
