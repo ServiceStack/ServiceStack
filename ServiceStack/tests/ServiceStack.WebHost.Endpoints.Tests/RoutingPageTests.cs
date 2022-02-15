@@ -92,6 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Can_get_routing_pages_from_MemoryVirtualFiles()
         {
             AssertCanGetRoutingPages(appHost.VirtualFileSources.GetMemoryVirtualFiles());
