@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -95,7 +92,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        [Ignore("Needs review - MONOREPO")]
         public void Can_get_routing_pages_from_MemoryVirtualFiles()
         {
             AssertCanGetRoutingPages(appHost.VirtualFileSources.GetMemoryVirtualFiles());
@@ -151,12 +147,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public static string ExpectedBundleJs = "function a(){};\n\nfunction b(){};\n\nfunction c(){};\n\nfunction fn(){};";
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Can_get_Routing_Page_after_in_Memory_js_Bundle()
         {
             var fs = appHost.VirtualFileSources.GetFileSystemVirtualFiles();
-            BundledJsFiles.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary().ForEach(fs.WriteFile);
+            BundledJsFiles.ForEach(fs.WriteFile);
             
-            foreach (var entry in BundledJsExpected.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary())
+            foreach (var entry in BundledJsExpected)
             {
                 entry.Key.Print();
                 var html = Config.ListeningOn.CombineWith(entry.Key).GetStringFromUrl(accept: MimeTypes.Html);
@@ -176,15 +173,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public static string ExpectedOnDiskBundleJs = "function a(){  }\nfunction b(){  }\nfunction c(){  }\nfunction fn(){  }";
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Can_get_Routing_Page_after_on_disk_js_Bundle()
         {
             var fs = appHost.VirtualFileSources.GetFileSystemVirtualFiles();
-            var files = BundledJsFiles.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary();
+            var files = BundledJsFiles;
             files["dir/contacts/_layout.html"] = files["dir/contacts/_layout.html"]
                 .Replace("disk:false", "disk:true,minify:false"); 
             files.ForEach(fs.WriteFile);
             
-            foreach (var entry in BundledJsExpected.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToStringDictionary())
+            foreach (var entry in BundledJsExpected)
             {
                 entry.Key.Print();
                 var html = Config.ListeningOn.CombineWith(entry.Key).GetStringFromUrl(accept: MimeTypes.Html);
