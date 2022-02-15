@@ -39,6 +39,49 @@ public static class Input
         public const string Textarea = "textarea";
     }
 
+    public class ConfigureCss
+    {
+        public ConfigureCss(InputInfo input)
+        {
+            Input = input;
+            Input.Css ??= new FieldCss();
+        }
+
+        string ColSpan(int n) => "col-span-" + n switch
+        {
+            1 => "12",
+            2 => "6",
+            3 => "4",
+            4 => "3",
+            6 => "2",
+            12 => "1",
+            _ => throw new ArgumentException("Supported fields per row: 1, 2, 3, 4, 6, 12")
+        };
+
+        public ConfigureCss FieldsPerRow(int sm, int? md=null, int? lg=null, int? xl=null, int? xl2=null)
+        {
+            var cls = new List<string> { "col-span-12", "sm:" + ColSpan(sm) };
+            if (md != null) cls.Add("md:" + ColSpan(md.Value));
+            if (lg != null) cls.Add("lg:" + ColSpan(lg.Value));
+            if (xl != null) cls.Add("xl:" + ColSpan(xl.Value));
+            if (xl2 != null) cls.Add("2xl:" + ColSpan(xl2.Value));
+            Input.Css.Field = string.Join(" ", cls);
+            return this;
+        }
+
+        public InputInfo Input { get; }
+    }
+    
+    public static InputInfo FieldsPerRow(this InputInfo input, 
+        int sm, int? md = null, int? lg = null, int? xl = null, int? xl2 = null) =>
+        new ConfigureCss(input).FieldsPerRow(sm, md, lg, xl, xl2).Input;
+
+    public static InputInfo AddCss(this InputInfo input, Action<ConfigureCss> configure)
+    {
+        configure(new ConfigureCss(input));
+        return input;
+    }
+
     public static InputInfo For<TModel>(Expression<Func<TModel, object?>> expr, Action<InputInfo> configure)
     {
         var ret = For(expr);
@@ -50,28 +93,31 @@ public static class Input
     {
         var pi = InspectUtils.PropertyFromExpression(expr) 
             ?? throw new Exception($"Could not resolve property expression from {expr}");
+        var css = pi.FirstAttribute<FieldCssAttribute>().ToCss();
         var useType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
         if (useType.IsNumericType())
-            return new InputInfo(pi.Name, Types.Number);
+            return new InputInfo(pi.Name, Types.Number) { Css = css };
         if (useType == typeof(bool))
-            return new InputInfo(pi.Name, Types.Checkbox);
+            return new InputInfo(pi.Name, Types.Checkbox) { Css = css };
         if (useType == typeof(DateTime) || useType == typeof(DateTimeOffset) || useType.Name == "DateOnly")
-            return new InputInfo(pi.Name, Types.Date);
+            return new InputInfo(pi.Name, Types.Date) { Css = css };
         if (useType == typeof(TimeSpan) || useType.Name == "TimeOnly")
-            return new InputInfo(pi.Name, Types.Time);
+            return new InputInfo(pi.Name, Types.Time) { Css = css };
 
         if (useType.IsEnum)
         {
             return GetEnumEntries(useType, out var entries)
                 ? new InputInfo(pi.Name, Types.Select) {
+                    Css = css,
                     AllowableEntries = entries
                 }
                 : new InputInfo(pi.Name, Types.Select) {
+                    Css = css,
                     AllowableValues = entries.Select(x => x.Value).ToArray()
                 };
         }
-
-        return new InputInfo(pi.Name);
+        
+        return new InputInfo(pi.Name) { Css = css };
     }
 
     static FieldInfo GetEnumMember(Type type, string name) => 
@@ -132,5 +178,29 @@ public static class Input
 
         var ssDescAttr = mi.FirstAttribute<ServiceStack.DataAnnotations.DescriptionAttribute>();
         return ssDescAttr?.Description;
+    }
+
+    /// <summary>
+    /// Convert from Grid Matrix of Inputs into a flat List of Inputs with configured grid classes
+    /// </summary>
+    /// <param name="gridLayout"></param>
+    /// <returns></returns>
+    public static List<InputInfo> FromGridLayout(IEnumerable<List<InputInfo>> gridLayout)
+    {
+        var to = new List<InputInfo>();
+        foreach (var inputs in gridLayout)
+        {
+            if (inputs.Count == 0) continue;
+            if (inputs.Count == 1)
+            {
+                to.Add(inputs[0]);
+                continue;
+            }
+            foreach (var input in inputs)
+            {
+                to.Add(input.FieldsPerRow(inputs.Count));
+            }
+        }
+        return to;
     }
 }

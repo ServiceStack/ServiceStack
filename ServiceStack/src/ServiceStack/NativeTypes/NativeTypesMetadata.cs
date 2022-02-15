@@ -154,8 +154,8 @@ namespace ServiceStack.NativeTypes
                     RequiresAnyPermission = operation.RequiresAnyPermission,
                     Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
                     Ui = new ApiUiInfo {
-                        QueryStyles = operation.QueryStyles,
-                        ExplorerStyles = operation.ExplorerStyles,
+                        QueryCss = operation.QueryCss,
+                        ExplorerCss = operation.ExplorerCss,
                         FormLayout = operation.FormLayout,
                     },
                 };
@@ -813,6 +813,7 @@ namespace ServiceStack.NativeTypes
                 property.AllowableMax = apiAllowableValues.Max;
             }
 
+
             var inputProp = pi.FirstAttribute<InputAttribute>();
             if (inputProp != null)
             {
@@ -843,7 +844,12 @@ namespace ServiceStack.NativeTypes
                         property.Input.AllowableValues = entries.Select(x => x.Value).ToArray();
                 }
             }
-            property.Cls = X.Map(pi.FirstAttribute<StyleAttribute>(), x => x.Cls);
+            var css = pi.FirstAttribute<FieldCssAttribute>().ToCss();
+            if (css != null)
+            {
+                property.Input ??= new InputInfo();
+                property.Input.Css = css;
+            }
 
             if (instance != null)
             {

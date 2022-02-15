@@ -247,7 +247,8 @@ namespace ServiceStack
         
         public List<MediaRule> QueryMediaRules { get; set; }
         
-        public List<List<InputInfo>> UserFormLayout { get; set; }
+        public List<InputInfo> FormLayout { get; set; }
+        public ApiCss Css { get; set; } 
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -276,6 +277,7 @@ namespace ServiceStack
         public int? MaxLength { get; set; }
         public string[] AllowableValues { get; set; }
         public KeyValuePair<string,string>[] AllowableEntries { get; set; }
+        public FieldCss Css { get; set; }
         
         public Dictionary<string, string> Meta { get; set; }
 
@@ -441,14 +443,19 @@ namespace ServiceStack
         public List<LinkInfo> AdminLinks { get; set; }
         
         /// <summary>
+        /// Default Themes for all UIs
+        /// </summary>
+        public ThemeCss Theme { get; set; }
+        
+        /// <summary>
         /// The default styles to use for rendering AutoQuery UI Forms 
         /// </summary>
-        public ApiStyles QueryStyles { get; set; } 
+        public ApiCss QueryCss { get; set; } 
         
         /// <summary>
         /// The default styles to use for rendering API Explorer Forms 
         /// </summary>
-        public ApiStyles ExplorerStyles { get; set; } 
+        public ApiCss ExplorerCss { get; set; } 
         
         /// <summary>
         /// Custom User-Defined Attributes
@@ -457,10 +464,26 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
-    public class ApiStyles
+    public class ThemeCss
     {
         public string Form { get; set; }
-        public string Rows { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class ApiCss
+    {
+        public string Form { get; set; }
+        public string Fieldset { get; set; }
+        public string Field { get; set; }
+    }
+
+
+    [Exclude(Feature.Soap)]
+    public class FieldCss
+    {
+        public string Field { get; set; }
+        public string Input { get; set; }
+        public string Label { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -498,9 +521,9 @@ namespace ServiceStack
 
     public class ApiUiInfo : IMeta
     {
-        public ApiStyles QueryStyles { get; set; } 
-        public ApiStyles ExplorerStyles { get; set; } 
-        public List<List<InputInfo>> FormLayout { get; set; }
+        public ApiCss QueryCss { get; set; } 
+        public ApiCss ExplorerCss { get; set; } 
+        public List<InputInfo> FormLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -638,7 +661,6 @@ namespace ServiceStack
         public List<MetadataAttribute> Attributes { get; set; }
         
         public InputInfo Input { get; set; }
-        public string Cls { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -754,5 +776,9 @@ namespace ServiceStack
 
             return appMetadata;
         }
+
+        public static FieldCss ToCss(this FieldCssAttribute attr) => attr == null
+            ? null
+            : new FieldCss { Field = attr.Field, Input = attr.Input, Label = attr.Label };
     }
 }

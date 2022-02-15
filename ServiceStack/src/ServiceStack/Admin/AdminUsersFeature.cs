@@ -40,30 +40,29 @@ namespace ServiceStack.Admin
             MediaRules.Small.Show<UserAuth>(x => new { x.Company, x.CreatedDate }),
         };
 
+        public List<List<InputInfo>> UserFormLayout
+        {
+            set => FormLayout = Input.FromGridLayout(value);
+        }
+
         /// <summary>
         /// Which User fields can be updated
         /// </summary>
-        public List<List<InputInfo>> UserFormLayout { get; set; } = new()
+        public List<InputInfo> FormLayout { get; set; } = new()
         {
-            new(){ Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email) },
-            new(){ Input.For<UserAuth>(x => x.UserName) },
-            new() {
-                Input.For<UserAuth>(x => x.FirstName),
-                Input.For<UserAuth>(x => x.LastName),
-            },
-            new(){ Input.For<UserAuth>(x => x.DisplayName) },
-            new(){ Input.For<UserAuth>(x => x.Company) },
-            new(){ Input.For<UserAuth>(x => x.Address) },
-            new(){ Input.For<UserAuth>(x => x.Address2) },
-            new() {
-                Input.For<UserAuth>(x => x.City),
-                Input.For<UserAuth>(x => x.State),
-            },
-            new() {
-                Input.For<UserAuth>(x => x.Country),
-                Input.For<UserAuth>(x => x.PostalCode),
-            },
-            new(){ Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel) },
+            Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email),
+            Input.For<UserAuth>(x => x.UserName),
+            Input.For<UserAuth>(x => x.FirstName,  c => c.FieldsPerRow(2)),
+            Input.For<UserAuth>(x => x.LastName,   c => c.FieldsPerRow(2)),
+            Input.For<UserAuth>(x => x.DisplayName),
+            Input.For<UserAuth>(x => x.Company),
+            Input.For<UserAuth>(x => x.Address),
+            Input.For<UserAuth>(x => x.Address2),
+            Input.For<UserAuth>(x => x.City,       c => c.FieldsPerRow(2)),
+            Input.For<UserAuth>(x => x.State,      c => c.FieldsPerRow(2)),
+            Input.For<UserAuth>(x => x.Country,    c => c.FieldsPerRow(2)),
+            Input.For<UserAuth>(x => x.PostalCode, c => c.FieldsPerRow(2)),
+            Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel),
         };
 
         /// <summary>
@@ -123,33 +122,23 @@ namespace ServiceStack.Admin
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
 
-        public AdminUsersFeature EachUserFormGroup(Action<List<InputInfo>, int> filter)
+        /// <summary>
+        /// Customize Admin Users FormLayout
+        /// </summary>
+        public ApiCss Css { get; set; } = new()
         {
-            for (var i = 0; i < UserFormLayout.Count; i++)
-            {
-                var row = UserFormLayout[i];
-                filter(row, i);
-            }
-            return this;
-        }
-
-        public AdminUsersFeature EachUserFormField(Action<InputInfo> filter)
-        {
-            UserFormLayout.SelectMany(row => row.ToArray()).Each(filter);
-            return this;
-        }
-
-        public List<T> MapUserFormField<T>(Func<InputInfo,T> filter) => 
-            UserFormLayout.SelectMany(row => row.ToArray()).Map(filter);
-
-        public AdminUsersFeature RemoveFromUserForm(Predicate<InputInfo> match)
-        {
-            UserFormLayout.ForEach(row => row.RemoveAll(match));
-            return this;
-        }
+            Form = "max-w-screen-lg",
+            Fieldset = "grid grid-cols-12 gap-6", 
+            Field = "col-span-12",
+        };
 
         public AdminUsersFeature RemoveFromUserForm(params string[] fieldNames) =>
             RemoveFromUserForm(input => fieldNames.Contains(input.Name));
+        public AdminUsersFeature RemoveFromUserForm(Predicate<InputInfo> match)
+        {
+            FormLayout.RemoveAll(match);
+            return this;
+        }
         
         public AdminUsersFeature RemoveFromQueryResults(params string[] fieldNames)
         {
@@ -209,7 +198,8 @@ namespace ServiceStack.Admin
                         AllPermissions = HostContext.Metadata.GetAllPermissions(),
                         QueryUserAuthProperties = QueryUserAuthProperties,
                         QueryMediaRules = QueryMediaRules, 
-                        UserFormLayout = UserFormLayout, 
+                        FormLayout = FormLayout,
+                        Css = Css,
                     };
                     if (authRepo is IQueryUserAuth)
                         plugin.Enabled.Add("query");
@@ -218,9 +208,9 @@ namespace ServiceStack.Admin
                     if (authRepo is IManageRoles)
                         plugin.Enabled.Add("manageRoles");
 
-                    if (UserFormLayout != null)
+                    if (FormLayout != null)
                     {
-                        var formPropNames = MapUserFormField(input => input.Id).ToSet();
+                        var formPropNames = FormLayout.Select(input => input.Id).ToSet();
                         plugin.UserAuth.Properties.RemoveAll(x => !formPropNames.Contains(x.Name));
                     }
 
