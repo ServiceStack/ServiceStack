@@ -1,6 +1,6 @@
 name: Build ServiceStack
 
-on: 
+on:
   push:
     paths:
       - 'ServiceStack/**'
@@ -9,88 +9,7 @@ on:
 jobs:
   build-servicestack:
     runs-on: ubuntu-20.04
-    services:
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-latest
-        env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: Test!tesT
-          MSSQL_PID: Developer
-        ports:
-          - 48501:1433
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0'
-          include-prerelease: true
-          
-      - name: Build
-        working-directory: ServiceStack/build
-        run: dotnet build ./build.proj
-
-      - name: Env setup
-        run: |
-          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
-        
-      - name: Test Common
-        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
-
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: Common Tests
-          only-summary: 'true'
-          path: ./ServiceStack/tests/ServiceStack.Common.Tests/TestResults/results.trx
-          reporter: dotnet-trx
-
-      - name: Test ServiceModels
-        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/ServiceStack.ServiceModel.Tests.csproj --logger 'trx;LogFileName=results.trx'
-
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: ServiceModels Tests
-          only-summary: 'true'
-          path: ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/TestResults/results.trx
-          reporter: dotnet-trx
-
-#      - name: Test WebHost Endpoints
-#        env:
-#          MSSQL_CONNECTION: Server=localhost;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-#        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
-#
-#      - name: Test Report
-#        uses: dorny/test-reporter@v1
-#        if: success() || failure()
-#        with:
-#          name: WebHost.Endpoints Tests
-#          only-summary: 'true'
-#          path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
-#          reporter: dotnet-trx
-          
-
-#      - name: Test OpenApi
-#        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.OpenApi.Tests/ServiceStack.OpenApi.Tests.csproj --logger 'trx;LogFileName=results.trx'
-#
-#      - name: Test Report
-#        uses: dorny/test-reporter@v1
-#        if: success() || failure()
-#        with:
-#          name: OpenApi Tests
-#          path: ./ServiceStack/tests/ServiceStack.OpenApi.Tests/TestResults/results.trx
-#          reporter: dotnet-trx
-        
+    uses: ServiceStack/ServiceStack/.github/workflows/reuse-build-servicestack.yml@main
+    secrets:
+      SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}
     

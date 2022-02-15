@@ -9,56 +9,7 @@ on:
 jobs:
   build-redis:
     runs-on: ubuntu-20.04
-    services:
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0'
-          include-prerelease: true
-          
-      - name: Build
-        working-directory: ServiceStack.Redis/build
-        run: dotnet build ./build.proj
-                
-      - name: Env setup
-        run: |
-          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
-        
-      - name: Test Without Integration
-        working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
-
-      - name: Non-Integration Tests Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: Redis Non-Integration Tests 
-          path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/non-integration-results.trx
-          reporter: dotnet-trx
-          only-summary: 'true'
-          
-
-      - name: Test With Integration
-        id: test_integration
-        working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
-
-      - name: Integration Tests Report
-        uses: dorny/test-reporter@v1
-        if: (success() || failure()) && steps.test_integration.outcome != 'skipped' 
-        with:
-          name: Redis Integration Tests
-          path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/integration-results.trx
-          reporter: dotnet-trx
-          only-summary: 'true'
+    integration-ormlite:
+      uses: ServiceStack/ServiceStack/.github/workflows/reuse-build-redis.yml@main
+      secrets:
+        SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}
