@@ -4,7 +4,6 @@ on: [workflow_dispatch]
 
 jobs:
   integration-ormlite:
-    runs-on: ubuntu-20.04
     uses: ServiceStack/ServiceStack/.github/workflows/reuse-integration-ormlite.yml@main
     secrets:
       SERVICESTACK_LICENSE: ${{ secrets.SERVICESTACK_LICENSE }}
