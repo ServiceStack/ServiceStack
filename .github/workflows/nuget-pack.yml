@@ -210,6 +210,13 @@ jobs:
     needs: build-test-all
     runs-on: ubuntu-20.04
     steps:
+    - uses: actions/checkout@v2
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0'
+        include-prerelease: true
+        
     - name: Rebuild All
       working-directory: ./build
       run: |
