@@ -86,6 +86,8 @@ namespace ServiceStack.Host
                 RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 Tags = tagAttrs,
+                QueryStyles = X.Map(requestType.FirstAttribute<QueryStylesAttribute>(), x => new ApiStyles { Form = x.Form, Rows = x.Rows }),
+                ExplorerStyles = X.Map(requestType.FirstAttribute<ExplorerStylesAttribute>(), x => new ApiStyles { Form = x.Form, Rows = x.Rows }),
             };
 
             this.OperationsMap[requestType] = operation;
@@ -780,6 +782,8 @@ namespace ServiceStack.Host
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         public List<TagAttribute> Tags { get; set; }
+        public ApiStyles QueryStyles { get; set; } 
+        public ApiStyles ExplorerStyles { get; set; } 
         public List<List<InputInfo>> FormLayout { get; set; }
         
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }

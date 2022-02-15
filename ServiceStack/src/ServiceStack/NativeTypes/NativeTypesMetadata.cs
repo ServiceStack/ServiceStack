@@ -153,7 +153,11 @@ namespace ServiceStack.NativeTypes
                     RequiredPermissions = operation.RequiredPermissions,
                     RequiresAnyPermission = operation.RequiresAnyPermission,
                     Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
-                    FormLayout = operation.FormLayout,
+                    Ui = new ApiUiInfo {
+                        QueryStyles = operation.QueryStyles,
+                        ExplorerStyles = operation.ExplorerStyles,
+                        FormLayout = operation.FormLayout,
+                    },
                 };
                 opType.Request.RequestType = opType;
                 metadata.Operations.Add(opType);
@@ -839,6 +843,7 @@ namespace ServiceStack.NativeTypes
                         property.Input.AllowableValues = entries.Select(x => x.Value).ToArray();
                 }
             }
+            property.Cls = X.Map(pi.FirstAttribute<StyleAttribute>(), x => x.Cls);
 
             if (instance != null)
             {

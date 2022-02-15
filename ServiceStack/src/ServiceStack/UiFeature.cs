@@ -32,8 +32,10 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
     {
         Info = new UiInfo
         {
-            BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
             HideTags = new List<string> { TagNames.Auth },
+            BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
+            QueryStyles = new ApiStyles { Form = "grid grid-cols-12 gap-6", Rows = "col-span-12 sm:col-span-6 md:col-span-4" },
+            ExplorerStyles = new ApiStyles { Form = "grid grid-cols-12 gap-6", Rows = "col-span-12 sm:col-span-6" },
             AdminLinks = new()
             {
                 new LinkInfo
