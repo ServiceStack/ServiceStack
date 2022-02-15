@@ -1,9 +1,10 @@
-import { leftPart } from "@servicestack/client"
+import { leftPart, mapGet } from "@servicestack/client"
+/*minify:*/
 
 /** @typedef {{namespace:string,name:string}} TypeRef 
-    @typedef {{name:string,genericArgs:string[]}} MetaType */ 
+    @typedef {{name:string,genericArgs:string[]}} MetaType */
 
-export let Types = (function (){
+export let Types = (function() {
     let NumTypesMap = {
         Byte: 'byte',
         Int16: 'short',
@@ -57,10 +58,7 @@ export let Types = (function (){
     /** @param {TypeRef} a
         @param {TypeRef} b */
     function equals(a,b) {
-        return !a || !b ? false 
-            : a.namespace && b.namespace 
-                ? a.namespace === b.namespace && a.name === b.name
-                : a.name === b.name
+        return (a && b) && a.name === b.name && ((!a.namespace || !b.namespace) || a.namespace === b.namespace)
     }
     /** @param {string} type
         @param {*} value */
@@ -73,5 +71,16 @@ export let Types = (function (){
                 ? `[${value}]`
                 : `'${value}'`
     }
-    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, })
+
+    /** @param {MetadataType} type
+        @param {*} row */
+    function getId(type,row) {
+        if (row.id) return row.id
+        let pk = type.properties.find(x => x.isPrimaryKey)
+        if (pk) mapGet(row, pk.name)
+        return null
+    }
+    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, getId })
 })()
+
+/*:minify*/

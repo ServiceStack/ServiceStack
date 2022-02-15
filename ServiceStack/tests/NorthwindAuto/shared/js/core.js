@@ -1,5 +1,7 @@
-import { apiValue, isDate, mapGet, padInt, $1, enc } from "@servicestack/client"
-import { MetadataOperationType, AuthenticateResponse } from "../../lib/types"
+import { apiValue, isDate, mapGet, padInt, $1, enc, resolve } from "@servicestack/client"
+import { MetadataOperationType, AuthenticateResponse, APP } from "../../lib/types"
+import { Types } from "./Types";
+import { FullTypesMap, TypesMap } from "../../query-ui/js/appInit";
 /*minify:*/
 
 /** @param {{[key:string]:string}} obj */
@@ -25,11 +27,13 @@ export function setStyleProperty(props) {
     Object.keys(props).forEach(name => style.setProperty(name, props[name]))
 }
 
-/** @param {boolean=} invalid */
-export function inputClass(invalid) {
+/** @param {boolean} [invalid=false] 
+    @param {string} [cls] */
+export function inputClass(invalid,cls) {
     return ['block w-full sm:text-sm rounded-md', !invalid
         ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300'
-        : 'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500'].join(' ')
+        : 'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500',
+        cls].join(' ')
 }
 
 /** @param {*} o
@@ -39,22 +43,6 @@ function mapGetForInput(o, id) {
     return isDate(ret)
         ?  `${ret.getFullYear()}-${padInt(ret.getMonth() + 1)}-${padInt(ret.getDate())}`
         : ret
-}
-
-function gridClass() { return `grid grid-cols-6 gap-6` }
-function gridInputs(formLayout) {
-    let to = []
-    formLayout.forEach(group => {
-        group.forEach(input => {
-            to.push({ input, rowClass: colClass(group.length) })
-        })
-    })
-    return to
-}
-
-/** @param {number} fields */
-function colClass(fields) {
-    return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
 }
 
 /** @param {ImageInfo} icon
@@ -97,25 +85,79 @@ export function createDto(name, obj) {
     return new dtoCtor(obj)
 }
 
-/** @param {MetadataOperationType} op */
-export const isQuery = op => resolve(op.request.inherits, x => x && x.name.startsWith('QueryDb`'))
+/** @param {MetadataTypes} api */
+export function createApiMaps(api) {
+    let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
+    let OpsMap = {}
+    let TypesMap = {}
+    let FullTypesMap = {}
+    api.operations.forEach(op => {
+        OpsMap[op.request.name] = op
+        TypesMap[op.request.name] = op.request
+        FullTypesMap[Types.key(op.request)] = op.request
+        if (op.response) TypesMap[op.response.name] = op.response
+        if (op.response) FullTypesMap[Types.key(op.response)] = op.response
+    })
+    api.types.forEach(type => TypesMap[type.name] = type)
+    api.types.forEach(type => FullTypesMap[Types.key(type)] = type)
 
-export const crudInterfaces = ['ICreateDb`1','IUpdateDb`1','IPatchDb`1','IDeleteDb`1']
+    /** @param {{namespace:string?,name:string}|string} typeRef
+        @return {MetadataType} */
+    function getType(typeRef) {
+        return !typeRef ? null 
+            : typeof typeRef == 'string' 
+                ? TypesMap[typeRef]
+                : FullTypesMap[Types.key(typeRef)] || TypesMap[typeRef.name]
+    }
 
-/** @param {MetadataOperationType} op */
-export const isCrud = (op) => op.request.implements?.some(x => crudInterfaces.indexOf(x.name) >= 0)
+    /** @param {string} type */
+    function isEnum(type) {
+        return type && resolve(TypesMap[type], x => x && x.isEnum) === true
+    }
+    /** @param {string} type
+        @return {{key:string,value:string}[]} */
+    function enumValues(type) {
+        let enumType = type && resolve(TypesMap[type], x => x && x.isEnum ? x : null)
+        if (!enumType) return []
+        if (enumType.enumValues) {
+            let ret = []
+            for (let i=0; i<enumType.enumNames; i++) {
+                ret.push({ key:enumType.enumValues[i], value:enumType.enumNames[i] })
+            }
+            return ret
+        } else {
+            return enumType.enumNames.map(x => ({ key:x, value:x }))
+        }
+    }
 
-/** @param {{namespace:string,name:string}} x
-    @param {{namespace:string,name:string}} y */
-export const matchesType = (x,y) =>
-    (x && y) && x.name === y.name && ((!x.namespace || !y.namespace) || x.namespace === y.namespace)
+    return { HttpErrors, OpsMap, TypesMap, FullTypesMap, getType, isEnum, enumValues }
+}
 
-/** @param {AuthenticateResponse} session */
-export const isAdminAuth = (session) => session && session.roles && session.roles.indexOf('Admin') >= 0
+/** @param {MetadataOperationType} op
+    @param {string} cls */
+const hasInterface = (op,cls) => resolve(op.request.implements.some(i => i.name === cls))
 
-/** @param {string} opName
-    @param {MetadataOperationType} op */
-export const canAccess = (opName, op) => {
+export const Crud = {
+    Create:'ICreateDb`1',
+    Update:'IUpdateDb`1',
+    Patch:'IPatchDb`1',
+    Delete:'IDeleteDb`1',
+    AnyRead: ['QueryDb`1','QueryDb`2'],
+    AnyWrite: ['ICreateDb`1','IUpdateDb`1','IPatchDb`1','IDeleteDb`1'],
+    isQuery: op => resolve(op.request.inherits, x => x && Crud.AnyRead.indexOf(x.name) >= 0),
+    isCrud: op => resolve(op.request.implements, x => x && x.some(x => Crud.AnyWrite.indexOf(x.name) >= 0)),
+    isCreate: op => hasInterface(op, Crud.Create),
+    isUpdate: op => hasInterface(op, Crud.Update),
+    isPatch: op => hasInterface(op, Crud.Patch),
+    isDelete: op => hasInterface(op, Crud.Delete),
+}
+
+/** @param {AuthenticateResponse?} session */
+export const isAdminAuth = session => resolve(session, x => x && x.roles && x.roles.indexOf('Admin') >= 0)
+
+/** @param {MetadataOperationType?} op */
+export function canAccess(op) {
+    if (!op) return false
     if (!op.requiresAuth)
         return true
     const session = window.AUTH
@@ -124,17 +166,39 @@ export const canAccess = (opName, op) => {
     if (isAdminAuth(session))
         return true;
     const userRoles = session.roles || []
-    if (op.requiredRoles?.length > 0 && !op.requiredRoles.every(role => userRoles.indexOf(role) >= 0))
+    const hasItems = arr => arr && arr.length > 0 
+    if (hasItems(op.requiredRoles) && !op.requiredRoles.every(role => userRoles.indexOf(role) >= 0))
         return false
-    if (op.requiresAnyRole?.length > 0 && !op.requiresAnyRole.some(role => userRoles.indexOf(role) >= 0))
+    if (hasItems(op.requiresAnyRole) && !op.requiresAnyRole.some(role => userRoles.indexOf(role) >= 0))
         return false
     const userPermissions = session.permissions || []
-    if (op.requiredPermissions?.length > 0 && !op.requiredRoles.every(perm => userPermissions.indexOf(perm) >= 0))
+    if (hasItems(op.requiredPermissions) && !op.requiredRoles.every(perm => userPermissions.indexOf(perm) >= 0))
         return false
-    if (op.requiresAnyPermission?.length > 0 && !op.requiresAnyPermission.every(perm => userPermissions.indexOf(perm) >= 0))
+    if (hasItems(op.requiresAnyPermission) && !op.requiresAnyPermission.every(perm => userPermissions.indexOf(perm) >= 0))
         return false
 
     return true
+}
+
+/** @param {MetadataOperationType} op
+    @param {string[]} authRoles
+    @param {string[]} authPerms */
+function invalidAccessMessage(op, authRoles, authPerms) {
+    if (authRoles.indexOf('Admin') >= 0) return null
+
+    let missingRoles = op.requiredRoles.filter(x => authRoles.indexOf(x) < 0)
+    if (missingRoles.length > 0)
+        return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
+    let missingPerms = op.requiredPermissions.filter(x => authPerms.indexOf(x) < 0)
+    if (missingPerms.length > 0)
+        return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+
+    if (missingRoles.length > 0)
+        return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
+    missingPerms = op.requiresAnyPermission.filter(x => authPerms.indexOf(x) < 0)
+    if (missingPerms.length > 0)
+        return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+    return null
 }
 
 /** @param {string} str */

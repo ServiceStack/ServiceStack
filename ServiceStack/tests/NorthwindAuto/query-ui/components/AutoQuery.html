@@ -1,14 +1,61 @@
 <script minify>
 import { resolve, delaySet, humanify, apiValueFmt, createUrl } from "@servicestack/client"
-import { canAccess, createDto, isCrud, isQuery, matchesType, Types, apiSend } from "../../shared/js/core"
+import { Crud, canAccess, createDto, apiSend } from "../../shared/js/core"
 import { typeProperties } from "../js/stores"
-import { resolveApiUrl } from "../js/appInit"
+import { Forms, resolveApiUrl } from "../js/appInit"
+import { Types } from "../../shared/js/Types"
+
+//Types,
 
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
     let dataModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).dataModel
     let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
+    
+    /** @param {MetadataOperationType} op 
+        @param {*?} args */
+    function createRequest(op,args) { return !op ? null : createDto(op.request.name,args) }
+    function createState() {
+        let op = routes.op && APP.api.operations.find(x => x.request.name === routes.op)
+        if (!op) {
+            console.log('!createState.op') /*debug*/
+            return null
+        }
+        let accessibleOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel) && canAccess(x))
+        function apiState(op) {
+            if (!op) return null
+            let formLayout = Forms.resolveFormLayout(op)
+            return {
+                op,
+                formLayout,
+                apiLoading: false,
+                apiResult: null,
+                createRequest: args => createRequest(op,args),
+                model: Forms.populateModel(createRequest(op), formLayout),
+                get dataModel() { return store.getType(dataModelRef()) },
+                title: op.request.description || humanify(op.request.name),
+                get error(){ return this.apiResult && this.apiResult.api.error },
+                get errorSummary() {
+                    if (!formLayout) return null
+                    let except = this.formLayout.map(input => input.id).filter(x => x)
+                    return this.apiResult && this.apiResult.api.summaryMessage(except)
+                },
+            }
+        } 
+
+        let ret = {
+            get dataModel() { return store.getType(dataModelRef()) },
+            get viewModel() { return store.getType(viewModelRef()) },
+            get viewModelColumns() { return typeProperties(this.viewModel) },
+            apiQuery: apiState(canAccess(op) ? op : null),
+            apiCreate: apiState(accessibleOp(Crud.isCreate)),
+            apiUpdate: apiState(accessibleOp(Crud.isUpdate)),
+            apiPatch: apiState(accessibleOp(Crud.isPatch)),
+            apiDelete: apiState(accessibleOp(Crud.isDelete)),
+        }
+        return ret
+    }
     
     return {
         $template: `#autoquery-template`,
@@ -19,6 +66,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         filter: null,
         filters: [],
         filtersCount: 0,
+        state: createState(),
         prefs: refreshPrefs(),
         get take() { return parseInt(this.prefs && this.prefs.take || 25) },
         get results() { return this.apiResult && resolve(this.apiResult.api.response, x => x && x.results) || [] },
@@ -60,7 +108,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         },
         
         get accessibleAutoQueryTables() {
-            return this.filterOperations((op, table) => isQuery(op) && canAccess(routes.op,op))
+            return this.filterOperations((op, table) => Crud.isQuery(op) && canAccess(op))
         },
 
         hasMultiple(dataModel) {
@@ -69,46 +117,16 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 
         get crudOperations() {
             let modelRef = dataModelRef()
-            return this.filterOperations((op, table) => isCrud(op) && matchesType(op.dataModel, modelRef))
+            return this.filterOperations((op, table) => Crud.isCrud(op) && Types.equals(op.dataModel, modelRef))
         },
 
         get canQuery() { return this.accessibleAutoQueryTables.some(op => routes.op === op.request.name) },
         
-        get state() {
-            let s = this.store
-            let opName = s.op && s.op.request && s.op.request.name
-            if (!opName) {
-                console.log('!state.opName') /*debug*/
-                return null
-            }
-            let ret = OP_STATE[opName] || (OP_STATE[opName] = ({
-                opName,
-                op: s.op,
-                formJson: '',
-                jsonError: '',
-                createRequest(args) { return createDto(opName, args) },
-                get dataModel() { return store.getType(dataModelRef()) },
-                get viewModel() { return store.getType(viewModelRef()) },
-                get viewModelColumns() { return typeProperties(this.viewModel) },
-                apiLoading: false,
-                apiResult: null,
-                get error(){ return this.apiResult && this.apiResult.api.error },
-                get errorSummary() {
-                    let except = this.formLayout.flatMap(group => group.map(input => input.id)).filter(x => x)
-                    return this.apiResult && this.apiResult.api.summaryMessage(except)
-                },
-                title: s.op.request.description || humanify(s.op.request.name),
-                //formLayout: resolveFormLayout(s.op),
-            }))
-            if (ret.opName !== opName) throw new Error('!!state.opName')
-            return ret
-        },
-        get apiLoading() { return resolve(this.state, x => x && x.apiLoading || false) },
-        get apiResult() { return resolve(this.state, x => x && x.apiResult) },
-        get hasState() { return resolve(this.state, x => x && x.op || false) },
+        get apiLoading() { return resolve(this.state, x => x && x.apiQuery.apiLoading || false) },
+        get apiResult() { return resolve(this.state, x => x && x.apiQuery.apiResult) },
+        get hasState() { return resolve(this.state, x => x && x.apiQuery || false) },
         get showForm() {
-            if (!this.hasState) return false
-            return !this.state.op.requiresAuth || this.store.auth
+            return this.hasState && !this.state.apiQuery.op.requiresAuth || this.store.auth
         },
 
         createRequestArgs() {
@@ -156,18 +174,18 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             if (!this.hasState) return
             let state = this.state
             
-            let requestDto = state.createRequest(this.createRequestArgs())
+            let requestDto = state.apiQuery.createRequest(this.createRequestArgs())
             if (!requestDto) return
             console.log('AutoQuery.apiSend()', requestDto) /*debug*/
 
             state.jsonError = null
             let complete = delaySet(x => {
-                state.apiResult = null
-                state.apiLoading = x
+                state.apiQuery.apiResult = null
+                state.apiQuery.apiLoading = x
             })
             return apiSend(createClient, requestDto).then(r => {
                 complete()
-                state.apiResult = r
+                state.apiQuery.apiResult = r
             })
         },
 
@@ -184,6 +202,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         updated() {
             this.skip = parseInt(routes.skip) || 0
             this.prefs = refreshPrefs()
+            this.state = createState()
             this.filters = this.columns
                 .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
             this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
@@ -282,13 +301,15 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
         <div v-else-if="results.length">
+            <div v-if="routes.new" v-scope="CreateForm({ store, routes, settings, state:() => state.apiCreate, save:updated, done:() => routes.to({ new:null }) })" class="p-4"></div>
+            <div v-else-if="routes.edit" v-scope="EditForm({ store, routes, settings, state:() => state.apiPatch || state.apiUpdate, save:updated, done:() => routes.to({ edit:null }) })" class="p-4"></div>
             <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save:updated, done:() => filter=null })" class="relative"></div>
             <div v-scope="Results({ store, routes, settings, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
         </div>
         <div class="p-4 flex items-center">
             <div class="flex justify-between w-full">
                 <div class="flex">
-                    <button type="button"
+                    <button v-if="!routes.new" type="button" v-href="{ new:true }"
                             class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
                         <span>New {{store.opDataModel}}</span>
@@ -318,6 +339,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 </template>
 
 <script>
+import { getType } from "../js/appInit"
+
 App.components({
     Results({ store, routes, settings, columns, results, onFilter }) {
         return {
@@ -333,6 +356,7 @@ App.components({
             },
             fieldName(name) { return humanify(name) },
             apiValueFmt,
+            getId(row) { return Types.getId(getType(routes.op),row) },
         }
     },
     SettingsIcons({ routes, settings, name }) {
@@ -362,7 +386,8 @@ App.components({
                     <thead class="bg-gray-50">
                     <tr>
                         <th class="pl-2 pt-2 w-6">
-                            <button type="button" :title="`New ${store.opDataModel}`">
+                            <button type="button" :title="`New ${store.opDataModel}`" v-href="{ new:true, edit:null }"
+                                    class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
                             </button>
                         </th>
@@ -377,7 +402,8 @@ App.components({
                     <tbody>
                     <tr v-for="(row,index) in results" :class="`${index % 2 == 0 ? 'bg-white' : 'bg-gray-50'}`">
                         <td class="pl-2 pt-2 w-6">
-                            <button type="button" :title="`Edit ${store.opDataModel}`">
+                            <button type="button" :title="`Edit ${store.opDataModel}`" v-href="{ edit:getId(row), new:null }"
+                                    class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
                             </button>
                         </td>

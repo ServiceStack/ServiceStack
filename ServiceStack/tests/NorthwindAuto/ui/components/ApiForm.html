@@ -1,7 +1,8 @@
 <script minify>
 import { $1, resolve, delaySet, humanify } from "@servicestack/client"
-import { createDto, apiSend, Types, isQuery } from "../../shared/js/core"
+import { createDto, apiSend } from "../../shared/js/core"
 import { createClient } from "../js/appInit"
+import { Forms } from "../../query-ui/js/appInit"
 
 let OP_STATE = {}
 App.component('ApiForm', ({ store, routes }) => {
@@ -24,12 +25,10 @@ App.component('ApiForm', ({ store, routes }) => {
                 requestDto: null,
                 get model() {
                     let model = this.requestDto || {}
-                    this.formLayout.forEach(group => {
-                        group.forEach(input => {
-                            if (typeof model[input.id] == 'undefined') {
-                                model[input.id] = null
-                            }
-                        })
+                    this.formLayout.forEach(input => {
+                        if (typeof model[input.id] == 'undefined') {
+                            model[input.id] = null
+                        }
                     })
                     return model
                 },
@@ -37,12 +36,12 @@ App.component('ApiForm', ({ store, routes }) => {
                 apiResult: null,
                 get error(){ return this.apiResult && this.apiResult.api.error },
                 get errorSummary() {
-                    let except = this.formLayout.flatMap(group => group.map(input => input.id)).filter(x => x)
+                    let except = this.formLayout.map(input => input.id).filter(x => x)
                     return this.apiResult && this.apiResult.api.summaryMessage(except)   
                 },
                 title: s.op.request.description || humanify(s.op.request.name),
                 get apiRequestJson() { return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || '' },
-                formLayout: resolveFormLayout(s.op),
+                formLayout: Forms.resolveFormLayout(s.op),
             }))
             if (ret.opName !== opName) throw new Error('!!state.opName')
             return ret
@@ -66,7 +65,7 @@ App.component('ApiForm', ({ store, routes }) => {
             if (!this.hasState) return
             let state = this.state
             if (!(form && form.tagName === 'FORM')) throw new Error('!form')
-            state.requestDto = createDto(state.opName, formValues(form))
+            state.requestDto = createDto(state.opName, Forms.formValues(form))
             state.formJson = JSON.stringify(state.requestDto, undefined, 4)
             return state.requestDto
         },
@@ -83,7 +82,7 @@ App.component('ApiForm', ({ store, routes }) => {
         },
         onAjaxFormInput(e) {
             if (!this.hasState) return
-            this.state.formJson = JSON.stringify(formValues(e.target.tagName === 'FORM' ? e.target : e.target.form), undefined, 4)
+            this.state.formJson = JSON.stringify(Forms.formValues(e.target.tagName === 'FORM' ? e.target : e.target.form), undefined, 4)
         },
         onJsonFormInput(e) { this.updateRequestDto(e.target.value) },
         onAjaxFormSubmit(e) {
@@ -117,133 +116,6 @@ App.component('ApiForm', ({ store, routes }) => {
     }
 })
 
-let useType = type => (acc,x) => { acc[x]=type; return acc }
-let InputTypes = {
-    bool: 'checkbox',
-    ...'DateTime,DateTimeOffset,DateOnly'.split(',').reduce(useType('date'), {}),
-    ...'TimeSpan,TimeOnly'.split(',').reduce(useType('time'), {}),
-    ...'byte,short,int,long,ushort,uint,ulong,float,double,decimal'.split(',').reduce(useType('number'), {}),
-    ...'string,Guid,Uri'.split(',').reduce(useType('text'), {}),
-}
-
-function resolveFormLayout(op) {
-    let allProps = typeProperties(op.request).filter(supportsProp)
-    if (op.formLayout) {
-        let allPropsMap = allProps.reduce((acc,x) => { acc[x.name] = x; return acc }, {})
-        let ret = op.formLayout.map(group => group.map(input => ({ ...inputProp(allPropsMap[input.id]), ...input }) ))
-        return ret
-    }
-    let formLayout = []
-    let inputProps = allProps.map(inputProp)
-    let fullWidthTypes = ['textarea','divider']
-    let fullWidth = input => input && (fullWidthTypes.indexOf(input.type) >= 0 || input['data-type'] === 'List`1')
-    let pagingStart = inputProps.findIndex(x => x.id.toLowerCase() === 'skip')
-    if (pagingStart >= 0) inputProps.splice(pagingStart, 0, { id:`__divider${pagingStart}`, type:'divider' })
-    while (inputProps.length > 0) {
-        let left = inputProps.shift();
-        let right = inputProps.length > 0 ? inputProps.shift() : null;
-        if (fullWidth(left) || fullWidth(right)) {
-            formLayout.push([left])
-            if (right) formLayout.push([right])
-        } else {
-            formLayout.push(right ? [left,right] : [left])
-        }
-    }
-    return formLayout
-}
-
-function formValues(form) {
-    let obj = {}
-    Array.from(form.elements).forEach(el => {
-        if (!el.id || el.value == null || el.value === '') return
-        let dataType = el.getAttribute('data-type')
-        let dataArgs = (el.getAttribute('data-args') || '').split(','), dataArg = dataArgs[0]
-        let value = el.type === 'checkbox'
-            ? el.checked
-            : el.value
-        if (Types.isNumber(dataType) || (dataType === 'Nullable`1' && Types.isNumber(dataArg))) {
-            value = Number(value)
-        } else if (dataType === 'List`1') {
-            value = value.split(',').map(x => Types.isNumber(dataArg)
-                ? Number(x)
-                : x)
-        }
-        obj[el.id] = value
-    })
-    return obj
-}
-
-function groupTypes(allTypes) {
-    let allTypesMap = {}
-    let groups = []
-    allTypes.forEach(type => {
-        if (allTypesMap[type.name]) return
-        let group = []
-        let addTypeDef = typeDef => {
-            if (!typeDef || allTypesMap[typeDef.name]) return
-            allTypesMap[typeDef.name] = typeDef
-            group.push({ type: typeDef, typeName: Types.typeName(typeDef) })
-        }
-        let addTypeRef = typeRef => {
-            if (!typeRef || allTypesMap[typeRef.name]) return
-            let typeDef = TypesMap[typeRef.name]
-            allTypesMap[typeDef.name] = typeDef
-            group.push({ type: typeDef, typeName: Types.typeName(typeRef) })
-            return typeDef
-        }
-        addTypeDef(type)
-        if (type.inherits) {
-            let subType = addTypeRef(type.inherits)
-            while (subType) {
-                subType = subType.inherits ? addTypeRef(subType.inherits) : null
-            }
-        }
-        groups.push(group)
-    })
-    return groups
-}
-
-function inputProp(prop) {
-    let id = toCamelCase(prop.name), idLower = id.toLowerCase()
-    let propType = Types.unwrap(Types.typeName2(prop.type, prop.genericArgs))
-    let input = { id, type:inputType(propType), 'data-type': prop.type }
-    if (prop.genericArgs) input['data-args'] = prop.genericArgs.join(',')
-    let type = TypesMap[propType]
-    if (type && type.isEnum) {
-        input.type = 'select'
-        if (type.enumValues) {
-            input.allowableEntries = []
-            for (let i=0; i<type.enumNames; i++) {
-                input.allowableEntries.push({ key:type.enumValues[i], value:type.enumNames[i] })
-            }
-        } else {
-            input.allowableValues = type.enumNames
-        }
-    } else if (idLower.indexOf('password') >= 0) {
-        input.type = 'password'
-    } else if (idLower === 'email') {
-        input.type = 'email'
-    } else if (idLower.endsWith('url')) {
-        input.type = 'url'
-    }
-    if (prop.input)
-        Object.assign(input, prop.input)
-    return input
-}
-function inputType(typeName) {
-    if (!typeName) return null
-    typeName = Types.unwrap(Types.alias(typeName))
-    return InputTypes[typeName]
-}
-function supportsProp(prop) {
-    let propType = Types.typeName2(prop.type, prop.genericArgs)
-    if (prop.isValueType || prop.isEnum || inputType(propType))
-        return true
-    if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
-        return true
-    console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0])) /*debug*/
-    return false
-}
 
 </script>
 <!--minify-->
@@ -266,11 +138,8 @@ function supportsProp(prop) {
     <div class="w-body md:w-body fixed top-sub-nav h-sub-nav overflow-auto md:pb-scroll">
         <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
  
-            <div v-if="routes.form==''" class="sm:p-4 max-w-screen-md"
-                 v-scope="AutoForm({ 
-                    state: () => state,  
-                    onsubmit: e => onAjaxFormSubmit(e),
-                })"></div>
+            <div v-if="routes.form==''" v-scope="AutoForm({ state: () => state, onsubmit: e => onAjaxFormSubmit(e), })"
+                 class="sm:p-4"></div>
             <div v-if="routes.form=='json'">
 
             <form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="sm:p-4">

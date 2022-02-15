@@ -48,7 +48,7 @@ public class QueryBookings : QueryDb<Booking>
 // [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), Template = SqlTemplate.IsNotNull)]
 // public class DeletedBookings : QueryDb<Booking> {}
 
-[Tag("Bookings"), Description("Create a new Booking")]
+[Tag("Bookings"), Description("Create a new Booking"), QueryCss(Field="col-span-12 sm:col-span-4")]
 [Route("/bookings", "POST")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditCreate)]
@@ -62,12 +62,13 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     [ValidateGreaterThan(0)]
     public decimal Cost { get; set; }
     public DateTime BookingStartDate { get; set; }
+    [FieldCss(Label = "text-green-800", Input = "bg-green-100")]
     public DateTime? BookingEndDate { get; set; }
-    [Input(Type = "textarea")]
+    [Input(Type = "textarea"), FieldCss(Field="col-span-12 text-center", Input = "bg-green-100")]
     public string? Notes { get; set; }
 }
 
-[Tag("Bookings"), Description("Update an existing Booking")]
+[Tag("Bookings"), Description("Update an existing Booking")]//, QueryStyles(Rows="col-span-12 sm:col-span-4")
 [Route("/booking/{Id}", "PATCH")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditModify)]

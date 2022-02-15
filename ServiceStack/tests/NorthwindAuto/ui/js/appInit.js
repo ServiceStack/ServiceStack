@@ -1,5 +1,7 @@
 import { JsonServiceClient, lastLeftPart, leftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
+import { createForms } from "../../shared/js/createForms";
+import { createApiMaps } from "../../shared/js/core";
 /*minify:*/
 //APP.config.debugMode = false
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
@@ -51,34 +53,9 @@ if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 
-let CACHE = {}
-let OpsMap = {}
-let TypesMap = {}
-let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
-APP.api.operations.forEach(op => {
-    OpsMap[op.request.name] = op
-    TypesMap[op.request.name] = op.request
-    if (op.response) TypesMap[op.response.name] = op.response
-})
-APP.api.types.forEach(type => TypesMap[type.name] = type)
-
 let cleanSrc = src => src.trim();
 
-function invalidAccessMessage(op, authRoles, authPerms) {
-    if (authRoles.indexOf('Admin') >= 0) return null
-
-    let missingRoles = op.requiredRoles.filter(x => authRoles.indexOf(x) < 0)
-    if (missingRoles.length > 0)
-        return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    let missingPerms = op.requiredPermissions.filter(x => authPerms.indexOf(x) < 0)
-    if (missingPerms.length > 0)
-        return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
-
-    if (missingRoles.length > 0)
-        return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    missingPerms = op.requiresAnyPermission.filter(x => authPerms.indexOf(x) < 0)
-    if (missingPerms.length > 0)
-        return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
-    return null
-}
+let CACHE = {}
+export let { HttpErrors, OpsMap, TypesMap, FullTypesMap, getType, isEnum, enumValues } = createApiMaps(APP.api)
+export let Forms = createForms(TypesMap,APP.ui.explorerCss, APP.ui.theme)
 /*:minify*/

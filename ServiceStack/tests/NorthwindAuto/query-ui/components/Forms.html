@@ -1,0 +1,96 @@
+<script minify>
+import { Forms } from "../js/appInit"
+
+/** @typedef {{title:string?,errorSummary:string?,model:*,formLayout:InputInfo[]}} State */
+
+App.components({
+    /** @param {{state:() => State}} */
+    CreateForm({ store, routes, settings, state, save, done }) {
+        let emptyState = { model:{} }
+        return {
+            $template: '#create-form-template',
+            store, routes, settings,
+            formClass: Forms.formClass,
+            gridClass: Forms.gridClass,
+            /** @type State */
+            get state() { return state && state() || emptyState },
+            get title() { return resolve(this.state, x => x && x.title) },
+            get dataModel() { return resolve(this.state, x => x && x.dataModel && x.dataModel.name) },
+            get errorSummary() { return resolve(this.state, x => x && x.errorSummary) },
+            get gridInputs() { return resolve(this.state, x => x && x.formLayout && Forms.getGridInputs(x.formLayout)) },
+            save,
+            done,
+        }
+    },
+    /** @param {{state:() => State}} */
+    EditForm({ store, routes, settings, state, save, done }) {
+        let emptyState = { model:{} }
+        return {
+            $template: '#edit-form-template',
+            store, routes, settings,
+            formClass: Forms.formClass,
+            gridClass: Forms.gridClass,
+            /** @type State */
+            get state() { return state && state() || emptyState },
+            get title() { return resolve(this.state, x => x && x.title) },
+            get dataModel() { return resolve(this.state, x => x && x.dataModel && x.dataModel.name) },
+            get errorSummary() { return resolve(this.state, x => x && x.errorSummary) },
+            get gridInputs() { return resolve(this.state, x => x && x.formLayout && Forms.getGridInputs(x.formLayout)) },
+            save,
+            done,
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="create-form-template">
+<form v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass">
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+        <div v-scope="CloseButton({ onclick:() => routes.to({ new:null }) })" title="Close"></div>
+        <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
+        <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+        <div class="flex flex-wrap sm:flex-nowrap">
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset :class="gridClass">
+                    <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
+                        <div :key="input.id" v-scope="Input({ input, model:state.model, api:() => api })"></div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+        <div class="flex justify-end">
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Create {{ dataModel }}
+            </button>
+        </div>
+    </div>
+</form>
+</template>
+<template id="edit-form-template">
+    <form v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass">
+        <div class="relative px-4 py-5 bg-white sm:p-6">
+            <div v-scope="CloseButton({ onclick:() => routes.to({ new:null }) })" title="Close"></div>
+            <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
+            <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+            <div class="flex flex-wrap sm:flex-nowrap">
+                <div class="flex-grow mb-3 sm:mb-0">
+                    <fieldset :class="gridClass">
+                        <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
+                            <div :key="input.id" v-scope="Input({ input, model:state.model, api:() => api })"></div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+            <div class="flex justify-end">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Update {{ dataModel }}
+                </button>
+            </div>
+        </div>
+    </form>
+</template>
+<!--/minify-->
