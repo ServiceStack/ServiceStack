@@ -441,9 +441,26 @@ namespace ServiceStack
         public List<LinkInfo> AdminLinks { get; set; }
         
         /// <summary>
+        /// The default styles to use for rendering AutoQuery UI Forms 
+        /// </summary>
+        public ApiStyles QueryStyles { get; set; } 
+        
+        /// <summary>
+        /// The default styles to use for rendering API Explorer Forms 
+        /// </summary>
+        public ApiStyles ExplorerStyles { get; set; } 
+        
+        /// <summary>
         /// Custom User-Defined Attributes
         /// </summary>
         public Dictionary<string, string> Meta { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class ApiStyles
+    {
+        public string Form { get; set; }
+        public string Rows { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -476,7 +493,15 @@ namespace ServiceStack
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         public List<string> Tags { get; set; }
+        public ApiUiInfo Ui { get; set; }
+    }
+
+    public class ApiUiInfo : IMeta
+    {
+        public ApiStyles QueryStyles { get; set; } 
+        public ApiStyles ExplorerStyles { get; set; } 
         public List<List<InputInfo>> FormLayout { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -613,6 +638,7 @@ namespace ServiceStack
         public List<MetadataAttribute> Attributes { get; set; }
         
         public InputInfo Input { get; set; }
+        public string Cls { get; set; }
     }
 
     [Exclude(Feature.Soap)]

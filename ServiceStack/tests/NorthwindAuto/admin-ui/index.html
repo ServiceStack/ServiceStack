@@ -11,8 +11,10 @@ DEBUG = true /*debug*/
 /*file:css/app.css */
 /*shared:css/ui.css */
 </style>
+<!--shared:custom-head-->
 </head>
 <body class="loading noauth">
+<!--shared:custom-body-->
 
 <div class="when-loading"></div>
 
@@ -119,5 +121,6 @@ App.start()
 App.nextTick(() => document.body.classList.remove('loading'))
 </script>
 
+<!--shared:custom-end-->
 </body>
 </html>
