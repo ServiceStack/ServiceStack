@@ -46,17 +46,20 @@ App.components({
 <template id="input-template">
 <div v-if="input.type=='divider'" class="border-t"></div>
 <input v-else-if="input.type=='hidden'" v-bind="input" type="hidden" v-model="model[input.id]" />
-<div v-else-if="input.type=='checkbox'" class="relative flex items-start">
-    <div class="flex items-center h-5">
-        <input v-bind="input" type="checkbox" v-model="model[input.id]"
-               :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
-               class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-    </div>
-    <div class="ml-3 text-sm">
-        <label v-if="useLabel(input)" :for="input.id" :class="['font-medium text-gray-700 select-none',labelClass(input)]"
-               v-html="useLabel(input)"></label>
-        <p v-if="fieldError(input.id)" class="text-red-500" v-html="fieldError(input.id)"></p>
-        <p v-else-if="input.help" class="text-gray-500" v-html="input.help"></p>
+<div v-else-if="input.type=='checkbox'" class="relative flex flex-col">
+    <span>&nbsp;</span>
+    <div class="flex items-start">
+        <div class="flex items-center h-5 flex-col">
+            <input v-bind="input" type="checkbox" v-model="model[input.id]"
+                   :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
+                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+        </div>
+        <div class="ml-3 text-sm">
+            <label v-if="useLabel(input)" :for="input.id" :class="['font-medium text-gray-700 select-none',labelClass(input)]"
+                   v-html="useLabel(input)"></label>
+            <p v-if="fieldError(input.id)" class="text-red-500" v-html="fieldError(input.id)"></p>
+            <p v-else-if="input.help" class="text-gray-500" v-html="input.help"></p>
+        </div>
     </div>
 </div>
 <div v-else>

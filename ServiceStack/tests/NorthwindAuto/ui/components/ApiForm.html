@@ -10,6 +10,7 @@ App.component('ApiForm', ({ store, routes }) => {
         $template: `#api-form-template`,
         store, routes,
         tabs: {'FORM':'','JSON':'json'},
+        formClass: Forms.formClass,
         get state() {
             let s = this.store
             let opName = s.op && s.op.request && s.op.request.name
@@ -140,41 +141,39 @@ App.component('ApiForm', ({ store, routes }) => {
  
             <div v-if="routes.form==''" v-scope="AutoForm({ state: () => state, onsubmit: e => onAjaxFormSubmit(e), })"
                  class="sm:p-4"></div>
-            <div v-if="routes.form=='json'">
+            <div v-if="routes.form=='json'" class="sm:p-4">
 
-            <form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="sm:p-4">
-                <div class="sm:shadow overflow-hidden sm:rounded-md bg-white">
-                    <div class="relative px-4 py-5 bg-white sm:p-6">
-                        <fieldset>
-                            <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
-                            <div class="flex flex-col">
-                                <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput"></textarea>
-                                <div v-if="state.formJson" class="mt-1">
-                                    <div v-if="state.jsonError" class="1 flex items-end">
-                                        <svg class="text-red-600 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                            <g fill="none">
-                                                <path d="M20 20L4 4m16 0L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                            </g>
-                                        </svg>
-                                        <p class="ml-1 text-md text-red-500">{{(state.jsonError || {}).type=='submit' ? state.jsonError.message : 'invalid'}}</p>
-                                    </div>
-                                    <div v-else-if="state.apiRequestJson">
-                                        <svg class="text-green-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                            <g fill="none"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
-                                        </svg>
-                                    </div>
+            <form @submit.prevent="onJsonFormSubmit" autocomplete="off" :class="formClass">
+                <div class="relative px-4 py-5 bg-white sm:p-6">
+                    <fieldset>
+                        <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
+                        <div class="flex flex-col">
+                            <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput"></textarea>
+                            <div v-if="state.formJson" class="mt-1">
+                                <div v-if="state.jsonError" class="1 flex items-end">
+                                    <svg class="text-red-600 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                        <g fill="none">
+                                            <path d="M20 20L4 4m16 0L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        </g>
+                                    </svg>
+                                    <p class="ml-1 text-md text-red-500">{{(state.jsonError || {}).type=='submit' ? state.jsonError.message : 'invalid'}}</p>
+                                </div>
+                                <div v-else-if="state.apiRequestJson">
+                                    <svg class="text-green-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                        <g fill="none"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                                    </svg>
                                 </div>
                             </div>
-                        </fieldset>
-                    </div>
-                    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
-                        <div class="flex justify-end">
-                            <button type="submit" :disabled="state.jsonError"
-                                    :class="[state.jsonError ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', 
-                                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white']">
-                                Submit
-                            </button>
                         </div>
+                    </fieldset>
+                </div>
+                <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+                    <div class="flex justify-end">
+                        <button type="submit" :disabled="state.jsonError"
+                                :class="[state.jsonError ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', 
+                                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white']">
+                            Submit
+                        </button>
                     </div>
                 </div>
             </form>
@@ -244,7 +243,7 @@ App.component('ApiResponse', ({ store, routes, apiResult }) => {
         </span>
 
         <div v-if="routes.body == ''" class="pt-2 icon-outer">
-            <div v-if="apiResultJson" class="icon-right" v-scope="CopyIcon({ text:() => apiResultJson })"></div>
+            <div v-if="apiResultJson" class="absolute right-4" v-scope="CopyIcon({ cls:'icon', text:() => apiResultJson })"></div>
             <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="apiResultJson"></code></pre>
         </div>
         <div v-else-if="routes.body == 'raw'" class="flex pt-2">

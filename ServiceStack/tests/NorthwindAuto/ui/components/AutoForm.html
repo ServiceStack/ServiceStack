@@ -13,6 +13,7 @@ App.components({
             $template: '#form-template',
             /** @type State */
             get state() { return state && state() || emptyState },
+            formClass: Forms.formClass,
             gridClass: Forms.gridClass,
             get gridInputs() { return resolve(this.state, x => x && x.formLayout && Forms.getGridInputs(x.formLayout)) },
             kvpValues(input) {
@@ -45,8 +46,7 @@ App.components({
 </script>
 <!--minify-->
 <template id="form-template">
-<form v-if="state" @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName"
-      class="">
+<form v-if="state" @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName" :class="formClass">
     <div v-if="state.errorSummary" v-scope="ErrorSummary({ errorSummary: () => state.errorSummary })"></div>
 
     <div class="relative px-4 py-5 bg-white sm:p-6">
