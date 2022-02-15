@@ -10,6 +10,7 @@ using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [NUnit.Framework.Ignore("Needs review - MONOREPO")]
     public class AutoQueryDataDynamoTests : AutoQueryDataTests
     {
         public override ServiceStackHost CreateAppHost()
