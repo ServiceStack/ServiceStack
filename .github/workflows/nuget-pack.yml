@@ -184,6 +184,7 @@ jobs:
  
   nuget-pack:
     needs: build-package-all
+    runs-on: ubuntu-20.04
     steps:
     - name: Rebuild All
       working-directory: ./build
