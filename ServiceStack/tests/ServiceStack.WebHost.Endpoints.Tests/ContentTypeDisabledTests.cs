@@ -33,6 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OneTimeTearDown() => appHost.Dispose();
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public void Disabling_XML_ContentType_fallbacks_to_DefaultContentType()
         {
             var json = Config.ListeningOn.AppendPath("testcontenttype")

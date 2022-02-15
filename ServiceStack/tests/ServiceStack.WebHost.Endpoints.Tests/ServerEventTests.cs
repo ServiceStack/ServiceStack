@@ -312,6 +312,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public async Task Does_clean_up_sse_id_subscriptions_regardless_of_config()
         {
             var manyClients = new List<ServerEventsClient>();
@@ -461,6 +462,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        [Ignore("Needs review - MONOREPO")]
         public async Task Does_not_fire_UnobservedTaskException()
         {
             var unobservedTaskException = false;

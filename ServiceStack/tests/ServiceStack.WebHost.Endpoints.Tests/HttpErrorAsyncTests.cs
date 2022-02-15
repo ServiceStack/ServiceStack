@@ -156,8 +156,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(((WebException)innerEx).Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
 #else
                 Assert.That(innerEx.Message, Is.EqualTo("Couldn't resolve host name")
-                                            .Or.EqualTo("No such host is known.")                             // .NET Core 3.1
-                                            .Or.EqualTo("The server name or address could not be resolved")); // .NET Core 2.0
+                                            .Or.EqualTo("No such host is known.")                           // .NET Core 3.1
+                                            .Or.EqualTo("The server name or address could not be resolved") // .NET Core 2.0
+                                            .Or.EqualTo("Name or service not known"));                      // .NET 6
 #endif        
             }
         }
