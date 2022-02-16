@@ -271,7 +271,12 @@ function supportsProp(prop) {
         return true
     if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
         return true
-    console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0])) /*debug*/
+    if(prop.genericArgs) {
+        console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0])) /*debug*/    
+    } else {
+        console.log('!supportsProp', 'propType', propType, prop.type) /*debug*/
+    }
+    
     return false
 }
 </script>
