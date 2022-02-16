@@ -1,4 +1,5 @@
 ﻿Imports NUnit.Framework
+Imports System.Data
 
 Public Class Table
     Public Property Id As Integer
