@@ -9,6 +9,9 @@ on:
 jobs:
   build-servicestack:
     runs-on: ubuntu-20.04
+    permissions:
+      checks: write
+      contents: read
     services:
       redis:
         image: redis
