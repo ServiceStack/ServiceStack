@@ -780,5 +780,33 @@ namespace ServiceStack
         public static FieldCss ToCss(this FieldCssAttribute attr) => attr == null
             ? null
             : new FieldCss { Field = attr.Field, Input = attr.Input, Label = attr.Label };
+
+        static bool? NullIfFalse(this bool value) => value ? true : (bool?)null;
+        static int? NullIfMinValue(this int value) => value != int.MinValue ? value : (int?)null;
+
+        public static InputInfo ToInput(this InputAttributeBase input, Action<InputInfo> configure = null)
+        {
+            var ret = new InputInfo
+            {
+                Type = input.Type,
+                Value = input.Value,
+                Placeholder = input.Placeholder,
+                Help = input.Help,
+                Label = input.Label,
+                Size = input.Size,
+                Pattern = input.Pattern,
+                ReadOnly = input.ReadOnly.NullIfFalse(),
+                Disabled = input.Disabled.NullIfFalse(),
+                Required = input.Required.NullIfFalse(),
+                Min = input.Min,
+                Max = input.Max,
+                Step = input.Step.NullIfMinValue(),
+                MinLength = input.MinLength.NullIfMinValue(),
+                MaxLength = input.MaxLength.NullIfMinValue(),
+                AllowableValues = input.AllowableValues,
+            };
+            configure?.Invoke(ret);
+            return ret;
+        }
     }
 }

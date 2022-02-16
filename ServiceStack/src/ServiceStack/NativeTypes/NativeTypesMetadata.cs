@@ -456,6 +456,34 @@ namespace ServiceStack.NativeTypes
                 IsAbstract = type.IsAbstract.NullIfFalse(),
             };
 
+            var fieldAttrs = type.AllAttributes<FieldAttribute>();
+            foreach (var attr in fieldAttrs)
+            {
+                var property = metaType.Properties?.FirstOrDefault(x => x.Name == attr.Name);
+                if (property == null)
+                {
+                    log.Warn($"Ignoring non-existing '{attr.Name}' Property not found on DTO '{type.Name}'");
+                    continue;
+                }
+                if (property.Input != null)
+                {
+                    log.Warn($"Ignoring populating existing Input of Property '{type.Name}.{attr.Name}'");
+                    continue;
+                }
+                property.Input = attr.ToInput(c => {
+                    c.Required ??= property.IsRequired;
+                    c.MinLength ??= property.AllowableMin;
+                    c.MaxLength ??= property.AllowableMax;
+                    if (attr.FieldCss != null || attr.InputCss != null || attr.LabelCss != null)
+                    {
+                        c.Css ??= new FieldCss();
+                        c.Css.Field ??= attr.FieldCss;
+                        c.Css.Input ??= attr.InputCss;
+                        c.Css.Label ??= attr.LabelCss;
+                    }
+                });
+            }
+
             if (type.BaseType != null && 
                 type.BaseType != typeof(object) && 
                 type.BaseType != typeof(ValueType) &&
@@ -817,24 +845,11 @@ namespace ServiceStack.NativeTypes
             var inputProp = pi.FirstAttribute<InputAttribute>();
             if (inputProp != null)
             {
-                property.Input = new InputInfo {
-                    Type = inputProp.Type,
-                    Value = inputProp.Value,
-                    Placeholder = inputProp.Placeholder,
-                    Help = inputProp.Help,
-                    Label = inputProp.Label,
-                    Size = inputProp.Size,
-                    Pattern = inputProp.Pattern,
-                    ReadOnly = inputProp.ReadOnly.NullIfFalse(),
-                    Disabled = inputProp.Disabled.NullIfFalse(),
-                    Required = inputProp.Required.NullIfFalse() ?? property.IsRequired,
-                    Min = inputProp.Min,
-                    Max = inputProp.Max,
-                    Step = inputProp.Step.NullIfMinValue(), 
-                    MinLength = inputProp.MinLength.NullIfMinValue() ?? property.AllowableMin,
-                    MaxLength = inputProp.MaxLength.NullIfMinValue() ?? property.AllowableMax,
-                    AllowableValues = inputProp.AllowableValues,
-                };
+                property.Input = inputProp.ToInput(c => {
+                    c.Required ??= property.IsRequired;
+                    c.MinLength ??= property.AllowableMin;
+                    c.MaxLength ??= property.AllowableMax;
+                });
                 if (pi.PropertyType.IsEnum && property.Input.AllowableValues == null) 
                 {
                     property.Input.Type ??= Html.Input.Types.Select;

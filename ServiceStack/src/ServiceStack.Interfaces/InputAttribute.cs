@@ -3,7 +3,22 @@ using System;
 namespace ServiceStack;
 
 [AttributeUsage(AttributeTargets.Property)]
-public class InputAttribute : AttributeBase
+public class InputAttribute : InputAttributeBase
+{
+}
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+public class FieldAttribute : InputAttributeBase
+{
+    public string Name { get; set; }
+    public string FieldCss { get; set; }
+    public string InputCss { get; set; }
+    public string LabelCss { get; set; }
+
+    public FieldAttribute(string name) => Name = name;
+}
+
+public class InputAttributeBase : AttributeBase
 {
     public string Type { get; set; }
     public string Value { get; set; }
@@ -24,4 +39,5 @@ public class InputAttribute : AttributeBase
     public int MinLength { get; set; } = int.MinValue;
     public int MaxLength { get; set; } = int.MinValue;
     public string[] AllowableValues { get; set; }
+    
 }

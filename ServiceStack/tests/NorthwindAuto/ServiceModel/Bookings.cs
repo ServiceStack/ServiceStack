@@ -72,6 +72,8 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 [Route("/booking/{Id}", "PATCH")]
 [ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditModify)]
+[Field(nameof(BookingEndDate), LabelCss = "text-gray-800", InputCss = "bg-gray-100")]
+[Field(nameof(Notes), Type = "textarea", FieldCss="col-span-12 text-center", InputCss = "bg-gray-100")]
 public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 {
     public int Id { get; set; }
