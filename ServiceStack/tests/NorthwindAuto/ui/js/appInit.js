@@ -1,7 +1,7 @@
 import { JsonServiceClient, lastLeftPart, leftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 import { createForms } from "../../shared/js/createForms";
-import { createApiMaps } from "../../shared/js/core";
+import { appApis } from "../../shared/js/core";
 /*minify:*/
 //APP.config.debugMode = false
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
@@ -55,7 +55,6 @@ if (alwaysHideTags) {
 
 let cleanSrc = src => src.trim();
 
-let CACHE = {}
-export let { HttpErrors, OpsMap, TypesMap, FullTypesMap, getType, isEnum, enumValues } = createApiMaps(APP.api)
+export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues } = appApis(APP.api)
 export let Forms = createForms(TypesMap,APP.ui.explorerCss, APP.ui.theme)
 /*:minify*/

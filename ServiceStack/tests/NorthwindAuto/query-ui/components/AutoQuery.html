@@ -1,58 +1,69 @@
 <script minify>
 import { resolve, delaySet, humanify, apiValueFmt, createUrl } from "@servicestack/client"
-import { Crud, canAccess, createDto, apiSend } from "../../shared/js/core"
+import { Crud, map, canAccess, createDto, apiSend, invalidAccessMessage } from "../../shared/js/core"
 import { typeProperties } from "../js/stores"
-import { Forms, resolveApiUrl } from "../js/appInit"
+import { Forms, getOp, resolveApiUrl } from "../js/appInit"
 import { Types } from "../../shared/js/Types"
 
 //Types,
 
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
+    /** @return {MetadataTypeName} */
     let dataModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).dataModel
+    /** @return {MetadataTypeName} */
     let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
     
     /** @param {MetadataOperationType} op 
         @param {*?} args */
     function createRequest(op,args) { return !op ? null : createDto(op.request.name,args) }
-    function createState() {
-        let op = routes.op && APP.api.operations.find(x => x.request.name === routes.op)
+
+    /** @param {MetadataOperationType} op */
+    function apiState(op) {
+        if (!op) return null
+        let formLayout = Forms.resolveFormLayout(op)
+        return {
+            op,
+            formLayout,
+            apiLoading: false,
+            apiResult: null,
+            createRequest: args => createRequest(op,args),
+            model: Forms.populateModel(createRequest(op), formLayout),
+            title: op.request.description || humanify(op.request.name),
+            get error(){ return this.apiResult && this.apiResult.api.error },
+            get errorSummary() {
+                if (!formLayout) return null
+                let except = formLayout.map(input => input.id).filter(x => x)
+                return this.apiResult && this.apiResult.api.summaryMessage(except)
+            },
+        }
+    }
+
+    /** @param {string} opName */
+    function createState(opName) {
+        let op = opName && APP.api.operations.find(x => x.request.name === opName)
         if (!op) {
             console.log('!createState.op') /*debug*/
             return null
         }
-        let accessibleOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel) && canAccess(x))
-        function apiState(op) {
-            if (!op) return null
-            let formLayout = Forms.resolveFormLayout(op)
-            return {
-                op,
-                formLayout,
-                apiLoading: false,
-                apiResult: null,
-                createRequest: args => createRequest(op,args),
-                model: Forms.populateModel(createRequest(op), formLayout),
-                get dataModel() { return store.getType(dataModelRef()) },
-                title: op.request.description || humanify(op.request.name),
-                get error(){ return this.apiResult && this.apiResult.api.error },
-                get errorSummary() {
-                    if (!formLayout) return null
-                    let except = this.formLayout.map(input => input.id).filter(x => x)
-                    return this.apiResult && this.apiResult.api.summaryMessage(except)
-                },
-            }
-        } 
+        let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
+        let accessibleOp = x => canAccess(x,store.auth) ? x : null
+        let crudOps = {
+            opQuery: op,
+            opCreate: findOp(Crud.isCreate),
+            opPatch: findOp(Crud.isPatch),
+            opUpdate: findOp(Crud.isUpdate),
+            opDelete: findOp(Crud.isDelete),
+        }
 
         let ret = {
-            get dataModel() { return store.getType(dataModelRef()) },
-            get viewModel() { return store.getType(viewModelRef()) },
-            get viewModelColumns() { return typeProperties(this.viewModel) },
-            apiQuery: apiState(canAccess(op) ? op : null),
-            apiCreate: apiState(accessibleOp(Crud.isCreate)),
-            apiUpdate: apiState(accessibleOp(Crud.isUpdate)),
-            apiPatch: apiState(accessibleOp(Crud.isPatch)),
-            apiDelete: apiState(accessibleOp(Crud.isDelete)),
+            ...crudOps,
+            apiQuery: apiState(canAccess(op,store.auth) ? op : null),
+            apiCreate: apiState(accessibleOp(crudOps.opCreate)),
+            apiPatch: apiState(accessibleOp(crudOps.opPatch)),
+            apiUpdate: apiState(accessibleOp(crudOps.opUpdate)),
+            apiDelete: apiState(accessibleOp(crudOps.opDelete)),
         }
         return ret
     }
@@ -66,17 +77,26 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         filter: null,
         filters: [],
         filtersCount: 0,
-        state: createState(),
+        state: createState(routes.op),
         prefs: refreshPrefs(),
         get take() { return parseInt(this.prefs && this.prefs.take || 25) },
-        get results() { return this.apiResult && resolve(this.apiResult.api.response, x => x && x.results) || [] },
-        get total() { return this.apiResult && resolve(this.apiResult.api.response, x => x && x.total) || 0 },
+        get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
+        get total() { return this.apiResult && map(this.apiResult.api.response, x => x.total) || 0 },
         get canFirst() { return this.skip > 0 },
         get canPrev() { return this.skip > 0 },
         get canNext() { return this.results.length >= this.take },
         get canLast() { return this.results.length >= this.take },
         min(num1,num2) { return Math.min(num1, num2) },
-        
+
+        get dataModel() { return getType(dataModelRef()) },
+        get viewModel() { return getType(viewModelRef()) },
+        get viewModelColumns() { return typeProperties(this.viewModel) },
+        get invalidAccess() { return invalidAccessMessage(getOp(routes.op), store.auth) },
+        get accessibleAutoQueryTables() {
+            return this.filterOperations((op, table) => Crud.isQuery(op) && canAccess(op,store.auth))
+        },
+        get canQuery() { return this.accessibleAutoQueryTables.some(op => routes.op === op.request.name) },
+
         filterOperations(fn) {
             const to = []
             const existingKeys = {}
@@ -101,16 +121,12 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             let only = this.prefs.selectedColumns.length > 0 ? this.prefs.selectedColumns : null   
             let opColumns = this.state 
                 ? only
-                    ? only.map(name => this.state.viewModelColumns.find(x => x.name === name))
-                    : this.state.viewModelColumns
+                    ? only.map(name => this.viewModelColumns.find(x => x.name === name))
+                    : this.viewModelColumns
                 : []
             return opColumns
         },
         
-        get accessibleAutoQueryTables() {
-            return this.filterOperations((op, table) => Crud.isQuery(op) && canAccess(op))
-        },
-
         hasMultiple(dataModel) {
             return this.accessibleAutoQueryTables.filter(x => x.dataModel?.name === dataModel).length > 1
         },
@@ -120,14 +136,10 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             return this.filterOperations((op, table) => Crud.isCrud(op) && Types.equals(op.dataModel, modelRef))
         },
 
-        get canQuery() { return this.accessibleAutoQueryTables.some(op => routes.op === op.request.name) },
-        
-        get apiLoading() { return resolve(this.state, x => x && x.apiQuery.apiLoading || false) },
-        get apiResult() { return resolve(this.state, x => x && x.apiQuery.apiResult) },
-        get hasState() { return resolve(this.state, x => x && x.apiQuery || false) },
-        get showForm() {
-            return this.hasState && !this.state.apiQuery.op.requiresAuth || this.store.auth
-        },
+        get apiLoading() { return map(this.state, x => x.apiQuery && x.apiQuery.apiLoading || false) },
+        get apiResult() { return map(this.state, x => x.apiQuery && x.apiQuery.apiResult) },
+        get hasState() { return map(this.state, x => x.apiQuery || false) },
+        get dataModelName() { return map(this.dataModel, x => x.name) },
 
         createRequestArgs() {
             let args = {
@@ -202,7 +214,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         updated() {
             this.skip = parseInt(routes.skip) || 0
             this.prefs = refreshPrefs()
-            this.state = createState()
+            this.state = createState(routes.op)
             this.filters = this.columns
                 .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
             this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
@@ -215,11 +227,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             this.sub = App.events.subscribe('route:nav', args => this.updated())
             this.updated()
         },
-        
-        closeModal() {
-            routes.select=''
-            transition('sidebar')
-        }
     }
 })
 </script>
@@ -230,16 +237,11 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             {{store.opDesc}}
         </h1>
     </div>
-    <div v-if="!showForm" class="w-body md:w-body overflow-auto">
-        <div class="md:p-4">
-            <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
-            <div v-scope="store.SignIn()"></div>
-        </div>
-    </div>
+    <div v-if="invalidAccess" class="w-body md:w-body overflow-auto" v-scope="EnsureAccess({ store, message:() => invalidAccess })"></div>
     <div v-else-if="hasState" class="pt-1">
         <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => state.viewModelColumns, save:updated })"></div>
-        <div class="p-1 flex">
-            <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title="View Columns" @click="Modal.show('query-prefs')">
+        <div class="p-1 flex flex-wrap">
+            <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('query-prefs')">
                 <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
             </button>
             <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']" 
@@ -260,7 +262,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             </button>
             <div class="px-4 text-lg">
                 <span v-if="apiLoading">Querying...</span>
-                <span v-else-if="results.length">Showing Results {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
+                <span v-else-if="results.length"><span class="hidden xl:inline">Showing Results</span> {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
                 <span v-else-if="apiResult">No Results</span>
             </div>
             <div class="pl-2">
@@ -301,10 +303,12 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
         <div v-else-if="results.length">
-            <div v-if="routes.new" v-scope="CreateForm({ store, routes, settings, state:() => state.apiCreate, save:updated, done:() => routes.to({ new:null }) })" class="p-4"></div>
-            <div v-else-if="routes.edit" v-scope="EditForm({ store, routes, settings, state:() => state.apiPatch || state.apiUpdate, save:updated, done:() => routes.to({ edit:null }) })" class="p-4"></div>
+            <div v-if="routes.new" v-scope="CreateForm({ store, routes, settings, apiCreate:() => state.apiCreate, save:updated, done:() => routes.to({ new:null }) })" class="p-4"></div>
+            <div v-else-if="routes.edit" v-scope="EditForm({ store, routes, id:() => routes.edit, settings, 
+                apiPatch:() => state.apiPatch, apiUpdate:() => state.apiUpdate, apiDelete:() => state.apiDelete, 
+                save:updated, done:() => routes.to({ edit:null }) })" class="p-4"></div>
             <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save:updated, done:() => filter=null })" class="relative"></div>
-            <div v-scope="Results({ store, routes, settings, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
+            <div v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
         </div>
         <div class="p-4 flex items-center">
             <div class="flex justify-between w-full">
@@ -342,10 +346,18 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 import { getType } from "../js/appInit"
 
 App.components({
-    Results({ store, routes, settings, columns, results, onFilter }) {
+    Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
         return {
             $template: `#results-template`,
             store, routes, settings,
+            get state() { return state && state() || {} },
+            get dataModel() { return dataModel && dataModel() },
+            get dataModelName() { return map(this.dataModel, x => x.name) },
+            get canCreate() { return canAccess(this.state.opCreate,store.auth) },
+            get createRequiresAuth() { return !store.auth && !this.canCreate },
+            get canUpdate() { return canAccess(this.state.opPatch,store.auth) || canAccess(this.state.opUpdate,store.auth) },
+            get updateRequiresAuth() { return !store.auth && map(this.state, x => x.opPatch || x.opUpdate) && !this.canUpdate },
+
             get columns() { return columns() || [] },
             get results() { return results() || [] },
             selectColumn(column,e) {
@@ -364,8 +376,8 @@ App.components({
         return {
             $template: `#settings-icons-template`,
             prefs: null,
-            get sort() { return resolve(this.prefs, x => x && x.sort) },
-            get filters() { return resolve(this.prefs, x => x && x.filters || []) },
+            get sort() { return map(this.prefs, x => x.sort) },
+            get filters() { return map(this.prefs, x => x.filters || []) },
 
             sub:null,
             unmounted: App.unsubscribe,
@@ -385,8 +397,14 @@ App.components({
                 <table class="table-array min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
-                        <th class="pl-2 pt-2 w-6">
-                            <button type="button" :title="`New ${store.opDataModel}`" v-href="{ new:true, edit:null }"
+                        <th v-if="canCreate || canUpdate || !store.auth" class="pl-2 pt-2 w-6">
+                            <button v-if="createRequiresAuth" v-href="{ $page:'' }" :title="`Sign In to Create ${dataModelName}`"
+                                    class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                    <path d="M9.586 11L7.05 8.464L8.464 7.05l4.95 4.95l-4.95 4.95l-1.414-1.414L9.586 13H3v-2h6.586zM11 3h8c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2h-8v-2h8V5h-8V3z" fill="currentColor" fill-rule="evenodd"/>
+                                </svg>
+                            </button>
+                            <button v-else-if="canCreate" type="button" :title="`New ${store.opDataModel}`" v-href="{ new:true, edit:null }" :disabled="!state.apiCreate"
                                     class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
                             </button>
@@ -401,8 +419,14 @@ App.components({
                     </thead>
                     <tbody>
                     <tr v-for="(row,index) in results" :class="`${index % 2 == 0 ? 'bg-white' : 'bg-gray-50'}`">
-                        <td class="pl-2 pt-2 w-6">
-                            <button type="button" :title="`Edit ${store.opDataModel}`" v-href="{ edit:getId(row), new:null }"
+                        <td v-if="canCreate || canUpdate || !store.auth" class="pl-2 pt-2 w-6">
+                            <button v-if="updateRequiresAuth" v-href="{ $page:'' }" :title="`Sign In to Edit ${dataModelName}`"
+                                    class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                    <path d="M9.586 11L7.05 8.464L8.464 7.05l4.95 4.95l-4.95 4.95l-1.414-1.414L9.586 13H3v-2h6.586zM11 3h8c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2h-8v-2h8V5h-8V3z" fill="currentColor" fill-rule="evenodd"/>
+                                </svg>
+                            </button>
+                            <button v-else-if="canUpdate" :title="`Edit ${store.opDataModel}`" v-href="{ edit:getId(row), new:null }"
                                     class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
                             </button>

@@ -9,7 +9,7 @@ App.components({
             $template: '#input-template',
             input,
             model: model || {},
-            get error() { return resolve(api, x => x && x.error) },
+            get error() { return map(api, x => x.error) },
             /** @param {InputInfo} input */
             kvpValues(input) {
                 return resolve(input.allowableEntries) || (resolve(input.allowableValues)||[]).map(x => ({ key:x, value:x }))

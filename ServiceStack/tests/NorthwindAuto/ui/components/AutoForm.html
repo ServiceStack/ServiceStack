@@ -15,7 +15,7 @@ App.components({
             get state() { return state && state() || emptyState },
             formClass: Forms.formClass,
             gridClass: Forms.gridClass,
-            get gridInputs() { return resolve(this.state, x => x && x.formLayout && Forms.getGridInputs(x.formLayout)) },
+            get gridInputs() { return map(this.state, x => x.formLayout && Forms.getGridInputs(x.formLayout)) },
             kvpValues(input) {
                 return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x }))
             },

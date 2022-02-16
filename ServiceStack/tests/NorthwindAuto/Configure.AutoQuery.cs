@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Data;
 
@@ -27,6 +28,8 @@ namespace MyApp
                         ServiceFilter = (op, req) =>
                         {
                             op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));
+                            if (op.Request.Name.IndexOf("User", StringComparison.Ordinal) >= 0)
+                                op.Request.AddAttributeIfNotExists(new ValidateIsAdminAttribute());
                         }
                     }
                 });

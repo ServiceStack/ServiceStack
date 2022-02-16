@@ -70,7 +70,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 
 [Tag("Bookings"), Description("Update an existing Booking")]//, QueryStyles(Rows="col-span-12 sm:col-span-4")
 [Route("/booking/{Id}", "PATCH")]
-[ValidateHasRole("Employee")]
+[ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 {

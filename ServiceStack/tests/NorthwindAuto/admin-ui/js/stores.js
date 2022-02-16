@@ -98,6 +98,7 @@ let store = PetiteVue.reactive({
         authsecret = bearerToken = client.bearerToken = null
         client.headers.delete('authsecret')
         this.auth = null
+        routes.to({ $page:null })
     },
 
     /**: v-if doesn't protect against nested access so need to guard against deep NRE access */

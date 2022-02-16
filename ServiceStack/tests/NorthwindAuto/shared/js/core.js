@@ -4,6 +4,12 @@ import { Types } from "./Types";
 import { FullTypesMap, TypesMap } from "../../query-ui/js/appInit";
 /*minify:*/
 
+/** @template T,V
+    @param {*} o
+    @param {(a:T) => V} f
+    @returns {V|null} */
+export function map(o, f) { return o == null ? null : f(o) }
+
 /** @param {{[key:string]:string}} obj */
 export function setBodyClass(obj) {
     let bodyCls = document.body.classList
@@ -86,7 +92,8 @@ export function createDto(name, obj) {
 }
 
 /** @param {MetadataTypes} api */
-export function createApiMaps(api) {
+export function appApis(api) {
+    let CACHE = {}
     let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
     let OpsMap = {}
     let TypesMap = {}
@@ -101,6 +108,11 @@ export function createApiMaps(api) {
     api.types.forEach(type => TypesMap[type.name] = type)
     api.types.forEach(type => FullTypesMap[Types.key(type)] = type)
 
+    /** @param {string} opName */
+    function getOp(opName) {
+        return OpsMap[opName]
+    }
+
     /** @param {{namespace:string?,name:string}|string} typeRef
         @return {MetadataType} */
     function getType(typeRef) {
@@ -112,12 +124,12 @@ export function createApiMaps(api) {
 
     /** @param {string} type */
     function isEnum(type) {
-        return type && resolve(TypesMap[type], x => x && x.isEnum) === true
+        return type && map(TypesMap[type], x => x.isEnum) === true
     }
     /** @param {string} type
         @return {{key:string,value:string}[]} */
     function enumValues(type) {
-        let enumType = type && resolve(TypesMap[type], x => x && x.isEnum ? x : null)
+        let enumType = type && map(TypesMap[type], x => x.isEnum ? x : null)
         if (!enumType) return []
         if (enumType.enumValues) {
             let ret = []
@@ -130,7 +142,7 @@ export function createApiMaps(api) {
         }
     }
 
-    return { HttpErrors, OpsMap, TypesMap, FullTypesMap, getType, isEnum, enumValues }
+    return { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues }
 }
 
 /** @param {MetadataOperationType} op
@@ -144,34 +156,34 @@ export const Crud = {
     Delete:'IDeleteDb`1',
     AnyRead: ['QueryDb`1','QueryDb`2'],
     AnyWrite: ['ICreateDb`1','IUpdateDb`1','IPatchDb`1','IDeleteDb`1'],
-    isQuery: op => resolve(op.request.inherits, x => x && Crud.AnyRead.indexOf(x.name) >= 0),
-    isCrud: op => resolve(op.request.implements, x => x && x.some(x => Crud.AnyWrite.indexOf(x.name) >= 0)),
+    isQuery: op => map(op.request.inherits, x => Crud.AnyRead.indexOf(x.name) >= 0),
+    isCrud: op => map(op.request.implements, x => x.some(x => Crud.AnyWrite.indexOf(x.name) >= 0)),
     isCreate: op => hasInterface(op, Crud.Create),
     isUpdate: op => hasInterface(op, Crud.Update),
     isPatch: op => hasInterface(op, Crud.Patch),
     isDelete: op => hasInterface(op, Crud.Delete),
 }
 
-/** @param {AuthenticateResponse?} session */
-export const isAdminAuth = session => resolve(session, x => x && x.roles && x.roles.indexOf('Admin') >= 0)
+/** @param {AuthenticateResponse} [session] */
+export const isAdminAuth = session => map(session, x => x.roles && x.roles.indexOf('Admin') >= 0)
 
-/** @param {MetadataOperationType?} op */
-export function canAccess(op) {
+/** @param {MetadataOperationType?} op 
+    @param {AuthenticateResponse|null} auth */
+export function canAccess(op, auth) {
     if (!op) return false
     if (!op.requiresAuth)
         return true
-    const session = window.AUTH
-    if (!session)
+    if (!auth)
         return false
-    if (isAdminAuth(session))
+    if (isAdminAuth(auth))
         return true;
-    const userRoles = session.roles || []
+    const userRoles = auth.roles || []
     const hasItems = arr => arr && arr.length > 0 
     if (hasItems(op.requiredRoles) && !op.requiredRoles.every(role => userRoles.indexOf(role) >= 0))
         return false
     if (hasItems(op.requiresAnyRole) && !op.requiresAnyRole.some(role => userRoles.indexOf(role) >= 0))
         return false
-    const userPermissions = session.permissions || []
+    const userPermissions = auth.permissions || []
     if (hasItems(op.requiredPermissions) && !op.requiredRoles.every(perm => userPermissions.indexOf(perm) >= 0))
         return false
     if (hasItems(op.requiresAnyPermission) && !op.requiresAnyPermission.every(perm => userPermissions.indexOf(perm) >= 0))
@@ -181,21 +193,25 @@ export function canAccess(op) {
 }
 
 /** @param {MetadataOperationType} op
-    @param {string[]} authRoles
-    @param {string[]} authPerms */
-function invalidAccessMessage(op, authRoles, authPerms) {
-    if (authRoles.indexOf('Admin') >= 0) return null
+    @param {{roles:string[],permissions:string[]}} auth */
+export function invalidAccessMessage(op, auth) {
+    if (!op || !op.requiresAuth) return null
+    if (!auth) 
+        return `<b>${op.request.name}</b> requires Authentication`
 
-    let missingRoles = op.requiredRoles.filter(x => authRoles.indexOf(x) < 0)
+    let { roles, permissions } = auth
+    if (roles.indexOf('Admin') >= 0) return null
+
+    let missingRoles = op.requiredRoles.filter(x => roles.indexOf(x) < 0)
     if (missingRoles.length > 0)
         return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    let missingPerms = op.requiredPermissions.filter(x => authPerms.indexOf(x) < 0)
+    let missingPerms = op.requiredPermissions.filter(x => permissions.indexOf(x) < 0)
     if (missingPerms.length > 0)
         return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
 
     if (missingRoles.length > 0)
         return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    missingPerms = op.requiresAnyPermission.filter(x => authPerms.indexOf(x) < 0)
+    missingPerms = op.requiresAnyPermission.filter(x => permissions.indexOf(x) < 0)
     if (missingPerms.length > 0)
         return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
     return null

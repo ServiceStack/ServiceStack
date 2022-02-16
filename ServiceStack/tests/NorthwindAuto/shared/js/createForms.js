@@ -76,7 +76,7 @@ export function createForms(TypesMap, css, theme) {
             return to
         },
         getFieldError(error, id) { return error && error.errors &&
-            resolve(error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase()), x => x && x.message)
+            map(error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase()), x => x.message)
         },
         kvpValues(input) {
             return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x }))

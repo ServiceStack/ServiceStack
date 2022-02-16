@@ -1,6 +1,6 @@
 import { leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
-import { Crud, setBodyClass } from "../../shared/js/core"
+import { Crud, setBodyClass, invalidAccessMessage } from "../../shared/js/core"
 import { Types } from "../../shared/js/Types"
 
 /*minify:*/
@@ -61,7 +61,7 @@ let store = PetiteVue.reactive({
             {
                 if (!this.auth)
                     return false
-                if (invalidAccessMessage(op, this.auth.roles, this.auth.permissions))
+                if (invalidAccessMessage(op, this.auth))
                     return false
             }
             return !lowerFilter || op.request.name.toLowerCase().indexOf(lowerFilter) >= 0
@@ -239,6 +239,7 @@ let store = PetiteVue.reactive({
         authsecret = bearerToken = client.bearerToken = null
         client.headers.delete('authsecret')
         this.auth = null
+        routes.to({ $page:null })
     },
 
     /**: v-if doesn't protect against nested access so need to guard against deep NRE access */
@@ -265,12 +266,7 @@ let store = PetiteVue.reactive({
             : null
     },
 
-    invalidAccess() {
-        let op = this.op
-        if (!op || !op.requiresAuth) return null
-        if (!this.auth) return `<b>${op.request.name}</b> requires Authentication`
-        ;return invalidAccessMessage(op, this.auth.roles, this.auth.permissions)
-    },
+    invalidAccess() { return invalidAccessMessage(this.op, this.auth) },
 })
 
 App.events.subscribe('route:nav', args => store.init())

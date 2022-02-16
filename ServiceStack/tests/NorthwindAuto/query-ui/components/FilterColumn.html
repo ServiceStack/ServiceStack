@@ -21,8 +21,8 @@ function filterValue(rule,type,filter) {
 
 App.components({
     FilterColumn({ store, routes, settings, filter, save, done }) {
-        let refresh = () => settings.opProp(routes.op, resolve(filter(), x => x && x.column.name))
-        let refreshEnums = () => resolve(refresh(), x => x && x.filters[0] && x.filters[0].value.split(',') || [])
+        let refresh = () => settings.opProp(routes.op, map(filter(), x => x.column.name))
+        let refreshEnums = () => map(refresh(), x => x.filters[0] && x.filters[0].value.split(',') || [])
 
         return {
             $template: '#filter-column-template',
@@ -31,22 +31,22 @@ App.components({
             selectedEnums: refreshEnums(),
             newQuery: '',
             newValue: '',
-            get column() { return resolve(filter(), x => x && x.column) },
-            get columnType() { return resolve(this.column, x => x && x.type) },
-            get columnName() { return resolve(this.column, x => x && x.name) },
-            get topRight() { return resolve(filter(), x => x && x.topRight) },
-            get topRightX() { return resolve(this.topRight, x => x && x.x) },
-            get topRightY() { return resolve(this.topRight, x => x && x.y) },
+            get column() { return map(filter(), x => x.column) },
+            get columnType() { return map(this.column, x => x.type) },
+            get columnName() { return map(this.column, x => x.name) },
+            get topRight() { return map(filter(), x => x.topRight) },
+            get topRightX() { return map(this.topRight, x => x.x) },
+            get topRightY() { return map(this.topRight, x => x.y) },
             get filterRules() { return filterRules(this.columnType) },
             done,
             inputClass(cls) { return cls + ' ' + inputClass() },
-            get valueType() { return resolve(filterRule(this.columnType, this.newQuery), x => x && x.valueType) },
+            get valueType() { return map(filterRule(this.columnType, this.newQuery), x => x.valueType) },
             get isEnum() { return isEnum(this.columnType) },
             get enumValues() { return enumValues(this.columnType) },
             get enumProps() {  },
             addFilter() {
                 if (!this.newQuery) return
-                let name = resolve(filterRule(this.columnType, this.newQuery), x => x && x.name)
+                let name = map(filterRule(this.columnType, this.newQuery), x => x.name)
                 this.prefs.filters.push({ key:this.newQuery, name, value:this.newValue })
                 this.newQuery = this.newValue = ''
             },
@@ -81,7 +81,7 @@ App.components({
             $template: '#filter-views-template',
             store, routes, settings,
             get filters() { return filters().filter(f => f.filters.length > 0) },
-            get columnType() { return resolve(this.filters, x => x && x.column && x.column.type) },
+            get columnType() { return map(this.filters, x => x.column && x.column.type) },
             done,
             filterValue(column,filter) {
                 return filterValue(filterRule(column.type, filter.key), column.type, filter)

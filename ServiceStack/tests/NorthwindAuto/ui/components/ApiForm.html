@@ -47,9 +47,9 @@ App.component('ApiForm', ({ store, routes }) => {
             if (ret.opName !== opName) throw new Error('!!state.opName')
             return ret
         },
-        get apiLoading() { return resolve(this.state, x => x && x.apiLoading || false) },
-        get apiResult() { return resolve(this.state, x => x && x.apiResult) },
-        get hasState() { return resolve(this.state, x => x && x.op || false) },
+        get apiLoading() { return map(this.state, x => x.apiLoading) || false },
+        get apiResult() { return map(this.state, x => x.apiResult) },
+        get hasState() { return map(this.state, x => x.op) || false },
         formNav(args) {
             if (args.form === '') {
                 this.updateRequestDto(this.state.formJson)
@@ -192,10 +192,10 @@ App.component('ApiResponse', ({ store, routes, apiResult }) => {
         $template: '#api-response-template',
         store, routes,
         get apiResult() { return resolve(apiResult) },
-        get apiResultJson() { return resolve(this.apiResult, x => x && x.json) },
-        get apiResultResponse() { return resolve(this.apiResult, x => x && x.api && (x.api.response || x.api.error)) },
-        get apiResultHeaders() { return resolve(this.apiResult, x => x && x.headers || []) },
-        get apiResultCookies() { return resolve(this.apiResult, x => x && x.cookies || []) },
+        get apiResultJson() { return map(this.apiResult, x => x.json) },
+        get apiResultResponse() { return map(this.apiResult, x => x.api && (x.api.response || x.api.error)) },
+        get apiResultHeaders() { return map(this.apiResult, x => x.headers) || [] },
+        get apiResultCookies() { return map(this.apiResult, x => x && x.cookies) || [] },
         toKvps(obj) {
             return Object.keys(obj).map(k => ({ Key:k, Value:obj[k]}))
         },

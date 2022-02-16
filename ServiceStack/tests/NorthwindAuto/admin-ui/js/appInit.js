@@ -1,7 +1,7 @@
 import { JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 import { createForms } from "../../shared/js/createForms"
-import { createApiMaps } from "../../shared/js/core"
+import { appApis } from "../../shared/js/core"
 
 /*minify:*/
 
@@ -22,7 +22,7 @@ function createClient(fn) {
 }
 let client = createClient()
 
-export let { HttpErrors, OpsMap, TypesMap, FullTypesMap, getType, isEnum, enumValues } = createApiMaps(APP.api)
+export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues } = appApis(APP.api)
 export let Forms = createForms(TypesMap, APP.plugins.adminUsers.css, APP.ui.theme)
 
 /*:minify*/

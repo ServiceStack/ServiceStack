@@ -1,6 +1,6 @@
 import { combinePaths, JsonServiceClient, lastLeftPart, leftPart, resolve, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
-import { createApiMaps, Crud } from "../../shared/js/core"
+import { appApis, Crud } from "../../shared/js/core"
 import { createForms } from "../../shared/js/createForms"
 import { Types } from "../../shared/js/types"
 
@@ -58,9 +58,7 @@ if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 
-let CACHE = {}
-export let { HttpErrors, OpsMap, TypesMap, FullTypesMap, getType, isEnum, enumValues } = createApiMaps(APP.api)
-
+export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues } = appApis(APP.api)
 export let Forms = createForms(TypesMap, APP.ui.queryCss, APP.ui.theme)
 
 /*:minify*/

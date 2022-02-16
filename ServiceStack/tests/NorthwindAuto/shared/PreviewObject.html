@@ -41,7 +41,7 @@ App.components({
             get val() { return resolve(val) },
             fieldAttrs: fieldAttrs || (k => ({})),
             get type() { return typeof this.val },
-            get keys() { return resolve(this.val, v => !v ? [] : Object.keys(v).filter(show)) },
+            get keys() { return map(this.val, v => Object.keys(v).filter(show)) || [] },
             get rows() { return this.keys.map(k => ({ key:keyFmt(k), val: this.val[k] })) },
         }
     },
