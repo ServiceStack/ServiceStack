@@ -1,4 +1,6 @@
 <script minify>
+import { Forms } from "../../query-ui/js/appInit"
+
 App.component('ApiDetails', ({ store, routes, breakpoints }) => {
     return {
         $template: '#api-details-layout',
@@ -26,7 +28,7 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
             }
             let opTypes = Object.values(allTypesMap)
                 .filter(type => !type.isValueType && type.name.toLowerCase() !== 'string')
-            return groupTypes(opTypes)
+            return Forms.groupTypes(opTypes)
         },
         inheritedTypes(typeRef) {
             if (!typeRef) return ''

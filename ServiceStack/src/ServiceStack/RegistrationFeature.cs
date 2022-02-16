@@ -16,12 +16,12 @@ namespace ServiceStack
         /// <summary>
         /// UI Layout for User Registration
         /// </summary>
-        public List<List<InputInfo>> FormLayout { get; set; } = new()
+        public List<InputInfo> FormLayout { get; set; } = new()
         {
-            new(){ Input.For<Register>(x => x.DisplayName, x => x.Help = "Your first and last name") },
-            new(){ Input.For<Register>(x => x.Email, x => x.Type = Input.Types.Email) },
-            new(){ Input.For<Register>(x => x.Password, x => x.Type = Input.Types.Password) },
-            new(){ Input.For<Register>(x => x.ConfirmPassword, x => x.Type = Input.Types.Password) },
+            Input.For<Register>(x => x.DisplayName, x => x.Help = "Your first and last name"),
+            Input.For<Register>(x => x.Email, x => x.Type = Input.Types.Email),
+            Input.For<Register>(x => x.Password, x => x.Type = Input.Types.Password),
+            Input.For<Register>(x => x.ConfirmPassword, x => x.Type = Input.Types.Password),
         };
         
         public ValidateFn ValidateFn 

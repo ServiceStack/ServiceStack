@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-02-13 15:24:41
+Date: 2022-02-15 22:40:38
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -125,6 +125,22 @@ export class LinkInfo
     public constructor(init?: Partial<LinkInfo>) { (Object as any).assign(this, init); }
 }
 
+export class ThemeCss
+{
+    public form: string;
+
+    public constructor(init?: Partial<ThemeCss>) { (Object as any).assign(this, init); }
+}
+
+export class ApiCss
+{
+    public form: string;
+    public fieldset: string;
+    public field: string;
+
+    public constructor(init?: Partial<ApiCss>) { (Object as any).assign(this, init); }
+}
+
 export class UiInfo
 {
     public brandIcon: ImageInfo;
@@ -132,6 +148,9 @@ export class UiInfo
     public modules: string[];
     public alwaysHideTags: string[];
     public adminLinks: LinkInfo[];
+    public theme: ThemeCss;
+    public queryCss: ApiCss;
+    public explorerCss: ApiCss;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<UiInfo>) { (Object as any).assign(this, init); }
@@ -161,6 +180,15 @@ export class NavItem
     public constructor(init?: Partial<NavItem>) { (Object as any).assign(this, init); }
 }
 
+export class FieldCss
+{
+    public field: string;
+    public input: string;
+    public label: string;
+
+    public constructor(init?: Partial<FieldCss>) { (Object as any).assign(this, init); }
+}
+
 export class InputInfo
 {
     public id: string;
@@ -185,6 +213,7 @@ export class InputInfo
     public maxLength?: number;
     public allowableValues: string[];
     public allowableEntries: KeyValuePair<String,String>[];
+    public css: FieldCss;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<InputInfo>) { (Object as any).assign(this, init); }
@@ -400,7 +429,8 @@ export class AdminUsersInfo
     public allPermissions: string[];
     public queryUserAuthProperties: string[];
     public queryMediaRules: MediaRule[];
-    public userFormLayout: InputInfo[][];
+    public formLayout: InputInfo[];
+    public css: ApiCss;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<AdminUsersInfo>) { (Object as any).assign(this, init); }
@@ -486,6 +516,16 @@ export class MetadataRoute
     public constructor(init?: Partial<MetadataRoute>) { (Object as any).assign(this, init); }
 }
 
+export class ApiUiInfo
+{
+    public queryCss: ApiCss;
+    public explorerCss: ApiCss;
+    public formLayout: InputInfo[];
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<ApiUiInfo>) { (Object as any).assign(this, init); }
+}
+
 export class MetadataOperationType
 {
     public request: MetadataType;
@@ -503,7 +543,7 @@ export class MetadataOperationType
     public requiredPermissions: string[];
     public requiresAnyPermission: string[];
     public tags: string[];
-    public formLayout: InputInfo[][];
+    public ui: ApiUiInfo;
 
     public constructor(init?: Partial<MetadataOperationType>) { (Object as any).assign(this, init); }
 }

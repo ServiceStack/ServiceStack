@@ -1,6 +1,6 @@
 import { appendQueryString, createUrl, humanify, leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
-import { isCrud, isQuery, setBodyClass } from "../../shared/js/core"
+import { setBodyClass } from "../../shared/js/core"
 import { getType } from "./appInit"
 
 /*minify:*/
@@ -13,7 +13,7 @@ let breakpoints = App.useBreakpoints({
 
 let routes = App.usePageRoutes({
     page:'op',
-    queryKeys:'tab,preview,body,doc,skip'.split(','),
+    queryKeys:'tab,preview,body,doc,skip,new,edit'.split(','),
     handlers: {
         nav(state) { console.log('nav', state) } /*debug*/
     },

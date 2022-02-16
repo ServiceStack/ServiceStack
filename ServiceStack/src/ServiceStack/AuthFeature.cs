@@ -148,12 +148,12 @@ namespace ServiceStack
         /// <summary>
         /// UI Layout for Authentication
         /// </summary>
-        public List<List<InputInfo>> FormLayout { get; set; } = new()
+        public List<InputInfo> FormLayout { get; set; } = new()
         {
-            new(){ Input.For<Authenticate>(x => x.provider, x => { x.Type = Input.Types.Select; x.Label = ""; }) },
-            new(){ Input.For<Authenticate>(x => x.UserName, x => x.Label = "Email") },
-            new(){ Input.For<Authenticate>(x => x.Password, x => x.Type = Input.Types.Password) },
-            new(){ Input.For<Authenticate>(x => x.RememberMe) },
+            Input.For<Authenticate>(x => x.provider, x => { x.Type = Input.Types.Select; x.Label = ""; }),
+            Input.For<Authenticate>(x => x.UserName, x => x.Label = "Email"),
+            Input.For<Authenticate>(x => x.Password, x => x.Type = Input.Types.Password),
+            Input.For<Authenticate>(x => x.RememberMe),
         };
 
         public MetaAuthProvider AdminAuthSecretInfo { get; set; } = new() {
@@ -276,7 +276,7 @@ namespace ServiceStack
             this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
 
-            FormLayout[0][0].AllowableValues = new List<string>(
+            FormLayout[0].AllowableValues = new List<string>(
                 authProviders.Where(x => x is not IAuthWithRequest).Select(x => x.Provider)) {
                     "logout"
                 }.ToArray();

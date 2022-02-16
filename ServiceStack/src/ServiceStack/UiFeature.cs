@@ -34,8 +34,19 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
         {
             HideTags = new List<string> { TagNames.Auth },
             BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
-            QueryStyles = new ApiStyles { Form = "grid grid-cols-12 gap-6", Rows = "col-span-12 sm:col-span-6 md:col-span-4" },
-            ExplorerStyles = new ApiStyles { Form = "grid grid-cols-12 gap-6", Rows = "col-span-12 sm:col-span-6" },
+            Theme = new ThemeCss { Form = "shadow overflow-hidden sm:rounded-md bg-white" },
+            QueryCss = new ApiCss
+            {
+                Form = "max-w-screen-2xl",
+                Fieldset = "grid grid-cols-12 gap-6", 
+                Field = "col-span-12 lg:col-span-6 xl:col-span-4",
+            },
+            ExplorerCss = new ApiCss
+            {
+                Form = "max-w-screen-md",
+                Fieldset = "grid grid-cols-12 gap-6", 
+                Field = "col-span-12 sm:col-span-6",
+            },
             AdminLinks = new()
             {
                 new LinkInfo

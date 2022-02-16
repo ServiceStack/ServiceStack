@@ -1,32 +1,44 @@
 <script minify>
-import { humanify } from "@servicestack/client"
+import { resolve, humanify } from "@servicestack/client"
 import { inputClass } from "./js/core"
 
-App.component('Input', ({ input, model, api }) => {
-    return {
-        $template: '#input-template',
-        input,
-        model: model || {},
-        get error() { return resolve(api, x => x && x.error) },
-        kvpValues(input) {
-            return resolve(input.allowableEntries) || (resolve(input.allowableValues)||[]).map(x => ({ key:x, value:x }))
-        },
-        useLabel(input) {
-            return input.label != null ? input.label : humanify(input.id)
-        },
-        usePlaceholder(input) {
-            return input.placeholder || '' 
-        },
-        fieldError(id) {
-            let error = this.error
-            let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
-            return fieldError && fieldError.message
-        },
-        hasError(id) { return !!this.fieldError(id) },
-        inputClass(input) { return inputClass(this.fieldError(input.id)) },
-        ariaDescribedby(input) {
-            return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
-        },
+App.components({
+    /** @param {{input:InputInfo,model:*,api:ApiResult}} args */
+    Input({ input, model, api }) {
+        return {
+            $template: '#input-template',
+            input,
+            model: model || {},
+            get error() { return resolve(api, x => x && x.error) },
+            /** @param {InputInfo} input */
+            kvpValues(input) {
+                return resolve(input.allowableEntries) || (resolve(input.allowableValues)||[]).map(x => ({ key:x, value:x }))
+            },
+            /** @param {InputInfo} input */
+            useLabel(input) {
+                return input.label != null ? input.label : humanify(input.id)
+            },
+            /** @param {InputInfo} input */
+            usePlaceholder(input) {
+                return input.placeholder || '' 
+            },
+            /** @param {string} id */
+            fieldError(id) {
+                let error = this.error
+                let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
+                return fieldError && fieldError.message
+            },
+            /** @param {string} id */
+            hasError(id) { return !!this.fieldError(id) },
+            /** @param {InputInfo} input */
+            labelClass(input) { return input.css && input.css.label || '' },
+            /** @param {InputInfo} input */
+            inputClass(input) { return inputClass(this.fieldError(input.id), input.css && input.css.input) },
+            /** @param {InputInfo} input */
+            ariaDescribedby(input) {
+                return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
+            },
+        }
     }
 })
 </script>
@@ -34,21 +46,24 @@ App.component('Input', ({ input, model, api }) => {
 <template id="input-template">
 <div v-if="input.type=='divider'" class="border-t"></div>
 <input v-else-if="input.type=='hidden'" v-bind="input" type="hidden" v-model="model[input.id]" />
-<div v-else-if="input.type=='checkbox'" class="relative flex items-start">
-    <div class="flex items-center h-5">
-        <input v-bind="input" type="checkbox" v-model="model[input.id]"
-               :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
-               class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-    </div>
-    <div class="ml-3 text-sm">
-        <label v-if="useLabel(input)" :for="input.id" class="font-medium text-gray-700 select-none"
-               v-html="useLabel(input)"></label>
-        <p v-if="fieldError(input.id)" class="text-red-500" v-html="fieldError(input.id)"></p>
-        <p v-else-if="input.help" class="text-gray-500" v-html="input.help"></p>
+<div v-else-if="input.type=='checkbox'" class="relative flex flex-col">
+    <span>&nbsp;</span>
+    <div class="flex items-start">
+        <div class="flex items-center h-5 flex-col">
+            <input v-bind="input" type="checkbox" v-model="model[input.id]"
+                   :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
+                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+        </div>
+        <div class="ml-3 text-sm">
+            <label v-if="useLabel(input)" :for="input.id" :class="['font-medium text-gray-700 select-none',labelClass(input)]"
+                   v-html="useLabel(input)"></label>
+            <p v-if="fieldError(input.id)" class="text-red-500" v-html="fieldError(input.id)"></p>
+            <p v-else-if="input.help" class="text-gray-500" v-html="input.help"></p>
+        </div>
     </div>
 </div>
 <div v-else>
-    <label v-if="useLabel(input)" :for="input.id" class="block text-sm font-medium text-gray-700"
+    <label v-if="useLabel(input)" :for="input.id" :class="['block text-sm font-medium text-gray-700',labelClass(input)]"
            v-html="useLabel(input)"></label>
     <div class="mt-1 relative rounded-md shadow-sm">
         <select v-if="input.type=='select'" v-bind="input"
