@@ -1,4 +1,4 @@
-﻿name: Pack NuGet
+﻿name: NuGet Pack
 
 on: workflow_dispatch
 
