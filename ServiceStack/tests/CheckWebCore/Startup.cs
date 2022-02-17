@@ -161,7 +161,7 @@ namespace CheckWebCore
             });
             
             ConfigurePlugin<UiFeature>(feature => {
-                feature.Info.BrandIcon.Uri = "https://vuejs.org/images/logo.svg";
+                feature.Info.BrandIcon.Uri = "https://vue-ssg.jamstacks.net/assets/img/logo.svg";
             });
 
             //not needed for /wwwroot/ui 
@@ -171,8 +171,6 @@ namespace CheckWebCore
 
             var cache = container.Resolve<ICacheClient>();
             
-            Plugins.Add(new ValidationFeature());
-
 //            Svg.CssFillColor["svg-auth"] = "#ccc";
             Svg.CssFillColor["svg-icons"] = "#e33";
 
