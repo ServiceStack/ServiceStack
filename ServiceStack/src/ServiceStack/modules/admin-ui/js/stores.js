@@ -84,6 +84,7 @@ let store = PetiteVue.reactive({
         authsecret = bearerToken = client.bearerToken = null
         client.headers.delete('authsecret')
         this.auth = null
+        routes.to({ $page:null })
     },
     get authRoles() { return this.auth && this.auth.roles || [] },
     get authPermissions() { return this.auth && this.auth.permissions || [] },

@@ -14,8 +14,10 @@ DEBUG = true /*debug*/
 /*file:css/app.css */
 /*shared:css/ui.css */
 </style>
+<!--shared:custom-head-->
 </head>
 <body class="loading noauth">
+<!--shared:custom-body-->
 <div class="when-loading"></div>
 <div v-scope class="app">
 <div class="flex">
@@ -32,7 +34,10 @@ DEBUG = true /*debug*/
         </div>
         <main class="flex-1">
             <div class="pt-2.5 pb-6">
-                <div v-if="plugins.auth" v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })" class="absolute top-1 right-2"></div>
+                <div class="z-10 absolute top-1 right-2 flex">
+                    <div v-if="routes.queryHref()" class="flex items-center" v-scope="QueryUiButton({ routes })"></div>
+                    <div v-if="plugins.auth" v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })"></div>
+                </div>
                 <div v-if="store.op">
                     <div class="fixed w-full md:w-sidebar border-b border-gray-200 bg-white top-sm-nav" style="padding-top:2.5px">
                         <nav class="flex max-w-screen-sm lg:max-w-screen-md" aria-label="Tabs">
@@ -59,7 +64,7 @@ DEBUG = true /*debug*/
 <script src="../types/js?vfx=hash"></script>
 <script>
 Object.assign(window, exports)
-/*shared/js:core */
+/*shared/js:core,Types,createForms */
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { 
     window.AUTH = !auth || auth.responseStatus ? null : auth
@@ -129,8 +134,8 @@ App.build({
     store,
     get request() { return this.store.op && this.store.op.request },
     humanify,
-    typeName,
-    typeName2,
+    typeName: Types.typeName,
+    typeName2: Types.typeName2,
 }).mount()
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
 let sidebarWidth = styleProperty('--sidebar-width')
@@ -144,5 +149,6 @@ App.nextTick(() => {
     }
 })
 </script>
+<!--shared:custom-end-->
 </body>
 </html>

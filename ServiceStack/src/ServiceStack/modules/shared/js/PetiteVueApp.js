@@ -8,6 +8,7 @@ function PetiteVueApp() {
     let Directives = {}
     let Props = {}
     let OnStart = []
+    let Instances = {}
     this.petite = null
     this.events = new EventBus()
     let assertNotBuilt = (name) => {
@@ -81,6 +82,12 @@ function PetiteVueApp() {
             let f = plugins[name]
             this[name] = typeof f == 'function' ? f.bind(this) : f 
         })
+    }
+    this.unsubscribe = function() {
+        if (this.sub) {
+            this.sub.unsubscribe()
+            this.sub = null
+        }
     }
     this.import = function (src) {
         return new Promise((resolve, reject) => {

@@ -92,8 +92,8 @@ App.component('AdminUsers', ({ store, routes, client }) => {
             </a>
         </div>
     </form>
-    <div v-if="routes.new"       class="mb-3 max-w-screen-md" v-scope="AdminUsersNew({ store, routes, client, done:formSearch })"></div>
-    <div v-else-if="routes.edit" class="mb-3 max-w-screen-md" v-scope="AdminUsersEdit({ store, routes, client, id:() => routes.edit, done:formSearch })"></div>
+    <div v-if="routes.new"       class="mb-3" v-scope="AdminUsersNew({ store, routes, client, done:formSearch })"></div>
+    <div v-else-if="routes.edit" class="mb-3" v-scope="AdminUsersEdit({ store, routes, client, id:() => routes.edit, done:formSearch })"></div>
     <div v-if="loading" v-scope="Loading()"></div>
     <div v-else-if="results.length" class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -101,12 +101,10 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-3 py-3 text-gray-500 text-left">
+                        <th class="pl-2 pt-2 w-6">
                             <button type="button" title="Create User" @click="routes.to({ new:1, edit:null, $on:nav })"
-                                    class="flex-shrink-0 rounded-full p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5v2H5v14h14v-5h2z" fill="currentColor"/><path d="M21 7h-4V3h-2v4h-4v2h4v4h2V9h4z" fill="currentColor"/>
-                                </svg>
+                                    class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"></path></svg>
                             </button>
                         </th>
                         <th v-for="name in fieldNames" scope="col" 
@@ -123,12 +121,10 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                     </thead>
                     <tbody>
                     <tr v-for="(row,index) in results" :v-key="`r-${row.Id}`" :class="index %2 == 0 ? 'bg-white' : 'bg-gray-50'">
-                        <td class="px-3 py-3 text-gray-500">
+                        <td class="pl-2 pt-2 w-6">
                             <button type="button" title="Edit User" @click="routes.to({ new:null, edit:row.Id, $on:nav })"
-                                    class="flex-shrink-0 rounded-full p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <g fill="none"><path d="M16.474 5.408l2.118 2.117m-.756-3.982L12.109 9.27a2.118 2.118 0 0 0-.58 1.082L11 13l2.648-.53c.41-.082.786-.283 1.082-.579l5.727-5.727a1.853 1.853 0 1 0-2.621-2.621z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
-                                </svg>
+                                    class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
                             </button>
                         </td>
                         <td v-for="name in fieldNames" :v-key="`f-${row.Id}-${name}`" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -145,10 +141,9 @@ App.component('AdminUsers', ({ store, routes, client }) => {
 <!--/minify-->
 <script minify>
 (function (){
-    let formLayout = store.adminUsers.userFormLayout
-    let mapInput = f => formLayout.reduce((acc,row) => acc.concat(row.map(input => f(input))), [])
-    let inputIds = mapInput(input => input.id)
-    let exceptFields = [...mapInput(x => x.id), 'password', 'id']
+    let formLayout = store.adminUsers.formLayout
+    let inputIds = formLayout.map(input => input.id)
+    let exceptFields = [...formLayout.map(x => x.id), 'password', 'id']
     let defaults = {
         roles: [],
         permissions: [],
@@ -179,8 +174,9 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                 api: null,
                 get errorSummary() { return this.api && this.api.error && this.api.summaryMessage(exceptFields) },
                 formLayout,
-                get gridClass() { return gridClass() },
-                get gridInputs() { return gridInputs(this.formLayout) },
+                formClass: Forms.formClass,
+                gridClass: Forms.gridClass,
+                get gridInputs() { return Forms.getGridInputs(this.formLayout) },
                 model:{ newRole:'', newPermission:'' },
                 addRole() {
                     this.request.roles.push(this.model.newRole)
@@ -232,8 +228,9 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                 model:{ newRole:'', newPermission:'', password:'', confirmDelete: false, },
                 get errorSummary() { return this.api && this.api.error && this.api.summaryMessage(exceptFields) },
                 formLayout,
-                get gridClass() { return gridClass() },
-                get gridInputs() { return gridInputs(this.formLayout) },
+                formClass: Forms.formClass,
+                gridClass: Forms.gridClass,
+                get gridInputs() { return Forms.getGridInputs(this.formLayout) },
                 addRole() {
                     this.roles.push(this.model.newRole)
                     this.model.newRole = ''
@@ -308,72 +305,71 @@ App.component('AdminUsers', ({ store, routes, client }) => {
 </script>
 <!--minify-->
 <template id="admin-users-new-template">
-<div class="shadow overflow-hidden sm:rounded-md bg-white">
-    <form @submit.prevent="submit" autocomplete="off">
+<form @submit.prevent="submit" autocomplete="off" :class="formClass">
     <div class="relative px-4 py-5 bg-white sm:p-6">
         <div v-scope="CloseButton({ onclick:() => routes.to({ new:null }) })" title="Close"></div>
-            <div class="text-xl text-gray-900 text-center mb-4">New User</div>
-            <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
-            <div class="flex flex-wrap sm:flex-nowrap">
-                <fieldset class="flex-grow mb-3 sm:mb-0">
-                    <div :class="gridClass">
-                        <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
-                            <div :key="input.id" v-scope="Input({ input, model:isDtoProp(input.id) ? request : request.userAuthProperties, api:() => api })"></div>
-                        </div>
+        <div class="text-xl text-gray-900 text-center mb-4">New User</div>
+        <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+        <div class="flex flex-wrap sm:flex-nowrap">
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset :class="gridClass">
+                    <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
+                        <div :key="input.id" v-scope="Input({ input, model:isDtoProp(input.id) ? request : request.userAuthProperties, api:() => api })"></div>
                     </div>
                 </fieldset>
-                <fieldset class="flex-grow sm:flex-shrink sm:ml-6">
-                    <div :class="gridClass">
-                        <div class="col-span-6">
-                            <div v-scope="Input({ input:{ id:'password', type:'password' }, model:request, api:() => api })"></div>
+            </div>
+            <div class="flex-grow sm:flex-shrink sm:ml-6">
+                <fieldset :class="gridClass">
+                    <div class="col-span-12">
+                        <div v-scope="Input({ input:{ id:'password', type:'password' }, model:request, api:() => api })"></div>
+                    </div>
+                    <div v-if="request.roles.length > 0" class="col-span-12">
+                        <label class="mb-2 block text-sm font-medium text-gray-700">Add Roles</label>
+                        <div v-for="role in request.roles" class="mb-2 flex items-center">
+                            <svg @click="request.roles = request.roles.filter(x => x !== role)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <title>Remove Role</title>
+                                <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                            </svg>
+                            <span>{{role}}</span>
                         </div>
-                        <div v-if="request.roles.length > 0" class="col-span-6">
-                            <label class="mb-2 block text-sm font-medium text-gray-700">Add Roles</label>
-                            <div v-for="role in request.roles" class="mb-2 flex items-center">
-                                <svg @click="request.roles = request.roles.filter(x => x !== role)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" 
-                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <title>Remove Role</title>
-                                    <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
-                                </svg>
-                                <span>{{role}}</span>
-                            </div>
+                    </div>
+                    <div v-if="missingRoles.length > 1" class="col-span-12 flex items-end">
+                        <div class="flex-grow" v-scope="Input({ input:{ id:'newRole', type:'select', label: 'New Role', allowableValues:() => missingRoles }, model, api })"></div>
+                        <div>
+                            <button type="button" @click="addRole" :disabled="!model.newRole"
+                                    :class="`${model.newRole ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
+                                Add
+                            </button>
                         </div>
-                        <div v-if="missingRoles.length > 1" class="col-span-6 flex items-end">
-                            <div class="flex-grow" v-scope="Input({ input:{ id:'newRole', type:'select', label: 'New Role', allowableValues:() => missingRoles }, model, api })"></div>
-                            <div>
-                                <button type="button" @click="addRole" :disabled="!model.newRole" 
-                                        :class="`${model.newRole ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
-                                    Add
-                                </button>                                
-                            </div>
+                    </div>
+                    <div v-if="request.permissions.length > 0" class="col-span-12">
+                        <label class="mb-2 block text-sm font-medium text-gray-700">Add Permissions</label>
+                        <div v-for="permission in request.permissions" class="mb-2 flex items-center">
+                            <svg @click="request.permissions = request.permissions.filter(x => x !== permission)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <title>Remove Permission</title>
+                                <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                            </svg>
+                            <span>{{permission}}</span>
                         </div>
-                        <div v-if="request.permissions.length > 0" class="col-span-6">
-                            <label class="mb-2 block text-sm font-medium text-gray-700">Add Permissions</label>
-                            <div v-for="permission in request.permissions" class="mb-2 flex items-center">
-                                <svg @click="request.permissions = request.permissions.filter(x => x !== permission)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <title>Remove Permission</title>
-                                    <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
-                                </svg>
-                                <span>{{permission}}</span>
-                            </div>
-                        </div>
-                        <div v-if="missingPermissions.length > 1" class="col-span-6 flex items-end">
-                            <div class="flex-grow" v-scope="Input({ input:{ id:'newPermission', type:'select', label: 'New Permission', allowableValues:() => missingPermissions }, model, api })"></div>
-                            <div>
-                                <button type="button" @click="addPermission" :disabled="!model.newPermission"
-                                        :class="`${model.newPermission ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
-                                    Add
-                                </button>
-                            </div>
+                    </div>
+                    <div v-if="missingPermissions.length > 1" class="col-span-12 flex items-end">
+                        <div class="flex-grow" v-scope="Input({ input:{ id:'newPermission', type:'select', label: 'New Permission', allowableValues:() => missingPermissions }, model, api })"></div>
+                        <div>
+                            <button type="button" @click="addPermission" :disabled="!model.newPermission"
+                                    :class="`${model.newPermission ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
+                                Add
+                            </button>
                         </div>
                     </div>
                 </fieldset>
             </div>
+        </div>
     </div>
     <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
         <div>
-            <div v-if="loading" v-scope="Loading({ cls:'p-0' })"></div>            
+            <div v-if="loading" v-scope="Loading({ cls:'p-0' })"></div>
         </div>
         <div>
             <button type="submit" :disabled="loading"
@@ -382,120 +378,117 @@ App.component('AdminUsers', ({ store, routes, client }) => {
             </button>
         </div>
     </div>
-    </form>
-</div>
+</form>
 </template>
 <template id="admin-users-edit-template">
-    <div class="shadow overflow-hidden sm:rounded-md bg-white" @vue:mounted="mounted">
-        <form @submit.prevent="submit" autocomplete="off">
-            <div class="relative px-4 py-5 bg-white sm:p-6">
-                <div v-scope="CloseButton({ onclick:() => routes.to({ edit:null }) })" title="Close"></div>
-                <div class="text-xl text-gray-900 text-center mb-4">Edit User</div>
-                <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
-                <div v-else-if="success" v-scope="AlertSuccess({ message:() => success })" class="mb-3"></div>
-                <div class="flex flex-wrap sm:flex-nowrap">
-                    <fieldset class="flex-grow mb-3 sm:mb-0">
-                        <div :class="gridClass">
-                            <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
-                                <div :key="input.id" v-scope="Input({ input, model:isDtoProp(input.id) ? request : request.userAuthProperties, api:() => api })"></div>
-                            </div>
+<form @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted">
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+        <div v-scope="CloseButton({ onclick:() => routes.to({ edit:null }) })" title="Close"></div>
+        <div class="text-xl text-gray-900 text-center mb-4">Edit User</div>
+        <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+        <div v-else-if="success" v-scope="AlertSuccess({ message:() => success })" class="mb-3"></div>
+        <div class="flex flex-wrap sm:flex-nowrap">
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset :class="gridClass">
+                    <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
+                        <div :key="input.id" v-scope="Input({ input, model:isDtoProp(input.id) ? request : request.userAuthProperties, api:() => api })"></div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="flex-grow sm:flex-shrink sm:ml-6">
+                <fieldset :class="gridClass">
+                    <div class="col-span-12 flex items-end">
+                        <div class="flex-grow" v-scope="Input({ input:{ id:'password', type:'password' }, model, api:() => api })"></div>
+                        <div>
+                            <button type="button" @click="changePassword" :disabled="!model.password"
+                                    :class="`${model.password ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
+                                Change
+                            </button>
                         </div>
-                    </fieldset>
-                    <fieldset class="flex-grow sm:flex-shrink sm:ml-6">
-                        <div :class="gridClass">
-                            <div class="col-span-6 flex items-end">
-                                <div class="flex-grow" v-scope="Input({ input:{ id:'password', type:'password' }, model, api:() => api })"></div>
-                                <div>
-                                    <button type="button" @click="changePassword" :disabled="!model.password"
-                                            :class="`${model.password ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
-                                        Change
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-span-6 flex items-end">
-                                <div v-if="!lockedDate">
-                                    <button type="button" @click="lockUser"
+                    </div>
+                    <div class="col-span-12 flex items-end">
+                        <div v-if="!lockedDate">
+                            <button type="button" @click="lockUser"
+                                    class="bg-red-600 hover:bg-red-700 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                Lock User
+                            </button>
+                        </div>
+                        <div v-else>
+                            <div class="flex items-center">
+                                <div>Locked on {{apiValueFmt(lockedDate)}}</div>
+                                <div class="ml-2">
+                                    <button type="button" @click="unlockUser"
                                             class="bg-red-600 hover:bg-red-700 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                        Lock User
-                                    </button>
-                                </div>
-                                <div v-else>
-                                    <div class="flex items-center">
-                                        <div>Locked on {{apiValueFmt(lockedDate)}}</div>
-                                        <div class="ml-2">
-                                            <button type="button" @click="unlockUser"
-                                                    class="bg-red-600 hover:bg-red-700 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                                Unlock User
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-if="roles.length > 0" class="col-span-6">
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Add Roles</label>
-                                <div v-for="role in roles" class="mb-2 flex items-center">
-                                    <svg @click="roles = roles.filter(x => x !== role)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <title>Remove Role</title>
-                                        <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
-                                    </svg>
-                                    <span>{{role}}</span>
-                                </div>
-                            </div>
-                            <div v-if="missingRoles.length > 1" class="col-span-6 flex items-end">
-                                <div class="flex-grow" v-scope="Input({ input:{ id:'newRole', type:'select', label: 'New Role', allowableValues:() => missingRoles }, model, api })"></div>
-                                <div>
-                                    <button type="button" @click="addRole" :disabled="!model.newRole"
-                                            :class="`${model.newRole ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
-                                        Add
-                                    </button>
-                                </div>
-                            </div>
-                            <div v-if="permissions.length > 0" class="col-span-6">
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Add Permissions</label>
-                                <div v-for="permission in permissions" class="mb-2 flex items-center">
-                                    <svg @click="permissions = permissions.filter(x => x !== permission)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <title>Remove Permission</title>
-                                        <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
-                                    </svg>
-                                    <span>{{permission}}</span>
-                                </div>
-                            </div>
-                            <div v-if="missingPermissions.length > 1" class="col-span-6 flex items-end">
-                                <div class="flex-grow" v-scope="Input({ input:{ id:'newPermission', type:'select', label: 'New Permission', allowableValues:() => missingPermissions }, model, api })"></div>
-                                <div>
-                                    <button type="button" @click="addPermission" :disabled="!model.newPermission"
-                                            :class="`${model.newPermission ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
-                                        Add
+                                        Unlock User
                                     </button>
                                 </div>
                             </div>
                         </div>
-                    </fieldset>
-                </div>
+                    </div>
+                    <div v-if="roles.length > 0" class="col-span-12">
+                        <label class="mb-2 block text-sm font-medium text-gray-700">Add Roles</label>
+                        <div v-for="role in roles" class="mb-2 flex items-center">
+                            <svg @click="roles = roles.filter(x => x !== role)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <title>Remove Role</title>
+                                <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                            </svg>
+                            <span>{{role}}</span>
+                        </div>
+                    </div>
+                    <div v-if="missingRoles.length > 1" class="col-span-12 flex items-end">
+                        <div class="flex-grow" v-scope="Input({ input:{ id:'newRole', type:'select', label: 'New Role', allowableValues:() => missingRoles }, model, api })"></div>
+                        <div>
+                            <button type="button" @click="addRole" :disabled="!model.newRole"
+                                    :class="`${model.newRole ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="permissions.length > 0" class="col-span-12">
+                        <label class="mb-2 block text-sm font-medium text-gray-700">Add Permissions</label>
+                        <div v-for="permission in permissions" class="mb-2 flex items-center">
+                            <svg @click="permissions = permissions.filter(x => x !== permission)" class="mr-1 w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <title>Remove Permission</title>
+                                <g fill="none"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                            </svg>
+                            <span>{{permission}}</span>
+                        </div>
+                    </div>
+                    <div v-if="missingPermissions.length > 1" class="col-span-12 flex items-end">
+                        <div class="flex-grow" v-scope="Input({ input:{ id:'newPermission', type:'select', label: 'New Permission', allowableValues:() => missingPermissions }, model, api })"></div>
+                        <div>
+                            <button type="button" @click="addPermission" :disabled="!model.newPermission"
+                                    :class="`${model.newPermission ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-400'} ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </fieldset>
             </div>
-            <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
-                <div>
-                    <input id="confirmDelete" type="checkbox" v-model="model.confirmDelete" 
-                           class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                    <label for="confirmDelete" class="mx-1 select-none">confirm</label>
-                    <button type="button" :disabled="loading || !model.confirmDelete" @click="deleteUser"
-                            :class="`${!loading && model.confirmDelete ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
-                        Delete
-                    </button>
-                </div>
-                <div>
-                    <div v-if="loading" class="hidden sm:block" v-scope="Loading({ cls:'p-0' })"></div>
-                </div>
-                <div>
-                    <button type="submit" :disabled="loading"
-                            :class="`${!loading ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
-                        Update User
-                    </button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
+    <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
+        <div>
+            <input id="confirmDelete" type="checkbox" v-model="model.confirmDelete"
+                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+            <label for="confirmDelete" class="mx-1 select-none">confirm</label>
+            <button type="button" :disabled="loading || !model.confirmDelete" @click="deleteUser"
+                    :class="`${!loading && model.confirmDelete ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
+                Delete
+            </button>
+        </div>
+        <div>
+            <div v-if="loading" class="hidden sm:block" v-scope="Loading({ cls:'p-0' })"></div>
+        </div>
+        <div>
+            <button type="submit" :disabled="loading"
+                    :class="`${!loading ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
+                Update User
+            </button>
+        </div>
+    </div>
+</form>
 </template>
 <!--/minify-->

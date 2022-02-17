@@ -11,17 +11,20 @@ App.plugin({
                     let rule = new Function("return " + attr)()
                     let prevTransition = rule[enter ? 'leaving' : 'entering']
                     let nextTransition = rule[enter ? 'entering' : 'leaving']
-                    if (rule.cls) {
-                        if (el.className.indexOf(rule.cls) < 0) el.className += ` ${rule.cls}`
-                        ;let clsDuration = rule.cls.split(' ').find(x => x.startsWith('duration-'))
+                    if (prevTransition.cls) {
+                        if (el.className.indexOf(prevTransition.cls) < 0) el.className.replace(prevTransition,'').trim()
+                    }
+                    if (nextTransition.cls) {
+                        if (el.className.indexOf(nextTransition.cls) < 0) el.className += ` ${nextTransition.cls}`
+                        ;let clsDuration = nextTransition.cls.split(' ').find(x => x.startsWith('duration-'))
                         if (clsDuration) {
                             duration = parseInt(clsDuration.split('-')[1])
                         }
                     }
-                    el.className = el.className.replace(` ${prevTransition.to}`, '')
+                    el.className = el.className.replace(` ${prevTransition.to}`, '').trim()
                     el.className += ` ${nextTransition.from}`
                     ;setTimeout(() => {
-                        el.className = el.className.replace(nextTransition.from, nextTransition.to)
+                        el.className = el.className.replace(nextTransition.from, nextTransition.to).trim()
                     }, duration)
                 }
                 setTimeout(() => {

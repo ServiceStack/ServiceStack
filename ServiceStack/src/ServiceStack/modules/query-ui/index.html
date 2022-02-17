@@ -3,6 +3,9 @@
 <head>
 <!--shared:Meta-->
 <base href="">
+<style>
+/*vfs[]:/css/highlight.css*/
+</style>
 <script>
 let DEBUG = false
 DEBUG = true /*debug*/
@@ -17,11 +20,11 @@ DEBUG = true /*debug*/
 <!--shared:custom-body-->
 <div class="when-loading"></div>
 <div v-scope class="app">
-<div v-if="store.auth && store.isAdmin" class="">
+<div class="flex">
     <div id="sidebar" v-scope="Sidebar({ store, routes })"></div>
-    <div class="md:pl-64 flex flex-col flex-1">
+    <div class="md:pl-sidebar md:w-sidebar overflow-auto flex flex-col flex-1">
         <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
-            <button type="button" @click="transition('sidebar')" 
+            <button type="button" @click="transition('sidebar')"    
                     class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                 <span class="sr-only">Open sidebar</span>
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -30,38 +33,27 @@ DEBUG = true /*debug*/
             </button>
         </div>
         <main class="flex-1">
-            <div class="py-6">
-                <div class="mx-auto px-4 sm:px-6 md:px-8">
-                    <h1 class="text-2xl font-semibold text-gray-900">{{store.link.label}}</h1>
+            <div class="pt-2.5 pb-6">
+                <div class="absolute top-1 right-2 flex">
+                    <div v-if="routes.uiHref()" class="flex items-center" v-scope="UiButton({ routes })"></div>
+                    <div v-if="plugins.auth" v-scope="AuthNav({ auth:() => store.auth, logout:() => store.logout() })"></div>
                 </div>
-                <div class="mx-auto px-4 sm:px-6 md:px-8">
-                    <div class="py-4">
-                        <div v-if="routes.admin === ''" v-scope="Dashboard({ store, routes, client })"></div>
-                        <div v-else-if="routes.admin === 'users'" v-scope="AdminUsers({ store, routes, client })"></div>
+                <div v-if="store.op">
+                    <div class="w-body md:w-body overflow-auto">
+                        <div v-scope="AutoQuery({ store, routes, settings })"></div>
                     </div>
                 </div>
+                <div class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto" v-else v-scope="Welcome({ store })"></div>
             </div>
         </main>
     </div>
 </div>
-<div v-else-if="store.auth && !store.isAdmin" class="w-full h-screen flex justify-center items-center">
-    <div class="flex flex-col items-center">
-        <div v-scope="Alert({ message: () => '<b>Admin</b> role required' })"></div>
-        <div class="mt-4">
-            <button type="button" @click="store.logout()"
-                    class="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Logout
-            </button>
-        </div>        
-    </div>
-</div>
-<div v-else class="w-full" v-scope="store.SignIn()"></div>
 </div>
 <script src="../js/require.js?vfx=hash"></script>
 <script src="../js/servicestack-client.js?vfx=hash"></script>
 <script src="../types/js?vfx=hash"></script>
 <script>
-Object.assign(window, exports) //import
+Object.assign(window, exports)
 /*shared/js:core,Types,createForms */
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { 
@@ -80,27 +72,30 @@ let App = new PetiteVueApp()
 /*plugins:* */
 /*files:js/*.js */
 </script>
-<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject-->
+<!--shared:Alert,AuthNav,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,ModalDialog-->
 <!--files:components/*.html-->
 <script>
-let api = APP.api
-let allTypes =  [...api.operations.map(x => x.request), ...api.operations.map(x => x.response), ...api.types.map(x => x)]
-    .filter(x => x).reduce((acc,x) => { acc[x.name] = x; return acc }, {})
 App.build({
     app: APP.app,
     ui: APP.ui,
-    api,
     serviceName: APP.app.serviceName,
     get plugins() { return APP.plugins },
-    allTypes,
+    get api() { return APP.api },
     store,
     get request() { return this.store.op && this.store.op.request },
     humanify,
-    resolve,
 }).mount()
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
+let sidebarWidth = styleProperty('--sidebar-width')
 App.start()
-App.nextTick(() => document.body.classList.remove('loading'))
+App.nextTick(() => {
+    document.body.classList.remove('loading')
+    let max = Math.max(...Array.from($$('#sidebar .nav-item')).map(el => el.clientWidth))
+    if (max > (240 - 75)) {
+       sidebarWidth = (max + 75) + 'px'
+       setStyleProperty({ '--sidebar-width': sidebarWidth })
+    }
+})
 </script>
 <!--shared:custom-end-->
 </body>

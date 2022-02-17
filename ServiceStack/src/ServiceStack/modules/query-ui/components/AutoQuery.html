@@ -1,10 +1,4 @@
 <script minify>
-import { delaySet, humanify, createUrl } from "@servicestack/client"
-import { Crud, map, canAccess, createRequest, apiSend, invalidAccessMessage } from "../../shared/js/core"
-import { Forms, getOp, resolveApiUrl } from "../js/appInit"
-import { Types } from "../../shared/js/Types"
-
-/** @param {MetadataOperationType} op */
 function apiState(op) {
     if (!op) return null
     let formLayout = Forms.resolveFormLayout(op)
@@ -31,8 +25,6 @@ function apiState(op) {
             let except = formLayout.map(input => input.id).filter(x => x)
             return this.apiResult && this.apiResult.api.summaryMessage(except)
         },
-        /** @param {*} [dtoArgs] 
-            @param {*} [queryArgs]*/
         apiSend(dtoArgs,queryArgs) {
             let requestDto = this.createRequest(dtoArgs)
             let complete = delaySet(x => {
@@ -47,17 +39,11 @@ function apiState(op) {
         }
     }
 }
-
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
-    /** @return {MetadataTypeName} */
     let dataModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).dataModel
-    /** @return {MetadataTypeName} */
     let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
-    
-
-    /** @param {string} opName */
     function createState(opName) {
         let op = opName && APP.api.operations.find(x => x.request.name === opName)
         if (!op) {
@@ -66,7 +52,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         }
         let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
         let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
-        
         let ret = {
             opQuery: op,
             opCreate: findOp(Crud.isCreate),
@@ -83,7 +68,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         })
         return ret
     }
-    
     return {
         $template: `#autoquery-template`,
         store, routes, settings,
@@ -101,13 +85,11 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
         get total() { return this.apiResult && map(this.apiResult.api.response, x => x.total) || 0 },
         get apiLoading() { return map(this.state, x => x.apiQuery && x.apiQuery.apiLoading || false) },
-
         get canFirst() { return this.skip > 0 },
         get canPrev() { return this.skip > 0 },
         get canNext() { return this.results.length >= this.take },
         get canLast() { return this.results.length >= this.take },
         min(num1,num2) { return Math.min(num1, num2) },
-
         get dataModel() { return getType(dataModelRef()) },
         get viewModel() { return getType(viewModelRef()) },
         get viewModelColumns() { return Forms.typeProperties(this.viewModel) },
@@ -116,27 +98,22 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             return this.filterOperations((op, table) => Crud.isQuery(op) && canAccess(op,store.auth))
         },
         get canQuery() { return this.accessibleAutoQueryTables.some(op => routes.op === op.request.name) },
-
         filterOperations(fn) {
             const to = []
             const existingKeys = {}
-    
             APP.api.operations.forEach(op => {
                 if (!op.dataModel)
                     return
-    
                 const key = Types.key(op.request)
                 if (existingKeys[key])
                     return
                 existingKeys[key] = true
-
                 if (!fn || fn(op,op.request))
                     to.push(op)
             })
             to.sort((x,y) => x.dataModel.name.localeCompare(y.dataModel.name))
             return to
         },
-        
         get columns() {
             let only = this.prefs.selectedColumns.length > 0 ? this.prefs.selectedColumns : null   
             let opColumns = this.state 
@@ -146,19 +123,15 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 : []
             return opColumns
         },
-        
         hasMultiple(dataModel) {
             return this.accessibleAutoQueryTables.filter(x => x.dataModel?.name === dataModel).length > 1
         },
-
         get crudOperations() {
             let modelRef = dataModelRef()
             return this.filterOperations((op, table) => Crud.isCrud(op) && Types.equals(op.dataModel, modelRef))
         },
-
         get hasState() { return map(this.state, x => x.apiQuery || false) },
         get dataModelName() { return map(this.dataModel, x => x.name) },
-
         createRequestArgs() {
             let args = {
                 include:'total',
@@ -181,7 +154,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             }
             return args
         },
-
         copy,        
         copied:false,
         copyApiUrl() {
@@ -194,7 +166,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             let csvUrl = createUrl(resolveApiUrl(routes.op), { ...args, format:'csv', jsconfig:'edv' })
             window.open(csvUrl)
         },
-        
         search() {
             if (!routes.op) return;
             if (!this.canQuery) return;
@@ -203,10 +174,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         apiSend() {
             if (!this.hasState) return
             let state = this.state
-            
             let requestDto = state.apiQuery.createRequest(this.createRequestArgs())
             if (!requestDto) return
-            
             state.jsonError = null
             let complete = delaySet(x => {
                 this.apiResult = null
@@ -217,7 +186,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 this.apiResult =  r
             })
         },
-
         nextSkip(skip) {
             skip += this.skip
             if (typeof this.total == 'number') {
@@ -227,7 +195,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             if (skip < 0) return 0
             return skip
         },
-        
         updated() {
             this.skip = parseInt(routes.skip) || 0
             this.prefs = refreshPrefs()
@@ -239,7 +206,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             if (skipRefresh) return
             this.search()
         },
-        
         sub:null,
         unmounted:App.unsubscribe,
         mounted() {
@@ -358,11 +324,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         </div>
     </div>
 </template>
-
 <script>
-import { getType } from "../js/appInit"
-import { apiValueFmt } from "@servicestack/client"
-
 App.components({
     Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
         return {
@@ -375,7 +337,6 @@ App.components({
             get createRequiresAuth() { return !store.auth && !this.canCreate },
             get canUpdate() { return canAccess(this.state.opPatch,store.auth) || canAccess(this.state.opUpdate,store.auth) },
             get updateRequiresAuth() { return !store.auth && map(this.state, x => x.opPatch || x.opUpdate) && !this.canUpdate },
-
             get columns() { return columns() || [] },
             get results() { return results() || [] },
             selectColumn(column,e) {
@@ -396,7 +357,6 @@ App.components({
             prefs: null,
             get sort() { return map(this.prefs, x => x.sort) },
             get filters() { return map(this.prefs, x => x.filters || []) },
-
             sub:null,
             unmounted: App.unsubscribe,
             mounted() {

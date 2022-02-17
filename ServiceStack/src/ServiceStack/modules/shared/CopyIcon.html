@@ -1,14 +1,4 @@
 <script minify>
-function copy(text) {
-    this.copied = true
-    let $el = document.createElement("textarea")
-    $el.innerHTML = enc(text)
-    document.body.appendChild($el)
-    $el.select()
-    document.execCommand("copy")
-    document.body.removeChild($el)
-    setTimeout(() => this.copied = false, 3000)
-}
 App.component('CopyIcon', ({ text, cls }) => {
     return {
         $template: '#copy-icon-template',

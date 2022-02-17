@@ -1,117 +1,94 @@
 <script minify>
-App.component('AutoForm', ({ state, onsubmit, oninput }) => {
-    let emptyState = { model:{} }
-    function getId(input) { return input && (input.id || `__${input.type}${to.length}`) || `__undefined${to.length}` }
-    return {
-        $template: '#form-template',
-        get state() { return state && state() || emptyState },
-        get gridClass() { return `grid grid-cols-6 gap-6` },
-        get gridInputs() {
-            let to = []
-            let formLayout = this.state && this.state.formLayout 
-            if (formLayout) {
-                formLayout.forEach(group => {
-                    group.forEach(input => {
-                        let id = getId(input) 
-                        if (id.startsWith('__')) console.log(`!id ${id}`) /*debug*/
-                        to.push({ id, input, rowClass: this.colClass(group.length) })
-                    })
-                })
-            }
-            return to
-        },
-        colClass(fields) {
-            return `col-span-6` + (fields === 2 ? ' sm:col-span-3' : fields === 3 ? ' sm:col-span-2' : '')
-        },
-        kvpValues(input) {
-            return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x }))
-        },
-        useLabel(input) {
-            return input.label != null ? input.label : humanify(input.id)
-        },
-        usePlaceholder(input) {
-            return input.placeholder || ''
-        },
-        isRequired(input) {
-            return input.required || false 
-        },
-        fieldError(id) {
-            let error = this.state.error
-            let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
-            return fieldError && fieldError.message
-        },
-        hasError(id) { return !!this.fieldError(id) },
-        inputClass(input) {
-            return ['block w-full sm:text-sm rounded-md', !this.fieldError(input.id)
-                ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300'
-                : 'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500'].join(' ')
-        },
-        ariaDescribedby(input) {
-            return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
-        },
-        onsubmit: onsubmit || (() => {}),
-        oninput: oninput || (() => {}),
+App.components({
+    AutoForm({ state, onsubmit, oninput }) {
+        let emptyState = { model:{} }
+        return {
+            $template: '#form-template',
+            get state() { return state && state() || emptyState },
+            formClass: Forms.formClass,
+            gridClass: Forms.gridClass,
+            get gridInputs() { return map(this.state, x => x.formLayout && Forms.getGridInputs(x.formLayout)) },
+            kvpValues(input) {
+                return input.allowableEntries || (input.allowableValues||[]).map(x => ({ key:x, value:x }))
+            },
+            useLabel(input) {
+                return input.label != null ? input.label : humanify(input.id)
+            },
+            usePlaceholder(input) {
+                return input.placeholder || ''
+            },
+            isRequired(input) {
+                return input.required || false
+            },
+            fieldError(id) {
+                let error = this.state.error
+                let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
+                return fieldError && fieldError.message
+            },
+            hasError(id) { return !!this.fieldError(id) },
+            inputClass(input) { return inputClass(this.fieldError(input.id)) },
+            ariaDescribedby(input) {
+                return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
+            },
+            onsubmit: onsubmit || (() => {}),
+            oninput: oninput || (() => {}),
+        }
     }
 })
 </script>
 <!--minify-->
 <template id="form-template">
-<form v-if="state" @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName">
+<form v-if="state" @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName" :class="formClass">
     <div v-if="state.errorSummary" v-scope="ErrorSummary({ errorSummary: () => state.errorSummary })"></div>
-    <div class="shadow overflow-hidden sm:rounded-md bg-white">
-        <div class="relative px-4 py-5 bg-white sm:p-6">
-            <fieldset>
-                <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
-                <div :class="gridClass">
-                    <div v-for="{ id, input, rowClass } in gridInputs" :class="rowClass">
-                        <div v-if="input.type=='divider'" class="border-t"></div>
-                        <input v-else-if="input.type=='hidden'" v-bind="input" type="hidden" v-model="state.model[id]" />
-                        <div v-else-if="input.type=='checkbox'" class="relative flex items-start">
-                            <div class="flex items-center h-5">
-                                <input v-bind="input" type="checkbox" v-model="state.model[id]"
-                                       :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
-                                       class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-                            </div>
-                            <div class="ml-3 text-sm">
-                                <label v-if="useLabel(input)" :for="id" class="font-medium text-gray-700 select-none"
-                                       v-html="useLabel(input)"></label>
-                                <p v-if="fieldError(id)" class="text-red-500" v-html="fieldError(id)"></p>
-                                <p v-else-if="input.help" class="text-gray-500" v-html="input.help"></p>
-                            </div>
-                        </div>
-                        <div v-else>
-                            <label v-if="useLabel(input)" :for="id" class="block text-sm font-medium text-gray-700"
-                                   v-html="useLabel(input)"></label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <select v-if="input.type=='select'" v-bind="input"
-                                        :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
-                                        :class="inputClass(input)" v-model="state.model[id]">
-                                    <option v-if="input['data-type']=='Nullable`1'"></option>
-                                    <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
-                                </select>
-                                <textarea v-else-if="input.type=='textarea'" v-bind="input" :placeholder="usePlaceholder(input)"
-                                          :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
-                                          :class="inputClass(input)" v-model="state.model[id]" :required="isRequired(input)"></textarea>
-                                <input v-else v-bind="input" :required="isRequired(input)" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
-                                       :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
-                                       :class="inputClass(input)" v-model="state.model[id]" />
-                                <div v-if="fieldError(id)" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <p v-if="fieldError(id)" class="mt-2 text-sm text-red-500" :id="`${id}-error`" v-html="fieldError(id)"></p>
-                            <p v-else-if="input.help" :id="`${id}-description`" class="text-gray-500" v-html="input.help"></p>
-                        </div>
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+        <h3 class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</h3>
+        <fieldset :class="gridClass">
+            <div v-for="{ id, input, rowClass } in gridInputs" :class="rowClass">
+                <div v-if="input.type=='divider'" class="border-t"></div>
+                <input v-else-if="input.type=='hidden'" v-bind="input" type="hidden" v-model="state.model[id]" />
+                <div v-else-if="input.type=='checkbox'" class="relative flex items-start">
+                    <div class="flex items-center h-5">
+                        <input v-bind="input" type="checkbox" v-model="state.model[id]"
+                               :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
+                               class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label v-if="useLabel(input)" :for="id" class="font-medium text-gray-700 select-none"
+                               v-html="useLabel(input)"></label>
+                        <p v-if="fieldError(id)" class="text-red-500" v-html="fieldError(id)"></p>
+                        <p v-else-if="input.help" class="text-gray-500" v-html="input.help"></p>
                     </div>
                 </div>
-            </fieldset>
-        </div>
-        <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
-            <div class="flex justify-end">
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
-            </div>
+                <div v-else>
+                    <label v-if="useLabel(input)" :for="id" class="block text-sm font-medium text-gray-700"
+                           v-html="useLabel(input)"></label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <select v-if="input.type=='select'" v-bind="input"
+                                :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
+                                :class="inputClass(input)" v-model="state.model[id]">
+                            <option v-if="input['data-type']=='Nullable`1'"></option>
+                            <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
+                        </select>
+                        <textarea v-else-if="input.type=='textarea'" v-bind="input" :placeholder="usePlaceholder(input)"
+                                  :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
+                                  :class="inputClass(input)" v-model="state.model[id]" :required="isRequired(input)"></textarea>
+                        <input v-else v-bind="input" :required="isRequired(input)" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
+                               :aria-invalid="hasError(id)" :aria-describedby="ariaDescribedby(input)"
+                               :class="inputClass(input)" v-model="state.model[id]" />
+                        <div v-if="fieldError(id)" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p v-if="fieldError(id)" class="mt-2 text-sm text-red-500" :id="`${id}-error`" v-html="fieldError(id)"></p>
+                    <p v-else-if="input.help" :id="`${id}-description`" class="text-gray-500" v-html="input.help"></p>
+                </div>
+            </div>        </fieldset>
+    </div>
+    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+        <div class="flex justify-end">
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
         </div>
     </div>
 </form>

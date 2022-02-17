@@ -1,0 +1,206 @@
+<script minify>
+App.components({
+    CreateForm({ store, routes, settings, state, save, done }) {
+        return {
+            $template: '#create-form-template',
+            store, routes, settings,
+            formClass: Forms.formClass,
+            gridClass: Forms.gridClass,
+            get state() { return state && state() },
+            get apiCreate() { return map(this.state, x => x.apiCreate) },
+            get api() { return map(this.apiCreate, x => x.api) },
+            get apiLoading() { return map(this.apiCreate, x => x.apiLoading) },
+            get model() { return map(this.apiCreate, x => x.model) || {} },
+            get title() { return map(this.apiCreate, x => x.title) },
+            get dataModelName() { return map(this.apiCreate, x => x.op && x.op.dataModel && x.op.dataModel.name) },
+            get errorSummary() { return map(this.apiCreate, x => x.errorSummary) },
+            get gridInputs() { return map(this.apiCreate, x => x.formLayout && Forms.getGridInputs(x.formLayout)) },
+            done,
+            submit() {
+                this.apiCreate.apiSend(Forms.formValues(this.$refs.form))
+                    .then(r => {
+                        if (r.api.succeeded) {
+                            save()
+                            done()
+                        }
+                    })
+            }
+        }
+    },
+    EditForm({ store, routes, settings, state, save, done }) {
+        return {
+            $template: '#edit-form-template',
+            store, routes, settings,
+            formClass: Forms.formClass,
+            gridClass: Forms.gridClass,
+            get state() { return state && state() },
+            get apiPatch() { return map(this.state, x => x.apiPatch) },
+            get apiUpdate() { return map(this.state, x => x.apiUpdate) },
+            get apiDelete() { return map(this.state, x => x.apiDelete) },
+            get useApiUpdate() { return this.apiPatch || this.apiUpdate },
+            get title() { return map(this.useApiUpdate, x => x.title) },
+            get dataModel() { return map(this.useApiUpdate, x => x.op && x.op.dataModel) },
+            get dataModelName() { return map(this.dataModel, x => x.name) },
+            get pk() { return Forms.getPrimaryKey(getType(this.dataModel)) },
+            get gridInputs() { return map(this.useApiUpdate, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forEdit(x.op.request))) },
+            api: null,
+            apiLoading: false,
+            errorSummary: null,
+            model: {},
+            origModel: {},
+            confirmDelete: false,
+            done,
+            updated() {
+                let pk = this.pk, state = this.state
+                if (!pk || !state || !state.opQuery || !routes.edit) return
+                let apiQuery = apiState(state.opQuery)
+                this.errorSummary = ''
+                let complete = delaySet(x => this.apiLoading = x)
+                apiQuery.apiSend({ [pk.name]:routes.edit })
+                    .then(r => {
+                        complete()
+                        let results = map(r.api.response, x => x.results)
+                        if (results && results.length !== 1) {
+                            this.errorSummary = `'${routes.edit}' PrimaryKey lookup failed for '${apiQuery.op.name}', found ${results.length} results`
+                        }
+                        if (apiQuery.errorSummary) this.errorSummary = apiQuery.errorSummary
+                        this.api = r.api
+                        this.origModel = this.useApiUpdate.createModel(results[0])
+                        this.model = Object.assign({}, this.origModel)
+                    })
+            },
+            submit() {
+                let pk = this.pk, useUpdateApi = this.useApiUpdate
+                if (!pk || !useUpdateApi || !routes.edit) return
+                let args = Forms.formValues(this.$refs.form)
+                let apiPatch = this.apiPatch
+                let reset = []
+                if (apiPatch) {
+                    let dirtyValues = {}
+                    apiPatch.formLayout.forEach(input => {
+                        let id = input.id
+                        let origValue = mapGet(this.origModel, id)
+                        if (pk && pk.name.toLowerCase() === id.toLowerCase()) {
+                            dirtyValues[id] = origValue
+                            return
+                        }
+                        let newValue = args[id]
+                        let changed = input.type === 'checkbox' 
+                            ? !!newValue !== !!origValue
+                            : newValue !== origValue 
+                        if (changed) {
+                            if (newValue) {
+                                dirtyValues[id] = newValue
+                            } else {
+                                reset.push(id)
+                            }
+                        }
+                    })
+                    args = dirtyValues
+                }
+                if (Object.keys(args).length <= 1 && reset.length === 0) return done()
+                this.errorSummary = ''
+                let complete = delaySet(x => {
+                    this.apiLoading = x
+                })
+                this.useApiUpdate.apiSend(args, reset.length > 0 ? { reset } : null)
+                    .then(r => {
+                        complete()
+                        useUpdateApi.apiResult = r
+                        this.errorSummary = useUpdateApi.errorSummary
+                        this.api = r.api
+                        if (r.api.succeeded) {
+                            done()
+                            save()
+                        }
+                    })
+            },
+            _delete() {
+                let pk = this.pk, apiDelete = this.apiDelete
+                if (!pk || !apiDelete || !routes.edit) return
+                this.errorSummary = ''
+                let complete = delaySet(x => this.apiLoading = x)
+                apiDelete.apiSend({ [pk.name]:routes.edit })
+                    .then(r => {
+                        complete()
+                        if (apiDelete.errorSummary) this.errorSummary = apiDelete.errorSummary
+                        this.api = r.api
+                        if (r.api.succeeded) {
+                            done()
+                            save()
+                        }
+                    })
+            },
+            mounted() {
+                this.updated()
+            },
+       }
+    }
+})
+</script>
+<!--minify-->
+<template id="create-form-template">
+<form ref="form" v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass">
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+        <div v-scope="CloseButton({ onclick:done })" title="Close"></div>
+        <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
+        <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+        <div class="flex flex-wrap sm:flex-nowrap">
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset :class="gridClass">
+                    <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
+                        <div :key="input.id" v-scope="Input({ input, model, api:() => api })"></div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6">
+        <div class="flex justify-end">
+            <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+            <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Create {{ dataModelName }}
+            </button>
+        </div>
+    </div>
+</form>
+</template>
+<template id="edit-form-template">
+    <form ref="form" v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted">
+        <div class="relative px-4 py-5 bg-white sm:p-6">
+            <div v-scope="CloseButton({ onclick:done })" title="Close"></div>
+            <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
+            <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+            <div class="flex flex-wrap sm:flex-nowrap">
+                <div class="flex-grow mb-3 sm:mb-0">
+                    <fieldset :class="gridClass">
+                        <div v-for="{ input, rowClass } in gridInputs" :class="rowClass">
+                            <div :key="input.id" v-scope="Input({ input, model:() => model, api:() => api })"></div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6 flex justify-between">
+            <div>
+                <div v-if="apiDelete">
+                    <input id="confirmDelete" type="checkbox" v-model="confirmDelete"
+                           class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="confirmDelete" class="mx-1 select-none">confirm</label>
+                    <button type="button" :disabled="apiLoading || !confirmDelete" @click="_delete"
+                            :class="`${!apiLoading && confirmDelete ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
+                        Delete
+                    </button>
+                </div>
+            </div>
+            <div v-if="apiLoading" v-scope="Loading()"></div>
+            <div class="flex justify-end">
+                <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Update {{ dataModelName }}
+                </button>
+            </div>
+        </div>
+    </form>
+</template>
+<!--/minify-->

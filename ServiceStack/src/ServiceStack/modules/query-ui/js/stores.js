@@ -1,5 +1,5 @@
 /*minify:*/
-App.useTransitions({ sidebar: true })
+App.useTransitions({ sidebar: true, 'select-columns': false })
 let breakpoints = App.useBreakpoints({
     handlers: {
         change({ previous, current }) { console.log('breakpoints.change', previous, current) } /*debug*/
@@ -7,26 +7,44 @@ let breakpoints = App.useBreakpoints({
 })
 let routes = App.usePageRoutes({
     page:'op',
-    queryKeys:'tab,lang,preview,detailSrc,form,response,body,provider,doc'.split(','),
+    queryKeys:'tab,preview,body,doc,skip,new,edit'.split(','),
     handlers: {
         nav(state) { console.log('nav', state) } /*debug*/
     },
     extend: {
-        queryHref() {
-            let op = this.op && OpsMap[this.op]
-            if (op && APP.ui.modules.indexOf('/query-ui') >= 0) {
-                if (Crud.isQuery(op))
-                    return `/query-ui/${this.op}`
-                if (Crud.isCrud(op)) {
-                    let queryOp = APP.api.operations.find(x => Crud.isQuery(x) && Types.equals(op.dataModel,x.dataModel))
-                    if (queryOp)
-                        return `/query-ui/${queryOp.request.name}`
-                }
-            }
-            return ''
+        uiHref(args) {
+            return this.op && APP.ui.modules.indexOf('/ui') >= 0
+                ? appendQueryString(`/ui/${this.op}`, args || {})
+                : ''
         },
     }
 })
+let settings = {
+    events: {
+        op(op) { return `settings:${op}` },
+        opProp(op,name) { return `settings:${op}.${name}` },
+    },
+    op(op) { 
+        return Object.assign({ take:25, selectedColumns:[] },
+            map(localStorage.getItem(`query-ui/op:${op}`), x => JSON.parse(x))) 
+    },
+    saveOp(op, fn) {
+        let setting = this.op(op)
+        fn(setting)
+        localStorage.setItem(`query-ui/op:${op}`, JSON.stringify(setting))
+        App.events.publish(this.events.op(op), setting)
+    },
+    opProp(op,name) {
+        return Object.assign({ sort:null, filters:[] },
+            map(localStorage.getItem(`query-ui/op:${op}.${name}`), x => JSON.parse(x)))
+    },
+    saveOpProp(op, name, fn) {
+        let setting = this.opProp(op, name)
+        fn(setting)
+        localStorage.setItem(`query-ui/op:${op}.${name}`, JSON.stringify(setting))
+        App.events.publish(this.events.opProp(op,name), setting)
+    },
+}
 let store = PetiteVue.reactive({
     previewResult: null,
     copied: false,
@@ -39,9 +57,6 @@ let store = PetiteVue.reactive({
     baseUrl: BASE_URL,
     get useLang() { return routes.lang || 'csharp' },
     init() {
-        this.loadDetailSrc()
-        this.loadLang()
-        this.loadPreview()
         setBodyClass({ page: routes.op })
     },
     get filteredSideNav() {
@@ -67,86 +82,12 @@ let store = PetiteVue.reactive({
         let nav = this.sideNav.find(x => x.tag === tag)
         nav.expanded = !nav.expanded
     },
-    loadLang() {
-        if (!this.activeLangSrc) {
-            let cache = this.langCache()
-            if (CACHE[cache.url]) {
-                this.langResult = { cache, result: CACHE[cache.url] }
-            } else {
-                this.cachedFetch(cache.url)
-                    .then(src => {
-                        this.langResult = { cache, result: CACHE[cache.url] = cleanSrc(src) }
-                        if (!this.activeLangSrc) {
-                            this.loadLang()
-                        }
-                    })
-            }
-        }
-    },
-    getTypeUrl(types) { return `/types/csharp?IncludeTypes=${types}&WithoutOptions=true&MakeVirtual=false&MakePartial=false&AddServiceStackTypes=true` },
-    get previewCache() {
-        if (routes.preview.startsWith('types.')) {
-            let types = routes.preview.substring('types.'.length)
-            return { preview: routes.preview, url: this.getTypeUrl(types), lang:'csharp' }
-        }
-        return null
-    },
-    loadPreview() {
-        if (!this.previewSrc) {
-            let cache = this.previewCache
-            if (!cache) return
-            if (CACHE[cache.url]) {
-                this.previewResult = { type:'src', ...cache, result: CACHE[cache.url] }
-            } else {
-                this.cachedFetch(cache.url)
-                    .then(src => {
-                        this.previewResult = {
-                            type:'src',
-                            ...cache,
-                            result: CACHE[cache.url] = cache.lang ? cleanSrc(src) : src
-                        }
-                    })
-            }
-        }
-    },
-    get previewSrc() {
-        let r = this.previewResult
-        if (!r) return ''
-        return routes.preview === r.preview && r.type === 'src' && r.lang ? r.result : ''
-    },
-    get activeLangSrc() {
-        let cache = this.langResult && this.langResult.cache
-        let ret = cache && routes.op === cache.op && this.useLang === cache.lang ? this.langResult.result : null
-        return ret
-    },
-    loadDetailSrc() {
-        if (!routes.detailSrc) return
-        let cache = { url: this.getTypeUrl(routes.detailSrc) }
-        if (CACHE[cache.url]) {
-            this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] }
-        } else {
-            this.cachedFetch(cache.url).then(src => {
-                this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] = cleanSrc(src) }
-            })
-        }
-    },
-    get activeDetailSrc() { return routes.detailSrc && this.detailSrcResult[this.getTypeUrl(routes.detailSrc)] },
-    get op() {
-        return routes.op ? APP.api.operations.find(op => op.request.name === routes.op) : null
-    },
+    get op() { return routes.op ? APP.api.operations.find(op => op.request.name === routes.op) : null },
     get opName() { return this.op && this.op.request.name },
-    get opTabs() {
-        return this.op
-            ? { ['API']:'', 'Details':'details', ['Code']:'code' }
-            : {}
-    },
-    get isServiceStackType() {
-        return this.op && this.op.request.namespace.startsWith("ServiceStack")
-    },
-    langCache() {
-        let op = routes.op, lang = this.useLang
-        return { op, lang, url: `/types/${lang}?IncludeTypes=${op}.*&WithoutOptions=true&MakeVirtual=false&MakePartial=false` + (this.isServiceStackType ? '&AddServiceStackTypes=true' : '') }
-    },
+    get opDesc() { return this.op && (this.op.request.description || humanify(this.op.request.name)) },
+    get opDataModel() { return this.op && this.op.dataModel && this.op.dataModel.name },
+    get opViewModel() { return this.op && this.op.viewModel && this.op.viewModel.name },
+    get isServiceStackType() { return this.op && this.op.request.namespace.startsWith("ServiceStack") },
     cachedFetch(url) {
         return new Promise((resolve,reject) => {
             let src = CACHE[url]
@@ -176,7 +117,7 @@ let store = PetiteVue.reactive({
             login:args => this.login(args),
             api: () => this.api,
         })
-        : NoAuth({ message:`${APP.app.serviceName} API Explorer` })
+        : NoAuth({ message:`${APP.app.serviceName} AutoQuery UI` })
     },
     login(args) {
         let provider = routes.provider || 'credentials'
