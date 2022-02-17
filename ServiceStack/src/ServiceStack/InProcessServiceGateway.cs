@@ -150,31 +150,7 @@ namespace ServiceStack
         {
             var feature = HostContext.GetPlugin<ValidationFeature>();
             if (feature != null)
-            {
-                var validator = ValidatorCache.GetValidator(req, request.GetType());
-                if (validator != null)
-                {
-                    var ruleSet = (string) (req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
-                    var validationContext = new ValidationContext<object>(request, null, new MultiRuleSetValidatorSelector(ruleSet))
-                    {
-                        Request = req
-                    };
-                    
-                    ValidationResult result;
-                    if (!validator.HasAsyncValidators(validationContext))
-                    {
-                        // ReSharper disable once MethodHasAsyncOverload
-                        result = validator.Validate(validationContext);
-                    }
-                    else
-                    {
-                        result = await validator.ValidateAsync(validationContext);
-                    }
-                    
-                    if (!result.IsValid)
-                        throw result.ToWebServiceException(request, feature);
-                }
-            }
+                await feature.ValidateRequestAsync(request, req);
         }
 
         private TResponse ConvertToResponse<TResponse>(object response)
