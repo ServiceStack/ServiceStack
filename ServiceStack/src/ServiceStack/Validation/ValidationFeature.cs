@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Configuration;
@@ -172,6 +173,40 @@ namespace ServiceStack.Validation
             }
 
             return $"[{GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {requestString}]";
+        }
+
+        public virtual void ValidateRequest(object requestDto, IRequest req)
+        {
+            var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
+            if (validator == null) return;
+            
+            var ruleSet = (string) (req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
+            var validationContext = new ValidationContext<object>(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)) {
+                Request = req
+            };
+                    
+            var result = validator.Validate(validationContext);
+            if (!result.IsValid)
+                throw result.ToWebServiceException(requestDto, this);
+        }
+
+        public virtual async Task ValidateRequestAsync(object requestDto, IRequest req, CancellationToken token=default)
+        {
+            var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
+            if (validator == null) return;
+            
+            var ruleSet = (string) (req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
+            var validationContext = new ValidationContext<object>(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)) {
+                Request = req
+            };
+
+            var result = validator.HasAsyncValidators(validationContext)
+                ? await validator.ValidateAsync(validationContext, token)
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation
+                : validator.Validate(validationContext);
+            
+            if (!result.IsValid)
+                throw result.ToWebServiceException(requestDto, this);
         }
     }
 

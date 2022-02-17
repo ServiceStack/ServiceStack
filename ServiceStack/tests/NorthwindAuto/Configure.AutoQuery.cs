@@ -30,8 +30,9 @@ namespace MyApp
                             op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));
                             if (op.Request.Name.IndexOf("User", StringComparison.Ordinal) >= 0)
                                 op.Request.AddAttributeIfNotExists(new ValidateIsAdminAttribute());
-                        }
-                    }
+                        },
+                        IncludeService = op => !op.ReferencesAny(nameof(Booking)),
+                    },
                 });
 
                 appHost.Resolve<ICrudEvents>().InitSchema();

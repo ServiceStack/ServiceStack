@@ -9,8 +9,11 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
+using ServiceStack.FluentValidation;
+using ServiceStack.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -255,7 +258,8 @@ namespace ServiceStack
         public List<string> RemoveDtoProps { get; set; } = new();
         public GetMemberDelegate RowVersionGetter { get; set; }
         public bool SoftDelete { get; set; }
-        
+        public HashSet<string> DenyReset { get; set; } = new();
+
         static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = new();
 
         internal static AutoCrudMetadata Create(Type dtoType)
@@ -309,6 +313,13 @@ namespace ServiceStack
                 if (allAttrs.FirstOrDefault(x => x is AutoDefaultAttribute) is AutoDefaultAttribute defaultAttr)
                 {
                     to.Set(propName, defaultAttr);
+                }
+                
+                var allowReset = allAttrs.FirstOrDefault(x => x is AllowResetAttribute);
+                var denyReset = allowReset == null && allAttrs.Any(x => x is ValidateAttribute);
+                if (denyReset)
+                {
+                    to.DenyReset.Add(propName);
                 }
 
                 if (pi.PropertyType.IsNullableType())
@@ -954,6 +965,7 @@ namespace ServiceStack
         
         private Dictionary<string, object> ResolveDtoValues(IRequest req, object dto, bool skipDefaults=false)
         {
+            ILog log = null;
             var dtoValues = dto.ToObjectDictionary();
 
             var meta = AutoCrudMetadata.Create(dto.GetType());
@@ -1030,22 +1042,14 @@ namespace ServiceStack
                 typeof(Dictionary<string, object>), meta.DtoType);
             populatorFn?.Invoke(dtoValues, dto);
 
-            IEnumerable<string> asStrings(object o) => o == null
-                ? null
-                : o is string s
-                    ? s.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x))
-                    : o is IEnumerable<string> e
-                        ? e
-                        : throw new NotSupportedException($"'{Keywords.Reset}' is not a list of field names");
-
             var resetField = meta.ModelDef.GetFieldDefinition(Keywords.Reset);
             var reset = resetField == null 
                 ? (dtoValues.TryRemove(Keywords.Reset, out var oReset)
-                    ? asStrings(oReset)
+                    ? ValidationFilters.GetResetFields(oReset)
                     : dtoValues.TryRemove(Keywords.reset, out oReset)
-                        ? asStrings(oReset)
+                        ? ValidationFilters.GetResetFields(oReset)
                         : null) 
-                  ?? asStrings(req.GetParam(Keywords.reset))
+                  ?? ValidationFilters.GetResetFields(req.GetParam(Keywords.reset))
                 : null;
             
             if (reset != null)
@@ -1057,6 +1061,14 @@ namespace ServiceStack
                         throw new NotSupportedException($"Reset field '{fieldName}' does not exist");
                     if (field.IsPrimaryKey)
                         throw new NotSupportedException($"Cannot reset primary key field '{fieldName}'");
+                    
+                    //Note: validation rules for omitted PATCH values that aren't reset ignored in ValidationFilters.RequestFilterAsync
+                    if (meta.DenyReset.Contains(field.Name))
+                    {
+                        log ??= LogManager.GetLogger(GetType());
+                        log.Warn($"Reset of {field.Name} property containing validators is denied. Use [AllowReset] to override.");
+                        continue;
+                    }
                     dtoValues[field.Name] = field.FieldTypeDefaultValue;
                 }
             }
@@ -1067,7 +1079,6 @@ namespace ServiceStack
 
             return dtoValues;
         }
-        
     }
 
     public abstract partial class AutoQueryServiceBase

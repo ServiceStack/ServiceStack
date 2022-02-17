@@ -2,11 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ServiceStack.Configuration;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Script;
 
 namespace ServiceStack
 {
+    public class AlwaysValidValidator : NoopPropertyValidator
+    {
+        public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) => Array.Empty<ValidationFailure>();
+    }
+   
     public class ValidateScripts : ScriptMethods
     {
         public static HashSet<string> RequiredValidators { get; } = new() {

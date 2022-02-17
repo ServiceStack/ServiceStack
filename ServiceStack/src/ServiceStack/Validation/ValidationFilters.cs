@@ -44,14 +44,16 @@ namespace ServiceStack.Validation
                 {
                     if (req.Verb == HttpMethods.Patch)
                     {
-                        // Ignore property rules for AutoCrud Patch operations with default values (which are ignored)
+                        // Ignore property rules for AutoCrud Patch operations with default values that aren't reset (which are ignored)
                         if (validator is IServiceStackValidator ssValidator && requestDto is ICrud && requestType.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
                         {
                             var typeProperties = TypeProperties.Get(requestType);
                             var propsWithDefaultValues = new HashSet<string>();
+                            var resetFields = GetResetFields(req.GetParam(Keywords.reset)).ToSet(StringComparer.OrdinalIgnoreCase);
+                            
                             foreach (var entry in typeProperties.PropertyMap)
                             {
-                                if (entry.Value.PublicGetter == null)
+                                if (entry.Value.PublicGetter == null || resetFields.Contains(entry.Key))
                                     continue;
                                 var defaultValue = entry.Value.PropertyInfo.PropertyType.GetDefaultValue();
                                 var propValue = entry.Value.PublicGetter(requestDto);
@@ -189,6 +191,13 @@ namespace ServiceStack.Validation
                 return validator.Validate(validationContext);
             }
         }
-
+        
+        public static IEnumerable<string> GetResetFields(object o) => o == null
+            ? null
+            : o is string s
+                ? s.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x))
+                : o is IEnumerable<string> e
+                    ? e
+                    : throw new NotSupportedException($"'{Keywords.Reset}' is not a list of field names");
     }
 }

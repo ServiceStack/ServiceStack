@@ -192,7 +192,14 @@ namespace ServiceStack
         }
     }
 
-    //Default IPropertyValidator defined in ValidateScripts 
+    /// <summary>
+    /// Override to allow a property to be reset back to their default values using partial updates.
+    /// By default properties with any validators cannot be reset
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class AllowResetAttribute : AttributeBase {}
+    
+    //Default IPropertyValidator defined in ValidateScripts
     public class ValidateNullAttribute : ValidateAttribute
     {
         public ValidateNullAttribute() : base("Null") { }
