@@ -138,7 +138,8 @@ namespace CheckWebCore
             {
                 AddRedirectParamsToQueryString = true,
                 //DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
-                DebugMode = true,
+                //DebugMode = true,
+                DebugMode = false,
 //                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
                 UseSecureCookies = true,
                 AdminAuthSecret = "secretz",

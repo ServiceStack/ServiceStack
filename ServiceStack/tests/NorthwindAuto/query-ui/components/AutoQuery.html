@@ -4,6 +4,7 @@ import { Crud, map, canAccess, createRequest, apiSend, invalidAccessMessage } fr
 import { Forms, getOp, resolveApiUrl } from "../js/appInit"
 import { Types } from "../../shared/js/Types"
 
+/*minify:*/
 /** @param {MetadataOperationType} op */
 function apiState(op) {
     if (!op) return null
@@ -97,7 +98,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         prefs: refreshPrefs(),
         get take() { return parseInt(this.prefs && this.prefs.take || 25) },
         apiResult: null,
-        //get apiResult() { return map(this.state, x => x.apiQuery && x.apiQuery.apiResult) },
         get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
         get total() { return this.apiResult && map(this.apiResult.api.response, x => x.total) || 0 },
         get apiLoading() { return map(this.state, x => x.apiQuery && x.apiQuery.apiLoading || false) },
@@ -115,7 +115,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         get accessibleAutoQueryTables() {
             return this.filterOperations((op, table) => Crud.isQuery(op) && canAccess(op,store.auth))
         },
-        get canQuery() { return this.accessibleAutoQueryTables.some(op => routes.op === op.request.name) },
+        get canQuery() { return map(this.state, x => canAccess(x.opQuery,store.auth)) },
+        get canCreate() { return map(this.state, x => canAccess(x.opCreate,store.auth)) },
 
         filterOperations(fn) {
             const to = []
@@ -248,6 +249,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         },
     }
 })
+/*:minify*/
 </script>
 <!--minify-->
 <template id="autoquery-template">
@@ -358,6 +360,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         </div>
     </div>
 </template>
+<!--/minify-->
 
 <script>
 import { getType } from "../js/appInit"
@@ -407,6 +410,7 @@ App.components({
     },
 })
 </script>
+<!--minify-->
 <template id="results-template">
 <div v-if="results.length" class="flex flex-col">
     <div class="overflow-x-auto pb-4">

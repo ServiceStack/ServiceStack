@@ -1,12 +1,12 @@
 <script minify>
 import { map } from "../../shared/js/core"
-import { Types } from "../../shared/js/Types"
 import { Forms, getType } from "../js/appInit"
 import { delaySet, mapGet } from "@servicestack/client";
 
 /** @typedef {{opQuery:MetadataOperationType,opPatch?:MetadataOperationType,opUpdate?:MetadataOperationType,opDelete?:MetadataOperationType,apiQuery:ApiState}} State */
 /** @typedef {{op:MetadataOperationType,apiSend?:Function,createModel?:Function,title:string?,errorSummary:string?,model:*,formLayout:InputInfo[]}} ApiState */
 
+/*minify:*/
 App.components({
     CreateForm({ store, routes, settings, state, save, done }) {
         return {
@@ -161,6 +161,7 @@ App.components({
        }
     }
 })
+/*:minify*/
 </script>
 <!--minify-->
 <template id="create-form-template">

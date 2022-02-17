@@ -21,9 +21,9 @@ let routes = App.usePageRoutes({
         queryHref() {
             let op = this.op && OpsMap[this.op]
             if (op && APP.ui.modules.indexOf('/query-ui') >= 0) {
-                if (Crud.isQuery(op))
+                if (Crud.isQuery(op)) {
                     return `/query-ui/${this.op}`
-                if (Crud.isCrud(op)) {
+                } else if (Crud.isCrud(op)) {
                     let queryOp = APP.api.operations.find(x => Crud.isQuery(x) && Types.equals(op.dataModel,x.dataModel))
                     if (queryOp)
                         return `/query-ui/${queryOp.request.name}`
