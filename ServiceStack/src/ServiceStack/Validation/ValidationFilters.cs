@@ -49,7 +49,8 @@ namespace ServiceStack.Validation
                         {
                             var typeProperties = TypeProperties.Get(requestType);
                             var propsWithDefaultValues = new HashSet<string>();
-                            var resetFields = GetResetFields(req.GetParam(Keywords.reset)).ToSet(StringComparer.OrdinalIgnoreCase);
+                            var resetFields = GetResetFields(req.GetParam(Keywords.reset))?.ToSet(StringComparer.OrdinalIgnoreCase)
+                                ?? TypeConstants<string>.EmptyHashSet;
                             
                             foreach (var entry in typeProperties.PropertyMap)
                             {
