@@ -50,8 +50,14 @@ function createForms(TypesMap, css, theme) {
     function typeProperties(type) {
         if (!type) return []
         let props = []
+        let existing = {}
+        let addProps = xs => xs.forEach(p => {
+            if (existing[p.name]) return
+            existing[p.name] = 1
+            props.push(p)
+        })
         while (type) {
-            if (type.properties) props.push(...type.properties)
+            if (type.properties) addProps(type.properties)
             type = type.inherits ? TypesMap[type.inherits.name] : null
         }
         return props.map(prop => prop.type.endsWith('[]')
