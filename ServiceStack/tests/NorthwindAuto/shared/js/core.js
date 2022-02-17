@@ -36,10 +36,10 @@ export function setStyleProperty(props) {
 /** @param {boolean} [invalid=false] 
     @param {string} [cls] */
 export function inputClass(invalid,cls) {
-    return ['block w-full sm:text-sm rounded-md', !invalid
+    return ['block w-full sm:text-sm rounded-md disabled:bg-gray-100 disabled:shadow-none', !invalid
         ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300'
         : 'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500',
-        cls].join(' ')
+        '',cls].join(' ')
 }
 
 /** @param {*} o
@@ -72,6 +72,11 @@ export function highlight(src, language) {
     if (!language) language = 'csharp'
     return hljs.highlight(src, { language }).value
 }
+
+
+/** @param {MetadataOperationType} op
+    @param {*?} args */
+export function createRequest(op,args) { return !op ? null : createDto(op.request.name,args) }
 
 /** @param {string} name
     @param {*} obj */
@@ -227,8 +232,9 @@ export function parseCookie(str) {
 }
 
 /** @param {function} createClient
-    @param {*} requestDto */
-export function apiSend(createClient, requestDto) {
+    @param {*} requestDto
+    @param {*} [queryArgs] */
+export function apiSend(createClient, requestDto, queryArgs) {
     if (!requestDto) throw new Error('!requestDto')
     let opName = requestDto.getTypeName()
     let httpReq = null, httpRes = null, headers = null
@@ -242,8 +248,8 @@ export function apiSend(createClient, requestDto) {
     })
     let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
     let task = returnsVoid
-        ? newClient.apiVoid(requestDto, { jsconfig: 'eccn' })
-        : newClient.api(requestDto, { jsconfig: 'eccn' })
+        ? newClient.apiVoid(requestDto, Object.assign({ jsconfig: 'eccn' }, queryArgs))
+        : newClient.api(requestDto, Object.assign({ jsconfig: 'eccn' }, queryArgs))
     return task.then(api => ({
         api,
         json: JSON.stringify(api.response || api.error, undefined, 4),

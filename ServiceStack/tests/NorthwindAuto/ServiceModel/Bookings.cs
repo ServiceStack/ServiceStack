@@ -69,30 +69,49 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 }
 
 [Tag("Bookings"), Description("Update an existing Booking")]//, QueryStyles(Rows="col-span-12 sm:col-span-4")
-[Route("/booking/{Id}", "PATCH")]
 [ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditModify)]
 [Field(nameof(BookingEndDate), LabelCss = "text-gray-800", InputCss = "bg-gray-100")]
 [Field(nameof(Notes), Type = "textarea", FieldCss="col-span-12 text-center", InputCss = "bg-gray-100")]
+#if true
+[Route("/booking/{Id}", "PATCH")]
 public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 {
     public int Id { get; set; }
+    [ValidateNotNull]
     public string? Name { get; set; }
     public RoomType? RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int? RoomNumber { get; set; }
-    [ValidateGreaterThan(0)]
+    [ValidateGreaterThan(0), AllowReset]
     public decimal? Cost { get; set; }
     public DateTime? BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
-    // [Input(Type = "textarea")]
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
 }
+#else
+[Route("/booking/{Id}", "PUT")]
+public class UpdateBooking : IUpdateDb<Booking>, IReturn<IdResponse>
+{
+    public int Id { get; set; }
+    [Description("Name this Booking is for"), ValidateNotEmpty]
+    public string Name { get; set; } = string.Empty;
+    public RoomType RoomType { get; set; }
+    [ValidateGreaterThan(0)]
+    public int RoomNumber { get; set; }
+    [ValidateGreaterThan(0)]
+    public decimal Cost { get; set; }
+    public DateTime BookingStartDate { get; set; }
+    public DateTime? BookingEndDate { get; set; }
+    public string? Notes { get; set; }
+    public bool? Cancelled { get; set; }
+}
+#endif
 
 [Tag("Bookings"), Description("Delete a Booking")]
 [Route("/booking/{Id}", "DELETE")]
-[ValidateHasRole("Manager")]
+[ValidateHasRole("Admin")]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
 {

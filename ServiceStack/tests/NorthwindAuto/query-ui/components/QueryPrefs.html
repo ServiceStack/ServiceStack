@@ -4,6 +4,7 @@ App.components({
         let refreshPrefs = () => settings.op(routes.op)
         let maxLimit = APP.plugins.autoQuery.maxLimit
         let allTakes = [10,25,50,100,250,500,1000]
+        
         return {
             $template: Modal.dialog({ $template:'#query-prefs-template', id }),
             store, routes,

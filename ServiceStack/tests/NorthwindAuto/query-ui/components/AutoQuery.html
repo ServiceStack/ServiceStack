@@ -1,11 +1,52 @@
 <script minify>
-import { resolve, delaySet, humanify, apiValueFmt, createUrl } from "@servicestack/client"
-import { Crud, map, canAccess, createDto, apiSend, invalidAccessMessage } from "../../shared/js/core"
-import { typeProperties } from "../js/stores"
+import { delaySet, humanify, createUrl } from "@servicestack/client"
+import { Crud, map, canAccess, createRequest, apiSend, invalidAccessMessage } from "../../shared/js/core"
 import { Forms, getOp, resolveApiUrl } from "../js/appInit"
 import { Types } from "../../shared/js/Types"
 
-//Types,
+/** @param {MetadataOperationType} op */
+function apiState(op) {
+    if (!op) return null
+    let formLayout = Forms.resolveFormLayout(op)
+    function createModel(args) {
+        let ret = Forms.populateModel(createRequest(op), formLayout)
+        if (args) Object.keys(args).forEach(k => {
+            ret[k] = Forms.apiValue(args[k])
+        })
+        return ret
+    }
+    return {
+        op,
+        formLayout,
+        createModel,
+        apiLoading: false,
+        apiResult: null,
+        get api() { return map(this.apiResult, x => x.api) },
+        createRequest: args => createRequest(op,args),
+        model: createModel(),
+        title: op.request.description || humanify(op.request.name),
+        get error(){ return this.apiResult && this.apiResult.api.error },
+        get errorSummary() {
+            if (!formLayout) return null
+            let except = formLayout.map(input => input.id).filter(x => x)
+            return this.apiResult && this.apiResult.api.summaryMessage(except)
+        },
+        /** @param {*} [dtoArgs] 
+            @param {*} [queryArgs]*/
+        apiSend(dtoArgs,queryArgs) {
+            let requestDto = this.createRequest(dtoArgs)
+            let complete = delaySet(x => {
+                this.apiResult = null
+                this.apiLoading = x
+            })
+            return apiSend(createClient, requestDto, queryArgs).then(r => {
+                complete()
+                this.apiResult = r
+                return this.apiResult
+            })
+        }
+    }
+}
 
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
@@ -15,30 +56,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
     let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
     
-    /** @param {MetadataOperationType} op 
-        @param {*?} args */
-    function createRequest(op,args) { return !op ? null : createDto(op.request.name,args) }
-
-    /** @param {MetadataOperationType} op */
-    function apiState(op) {
-        if (!op) return null
-        let formLayout = Forms.resolveFormLayout(op)
-        return {
-            op,
-            formLayout,
-            apiLoading: false,
-            apiResult: null,
-            createRequest: args => createRequest(op,args),
-            model: Forms.populateModel(createRequest(op), formLayout),
-            title: op.request.description || humanify(op.request.name),
-            get error(){ return this.apiResult && this.apiResult.api.error },
-            get errorSummary() {
-                if (!formLayout) return null
-                let except = formLayout.map(input => input.id).filter(x => x)
-                return this.apiResult && this.apiResult.api.summaryMessage(except)
-            },
-        }
-    }
 
     /** @param {string} opName */
     function createState(opName) {
@@ -48,23 +65,22 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             return null
         }
         let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
-        let accessibleOp = x => canAccess(x,store.auth) ? x : null
-        let crudOps = {
+        let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
+        
+        let ret = {
             opQuery: op,
             opCreate: findOp(Crud.isCreate),
             opPatch: findOp(Crud.isPatch),
             opUpdate: findOp(Crud.isUpdate),
             opDelete: findOp(Crud.isDelete),
         }
-
-        let ret = {
-            ...crudOps,
-            apiQuery: apiState(canAccess(op,store.auth) ? op : null),
-            apiCreate: apiState(accessibleOp(crudOps.opCreate)),
-            apiPatch: apiState(accessibleOp(crudOps.opPatch)),
-            apiUpdate: apiState(accessibleOp(crudOps.opUpdate)),
-            apiDelete: apiState(accessibleOp(crudOps.opDelete)),
-        }
+        Object.assign(ret, {
+            apiQuery: hasApi(op),
+            apiCreate: hasApi(ret.opCreate),
+            apiPatch: hasApi(ret.opPatch),
+            apiUpdate: hasApi(ret.opUpdate),
+            apiDelete: hasApi(ret.opDelete),
+        })
         return ret
     }
     
@@ -80,8 +96,12 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         state: createState(routes.op),
         prefs: refreshPrefs(),
         get take() { return parseInt(this.prefs && this.prefs.take || 25) },
+        apiResult: null,
+        //get apiResult() { return map(this.state, x => x.apiQuery && x.apiQuery.apiResult) },
         get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
         get total() { return this.apiResult && map(this.apiResult.api.response, x => x.total) || 0 },
+        get apiLoading() { return map(this.state, x => x.apiQuery && x.apiQuery.apiLoading || false) },
+
         get canFirst() { return this.skip > 0 },
         get canPrev() { return this.skip > 0 },
         get canNext() { return this.results.length >= this.take },
@@ -90,7 +110,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 
         get dataModel() { return getType(dataModelRef()) },
         get viewModel() { return getType(viewModelRef()) },
-        get viewModelColumns() { return typeProperties(this.viewModel) },
+        get viewModelColumns() { return Forms.typeProperties(this.viewModel) },
         get invalidAccess() { return invalidAccessMessage(getOp(routes.op), store.auth) },
         get accessibleAutoQueryTables() {
             return this.filterOperations((op, table) => Crud.isQuery(op) && canAccess(op,store.auth))
@@ -136,8 +156,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             return this.filterOperations((op, table) => Crud.isCrud(op) && Types.equals(op.dataModel, modelRef))
         },
 
-        get apiLoading() { return map(this.state, x => x.apiQuery && x.apiQuery.apiLoading || false) },
-        get apiResult() { return map(this.state, x => x.apiQuery && x.apiQuery.apiResult) },
         get hasState() { return map(this.state, x => x.apiQuery || false) },
         get dataModelName() { return map(this.dataModel, x => x.name) },
 
@@ -188,16 +206,15 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             
             let requestDto = state.apiQuery.createRequest(this.createRequestArgs())
             if (!requestDto) return
-            console.log('AutoQuery.apiSend()', requestDto) /*debug*/
-
+            
             state.jsonError = null
             let complete = delaySet(x => {
-                state.apiQuery.apiResult = null
+                this.apiResult = null
                 state.apiQuery.apiLoading = x
             })
             return apiSend(createClient, requestDto).then(r => {
                 complete()
-                state.apiQuery.apiResult = r
+                this.apiResult =  r
             })
         },
 
@@ -218,6 +235,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             this.filters = this.columns
                 .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
             this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
+            let skipRefresh = routes.edit && this.results.length 
+            if (skipRefresh) return
             this.search()
         },
         
@@ -239,7 +258,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
     </div>
     <div v-if="invalidAccess" class="w-body md:w-body overflow-auto" v-scope="EnsureAccess({ store, message:() => invalidAccess })"></div>
     <div v-else-if="hasState" class="pt-1">
-        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => state.viewModelColumns, save:updated })"></div>
+        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => viewModelColumns, save:updated })"></div>
         <div class="p-1 flex flex-wrap">
             <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('query-prefs')">
                 <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
@@ -303,10 +322,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
         <div v-else-if="results.length">
-            <div v-if="routes.new" v-scope="CreateForm({ store, routes, settings, apiCreate:() => state.apiCreate, save:updated, done:() => routes.to({ new:null }) })" class="p-4"></div>
-            <div v-else-if="routes.edit" v-scope="EditForm({ store, routes, id:() => routes.edit, settings, 
-                apiPatch:() => state.apiPatch, apiUpdate:() => state.apiUpdate, apiDelete:() => state.apiDelete, 
-                save:updated, done:() => routes.to({ edit:null }) })" class="p-4"></div>
+            <div v-if="routes.new" v-scope="CreateForm({ store, routes, settings, state:() => state, save:updated, done:() => routes.to({ new:null }) })" class="p-4"></div>
+            <div v-else-if="routes.edit" v-scope="EditForm({ store, routes, settings, state:() => state, save:updated, done:() => routes.to({ edit:null }) })" class="p-4"></div>
             <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save:updated, done:() => filter=null })" class="relative"></div>
             <div v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
         </div>
@@ -344,6 +361,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 
 <script>
 import { getType } from "../js/appInit"
+import { apiValueFmt } from "@servicestack/client"
 
 App.components({
     Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
@@ -368,7 +386,7 @@ App.components({
             },
             fieldName(name) { return humanify(name) },
             apiValueFmt,
-            getId(row) { return Types.getId(getType(routes.op),row) },
+            getId(row) { return Forms.getId(getType(routes.op),row) },
         }
     },
     SettingsIcons({ routes, settings, name }) {
@@ -444,7 +462,7 @@ App.components({
 </template>
 <template id="settings-icons-template">
 <div class="flex" @vue:mounted="mounted" @vue:unmounted="unmounted">
-    <svg class="w-4 h-4" v-if="filters.length" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.586a1 1 0 0 1-.293.707l-6.414 6.414a1 1 0 0 0-.293.707V17l-4 4v-6.586a1 1 0 0 0-.293-.707L3.293 7.293A1 1 0 0 1 3 6.586V4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+    <svg class="w-4 h-4" v-if="filters && filters.length" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.586a1 1 0 0 1-.293.707l-6.414 6.414a1 1 0 0 0-.293.707V17l-4 4v-6.586a1 1 0 0 0-.293-.707L3.293 7.293A1 1 0 0 1 3 6.586V4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
     <svg class="w-4 h-4" v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path d="M505.5 658.7c3.2 4.4 9.7 4.4 12.9 0l178-246c3.8-5.3 0-12.7-6.5-12.7H643c-10.2 0-19.9 4.9-25.9 13.2L512 558.6L406.8 413.2c-6-8.3-15.6-13.2-25.9-13.2H334c-6.5 0-10.3 7.4-6.5 12.7l178 246z" fill="currentColor"/><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z" fill="currentColor"/></svg>
     <svg class="w-4 h-4" v-if="sort==='ASC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor"/></g></svg>
     <svg class="w-4 h-4" v-else-if="sort==='DESC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor"/></g></svg>

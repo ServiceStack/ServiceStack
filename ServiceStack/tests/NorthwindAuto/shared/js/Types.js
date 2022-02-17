@@ -71,16 +71,8 @@ export let Types = (function() {
                 ? `[${value}]`
                 : `'${value}'`
     }
-
-    /** @param {MetadataType} type
-        @param {*} row */
-    function getId(type,row) {
-        if (row.id) return row.id
-        let pk = type.properties.find(x => x.isPrimaryKey)
-        if (pk) mapGet(row, pk.name)
-        return null
-    }
-    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, getId })
+    
+    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, })
 })()
 
 /*:minify*/

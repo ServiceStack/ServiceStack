@@ -1,4 +1,4 @@
-import { resolve, humanify } from "@servicestack/client"
+import { resolve, humanify, padInt, toDate, mapGet } from "@servicestack/client"
 import { Types } from "./Types"
 import { Forms } from "../../ui/js/appInit";
 /*minify:*/
@@ -55,22 +55,74 @@ export function createForms(TypesMap, css, theme) {
             Object.assign(input, prop.input)
         return input
     }
+    let pad4 = n => n <= 9999 ? `000${n}`.slice(-4) : n;
+    function dateFmt(d) { 
+        return pad4(d.getFullYear()) + '-' + padInt(d.getMonth() + 1) + '-' + padInt(d.getDate()) 
+    }
+    
+    /** @param {MetadataType} type
+        @return {MetadataPropertyType[]} */
+    function typeProperties(type) {
+        if (!type) return []
+        let props = []
+        while (type) {
+            if (type.properties) props.push(...type.properties)
+            type = type.inherits ? TypesMap[type.inherits.name] : null
+        }
+        return props.map(prop => prop.type.endsWith('[]')
+            ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
+            : prop)
+    }
+
+    /** @param {MetadataType} type */
+    function getPrimaryKey(type) {
+        if (!type) return null
+        let typeProps = typeProperties(type)
+        let id = typeProps.find(x => x.name.toLowerCase() === 'id')
+        if (id && id.isPrimaryKey) return id
+        let pk = typeProps.find(x => x.isPrimaryKey)
+        let ret = pk || id
+        if (!ret) console.error(`Primary Key not found in ${type.name}`)
+        return ret || null
+    }
+
+    /** @param {MetadataType} type
+     @param {*} row */
+    function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
 
     return {
+        getId,
         inputId,
         colClass,
         inputProp,
+        getPrimaryKey,
+        typeProperties,
         theme,
         formClass: theme.form + (css.form ? ' ' + css.form : ''),
         gridClass: css.fieldset,
-        /** @param {InputInfo[]} formLayout */
-        getGridInputs(formLayout) {
+        /** @param {MetadataType} type */
+        forEdit(type) {
+            /** @param {InputInfo} input */
+            let pk = getPrimaryKey(type)
+            if (!pk) return null
+            return field => {
+                if (field.id.toLowerCase() === pk.name.toLowerCase()) {
+                    if (!field.input) field.input = {}
+                    field.input.disabled = true
+                }
+            }
+        },
+        /** @param {InputInfo[]} formLayout
+            @param {({id:string,input:InputInfo,rowClass:string}) => void} [f] */
+        getGridInputs(formLayout, f) {
             let to = []
             if (formLayout) {
                 formLayout.forEach(input => {
                     let id = inputId(input)
                     if (id.startsWith('__')) console.log(`!id ${id}`, input) /*debug*/
-                    to.push({ id, input, rowClass: input.css && input.css.field || css.field })
+                    let field = { id, input, rowClass: input.css && input.css.field || css.field }
+                    if (f) f(field)
+                    to.push(field)
                 })
             }
             return to
@@ -170,7 +222,7 @@ export function createForms(TypesMap, css, theme) {
                 return true
             if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
                 return true
-            console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0])) /*debug*/
+            console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, map(prop.genericArgs, x => inputType(x[0]))) /*debug*/
             return false
         },
         populateModel(model, formLayout) {
@@ -181,7 +233,16 @@ export function createForms(TypesMap, css, theme) {
                 }
             })
             return model
+        },
+        apiValue(o) {
+            if (o == null) return ''
+            if (typeof o == 'string')
+                return o.substring(0, 6) === '/Date('
+                    ? dateFmt(toDate(o))
+                    : o.trim()
+            return o
         }
+
     }
 }
 

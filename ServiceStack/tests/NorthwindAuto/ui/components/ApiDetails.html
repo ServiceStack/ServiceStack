@@ -62,7 +62,7 @@ function addReferencedTypes(allTypesMap, type) {
             type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
         }
     }
-    typeProperties(type).forEach(prop => {
+    Forms.typeProperties(type).forEach(prop => {
         addReferencedTypes(allTypesMap, TypesMap[prop.type])
         if (type.genericArgs) {
             type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))

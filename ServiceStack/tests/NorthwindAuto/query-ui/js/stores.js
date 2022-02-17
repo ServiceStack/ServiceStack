@@ -201,18 +201,4 @@ let store = PetiteVue.reactive({
 })
 
 App.events.subscribe('route:nav', args => store.init())
-
-/** @param {MetadataType} type 
-    @return {MetadataPropertyType[]} */
-export function typeProperties(type) {
-    if (!type) return []
-    let props = []
-    while (type) {
-        if (type.properties) props.push(...type.properties)
-        type = type.inherits ? TypesMap[type.inherits.name] : null
-    }
-    return props.map(prop => prop.type.endsWith('[]')
-        ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
-        : prop)
-}
 /*:minify*/
