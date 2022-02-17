@@ -20,7 +20,7 @@
                 <fieldset class="grid grid-cols-12 gap-6">
                 @foreach (var f in FormLayout)
                 {
-                    <div class=@CssUtils.ClassNames($"mb-3 me-1 {f.Css.Field}", f.Type != Input.Types.Checkbox ? "form-floating" : "")
+                    <div class=@CssUtils.ClassNames($"mb-3 me-1 {f.Css?.Field}", f.Type != Input.Types.Checkbox ? "form-floating" : "")
                          style="width:100%">
                         <DynamicInput Input=@f Model=@Model />
                     </div>
