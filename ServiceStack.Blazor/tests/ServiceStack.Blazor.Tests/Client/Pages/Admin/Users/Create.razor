@@ -16,18 +16,16 @@
     </div>
     <div class="row">
         <div class="col col-7 sm:px-1">
-            <div class="mb-3">
-            @foreach (var rowProps in UserFormLayout)
-            {
-                <div class="d-flex sm:flex-row">
-                @foreach (var f in rowProps)
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset class="grid grid-cols-12 gap-6">
+                @foreach (var f in FormLayout)
                 {
-                    <div class=@CssUtils.ClassNames("mb-3 me-1", f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
+                    <div class=@CssUtils.ClassNames($"mb-3 me-1 {f.Css.Field}", f.Type != Input.Types.Checkbox ? "form-floating" : "")
+                         style="width:100%">
                         <DynamicInput Input=@f Model=@Model />
                     </div>
                 }
-                </div>
-            }
+                </fieldset>
             </div>
         </div>
         <div class="col col-5 sm:px-1">
@@ -135,9 +133,9 @@
 
     List<string> missingPermissions => plugin?.AllPermissions.Where(x => !request.Permissions.Contains(x)).ToList() ?? new();
 
-    List<List<InputInfo>> UserFormLayout => plugin?.UserFormLayout ?? new();
+    List<InputInfo> FormLayout => plugin?.FormLayout ?? new();
 
-    string[] VisibleFields => UserFormLayout.SelectMany(row => row.Select(x => x.Id)).Union(new[]{ "Password" }).ToArray();
+    string[] VisibleFields => FormLayout.Select(x => x.Id).Union(new[]{ "Password" }).ToArray();
 
     void addRole() {
         if (string.IsNullOrWhiteSpace(newRole)) return;
