@@ -201,9 +201,9 @@ export function canAccess(op, auth) {
     @param {{roles:string[],permissions:string[]}} auth */
 export function invalidAccessMessage(op, auth) {
     if (!op || !op.requiresAuth) return null
-    if (!auth) 
+    if (!auth) {
         return `<b>${op.request.name}</b> requires Authentication`
-
+    }
     let { roles, permissions } = auth
     if (roles.indexOf('Admin') >= 0) return null
 

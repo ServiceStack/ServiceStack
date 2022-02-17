@@ -144,8 +144,9 @@ function canAccess(op, auth) {
 }
 function invalidAccessMessage(op, auth) {
     if (!op || !op.requiresAuth) return null
-    if (!auth) 
+    if (!auth) {
         return `<b>${op.request.name}</b> requires Authentication`
+    }
     let { roles, permissions } = auth
     if (roles.indexOf('Admin') >= 0) return null
     let missingRoles = op.requiredRoles.filter(x => roles.indexOf(x) < 0)
