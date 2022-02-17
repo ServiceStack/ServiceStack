@@ -13,7 +13,7 @@ namespace ServiceStack
     [DataContract]
     public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
     {
-        [ApiMember(Description = "AuthProvider, e.g. credentials")]
+        [Description("AuthProvider, e.g. credentials")]
         [DataMember(Order = 1)] public string provider { get; set; }
         [DataMember(Order = 2)] public string State { get; set; }
         [DataMember(Order = 3)] public string oauth_token { get; set; }
