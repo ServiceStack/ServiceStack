@@ -456,14 +456,26 @@ namespace ServiceStack.NativeTypes
                 IsAbstract = type.IsAbstract.NullIfFalse(),
             };
 
+            var propsToAdd = new List<MetadataPropertyType>();
             var fieldAttrs = type.AllAttributes<FieldAttribute>();
             foreach (var attr in fieldAttrs)
             {
                 var property = metaType.Properties?.FirstOrDefault(x => x.Name == attr.Name);
                 if (property == null)
                 {
-                    log.Warn($"Ignoring non-existing '{attr.Name}' Property not found on DTO '{type.Name}'");
-                    continue;
+                    // If it's in a base property we need to hoist it to attach Input info
+                    var pi = type.GetPublicProperties().FirstOrDefault(p => p.Name == attr.Name);
+                    if (pi != null)
+                    {
+                        property = ToProperty(pi);
+                        property.Input = null; // Always use [Field]
+                        propsToAdd.Add(property);
+                    }
+                    else
+                    {
+                        log.Warn($"Ignoring non-existing '{attr.Name}' Property not found on DTO '{type.Name}'");
+                        continue;
+                    }
                 }
                 if (property.Input != null)
                 {
@@ -482,6 +494,12 @@ namespace ServiceStack.NativeTypes
                         c.Css.Label ??= attr.LabelCss;
                     }
                 });
+            }
+
+            if (propsToAdd.Count > 0)
+            {
+                metaType.Properties ??= new();
+                metaType.Properties.InsertRange(0, propsToAdd);
             }
 
             if (type.BaseType != null && 
