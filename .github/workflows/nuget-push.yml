@@ -32,8 +32,8 @@ jobs:
       - name: Push to NuGet
         working-directory: ./build/staging
         run: |
-          # Check if more than 74 packages 
-          if [[ ${number_of_packages} -gt 74 ]]; then
+          # Check if more than 73 packages 
+          if [[ ${number_of_packages} -gt 73 ]]; then
             echo "Pushing to MyGet"
             dotnet nuget push '*.nupkg' -s 'https://api.nuget.org/v3/index.json' -k '${{ secrets.NUGET_APIKEY }}'
           else

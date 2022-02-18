@@ -40,7 +40,7 @@ jobs:
 
 
       - name: Check number of packages
-        if: env.number_of_packages < 74
+        if: env.number_of_packages < 73
         run: |
           echo "Less packages produced than expected, failing."
           exit 1
