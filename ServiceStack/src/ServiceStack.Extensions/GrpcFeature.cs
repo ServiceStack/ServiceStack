@@ -81,7 +81,7 @@ namespace ServiceStack
     }
 
     [Priority(10)]
-    public class GrpcFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
+    public class GrpcFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.Grpc;
         public string ServicesName { get; set; } = "GrpcServices";
@@ -98,14 +98,15 @@ namespace ServiceStack
         /// <summary>
         /// Only generate specified Verb entries for "ANY" routes
         /// </summary>
-        public List<string> DefaultMethodsForAny { get; set; } = new List<string> {
+        public List<string> DefaultMethodsForAny { get; set; } = new()
+        {
             HttpMethods.Get,
             HttpMethods.Post,
             HttpMethods.Put,
             HttpMethods.Delete,
         };
         
-        public List<string> AutoQueryMethodsForAny { get; set; } = new List<string> {
+        public List<string> AutoQueryMethodsForAny { get; set; } = new() {
             HttpMethods.Get,
         };
 
@@ -116,17 +117,17 @@ namespace ServiceStack
                 ? AutoQueryMethodsForAny
                 : DefaultMethodsForAny;
         
-        public HashSet<string> IgnoreResponseHeaders { get; set; } = new HashSet<string> {
+        public HashSet<string> IgnoreResponseHeaders { get; set; } = new() {
             HttpHeaders.Vary,
             HttpHeaders.XPoweredBy,
         };
         
-        public List<Type> RegisterServices { get; set; } = new List<Type> {
+        public List<Type> RegisterServices { get; set; } = new() {
             typeof(StreamFileService),
             typeof(SubscribeServerEventsService),
         };
         
-        internal Dictionary<Type, Type> RequestServiceTypeMap { get; } = new Dictionary<Type, Type>();
+        internal Dictionary<Type, Type> RequestServiceTypeMap { get; } = new();
 
         public bool DisableResponseHeaders
         {
@@ -136,7 +137,8 @@ namespace ServiceStack
         
         public bool DisableRequestParamsInHeaders { get; set; }
         
-        public List<ProtoOptionDelegate> ProtoOptions { get; set; } = new List<ProtoOptionDelegate> {
+        public List<ProtoOptionDelegate> ProtoOptions { get; set; } = new()
+        {
             ProtoOption.CSharpNamespace,
             ProtoOption.PhpNamespace,
         };
@@ -146,6 +148,12 @@ namespace ServiceStack
         {
             this.app = app;
             GenerateMethodsForAny = DefaultGenerateMethodsForAny;
+        }
+
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddPluginLink("types/proto", "gRPC .proto APIs"));
         }
 
         public void Register(IAppHost appHost)
@@ -179,9 +187,6 @@ namespace ServiceStack
                     ((ServiceStackHost)appHost).Container.RegisterAutoWiredType(serviceType);
                 }
             }
-
-            appHost.ConfigurePlugin<MetadataFeature>(
-                feature => feature.AddPluginLink("types/proto", "gRPC .proto APIs"));
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

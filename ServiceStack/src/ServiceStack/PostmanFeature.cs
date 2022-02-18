@@ -12,7 +12,7 @@ namespace ServiceStack
     /// <summary>
     /// Postman 2 Feature
     /// </summary>
-    public class PostmanFeature : IPlugin, IHasStringId
+    public class PostmanFeature : IPlugin, IHasStringId, IPreInitPlugin
     {
         public string Id { get; set; } = Plugins.Postman;
         public string AtRestPath { get; set; }
@@ -42,12 +42,15 @@ namespace ServiceStack
             this.DefaultLabelFmt = new List<string> { "type" };
         }
 
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddPluginLink(AtRestPath.TrimStart('/'), "Postman Metadata"));
+        }
+
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService<PostmanService>(AtRestPath);
-
-            appHost.ConfigurePlugin<MetadataFeature>(
-                feature => feature.AddPluginLink(AtRestPath.TrimStart('/'), "Postman Metadata"));
 
             if (EnableSessionExport == null)
                 EnableSessionExport = appHost.Config.DebugMode;

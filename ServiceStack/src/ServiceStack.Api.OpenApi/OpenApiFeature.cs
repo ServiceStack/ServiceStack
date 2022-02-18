@@ -90,6 +90,12 @@ namespace ServiceStack.Api.OpenApi
         public void BeforePluginsLoaded(IAppHost appHost)
         {
             appHost.Config.EmbeddedResourceSources.Add(typeof(OpenApiFeature).Assembly);
+
+            if (!DisableSwaggerUI)
+            {
+                appHost.ConfigurePlugin<MetadataFeature>(
+                    feature => feature.AddPluginLink("swagger-ui/", "Swagger UI"));
+            }
         }
 
         public void Register(IAppHost appHost)
@@ -123,11 +129,6 @@ namespace ServiceStack.Api.OpenApi
 
             if (!DisableSwaggerUI)
             {
-                var swaggerUrl = "swagger-ui/";
-
-                appHost.ConfigurePlugin<MetadataFeature>(
-                    feature => feature.AddPluginLink(swaggerUrl, "Swagger UI"));
-
                 appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
                 {
                     IVirtualFile indexFile;
