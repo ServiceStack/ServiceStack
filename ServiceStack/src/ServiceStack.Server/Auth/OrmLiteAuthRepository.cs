@@ -175,7 +175,8 @@ namespace ServiceStack.Auth
             {
                 db.CreateTableIfNotExists<TUserAuth>();
                 db.CreateTableIfNotExists<TUserAuthDetails>();
-                db.CreateTableIfNotExists<UserAuthRole>();
+                if (UseDistinctRoleTables)
+                    db.CreateTableIfNotExists<UserAuthRole>();
             });
         }
 
@@ -186,7 +187,8 @@ namespace ServiceStack.Auth
             {
                 db.DropAndCreateTable<TUserAuth>();
                 db.DropAndCreateTable<TUserAuthDetails>();
-                db.DropAndCreateTable<UserAuthRole>();
+                if (UseDistinctRoleTables)
+                    db.DropAndCreateTable<UserAuthRole>();
             });
         }
 
