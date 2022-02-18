@@ -103,6 +103,9 @@ function createForms(TypesMap, css, theme) {
                     let id = inputId(input)
                     if (id.startsWith('__')) console.log(`!id ${id}`, input) /*debug*/
                     let field = { id, input, rowClass: input.css && input.css.field || css.field }
+                    if (input.type === 'hidden' && (field.rowClass||'').indexOf('hidden') === -1) {
+                        field.rowClass = field.rowClass ? `${field.rowClass} hidden` : 'hidden'
+                    }
                     if (f) f(field)
                     to.push(field)
                 })
