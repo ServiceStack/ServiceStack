@@ -206,11 +206,11 @@ App.component('ApiResponse', ({ store, routes, apiResult }) => {
             return tabs
         },
         get headersLabel() {
-            let count = this.apiResult && Object.keys(this.apiResult.headers).length || 0
+            let count = this.apiResult && this.apiResult.headers && Object.keys(this.apiResult.headers).length || 0
             return `Headers (${count})`
         },
         get cookiesLabel() {
-            let count = this.apiResult && Object.keys(this.apiResult.cookies).length || 0
+            let count = this.apiResult && this.apiResult.cookies && Object.keys(this.apiResult.cookies).length || 0
             return `Cookies (${count})`
         },
         fieldAttrs(id) {
