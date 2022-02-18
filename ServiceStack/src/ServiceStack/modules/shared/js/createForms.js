@@ -99,6 +99,7 @@ function createForms(TypesMap, css, theme) {
             let to = []
             if (formLayout) {
                 formLayout.forEach(input => {
+                    if (input.ignore) return
                     let id = inputId(input)
                     if (id.startsWith('__')) console.log(`!id ${id}`, input) /*debug*/
                     let field = { id, input, rowClass: input.css && input.css.field || css.field }

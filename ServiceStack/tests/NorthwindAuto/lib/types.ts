@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-02-15 22:40:38
+Date: 2022-02-18 13:45:42
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -213,6 +213,7 @@ export class InputInfo
     public maxLength?: number;
     public allowableValues: string[];
     public allowableEntries: KeyValuePair<String,String>[];
+    public ignore?: boolean;
     public css: FieldCss;
     public meta: { [index: string]: string; };
 
@@ -764,7 +765,6 @@ export class Authenticate implements IReturn<AuthenticateResponse>, IPost
     * AuthProvider, e.g. credentials
     */
     // @DataMember(Order=1)
-    // @ApiMember(Description="AuthProvider, e.g. credentials")
     public provider: string;
 
     // @DataMember(Order=2)

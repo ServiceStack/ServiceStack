@@ -277,6 +277,7 @@ namespace ServiceStack
         public int? MaxLength { get; set; }
         public string[] AllowableValues { get; set; }
         public KeyValuePair<string,string>[] AllowableEntries { get; set; }
+        public bool? Ignore { get; set; }
         public FieldCss Css { get; set; }
         
         public Dictionary<string, string> Meta { get; set; }
@@ -804,6 +805,7 @@ namespace ServiceStack
                 MinLength = input.MinLength.NullIfMinValue(),
                 MaxLength = input.MaxLength.NullIfMinValue(),
                 AllowableValues = input.AllowableValues,
+                Ignore = input.Ignore.NullIfFalse(),
             };
             configure?.Invoke(ret);
             return ret;
