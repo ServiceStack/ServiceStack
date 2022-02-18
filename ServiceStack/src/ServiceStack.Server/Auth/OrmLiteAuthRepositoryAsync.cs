@@ -295,7 +295,8 @@ namespace ServiceStack.Auth
 
                 await db.DeleteAsync<TUserAuth>(x => x.Id == userId, token: token).ConfigAwait();
                 await db.DeleteAsync<TUserAuthDetails>(x => x.UserAuthId == userId, token: token).ConfigAwait();
-                await db.DeleteAsync<UserAuthRole>(x => x.UserAuthId == userId, token: token).ConfigAwait();
+                if (UseDistinctRoleTables)
+                    await db.DeleteAsync<UserAuthRole>(x => x.UserAuthId == userId, token: token).ConfigAwait();
 
                 trans.Commit();
             }).ConfigAwait();
