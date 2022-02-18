@@ -145,7 +145,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                     ? only.map(name => this.viewModelColumns.find(x => x.name === name))
                     : this.viewModelColumns
                 : []
-            return opColumns
+            return opColumns.filter(x => !!x)
         },
         
         hasMultiple(dataModel) {
