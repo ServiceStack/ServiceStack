@@ -863,6 +863,7 @@ namespace ServiceStack.Redis
         }
 
         public RedisClient CloneClient() => new(Host, Port, Password, Db) {
+            Username = Username,
             SendTimeout = SendTimeout,
             ReceiveTimeout = ReceiveTimeout
         };

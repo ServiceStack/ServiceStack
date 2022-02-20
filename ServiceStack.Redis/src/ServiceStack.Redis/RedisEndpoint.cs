@@ -43,8 +43,12 @@ namespace ServiceStack.Redis
         public int IdleTimeOutSecs { get; set; }
         public long Db { get; set; }
         public string Client { get; set; }
+        /// <summary>
+        /// ACL Username
+        /// </summary>
+        public string Username { get; set; }
         public string Password { get; set; }
-        public bool RequiresAuth { get { return !string.IsNullOrEmpty(Password); } }
+        public bool RequiresAuth => !string.IsNullOrEmpty(Password);
         public string NamespacePrefix { get; set; }
 
         public override string ToString()
@@ -55,6 +59,8 @@ namespace ServiceStack.Redis
             var args = new List<string>();
             if (Client != null)
                 args.Add("Client=" + Client);
+            if (Username != null)
+                args.Add("Username=" + Username.UrlEncode());
             if (Password != null)
                 args.Add("Password=" + Password.UrlEncode());
             if (Db != RedisConfig.DefaultDb)
@@ -62,7 +68,7 @@ namespace ServiceStack.Redis
             if (Ssl)
                 args.Add("Ssl=true");
             if (SslProtocols != null)
-                args.Add("SslProtocols=" + SslProtocols.ToString());
+                args.Add("SslProtocols=" + SslProtocols);
             if (ConnectTimeout != RedisConfig.DefaultConnectTimeout)
                 args.Add("ConnectTimeout=" + ConnectTimeout);
             if (SendTimeout != RedisConfig.DefaultSendTimeout)

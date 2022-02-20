@@ -33,7 +33,7 @@ namespace ServiceStack.Redis
         public static RedisEndpoint ToRedisEndpoint(this string connectionString, int? defaultPort = null)
         {
             if (connectionString == null)
-                throw new ArgumentNullException("connectionString");
+                throw new ArgumentNullException(nameof(connectionString));
             if (connectionString.StartsWith("redis://"))
                 connectionString = connectionString.Substring("redis://".Length);
 
@@ -78,13 +78,16 @@ namespace ServiceStack.Redis
                                 endpoint.Port = RedisConfig.DefaultPortSsl;
                             break;
                         case "sslprotocols":
-                            SslProtocols protocols;
                             value = value?.Replace("|", ",");
-                            if (!Enum.TryParse(value, true, out protocols)) throw new ArgumentOutOfRangeException("Keyword '" + name + "' requires an SslProtocol value (multiple values separated by '|').");
+                            if (!Enum.TryParse(value, true, out SslProtocols protocols)) 
+                                throw new ArgumentOutOfRangeException("Keyword '" + name + "' requires an SslProtocol value (multiple values separated by '|').");
                             endpoint.SslProtocols = protocols;
                             break;
                         case "client":
                             endpoint.Client = value;
+                            break;
+                        case "username":
+                            endpoint.Username = value;
                             break;
                         case "password":
                             endpoint.Password = value;

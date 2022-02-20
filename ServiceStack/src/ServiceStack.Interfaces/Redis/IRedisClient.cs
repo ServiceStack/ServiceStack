@@ -35,6 +35,7 @@ namespace ServiceStack.Redis
         int RetryTimeout { get; set; }
         int RetryCount { get; set; }
         int SendTimeout { get; set; }
+        string Username { get; set; }
         string Password { get; set; }
         bool HadExceptions { get; }
 

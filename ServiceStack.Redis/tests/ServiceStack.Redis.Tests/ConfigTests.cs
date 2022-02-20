@@ -51,6 +51,7 @@ namespace ServiceStack.Redis.Tests
         [TestCase("pass@host:1", "host:1?Password=pass")]
         [TestCase("nunit:pass@host:1", "host:1?Client=nunit&Password=pass")]
         [TestCase("host:1?password=pass&client=nunit", "host:1?Client=nunit&Password=pass")]
+        [TestCase("host:1?username=user&password=pass", "host:1?Username=user&Password=pass")]
         [TestCase("host:1?db=2", "host:1?Db=2")]
         [TestCase("host?ssl=true", "host:6380?Ssl=true")]
         [TestCase("host:1?ssl=true", "host:1?Ssl=true")]
@@ -72,18 +73,14 @@ namespace ServiceStack.Redis.Tests
             var expected = "{Host:host,Port:1,Ssl:True,SslProtocols:Tls12,Client:nunit,Password:pass,Db:0,ConnectTimeout:2,SendTimeout:3,ReceiveTimeout:4,IdleTimeOutSecs:5,NamespacePrefix:prefix.}"
                 .FromJsv<RedisEndpoint>();
 
-            using (var pooledManager = new RedisManagerPool(connStr))
-            {
-                AssertClientManager(pooledManager, expected);
-            }
-            using (var pooledManager = new PooledRedisClientManager(connStr))
-            {
-                AssertClientManager(pooledManager, expected);
-            }
-            using (var basicManager = new BasicRedisClientManager(connStr))
-            {
-                AssertClientManager(basicManager, expected);
-            }
+            using var redisManager = new RedisManagerPool(connStr);
+            AssertClientManager(redisManager, expected);
+            
+            using var pooledManager = new PooledRedisClientManager(connStr);
+            AssertClientManager(pooledManager, expected);
+            
+            using var basicManager = new BasicRedisClientManager(connStr);
+            AssertClientManager(basicManager, expected);
         }
 
         [Test]
@@ -107,18 +104,14 @@ namespace ServiceStack.Redis.Tests
 
         private static void AssertClientManager(IRedisClientsManager redisManager, RedisEndpoint expected)
         {
-            using (var readWrite = (RedisClient)redisManager.GetClient())
-            using (var readOnly = (RedisClient)redisManager.GetReadOnlyClient())
-            using (var cacheClientWrapper = (RedisClientManagerCacheClient)redisManager.GetCacheClient())
-            {
-                AssertClient(readWrite, expected);
-                AssertClient(readOnly, expected);
+            using var readWrite = (RedisClient)redisManager.GetClient();
+            using var readOnly = (RedisClient)redisManager.GetReadOnlyClient();
+            using var cacheClientWrapper = (RedisClientManagerCacheClient)redisManager.GetCacheClient();
+            AssertClient(readWrite, expected);
+            AssertClient(readOnly, expected);
 
-                using (var cacheClient = (RedisClient)cacheClientWrapper.GetClient())
-                {
-                    AssertClient(cacheClient, expected);
-                }
-            }
+            using var cacheClient = (RedisClient)cacheClientWrapper.GetClient();
+            AssertClient(cacheClient, expected);
         }
 
         private static void AssertClient(RedisClient redis, RedisEndpoint expected)
@@ -141,24 +134,43 @@ namespace ServiceStack.Redis.Tests
         [Test]
         public void Does_set_Client_name_on_Connection()
         {
-            using (var redis = new RedisClient(TestConfig.SingleHost + "?Client=nunit"))
-            {
-                var clientName = redis.GetClient();
+            using var redis = new RedisClient(TestConfig.SingleHost + "?Client=nunit");
+            var clientName = redis.GetClient();
 
-                Assert.That(clientName, Is.EqualTo("nunit"));
-            }
+            Assert.That(clientName, Is.EqualTo("nunit"));
         }
 
         [Test]
         public void Does_set_Client_on_Pooled_Connection()
         {
-            using (var redisManager = new PooledRedisClientManager(TestConfig.SingleHost + "?Client=nunit"))
-            using (var redis = redisManager.GetClient())
-            {
-                var clientName = redis.GetClient();
+            using var redisManager = new PooledRedisClientManager(TestConfig.SingleHost + "?Client=nunit");
+            using var redis = redisManager.GetClient();
+            var clientName = redis.GetClient();
 
-                Assert.That(clientName, Is.EqualTo("nunit"));
-            }
+            Assert.That(clientName, Is.EqualTo("nunit"));
         }
+
+        // [Test]
+        public void Different_password_examples()
+        {
+            var username = "user";
+            var password = "pass";
+
+            using var redisManager1 = new RedisManagerPool(
+                "localhost:6379?username=" + username.UrlEncode() + "&password=" + password.UrlEncode());
+            using var client1 = redisManager1.GetClient();
+            Assert.That(client1.Ping());
+            
+            using var redisManager2 = new RedisManagerPool("localhost:6379");
+            using var client2 = redisManager2.GetClient();
+            client2.Username = username;
+            client2.Password = password;
+            Assert.That(client2.Ping());
+
+            using var client3 = redisManager2.GetClient();
+            client3.Custom("AUTH", username, password);
+            Assert.That(client3.Ping());
+        }
+
     }
 }

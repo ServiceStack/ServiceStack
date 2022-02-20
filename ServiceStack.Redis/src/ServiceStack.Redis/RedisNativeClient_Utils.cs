@@ -198,7 +198,12 @@ namespace ServiceStack.Redis
                 bufferedReader = new BufferedReader(networkStream, 16 * 1024);
 
                 if (!string.IsNullOrEmpty(Password))
-                    SendUnmanagedExpectSuccess(Commands.Auth, Password.ToUtf8Bytes());
+                {
+                    if (!string.IsNullOrEmpty(Username))
+                        SendUnmanagedExpectSuccess(Commands.Auth, Username.ToUtf8Bytes(), Password.ToUtf8Bytes());
+                    else
+                        SendUnmanagedExpectSuccess(Commands.Auth, Password.ToUtf8Bytes());
+                }
 
                 if (db != 0)
                     SendUnmanagedExpectSuccess(Commands.Select, db.ToUtf8Bytes());
