@@ -41,9 +41,9 @@ namespace ServiceStack.Grpc
             
             this.Response = new GrpcResponse(this);
             this.Verb = httpMethod;
-            this.PathInfo = context.ServerCallContext.Method;
+            this.PathInfo = context.ServerCallContext!.Method;
             var httpCtx = context.ServerCallContext.GetHttpContext();
-            var httpFeature = httpCtx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>();
+            var httpFeature = httpCtx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>()!;
             var scheme = httpFeature.Scheme;
             this.RawUrl = scheme + "://" + context.ServerCallContext.Host.CombineWith(PathInfo);
             this.AbsoluteUri = RawUrl;
@@ -94,7 +94,7 @@ namespace ServiceStack.Grpc
                     if (entry.Key is string key)
                         Items[key] = entry.Value;
                     else if (entry.Key.GetType().IsValueType)
-                        Items[entry.Key.ToString()] = entry.Value;
+                        Items[entry.Key.ToString()!] = entry.Value;
                 }
             }
         }

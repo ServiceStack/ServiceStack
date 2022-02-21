@@ -979,7 +979,7 @@ namespace ServiceStack
             OnDispose = null;
         }
     }
-
+    
     public interface IEventSubscription : IDisposable
     {
         DateTime CreatedAt { get; set; }
@@ -1808,9 +1808,15 @@ namespace ServiceStack
                         asyncTasks.Add(() => OnSubscribeAsync(subscription));
 
                     if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoinAsync != null)
+                    {
                         asyncTasks.Add(() => NotifyJoinAsync(subscription));
+                    }
                     else if (FlushNopOnSubscription)
-                        asyncTasks.Add(() => FlushNopToChannelsAsync(subscription.Channels, token));
+                    {
+                        //NOOP on gRPC Stream closes connection resulting in https://forums.servicestack.net/t/serverevents-not-received-on-client/10427/2
+                        if (!subscription.IsGrpc())
+                            asyncTasks.Add(() => FlushNopToChannelsAsync(subscription.Channels, token));
+                    }
                 }
 
                 Interlocked.Increment(ref TotalConnections);
@@ -2169,5 +2175,8 @@ namespace ServiceStack
         internal static string AssertSelector(this string selector) => selector == null || selector.IndexOf('@') == -1
             ? selector
             : throw new ArgumentException(@"Illegal '@' used in name", nameof(selector));
+
+        public static bool IsGrpc(this IEventSubscription sub) =>
+            ((EventSubscription)sub).Request.RequestAttributes.HasFlag(RequestAttributes.Grpc);
     }
 }
