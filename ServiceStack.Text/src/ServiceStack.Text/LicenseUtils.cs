@@ -7,8 +7,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 
@@ -236,11 +238,15 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 //bubble unrelated project Exceptions
-                if (ex is FileNotFoundException || ex is FileLoadException || ex is BadImageFormatException || ex is NotSupportedException) 
-                    throw;
-                
-                if (ex is LicenseException)
-                    throw;
+                switch (ex)
+                {
+                    case FileNotFoundException or FileLoadException or BadImageFormatException or NotSupportedException
+#if NET6_0_OR_GREATER
+                        or System.Net.Http.HttpRequestException
+#endif
+                        or WebException or TaskCanceledException or LicenseException:
+                        throw;
+                }
 
                 var msg = "This license is invalid." + ContactDetails;
                 if (!string.IsNullOrEmpty(subId))
@@ -255,7 +261,7 @@ namespace ServiceStack
                     }
                     catch (Exception exFallback)
                     {
-                        if (exFallback is FileNotFoundException || exFallback is FileLoadException || exFallback is BadImageFormatException) 
+                        if (exFallback is FileNotFoundException or FileLoadException or BadImageFormatException) 
                             throw;
 
                         throw new LicenseException(msg, exFallback).Trace();
