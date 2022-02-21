@@ -55,6 +55,7 @@ let store = PetiteVue.reactive({
     login(args) {
         let provider = routes.provider || 'credentials'
         let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
+            || APP.plugins.auth.authProviders[0]
         if (!authProvider)
             throw new Error("!authProvider")
         let auth = new Authenticate()
