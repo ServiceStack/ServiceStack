@@ -94,11 +94,14 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         get viewModel() { return getType(viewModelRef()) },
         get viewModelColumns() { return Forms.typeProperties(this.viewModel) },
         get invalidAccess() { return invalidAccessMessage(getOp(routes.op), store.auth) },
+        get invalidCreateAccess() { return map(this.state, x => invalidAccessMessage(x.opCreate, store.auth)) },
+        get invalidUpdateAccess() { return !this.canUpdate && map(this.state, x => invalidAccessMessage(x.opPatch, store.auth) || invalidAccessMessage(x.opUpdate, store.auth)) },
         get accessibleAutoQueryTables() {
             return this.filterOperations((op, table) => Crud.isQuery(op) && canAccess(op,store.auth))
         },
         get canQuery() { return map(this.state, x => canAccess(x.opQuery,store.auth)) },
         get canCreate() { return map(this.state, x => canAccess(x.opCreate,store.auth)) },
+        get canUpdate() { return map(this.state, x => canAccess(x.opPatch || x.opUpdate, store.auth)) },
         filterOperations(fn) {
             const to = []
             const existingKeys = {}
@@ -290,8 +293,14 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
         <div v-else-if="results.length">
-            <div v-if="routes.new" v-scope="CreateForm({ store, routes, settings, state:() => state, save:updated, done:() => routes.to({ new:null }) })" class="p-4"></div>
-            <div v-else-if="routes.edit" v-scope="EditForm({ store, routes, settings, state:() => state, save:updated, done:() => routes.to({ edit:null }) })" class="p-4"></div>
+            <div v-if="routes.new" class="p-4">
+                <div v-if="!canCreate" v-scope="EnsureAccess({ store, message:() => invalidCreateAccess, $on:updated })"></div>
+                <div v-else v-scope="CreateForm({ store, routes, settings, state:() => state, save:updated, done:() => routes.to({ new:null }) })"></div>
+            </div>
+            <div v-else-if="routes.edit" class="p-4">
+                <div v-if="!canUpdate" v-scope="EnsureAccess({ store, message:() => invalidUpdateAccess, $on:updated })"></div>
+                <div v-else v-scope="EditForm({ store, routes, settings, state:() => state, save:updated, done:() => routes.to({ edit:null }) })"></div>
+            </div>
             <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save:updated, done:() => filter=null })" class="relative"></div>
             <div v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
         </div>

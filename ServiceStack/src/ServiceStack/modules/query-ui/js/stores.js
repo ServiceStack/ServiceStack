@@ -109,17 +109,17 @@ let store = PetiteVue.reactive({
             }
         })
     },
-    SignIn() {
+    SignIn(opt) {
         return APP.plugins.auth
         ? SignIn({
             plugin: APP.plugins.auth,
             provider:() => routes.provider,
-            login:args => this.login(args),
-            api: () => this.api,
+            login:args => this.login(args, opt && opt.$on),
+            api: () => this.api
         })
         : NoAuth({ message:`${APP.app.serviceName} AutoQuery UI` })
     },
-    login(args) {
+    login(args, $on) {
         let provider = routes.provider || 'credentials'
         let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
             || APP.plugins.auth.authProviders[0]
@@ -143,6 +143,7 @@ let store = PetiteVue.reactive({
                 if (this.api.succeeded) {
                     this.auth = this.api.response
                     setBodyClass({ auth: this.auth })
+                    if ($on) $on()
                 }
             })
     },
