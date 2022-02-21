@@ -1,6 +1,10 @@
 using ServiceStack;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
+using ServiceStack.Data;
 using ServiceStack.FluentValidation;
+using ServiceStack.OrmLite;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAuth))]
 
@@ -24,6 +28,7 @@ public class CustomRegistrationValidator : RegistrationValidator
     }
 }
 
+/**/
 public class ConfigureAuth : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
@@ -36,10 +41,11 @@ public class ConfigureAuth : IHostingStartup
                     new JwtAuthProvider(appSettings) {
                         AuthKeyBase64 = appSettings.GetString("AuthKeyBase64") ?? "cARl12kvS/Ra4moVBIaVsrWwTpXYuZ0mZf/gNLUhDW5=",
                     },
-                    new CredentialsAuthProvider(appSettings),     /* Sign In with Username / Password credentials */
-                    new FacebookAuthProvider(appSettings),        /* Create App https://developers.facebook.com/apps */
-                    new GoogleAuthProvider(appSettings),          /* Create App https://console.developers.google.com/apis/credentials */
-                    new MicrosoftGraphAuthProvider(appSettings),  /* Create App https://apps.dev.microsoft.com */
+                    new ApiKeyAuthProvider(appSettings),
+                    new CredentialsAuthProvider(appSettings),
+                    new FacebookAuthProvider(appSettings),
+                    new GoogleAuthProvider(appSettings),
+                    new MicrosoftGraphAuthProvider(appSettings),
                 })
             {
                 // IncludeDefaultLogin = false
@@ -53,3 +59,37 @@ public class ConfigureAuth : IHostingStartup
             appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
         });
 }
+
+
+/*
+// Call QueryApiKeys to view API Keys
+public class ConfigureAuth : IHostingStartup
+{
+    public void Configure(IWebHostBuilder builder) => builder
+        .ConfigureAppHost(appHost =>
+        {
+            appHost.Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                new IAuthProvider[] {
+                    new ApiKeyAuthProvider(appHost.AppSettings)
+                }));
+        }, afterAppHostInit: appHost => {
+            var authProvider = (ApiKeyAuthProvider)
+                AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
+            
+            using var db = appHost.TryResolve<IDbConnectionFactory>().Open();
+            var userWithKeysIds = db.Column<string>(db.From<ApiKey>()
+                .SelectDistinct(x => x.UserAuthId)).Map(int.Parse);
+
+            var userIdsMissingKeys = db.Column<string>(db.From<AppUser>()
+                .Where(x => userWithKeysIds.Count == 0 || !userWithKeysIds.Contains(x.Id))
+                .Select(x => x.Id));
+
+            var authRepo = (IManageApiKeys)appHost.TryResolve<IAuthRepository>();
+            foreach (var userId in userIdsMissingKeys)
+            {
+                var apiKeys = authProvider.GenerateNewApiKeys(userId);
+                authRepo.StoreAll(apiKeys);
+            }
+        });
+}
+*/

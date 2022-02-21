@@ -39,7 +39,7 @@ namespace MyApp
             //     new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider));
 
             ConfigurePlugin<UiFeature>(feature => {
-                Console.WriteLine("ConfigurePlugin<UiFeature>...");
+                Console.WriteLine(@"ConfigurePlugin<UiFeature>...");
                 //feature.Module.EnableHttpCaching = true;
                 feature.Module.Configure((appHost, module) =>
                 {
