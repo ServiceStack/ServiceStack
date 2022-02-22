@@ -4,9 +4,12 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.Aws.S3
@@ -60,7 +63,7 @@ namespace ServiceStack.Aws.S3
 
         public override Stream OpenRead()
         {
-            if (Stream == null || !Stream.CanRead)
+            if (Stream is not { CanRead: true })
             {
                 var response = Client.GetObject(new GetObjectRequest
                 {
@@ -88,8 +91,21 @@ namespace ServiceStack.Aws.S3
             catch (AmazonS3Exception ex)
             {
                 if (ex.StatusCode != HttpStatusCode.NotModified)
-                    throw ex;
+                    throw;
             }
+        }
+
+        public override async Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default)
+        {
+            var response = await Client.GetObjectAsync(new GetObjectRequest
+            {
+                Key = FilePath,
+                BucketName = BucketName,
+                ByteRange = new ByteRange(start, end)
+            }, token);
+            Init(response);
+
+            await response.ResponseStream.WriteToAsync(toStream, token).ConfigAwait();
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ServiceStack.IO
 {
@@ -29,5 +31,7 @@ namespace ServiceStack.IO
         /// Refresh file stats for this node if supported
         /// </summary>
         void Refresh();
+
+        Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default);
     }
 }

@@ -89,6 +89,7 @@ namespace ServiceStack
 
             this.AllowsPartialResponse = true;
             this.LastModified = fileResponse.LastModified;
+            this.VirtualFile = fileResponse;
             this.ResponseStream = fileResponse.OpenRead();
 
             if (!asAttachment) return;
@@ -127,6 +128,7 @@ namespace ServiceStack
         public Stream ResponseStream { get; private set; }
 
         public FileInfo FileInfo { get; }
+        public IVirtualFile VirtualFile { get; }
 
         public string ContentType { get; set; }
 
@@ -341,7 +343,18 @@ namespace ServiceStack
             response.AddHttpRangeResponseHeaders(rangeStart, rangeEnd, contentLength);
 
             var outputStream = response.OutputStream;
-            if (FileInfo != null)
+            if (VirtualFile != null)
+            {
+                try
+                {
+                    await VirtualFile.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token).ConfigAwait();
+                }
+                finally
+                {
+                    DisposeStream();
+                }
+            }
+            else if (FileInfo != null)
             {
                 using var fs = FileInfo.OpenRead();
                 await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token).ConfigAwait();

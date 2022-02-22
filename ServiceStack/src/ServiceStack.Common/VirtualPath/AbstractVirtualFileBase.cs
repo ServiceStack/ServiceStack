@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
@@ -111,6 +113,12 @@ namespace ServiceStack.VirtualPath
 
         public virtual void Refresh()
         {            
+        }
+
+        public virtual async Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default)
+        {
+            using var fs = OpenRead();
+            await fs.WritePartialToAsync(toStream, start, end, token).ConfigAwait();
         }
     }
 }

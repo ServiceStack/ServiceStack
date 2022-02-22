@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Testing;
@@ -288,15 +289,15 @@ namespace ServiceStack.Azure.Tests.Storage
             AssertContents(pathProvider.GetDirectory("a/b/c"), new[] {
                 "a/b/c/testfile-abc1.txt",
                 "a/b/c/testfile-abc2.txt",
-            }, new string[0]);
+            }, Array.Empty<string>());
 
             AssertContents(pathProvider.GetDirectory("a/d"), new[] {
                 "a/d/testfile-ad1.txt",
-            }, new string[0]);
+            }, Array.Empty<string>());
 
             AssertContents(pathProvider.GetDirectory("e"), new[] {
                 "e/testfile-e1.txt",
-            }, new string[0]);
+            }, Array.Empty<string>());
 
             Assert.That(pathProvider.GetFile("a/b/c/testfile-abc1.txt").ReadAllText(), Is.EqualTo("testfile-abc1"));
             Assert.That(pathProvider.GetDirectory("a").GetFile("b/c/testfile-abc1.txt").ReadAllText(), Is.EqualTo("testfile-abc1"));
@@ -386,6 +387,43 @@ namespace ServiceStack.Azure.Tests.Storage
             Assert.That(contents, Is.EquivalentTo("original\nNew Line1\nNew Line2\n".ToUtf8Bytes()));
 
             pathProvider.DeleteFile("original.bin");
+        }
+
+        byte[] ReadAndReset(MemoryStream ms)
+        {
+            var ret = ms.ToArray();
+            ms.SetLength(0);
+            return ret;
+        }
+        string ReadAsStringAndReset(MemoryStream ms) => ReadAndReset(ms).FromUtf8Bytes();
+
+        [Test]
+        public async Task Can_WritePartialToAsync()
+        {
+            var pathProvider = GetPathProvider();
+            var customText = "1234567890";
+            var customTextBytes = customText.ToUtf8Bytes();
+
+            pathProvider.WriteFile("original.txt", customTextBytes);
+            var file = pathProvider.GetFile("original.txt");
+
+            var ms = new MemoryStream();
+
+            // Ranges (follows HTTP Ranges) are inclusive 
+            await file.WritePartialToAsync(ms, 0, customTextBytes.Length - 1);
+            Assert.That(ReadAndReset(ms), Is.EquivalentTo(customTextBytes));
+            
+            await file.WritePartialToAsync(ms, 0, customTextBytes.Length + 1);
+            Assert.That(ReadAndReset(ms), Is.EquivalentTo(customTextBytes));
+            
+            await file.WritePartialToAsync(ms, 0, 2);
+            Assert.That(ReadAsStringAndReset(ms), Is.EquivalentTo("123"));
+            
+            await file.WritePartialToAsync(ms, 4, int.MaxValue);
+            Assert.That(ReadAsStringAndReset(ms), Is.EquivalentTo("567890"));
+            
+            await file.WritePartialToAsync(ms, 3, 5);
+            Assert.That(ReadAsStringAndReset(ms), Is.EquivalentTo("456"));
         }
 
         public void AssertContents(IVirtualDirectory dir,

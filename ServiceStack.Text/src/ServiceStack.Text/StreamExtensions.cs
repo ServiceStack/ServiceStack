@@ -671,5 +671,104 @@ namespace ServiceStack
             ms.Position = 0;
             return ms;
         }
+        
+        /// <summary>
+        /// Writes partial range as specified by start-end, from fromStream to toStream.
+        /// </summary>
+        [Obsolete("Use WritePartialToAsync")]
+        public static void WritePartialTo(this Stream fromStream, Stream toStream, long start, long end)
+        {
+            if (!fromStream.CanSeek)
+                throw new InvalidOperationException(
+                    "Sending Range Responses requires a seekable stream eg. FileStream or MemoryStream");
+
+            long totalBytesToSend = end - start + 1;
+
+            var buf = SharedPools.AsyncByteArray.Allocate();
+
+            long bytesRemaining = totalBytesToSend;
+
+            fromStream.Seek(start, SeekOrigin.Begin);
+            while (bytesRemaining > 0)
+            {
+                var count = bytesRemaining <= buf.Length
+                    ? fromStream.Read(buf, 0, (int)Math.Min(bytesRemaining, int.MaxValue))
+                    : fromStream.Read(buf, 0, buf.Length);
+
+                if (count == 0) break; // Read to End 
+                    
+                try
+                {
+                    //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
+                    toStream.Write(buf, 0, count);
+                    toStream.Flush();
+                    bytesRemaining -= count;
+                }
+                catch (Exception httpException)
+                {
+                    /* in Asp.Net we can call HttpResponseBase.IsClientConnected
+                        * to see if the client broke off the connection
+                        * and avoid trying to flush the response stream.
+                        * I'm not quite I can do the same here without some invasive changes,
+                        * so instead I'll swallow the exception that IIS throws in this situation.*/
+
+                    if (httpException.Message == "An error occurred while communicating with the remote host. The error code is 0x80070057.")
+                        return;
+
+                    throw;
+                }
+            }
+            
+            SharedPools.AsyncByteArray.Free(buf);
+        }
+        
+        /// <summary>
+        /// Writes partial range as specified by start-end, from fromStream to toStream.
+        /// </summary>
+        public static async Task WritePartialToAsync(this Stream fromStream, Stream toStream, long start, long end, CancellationToken token = default)
+        {
+            if (!fromStream.CanSeek)
+                throw new InvalidOperationException(
+                    "Sending Range Responses requires a seekable stream eg. FileStream or MemoryStream");
+
+            long totalBytesToSend = end - start + 1;
+
+            var buf = SharedPools.AsyncByteArray.Allocate();
+
+            long bytesRemaining = totalBytesToSend;
+
+            fromStream.Seek(start, SeekOrigin.Begin);
+            while (bytesRemaining > 0)
+            {
+                try
+                {
+                    var count = bytesRemaining <= buf.Length
+                        ? await fromStream.ReadAsync(buf, 0, (int)Math.Min(bytesRemaining, int.MaxValue), token).ConfigAwait()
+                        : await fromStream.ReadAsync(buf, 0, buf.Length, token).ConfigAwait();
+
+                    if (count == 0) break; // Read to End 
+                    
+                    //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
+                    await toStream.WriteAsync(buf, 0, count, token).ConfigAwait();
+                    await toStream.FlushAsync(token).ConfigAwait();
+                    bytesRemaining -= count;
+                }
+                catch (Exception httpException)
+                {
+                    /* in Asp.Net we can call HttpResponseBase.IsClientConnected
+                        * to see if the client broke off the connection
+                        * and avoid trying to flush the response stream.
+                        * I'm not quite I can do the same here without some invasive changes,
+                        * so instead I'll swallow the exception that IIS throws in this situation.*/
+
+                    if (httpException.Message == "An error occurred while communicating with the remote host. The error code is 0x80070057.")
+                        return;
+
+                    throw;
+                }
+            }
+            
+            SharedPools.AsyncByteArray.Free(buf);
+        }        
     }
 }

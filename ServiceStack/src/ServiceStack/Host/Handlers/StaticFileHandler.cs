@@ -231,13 +231,13 @@ namespace ServiceStack.Host.Handlers
                     }
 
                     var outputStream = r.OutputStream;
-                    using var fs = file.OpenRead();
                     if (rangeStart != 0 || rangeEnd != file.Length - 1)
                     {
-                        await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd).ConfigAwait();
+                        await file.WritePartialToAsync(outputStream, rangeStart, rangeEnd).ConfigAwait();
                     }
                     else
                     {
+                        using var fs = file.OpenRead();
                         if (!shouldCompress)
                         {
                             r.SetContentLength(contentLength);
