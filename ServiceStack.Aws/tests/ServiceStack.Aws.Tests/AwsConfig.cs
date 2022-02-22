@@ -37,7 +37,10 @@ namespace ServiceStack.Aws.Tests
 
         public static AmazonS3Client CreateAmazonS3Client()
         {
-            return new AmazonS3Client(AwsAccessKey, AwsSecretKey, RegionEndpoint.USEast1);
+            return new AmazonS3Client(
+                Environment.GetEnvironmentVariable("AWS_S3_ACCESS_KEY") ?? AwsAccessKey, 
+                Environment.GetEnvironmentVariable("AWS_S3_SECRET_KEY") ?? AwsSecretKey, 
+                RegionEndpoint.USEast1);
         }
     }
 }

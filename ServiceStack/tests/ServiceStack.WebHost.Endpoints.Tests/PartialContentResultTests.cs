@@ -203,8 +203,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(ms, "audio/mpeg");
 
-            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
-            Assert.That(reponseWasAutoHandled, Is.True);
+            bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(responseWasAutoHandled, Is.True);
 
             string writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(customText));
@@ -234,8 +234,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(ms, "audio/mpeg");
 
-            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
-            Assert.That(reponseWasAutoHandled, Is.True);
+            bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(responseWasAutoHandled, Is.True);
 
             string writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(customText));
@@ -262,8 +262,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(ms, "audio/mpeg");
 
-            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
-            Assert.That(reponseWasAutoHandled, Is.True);
+            bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(responseWasAutoHandled, Is.True);
 
             string writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo("123"));
@@ -289,8 +289,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(ms, "audio/mpeg");
 
-            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
-            Assert.That(reponseWasAutoHandled, Is.True);
+            bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(responseWasAutoHandled, Is.True);
 
             string writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo("567890"));
@@ -331,7 +331,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_use_fileStream()
         {
-            byte[] fileBytes = uploadedTextFile.ReadFully();
+            byte[] fileBytes = await uploadedTextFile.ReadFullyAsync();
             string fileText = Encoding.ASCII.GetString(fileBytes);
 
             "File content size {0}".Print(fileBytes.Length);
@@ -343,8 +343,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(uploadedTextFile, "audio/mpeg");
 
-            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
-            Assert.That(reponseWasAutoHandled, Is.True);
+            bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(responseWasAutoHandled, Is.True);
 
             string writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(fileText.Substring(6, 3)));

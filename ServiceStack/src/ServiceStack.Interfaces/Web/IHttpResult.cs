@@ -7,6 +7,9 @@ using System.Net;
 
 namespace ServiceStack.Web
 {
+    /// <summary>
+    /// Custom HTTP Response
+    /// </summary>
     public interface IHttpResult : IHasOptions
     {
         /// <summary>
