@@ -440,8 +440,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var customText = "1234567890";
             var customTextBytes = customText.ToUtf8Bytes();
 
-            pathProvider.WriteFile("original.txt", customTextBytes);
-            var file = pathProvider.GetFile("original.txt");
+            pathProvider.WriteFile("rangetest.txt", customTextBytes);
+            var file = pathProvider.GetFile("rangetest.txt");
 
             var ms = new MemoryStream();
 
@@ -460,6 +460,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             await file.WritePartialToAsync(ms, 3, 5);
             Assert.That(ReadAsStringAndReset(ms), Is.EquivalentTo("456"));
+            
+            pathProvider.DeleteFile(file);
         }
        
         public void AssertContents(IVirtualDirectory dir,
