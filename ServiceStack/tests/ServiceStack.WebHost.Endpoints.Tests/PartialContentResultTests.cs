@@ -72,8 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private ServiceStackHost appHost;
 
-        FileInfo uploadedFile => new("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-        FileInfo uploadedTextFile => new("~/TestExistingDir/textfile.txt".MapProjectPlatformPath());
+        FileInfo uploadedFile = new("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+        FileInfo uploadedTextFile = new("~/TestExistingDir/textfile.txt".MapProjectPlatformPath());
 
         [OneTimeSetUp]
         public void TextFixtureSetUp()
@@ -89,29 +89,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_StaticFile_GET_200_OK_response_for_file_with_no_range_header()
         {
-            var fileInfo = uploadedFile;
-            $"File size {fileInfo.Length}".Print();
+            $"File size {uploadedFile.Length}".Print();
 
             byte[] actualContents = $"{BaseUri}/TestExistingDir/upload.html".GetBytesFromUrl(
                 responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
 
             $"response size {actualContents.Length}".Print();
 
-            Assert.That(actualContents.Length, Is.EqualTo(fileInfo.Length));
+            Assert.That(actualContents.Length, Is.EqualTo(uploadedFile.Length));
         }
 
         [Test]
         public void Can_GET_200_OK_response_for_file_with_no_range_header()
         {
-            var fileInfo = uploadedFile;
-            $"File size {fileInfo.Length}".Print();
+            $"File size {uploadedFile.Length}".Print();
 
             byte[] actualContents = $"{BaseUri}/partialfiles/TestExistingDir/upload.html".GetBytesFromUrl(
                 responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
 
             $"response size {actualContents.Length}".Print();
 
-            Assert.That(actualContents.Length, Is.EqualTo(fileInfo.Length));
+            Assert.That(actualContents.Length, Is.EqualTo(uploadedFile.Length));
         }
 
         [Test]
@@ -333,8 +331,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_use_fileStream()
         {
-            var fileInfo = uploadedTextFile;
-            byte[] fileBytes = await fileInfo.ReadFullyAsync();
+            byte[] fileBytes = await uploadedTextFile.ReadFullyAsync();
             string fileText = Encoding.ASCII.GetString(fileBytes);
 
             $"File content size {fileBytes.Length}".Print();
@@ -344,7 +341,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var mockResponse = new MockHttpResponse(mockRequest);
             mockRequest.Headers.Add("Range", "bytes=6-8");
 
-            var httpResult = new HttpResult(fileInfo, "audio/mpeg");
+            var httpResult = new HttpResult(uploadedTextFile, "audio/mpeg");
 
             bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
             Assert.That(responseWasAutoHandled, Is.True);

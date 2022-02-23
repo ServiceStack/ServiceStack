@@ -64,10 +64,14 @@ namespace ServiceStack
             return fs.ReadFully();
         }
 
-        public static Task<byte[]> ReadFullyAsync(this FileInfo file, CancellationToken token=new())
+        public static async Task<byte[]> ReadFullyAsync(this FileInfo file, CancellationToken token=default)
         {
+#if NET6_0_OR_GREATER
+            return await File.ReadAllBytesAsync(file.FullName, token).ConfigAwait();
+#else
             using var fs = file.OpenRead();
-            return fs.ReadFullyAsync(token);
+            return await fs.ReadFullyAsync(token).ConfigAwait();
+#endif
         }
 
         public static string ReadAllText(this FileInfo file)
@@ -75,9 +79,13 @@ namespace ServiceStack
             return file.ReadFully().FromUtf8Bytes();
         }
 
-        public static async Task<string> ReadAllTextAsync(this FileInfo file, CancellationToken token=new())
+        public static async Task<string> ReadAllTextAsync(this FileInfo file, CancellationToken token=default)
         {
-            return (await file.ReadFullyAsync(token)).FromUtf8Bytes();
+#if NET6_0_OR_GREATER
+            return await File.ReadAllTextAsync(file.FullName, token).ConfigAwait();
+#else
+            return (await file.ReadFullyAsync(token).ConfigAwait()).FromUtf8Bytes();
+#endif
         }
     }
 }

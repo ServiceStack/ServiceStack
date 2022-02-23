@@ -130,7 +130,7 @@ namespace ServiceStack
             byte[] buffer = BufferPool.GetBuffer(bufferSize);
             try
             {
-                return await ReadFullyAsync(input, buffer, token);
+                return await ReadFullyAsync(input, buffer, token).ConfigAwait();
             }
             finally
             {
@@ -315,7 +315,7 @@ namespace ServiceStack
 
             long total = 0;
             int read;
-            while ((read = await input.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
+            while ((read = await input.ReadAsync(buffer, 0, buffer.Length, token).ConfigAwait()) > 0)
             {
                 await output.WriteAsync(buffer, 0, read, token);
                 total += read;
