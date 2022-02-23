@@ -4,6 +4,7 @@ using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.Auth;
+using ServiceStack.Data;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
 using ServiceStack.NativeTypes;
@@ -128,13 +129,18 @@ public class PublishTasks
                 typeof(AdminCreateUser),
                 typeof(AdminUpdateUser),
                 typeof(AdminDeleteUser),
+                typeof(GetCrudEvents),
             };
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
                 new CredentialsAuthProvider(AppSettings),
             }));
             
+            container.AddSingleton<ICrudEvents>(c =>
+                new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
+
             Plugins.Add(new AdminUsersFeature());
+            Plugins.Add(new AutoQueryFeature());
         }
     }
 

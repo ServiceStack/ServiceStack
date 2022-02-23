@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-02-18 13:45:42
+Date: 2022-02-23 23:10:26
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -83,6 +83,90 @@ export class AdminUserBase
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<AdminUserBase>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class QueryBase
+{
+    // @DataMember(Order=1)
+    public skip?: number;
+
+    // @DataMember(Order=2)
+    public take?: number;
+
+    // @DataMember(Order=3)
+    public orderBy: string;
+
+    // @DataMember(Order=4)
+    public orderByDesc: string;
+
+    // @DataMember(Order=5)
+    public include: string;
+
+    // @DataMember(Order=6)
+    public fields: string;
+
+    // @DataMember(Order=7)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<QueryBase>) { (Object as any).assign(this, init); }
+}
+
+export class QueryDb<T> extends QueryBase
+{
+
+    public constructor(init?: Partial<QueryDb<T>>) { super(init); (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class CrudEvent
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public eventType: string;
+
+    // @DataMember(Order=3)
+    public model: string;
+
+    // @DataMember(Order=4)
+    public modelId: string;
+
+    // @DataMember(Order=5)
+    public eventDate: string;
+
+    // @DataMember(Order=6)
+    public rowsUpdated?: number;
+
+    // @DataMember(Order=7)
+    public requestType: string;
+
+    // @DataMember(Order=8)
+    public requestBody: string;
+
+    // @DataMember(Order=9)
+    public userAuthId: string;
+
+    // @DataMember(Order=10)
+    public userAuthName: string;
+
+    // @DataMember(Order=11)
+    public remoteIp: string;
+
+    // @DataMember(Order=12)
+    public urn: string;
+
+    // @DataMember(Order=13)
+    public refId?: number;
+
+    // @DataMember(Order=14)
+    public refIdStr: string;
+
+    // @DataMember(Order=15)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<CrudEvent>) { (Object as any).assign(this, init); }
 }
 
 export class AppInfo
@@ -741,6 +825,27 @@ export class AdminDeleteUserResponse
     public constructor(init?: Partial<AdminDeleteUserResponse>) { (Object as any).assign(this, init); }
 }
 
+// @DataContract
+export class QueryResponse<T>
+{
+    // @DataMember(Order=1)
+    public offset: number;
+
+    // @DataMember(Order=2)
+    public total: number;
+
+    // @DataMember(Order=3)
+    public results: T[];
+
+    // @DataMember(Order=4)
+    public meta: { [index: string]: string; };
+
+    // @DataMember(Order=5)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<QueryResponse<T>>) { (Object as any).assign(this, init); }
+}
+
 // @Route("/metadata/app")
 // @DataContract
 export class MetadataApp implements IReturn<AppMetadata>
@@ -956,6 +1061,25 @@ export class AdminDeleteUser implements IReturn<AdminDeleteUserResponse>, IDelet
     public getTypeName() { return 'AdminDeleteUser'; }
     public getMethod() { return 'DELETE'; }
     public createResponse() { return new AdminDeleteUserResponse(); }
+}
+
+// @Route("/crudevents/{Model}")
+// @DataContract
+export class GetCrudEvents extends QueryDb<CrudEvent> implements IReturn<QueryResponse<CrudEvent>>
+{
+    // @DataMember(Order=1)
+    public authSecret: string;
+
+    // @DataMember(Order=2)
+    public model: string;
+
+    // @DataMember(Order=3)
+    public modelId: string;
+
+    public constructor(init?: Partial<GetCrudEvents>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'GetCrudEvents'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<CrudEvent>(); }
 }
 
 

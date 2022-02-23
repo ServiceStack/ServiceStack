@@ -227,7 +227,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             {{store.opDesc}}
         </h1>
     </div>
-    <div v-if="invalidAccess" class="w-body md:w-body overflow-auto" v-scope="EnsureAccess({ store, message:() => invalidAccess })"></div>
+    <div v-if="invalidAccess" class="w-body md:w-body overflow-auto" v-scope="EnsureAccess({ store, message:() => invalidAccess, $on:updated })"></div>
     <div v-else-if="hasState" class="pt-1">
         <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => viewModelColumns, save:updated })"></div>
         <div class="p-1 flex flex-wrap">

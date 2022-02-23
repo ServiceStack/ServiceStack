@@ -234,6 +234,7 @@ let store = PetiteVue.reactive({
             : null
     },
     invalidAccess() { return invalidAccessMessage(this.op, this.auth) },
+    hasRole(role) { return this.auth && this.auth.roles.indexOf(role) >= 0 },
 })
 App.events.subscribe('route:nav', args => store.init())
 /*:minify*/

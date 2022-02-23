@@ -44,6 +44,7 @@ App.components({
             get dataModelName() { return map(this.dataModel, x => x.name) },
             get pk() { return Forms.getPrimaryKey(getType(this.dataModel)) },
             get gridInputs() { return map(this.useApiUpdate, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forEdit(x.op.request))) },
+            get canAccessCrudEvents() { return APP.plugins.autoQuery.crudEventsServices && store.hasRole(APP.plugins.autoQuery.accessRole) },
             api: null,
             apiLoading: false,
             errorSummary: null,
@@ -51,6 +52,9 @@ App.components({
             origModel: {},
             confirmDelete: false,
             done,
+            open: null,
+            events: [],
+            eventsCount: 0,
             updated() {
                 let pk = this.pk, state = this.state
                 if (!pk || !state || !state.opQuery || !routes.edit) return
@@ -68,6 +72,20 @@ App.components({
                         this.api = r.api
                         this.origModel = this.useApiUpdate.createModel(results[0])
                         this.model = Object.assign({}, this.origModel)
+                    })
+                this.eventsCount = 0
+                this.events = []
+                apiSend(createClient, new GetCrudEvents({
+                        modelId: routes.edit,
+                        model: this.dataModelName,
+                        include: 'total',
+                        orderBy: '-Id',
+                    }))
+                    .then(r => {
+                        if (r.api.succeeded) {
+                            this.eventsCount = r.api.response.total
+                            this.events = r.api.response.results
+                        }
                     })
             },
             submit() {
@@ -135,6 +153,17 @@ App.components({
             mounted() {
                 this.updated()
             },
+            expand:{},
+            expanded(id) { return !!this.expand[id] },
+            toggle(id) {
+                this.expand[id] = !this.expand[id]
+            },
+            timeago(date) {
+                return timeago(new Date - toDate(date))
+            },
+            fullDate(date) {
+                return toLocalISOString(toDate(date)).replace('T',' ').replace(/-/g,'/')
+            }
        }
     }
 })
@@ -180,6 +209,74 @@ App.components({
                             <div :key="input.id" v-scope="Input({ input, model:() => model, api:() => api })"></div>
                         </div>
                     </fieldset>
+                </div>
+            </div>
+            <div v-if="canAccessCrudEvents">
+                <div class="flex justify-center">
+                    <button type="button" @click="open = open === 'events' ? '' : 'events'"
+                            class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                        <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                            <path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></g>
+                        </svg>
+                        <span class="mr-1">
+                            {{eventsCount}} {{ eventsCount === 1 ? 'Event' : 'Events' }}
+                        </span>
+                        <svg v-if="open!=='events'"
+                             class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <svg v-else
+                             class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div v-if="open==='events'">
+                    <ul class="divide-y divide-gray-200">
+                        <li v-for="x in events" :key="x.id" class="py-4 cursor-pointer" @click="toggle(x.id)">
+                            <div class="flex space-x-3">
+                                <div class="flex-1 flex flex-col">
+                                    <div class="flex justify-between">
+                                        <div class="uppercase inline-block w-20">{{x.eventType}}</div>
+                                        <div>
+                                            <span :title="`User ${x.userAuthId}`">{{x.userAuthName}}</span>
+                                        </div>
+                                        <div>
+                                            <span :title="fullDate(x.eventDate)">{{timeago(x.eventDate)}}</span>
+                                            <div class="ml-3 inline-block w-5">
+                                                <svg v-if="!expanded(x.id)" class="h-5 w-5 flex-none text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="expanded(x.id)" class="p-4">
+                                        <table>
+                                            <tr>
+                                                <td class="font-medium">API</td>
+                                                <td>{{x.requestType}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="pr-4 font-medium">User Id</td>
+                                                <td>{{x.userAuthId}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="pr-4 font-medium">Date</td>
+                                                <td>{{fullDate(x.eventDate)}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="pr-4 font-medium">IP</td>
+                                                <td>{{x.remoteIp}}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div v-if="expanded(x.id)" v-scope="PreviewObject({ val:() => JSON.parse(x.requestBody) })"></div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
