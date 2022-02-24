@@ -237,7 +237,7 @@ App.components({
                     </fieldset>
                 </div>
             </div>
-            <div v-if="canAccessCrudEvents">
+            <div class="mt-4" v-if="canAccessCrudEvents && eventsCount">
                 <div class="flex justify-center">
                     <button type="button" @click="open = open === 'events' ? '' : 'events'"
                             class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
@@ -245,7 +245,7 @@ App.components({
                             <path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></g>
                         </svg>
                         <span class="mr-1">
-                            {{eventsCount}} {{ eventsCount === 1 ? 'Event' : 'Events' }}
+                            {{eventsCount}} Audit {{ eventsCount === 1 ? 'Event' : 'Events' }}
                         </span>
                         <svg v-if="open!=='events'"
                              class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -258,7 +258,7 @@ App.components({
                     </button>
                 </div>
                 <div v-if="open==='events'">
-                    <ul class="divide-y divide-gray-200">
+                    <ul class="divide-y divide-gray-200 border-t">
                         <li v-for="x in events" :key="x.id" class="py-4 cursor-pointer" @click="toggle(x.id)">
                             <div class="flex space-x-3">
                                 <div class="flex-1 flex flex-col">
@@ -269,7 +269,7 @@ App.components({
                                         </div>
                                         <div>
                                             <span :title="fullDate(x.eventDate)">{{timeago(x.eventDate)}}</span>
-                                            <div class="ml-3 inline-block w-5">
+                                            <div class="ml-3 inline-block w-5 align-middle">
                                                 <svg v-if="!expanded(x.id)" class="h-5 w-5 flex-none text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                     <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                                                 </svg>
