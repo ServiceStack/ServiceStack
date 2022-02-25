@@ -103,6 +103,7 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
     
     let Formatters = {}
+    /**  @param {FormatInfo} format */
     function formatter(format) {
         let { method, options } = format
         let key = `${method}(${options})`
@@ -113,7 +114,11 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
             let intlExpr = `return new ${method}('${loc}',${options||'undefined'})`
             try {
                 let intlFn = Function(intlExpr)()
-                f = val => intlFn.format(val)
+                f = method === 'Intl.DateTimeFormat'
+                    ? val => intlFn.format(toDate(val))
+                    : method === 'Intl.NumberFormat'
+                        ? val => intlFn.format(Number(val))
+                        : val => intlFn.format(val)
                 return Formatters[key] = f
             } catch(e) {
                 console.error(`Invalid format: ${intlExpr}`,e)
@@ -294,7 +299,7 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
             return o
         },
         /** @param {*} o
-         *  @param {FormatInfo} [format] */
+         *  @param {FormatInfo} format */
         format(o, format) {
             if (o == null) return ''
             let val = apiValue(o)

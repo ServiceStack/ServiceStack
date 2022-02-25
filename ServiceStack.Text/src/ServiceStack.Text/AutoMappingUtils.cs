@@ -275,6 +275,12 @@ namespace ServiceStack
             if (mi != null)
                 return mi.Invoke(null, new[] { from });
 
+            if (toType.IsEnum)
+            {
+                var enumValueStr = s.LastRightPart('.');
+                return Enum.Parse(toType, enumValueStr);
+            }
+
             if (s != null)
                 return TypeSerializer.DeserializeFromString(s, toType);
 

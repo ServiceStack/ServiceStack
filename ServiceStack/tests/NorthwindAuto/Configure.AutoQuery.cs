@@ -31,6 +31,25 @@ namespace MyApp
                             if (op.Request.Name.IndexOf("User", StringComparison.Ordinal) >= 0)
                                 op.Request.AddAttributeIfNotExists(new ValidateIsAdminAttribute());
                         },
+                        TypeFilter = (type, req) =>
+                        {
+                            switch (type.Name)
+                            {
+                                case "Order":
+                                    type.Properties.Where(x => x.Name.EndsWith("Date")).Each(p => 
+                                        p.AddAttribute(new IntlAttribute(Intl.DateTime) { Date = DateStyle.Medium }));
+                                    type.Properties.First(x => x.Name == "Freight")
+                                        .AddAttribute(new IntlAttribute(Intl.Number) { Currency = NumberCurrency.USD });
+                                    break;
+                                case "OrderDetail":
+                                    type.Properties.First(x => x.Name == "UnitPrice")
+                                        .AddAttribute(new IntlAttribute(Intl.Number) { Currency = NumberCurrency.USD });
+                                    type.Properties.First(x => x.Name == "Discount")
+                                        .AddAttribute(new IntlAttribute(Intl.Number) { Number = NumberStyle.Percent });
+                                    break;
+                            }
+                            
+                        },
                         IncludeService = op => !op.ReferencesAny(nameof(Booking)),
                     },
                 });

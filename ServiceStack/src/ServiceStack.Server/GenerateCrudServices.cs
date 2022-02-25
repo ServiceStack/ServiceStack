@@ -588,9 +588,17 @@ namespace ServiceStack
 
                 foreach (var argType in metaAttr.ConstructorArgs)
                 {
-                    var ctorAttrType = ResolveType(argType.Type, generatedTypes);
-                    var argValue = argType.Value.ConvertTo(ctorAttrType);
-                    args.Add(argValue);
+                    try
+                    {
+                        var ctorAttrType = ResolveType(argType.Type, generatedTypes);
+                        var argValue = argType.Value.ConvertTo(ctorAttrType);
+                        args.Add(argValue);
+                    }
+                    catch (Exception e)
+                    {
+                        LogManager.GetLogger(typeof(GenerateCrudServices)).Error($"Could not convert '{argType.Value}' to '{argType.Type}'", e);
+                        throw;
+                    }
                 }
                 var attrBuilder = new CustomAttributeBuilder(ciAttr, args.ToArray());
                 return attrBuilder;
@@ -605,10 +613,18 @@ namespace ServiceStack
                 {
                     foreach (var argType in metaAttr.Args)
                     {
-                        propInfos.Add(attrType.GetProperty(argType.Name));
-                        var piAttrType = ResolveType(argType.Type, generatedTypes);
-                        var argValue = argType.Value.ConvertTo(piAttrType);
-                        args.Add(argValue);
+                        try
+                        {
+                            propInfos.Add(attrType.GetProperty(argType.Name));
+                            var piAttrType = ResolveType(argType.Type, generatedTypes);
+                            var argValue = argType.Value.ConvertTo(piAttrType);
+                            args.Add(argValue);
+                        }
+                        catch (Exception e)
+                        {
+                            LogManager.GetLogger(typeof(GenerateCrudServices)).Error($"Could not convert '{argType.Value}' to '{argType.Type}'", e);
+                            throw;
+                        }
                     }
                 }
 

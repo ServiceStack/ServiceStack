@@ -930,9 +930,7 @@ namespace ServiceStack.NativeTypes
         public static string PropertyStringValue(PropertyInfo pi, object value)
         {
             if (pi.PropertyType.IsEnum)
-            {
-                return "{0}.{1}".Fmt(pi.PropertyType.Name, value);
-            }
+                return pi.PropertyType.Name + "." + value;
 
             if (pi.PropertyType == typeof(Type))
             {
