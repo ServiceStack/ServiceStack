@@ -155,5 +155,4 @@ public class InputTests
         
         Assert.That(mediaRules.Reverse().MinVisibleSize(nameof(UserAuth.Id)), Is.EqualTo(MediaSizes.ExtraSmall));
     }
-    
 }

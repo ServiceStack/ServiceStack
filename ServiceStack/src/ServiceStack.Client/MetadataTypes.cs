@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -168,6 +169,14 @@ namespace ServiceStack
         public string Uri { get; set; }
         public string Alt { get; set; }
         public string Cls { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class FormatInfo
+    {
+        public string Method { get; set; }
+        public string Options { get; set; }
+        public string Locale { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -456,7 +465,12 @@ namespace ServiceStack
         /// <summary>
         /// The default styles to use for rendering API Explorer Forms 
         /// </summary>
-        public ApiCss ExplorerCss { get; set; } 
+        public ApiCss ExplorerCss { get; set; }
+        
+        /// <summary>
+        /// The Locale to use for displaying info, defaults to 
+        /// </summary>
+        public string Locale { get; set; }
         
         /// <summary>
         /// Custom User-Defined Attributes
@@ -662,6 +676,7 @@ namespace ServiceStack
         public List<MetadataAttribute> Attributes { get; set; }
         
         public InputInfo Input { get; set; }
+        public FormatInfo Format { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -809,6 +824,118 @@ namespace ServiceStack
             };
             configure?.Invoke(ret);
             return ret;
+        }
+
+        public static FormatInfo ToFormat(this FormatAttribute attr) => attr == null
+            ? null
+            : new FormatInfo { Method = attr.Method, Options = attr.Options, Locale = attr.Locale };
+
+        static string LowerFirst(this string s) => char.ToLower(s[0]) + s.Substring(1);
+        
+        public static FormatInfo ToFormat(this IntlAttribute attr)
+        {
+            if (attr == null) 
+                return null; 
+            
+            var to = new FormatInfo
+            {
+                Method = attr.Type switch {
+                    Intl.Number => "Intl.NumberFormat",
+                    Intl.DateTime => "Intl.DateTimeFormat",
+                    Intl.RelativeTime => "Intl.RelativeTimeFormat",
+                    _ => throw new NotSupportedException($"{attr.Type}")
+                }, 
+                Options = attr.Options, 
+                Locale = attr.Locale,
+            };
+
+            if (to.Options == null)
+            {
+                var args = new Dictionary<string, object>();
+                
+                if (attr.Type == Intl.Number)
+                {
+                    var style = attr.Number;
+                    if (!string.IsNullOrEmpty(attr.Currency))
+                    {
+                        args["style"] = "currency";
+                        args["currency"] = attr.Currency;
+                    }
+                    if (!string.IsNullOrEmpty(attr.Unit))
+                    {
+                        args["style"] = "unit";
+                        args["unit"] = attr.Unit;
+                    }
+                    if (style != NumberStyle.None)
+                        args["style"] = style.ToString().LowerFirst();
+                    
+                    if (attr.MinimumIntegerDigits >= 0)
+                        args[nameof(attr.MinimumIntegerDigits).LowerFirst()] = attr.MinimumIntegerDigits;
+                    if (attr.MinimumFractionDigits >= 0)
+                        args[nameof(attr.MinimumFractionDigits).LowerFirst()] = attr.MinimumFractionDigits;
+                    if (attr.MaximumFractionDigits >= 0)
+                        args[nameof(attr.MaximumFractionDigits).LowerFirst()] = attr.MaximumFractionDigits;
+                    if (attr.MinimumSignificantDigits >= 0)
+                        args[nameof(attr.MinimumSignificantDigits).LowerFirst()] = attr.MinimumSignificantDigits;
+                    if (attr.MaximumSignificantDigits >= 0)
+                        args[nameof(attr.MaximumSignificantDigits).LowerFirst()] = attr.MaximumSignificantDigits;
+                }
+                else if (attr.Type == Intl.DateTime)
+                {
+                    if (attr.Date != DateStyle.None)
+                        args["dateStyle"] = attr.Date.ToString().LowerFirst();
+                    if (attr.Time != TimeStyle.None)
+                        args["timeStyle"] = attr.Time.ToString().LowerFirst();
+
+                    void AddDatePart(Dictionary<string, object> args, string name, PartStyle value)
+                    {
+                        if (value == PartStyle.None)
+                            return;
+                        args[name.LowerFirst()] = value == PartStyle.Digits2 ? "2-digit" : value.ToString().ToLower();
+                    }
+                    AddDatePart(args, nameof(attr.Weekday), attr.Weekday);
+                    AddDatePart(args, nameof(attr.Era), attr.Era);
+                    AddDatePart(args, nameof(attr.Year), attr.Year);
+                    AddDatePart(args, nameof(attr.Month), attr.Month);
+                    AddDatePart(args, nameof(attr.Day), attr.Day);
+                    AddDatePart(args, nameof(attr.Hour), attr.Hour);
+                    AddDatePart(args, nameof(attr.Minute), attr.Minute);
+                    AddDatePart(args, nameof(attr.Second), attr.Second);
+                    AddDatePart(args, nameof(attr.TimeZoneName), attr.TimeZoneName);
+
+                    if (attr.Hour12)
+                        args[nameof(attr.Hour12).LowerFirst()] = attr.Hour12;
+                }
+                else if (attr.Type == Intl.RelativeTime)
+                {
+                    if (attr.RelativeTime != RelativeTimeStyle.None)
+                        args["style"] = attr.RelativeTime.ToString().LowerFirst();
+                }
+                else throw new NotSupportedException(attr.Type.ToString());
+
+                if (args.Count > 0)
+                {
+                    var sb = StringBuilderCache.Allocate();
+                    foreach (var entry in args)
+                    {
+                        if (sb.Length > 0)
+                            sb.Append(",");
+                        sb.Append(entry.Key);
+                        sb.Append(':');
+                        sb.Append(entry.Value switch {
+                            string s => $"'{s}'",
+                            int i => i.ToString(),
+                            bool b => b.ToString().ToLower(),
+                            _ => throw new NotSupportedException($"{entry.Key}:{entry.Value}")
+                        });
+                    }
+                    sb.Insert(0, "{");
+                    sb.Append("}");
+                    to.Options = StringBuilderCache.ReturnAndFree(sb);
+                }
+            }
+            
+            return to;
         }
     }
 }

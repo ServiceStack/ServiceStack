@@ -766,8 +766,8 @@ namespace ServiceStack
             {
                 var c0 = value[i];
                 var c1 = i < len - 1 ? value[i + 1] : 'A';
-                var c0isUpper = c0 >= 'A' && c0 <= 'Z';
-                var c1isUpper = c1 >= 'A' && c1 <= 'Z';
+                var c0isUpper = c0 is >= 'A' and <= 'Z';
+                var c1isUpper = c1 is >= 'A' and <= 'Z';
 
                 if (firstPart && c0isUpper && (c1isUpper || i == 0))
                     c0 = (char)(c0 + LowerCaseOffset);

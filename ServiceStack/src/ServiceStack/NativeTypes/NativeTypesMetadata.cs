@@ -156,6 +156,7 @@ namespace ServiceStack.NativeTypes
                     Ui = new ApiUiInfo {
                         QueryCss = operation.QueryCss,
                         ExplorerCss = operation.ExplorerCss,
+                        Icon = operation.Icon,
                         FormLayout = operation.FormLayout,
                     },
                 };
@@ -826,6 +827,9 @@ namespace ServiceStack.NativeTypes
                 Description = pi.GetDescription(),
             };
 
+            property.Format ??= pi.FirstAttribute<IntlAttribute>().ToFormat();
+            property.Format ??= pi.FirstAttribute<FormatAttribute>().ToFormat();
+
             var apiMember = pi.FirstAttribute<ApiMemberAttribute>();
             if (apiMember != null)
             {
@@ -834,6 +838,7 @@ namespace ServiceStack.NativeTypes
 
                 property.ParamType = apiMember.ParameterType;
                 property.DisplayType = apiMember.DataType;
+                property.Format ??= new FormatInfo { Method = apiMember.Format };
             }
 
             var validateProp = pi.AllAttributes<ValidateAttribute>();
@@ -858,8 +863,7 @@ namespace ServiceStack.NativeTypes
                 property.AllowableMin = apiAllowableValues.Min;
                 property.AllowableMax = apiAllowableValues.Max;
             }
-
-
+            
             var inputProp = pi.FirstAttribute<InputAttribute>();
             if (inputProp != null)
             {
