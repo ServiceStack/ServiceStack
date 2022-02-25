@@ -59,6 +59,6 @@ if (alwaysHideTags) {
 }
 
 export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues } = appApis(APP.api)
-export let Forms = createForms(TypesMap, APP.ui.queryCss, APP.ui.theme)
+export let Forms = createForms(TypesMap, APP.ui.queryCss, APP.ui.theme, APP.ui.defaultFormats)
 
 /*:minify*/

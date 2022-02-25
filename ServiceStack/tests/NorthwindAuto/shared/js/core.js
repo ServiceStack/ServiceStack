@@ -322,4 +322,9 @@ export function timeago(ms) {
     return ""
 }
 
+/** @param {number} val */
+function currency(val) {
+    return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(val)
+}
+
 /*:minify*/

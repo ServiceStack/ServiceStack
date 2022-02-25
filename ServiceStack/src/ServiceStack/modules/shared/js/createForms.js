@@ -1,5 +1,9 @@
 /*minify:*/
-function createForms(TypesMap, css, theme) {
+function createForms(TypesMap, css, theme, defaultFormats) {
+    if (!defaultFormats) defaultFormats = {}
+    if (!defaultFormats.locale) {
+        defaultFormats.locale = map(navigator.languages, x => x[0]) || navigator.language || 'en'
+    }
     let useType = type => (acc,x) => { acc[x]=type; return acc }
     let InputTypes = {
         bool: 'checkbox',
@@ -75,6 +79,40 @@ function createForms(TypesMap, css, theme) {
         return ret || null
     }
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
+    let Formatters = {}
+    function formatter(format) {
+        let { method, options } = format
+        let key = `${method}(${options})`
+        let f = Formatters[key]
+        if (typeof f == 'function') return f
+        let loc = format.locale || defaultFormats.locale
+        if (method.startsWith('Intl.')) {
+            let intlExpr = `return new ${method}('${loc}',${options||'undefined'})`
+            try {
+                let intlFn = Function(intlExpr)()
+                f = val => intlFn.format(val)
+                return Formatters[key] = f
+            } catch(e) {
+                console.error(`Invalid format: ${intlExpr}`,e)
+            }
+        } else {
+            let fmt = require(method)
+            if (typeof fmt == 'function') {
+                let opt = options != null
+                    ? Function("return " + options)()
+                    : undefined
+                f = val => fmt(val,opt,loc)
+                return Formatters[key] = f
+            }
+            console.error(`No '${method}' function exists`)
+        }
+    }
+    let useDateFmt = defaultFormats.date 
+        ? formatter(defaultFormats.date)
+        : dateFmt
+    let useNumberFmt = defaultFormats.number
+        ? formatter(defaultFormats.number)
+        : v => v
     return {
         getId,
         inputId,
@@ -223,6 +261,19 @@ function createForms(TypesMap, css, theme) {
                     ? dateFmt(toDate(o))
                     : o.trim()
             return o
+        },
+        format(o, format) {
+            if (o == null) return ''
+            let val = apiValue(o)
+            let f = format && formatter(format) 
+            if (typeof f != 'function') {
+                f = v => isDate(v) 
+                    ? useDateFmt(v) 
+                    : typeof v == 'number'
+                        ? useNumberFmt(v)
+                        : v
+            }
+            return f(val)
         }
     }
 }

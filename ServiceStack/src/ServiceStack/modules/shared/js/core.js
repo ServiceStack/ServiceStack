@@ -244,4 +244,7 @@ function timeago(ms) {
     }
     return ""
 }
+function currency(val) {
+    return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(val)
+}
 /*:minify*/

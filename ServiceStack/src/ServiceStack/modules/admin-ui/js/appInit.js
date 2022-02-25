@@ -15,5 +15,5 @@ function createClient(fn) {
 }
 let client = createClient()
 let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues } = appApis(APP.api)
-let Forms = createForms(TypesMap, APP.plugins.adminUsers.css, APP.ui.theme)
+let Forms = createForms(TypesMap, APP.plugins.adminUsers.css, APP.ui.theme, APP.ui.defaultFormats)
 /*:minify*/

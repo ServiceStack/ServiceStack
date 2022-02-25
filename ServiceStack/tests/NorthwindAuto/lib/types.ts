@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-02-23 23:10:26
+Date: 2022-02-26 00:05:31
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -225,6 +225,24 @@ export class ApiCss
     public constructor(init?: Partial<ApiCss>) { (Object as any).assign(this, init); }
 }
 
+export class FormatInfo
+{
+    public method: string;
+    public options: string;
+    public locale: string;
+
+    public constructor(init?: Partial<FormatInfo>) { (Object as any).assign(this, init); }
+}
+
+export class ApiFormat
+{
+    public locale: string;
+    public number: FormatInfo;
+    public date: FormatInfo;
+
+    public constructor(init?: Partial<ApiFormat>) { (Object as any).assign(this, init); }
+}
+
 export class UiInfo
 {
     public brandIcon: ImageInfo;
@@ -235,6 +253,7 @@ export class UiInfo
     public theme: ThemeCss;
     public queryCss: ApiCss;
     public explorerCss: ApiCss;
+    public defaultFormats: ApiFormat;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<UiInfo>) { (Object as any).assign(this, init); }
@@ -441,6 +460,15 @@ export class MetadataAttribute
     public constructor(init?: Partial<MetadataAttribute>) { (Object as any).assign(this, init); }
 }
 
+export class RefInfo
+{
+    public model: string;
+    public refId: string;
+    public refLabel: string;
+
+    public constructor(init?: Partial<RefInfo>) { (Object as any).assign(this, init); }
+}
+
 export class MetadataPropertyType
 {
     public name: string;
@@ -463,6 +491,8 @@ export class MetadataPropertyType
     public allowableMax?: number;
     public attributes: MetadataAttribute[];
     public input: InputInfo;
+    public format: FormatInfo;
+    public ref: RefInfo;
 
     public constructor(init?: Partial<MetadataPropertyType>) { (Object as any).assign(this, init); }
 }
@@ -605,6 +635,7 @@ export class ApiUiInfo
 {
     public queryCss: ApiCss;
     public explorerCss: ApiCss;
+    public icon: ImageInfo;
     public formLayout: InputInfo[];
     public meta: { [index: string]: string; };
 

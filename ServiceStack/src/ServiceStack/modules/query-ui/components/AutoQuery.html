@@ -153,6 +153,11 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                     args[k] = filter.value
                 })
             })
+            let qs = queryString(location.search)
+            Object.keys(qs).forEach(k => {
+                let field = this.viewModelColumns.find(x => x.name === k)
+                if (field) args[k] = qs[k]
+            })
             if (orderBy.length > 0) {
                 args.orderBy = orderBy.join(',')
             }
@@ -358,8 +363,8 @@ App.components({
                 onFilter(args)
             },
             fieldName(name) { return humanify(name) },
-            apiValueFmt,
             getId(row) { return Forms.getId(getType(routes.op),row) },
+            format(row, column) { return Forms.format(mapGet(row,column.name), column.format) },
         }
     },
     SettingsIcons({ routes, settings, name }) {
@@ -423,7 +428,7 @@ App.components({
                             </button>
                         </td>
                         <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ apiValueFmt(mapGet(row,c.name)) }}
+                            {{ format(row,c) }}
                         </td>
                     </tr>
                     </tbody>

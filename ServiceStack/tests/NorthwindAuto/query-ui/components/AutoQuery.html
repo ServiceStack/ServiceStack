@@ -378,7 +378,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 
 <script>
 import { getType } from "../js/appInit"
-import { apiValueFmt } from "@servicestack/client"
+import { apiValueFmt, mapGet } from "@servicestack/client"
 
 App.components({
     Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
@@ -402,8 +402,8 @@ App.components({
                 onFilter(args)
             },
             fieldName(name) { return humanify(name) },
-            apiValueFmt,
             getId(row) { return Forms.getId(getType(routes.op),row) },
+            format(row, column) { return Forms.format(mapGet(row,column.name), column.format) },
         }
     },
     SettingsIcons({ routes, settings, name }) {
@@ -468,7 +468,7 @@ App.components({
                             </button>
                         </td>
                         <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ apiValueFmt(mapGet(row,c.name)) }}
+                            {{ format(row,c) }}
                         </td>
                     </tr>
                     </tbody>
