@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using ServiceStack.HtmlModules;
 using ServiceStack.Model;
 
@@ -35,6 +36,14 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
             HideTags = new List<string> { TagNames.Auth },
             BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
             Theme = new ThemeCss { Form = "shadow overflow-hidden sm:rounded-md bg-white" },
+            DefaultFormats = new ApiFormat
+            {
+                // Defaults to browsers navigator.languages
+                //Locale = Thread.CurrentThread.CurrentCulture.Name, 
+                Date = new IntlAttribute(Intl.DateTime) {
+                    Date = DateStyle.Medium,
+                }.ToFormat(),
+            },
             QueryCss = new ApiCss
             {
                 Form = "max-w-screen-2xl",

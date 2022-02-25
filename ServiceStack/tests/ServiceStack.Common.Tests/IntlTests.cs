@@ -14,6 +14,8 @@ public class IntlDateExamples
     public DateTime Example2 { get; set; }
     [Intl(Intl.DateTime, Date = DateStyle.Short)]
     public DateTime Example3 { get; set; }
+    [Intl(Intl.DateTime, Year = DatePart.Digits2, Month = DateMonth.Short, Day = DatePart.Numeric)]
+    public DateTime Example4 { get; set; }
 }
 
 public class IntlNumberExamples
@@ -76,6 +78,7 @@ public class IntlTests
         AssertFormat(Format(dto,nameof(IntlDateExamples.Example1)), "Intl.DateTimeFormat");
         AssertFormat(Format(dto,nameof(IntlDateExamples.Example2)), "Intl.DateTimeFormat", "{dateStyle:'medium',timeStyle:'short'}", "en-AU");
         AssertFormat(Format(dto,nameof(IntlDateExamples.Example3)), "Intl.DateTimeFormat", "{dateStyle:'short'}");
+        AssertFormat(Format(dto,nameof(IntlDateExamples.Example4)), "Intl.DateTimeFormat", "{year:'2-digit',month:'short',day:'numeric'}");
     }
 
     [Test]

@@ -172,11 +172,30 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
+    public class ApiFormat
+    {
+        /// <summary>
+        /// If not specified uses browser's navigator.languages
+        /// </summary>
+        public string Locale { get; set; }
+        public FormatInfo Number { get; set; }
+        public FormatInfo Date { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
     public class FormatInfo
     {
         public string Method { get; set; }
         public string Options { get; set; }
         public string Locale { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class RefInfo
+    {
+        public string Model { get; set; }
+        public string RefId { get; set; }
+        public string RefLabel { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -468,9 +487,9 @@ namespace ServiceStack
         public ApiCss ExplorerCss { get; set; }
         
         /// <summary>
-        /// The Locale to use for displaying info, defaults to 
+        /// The default formats for displaying info
         /// </summary>
-        public string Locale { get; set; }
+        public ApiFormat DefaultFormats { get; set; }
         
         /// <summary>
         /// Custom User-Defined Attributes
@@ -538,6 +557,7 @@ namespace ServiceStack
     {
         public ApiCss QueryCss { get; set; } 
         public ApiCss ExplorerCss { get; set; } 
+        public ImageInfo Icon { get; set; }
         public List<InputInfo> FormLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -677,6 +697,7 @@ namespace ServiceStack
         
         public InputInfo Input { get; set; }
         public FormatInfo Format { get; set; }
+        public RefInfo Ref { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -866,7 +887,7 @@ namespace ServiceStack
                         args["style"] = "unit";
                         args["unit"] = attr.Unit;
                     }
-                    if (style != NumberStyle.None)
+                    if (style != NumberStyle.Undefined)
                         args["style"] = style.ToString().LowerFirst();
                     
                     if (attr.MinimumIntegerDigits >= 0)
@@ -882,33 +903,40 @@ namespace ServiceStack
                 }
                 else if (attr.Type == Intl.DateTime)
                 {
-                    if (attr.Date != DateStyle.None)
+                    if (attr.Date != DateStyle.Undefined)
                         args["dateStyle"] = attr.Date.ToString().LowerFirst();
-                    if (attr.Time != TimeStyle.None)
+                    if (attr.Time != TimeStyle.Undefined)
                         args["timeStyle"] = attr.Time.ToString().LowerFirst();
 
-                    void AddDatePart(Dictionary<string, object> args, string name, PartStyle value)
-                    {
-                        if (value == PartStyle.None)
-                            return;
-                        args[name.LowerFirst()] = value == PartStyle.Digits2 ? "2-digit" : value.ToString().ToLower();
+                    void AddDateText(Dictionary<string, object> args, string name, DateText value) {
+                        if (value != DateText.Undefined)
+                            args[name.LowerFirst()] = value.ToString().ToLower();
                     }
-                    AddDatePart(args, nameof(attr.Weekday), attr.Weekday);
-                    AddDatePart(args, nameof(attr.Era), attr.Era);
+                    void AddDatePart(Dictionary<string, object> args, string name, DatePart value) {
+                        if (value != DatePart.Undefined)
+                            args[name.LowerFirst()] = value == DatePart.Digits2 ? "2-digit" : value.ToString().ToLower();
+                    }
+                    void AddDateMonth(Dictionary<string, object> args, string name, DateMonth value) {
+                        if (value != DateMonth.Undefined)
+                            args[name.LowerFirst()] = value == DateMonth.Digits2 ? "2-digit" : value.ToString().ToLower();
+                    }
+                    
+                    AddDateText(args, nameof(attr.Weekday), attr.Weekday);
+                    AddDateText(args, nameof(attr.Era), attr.Era);
                     AddDatePart(args, nameof(attr.Year), attr.Year);
-                    AddDatePart(args, nameof(attr.Month), attr.Month);
+                    AddDateMonth(args, nameof(attr.Month), attr.Month);
                     AddDatePart(args, nameof(attr.Day), attr.Day);
                     AddDatePart(args, nameof(attr.Hour), attr.Hour);
                     AddDatePart(args, nameof(attr.Minute), attr.Minute);
                     AddDatePart(args, nameof(attr.Second), attr.Second);
-                    AddDatePart(args, nameof(attr.TimeZoneName), attr.TimeZoneName);
+                    AddDateText(args, nameof(attr.TimeZoneName), attr.TimeZoneName);
 
                     if (attr.Hour12)
                         args[nameof(attr.Hour12).LowerFirst()] = attr.Hour12;
                 }
                 else if (attr.Type == Intl.RelativeTime)
                 {
-                    if (attr.RelativeTime != RelativeTimeStyle.None)
+                    if (attr.RelativeTime != RelativeTimeStyle.Undefined)
                         args["style"] = attr.RelativeTime.ToString().LowerFirst();
                 }
                 else throw new NotSupportedException(attr.Type.ToString());

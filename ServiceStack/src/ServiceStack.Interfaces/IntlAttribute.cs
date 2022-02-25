@@ -40,15 +40,15 @@ public class IntlAttribute : AttributeBase
     public int MaximumSignificantDigits { get; set; } = int.MinValue;
     public int FractionalSecondDigits { get; set; } = int.MinValue;
     
-    public PartStyle Weekday { get; set; }
-    public PartStyle Era { get; set; }
-    public PartStyle Year { get; set; }
-    public PartStyle Month { get; set; }
-    public PartStyle Day { get; set; }
-    public PartStyle Hour { get; set; }
-    public PartStyle Minute { get; set; }
-    public PartStyle Second { get; set; }
-    public PartStyle TimeZoneName { get; set; }
+    public DateText Weekday { get; set; }
+    public DateText Era { get; set; }
+    public DatePart Year { get; set; }
+    public DateMonth Month { get; set; }
+    public DatePart Day { get; set; }
+    public DatePart Hour { get; set; }
+    public DatePart Minute { get; set; }
+    public DatePart Second { get; set; }
+    public DateText TimeZoneName { get; set; }
     public string TimeZone { get; set; }
     public bool Hour12 { get; set; }
 }
@@ -63,12 +63,14 @@ public enum Intl
     RelativeTime,
 }
 
-public enum DateStyle { None=0, Full, Long, Medium, Short, }
-public enum TimeStyle { None=0, Full, Long, Medium, Short, }
-public enum NumberStyle { None=0, Decimal, Currency, Percent, Unit, }
-public enum RelativeTimeStyle { None=0, Long, Short, Narrow, }
+public enum DateStyle { Undefined=0, Full, Long, Medium, Short, }
+public enum TimeStyle { Undefined=0, Full, Long, Medium, Short, }
+public enum NumberStyle { Undefined=0, Decimal, Currency, Percent, Unit, }
+public enum RelativeTimeStyle { Undefined=0, Long, Short, Narrow, }
 
-public enum PartStyle { None=0, Narrow, Short, Long, Digits2, }
+public enum DatePart { Undefined=0, Numeric, Digits2, }
+public enum DateMonth { Undefined=0, Numeric, Digits2, Narrow, Short, Long, }
+public enum DateText { Undefined=0, Narrow, Short, Long }
 
 
 public static class NumberCurrency
