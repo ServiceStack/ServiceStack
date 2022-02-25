@@ -180,6 +180,11 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                     args[k] = filter.value
                 })
             })
+            let qs = queryString(location.search)
+            Object.keys(qs).forEach(k => {
+                let field = this.viewModelColumns.find(x => x.name === k)
+                if (field) args[k] = qs[k]
+            })
             if (orderBy.length > 0) {
                 args.orderBy = orderBy.join(',')
             }
