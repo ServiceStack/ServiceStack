@@ -17,13 +17,16 @@ public class Booking : AuditBase
     public string Name { get; set; } = string.Empty;
     public RoomType RoomType { get; set; }
     public int RoomNumber { get; set; }
-    [Intl(Intl.DateTime, Date = DateStyle.Long)]
+    [Intl(IntlFormat.DateTime, Date = DateStyle.Long)]
     public DateTime BookingStartDate { get; set; }
+    [IntlRelativeTime]
     public DateTime? BookingEndDate { get; set; }
-    [Intl(Intl.Number, Currency = NumberCurrency.USD)]
+    [Intl(IntlFormat.Number, Currency = NumberCurrency.USD)]
     public decimal Cost { get; set; }
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
+    [IntlRelativeTime]
+    public TimeSpan TimeAgo => DateTime.UtcNow - this.BookingStartDate;
 }
 
 public enum RoomType

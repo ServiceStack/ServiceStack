@@ -853,7 +853,7 @@ namespace ServiceStack
 
         static string LowerFirst(this string s) => char.ToLower(s[0]) + s.Substring(1);
         
-        public static FormatInfo ToFormat(this IntlAttribute attr)
+        public static FormatInfo ToFormat(this Intl attr)
         {
             if (attr == null) 
                 return null; 
@@ -861,9 +861,9 @@ namespace ServiceStack
             var to = new FormatInfo
             {
                 Method = attr.Type switch {
-                    Intl.Number => "Intl.NumberFormat",
-                    Intl.DateTime => "Intl.DateTimeFormat",
-                    Intl.RelativeTime => "Intl.RelativeTimeFormat",
+                    IntlFormat.Number => "Intl.NumberFormat",
+                    IntlFormat.DateTime => "Intl.DateTimeFormat",
+                    IntlFormat.RelativeTime => "Intl.RelativeTimeFormat",
                     _ => throw new NotSupportedException($"{attr.Type}")
                 }, 
                 Options = attr.Options, 
@@ -874,7 +874,7 @@ namespace ServiceStack
             {
                 var args = new Dictionary<string, object>();
                 
-                if (attr.Type == Intl.Number)
+                if (attr.Type == IntlFormat.Number)
                 {
                     var style = attr.Number;
                     if (!string.IsNullOrEmpty(attr.Currency))
@@ -890,6 +890,19 @@ namespace ServiceStack
                     if (style != NumberStyle.Undefined)
                         args["style"] = style.ToString().LowerFirst();
                     
+                    if (attr.Notation != Notation.Undefined)
+                        args[nameof(attr.Notation).LowerFirst()] = attr.Notation.ToString().LowerFirst();
+                    if (attr.RoundingMode != RoundingMode.Undefined)
+                        args[nameof(attr.RoundingMode).LowerFirst()] = attr.RoundingMode.ToString().LowerFirst();
+                    if (attr.UnitDisplay != UnitDisplay.Undefined)
+                        args[nameof(attr.UnitDisplay).LowerFirst()] = attr.UnitDisplay.ToString().LowerFirst();
+                    if (attr.SignDisplay != SignDisplay.Undefined)
+                        args[nameof(attr.SignDisplay).LowerFirst()] = attr.SignDisplay.ToString().LowerFirst();
+                    if (attr.CurrencyDisplay != CurrencyDisplay.Undefined)
+                        args[nameof(attr.CurrencyDisplay).LowerFirst()] = attr.CurrencyDisplay.ToString().LowerFirst();
+                    if (attr.CurrencySign != CurrencySign.Undefined)
+                        args[nameof(attr.CurrencySign).LowerFirst()] = attr.CurrencySign.ToString().LowerFirst();
+
                     if (attr.MinimumIntegerDigits >= 0)
                         args[nameof(attr.MinimumIntegerDigits).LowerFirst()] = attr.MinimumIntegerDigits;
                     if (attr.MinimumFractionDigits >= 0)
@@ -901,7 +914,7 @@ namespace ServiceStack
                     if (attr.MaximumSignificantDigits >= 0)
                         args[nameof(attr.MaximumSignificantDigits).LowerFirst()] = attr.MaximumSignificantDigits;
                 }
-                else if (attr.Type == Intl.DateTime)
+                else if (attr.Type == IntlFormat.DateTime)
                 {
                     if (attr.Date != DateStyle.Undefined)
                         args["dateStyle"] = attr.Date.ToString().LowerFirst();
@@ -934,10 +947,12 @@ namespace ServiceStack
                     if (attr.Hour12)
                         args[nameof(attr.Hour12).LowerFirst()] = attr.Hour12;
                 }
-                else if (attr.Type == Intl.RelativeTime)
+                else if (attr.Type == IntlFormat.RelativeTime)
                 {
                     if (attr.RelativeTime != RelativeTimeStyle.Undefined)
                         args["style"] = attr.RelativeTime.ToString().LowerFirst();
+                    if (attr.Numeric != Numeric.Undefined)
+                        args[nameof(attr.Numeric).LowerFirst()] = attr.Numeric.ToString().LowerFirst();
                 }
                 else throw new NotSupportedException(attr.Type.ToString());
 

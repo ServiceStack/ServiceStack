@@ -10,14 +10,39 @@ public class FormatAttribute : AttributeBase
     public string Locale { get; set; }
 }
 
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class IntlAttribute : AttributeBase
+public class IntlNumber : Intl
 {
-    public Intl Type { get; set; }
+    public IntlNumber() : base(IntlFormat.Number) {}
+    public IntlNumber(NumberStyle style) : base(IntlFormat.Number)
+    {
+        Number = style;
+    }
+}
+public class IntlDateTime : Intl
+{
+    public IntlDateTime() : base(IntlFormat.DateTime) {}
+    public IntlDateTime(DateStyle date, TimeStyle time = TimeStyle.Undefined) : base(IntlFormat.DateTime)
+    {
+        Date = date;
+        Time = time;
+    }
+}
+public class IntlRelativeTime : Intl
+{
+    public IntlRelativeTime() : base(IntlFormat.RelativeTime) {}
+    public IntlRelativeTime(Numeric numeric) : base(IntlFormat.RelativeTime)
+    {
+        Numeric = numeric;
+    }
+}
 
-    public IntlAttribute() {}
-    public IntlAttribute(Intl type) => Type = type;
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class Intl : AttributeBase
+{
+    public Intl() {}
+    public Intl(IntlFormat type) => Type = type;
 
+    public IntlFormat Type { get; set; }
     public string Locale { get; set; }
     public string Options { get; set; }
     
@@ -25,14 +50,21 @@ public class IntlAttribute : AttributeBase
     public TimeStyle Time { get; set; }
     public NumberStyle Number { get; set; }
     public RelativeTimeStyle RelativeTime { get; set; }
+    public Numeric Numeric { get; set; }
     /// <summary>
     /// Use <see cref="NumberCurrency"/> for typed values
     /// </summary>
     public string Currency { get; set; }
+    public CurrencyDisplay CurrencyDisplay { get; set; }
+    public CurrencySign CurrencySign { get; set; }
+    public SignDisplay SignDisplay { get; set; }
+    public RoundingMode RoundingMode { get; set; }
     /// <summary>
     /// Use <see cref="NumberUnit"/> for typed values
     /// </summary>
     public string Unit { get; set; }
+    public UnitDisplay UnitDisplay { get; set; }
+    public Notation Notation { get; set; }
     public int MinimumIntegerDigits { get; set; } = int.MinValue;
     public int MinimumFractionDigits { get; set; } = int.MinValue;
     public int MaximumFractionDigits { get; set; } = int.MinValue;
@@ -53,7 +85,7 @@ public class IntlAttribute : AttributeBase
     public bool Hour12 { get; set; }
 }
 
-public enum Intl
+public enum IntlFormat
 {
     //Intl.NumberFormat
     Number,
@@ -67,11 +99,17 @@ public enum DateStyle { Undefined=0, Full, Long, Medium, Short, }
 public enum TimeStyle { Undefined=0, Full, Long, Medium, Short, }
 public enum NumberStyle { Undefined=0, Decimal, Currency, Percent, Unit, }
 public enum RelativeTimeStyle { Undefined=0, Long, Short, Narrow, }
+public enum Numeric { Undefined=0, Always, Auto, }
 
 public enum DatePart { Undefined=0, Numeric, Digits2, }
 public enum DateMonth { Undefined=0, Numeric, Digits2, Narrow, Short, Long, }
 public enum DateText { Undefined=0, Narrow, Short, Long }
-
+public enum UnitDisplay { Undefined=0, Long, Short, Narrow }
+public enum Notation { Undefined=0, Standard, Scientific, Engineering, Compact, }
+public enum CurrencyDisplay { Undefined=0, Symbol, NarrowSymbol, Code, Name, }
+public enum CurrencySign { Undefined=0, Accounting, Standard, }
+public enum SignDisplay { Undefined=0, Always, Auto, ExceptZero, Negative, Never, }
+public enum RoundingMode { Undefined=0, Ceil, Floor, Expand, Trunc, HalfCeil, HalfFloor, HalfExpand, HalfTrunc, HalfEven, }
 
 public static class NumberCurrency
 {

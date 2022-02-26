@@ -159,7 +159,7 @@ App.components({
                 this.expand[id] = !this.expand[id]
             },
             timeago(date) {
-                return timeago(new Date - toDate(date))
+                return Forms.relativeTimeFromDate(toDate(date))
             },
             fullDate(date) {
                 return toLocalISOString(toDate(date)).replace('T',' ').replace(/-/g,'/')

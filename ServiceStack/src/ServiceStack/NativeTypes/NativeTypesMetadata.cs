@@ -827,7 +827,7 @@ namespace ServiceStack.NativeTypes
                 Description = pi.GetDescription(),
             };
 
-            property.Format ??= pi.FirstAttribute<IntlAttribute>().ToFormat();
+            property.Format ??= pi.FirstAttribute<Intl>().ToFormat();
             property.Format ??= pi.FirstAttribute<FormatAttribute>().ToFormat();
 
             var apiMember = pi.FirstAttribute<ApiMemberAttribute>();

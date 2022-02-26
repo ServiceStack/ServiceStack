@@ -1,6 +1,6 @@
-import { resolve, humanify, padInt, toDate, mapGet, apiValue, isDate } from "@servicestack/client"
+import { humanify, padInt, toDate, mapGet, apiValue, isDate, indexOfAny, fromXsdDuration } from "@servicestack/client"
 import { Types } from "./Types"
-import { Forms } from "../../ui/js/appInit";
+import { Forms } from "../../ui/js/appInit"
 /*minify:*/
 
 /** @typedef {{namespace:string,name:string}} TypeRef
@@ -98,9 +98,59 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
         return ret || null
     }
 
-    /** @param {MetadataType} type
-     @param {*} row */
+    /** @param {MetadataType} type 
+     *  @param {*} row */
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
+
+    let DateChars = ['/','T',':','-']
+    /** @param {string|Date|number} val */
+    function toRelativeNumber(val) {
+        if (typeof val == 'number')
+            return val
+        if (isDate(val))
+            return val - new Date()
+        if (typeof val === 'string') {
+            let num = Number(val)
+            if (!isNaN(num))
+                return num
+            if (val[0] === 'P')
+                return fromXsdDuration(val) * 1000 * -1
+            if (indexOfAny(val, DateChars) >= 0)
+                return toDate(val) - new Date()
+        }
+        return NaN
+    }
+    
+    let defaultRtf = new Intl.RelativeTimeFormat(defaultFormats.locale, {})
+    let year =  24 * 60 * 60 * 1000 * 365
+    let units = {
+        year,
+        month : year/12,
+        day   : 24 * 60 * 60 * 1000,
+        hour  : 60 * 60 * 1000,
+        minute: 60 * 1000,
+        second: 1000
+    }
+    /** @param {number} elapsedMs
+     *  @param {Intl.RelativeTimeFormat} [rtf] */
+    function relativeTimeFromMs(elapsedMs,rtf) {
+        for (let u in units) {
+            if (Math.abs(elapsedMs) > units[u] || u === 'second')
+                return (rtf || defaultRtf).format(Math.round(elapsedMs/units[u]), u)
+        }
+    }
+    /** @param {string|Date|number} val
+     *  @param {Intl.RelativeTimeFormat} [rtf] */
+    function relativeTime(val,rtf) {
+        let num = toRelativeNumber(val)
+        if (!isNaN(num))
+            return relativeTimeFromMs(num,rtf)
+        console.error(`Cannot convert ${val}:${typeof val} to relativeTime`)
+        return ''
+    }
+    /** @param {Date} d
+     *  @param {Date} [from] */
+    let relativeTimeFromDate = (d,from= new Date) => relativeTimeFromMs(d-from)
     
     let Formatters = {}
     /**  @param {FormatInfo} format */
@@ -118,7 +168,9 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
                     ? val => intlFn.format(toDate(val))
                     : method === 'Intl.NumberFormat'
                         ? val => intlFn.format(Number(val))
-                        : val => intlFn.format(val)
+                        : method === 'Intl.RelativeTimeFormat'
+                            ? val => relativeTime(val,intlFn)
+                            : val => intlFn.format(val)
                 return Formatters[key] = f
             } catch(e) {
                 console.error(`Invalid format: ${intlExpr}`,e)
@@ -149,6 +201,9 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
         inputProp,
         getPrimaryKey,
         typeProperties,
+        relativeTime,
+        relativeTimeFromMs,
+        relativeTimeFromDate,
         theme,
         formClass: theme.form + (css.form ? ' ' + css.form : ''),
         gridClass: css.fieldset,

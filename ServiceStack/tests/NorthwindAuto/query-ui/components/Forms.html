@@ -1,6 +1,6 @@
 <script minify>
 import { GetCrudEvents } from "../../lib/types"
-import { map, timeago } from "../../shared/js/core"
+import { map } from "../../shared/js/core"
 import { Forms, getType } from "../js/appInit"
 import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client"
 
@@ -185,7 +185,7 @@ App.components({
                 this.expand[id] = !this.expand[id]
             },
             timeago(date) {
-                return timeago(new Date - toDate(date))
+                return Forms.relativeTimeFromDate(toDate(date))
             },
             fullDate(date) {
                 return toLocalISOString(toDate(date)).replace('T',' ').replace(/-/g,'/')

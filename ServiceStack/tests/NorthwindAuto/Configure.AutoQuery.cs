@@ -37,15 +37,15 @@ namespace MyApp
                             {
                                 case "Order":
                                     type.Properties.Where(x => x.Name.EndsWith("Date")).Each(p => 
-                                        p.AddAttribute(new IntlAttribute(Intl.DateTime) { Date = DateStyle.Medium }));
+                                        p.AddAttribute(new IntlDateTime(DateStyle.Medium)));
                                     type.Properties.First(x => x.Name == "Freight")
-                                        .AddAttribute(new IntlAttribute(Intl.Number) { Currency = NumberCurrency.USD });
+                                        .AddAttribute(new IntlNumber { Currency = NumberCurrency.USD });
                                     break;
                                 case "OrderDetail":
                                     type.Properties.First(x => x.Name == "UnitPrice")
-                                        .AddAttribute(new IntlAttribute(Intl.Number) { Currency = NumberCurrency.USD });
+                                        .AddAttribute(new IntlNumber { Currency = NumberCurrency.USD });
                                     type.Properties.First(x => x.Name == "Discount")
-                                        .AddAttribute(new IntlAttribute(Intl.Number) { Number = NumberStyle.Percent });
+                                        .AddAttribute(new IntlNumber(NumberStyle.Percent));
                                     break;
                             }
                             

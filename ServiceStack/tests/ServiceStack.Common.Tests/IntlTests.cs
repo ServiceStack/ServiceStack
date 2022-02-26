@@ -8,24 +8,36 @@ namespace ServiceStack.Common.Tests;
 
 public class IntlDateExamples
 {
-    [Intl(Intl.DateTime)]
+    [IntlDateTime]
     public DateTime Example1 { get; set; }
-    [Intl(Intl.DateTime, Date = DateStyle.Medium, Time = TimeStyle.Short, Locale = "en-AU")]
+    [IntlDateTime(DateStyle.Medium, TimeStyle.Short, Locale = "en-AU")]
     public DateTime Example2 { get; set; }
-    [Intl(Intl.DateTime, Date = DateStyle.Short)]
+    [IntlDateTime(DateStyle.Short)]
     public DateTime Example3 { get; set; }
-    [Intl(Intl.DateTime, Year = DatePart.Digits2, Month = DateMonth.Short, Day = DatePart.Numeric)]
+    [IntlDateTime(Year = DatePart.Digits2, Month = DateMonth.Short, Day = DatePart.Numeric)]
     public DateTime Example4 { get; set; }
 }
 
 public class IntlNumberExamples
 {
-    [Intl(Intl.Number)]
+    [IntlNumber]
     public int Example1 { get; set; }
-    [Intl(Intl.Number, Number = NumberStyle.Decimal, Locale = "en-AU")]
+    [IntlNumber(NumberStyle.Decimal, RoundingMode = RoundingMode.HalfCeil, SignDisplay = SignDisplay.ExceptZero, Locale = "en-AU")]
     public int Example2 { get; set; }
-    [Intl(Intl.Number, Currency = NumberCurrency.USD)]
+    [IntlNumber(Currency = NumberCurrency.USD)]
     public int Example3 { get; set; }
+    [IntlNumber(Currency = NumberCurrency.USD, CurrencyDisplay = CurrencyDisplay.NarrowSymbol, CurrencySign = CurrencySign.Accounting)]
+    public int Example4 { get; set; }
+    [IntlNumber(Unit = NumberUnit.Kilobyte)]
+    public int Example5 { get; set; }
+}
+
+public class IntlRelativeTimeExamples
+{
+    [IntlRelativeTime]
+    public int Example1 { get; set; }
+    [IntlRelativeTime(Numeric.Always)]
+    public int Example2 { get; set; }
 }
 
 public class CustomFormatExamples
@@ -71,7 +83,7 @@ public class IntlTests
     FormatInfo Format(MetadataType dto, string name) => dto.Properties.First(x => x.Name == name).Format; 
 
     [Test]
-    public void Does_DateTimeFormat_Examples()
+    public void Does_IntlDateExamples()
     {
         var gen = appHost.Resolve<INativeTypesMetadata>().GetGenerator();
         var dto = gen.ToType(typeof(IntlDateExamples));
@@ -82,13 +94,24 @@ public class IntlTests
     }
 
     [Test]
-    public void Does_IntlNumberExamples_Examples()
+    public void Does_IntlNumberExamples()
     {
         var gen = appHost.Resolve<INativeTypesMetadata>().GetGenerator();
         var dto = gen.ToType(typeof(IntlNumberExamples));
         AssertFormat(Format(dto,nameof(IntlNumberExamples.Example1)), "Intl.NumberFormat");
-        AssertFormat(Format(dto,nameof(IntlNumberExamples.Example2)), "Intl.NumberFormat", "{style:'decimal'}", "en-AU");
+        AssertFormat(Format(dto,nameof(IntlNumberExamples.Example2)), "Intl.NumberFormat", "{style:'decimal',roundingMode:'halfCeil',signDisplay:'exceptZero'}", "en-AU");
         AssertFormat(Format(dto,nameof(IntlNumberExamples.Example3)), "Intl.NumberFormat", "{style:'currency',currency:'USD'}");
+        AssertFormat(Format(dto,nameof(IntlNumberExamples.Example4)), "Intl.NumberFormat", "{style:'currency',currency:'USD',currencyDisplay:'narrowSymbol',currencySign:'accounting'}");
+        AssertFormat(Format(dto,nameof(IntlNumberExamples.Example5)), "Intl.NumberFormat", "{style:'unit',unit:'kilobyte'}");
+    }
+
+    [Test]
+    public void Does_IntlRelativeTimeExamples()
+    {
+        var gen = appHost.Resolve<INativeTypesMetadata>().GetGenerator();
+        var dto = gen.ToType(typeof(IntlRelativeTimeExamples));
+        AssertFormat(Format(dto,nameof(IntlRelativeTimeExamples.Example1)), "Intl.RelativeTimeFormat");
+        AssertFormat(Format(dto,nameof(IntlRelativeTimeExamples.Example2)), "Intl.RelativeTimeFormat", "{numeric:'always'}");
     }
 
     [Test]

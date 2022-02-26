@@ -79,7 +79,49 @@ function createForms(TypesMap, css, theme, defaultFormats) {
         return ret || null
     }
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
+    let DateChars = ['/','T',':','-']
+    function toRelativeNumber(val) {
+        if (typeof val == 'number')
+            return val
+        if (isDate(val))
+            return val - new Date()
+        if (typeof val === 'string') {
+            let num = Number(val)
+            if (!isNaN(num))
+                return num
+            if (val[0] === 'P')
+                return fromXsdDuration(val) * 1000 * -1
+            if (indexOfAny(val, DateChars) >= 0)
+                return toDate(val) - new Date()
+        }
+        return NaN
+    }
+    let defaultRtf = new Intl.RelativeTimeFormat(defaultFormats.locale, {})
+    let year =  24 * 60 * 60 * 1000 * 365
+    let units = {
+        year,
+        month : year/12,
+        day   : 24 * 60 * 60 * 1000,
+        hour  : 60 * 60 * 1000,
+        minute: 60 * 1000,
+        second: 1000
+    }
+    function relativeTimeFromMs(elapsedMs,rtf) {
+        for (let u in units) {
+            if (Math.abs(elapsedMs) > units[u] || u === 'second')
+                return (rtf || defaultRtf).format(Math.round(elapsedMs/units[u]), u)
+        }
+    }
+    function relativeTime(val,rtf) {
+        let num = toRelativeNumber(val)
+        if (!isNaN(num))
+            return relativeTimeFromMs(num,rtf)
+        console.error(`Cannot convert ${val}:${typeof val} to relativeTime`)
+        return ''
+    }
+    let relativeTimeFromDate = (d,from= new Date) => relativeTimeFromMs(d-from)
     let Formatters = {}
+    /**  @param {FormatInfo} format */
     function formatter(format) {
         let { method, options } = format
         let key = `${method}(${options})`
@@ -90,7 +132,13 @@ function createForms(TypesMap, css, theme, defaultFormats) {
             let intlExpr = `return new ${method}('${loc}',${options||'undefined'})`
             try {
                 let intlFn = Function(intlExpr)()
-                f = val => intlFn.format(val)
+                f = method === 'Intl.DateTimeFormat'
+                    ? val => intlFn.format(toDate(val))
+                    : method === 'Intl.NumberFormat'
+                        ? val => intlFn.format(Number(val))
+                        : method === 'Intl.RelativeTimeFormat'
+                            ? val => relativeTime(val,intlFn)
+                            : val => intlFn.format(val)
                 return Formatters[key] = f
             } catch(e) {
                 console.error(`Invalid format: ${intlExpr}`,e)
@@ -120,6 +168,9 @@ function createForms(TypesMap, css, theme, defaultFormats) {
         inputProp,
         getPrimaryKey,
         typeProperties,
+        relativeTime,
+        relativeTimeFromMs,
+        relativeTimeFromDate,
         theme,
         formClass: theme.form + (css.form ? ' ' + css.form : ''),
         gridClass: css.fieldset,

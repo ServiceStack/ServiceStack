@@ -40,7 +40,7 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
             {
                 // Defaults to browsers navigator.languages
                 //Locale = Thread.CurrentThread.CurrentCulture.Name, 
-                Date = new IntlAttribute(Intl.DateTime) {
+                Date = new Intl(IntlFormat.DateTime) {
                     Date = DateStyle.Medium,
                 }.ToFormat(),
             },
