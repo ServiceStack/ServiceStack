@@ -79,20 +79,22 @@ function createForms(TypesMap, css, theme, defaultFormats) {
         return ret || null
     }
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
+    let nowMs = () => new Date().getTime() + (defaultFormats.assumeUtc ? new Date().getTimezoneOffset() * 1000 * 60 : 0)
     let DateChars = ['/','T',':','-']
     function toRelativeNumber(val) {
+        if (val == null) return NaN
         if (typeof val == 'number')
             return val
         if (isDate(val))
-            return val - new Date()
+            return val.getTime() - nowMs()
         if (typeof val === 'string') {
             let num = Number(val)
             if (!isNaN(num))
                 return num
-            if (val[0] === 'P')
+            if (val[0] === 'P' || val.startsWith('-P'))
                 return fromXsdDuration(val) * 1000 * -1
             if (indexOfAny(val, DateChars) >= 0)
-                return toDate(val) - new Date()
+                return toDate(val).getTime() - nowMs()
         }
         return NaN
     }
@@ -119,7 +121,8 @@ function createForms(TypesMap, css, theme, defaultFormats) {
         console.error(`Cannot convert ${val}:${typeof val} to relativeTime`)
         return ''
     }
-    let relativeTimeFromDate = (d,from= new Date) => relativeTimeFromMs(d-from)
+    let relativeTimeFromDate = (d,from) => 
+        relativeTimeFromMs(d.getTime()-(from ? from.getTime() : nowMs()))
     let Formatters = {}
     /**  @param {FormatInfo} format */
     function formatter(format) {

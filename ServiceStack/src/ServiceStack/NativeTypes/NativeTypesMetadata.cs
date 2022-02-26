@@ -156,7 +156,6 @@ namespace ServiceStack.NativeTypes
                     Ui = new ApiUiInfo {
                         QueryCss = operation.QueryCss,
                         ExplorerCss = operation.ExplorerCss,
-                        Icon = operation.Icon,
                         FormLayout = operation.FormLayout,
                     },
                 };
@@ -514,6 +513,8 @@ namespace ServiceStack.NativeTypes
 
             metaType.Description = type.GetDescription();
             metaType.Notes = type.FirstAttribute<NotesAttribute>()?.Notes;
+            metaType.Icon = X.Map(type.FirstAttribute<IconAttribute>(),
+                x => new ImageInfo { Svg = x.Svg, Uri = x.Uri, Cls = x.Cls, Alt = x.Alt });
 
             var dcAttr = type.GetDataContract();
             if (dcAttr != null)

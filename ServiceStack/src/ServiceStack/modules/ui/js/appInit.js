@@ -43,6 +43,6 @@ if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 let cleanSrc = src => src.trim();
-let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues } = appApis(APP.api)
+let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, icon } = appApis(APP)
 let Forms = createForms(TypesMap,APP.ui.explorerCss, APP.ui.theme, APP.ui.defaultFormats)
 /*:minify*/

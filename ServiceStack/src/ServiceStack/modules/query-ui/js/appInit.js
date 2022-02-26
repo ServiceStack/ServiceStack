@@ -43,6 +43,7 @@ let alwaysHideTags = APP.ui.alwaysHideTags || !DEBUG && APP.ui.hideTags
 if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
-let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues } = appApis(APP.api)
+let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, icon } = appApis(APP)
 let Forms = createForms(TypesMap, APP.ui.queryCss, APP.ui.theme, APP.ui.defaultFormats)
+let onRoutesEditChange = () => {}
 /*:minify*/

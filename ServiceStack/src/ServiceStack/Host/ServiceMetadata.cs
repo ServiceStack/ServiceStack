@@ -88,7 +88,6 @@ namespace ServiceStack.Host
                 Tags = tagAttrs,
                 QueryCss = X.Map(requestType.FirstAttribute<QueryCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
                 ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
-                Icon = X.Map(requestType.FirstAttribute<IconAttribute>(), x => new ImageInfo { Svg = x.Svg, Uri = x.Uri, Cls = x.Cls, Alt = x.Alt }),
             };
 
             this.OperationsMap[requestType] = operation;
@@ -785,7 +784,6 @@ namespace ServiceStack.Host
         public List<TagAttribute> Tags { get; set; }
         public ApiCss QueryCss { get; set; } 
         public ApiCss ExplorerCss { get; set; } 
-        public ImageInfo Icon { get; set; } 
         public List<InputInfo> FormLayout { get; set; }
         
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
@@ -811,7 +809,6 @@ namespace ServiceStack.Host
             Tags = Tags?.ToList(),
             QueryCss = QueryCss,
             ExplorerCss = ExplorerCss,
-            Icon = Icon,
             FormLayout = FormLayout,
         };
 

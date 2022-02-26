@@ -35,7 +35,11 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
         {
             HideTags = new List<string> { TagNames.Auth },
             BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
-            Theme = new ThemeCss { Form = "shadow overflow-hidden sm:rounded-md bg-white" },
+            Theme = new ThemeInfo
+            {
+                Form = "shadow overflow-hidden sm:rounded-md bg-white",
+                ModelIcon = Svg.ImageSvg(Svg.Create(Svg.Body.Table)),
+            },
             DefaultFormats = new ApiFormat
             {
                 // Defaults to browsers navigator.languages

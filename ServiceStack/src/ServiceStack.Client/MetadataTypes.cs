@@ -562,7 +562,6 @@ namespace ServiceStack
     {
         public ApiCss QueryCss { get; set; } 
         public ApiCss ExplorerCss { get; set; } 
-        public ImageInfo Icon { get; set; }
         public List<InputInfo> FormLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -588,6 +587,7 @@ namespace ServiceStack
         public string DisplayType { get; set; }
         public string Description { get; set; }
         public string Notes { get; set; }
+        public ImageInfo Icon { get; set; } 
         public bool? IsNested { get; set; }
         public bool? IsEnum { get; set; }
         public bool? IsEnumInt { get; set; }

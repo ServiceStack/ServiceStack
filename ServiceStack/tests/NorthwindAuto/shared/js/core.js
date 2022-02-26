@@ -96,8 +96,9 @@ export function createDto(name, obj) {
     return new dtoCtor(obj)
 }
 
-/** @param {MetadataTypes} api */
-export function appApis(api) {
+/** @param {AppMetadata} app */
+export function appApis(app) {
+    let api = app.api
     let CACHE = {}
     let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
     let OpsMap = {}
@@ -146,9 +147,28 @@ export function appApis(api) {
             return enumType.enumNames.map(x => ({ key:x, value:x }))
         }
     }
+    
+    let defaultIcon = app.ui.theme.modelIcon ||
+        { svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12v6s0 3 7 3s7-3 7-3v-6"/><path d="M5 6v6s0 3 7 3s7-3 7-3V6"/><path d="M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z"/></g></svg>` }
 
-    return { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues }
+    /** @param {{op:MetadataOperationType?,type:MetadataType?}} opt */
+    function icon({op,type}) {
+        if (op) {
+            let img = map(op.request, x => x.icon)
+                || map(getType(op.viewModel), x => x.icon)
+                || map(getType(op.dataModel), x => x.icon)
+            if (img)
+                return img
+        }
+        if (type && type.icon) {
+            return type.icon
+        }
+        return defaultIcon
+    }
+
+    return { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, icon }
 }
+
 
 /** @param {MetadataOperationType} op
     @param {string} cls */

@@ -8,7 +8,7 @@ import { Forms } from "../../ui/js/appInit"
 
 /** @param {{[op:string]:MetadataType}} TypesMap
  *  @param {ApiCss} css 
- *  @param {ThemeCss} theme 
+ *  @param {ThemeInfo} theme 
  *  @param {ApiFormat|*} defaultFormats */
 export function createForms(TypesMap, css, theme, defaultFormats) {
     if (!defaultFormats) defaultFormats = {}
@@ -107,6 +107,7 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
     let DateChars = ['/','T',':','-']
     /** @param {string|Date|number} val */
     function toRelativeNumber(val) {
+        if (val == null) return NaN
         if (typeof val == 'number')
             return val
         if (isDate(val))
@@ -115,7 +116,7 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
             let num = Number(val)
             if (!isNaN(num))
                 return num
-            if (val[0] === 'P')
+            if (val[0] === 'P' || val.startsWith('-P'))
                 return fromXsdDuration(val) * 1000 * -1
             if (indexOfAny(val, DateChars) >= 0)
                 return toDate(val).getTime() - nowMs()
