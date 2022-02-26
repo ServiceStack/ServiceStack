@@ -46,7 +46,7 @@ namespace ServiceStack.Text.Common
         private static readonly int XsdTimeSeparatorIndex = XsdDateTimeFormat.IndexOf(XsdTimeSeparator);
         private const string XsdUtcSuffix = "Z";
         private static readonly char[] DateTimeSeparators = { '-', '/' };
-        private static readonly Regex UtcOffsetInfoRegex = new Regex("([+-](?:2[0-3]|[0-1][0-9]):[0-5][0-9])", PclExport.Instance.RegexOptions);
+        private static readonly Regex UtcOffsetInfoRegex = new("([+-](?:2[0-3]|[0-1][0-9]):[0-5][0-9])", RegexOptions.Compiled);
         public static Func<string, Exception, DateTime> OnParseErrorFn { get; set; }
 
         /// <summary>
@@ -488,7 +488,7 @@ namespace ServiceStack.Text.Common
                 : PclExport.Instance.ToXsdDateTimeString(dateTime);
         }
 
-        static readonly char[] TimeZoneChars = new[] { '+', '-' };
+        static readonly char[] TimeZoneChars = { '+', '-' };
 
         private const string MinDateTimeOffsetWcfValue = "\\/Date(-62135596800000)\\/";
         private const string MaxDateTimeOffsetWcfValue = "\\/Date(253402300799999)\\/";
@@ -660,11 +660,9 @@ namespace ServiceStack.Text.Common
         public static string ToWcfJsonDate(DateTime dateTime)
         {
             var sb = StringBuilderThreadStatic.Allocate();
-            using (var writer = new StringWriter(sb))
-            {
-                WriteWcfJsonDate(writer, dateTime);
-                return StringBuilderThreadStatic.ReturnAndFree(sb);
-            }
+            using var writer = new StringWriter(sb);
+            WriteWcfJsonDate(writer, dateTime);
+            return StringBuilderThreadStatic.ReturnAndFree(sb);
         }
         
         public static void WriteWcfJsonDateTimeOffset(TextWriter writer, DateTimeOffset dateTimeOffset)
@@ -692,11 +690,9 @@ namespace ServiceStack.Text.Common
         public static string ToWcfJsonDateTimeOffset(DateTimeOffset dateTimeOffset)
         {
             var sb = StringBuilderThreadStatic.Allocate();
-            using (var writer = new StringWriter(sb))
-            {
-                WriteWcfJsonDateTimeOffset(writer, dateTimeOffset);
-                return StringBuilderThreadStatic.ReturnAndFree(sb);
-            }
+            using var writer = new StringWriter(sb);
+            WriteWcfJsonDateTimeOffset(writer, dateTimeOffset);
+            return StringBuilderThreadStatic.ReturnAndFree(sb);
         }
     }
 }

@@ -1,7 +1,7 @@
 <script minify>
 import { GetCrudEvents } from "../../lib/types"
 import { map } from "../../shared/js/core"
-import { Forms, getType } from "../js/appInit"
+import { Forms, getType, onRoutesEditChange } from "../js/appInit"
 import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client"
 
 /** @typedef {{opQuery:MetadataOperationType,opPatch?:MetadataOperationType,opUpdate?:MetadataOperationType,opDelete?:MetadataOperationType,apiQuery:ApiState}} State */
@@ -176,15 +176,17 @@ App.components({
             },
             
             mounted() {
+                onRoutesEditChange = () => this.updated()
                 this.updated()
             },
+            unmounted() { onRoutesEditChange = null },
             
             expand:{},
             expanded(id) { return !!this.expand[id] },
             toggle(id) {
                 this.expand[id] = !this.expand[id]
             },
-            timeago(date) {
+            relativeTime(date) {
                 return Forms.relativeTimeFromDate(toDate(date))
             },
             fullDate(date) {
@@ -223,7 +225,7 @@ App.components({
 </form>
 </template>
 <template id="edit-form-template">
-    <form ref="form" v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted">
+    <form ref="form" v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted" @vue:unmounted="unmounted">
         <div class="relative px-4 py-5 bg-white sm:p-6">
             <div v-scope="CloseButton({ onclick:done })" title="Close"></div>
             <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
@@ -268,7 +270,7 @@ App.components({
                                             <span :title="`User ${x.userAuthId}`">{{x.userAuthName}}</span>
                                         </div>
                                         <div>
-                                            <span :title="fullDate(x.eventDate)">{{timeago(x.eventDate)}}</span>
+                                            <span :title="fullDate(x.eventDate)">{{relativeTime(x.eventDate)}}</span>
                                             <div class="ml-3 inline-block w-5 align-middle">
                                                 <svg v-if="!expanded(x.id)" class="h-5 w-5 flex-none text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                     <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />

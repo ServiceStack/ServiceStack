@@ -101,6 +101,8 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
     /** @param {MetadataType} type 
      *  @param {*} row */
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
+    
+    let nowMs = () => new Date().getTime() + (defaultFormats.assumeUtc ? new Date().getTimezoneOffset() * 1000 * 60 : 0)
 
     let DateChars = ['/','T',':','-']
     /** @param {string|Date|number} val */
@@ -108,7 +110,7 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
         if (typeof val == 'number')
             return val
         if (isDate(val))
-            return val - new Date()
+            return val.getTime() - nowMs()
         if (typeof val === 'string') {
             let num = Number(val)
             if (!isNaN(num))
@@ -116,7 +118,7 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
             if (val[0] === 'P')
                 return fromXsdDuration(val) * 1000 * -1
             if (indexOfAny(val, DateChars) >= 0)
-                return toDate(val) - new Date()
+                return toDate(val).getTime() - nowMs()
         }
         return NaN
     }
@@ -150,7 +152,8 @@ export function createForms(TypesMap, css, theme, defaultFormats) {
     }
     /** @param {Date} d
      *  @param {Date} [from] */
-    let relativeTimeFromDate = (d,from= new Date) => relativeTimeFromMs(d-from)
+    let relativeTimeFromDate = (d,from) => 
+        relativeTimeFromMs(d.getTime()-(from ? from.getTime() : nowMs()))
     
     let Formatters = {}
     /**  @param {FormatInfo} format */

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-02-26 00:05:31
+Date: 2022-02-26 19:01:48
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -237,6 +237,7 @@ export class FormatInfo
 export class ApiFormat
 {
     public locale: string;
+    public assumeUtc: boolean;
     public number: FormatInfo;
     public date: FormatInfo;
 

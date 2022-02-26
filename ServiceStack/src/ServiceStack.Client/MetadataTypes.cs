@@ -178,6 +178,10 @@ namespace ServiceStack
         /// If not specified uses browser's navigator.languages
         /// </summary>
         public string Locale { get; set; }
+        /// <summary>
+        /// Assume Dates are returned as UTC 
+        /// </summary>
+        public bool AssumeUtc { get; set; }
         public FormatInfo Number { get; set; }
         public FormatInfo Date { get; set; }
     }
@@ -474,7 +478,7 @@ namespace ServiceStack
         /// <summary>
         /// Default Themes for all UIs
         /// </summary>
-        public ThemeCss Theme { get; set; }
+        public ThemeInfo Theme { get; set; }
         
         /// <summary>
         /// The default styles to use for rendering AutoQuery UI Forms 
@@ -498,9 +502,10 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
-    public class ThemeCss
+    public class ThemeInfo
     {
         public string Form { get; set; }
+        public ImageInfo ModelIcon { get; set; }
     }
 
     [Exclude(Feature.Soap)]

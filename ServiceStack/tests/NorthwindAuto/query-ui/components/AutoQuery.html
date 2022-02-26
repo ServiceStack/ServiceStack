@@ -1,7 +1,7 @@
 <script minify>
 import { delaySet, humanify, createUrl } from "@servicestack/client"
 import { Crud, map, canAccess, createRequest, apiSend, invalidAccessMessage } from "../../shared/js/core"
-import { Forms, getOp, resolveApiUrl } from "../js/appInit"
+import { Forms, getOp, resolveApiUrl, onRoutesEditChange } from "../js/appInit"
 import { Types } from "../../shared/js/Types"
 
 /*minify:*/
@@ -244,7 +244,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             this.filters = this.columns
                 .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
             this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
-            let skipRefresh = routes.edit && this.results.length 
+            if (routes.edit && onRoutesEditChange) onRoutesEditChange()
+            let skipRefresh = routes.edit && this.results.length && !routes.skip
             if (skipRefresh) return
             this.search()
         },
