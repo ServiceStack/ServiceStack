@@ -63,8 +63,7 @@ namespace MyApp
                 var icons = new Dictionary<string, ImageInfo>
                 {
                     [nameof(ApiKey)] = Svg.CreateImage(Svg.Body.Key),
-                    [nameof(AppUser)] = Svg.CreateImage(Svg.Body.Users),
-                    [nameof(UserAuth)] = Svg.CreateImage(Svg.Body.Users),
+                    [nameof(AppUser)] = Svg.CreateImage(Svg.Body.User),
                     [nameof(UserAuthDetails)] = Svg.CreateImage(Svg.Body.UserDetails),
                     [nameof(UserAuthRole)] = Svg.CreateImage(Svg.Body.UserShield),
                     [nameof(CrudEvent)] = Svg.CreateImage(Svg.Body.History),
