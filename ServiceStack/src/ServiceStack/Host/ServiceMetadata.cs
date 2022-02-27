@@ -35,8 +35,9 @@ namespace ServiceStack.Host
         public HashSet<Type> ServiceTypes { get; protected set; }
         public HashSet<Type> ResponseTypes { get; protected set; }
         private readonly List<RestPath> restPaths;
-
-        public Dictionary<Type, List<Action<Operation>>> ConfigureOperations { get; protected set; } = new();
+        
+        public List<Action<Operation>> ConfigureOperations { get; protected set; } = new();
+        public List<Action<MetadataType>> ConfigureMetadataTypes { get; protected set; } = new();
 
         public IEnumerable<Operation> Operations => OperationsMap.Values;
         
@@ -118,19 +119,16 @@ namespace ServiceStack.Host
                 operation.Routes.Add(restPath);
             }
 
-            foreach (var entry in ConfigureOperations)
+            foreach (var entry in OperationsMap)
             {
-                if (!OperationsMap.TryGetValue(entry.Key, out var op)) 
-                    continue;
-                
-                foreach (var configure in entry.Value)
+                foreach (var configure in ConfigureOperations)
                 {
-                    configure(op);
+                    configure(entry.Value);
                 }
             }
         }
 
-        readonly HashSet<Assembly> excludeAssemblies = new HashSet<Assembly>
+        readonly HashSet<Assembly> excludeAssemblies = new()
         {
             typeof(string).Assembly,            //mscorelib
             typeof(Uri).Assembly,               //System

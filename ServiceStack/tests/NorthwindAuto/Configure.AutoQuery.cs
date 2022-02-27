@@ -31,6 +31,7 @@ namespace MyApp
                             if (op.Request.Name.IndexOf("User", StringComparison.Ordinal) >= 0)
                                 op.Request.AddAttributeIfNotExists(new ValidateIsAdminAttribute());
                         },
+                        /* Example adding attributes to generated Type
                         TypeFilter = (type, req) =>
                         {
                             switch (type.Name)
@@ -48,10 +49,29 @@ namespace MyApp
                                         .AddAttribute(new IntlNumber(NumberStyle.Percent));
                                     break;
                             }
-                            
                         },
+                        */
                         IncludeService = op => !op.ReferencesAny(nameof(Booking)),
                     },
+                });
+
+                // Can use to configure both code-first + generated types
+                var dateFormat = new IntlDateTime(DateStyle.Medium).ToFormat();
+                var currency = new IntlNumber { Currency = NumberCurrency.USD }.ToFormat();
+                var percent = new IntlNumber(NumberStyle.Percent).ToFormat();
+                appHost.ConfigureTypes(type =>
+                {
+                    switch (type.Name)
+                    {
+                        case "Order":
+                            type.Properties.Where(x => x.Name.EndsWith("Date")).Each(x => x.Format = dateFormat);
+                            type.Properties.First(x => x.Name == "Freight").Format = currency;
+                            break;
+                        case "OrderDetail":
+                            type.Properties.First(x => x.Name == "UnitPrice").Format = currency;
+                            type.Properties.First(x => x.Name == "Discount").Format = percent;
+                            break;
+                    }
                 });
 
                 appHost.Resolve<ICrudEvents>().InitSchema();

@@ -595,6 +595,10 @@ namespace ServiceStack.NativeTypes
                 });
             }
 
+            foreach (var configure in HostContext.AppHost.Metadata.ConfigureMetadataTypes)
+            {
+                configure(metaType);
+            }
             return metaType;
         }
 

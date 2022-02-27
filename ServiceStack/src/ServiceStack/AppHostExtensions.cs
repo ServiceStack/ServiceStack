@@ -17,10 +17,33 @@ namespace ServiceStack
 
         public static void ConfigureOperation<T>(this IAppHost appHost, Action<Operation> configure)
         {
-            if (!appHost.Metadata.ConfigureOperations.TryGetValue(typeof(T), out var handlers))
-                handlers = appHost.Metadata.ConfigureOperations[typeof(T)] = new();
-            handlers.Add(configure);
+            appHost.ConfigureOperations(op => {
+                if (op.RequestType != typeof(T)) return;
+                configure(op);
+            });
         }
+
+        public static void ConfigureOperations(this IAppHost appHost, Action<Operation> configure) => 
+            appHost.Metadata.ConfigureOperations.Add(configure);
+
+        public static void ConfigureType<T>(this IAppHost appHost, Action<MetadataType> configure)
+        {
+            appHost.ConfigureTypes(metaType => {
+                if (metaType.Type != null)
+                {
+                    if (metaType.Type == typeof(T)) 
+                        configure(metaType);
+                }
+                else if ((metaType.Namespace == null || metaType.Namespace == typeof(T).Namespace)
+                         && metaType.Name == typeof(T).Name)
+                {
+                    configure(metaType);
+                }
+            });
+        }
+
+        public static void ConfigureTypes(this IAppHost appHost, Action<MetadataType> configure) => 
+            appHost.Metadata.ConfigureMetadataTypes.Add(configure);
 
         public static void RegisterServices(this IAppHost appHost, Dictionary<Type, string[]> serviceRoutes)
         {
