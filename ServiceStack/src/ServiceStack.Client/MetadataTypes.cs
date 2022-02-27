@@ -985,5 +985,24 @@ namespace ServiceStack
             
             return to;
         }
+
+        public static MetadataPropertyType Property(this MetadataType type, string name) =>
+            type.Properties.FirstOrDefault(x => x.Name == name);
+        public static MetadataPropertyType RequiredProperty(this MetadataType type, string name) =>
+            type.Properties.FirstOrDefault(x => x.Name == name) ?? throw new Exception($"{type.Name} does not contain property ${name}");
+
+        public static void Property(this MetadataType type, string name, Action<MetadataPropertyType> configure)
+        {
+            var prop = type.Properties.FirstOrDefault(x => x.Name == name);
+            if (prop != null) configure(prop);
+        }
+
+        public static void Properties(this MetadataType type, Func<MetadataPropertyType,bool> where, Action<MetadataPropertyType> configure)
+        {
+            foreach (var prop in type.Properties.Where(@where))
+            {
+                configure(prop);
+            }
+        }
     }
 }
