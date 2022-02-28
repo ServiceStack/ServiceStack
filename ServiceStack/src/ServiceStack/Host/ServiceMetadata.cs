@@ -656,7 +656,7 @@ namespace ServiceStack.Host
             {
                 foreach (var p in metadataType.Properties)
                 {
-                    var type = FindMetadataType(metadataTypes, p.Type, p.TypeNamespace);
+                    var type = FindMetadataType(metadataTypes, p.Type, p.Namespace);
                     if (type != null && !types.Contains(type))
                     {
                         types.Add(type);
@@ -678,7 +678,7 @@ namespace ServiceStack.Host
                     else if (p.IsArray())
                     {
                         var elType = p.Type.LeftPart('[');
-                        type = FindMetadataType(metadataTypes, elType, p.TypeNamespace);
+                        type = FindMetadataType(metadataTypes, elType, p.Namespace);
                         if (type != null && !types.Contains(type))
                         {
                             types.Add(type);

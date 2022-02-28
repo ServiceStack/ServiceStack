@@ -64,9 +64,9 @@ namespace MyApp
                 {
                     [nameof(ApiKey)] = Svg.CreateImage(Svg.Body.Key),
                     [nameof(AppUser)] = Svg.CreateImage(Svg.Body.User),
+                    [nameof(CrudEvent)] = Svg.CreateImage(Svg.Body.History),
                     [nameof(UserAuthDetails)] = Svg.CreateImage(Svg.Body.UserDetails),
                     [nameof(UserAuthRole)] = Svg.CreateImage(Svg.Body.UserShield),
-                    [nameof(CrudEvent)] = Svg.CreateImage(Svg.Body.History),
                     ["Category"] = Svg.CreateImage("<path fill='currentColor' d='M20 5h-9.586L8.707 3.293A.997.997 0 0 0 8 3H4c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V7c0-1.103-.897-2-2-2z'/>"),
                     ["Customer"] = Svg.CreateImage("<path fill='currentColor' d='M19 2H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4l2.29 2.29c.39.39 1.02.39 1.41 0L15 20h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 3.3c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7S9.3 9.49 9.3 8s1.21-2.7 2.7-2.7zM18 16H6v-.9c0-2 4-3.1 6-3.1s6 1.1 6 3.1v.9z'/>"),
                     ["Employee"] = Svg.CreateImage("<path fill='currentColor' d='M19.745 4a2.25 2.25 0 0 1 2.25 2.25v11.505a2.25 2.25 0 0 1-2.25 2.25H4.25A2.25 2.25 0 0 1 2 17.755V6.25A2.25 2.25 0 0 1 4.25 4h15.495Zm0 1.5H4.25a.75.75 0 0 0-.75.75v11.505c0 .414.336.75.75.75l2.749-.001L7 15.75a1.75 1.75 0 0 1 1.606-1.744L8.75 14h6.495a1.75 1.75 0 0 1 1.744 1.607l.006.143l-.001 2.754h2.751a.75.75 0 0 0 .75-.75V6.25a.75.75 0 0 0-.75-.75ZM12 7a3 3 0 1 1 0 6a3 3 0 0 1 0-6Z'/>"),

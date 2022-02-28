@@ -824,9 +824,8 @@ namespace ServiceStack.NativeTypes
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
                 Type = propType.GetMetadataPropertyType(),
                 IsValueType = underlyingType.IsValueType.NullIfFalse(),
-                IsSystemType = underlyingType.IsSystemType().NullIfFalse(),
                 IsEnum = underlyingType.IsEnum.NullIfFalse(),
-                TypeNamespace = propType.Namespace,
+                Namespace = propType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
                 GenericArgs = ToGenericArgs(propType),
                 Description = pi.GetDescription(),
@@ -959,9 +958,8 @@ namespace ServiceStack.NativeTypes
                 Attributes = ToAttributes(propertyAttrs),
                 Type = paramType.GetOperationName(),
                 IsValueType = underlyingType.IsValueType.NullIfFalse(),
-                IsSystemType = underlyingType.IsSystemType().NullIfFalse(),
                 IsEnum = underlyingType.IsEnum.NullIfFalse(),
-                TypeNamespace = paramType.Namespace,
+                Namespace = paramType.Namespace,
                 Description = pi.GetDescription(),
             };
 
@@ -1651,7 +1649,7 @@ namespace ServiceStack.NativeTypes
             if (prop.IsValueType != true || prop.IsEnum == true)
                 return prop.Type;
 
-            if (prop.IsSystemType == true)
+            if (prop.IsSystemType() == true)
             {
                 if (prop.Type != "Nullable`1" || prop.GenericArgs?.Length != 1)
                     return prop.Type;
@@ -1665,7 +1663,7 @@ namespace ServiceStack.NativeTypes
                     .SelectMany(x => x.Properties)
                     .FirstOrDefault(x => x.Type == genericArg);
 
-                return typeInfo != null && typeInfo.IsSystemType != true && typeInfo.IsEnum != true
+                return typeInfo != null && typeInfo.IsSystemType() != true && typeInfo.IsEnum != true
                     ? "String"
                     : prop.Type;
             }

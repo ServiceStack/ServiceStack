@@ -680,11 +680,10 @@ namespace ServiceStack
         public Dictionary<string, object> Items { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+        public string Namespace { get; set; }
         public bool? IsValueType { get; set; }
-        public bool? IsSystemType { get; set; }
         public bool? IsEnum { get; set; }
         public bool? IsPrimaryKey { get; set; }
-        public string TypeNamespace { get; set; }
         public string[] GenericArgs { get; set; }
         public string Value { get; set; }
         public string Description { get; set; }
@@ -1004,5 +1003,7 @@ namespace ServiceStack
                 configure(prop);
             }
         }
+
+        public static bool IsSystemType(this MetadataPropertyType prop) => prop.Namespace?.StartsWith("System") == true;
     }
 }

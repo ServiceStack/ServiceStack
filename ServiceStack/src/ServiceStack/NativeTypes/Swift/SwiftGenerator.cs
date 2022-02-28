@@ -584,7 +584,7 @@ namespace ServiceStack.NativeTypes.Swift
                 var propTypeName = GetPropertyType(prop);
                 propTypeName = PropertyTypeFilter?.Invoke(this, type, prop) ?? propTypeName;
 
-                var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
+                var propType = FindType(prop.Type, prop.Namespace, prop.GenericArgs);
                     
                 var optional = "";
                 var defaultValue = "";

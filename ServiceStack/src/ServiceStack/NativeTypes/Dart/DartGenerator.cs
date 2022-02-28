@@ -588,7 +588,7 @@ namespace ServiceStack.NativeTypes.Dart
                         props.Insert(0, new MetadataPropertyType {
                             Name = GetPropertyName("Version"),
                             Type = "Int32",
-                            TypeNamespace = "System",
+                            Namespace = "System",
                             IsValueType = true,            
                             Value = Config.AddImplicitVersion.ToString()
                         });

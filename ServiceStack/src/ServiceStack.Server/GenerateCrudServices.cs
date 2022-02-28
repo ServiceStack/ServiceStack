@@ -501,7 +501,7 @@ namespace ServiceStack
             foreach (var metaProp in metaType.Properties.Safe())
             {
                 var returnType = metaProp.PropertyType ??
-                    AssertResolveType(keyNs(metaProp.TypeNamespace, metaProp.Type), generatedTypes);
+                    AssertResolveType(keyNs(metaProp.Namespace, metaProp.Type), generatedTypes);
                 var propBuilder = typeBuilder.DefineProperty(metaProp.Name, PropertyAttributes.HasDefault,
                     CallingConventions.Any, returnType, null);
 
@@ -1128,9 +1128,8 @@ namespace ServiceStack
                         Name = StringUtils.SnakeCaseToPascalCase(column.ColumnName),
                         Type = dataType.GetMetadataPropertyType(),
                         IsValueType = underlyingType.IsValueType ? true : (bool?) null,
-                        IsSystemType = underlyingType.IsSystemType() ? true : (bool?) null,
                         IsEnum = underlyingType.IsEnum ? true : (bool?) null,
-                        TypeNamespace = dataType.Namespace,
+                        Namespace = dataType.Namespace,
                         GenericArgs = MetadataTypesGenerator.ToGenericArgs(dataType),
                         DataMember = typesConfig.AddDataContractAttributes
                             ? new MetadataDataMember { Order = i++ } 
@@ -1140,7 +1139,7 @@ namespace ServiceStack
                     var attrs = new List<MetadataAttribute>();
                     if (isModel)
                     {
-                        prop.TypeNamespace = typesNs;
+                        prop.Namespace = typesNs;
                         if (column.IsKey && column.ColumnName != IdUtils.IdField && !column.IsAutoIncrement)
                             prop.AddAttribute(new PrimaryKeyAttribute());
                         if (column.IsAutoIncrement)
@@ -1298,7 +1297,7 @@ namespace ServiceStack
                                     new() {
                                         Name = id,
                                         Type = pkField.DataType.Name + (pkField.DataType.IsValueType ? "?" : ""),
-                                        TypeNamespace = pkField.DataType.Namespace, 
+                                        Namespace = pkField.DataType.Namespace, 
                                         DataMember = typesConfig.AddDataContractAttributes
                                             ? new MetadataDataMember { Order = 1 } 
                                             : null, 
