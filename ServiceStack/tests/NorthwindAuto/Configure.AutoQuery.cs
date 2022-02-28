@@ -52,7 +52,7 @@ namespace MyApp
                             }
                         },
                         */
-                        IncludeService = op => !op.ReferencesAny(nameof(Booking)),
+                        IncludeService = op => !op.ReferencesAny(nameof(Booking),nameof(Player),nameof(GameItem),nameof(Profile),nameof(Level)),
                     },
                 });
 

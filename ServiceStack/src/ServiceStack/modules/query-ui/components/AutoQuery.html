@@ -429,7 +429,7 @@ App.components({
                             </button>
                         </td>
                         <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ format(row,c) }}
+                            <div v-html="format(row,c)"></div>
                         </td>
                     </tr>
                     </tbody>

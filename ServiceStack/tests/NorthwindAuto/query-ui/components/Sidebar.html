@@ -1,5 +1,5 @@
 <script minify>
-import { icon } from "../js/appInit"
+import { getIcon } from "../js/appInit"
 
 App.components({
     Sidebar: '#sidebar-template',
@@ -10,7 +10,7 @@ App.components({
             store,
             $on: $on || null,
             label(op) { return op.request.inherits.genericArgs[0] },
-            icon,
+            getIcon,
         }
     },
 })
@@ -40,7 +40,7 @@ App.components({
             <a v-for="op in nav.operations" v-href="{ op:op.request.name, provider:'', skip:'', preview:'', new:'', edit:'', $on }" :title="op.request.name"
                :class="[op.request.name == routes.op ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
                 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
-                <span v-scope="Image(icon({op}), {cls:'w-5 h-5 mr-1'})"></span>
+                <span v-scope="Image(getIcon({op}), {cls:'w-5 h-5 mr-1'})"></span>
                 <span class="nav-item flex-grow mb-0.5">{{label(op)}}</span>
                 <span v-if="op.requiresAuth" class="svg-lock w-5 h-5"></span>
             </a>

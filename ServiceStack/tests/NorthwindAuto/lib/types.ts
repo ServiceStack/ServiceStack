@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-02-26 22:33:04
+Date: 2022-02-28 17:30:31
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -475,11 +475,10 @@ export class MetadataPropertyType
 {
     public name: string;
     public type: string;
+    public namespace: string;
     public isValueType?: boolean;
-    public isSystemType?: boolean;
     public isEnum?: boolean;
     public isPrimaryKey?: boolean;
-    public typeNamespace: string;
     public genericArgs: string[];
     public value: string;
     public description: string;

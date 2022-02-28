@@ -227,20 +227,17 @@ namespace ServiceStack
                     meta.EachType(type => {
                         type.EachProperty(x => x.Ref == null && x.Name.Length > 2 && x.Name.EndsWith("Id"), x => {
                             var refType = meta.GetType(x.Name.Substring(0, x.Name.Length - 2));
-                            if (refType != null)
-                            {
-                                var pk = refType.Properties?.FirstOrDefault(x => x.IsPrimaryKey == true);
-                                if (pk != null)
-                                {
-                                    var firstStringProp = refType.Properties.FirstOrDefault(x =>
-                                        x.IsPrimaryKey != true && x.Type == nameof(String));
-                                    x.Ref = new RefInfo {
-                                        Model = refType.Name,
-                                        RefId = pk.Name,
-                                        RefLabel = firstStringProp?.Name,
-                                    };
-                                }
-                            }
+                            var pk = refType?.Properties?.FirstOrDefault(x => x.IsPrimaryKey == true);
+                            if (pk == null) 
+                                return;
+
+                            var firstStringProp = refType.Properties.FirstOrDefault(x =>
+                                x.IsPrimaryKey != true && x.Type == nameof(String));
+                            x.Ref = new RefInfo {
+                                Model = refType.Name,
+                                RefId = pk.Name,
+                                RefLabel = firstStringProp?.Name,
+                            };
                         });
                     });
                 }

@@ -75,7 +75,12 @@ function createForms(TypesMap, css, theme, defaultFormats) {
         if (id && id.isPrimaryKey) return id
         let pk = typeProps.find(x => x.isPrimaryKey)
         let ret = pk || id
-        if (!ret) console.error(`Primary Key not found in ${type.name}`)
+        if (!ret) {
+            if (map(type.inherits, x => x.name.startsWith('QueryDb`'))) {
+                return getPrimaryKey(getType({ name: type.inherits.genericArgs[0] }))
+            }
+            console.error(`Primary Key not found in ${type.name}`)
+        } 
         return ret || null
     }
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
@@ -164,6 +169,8 @@ function createForms(TypesMap, css, theme, defaultFormats) {
     let useNumberFmt = defaultFormats.number
         ? formatter(defaultFormats.number)
         : v => v
+    let Primitives = ['string','number','symbol','boolean']
+    function isPrimitive (value) { return Primitives.indexOf(typeof value) >= 0 }
     return {
         getId,
         inputId,
@@ -327,8 +334,29 @@ function createForms(TypesMap, css, theme, defaultFormats) {
                         ? useNumberFmt(v)
                         : v
             }
-            return f(val)
+            let ret = f(val)
+            if (typeof ret == 'object') {
+                if (Array.isArray(ret)) {
+                    if (isPrimitive(ret[0])) {
+                        return ret.join(',')
+                    }
+                    return formatObject(ret[0])
+                }
+                return formatObject(ret)
+            }
+            return ret
         }
+    }
+    function formatObject(o) {
+        let keys = Object.keys(o)
+        let sb = []
+        for (let i=0; i<Math.min(2,keys.length); i++) {
+            let k = keys[i]
+            let val = `${o[k]}`
+            sb.push(`<b class="font-medium">${k}</b>: ${val.substring(0,20) + (val.length > 20 ? '...' : '')}`)
+        }            
+        if (keys.length > 2) sb.push('...')
+        return '<span title="' + enc(JSON.stringify(o)) + '">{ ' + sb.join(', ') + ' }</span>'
     }
 }
 /*:minify*/
