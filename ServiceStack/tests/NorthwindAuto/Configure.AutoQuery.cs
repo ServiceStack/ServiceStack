@@ -87,7 +87,7 @@ namespace MyApp
                     switch (type.Name)
                     {
                         case "Order":
-                            type.Properties(x => x.Name.EndsWith("Date"), x => x.Format = dateFormat);
+                            type.EachProperty(x => x.Name.EndsWith("Date"), x => x.Format = dateFormat);
                             type.Property("Freight").Format = currency;
                             break;
                         case "OrderDetail":

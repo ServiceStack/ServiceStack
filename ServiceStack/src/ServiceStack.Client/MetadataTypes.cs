@@ -131,6 +131,9 @@ namespace ServiceStack
         public Dictionary<string,CustomPluginInfo> CustomPlugins { get; set; }
         public MetadataTypes Api { get; set; }
         public Dictionary<string, string> Meta { get; set; }
+        
+        [IgnoreDataMember]
+        public AppMetadataCache Cache { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -773,8 +776,72 @@ namespace ServiceStack
         }
     }
 
+    [Exclude(Feature.Soap)]
+    public class AppMetadataCache
+    {
+        public Dictionary<string, MetadataOperationType> OperationsMap { get; set; }
+        public Dictionary<string, MetadataType> TypesMap { get; set; }
+
+        public AppMetadataCache(Dictionary<string, MetadataOperationType> operationsMap,
+            Dictionary<string, MetadataType> typesMap)
+        {
+            TypesMap = typesMap;
+            OperationsMap = operationsMap;
+        }
+    }
+
     public static class AppMetadataUtils
     {
+        public static AppMetadataCache GetCache(this AppMetadata app)
+        {
+            if (app.Cache == null)
+            {
+                var allOps = new Dictionary<string, MetadataOperationType>();
+                foreach (var op in app.Api.Operations)
+                {
+                    allOps[op.Request.Name] = op;
+                }
+                
+                var allTypes = new Dictionary<string, MetadataType>();
+                foreach (var type in app.Api.Types)
+                {
+                    allTypes[type.Name] = type;
+                    if (type.Namespace != null)
+                        allTypes[type.Namespace + "." + type.Name] = type;
+                }
+                app.Cache = new AppMetadataCache(allOps, allTypes);
+            }
+            return app.Cache;
+        }
+        public static MetadataOperationType GetOperation(this AppMetadata app, string name) => 
+            app.GetCache().OperationsMap.TryGetValue(name, out var op) ? op : null;
+
+        public static MetadataType GetType(this AppMetadata app, string name) => 
+            app.GetCache().TypesMap.TryGetValue(name, out var type) ? type : null;
+
+        public static MetadataType GetType(this AppMetadata app, string @namespace, string name) => 
+            X.Map(app.GetCache().TypesMap, x => x.TryGetValue(@namespace + "." + name, out var type) 
+                ? type 
+                : x.TryGetValue(name, out type) 
+                    ? type 
+                    : null);
+
+        public static void EachOperation(this AppMetadata app, Action<MetadataOperationType> configure) 
+        {
+            foreach (var entry in app.GetCache().OperationsMap)
+            {
+                configure(entry.Value);
+            }
+        }
+
+        public static void EachType(this AppMetadata app, Action<MetadataType> configure) 
+        {
+            foreach (var entry in app.GetCache().TypesMap)
+            {
+                configure(entry.Value);
+            }
+        }
+
         public static async Task<AppMetadata> GetAppMetadataAsync(this string baseUrl)
         {
             string appResponseJson = null;
@@ -986,19 +1053,21 @@ namespace ServiceStack
         }
 
         public static MetadataPropertyType Property(this MetadataType type, string name) =>
-            type.Properties.FirstOrDefault(x => x.Name == name);
+            type.Properties?.FirstOrDefault(x => x.Name == name);
         public static MetadataPropertyType RequiredProperty(this MetadataType type, string name) =>
-            type.Properties.FirstOrDefault(x => x.Name == name) ?? throw new Exception($"{type.Name} does not contain property ${name}");
+            type.Properties?.FirstOrDefault(x => x.Name == name) ?? throw new Exception($"{type.Name} does not contain property ${name}");
 
         public static void Property(this MetadataType type, string name, Action<MetadataPropertyType> configure)
         {
-            var prop = type.Properties.FirstOrDefault(x => x.Name == name);
+            var prop = type.Properties?.FirstOrDefault(x => x.Name == name);
             if (prop != null) configure(prop);
         }
 
-        public static void Properties(this MetadataType type, Func<MetadataPropertyType,bool> where, Action<MetadataPropertyType> configure)
+        public static void EachProperty(this MetadataType type, Func<MetadataPropertyType,bool> where, Action<MetadataPropertyType> configure)
         {
-            foreach (var prop in type.Properties.Where(@where))
+            if (type.Properties == null) 
+                return;
+            foreach (var prop in type.Properties.Where(where))
             {
                 configure(prop);
             }

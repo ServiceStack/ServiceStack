@@ -49,6 +49,10 @@ namespace ServiceStack
         public bool EnableAsync { get; set; } = true;
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; } = true;
         public string UseNamedConnection { get; set; }
+        /// <summary>
+        /// Whether to create implicit AutoQuery UI references based on field naming conventions
+        /// </summary>
+        public bool ImplicitReferences { get; set; } = true;
         public Type AutoQueryServiceBaseType { get; set; } = typeof(AutoQueryServiceBase);
         public QueryFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; } = new();
@@ -217,6 +221,29 @@ namespace ServiceStack
                     NamedConnection = UseNamedConnection,
                     ViewerConventions = ViewerConventions,
                 };
+                
+                if (ImplicitReferences)
+                {
+                    meta.EachType(type => {
+                        type.EachProperty(x => x.Ref == null && x.Name.Length > 2 && x.Name.EndsWith("Id"), x => {
+                            var refType = meta.GetType(x.Name.Substring(0, x.Name.Length - 2));
+                            if (refType != null)
+                            {
+                                var pk = refType.Properties?.FirstOrDefault(x => x.IsPrimaryKey == true);
+                                if (pk != null)
+                                {
+                                    var firstStringProp = refType.Properties.FirstOrDefault(x =>
+                                        x.IsPrimaryKey != true && x.Type == nameof(String));
+                                    x.Ref = new RefInfo {
+                                        Model = refType.Name,
+                                        RefId = pk.Name,
+                                        RefLabel = firstStringProp?.Name,
+                                    };
+                                }
+                            }
+                        });
+                    });
+                }
             });
 
             if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
