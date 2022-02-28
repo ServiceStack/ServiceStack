@@ -92,9 +92,7 @@ namespace ServiceStack
 
     public static class CrudUtils
     {
-        public static MetadataAttribute ToAttribute(string name, Dictionary<string, object> args = null,
-            Attribute attr = null) =>
-            new MetadataAttribute {
+        public static MetadataAttribute ToAttribute(string name, Dictionary<string, object> args = null, Attribute attr = null) => new() {
                 Name = name,
                 Attribute = attr,
                 Args = args?.Map(x => new MetadataPropertyType {

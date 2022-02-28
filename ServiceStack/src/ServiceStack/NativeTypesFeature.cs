@@ -61,6 +61,17 @@ namespace ServiceStack
                     typeof(ValidateNotEqualAttribute),
                     typeof(ValidateInclusiveBetweenAttribute),
                     typeof(ValidateExclusiveBetweenAttribute),
+                    
+                    typeof(InputAttribute),
+                    typeof(FieldAttribute),
+                    typeof(FieldCssAttribute),
+                    typeof(QueryCssAttribute),
+                    typeof(ExplorerCssAttribute),
+
+                    typeof(Intl),
+                    typeof(IntlNumber),
+                    typeof(IntlDateTime),
+                    typeof(IntlRelativeTime),
                 },
                 ExportTypes = new HashSet<Type>
                 {

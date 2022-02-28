@@ -9,6 +9,11 @@ namespace ServiceStack
         ReflectAttribute ToReflectAttribute();
     }
 
+    public interface IReflectAttributeFilter
+    {
+        bool ShouldInclude(PropertyInfo pi, string value);
+    }
+
     public class ReflectAttribute
     {
         public string Name { get; set; }

@@ -754,9 +754,14 @@ namespace ServiceStack.NativeTypes
             };
 
             var attrProps = Properties(attr);
-            metaAttr.Args = attrProps
+            var metaArgs = attrProps
                 .Select(x => ToProperty(x, attr))
-                .Where(x => x.Value != null && x.ReadOnly != true).ToList();
+                .Where(x => x.Value != null && x.ReadOnly != true);
+
+            if (attr is IReflectAttributeFilter reflectAttr)
+                metaArgs = metaArgs.Where(x => reflectAttr.ShouldInclude(x.PropertyInfo, x.Value));
+
+            metaAttr.Args = metaArgs.ToList();
 
             //Populate ctor Arg values from matching properties
             var argValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

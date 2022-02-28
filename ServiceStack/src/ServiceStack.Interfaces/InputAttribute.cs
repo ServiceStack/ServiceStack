@@ -15,10 +15,11 @@ public class FieldAttribute : InputAttributeBase
     public string InputCss { get; set; }
     public string LabelCss { get; set; }
 
+    public FieldAttribute(){}
     public FieldAttribute(string name) => Name = name;
 }
 
-public class InputAttributeBase : AttributeBase
+public class InputAttributeBase : MetadataAttributeBase
 {
     public string Type { get; set; }
     public string Value { get; set; }

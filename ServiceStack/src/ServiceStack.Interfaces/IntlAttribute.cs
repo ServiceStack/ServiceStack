@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 namespace ServiceStack;
 
@@ -17,6 +18,7 @@ public class IntlNumber : Intl
     {
         Number = style;
     }
+    public override bool ShouldInclude(PropertyInfo pi, string value) => pi.Name != nameof(Type) && base.ShouldInclude(pi, value);
 }
 public class IntlDateTime : Intl
 {
@@ -26,6 +28,8 @@ public class IntlDateTime : Intl
         Date = date;
         Time = time;
     }
+    public override bool ShouldInclude(PropertyInfo pi, string value) => pi.Name != nameof(Type) && base.ShouldInclude(pi, value);
+
 }
 public class IntlRelativeTime : Intl
 {
@@ -34,10 +38,12 @@ public class IntlRelativeTime : Intl
     {
         Numeric = numeric;
     }
+
+    public override bool ShouldInclude(PropertyInfo pi, string value) => pi.Name != nameof(Type) && base.ShouldInclude(pi, value);
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class Intl : AttributeBase
+public class Intl : MetadataAttributeBase
 {
     public Intl() {}
     public Intl(IntlFormat type) => Type = type;
