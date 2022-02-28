@@ -344,7 +344,7 @@ function createForms(TypesMap, css, theme, defaultFormats) {
                 }
                 return formatObject(ret)
             }
-            return ret
+            return typeof ret == 'string' ? enc(ret) : `${ret}`
         }
     }
     function formatObject(o) {
@@ -353,7 +353,7 @@ function createForms(TypesMap, css, theme, defaultFormats) {
         for (let i=0; i<Math.min(2,keys.length); i++) {
             let k = keys[i]
             let val = `${o[k]}`
-            sb.push(`<b class="font-medium">${k}</b>: ${val.substring(0,20) + (val.length > 20 ? '...' : '')}`)
+            sb.push(`<b class="font-medium">${k}</b>: ${enc(val.substring(0,20)) + (val.length > 20 ? '...' : '')}`)
         }            
         if (keys.length > 2) sb.push('...')
         return '<span title="' + enc(JSON.stringify(o)) + '">{ ' + sb.join(', ') + ' }</span>'
