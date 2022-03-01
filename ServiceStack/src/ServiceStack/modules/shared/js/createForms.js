@@ -344,7 +344,7 @@ function createForms(TypesMap, css, theme, defaultFormats) {
                 }
                 return formatObject(ret)
             }
-            return typeof ret == 'string' ? enc(ret) : `${ret}`
+            return typeof ret == 'string' && ret[0] !== '<' ? enc(ret) : `${ret}`
         }
     }
     function formatObject(o) {
@@ -356,7 +356,7 @@ function createForms(TypesMap, css, theme, defaultFormats) {
             sb.push(`<b class="font-medium">${k}</b>: ${enc(val.substring(0,20)) + (val.length > 20 ? '...' : '')}`)
         }            
         if (keys.length > 2) sb.push('...')
-        return '<span title="' + enc(JSON.stringify(o)) + '">{ ' + sb.join(', ') + ' }</span>'
+        return '<span title="' + enc(JSON.stringify(o, null, 4)) + '">{ ' + sb.join(', ') + ' }</span>'
     }
 }
 /*:minify*/
