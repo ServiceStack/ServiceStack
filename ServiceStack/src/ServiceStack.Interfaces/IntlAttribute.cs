@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace ServiceStack;
 
+/// <summary>
+/// Format Results to use custom formatting function 
+/// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class FormatAttribute : AttributeBase
 {
@@ -11,6 +14,9 @@ public class FormatAttribute : AttributeBase
     public string Locale { get; set; }
 }
 
+/// <summary>
+/// Configure property to use JS Intl.NumberFormat formatter 
+/// </summary>
 public class IntlNumber : Intl
 {
     public IntlNumber() : base(IntlFormat.Number) {}
@@ -20,6 +26,10 @@ public class IntlNumber : Intl
     }
     public override bool ShouldInclude(PropertyInfo pi, string value) => pi.Name != nameof(Type) && base.ShouldInclude(pi, value);
 }
+
+/// <summary>
+/// Configure property to use JS Intl.DateTimeFormat formatter 
+/// </summary>
 public class IntlDateTime : Intl
 {
     public IntlDateTime() : base(IntlFormat.DateTime) {}
@@ -31,6 +41,10 @@ public class IntlDateTime : Intl
     public override bool ShouldInclude(PropertyInfo pi, string value) => pi.Name != nameof(Type) && base.ShouldInclude(pi, value);
 
 }
+
+/// <summary>
+/// Configure property to use JS Intl.RelativeTimeFormat formatter 
+/// </summary>
 public class IntlRelativeTime : Intl
 {
     public IntlRelativeTime() : base(IntlFormat.RelativeTime) {}
@@ -42,6 +56,9 @@ public class IntlRelativeTime : Intl
     public override bool ShouldInclude(PropertyInfo pi, string value) => pi.Name != nameof(Type) && base.ShouldInclude(pi, value);
 }
 
+/// <summary>
+/// Configure property to use JS Intl formatter 
+/// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class Intl : MetadataAttributeBase
 {
@@ -93,11 +110,19 @@ public class Intl : MetadataAttributeBase
 
 public enum IntlFormat
 {
-    //Intl.NumberFormat
+    /// <summary>
+    /// Intl.NumberFormat
+    /// </summary>
     Number,
-    //Intl.DateTimeFormat
+    
+    /// <summary>
+    /// Intl.DateTimeFormat
+    /// </summary>
     DateTime,
-    //Intl.RelativeTimeFormat
+    
+    /// <summary>
+    /// Intl.RelativeTimeFormat
+    /// </summary>
     RelativeTime,
 }
 

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -224,20 +225,48 @@ namespace ServiceStack
                 
                 if (ImplicitReferences)
                 {
-                    meta.EachType(type => {
-                        type.EachProperty(x => x.Ref == null && x.Name.Length > 2 && x.Name.EndsWith("Id"), x => {
-                            var refType = meta.GetType(x.Name.Substring(0, x.Name.Length - 2));
-                            var pk = refType?.Properties?.FirstOrDefault(x => x.IsPrimaryKey == true);
-                            if (pk == null) 
-                                return;
+                    RefInfo CreateRefInfo(string model)
+                    {
+                        var refType = meta.GetType(model);
+                        var pk = refType?.Properties?.FirstOrDefault(x => x.IsPrimaryKey == true);
+                        if (pk == null)
+                            return null;
 
-                            var firstStringProp = refType.Properties.FirstOrDefault(x =>
-                                x.IsPrimaryKey != true && x.Type == nameof(String));
-                            x.Ref = new RefInfo {
-                                Model = refType.Name,
-                                RefId = pk.Name,
-                                RefLabel = firstStringProp?.Name,
-                            };
+                        var firstStringProp = refType.Properties.FirstOrDefault(x =>
+                            x.IsPrimaryKey != true && x.Type == nameof(String));
+                        var refInfo = new RefInfo
+                        {
+                            Model = refType.Name,
+                            RefId = pk.Name,
+                            RefLabel = firstStringProp?.Name,
+                        };
+                        return refInfo;
+                    }
+
+                    meta.EachType(type => {
+                        type.EachProperty(x => x.Ref == null && x.PropertyInfo != null, p =>
+                        {
+                            var allAttrs = p.PropertyInfo.AllAttributes();
+                            p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is RefAttribute) as RefAttribute, 
+                                x => new RefInfo { Model = x.Model, RefId = x.RefId, RefLabel = x.RefLabel });
+                            if (p.Ref != null) return;
+                            
+                            p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is ReferencesAttribute) as ReferencesAttribute,
+                                x => CreateRefInfo(x.Type.Name));
+                            if (p.Ref != null) return;
+                            
+                            p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is ForeignKeyAttribute) as ForeignKeyAttribute,
+                                x => CreateRefInfo(x.Type.Name));
+                            if (p.Ref != null) return;
+
+                            p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is ReferenceAttribute) as ReferenceAttribute,
+                                x => CreateRefInfo(X.Map(p.PropertyInfo.PropertyType, pt => pt.HasInterface(typeof(IEnumerable))
+                                    ? pt.GetCollectionType().Name 
+                                    : pt.Name)));
+                        });
+                        type.EachProperty(x => x.Ref == null && x.Name.Length > 2 && x.Name.EndsWith("Id"), x => {
+                            var model = x.Name.Substring(0, x.Name.Length - 2);
+                            x.Ref = CreateRefInfo(model);
                         });
                     });
                 }
