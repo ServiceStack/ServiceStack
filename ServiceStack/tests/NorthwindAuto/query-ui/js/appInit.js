@@ -59,7 +59,7 @@ if (alwaysHideTags) {
 }
 
 export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP)
-export let Forms = createForms(TypesMap, APP.ui.queryCss, APP.ui.theme, APP.ui.defaultFormats)
+export let Forms = createForms(TypesMap, APP.ui.query.css, APP.ui)
 export let onRoutesEditChange = () => {}
 
 /*:minify*/

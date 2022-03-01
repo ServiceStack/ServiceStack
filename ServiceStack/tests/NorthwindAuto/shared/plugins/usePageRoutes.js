@@ -51,7 +51,8 @@ App.plugin({
                 this.set(args)
                 let cleanArgs = state(this)
                 if (typeof args.$on == 'function') args.$on(cleanArgs)
-                history.pushState(cleanArgs, this[page], this.href())
+                let href = args.$qs ? this.href({ $qs:args.$qs }) : this.href()
+                history.pushState(cleanArgs, this[page], href)
                 publish('to', cleanArgs)
             },
             href(args) {
@@ -59,8 +60,12 @@ App.plugin({
                 if (args && typeof args['$page'] != 'undefined') args[page] = args['$page']
                 let s = args ? Object.assign({}, state(this), args) : state(this)
                 let path = s[page] || ''
-                let qs = queryKeys.filter(k => s[k]).map(k =>
-                    `${encodeURIComponent(k)}=${encodeURIComponent(s[k])}`).join('&')
+                let qsArgs = queryKeys.filter(k => s[k]).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(s[k])}`)
+                let $qs = args && typeof args['$qs'] == 'object' ? args['$qs'] : null
+                if ($qs) {
+                    qsArgs = [...qsArgs, ...Object.keys($qs).map(k => `${encodeURIComponent(k)}=${encodeURIComponent($qs[k])}`)]
+                }
+                let qs = qsArgs.join('&')
                 return path + (qs ? '?' + qs : '')
             },
             ...extend

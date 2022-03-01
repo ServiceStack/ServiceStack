@@ -1,5 +1,6 @@
 /*minify:*/
-function createForms(TypesMap, css, theme, defaultFormats) {
+function createForms(TypesMap, css, ui) {
+    let { theme, defaultFormats } = ui
     if (!defaultFormats) defaultFormats = {}
     if (!defaultFormats.locale) {
         defaultFormats.locale = map(navigator.languages, x => x[0]) || navigator.language || 'en'
@@ -169,8 +170,28 @@ function createForms(TypesMap, css, theme, defaultFormats) {
     let useNumberFmt = defaultFormats.number
         ? formatter(defaultFormats.number)
         : v => v
-    let Primitives = ['string','number','symbol','boolean']
-    function isPrimitive (value) { return Primitives.indexOf(typeof value) >= 0 }
+    let maxFieldLength = map(ui.query, x => x.maxFieldLength) || 150
+    let maxNestedFields = map(ui.query, x => x.maxNestedFields) || 2
+    let maxNestedFieldLength = map(ui.query, x => x.maxNestedFieldLength) || 30
+    function trunc(s, len) { return s.length > len ? s.substring(0,len) + '...' : s }
+    function formatObject(val) {
+        let obj = val
+        if (Array.isArray(val)) {
+            if (Types.isPrimitive(val[0])) {
+                return obj.join(',')
+            }
+            obj = val[0]
+        }
+        let keys = Object.keys(obj)
+        let sb = []
+        for (let i=0; i<Math.min(maxNestedFields,keys.length); i++) {
+            let k = keys[i]
+            let val = `${obj[k]}`
+            sb.push(`<b class="font-medium">${k}</b>: ${enc(trunc(val,maxNestedFieldLength))}`)
+        }
+        if (keys.length > 2) sb.push('...')
+        return '<span title="' + enc(JSON.stringify(val, null, 4)) + '">{ ' + sb.join(', ') + ' }</span>'
+    }
     return {
         getId,
         inputId,
@@ -323,9 +344,10 @@ function createForms(TypesMap, css, theme, defaultFormats) {
                     : o.trim()
             return o
         },
-        format(o, format) {
+        format(o, prop) {
             if (o == null) return ''
             let val = apiValue(o)
+            let { format } = prop
             let f = format && formatter(format) 
             if (typeof f != 'function') {
                 f = v => isDate(v) 
@@ -336,27 +358,14 @@ function createForms(TypesMap, css, theme, defaultFormats) {
             }
             let ret = f(val)
             if (typeof ret == 'object') {
-                if (Array.isArray(ret)) {
-                    if (isPrimitive(ret[0])) {
-                        return ret.join(',')
-                    }
-                    return formatObject(ret[0])
-                }
                 return formatObject(ret)
             }
-            return typeof ret == 'string' && ret[0] !== '<' ? enc(ret) : `${ret}`
+            return typeof ret == 'string' && ret[0] !== '<'
+                ? ret.length > maxFieldLength
+                    ? `<span title="${enc(ret)}">${enc(trunc(ret,maxFieldLength))}</span>`
+                    : enc(ret)
+                : `${ret}`
         }
-    }
-    function formatObject(o) {
-        let keys = Object.keys(o)
-        let sb = []
-        for (let i=0; i<Math.min(2,keys.length); i++) {
-            let k = keys[i]
-            let val = `${o[k]}`
-            sb.push(`<b class="font-medium">${k}</b>: ${enc(val.substring(0,20)) + (val.length > 20 ? '...' : '')}`)
-        }            
-        if (keys.length > 2) sb.push('...')
-        return '<span title="' + enc(JSON.stringify(o, null, 4)) + '">{ ' + sb.join(', ') + ' }</span>'
     }
 }
 /*:minify*/

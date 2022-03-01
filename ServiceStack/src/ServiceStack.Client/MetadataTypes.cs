@@ -201,6 +201,7 @@ namespace ServiceStack
     public class RefInfo
     {
         public string Model { get; set; }
+        public string SelfId { get; set; }
         public string RefId { get; set; }
         public string RefLabel { get; set; }
     }
@@ -486,12 +487,12 @@ namespace ServiceStack
         /// <summary>
         /// The default styles to use for rendering AutoQuery UI Forms 
         /// </summary>
-        public ApiCss QueryCss { get; set; } 
+        public QueryUi Query { get; set; } 
         
         /// <summary>
         /// The default styles to use for rendering API Explorer Forms 
         /// </summary>
-        public ApiCss ExplorerCss { get; set; }
+        public ExplorerUi Explorer { get; set; }
         
         /// <summary>
         /// The default formats for displaying info
@@ -512,13 +513,33 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
+    public class QueryUi
+    {
+        public ApiCss Css { get; set; }
+        public int MaxFieldLength { get; set; }
+        public int MaxNestedFields { get; set; }
+        public int MaxNestedFieldLength { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class ExplorerUi
+    {
+        public ApiCss Css { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class AdminUi
+    {
+        public ApiCss Css { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
     public class ApiCss
     {
         public string Form { get; set; }
         public string Fieldset { get; set; }
         public string Field { get; set; }
     }
-
 
     [Exclude(Feature.Soap)]
     public class FieldCss
@@ -815,6 +836,9 @@ namespace ServiceStack
         }
         public static MetadataOperationType GetOperation(this AppMetadata app, string name) => 
             app.GetCache().OperationsMap.TryGetValue(name, out var op) ? op : null;
+
+        public static MetadataType GetType(this AppMetadata app, Type type) => 
+            app.GetType(type.Namespace, type.Name);
 
         public static MetadataType GetType(this AppMetadata app, string name) => 
             app.GetCache().TypesMap.TryGetValue(name, out var type) ? type : null;

@@ -71,8 +71,11 @@ export let Types = (function() {
                 ? `[${value}]`
                 : `'${value}'`
     }
+
+    let Primitives = ['string','number','symbol','boolean']
+    function isPrimitive (value) { return Primitives.indexOf(typeof value) >= 0 }
     
-    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, })
+    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, isPrimitive, })
 })()
 
 /*:minify*/

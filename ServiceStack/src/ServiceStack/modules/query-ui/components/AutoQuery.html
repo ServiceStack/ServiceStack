@@ -40,6 +40,10 @@ function apiState(op) {
         }
     }
 }
+let Lookup = {}
+function lookupLabel(model,id,label) {
+    return Lookup[model] && Lookup[model][id] && Lookup[model][id][label] || '' 
+}
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
     let dataModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).dataModel
@@ -180,6 +184,11 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             if (!this.canQuery) return;
             return this.apiSend()
         },
+        refreshResults() {
+            let hold = this.apiResult
+            this.apiResult = null
+            App.nextTick(() => this.apiResult = hold)
+        },
         apiSend() {
             if (!this.hasState) return
             let state = this.state
@@ -193,6 +202,44 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             return apiSend(createClient, requestDto).then(r => {
                 complete()
                 this.apiResult =  r
+                let results = this.results 
+                if (!r.api.succeeded || results.length === 0) return
+                let pending = 0
+                this.columns.forEach(c => {
+                    let refLabel = c.ref && c.ref.refLabel
+                    if (refLabel) {
+                        let refId = c.ref.refId
+                        let lookupOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === c.ref.model)
+                        if (lookupOp) {
+                            let lookupIds = uniq(results.map(x => mapGet(x, c.name)).filter(x => x != null))
+                            let modelLookup = Lookup[c.ref.model] 
+                            if (!modelLookup) Lookup[c.ref.model] = modelLookup = {}
+                            let existingIds = []
+                            Object.keys(Lookup[c.ref.model]).forEach(pk => {
+                                if (mapGet(modelLookup[pk], refLabel) != null) {
+                                    existingIds.push(pk)
+                                }
+                            })
+                            let newIds = lookupIds.filter(id => existingIds.indexOf(`${id}`) === -1)
+                            console.log('lookup', c.ref.model, lookupIds, existingIds, newIds)
+                            if (newIds.length === 0) return
+                            //https://localhost:5001/api/QueryEmployees?IdIn=1,2,3&fields=Id,LastName&jsconfig=edv
+                            let queryArgs = { [c.ref.refId + 'In']:newIds,fields:[refId,refLabel].join(','), jsconfig:'edv' }
+                            let lookupRequest = createRequest(lookupOp, queryArgs)
+                            apiSend(createClient, lookupRequest)
+                                .then(r => {
+                                    if (!r.api.succeeded) return
+                                    (r.api.response.results || []).forEach(x => {
+                                        let id = mapGet(x, refId)
+                                        let val = mapGet(x, refLabel)
+                                        if (!modelLookup[id]) modelLookup[id] = {}
+                                        modelLookup[id][refLabel] = val
+                                    })
+                                    this.refreshResults()
+                                })
+                        }
+                    }
+                })
             })
         },
         nextSkip(skip) {
@@ -365,7 +412,39 @@ App.components({
             },
             fieldName(name) { return humanify(name) },
             getId(row) { return Forms.getId(getType(routes.op),row) },
-            format(row, column) { return Forms.format(mapGet(row,column.name), column.format) },
+            format(row, column) { 
+                return Forms.format(mapGet(row,column.name), column)
+            },
+            refInfo(row, column) {
+                let ref = column.ref
+                if (ref) {
+                    let refIdValue = ref.selfId == null 
+                        ? mapGet(row,column.name)
+                        : mapGet(row, ref.selfId)
+                    let queryOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === ref.model)
+                    if (queryOp) {
+                        let href = { op:queryOp.request.name, skip:null, $qs: { [ref.refId]:refIdValue } }
+                        let html = this.format(row,column)
+                        if (ref.refLabel) {
+                            let colModel = this.columns.find(x => x.type === ref.model)
+                            let modelValue = colModel && mapGet(row, colModel.name)
+                            if (modelValue) {
+                                let label = mapGet(modelValue, ref.refLabel)
+                                if (label) {
+                                    html = label
+                                }
+                            } else {
+                                let label = lookupLabel(ref.model, refIdValue, ref.refLabel)
+                                if (label) {
+                                    html = label
+                                }
+                            }
+                        }
+                        return { href, icon:getIcon({ op:queryOp }), html }
+                    }
+                }
+                return null
+            },
         }
     },
     SettingsIcons({ routes, settings, name }) {
@@ -428,8 +507,12 @@ App.components({
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
                             </button>
                         </td>
-                        <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div v-html="format(row,c)"></div>
+                        <td v-for="c in columns.filter(c => !c.format || c.format.method !== 'hidden')" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div v-if="refInfo(row,c)" class="text-blue-700 flex cursor-pointer" v-href="refInfo(row,c).href">
+                                <span class="mr-1" v-scope="Image(refInfo(row,c).icon, { cls:'w-5 h-5' })"></span>
+                                <div v-html="map(refInfo(row,c),x => x.html)"></div>
+                            </div>
+                            <div v-else v-html="format(row,c)"></div>
                         </td>
                     </tr>
                     </tbody>

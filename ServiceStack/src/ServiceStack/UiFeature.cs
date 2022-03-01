@@ -49,17 +49,26 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
                     Date = DateStyle.Medium,
                 }.ToFormat(),
             },
-            QueryCss = new ApiCss
+            Query = new()
             {
-                Form = "max-w-screen-2xl",
-                Fieldset = "grid grid-cols-12 gap-6", 
-                Field = "col-span-12 lg:col-span-6 xl:col-span-4",
+                Css = new ApiCss
+                {
+                    Form = "max-w-screen-2xl",
+                    Fieldset = "grid grid-cols-12 gap-6",
+                    Field = "col-span-12 lg:col-span-6 xl:col-span-4",
+                },
+                MaxFieldLength = 150,
+                MaxNestedFields = 2,
+                MaxNestedFieldLength = 30,
             },
-            ExplorerCss = new ApiCss
+            Explorer = new()
             {
-                Form = "max-w-screen-md",
-                Fieldset = "grid grid-cols-12 gap-6", 
-                Field = "col-span-12 sm:col-span-6",
+                Css = new ApiCss
+                {
+                    Form = "max-w-screen-md",
+                    Fieldset = "grid grid-cols-12 gap-6", 
+                    Field = "col-span-12 sm:col-span-6",
+                }
             },
             AdminLinks = new()
             {

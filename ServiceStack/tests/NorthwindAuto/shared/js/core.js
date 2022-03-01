@@ -307,4 +307,37 @@ export function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${url}">`
 }
 
+export function hidden(o) { return '' }
+
+/** @param {ImageInfo} icon 
+ *  @param {*} [opt] */
+export function iconHtml(icon, opt) {
+    if (!icon) return ''
+    if (!opt) opt = {}
+    let { svg, uri, alt, cls } = icon
+    if (!cls) cls = 'w-5 h-5'
+    if (opt.cls) {
+        cls += ' ' + opt.cls 
+    }
+    if (svg) {
+        let attrs = [
+            cls ? `class="${cls}"` : null, 
+            svg.indexOf('role') === -1 ? `role="img"` : null,
+            svg.indexOf('aria-hidden') === -1 ? `aria-hidden="true"` : null
+        ].filter(x => !!x)
+        if (attrs.length > 0) {
+            svg = `<svg ${attrs.join(' ')}' ${svg.substring(4)}`
+        }
+        return svg
+    }
+    if (uri) {
+        let attrs = [
+            cls ? `class="${cls}"` : null,
+            alt ? `alt="${alt}"` : null
+        ].filter(x => !!x)
+        return `<img src="${uri}" ${attrs.join(' ')}>`
+    }
+    return ''
+}
+
 /*:minify*/

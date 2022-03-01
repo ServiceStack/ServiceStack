@@ -232,8 +232,9 @@ namespace ServiceStack
                         if (pk == null)
                             return null;
 
-                        var firstStringProp = refType.Properties.FirstOrDefault(x =>
-                            x.IsPrimaryKey != true && x.Type == nameof(String));
+                        var firstStringProp = pk.Type != nameof(String) 
+                            ? refType.Properties.FirstOrDefault(x => x.IsPrimaryKey != true && x.Type == nameof(String))
+                            : null;
                         var refInfo = new RefInfo
                         {
                             Model = refType.Name,
@@ -247,8 +248,10 @@ namespace ServiceStack
                         type.EachProperty(x => x.Ref == null && x.PropertyInfo != null, p =>
                         {
                             var allAttrs = p.PropertyInfo.AllAttributes();
-                            p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is RefAttribute) as RefAttribute, 
-                                x => new RefInfo { Model = x.Model, RefId = x.RefId, RefLabel = x.RefLabel });
+                            p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is RefAttribute) as RefAttribute, x => 
+                                new RefInfo {
+                                    Model = x.Model, SelfId = x.SelfId, RefId = x.RefId, RefLabel = x.RefLabel
+                                });
                             if (p.Ref != null) return;
                             
                             p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is ReferencesAttribute) as ReferencesAttribute,
@@ -260,9 +263,47 @@ namespace ServiceStack
                             if (p.Ref != null) return;
 
                             p.Ref = X.Map(allAttrs.FirstOrDefault(x => x is ReferenceAttribute) as ReferenceAttribute,
-                                x => CreateRefInfo(X.Map(p.PropertyInfo.PropertyType, pt => pt.HasInterface(typeof(IEnumerable))
-                                    ? pt.GetCollectionType().Name 
-                                    : pt.Name)));
+                                x =>
+                                {
+                                    var pt = p.PropertyInfo.PropertyType;
+                                    var typePk = type.Properties?.FirstOrDefault(prop => prop.IsPrimaryKey == true);
+                                    if (pt.HasInterface(typeof(IEnumerable)))
+                                    {
+                                        if (typePk == null)
+                                            return null;
+                                        
+                                        var refType = pt.GetCollectionType();
+                                        var refMetaType = meta.GetType(refType.Name);
+                                        if (refMetaType == null)
+                                            return null;
+                                        
+                                        var fkId = type.Name + "Id";
+                                        var fkProp = refMetaType.Properties?.FirstOrDefault(prop => prop.Name == fkId);
+                                        
+                                        return fkProp == null ? null : new RefInfo
+                                        {
+                                            Model = refType.Name,
+                                            SelfId = typePk.Name,
+                                            RefId = fkProp.Name,
+                                        };
+                                    }
+                                    else
+                                    {
+                                        var selfRefId = pt.Name + "Id";
+                                        var selfRef = type.Properties?.FirstOrDefault(prop => prop.Name == selfRefId);
+                                        if (selfRef == null)
+                                            return CreateRefInfo(pt.Name);
+                                        var refMetaType = meta.GetType(pt.Name);
+                                        var fkProp = refMetaType?.Properties?.FirstOrDefault(prop => prop.IsPrimaryKey == true);
+                                        
+                                        return fkProp == null ? null : new RefInfo
+                                        {
+                                            Model = pt.Name,
+                                            SelfId = selfRefId,
+                                            RefId = fkProp.Name,
+                                        };
+                                    }
+                                });
                         });
                         type.EachProperty(x => x.Ref == null && x.Name.Length > 2 && x.Name.EndsWith("Id"), x => {
                             var model = x.Name.Substring(0, x.Name.Length - 2);

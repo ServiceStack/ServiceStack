@@ -12,6 +12,8 @@ public class FormatAttribute : AttributeBase
     public string Method { get; set; }
     public string Options { get; set; }
     public string Locale { get; set; }
+    public FormatAttribute(){}
+    public FormatAttribute(string method) => Method = method;
 }
 
 /// <summary>

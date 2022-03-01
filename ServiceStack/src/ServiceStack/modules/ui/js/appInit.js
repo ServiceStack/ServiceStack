@@ -44,5 +44,5 @@ if (alwaysHideTags) {
 }
 let cleanSrc = src => src.trim();
 let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP)
-let Forms = createForms(TypesMap,APP.ui.explorerCss, APP.ui.theme, APP.ui.defaultFormats)
+let Forms = createForms(TypesMap, APP.ui.explorer.css, APP.ui)
 /*:minify*/

@@ -52,7 +52,8 @@ namespace MyApp
                             }
                         },
                         */
-                        IncludeService = op => !op.ReferencesAny(nameof(Booking),nameof(Player),nameof(GameItem),nameof(Profile),nameof(Level)),
+                        IncludeService = op => !op.ReferencesAny(nameof(Booking),
+                            nameof(Player),nameof(GameItem),nameof(Profile),nameof(Level),nameof(PlayerGameItem)),
                     },
                 });
 
@@ -89,10 +90,14 @@ namespace MyApp
                         case "Order":
                             type.EachProperty(x => x.Name.EndsWith("Date"), x => x.Format = dateFormat);
                             type.Property("Freight").Format = currency;
+                            type.Property("ShipVia").Ref = new() { Model = "Shipper", RefId = "Id", RefLabel = "CompanyName" };
                             break;
                         case "OrderDetail":
                             type.Property("UnitPrice").Format = currency;
                             type.Property("Discount").Format = percent;
+                            break;
+                        case "EmployeeTerritory":
+                            type.Property("TerritoryId").Ref = new() { Model = "Territory", RefId = "Id", RefLabel = "TerritoryDescription" };
                             break;
                     }
                 });

@@ -48,7 +48,7 @@ App.components({
             <div class="mt-4">
                 <div class="pb-2 px-4">
                     <div class="">
-                        <div v-for="c in columns" :key="c.name" class="flex items-center">
+                        <div v-for="c in columns.filter(c => !c.format || c.format.method !== 'hidden')" :key="c.name" class="flex items-center">
                             <input type="checkbox" :id="c.name" :value="c.name" v-model="prefs.selectedColumns" 
                                    class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
                             <label :for="c.name" class="ml-3">{{c.name}}</label>

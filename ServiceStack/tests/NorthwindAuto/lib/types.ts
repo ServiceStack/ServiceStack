@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-02-28 17:30:31
+Date: 2022-03-01 19:09:55
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -226,6 +226,23 @@ export class ApiCss
     public constructor(init?: Partial<ApiCss>) { (Object as any).assign(this, init); }
 }
 
+export class QueryUi
+{
+    public css: ApiCss;
+    public maxFieldLength: number;
+    public maxNestedFields: number;
+    public maxNestedFieldLength: number;
+
+    public constructor(init?: Partial<QueryUi>) { (Object as any).assign(this, init); }
+}
+
+export class ExplorerUi
+{
+    public css: ApiCss;
+
+    public constructor(init?: Partial<ExplorerUi>) { (Object as any).assign(this, init); }
+}
+
 export class FormatInfo
 {
     public method: string;
@@ -253,8 +270,8 @@ export class UiInfo
     public alwaysHideTags: string[];
     public adminLinks: LinkInfo[];
     public theme: ThemeInfo;
-    public queryCss: ApiCss;
-    public explorerCss: ApiCss;
+    public query: QueryUi;
+    public explorer: ExplorerUi;
     public defaultFormats: ApiFormat;
     public meta: { [index: string]: string; };
 
@@ -465,6 +482,7 @@ export class MetadataAttribute
 export class RefInfo
 {
     public model: string;
+    public selfId: string;
     public refId: string;
     public refLabel: string;
 
