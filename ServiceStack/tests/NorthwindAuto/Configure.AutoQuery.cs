@@ -3,6 +3,7 @@ using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using TalentBlazor.ServiceModel;
 
 // In Configure.AppHost
 [assembly: HostingStartup(typeof(MyApp.ConfigureAutoQuery))]
@@ -53,7 +54,9 @@ namespace MyApp
                         },
                         */
                         IncludeService = op => !op.ReferencesAny(nameof(Booking),
-                            nameof(Player),nameof(GameItem),nameof(Profile),nameof(Level),nameof(PlayerGameItem)),
+                            nameof(Player),nameof(GameItem),nameof(Profile),nameof(Level),nameof(PlayerGameItem),
+                            nameof(Contact),nameof(Job),nameof(JobApplication),nameof(JobApplicationEvent),nameof(JobApplicationAttachment),
+                            nameof(PhoneScreen),nameof(Interview)),
                     },
                 });
 

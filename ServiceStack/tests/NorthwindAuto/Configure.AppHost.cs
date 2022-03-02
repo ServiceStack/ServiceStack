@@ -56,7 +56,6 @@ namespace MyApp
                 VirtualFiles = VirtualFiles,
                 DefaultPattern = "*.html;*.js;*.css"
             });
-            
             //Plugins.Add(new PostmanFeature());
         }
 
