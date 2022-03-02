@@ -416,14 +416,20 @@ App.components({
                 return Forms.format(mapGet(row,column.name), column)
             },
             refInfo(row, column) {
+                let val = mapGet(row,column.name)
+                if (val == null || Array.isArray(val) && val.length === 0) return null
                 let ref = column.ref
                 if (ref) {
                     let refIdValue = ref.selfId == null 
-                        ? mapGet(row,column.name)
+                        ? mapGet(row, column.name)
                         : mapGet(row, ref.selfId)
+                    let isRefType = typeof refIdValue == 'object'
+                    if (isRefType) {
+                        refIdValue = mapGet(refIdValue, ref.refId)
+                    }
                     let queryOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === ref.model)
                     if (queryOp) {
-                        let href = { op:queryOp.request.name, skip:null, $qs: { [ref.refId]:refIdValue } }
+                        let href = { op:queryOp.request.name, skip:null, $qs: { [ref.refId]: refIdValue } }
                         let html = this.format(row,column)
                         if (ref.refLabel) {
                             let colModel = this.columns.find(x => x.type === ref.model)

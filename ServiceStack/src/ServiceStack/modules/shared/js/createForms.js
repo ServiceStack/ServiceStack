@@ -174,6 +174,28 @@ function createForms(TypesMap, css, ui) {
     let maxNestedFields = map(ui.query, x => x.maxNestedFields) || 2
     let maxNestedFieldLength = map(ui.query, x => x.maxNestedFieldLength) || 30
     function trunc(s, len) { return s.length > len ? s.substring(0,len) + '...' : s }
+    function scrubStr(s) {
+        return s.substring(0, 6) === '/Date('
+            ? dateFmt(toDate(s))
+            : s
+    }
+    function scrub(o) {
+        if (o == null) return null
+        if (typeof o == 'string') return scrubStr(o)
+        if (Types.isPrimitive(o)) return o
+        if (Array.isArray(o)) return o.map(scrub)
+        if (typeof o == 'object') {
+            let to = {}
+            Object.keys(o).forEach(k => {
+                to[k] = scrub(o[k])
+            })
+            return to
+        }
+        return o
+    }
+    function displayObj(val) {
+        return JSON.stringify(scrub(val), null, 4).replace(/"/g,'')
+    }
     function formatObject(val) {
         let obj = val
         if (Array.isArray(val)) {
@@ -187,10 +209,10 @@ function createForms(TypesMap, css, ui) {
         for (let i=0; i<Math.min(maxNestedFields,keys.length); i++) {
             let k = keys[i]
             let val = `${obj[k]}`
-            sb.push(`<b class="font-medium">${k}</b>: ${enc(trunc(val,maxNestedFieldLength))}`)
+            sb.push(`<b class="font-medium">${k}</b>: ${enc(trunc(scrubStr(val),maxNestedFieldLength))}`)
         }
         if (keys.length > 2) sb.push('...')
-        return '<span title="' + enc(JSON.stringify(val, null, 4)) + '">{ ' + sb.join(', ') + ' }</span>'
+        return '<span title="' + enc(displayObj(val)) + '">{ ' + sb.join(', ') + ' }</span>'
     }
     return {
         getId,
