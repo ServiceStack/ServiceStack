@@ -4,16 +4,41 @@ using System.Reflection;
 namespace ServiceStack;
 
 /// <summary>
-/// Format Results to use custom formatting function 
+/// Format Results to use custom formatting function. 
+/// Can use any available JS function, see <see cref="FormatMethods"/> for built-in format functions
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class FormatAttribute : AttributeBase
 {
+    /// <summary>
+    /// Name of available JS function, see <see cref="FormatMethods"/> for built-in functions
+    /// </summary>
     public string Method { get; set; }
     public string Options { get; set; }
     public string Locale { get; set; }
     public FormatAttribute(){}
     public FormatAttribute(string method) => Method = method;
+}
+
+/// <summary>
+/// JS Functions available in UIs 
+/// </summary>
+public static class FormatMethods
+{
+    /// <summary>
+    /// USD Currency
+    /// </summary>
+    public const string Currency = "currency";
+    
+    /// <summary>
+    /// Render Image URL as an img icon
+    /// </summary>
+    public const string Icon = "icon";
+    
+    /// <summary>
+    /// Hides field from being displayed in search results
+    /// </summary>
+    public const string Hidden = "hidden";
 }
 
 /// <summary>
