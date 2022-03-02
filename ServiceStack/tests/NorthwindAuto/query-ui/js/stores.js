@@ -1,6 +1,6 @@
 import { appendQueryString, createUrl, humanify, leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
-import { setBodyClass, invalidAccessMessage } from "../../shared/js/core"
+import { setBodyClass, invalidAccessMessage, sortOps } from "../../shared/js/core"
 
 /*minify:*/
 App.useTransitions({ sidebar: true, 'select-columns': false })
@@ -84,10 +84,9 @@ let store = PetiteVue.reactive({
         let ret = this.sideNav.filter(nav => nav.operations.some(filter))
             .map(nav => ({
                 ...nav,
-                operations: nav.operations.filter(filter)
+                operations: sortOps(nav.operations.filter(filter))
             }))
 
-        /**:return [...ret, ...ret, ...ret, ...ret, ...ret]*/
         return ret
     },
 

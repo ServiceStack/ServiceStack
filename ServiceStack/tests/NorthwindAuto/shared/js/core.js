@@ -307,6 +307,7 @@ export function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${url}">`
 }
 
+// marker fn, special-cased to hide from query results
 export function hidden(o) { return '' }
 
 /** @param {ImageInfo} icon 
@@ -338,6 +339,21 @@ export function iconHtml(icon, opt) {
         return `<img src="${uri}" ${attrs.join(' ')}>`
     }
     return ''
+}
+
+let SORT_METHODS = ['GET','POST','PATCH','PUT','DELETE']
+
+/** @param {MetadataOperationType} op */
+function opSortName(op) {
+    // group related services by model or inherited generic type
+    let group = map(op.dataModel, x => x.name) || map(op.request.inherits, x => x.genericArgs && x.genericArgs[0]) 
+    let sort1 = group ? group + map(SORT_METHODS.indexOf(op.method || 'ANY'), x => x === -1 ? '' : x.toString()) : 'z'
+    return sort1 + `_` + op.request.name
+}
+
+export function sortOps(ops) {
+    ops.sort((a,b) => opSortName(a).localeCompare(opSortName(b)))
+    return ops
 }
 
 /*:minify*/

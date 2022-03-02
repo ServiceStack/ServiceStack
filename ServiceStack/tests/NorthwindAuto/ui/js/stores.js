@@ -1,6 +1,6 @@
 import { leftPart } from "@servicestack/client"
 import { APP, Authenticate } from "../../lib/types"
-import { Crud, setBodyClass, invalidAccessMessage } from "../../shared/js/core"
+import { Crud, setBodyClass, invalidAccessMessage, sortOps } from "../../shared/js/core"
 import { Types } from "../../shared/js/Types"
 
 /*minify:*/
@@ -69,7 +69,7 @@ let store = PetiteVue.reactive({
         let ret = this.sideNav.filter(nav => nav.operations.some(filter))
             .map(nav => ({
                 ...nav,
-                operations: nav.operations.filter(filter)
+                operations: sortOps(nav.operations.filter(filter))
             }))
 
         /**:return [...ret, ...ret, ...ret, ...ret, ...ret]*/

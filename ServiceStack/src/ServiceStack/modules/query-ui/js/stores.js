@@ -74,7 +74,7 @@ let store = PetiteVue.reactive({
         let ret = this.sideNav.filter(nav => nav.operations.some(filter))
             .map(nav => ({
                 ...nav,
-                operations: nav.operations.filter(filter)
+                operations: sortOps(nav.operations.filter(filter))
             }))
         return ret
     },
