@@ -230,6 +230,9 @@ function currency(val) {
 function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${url}">`
 }
+function iconRounded(url) {
+    return `<img class="w-8 h-8 rounded-full" title="${url}" src="${url}">`
+}
 // marker fn, special-cased to hide from query results
 function hidden(o) { return '' }
 function iconHtml(icon, opt) {

@@ -36,6 +36,11 @@ public static class FormatMethods
     public const string Icon = "icon";
     
     /// <summary>
+    /// Render Image URL as an img icon
+    /// </summary>
+    public const string IconRounded = "iconRounded";
+    
+    /// <summary>
     /// Hides field from being displayed in search results
     /// </summary>
     public const string Hidden = "hidden";

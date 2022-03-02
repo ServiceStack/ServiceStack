@@ -488,9 +488,7 @@ App.components({
                                 }
                             } else {
                                 let label = lookupLabel(ref.model, refIdValue, ref.refLabel)
-                                if (label) {
-                                    html = label
-                                }
+                                html = label ? label : `${ref.model}: ${html}`
                             }
                         }
                         return { href, icon:getIcon({ op:queryOp }), html }

@@ -16,7 +16,7 @@ public class Contact : AuditBase
 
     public string DisplayName { get => FirstName + " " + LastName; }
 
-    [Format(FormatMethods.Icon)]
+    [Format(FormatMethods.IconRounded)]
     public string ProfileUrl { get; set; }
 
     [IntlNumber(Currency = NumberCurrency.USD)]

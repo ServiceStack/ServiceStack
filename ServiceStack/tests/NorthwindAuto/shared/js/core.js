@@ -306,6 +306,10 @@ export function currency(val) {
 export function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${url}">`
 }
+/** @param {string} url */
+export function iconRounded(url) {
+    return `<img class="w-8 h-8 rounded-full" title="${url}" src="${url}">`
+}
 
 // marker fn, special-cased to hide from query results
 export function hidden(o) { return '' }
