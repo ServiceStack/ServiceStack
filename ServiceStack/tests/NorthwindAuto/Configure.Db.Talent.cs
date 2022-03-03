@@ -20,6 +20,7 @@ public static class ConfigureDbTalent
         db.CreateTableIfNotExists<PhoneScreen>();
         db.CreateTableIfNotExists<Interview>();
         db.CreateTableIfNotExists<JobApplicationAttachment>();
+        db.CreateTableIfNotExists<JobApplicationComment>();
 
         if (seedData)
         {
@@ -117,10 +118,10 @@ public static class ConfigureDbTalent
             }
         }
     }
-    
+
     private static Faker<PhoneScreen> phoneScreenFaker = new Faker<PhoneScreen>()
         .RuleFor(p => p.Id, () => 0)
-        .RuleFor(p => p.ApiAppUserId, (faker, screen) => faker.Random.Int(1, 5))
+        .RuleFor(p => p.AppUserId, (faker, screen) => faker.Random.Int(1, 5))
         .RuleFor(p => p.Notes, (faker, screen) => faker.Lorem.Paragraph())
         .RuleFor(p => p.CreatedDate, () => DateTime.UtcNow)
         .RuleFor(p => p.ModifiedDate, () => DateTime.UtcNow)
@@ -129,7 +130,7 @@ public static class ConfigureDbTalent
 
     private static Faker<Interview> interviewFaker = new Faker<Interview>()
         .RuleFor(p => p.Id, () => 0)
-        .RuleFor(p => p.ApiAppUserId, (faker, screen) => faker.Random.Int(1, 5))
+        .RuleFor(p => p.AppUserId, (faker, screen) => faker.Random.Int(1, 5))
         .RuleFor(p => p.Notes, (faker, screen) => faker.Lorem.Paragraph())
         .RuleFor(p => p.CreatedDate, () => DateTime.UtcNow)
         .RuleFor(p => p.ModifiedDate, () => DateTime.UtcNow)
@@ -138,11 +139,20 @@ public static class ConfigureDbTalent
 
     private static Faker<JobApplicationEvent> eventFaker = new Faker<JobApplicationEvent>()
         .RuleFor(e => e.Id, () => 0)
-        .RuleFor(e => e.ApiAppUserId, (f) => f.Random.Int(1, 5))
+        .RuleFor(e => e.AppUserId, (f) => f.Random.Int(1, 5))
         .RuleFor(e => e.CreatedDate, () => DateTime.UtcNow)
         .RuleFor(e => e.ModifiedDate, () => DateTime.UtcNow)
         .RuleFor(e => e.CreatedBy, () => "SYSTEM")
         .RuleFor(e => e.ModifiedBy, () => "SYSTEM");
+
+    private static Faker<JobApplicationComment> commentFaker = new Faker<JobApplicationComment>()
+        .RuleFor(c => c.Id, () => 0)
+        .RuleFor(c => c.AppUserId, (f) => f.Random.Int(1, 5))
+        .RuleFor(c => c.Message, (f) => f.Lorem.Paragraph())
+        .RuleFor(c => c.CreatedDate, (f) => f.Date.Recent(5))
+        .RuleFor(c => c.ModifiedDate, () => DateTime.UtcNow)
+        .RuleFor(c => c.CreatedBy, () => "SYSTEM")
+        .RuleFor(c => c.ModifiedBy, () => "SYSTEM");
 
     private static readonly Faker FakerInstance = new();
 
@@ -167,7 +177,7 @@ public static class ConfigureDbTalent
         if (status >= JobApplicationStatus.InterviewCompleted)
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
-            appEvent.ApiAppUserId = FakerInstance.Random.Int(1, 5);
+            appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
             appEvent.Description = "Completed interview";
             appEvent.EventDate = eventDate;
             appEvent.Status = JobApplicationStatus.InterviewCompleted;
@@ -175,52 +185,77 @@ public static class ConfigureDbTalent
             var interview = interviewFaker.Generate();
             interview.JobApplicationId = jobApp.Id;
             interview.BookingTime = eventDate;
-            interview.ApiAppUserId = FakerInstance.Random.Int(1, 5);
+            interview.AppUserId = FakerInstance.Random.Int(1, 5);
             db.Insert(interview);
         }
 
         if (status >= JobApplicationStatus.Interview)
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
-            appEvent.ApiAppUserId = FakerInstance.Random.Int(1, 5);
+            appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
             appEvent.Description = "Advanced to interview";
             appEvent.Status = JobApplicationStatus.Interview;
             appEvent.EventDate = eventDate;
             db.Insert(appEvent);
+            if(status == JobApplicationStatus.Interview)
+            {
+                var interview = interviewFaker.Generate();
+                interview.JobApplicationId = jobApp.Id;
+                interview.BookingTime = eventDate;
+                interview.AppUserId = FakerInstance.Random.Int(1, 5);
+                db.Insert(interview);
+            }
         }
 
         if (status >= JobApplicationStatus.PhoneScreeningCompleted)
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
-            appEvent.ApiAppUserId = FakerInstance.Random.Int(1, 5);
+            appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
             appEvent.Description = "Completed phone screening";
             appEvent.EventDate = eventDate;
             appEvent.Status = JobApplicationStatus.PhoneScreeningCompleted;
             db.Insert(appEvent);
             var screen = phoneScreenFaker.Generate();
             screen.JobApplicationId = jobApp.Id;
-            screen.ApiAppUserId = FakerInstance.Random.Int(1, 5);
+            screen.AppUserId = FakerInstance.Random.Int(1, 5);
             db.Insert(screen);
         }
 
         if (status >= JobApplicationStatus.PhoneScreening)
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
-            appEvent.ApiAppUserId = FakerInstance.Random.Int(1, 5);
+            appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
             appEvent.Description = "Advanced to phone screening";
             appEvent.Status = JobApplicationStatus.PhoneScreening;
             appEvent.EventDate = eventDate;
             db.Insert(appEvent);
+            if(status == JobApplicationStatus.PhoneScreening)
+            {
+                var screen = phoneScreenFaker.Generate();
+                screen.JobApplicationId = jobApp.Id;
+                screen.AppUserId = FakerInstance.Random.Int(1, 5);
+                db.Insert(screen);
+            }
         }
 
         if (status >= JobApplicationStatus.Applied)
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
-            appEvent.ApiAppUserId = FakerInstance.Random.Int(1, 5);
+            appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
             appEvent.Description = "Applied";
             appEvent.Status = JobApplicationStatus.Applied;
             appEvent.EventDate = eventDate;
             db.Insert(appEvent);
         }
+
+        var numOfComments = FakerInstance.Random.Int(1, 5);
+        for (var i = 0;  i < numOfComments; i++)
+        {
+            var comment = commentFaker.Generate();
+            comment.JobApplicationId = jobApp.Id;
+            db.Insert(comment);
+        }
     }
+
+
 }

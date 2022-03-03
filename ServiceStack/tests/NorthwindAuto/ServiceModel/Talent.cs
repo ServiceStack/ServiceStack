@@ -5,19 +5,17 @@ using System.Collections.Generic;
 
 namespace TalentBlazor.ServiceModel;
 
-[Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path fill='currentColor' d='M20 22H4v-2a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v2zm-8-9a6 6 0 1 1 0-12a6 6 0 0 1 0 12z'></path></svg>")]
+[Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='currentColor' d='M5 3a3 3 0 1 1 6 0a3 3 0 0 1-6 0zm7.001 4h-.553l-3.111 6.316L9.5 7.5L8 6L6.5 7.5l1.163 5.816L4.552 7h-.554c-1.999 0-1.999 1.344-1.999 3v5h12v-5c0-1.656 0-3-1.999-3z'/></svg>")]
 public class Contact : AuditBase
 {
     [AutoIncrement]
     public int Id { get; set; }
 
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-
-    public string DisplayName { get => FirstName + " " + LastName; }
-
+    public string DisplayName => FirstName + " " + LastName;
     [Format(FormatMethods.IconRounded)]
     public string ProfileUrl { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
 
     [IntlNumber(Currency = NumberCurrency.USD)]
     public int? SalaryExpectation { get; set; }
@@ -36,7 +34,7 @@ public class Contact : AuditBase
     public List<JobApplication> Applications { get; set; }
 }
 
-[Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='currentColor' d='M5 3a3 3 0 1 1 6 0a3 3 0 0 1-6 0zm7.001 4h-.553l-3.111 6.316L9.5 7.5L8 6L6.5 7.5l1.163 5.816L4.552 7h-.554c-1.999 0-1.999 1.344-1.999 3v5h12v-5c0-1.656 0-3-1.999-3z'/></svg>")]
+[Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><path fill='currentColor' d='M13.11 2.293a1.5 1.5 0 0 1 1.78 0l9.497 7.005c1.124.83.598 2.578-.74 2.7H4.353c-1.338-.122-1.863-1.87-.74-2.7l9.498-7.005ZM14 8.999a1.5 1.5 0 1 0 0-3a1.5 1.5 0 0 0 0 3Zm5.5 4h2.499v6h-2.5v-6Zm-2 6v-6H15v6h2.5ZM13 19v-6h-2.5v6H13Zm-4.499 0v-6h-2.5v6h2.5Zm-2.25 1a3.25 3.25 0 0 0-3.25 3.25v.5a.752.752 0 0 0 .75.751h20.497a.75.75 0 0 0 .75-.75v-.5a3.25 3.25 0 0 0-3.25-3.25H6.252Z'/></svg>")]
 public class Job : AuditBase
 {
     [AutoIncrement]
@@ -69,6 +67,23 @@ public enum EmploymentType
     Contract
 }
 
+[Icon(Svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" role=\"img\" width=\"1em\" height=\"1em\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4c32.7 12.3 69 19.4 107.4 19.4c141.4 0 256-93.1 256-208S397.4 32 256 32zM128 272c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32zm128 0c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32zm128 0c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32z\"/></svg>")]
+public class JobApplicationComment : AuditBase
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+
+    [References(typeof(AppUser))]
+    public int AppUserId { get; set; }
+
+    [Reference, Format(FormatMethods.Hidden)]
+    public AppUser AppUser { get; set; }
+
+    [References(typeof(JobApplication))]
+    public int JobApplicationId { get; set; }
+    public string Message { get; set; }
+}
+
 [Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='currentColor' d='M18 19H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1M12 7a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m0-4a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m7 0h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z'/></svg>")]
 public class JobApplication : AuditBase
 {
@@ -85,6 +100,9 @@ public class JobApplication : AuditBase
 
     [Reference]
     public Contact Applicant { get; set; }
+
+    [Reference]
+    public List<JobApplicationComment> Comments { get; set; }
 
     public DateTime AppliedDate { get; set; }
 
@@ -112,12 +130,11 @@ public class JobApplicationEvent : AuditBase
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
 
-    [References(typeof(ApiAppUser))]
-    public int ApiAppUserId { get; set; }
+    [References(typeof(AppUser))]
+    public int AppUserId { get; set; }
 
-    [Format(FormatMethods.Hidden)]
-    [Reference]
-    public ApiAppUser AppUser { get; set; }
+    [Reference, Format(FormatMethods.Hidden)]
+    public AppUser AppUser { get; set; }
 
     public JobApplicationStatus? Status { get; set; }
 
@@ -133,16 +150,16 @@ public class PhoneScreen : AuditBase
     [AutoIncrement]
     public int Id { get; set; }
 
+    [References(typeof(AppUser))]
+    public int AppUserId { get; set; }
+
+    [Reference, Format(FormatMethods.Hidden)]
+    public AppUser AppUser { get; set; }
+
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
 
-    [References(typeof(ApiAppUser))]
-    public int ApiAppUserId { get; set; }
-
-    [Format(FormatMethods.Hidden)]
-    [Reference]
-    public ApiAppUser AppUser { get; set; }
-
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Notes { get; set; }
 }
 
@@ -153,18 +170,18 @@ public class Interview : AuditBase
     public int Id { get; set; }
 
     [IntlRelativeTime]
-    public DateTime BookingTime { get;set; }
+    public DateTime BookingTime { get; set; }
 
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
 
-    [References(typeof(ApiAppUser))]
-    public int ApiAppUserId { get; set; }
+    [References(typeof(AppUser))]
+    public int AppUserId { get; set; }
 
-    [Format(FormatMethods.Hidden)]
-    [Reference]
-    public ApiAppUser AppUser { get; set; }
+    [Reference, Format(FormatMethods.Hidden)]
+    public AppUser AppUser { get; set; }
 
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Notes { get; set; }
 }
 
@@ -177,37 +194,6 @@ public enum JobApplicationStatus
     InterviewCompleted,
     Offer,
     Disqualified
-}
-
-[Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='currentColor' d='M10.277 2.084a.5.5 0 0 0-.554 0a15.05 15.05 0 0 1-6.294 2.421A.5.5 0 0 0 3 5v4.5c0 3.891 2.307 6.73 6.82 8.467a.5.5 0 0 0 .36 0C14.693 16.23 17 13.39 17 9.5V5a.5.5 0 0 0-.43-.495a15.05 15.05 0 0 1-6.293-2.421ZM10 9.5a2 2 0 1 1 0-4a2 2 0 0 1 0 4Zm0 5c-2.5 0-3.5-1.25-3.5-2.5A1.5 1.5 0 0 1 8 10.5h4a1.5 1.5 0 0 1 1.5 1.5c0 1.245-1 2.5-3.5 2.5Z'/></svg>")]
-[Alias("AppUser")]
-public class ApiAppUser
-{    
-    public int Id { get; set; }
-    public string DisplayName { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Email { get; set; }
-    public string UserName { get; set; }
-    public string PrimaryEmail { get; set; }
-    public string PhoneNumber { get; set; }
-    public string Company { get; set; }
-    public string Title { get; set; }
-    public string JobArea { get; set; }
-    public string Location { get; set; }
-    public int Salary { get; set; }
-    public string About { get; set; }
-    public string Department { get; set; }
-    public string? ProfileUrl { get; set; }
-}
-
-public enum Department
-{
-    None,
-    Marketing,
-    Accounts,
-    Legal,
-    HumanResources,
 }
 
 [Tag("Talent")]
@@ -247,6 +233,7 @@ public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
     [ValidateNotEmpty]
     public string Email { get; set; }
     public string Phone { get; set; }
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string About { get; set; }
 }
 
@@ -262,6 +249,7 @@ public class UpdateContact : IUpdateDb<Contact>, IReturn<Contact>
     [ValidateNotEmpty]
     public string Email { get; set; }
     public string Phone { get; set; }
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string About { get; set; }
 }
 
@@ -286,10 +274,11 @@ public class QueryJob : QueryDb<Job>
 public class CreateJob : ICreateDb<Job>, IReturn<Job>
 {
     public string Title { get; set; }
-    public string Description { get; set; }
 
     public int SalaryRangeLower { get; set; }
     public int SalaryRangeUpper { get; set; }
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    public string Description { get; set; }
 }
 
 [Tag("Talent")]
@@ -298,10 +287,10 @@ public class UpdateJob : IUpdateDb<Job>, IReturn<Job>
 {
     public int Id { get; set; }
     public string Title { get; set; }
-    public string Description { get; set; }
-
     public int SalaryRangeLower { get; set; }
     public int SalaryRangeUpper { get; set; }
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    public string Description { get; set; }
 }
 
 [Tag("Talent")]
@@ -355,6 +344,8 @@ public class DeleteJobApplication : IDeleteDb<JobApplication>, IReturnVoid
 [AutoApply(Behavior.AuditQuery)]
 public class QueryPhoneScreen : QueryDb<PhoneScreen>
 {
+    public int? Id { get; set; }
+    public int? JobApplicationId { get; set; }
 }
 
 [Tag("Talent")]
@@ -363,18 +354,21 @@ public class CreatePhoneScreen : ICreateDb<PhoneScreen>, IReturn<PhoneScreen>
 {
     [ValidateNotEmpty]
     public int JobApplicationId { get; set; }
-    public int ApiAppUserId { get; set; }
+    [ValidateNotEmpty(Message = "An employee to perform the phone screening must be selected.")]
+    public int AppUserId { get; set; }
 }
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditModify)]
 public class UpdatePhoneScreen : IUpdateDb<PhoneScreen>, IReturn<PhoneScreen>
 {
+    [ValidateNotEmpty]
     public int Id { get; set; }
     [ValidateNotEmpty]
     public int JobApplicationId { get; set; }
-    public int ApiAppUserId { get; set; }
 
+    [ValidateNotEmpty]
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Notes { get; set; }
 }
 
@@ -383,6 +377,7 @@ public class UpdatePhoneScreen : IUpdateDb<PhoneScreen>, IReturn<PhoneScreen>
 public class QueryInterview : QueryDb<Interview>
 {
     public int? Id { get; set; }
+    public int? JobApplicationId { get; set; }
 }
 
 [Tag("Talent")]
@@ -393,8 +388,8 @@ public class CreateInterview : ICreateDb<Interview>, IReturn<Interview>
     public DateTime? BookingTime { get; set; }
     [ValidateNotEmpty]
     public int JobApplicationId { get; set; }
-    [ValidateNotEmpty]
-    public int ApiAppUserId { get; set; }
+    [ValidateNotEmpty(Message = "An employee to perform interview must be selected.")]
+    public int AppUserId { get; set; }
 }
 
 [Tag("Talent")]
@@ -403,13 +398,11 @@ public class UpdateInterview : IUpdateDb<Interview>, IReturn<Interview>
 {
     [ValidateNotEmpty]
     public int Id { get; set; }
-    [ValidateNotNull]
-    public DateTime? BookingTime { get; set; }
     [ValidateNotEmpty]
     public int JobApplicationId { get; set; }
-    [ValidateNotEmpty]
-    public int ApiAppUserId { get; set; }
 
+    [ValidateNotEmpty]
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Notes { get; set; }
 }
 
@@ -422,7 +415,7 @@ public class QueryJobAppEvents : QueryDb<JobApplicationEvent>
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditCreate)]
-public class CreateJobApplicationEvent : ICreateDb<JobApplicationEvent>, 
+public class CreateJobApplicationEvent : ICreateDb<JobApplicationEvent>,
     IReturn<JobApplicationEvent>
 {
 }
@@ -442,9 +435,51 @@ public class DeleteJobApplicationEvent : IDeleteDb<JobApplicationEvent>,
 }
 
 [Tag("Talent")]
-public class QueryAppUser : QueryDb<ApiAppUser>
+public class QueryAppUser : QueryDb<AppUser>
 {
     public string? EmailContains { get; set; }
     public string? FirstNameContains { get; set; }
     public string? LastNameContains { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditQuery)]
+public class QueryJobApplicationComments : QueryDb<JobApplicationComment>
+{
+    public int? JobApplicationId { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditCreate)]
+[AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
+public class CreateJobApplicationComment : ICreateDb<JobApplicationComment>, IReturn<JobApplicationComment>
+{
+    [ValidateNotEmpty]
+    public int JobApplicationId { get; set; }
+    [ValidateNotEmpty]
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    public string Message { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditModify)]
+[AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
+public class UpdateJobApplicationComment : IUpdateDb<JobApplicationComment>, IReturn<JobApplicationComment>
+{
+    [ValidateNotEmpty]
+    public int Id { get; set; }
+    [ValidateNotEmpty]
+    public int JobApplicationId { get; set; }
+    [ValidateNotEmpty]
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    public string Message { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditSoftDelete)]
+[AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
+public class DeleteJobApplicationComment : IDeleteDb<JobApplicationComment>, IReturnVoid
+{
+    [ValidateNotEmpty]
+    public int Id { get; set; }
 }
