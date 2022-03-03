@@ -446,7 +446,7 @@ App.components({
             get canUpdate() { return canAccess(this.state.opPatch,store.auth) || canAccess(this.state.opUpdate,store.auth) },
             get updateRequiresAuth() { return !store.auth && map(this.state, x => x.opPatch || x.opUpdate) && !this.canUpdate },
 
-            get columns() { return columns() || [] },
+            get columns() { return columns().filter(c => !c.format || c.format.method !== 'hidden') || [] },
             get results() { return results() || [] },
             selectColumn(column,e) {
                 let div = e.target.tagName === 'DIV' ? e.target : e.target.closest('DIV')
@@ -559,7 +559,7 @@ App.components({
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
                             </button>
                         </td>
-                        <td v-for="c in columns.filter(c => !c.format || c.format.method !== 'hidden')" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div v-if="refInfo(row,c)" class="text-blue-700 flex cursor-pointer" v-href="refInfo(row,c).href">
                                 <span class="mr-1" v-scope="Image(refInfo(row,c).icon, { cls:'w-5 h-5' })"></span>
                                 <div v-html="map(refInfo(row,c),x => x.html)"></div>
