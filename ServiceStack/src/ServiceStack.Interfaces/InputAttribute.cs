@@ -40,5 +40,6 @@ public class InputAttributeBase : MetadataAttributeBase
     public int MinLength { get; set; } = int.MinValue;
     public int MaxLength { get; set; } = int.MinValue;
     public string[] AllowableValues { get; set; }
+    public string Options  { get; set; }
     public bool Ignore { get; set; }
 }

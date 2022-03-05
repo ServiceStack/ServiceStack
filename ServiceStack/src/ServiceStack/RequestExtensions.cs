@@ -358,6 +358,15 @@ namespace ServiceStack
             }
         }
 
+        [Obsolete("Use AssertAccessRoleAsync")]
+        public static void AssertAccessRole(IRequest req, string accessRole=null, string authSecret=null)
+        {
+            if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
+            {
+                RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
+            }
+        }
+
         public static async Task AssertAccessRoleAsync(IRequest req, string accessRole=null, string authSecret=null, CancellationToken token=default)
         {
             if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)

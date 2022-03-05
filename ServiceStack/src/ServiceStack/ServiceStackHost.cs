@@ -170,6 +170,7 @@ namespace ServiceStack
             }.InitForSharpPages(this);
             PluginsLoaded = new List<string>();
             Plugins = new List<IPlugin> {
+                new PreProcessRequest(),
                 new HtmlFormat(),
                 new CsvFormat(),
                 new PredefinedRoutesFeature(),

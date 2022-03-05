@@ -152,6 +152,7 @@ namespace ServiceStack
         public ValidationInfo Validation { get; set; }
         public SharpPagesInfo SharpPages { get; set; }
         public RequestLogsInfo RequestLogs { get; set; }
+        public FilesUploadInfo FilesUpload { get; set; }
         public AdminUsersInfo AdminUsers { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -272,6 +273,24 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
+    public class FilesUploadInfo : IMeta
+    {
+        public string BasePath { get; set; }
+        public List<FilesUploadLocation> Locations { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    public class FilesUploadLocation
+    {
+        public string Name { get; set; }
+        public string AccessRole { get; set; }
+        public HashSet<string> AllowExtensions { get; set; }
+        public string AllowOperations { get; set; }
+        public long? MinFileBytes { get; set; }
+        public long? MaxFileBytes { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
     public class AdminUsersInfo : IMeta
     {
         public string AccessRole { get; set; }
@@ -313,6 +332,7 @@ namespace ServiceStack
         public int? MaxLength { get; set; }
         public string[] AllowableValues { get; set; }
         public KeyValuePair<string,string>[] AllowableEntries { get; set; }
+        public string Options  { get; set; }
         public bool? Ignore { get; set; }
         public FieldCss Css { get; set; }
         
@@ -936,6 +956,7 @@ namespace ServiceStack
                 MinLength = input.MinLength.NullIfMinValue(),
                 MaxLength = input.MaxLength.NullIfMinValue(),
                 AllowableValues = input.AllowableValues,
+                Options = input.Options,
                 Ignore = input.Ignore.NullIfFalse(),
             };
             configure?.Invoke(ret);

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -254,6 +255,7 @@ namespace ServiceStack
         public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new();
         public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new();
         public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new();
+        public Dictionary<string, InputInfo> MapInputs { get; set; } = new();
         public HashSet<string> NullableProps { get; set; } = new();
         public List<string> RemoveDtoProps { get; set; } = new();
         public GetMemberDelegate RowVersionGetter { get; set; }
@@ -304,24 +306,27 @@ namespace ServiceStack
                     to.Set(propName, mapAttr);
                     propName = mapAttr.To;
                 }
-
                 if (allAttrs.FirstOrDefault(x => x is AutoUpdateAttribute) is AutoUpdateAttribute updateAttr)
                 {
                     to.Set(propName, updateAttr);
                 }
-
                 if (allAttrs.FirstOrDefault(x => x is AutoDefaultAttribute) is AutoDefaultAttribute defaultAttr)
                 {
                     to.Set(propName, defaultAttr);
                 }
+                if (allAttrs.FirstOrDefault(x => x is InputAttribute) is InputAttribute inputAttr)
+                {
+                    to.Set(propName, inputAttr);
+                }
                 
+                // Deny resetting all properties with [Validate*] attrs without an explicit [AllowReset] attr  
                 var allowReset = allAttrs.FirstOrDefault(x => x is AllowResetAttribute);
                 var denyReset = allowReset == null && allAttrs.Any(x => x is ValidateAttribute);
                 if (denyReset)
                 {
                     to.DenyReset.Add(propName);
                 }
-
+                
                 if (pi.PropertyType.IsNullableType())
                 {
                     to.AddNullableProperty(propName);
@@ -377,6 +382,11 @@ namespace ServiceStack
             UpdateAttrs[propName] = updateAttr;
         }
 
+        public void Set(string propName, InputAttribute inputAttr)
+        {
+            MapInputs[propName] = inputAttr.ToInput();
+        }
+
         public void Add(AutoPopulateAttribute populateAttr)
         {
             PopulateAttrs.Add(populateAttr);
@@ -415,7 +425,7 @@ namespace ServiceStack
 
             ctx.Response = ExecAndReturnResponse<Table>(ctx,
                 ctx => {
-                    var dtoValues = ResolveDtoValues(req, dto);
+                    var dtoValues = CreateDtoValues(req, dto);
                     var pkField = ctx.ModelDef.PrimaryKey;
                     var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
 
@@ -460,7 +470,7 @@ namespace ServiceStack
             
             ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
                 async ctx => {
-                    var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto);
+                    var dtoValues = await CreateDtoValuesAsync(ctx.Request, ctx.Dto).ConfigAwait();
                     var pkField = ctx.ModelDef.PrimaryKey;
                     var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
 
@@ -551,7 +561,7 @@ namespace ServiceStack
 
                 ctx.Response = ExecAndReturnResponse<Table>(ctx,
                     ctx => {
-                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
+                        var dtoValues = CreateDtoValues(req, dto, skipDefaults);
                         var pkField = ctx.ModelDef?.PrimaryKey;
                         if (pkField == null)
                             throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
@@ -601,7 +611,7 @@ namespace ServiceStack
                 
                 ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx, 
                     async ctx => {
-                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
+                        var dtoValues = await CreateDtoValuesAsync(req, dto, skipDefaults).ConfigAwait();
                         var pkField = ctx.ModelDef?.PrimaryKey;
                         if (pkField == null)
                             throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
@@ -650,7 +660,7 @@ namespace ServiceStack
 
             ctx.Response = ExecAndReturnResponse<Table>(ctx,
                 ctx => {
-                    var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
+                    var dtoValues = CreateDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
                         ? oId
                         : null;
@@ -681,7 +691,7 @@ namespace ServiceStack
             
             ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
                 async ctx => {
-                    var dtoValues = ResolveDtoValues(req, dto, skipDefaults:true);
+                    var dtoValues = await CreateDtoValuesAsync(req, dto, skipDefaults:true).ConfigAwait();
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
                         ? oId
                         : null;
@@ -962,13 +972,25 @@ namespace ServiceStack
             exprParams = null;
             return false;
         }
+
+        private Dictionary<string, object> CreateDtoValues(IRequest req, object dto, bool skipDefaults = false)
+        {
+            var meta = AutoCrudMetadata.Create(dto.GetType());
+            var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
+            return dtoValues;
+        }
         
-        private Dictionary<string, object> ResolveDtoValues(IRequest req, object dto, bool skipDefaults=false)
+        private async Task<Dictionary<string, object>> CreateDtoValuesAsync(IRequest req, object dto, bool skipDefaults = false)
+        {
+            var meta = AutoCrudMetadata.Create(dto.GetType());
+            var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
+            return dtoValues;
+        }
+        
+        private Dictionary<string, object> ResolveDtoValues(AutoCrudMetadata meta, IRequest req, object dto, bool skipDefaults=false)
         {
             ILog log = null;
             var dtoValues = dto.ToObjectDictionary();
-
-            var meta = AutoCrudMetadata.Create(dto.GetType());
 
             foreach (var entry in meta.MapAttrs)
             {

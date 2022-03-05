@@ -23,8 +23,7 @@ public class ConfigureDb : IHostingStartup
             db.SeedBookings();
             db.SeedPlayers();
 
-            var profilesDir = "C:\\src\\netcore\\TalentBlazor\\TalentBlazor\\wwwroot\\profiles";
-            appHost.AddVirtualFileSources.Add(new FileSystemMapping("profiles", profilesDir));
+            appHost.AddVirtualFileSources.Add(new FileSystemMapping("profiles", AppHost.ProfilesDir));
             db.DropTable<Contact>();
             db.DropTable<Job>();
             db.DropTable<JobApplication>();
@@ -32,7 +31,7 @@ public class ConfigureDb : IHostingStartup
             db.DropTable<PhoneScreen>();
             db.DropTable<Interview>();
             db.DropTable<JobApplicationAttachment>();
-            db.SeedTalent(profilesDir:profilesDir);
+            db.SeedTalent(profilesDir:AppHost.ProfilesDir);
         });
 }
 
