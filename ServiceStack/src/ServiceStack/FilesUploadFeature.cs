@@ -42,19 +42,13 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         var props = TypeProperties.Get(requestType);
         var pi = props.GetPublicProperty(propName);
         if (pi == null) return null;
-        var locationName = pi.FirstAttribute<InputAttribute>()?.Target;
+        var locationName = pi.FirstAttribute<UploadToAttribute>()?.Location;
         return locationName != null ? GetLocation(locationName) : null;
     }
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
-        appHost.ConfigurePlugin<PreProcessRequest>(feature =>
-        {
-            // preprocess.HandleUploadFile = (req, file) => {
-            //     var location = GetLocationFromProperty(req.Dto.GetType(), file.Name)
-            //                    ?? Locations.First();
-            //     return UploadFile(location, req, req.GetSession(), file);
-            // };
+        appHost.ConfigurePlugin<PreProcessRequest>(feature => {
             feature.HandleUploadFileAsync = async (req, file, token) => {
                 var location = GetLocationFromProperty(req.Dto.GetType(), file.Name) 
                     ?? Locations.First();
