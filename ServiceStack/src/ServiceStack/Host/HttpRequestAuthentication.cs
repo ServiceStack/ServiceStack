@@ -12,6 +12,10 @@ namespace ServiceStack.Host
         public static string GetJwtToken(this IRequest req) => HostContext.AppHost.GetJwtToken(req);
         public static string GetJwtRefreshToken(this IRequest req) => HostContext.AppHost.GetJwtRefreshToken(req);
 
+        public static string GetAuthSecret(this IRequest httpReq) => (httpReq.Dto as IHasAuthSecret)?.AuthSecret 
+            ?? httpReq.GetParam(Keywords.AuthSecret) 
+            ?? httpReq.Headers[Keywords.AuthSecret];
+
         public static string GetBasicAuth(this IRequest req)
         {
             var auth = req.GetAuthorization();

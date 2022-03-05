@@ -26,6 +26,11 @@ namespace ServiceStack
         string RefreshToken { get; set; }
     }
 
+    public interface IHasAuthSecret
+    {
+        string AuthSecret { get; set; }
+    }
+
     public interface IHasVersion
     {
         int Version { get; set; }

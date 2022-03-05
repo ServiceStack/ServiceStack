@@ -798,7 +798,7 @@ Plugins:
             var html = Templates.HtmlTemplates.GetMetadataDebugTemplate();
             html = html.Replace("{0}", defaultTemplate);
 
-            var authsecret = Request.GetParam(Keywords.AuthSecret);
+            var authSecret = Request.GetAuthSecret();
             if (HostContext.Config.AdminAuthSecret != null &&
                 HostContext.Config.AdminAuthSecret == authSecret)
             {
