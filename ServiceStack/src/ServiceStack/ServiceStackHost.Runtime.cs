@@ -626,7 +626,7 @@ namespace ServiceStack
         /// Override to customize converting an Exception into a generic ErrorResponse DTO  
         /// </summary>
         public virtual ErrorResponse CreateErrorResponse(Exception ex, object request = null) =>
-            new ErrorResponse { ResponseStatus = ex.ToResponseStatus() };
+            new() { ResponseStatus = ex.ToResponseStatus() };
         
         /// <summary>
         /// Override to customize converting an Exception into the ResponseStatus DTO  

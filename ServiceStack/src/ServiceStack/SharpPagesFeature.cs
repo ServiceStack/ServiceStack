@@ -800,10 +800,10 @@ Plugins:
 
             var authsecret = Request.GetParam(Keywords.AuthSecret);
             if (HostContext.Config.AdminAuthSecret != null &&
-                HostContext.Config.AdminAuthSecret == authsecret)
+                HostContext.Config.AdminAuthSecret == authSecret)
             {
                 html = html.Replace("{ template: template }", 
-                    "{ template: template, authsecret:" + feature.DefaultMethods.jsQuotedString(authsecret).ToRawString() + " }");
+                    "{ template: template, authsecret:" + feature.DefaultMethods.jsQuotedString(authSecret).ToRawString() + " }");
             }
  
             return html;

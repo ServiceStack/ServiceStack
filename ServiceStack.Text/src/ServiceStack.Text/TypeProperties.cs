@@ -96,8 +96,7 @@ namespace ServiceStack
 
         public Type Type { get; protected set; }
 
-        public readonly Dictionary<string, PropertyAccessor> PropertyMap =
-            new Dictionary<string, PropertyAccessor>(PclExport.Instance.InvariantComparerIgnoreCase);
+        public readonly Dictionary<string, PropertyAccessor> PropertyMap = new(StringComparer.OrdinalIgnoreCase);
 
         public PropertyInfo[] PublicPropertyInfos { get; protected set; }
 
@@ -105,7 +104,7 @@ namespace ServiceStack
         {
             foreach (var pi in PublicPropertyInfos)
             {
-                if (pi.Name == name)
+                if (pi.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                     return pi;
             }
             return null;
