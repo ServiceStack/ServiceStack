@@ -5,6 +5,7 @@ using ServiceStack.OrmLite;
 namespace MyApp.ServiceModel;
 
 [Tag("Game")]
+[AutoApply(Behavior.AuditQuery)]
 public class QueryPlayer : QueryDb<Player>
 {
     
@@ -102,6 +103,7 @@ public enum PhoneKind
 }
 
 [Tag("Game")]
+[AutoApply(Behavior.AuditQuery)]
 public class QueryProfile : QueryDb<Profile> {}
 
 [Tag("Game")]
@@ -190,6 +192,7 @@ public enum PlayerRegion
 
 
 [Tag("Game")]
+[AutoApply(Behavior.AuditQuery)]
 public class QueryGameItem : QueryDb<GameItem>
 {
     public string Name { get; set; }
@@ -202,11 +205,12 @@ public class CreateGameItem : ICreateDb<GameItem>, IReturn<IdResponse>
     [ValidateNotEmpty]
     public string Name { get; set; } = string.Empty;
 
-    [ValidateGreaterThan(0)]
-    public int PlayerId { get; set; }
-
     [ValidateNotEmpty]
     public string Description { get; set; } = string.Empty;
+    
+    [ValidateNotEmpty]
+    [Input(Type = "file"), UploadTo("game_items")]
+    public string ImageUrl { get; set; }
 }
 
 [Tag("Game")]
@@ -216,11 +220,11 @@ public class UpdateGameItem : IPatchDb<GameItem>, IReturn<IdResponse>
     [ValidateNotEmpty]
     public string Name { get; set; } = string.Empty;
 
-    [ValidateGreaterThan(0)]
-    public int? PlayerId { get; set; }
-
     [ValidateNotEmpty]
-    public string? Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    
+    [Input(Type = "file"), UploadTo("game_items")]
+    public string? ImageUrl { get; set; }
 }
 
 [Tag("Game")]
@@ -237,6 +241,9 @@ public class GameItem : AuditBase
     [PrimaryKey]                                    // Specify field to use as Primary Key
     [StringLength(50)]                              // Creates VARCHAR COLUMN
     public string Name { get; set; }
+    
+    [Format(FormatMethods.IconRounded)]
+    public string ImageUrl { get; set; }
 
     [StringLength(StringLengthAttribute.MaxText)]   // Creates "TEXT" RDBMS Column 
     public string? Description { get; set; }

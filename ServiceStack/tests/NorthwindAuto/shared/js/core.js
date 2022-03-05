@@ -283,6 +283,39 @@ export function apiSend(createClient, requestDto, queryArgs) {
     }))
 }
 
+/** @param {function} createClient
+    @param {*} requestDto
+    @param {FormData} formData
+    @param {*} [queryArgs] */
+export function apiForm(createClient, requestDto, formData, queryArgs) {
+    if (!requestDto) throw new Error('!requestDto')
+    let opName = requestDto.getTypeName()
+    let httpReq = null, httpRes = null, headers = null
+    let cookies = parseCookie(document.cookie)
+    let newClient = createClient(c => {
+        c.requestFilter = req => httpReq = req
+        c.responseFilter = res => {
+            httpRes = res
+            headers = Object.fromEntries(res.headers)
+        }
+    })
+    let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
+    let task = returnsVoid
+        ? newClient.apiFormVoid(requestDto, formData, Object.assign({ jsconfig: 'eccn' }, queryArgs))
+        : newClient.apiForm(requestDto, formData, Object.assign({ jsconfig: 'eccn' }, queryArgs))
+    return task.then(api => ({
+        api,
+        json: JSON.stringify(api.response || api.error, undefined, 4),
+        text: JSON.stringify(api.response || api.error),
+        opName,
+        requestDto,
+        httpReq,
+        httpRes,
+        headers,
+        cookies,
+    }))
+}
+
 /** @param {string} text
     @param {number} [timeout=3000] */
 export function copy(text,timeout) {

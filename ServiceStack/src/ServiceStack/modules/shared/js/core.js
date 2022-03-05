@@ -213,6 +213,34 @@ function apiSend(createClient, requestDto, queryArgs) {
         cookies,
     }))
 }
+function apiForm(createClient, requestDto, formData, queryArgs) {
+    if (!requestDto) throw new Error('!requestDto')
+    let opName = requestDto.getTypeName()
+    let httpReq = null, httpRes = null, headers = null
+    let cookies = parseCookie(document.cookie)
+    let newClient = createClient(c => {
+        c.requestFilter = req => httpReq = req
+        c.responseFilter = res => {
+            httpRes = res
+            headers = Object.fromEntries(res.headers)
+        }
+    })
+    let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
+    let task = returnsVoid
+        ? newClient.apiFormVoid(requestDto, formData, Object.assign({ jsconfig: 'eccn' }, queryArgs))
+        : newClient.apiForm(requestDto, formData, Object.assign({ jsconfig: 'eccn' }, queryArgs))
+    return task.then(api => ({
+        api,
+        json: JSON.stringify(api.response || api.error, undefined, 4),
+        text: JSON.stringify(api.response || api.error),
+        opName,
+        requestDto,
+        httpReq,
+        httpRes,
+        headers,
+        cookies,
+    }))
+}
 function copy(text,timeout) {
     if (typeof timeout != 'number') timeout = 3000
     this.copied = true

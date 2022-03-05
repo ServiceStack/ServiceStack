@@ -226,15 +226,24 @@ public class QueryContacts : QueryDb<Contact>
 [AutoApply(Behavior.AuditCreate)]
 public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
 {
-    [ValidateNotEmpty]
-    public string Name { get; set; }
-    public string ProfileUrl { get; set; }
+    [ValidateNotEmpty] 
+    public string FirstName { get; set; } = string.Empty;
+    [ValidateNotEmpty] 
+    public string LastName { get; set; } = string.Empty;
+    [Input(Type = "file"), UploadTo("profiles")]
+    public string? ProfileUrl { get; set; }
     public int? SalaryExpectation { get; set; }
     [ValidateNotEmpty]
-    public string Email { get; set; }
-    public string Phone { get; set; }
+    public string JobType { get; set; } = string.Empty;
+    public int AvailabilityWeeks { get; set; }
+    public EmploymentType PreferredWorkType { get; set; }
+    [ValidateNotEmpty]
+    public string PreferredLocation { get; set; } = string.Empty;
+    [ValidateNotEmpty] 
+    public string Email { get; set; } = string.Empty;
+    public string? Phone { get; set; }
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
-    public string About { get; set; }
+    public string? About { get; set; }
 }
 
 [Tag("Talent")]
@@ -243,14 +252,22 @@ public class UpdateContact : IUpdateDb<Contact>, IReturn<Contact>
 {
     public int Id { get; set; }
     [ValidateNotEmpty]
-    public string Name { get; set; }
-    public string ProfileUrl { get; set; }
+    public string? FirstName { get; set; }
+    [ValidateNotEmpty]
+    public string? LastName { get; set; }
+    [Input(Type = "file"), UploadTo("profiles")]
+    public string? ProfileUrl { get; set; }
     public int? SalaryExpectation { get; set; }
     [ValidateNotEmpty]
-    public string Email { get; set; }
-    public string Phone { get; set; }
+    public string? JobType { get; set; }
+    public int? AvailabilityWeeks { get; set; }
+    public EmploymentType? PreferredWorkType { get; set; }
+    public string? PreferredLocation { get; set; }
+    [ValidateNotEmpty]
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
-    public string About { get; set; }
+    public string? About { get; set; }
 }
 
 [Tag("Talent")]

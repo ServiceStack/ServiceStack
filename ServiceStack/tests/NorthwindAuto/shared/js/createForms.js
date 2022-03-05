@@ -1,6 +1,7 @@
 import { humanify, padInt, toDate, mapGet, apiValue, isDate, indexOfAny, fromXsdDuration, enc, apiValueFmt } from "@servicestack/client"
 import { Types } from "./Types"
 import { Forms } from "../../ui/js/appInit"
+import { Crud } from "./core";
 /*minify:*/
 
 /** @typedef {{namespace:string,name:string}} TypeRef
@@ -87,6 +88,19 @@ export function createForms(TypesMap, css, ui) {
     }
 
     /** @param {MetadataType} type */
+    function isCrud(type) {
+        return map(type.inherits, x => Crud.AnyRead.indexOf(x.name) >= 0) ||
+            map(type.implements, x => x.some(iFace => Crud.AnyWrite.indexOf(iFace.name) >= 0))
+    }
+
+    /** @param {MetadataType} type */
+    function crudModel(type) {
+        return map(type.inherits, x => Crud.AnyRead.indexOf(x.name) >= 0) 
+            ? type.inherits.genericArgs[0]
+            : map(map(type.implements, x => x.find(iFace => Crud.AnyWrite.indexOf(iFace.name) >= 0)), x => x.genericArgs[0])
+    }
+
+    /** @param {MetadataType} type */
     function getPrimaryKey(type) {
         if (!type) return null
         let typeProps = typeProperties(type)
@@ -95,8 +109,9 @@ export function createForms(TypesMap, css, ui) {
         let pk = typeProps.find(x => x.isPrimaryKey)
         let ret = pk || id
         if (!ret) {
-            if (map(type.inherits, x => x.name.startsWith('QueryDb`'))) {
-                return getPrimaryKey(getType({ name: type.inherits.genericArgs[0] }))
+            let crudType = crudModel(type)
+            if (crudType) {
+                return getPrimaryKey(getType({ name: crudType }))
             }
             console.error(`Primary Key not found in ${type.name}`)
         } 
@@ -361,6 +376,20 @@ export function createForms(TypesMap, css, ui) {
                 obj[el.id] = value
             })
             return obj
+        },
+        /** @param {Element} form
+         *  @param {MetadataOperationType} op */
+        formData(form,op) {
+            let formData = new FormData(form)
+            Array.from(form.elements).forEach(e => {
+                if (e.type === 'file') {
+                    let file = formData.get(e.name)
+                    if (file.size === 0) {
+                        formData.delete(e.name)
+                    }
+                }
+            })
+            return formData
         },
         groupTypes(allTypes) {
             let allTypesMap = {}

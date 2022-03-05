@@ -37,6 +37,18 @@ function apiState(op) {
                 this.apiResult = r
                 return this.apiResult
             })
+        },
+        apiForm(formData,queryArgs) {
+            let requestDto = this.createRequest()
+            let complete = delaySet(x => {
+                this.apiResult = null
+                this.apiLoading = x
+            })
+            return apiForm(createClient, requestDto, formData, queryArgs).then(r => {
+                complete()
+                this.apiResult = r
+                return this.apiResult
+            })
         }
     }
 }
@@ -363,7 +375,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                     <button v-if="canCreate && !routes.new" type="button" v-href="{ new:true }"
                             class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
-                        <span>New {{store.opDataModel}}</span>
+                        <span>New {{humanify(store.opDataModel)}}</span>
                     </button>
                     <button v-if="canFirst"  type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
                             title="First page" v-href="{ skip:nextSkip(-total) }">
@@ -484,7 +496,7 @@ App.components({
                                     <path d="M9.586 11L7.05 8.464L8.464 7.05l4.95 4.95l-4.95 4.95l-1.414-1.414L9.586 13H3v-2h6.586zM11 3h8c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2h-8v-2h8V5h-8V3z" fill="currentColor" fill-rule="evenodd"/>
                                 </svg>
                             </button>
-                            <button v-else-if="canCreate" type="button" :title="`New ${store.opDataModel}`" v-href="{ new:true, edit:null }" :disabled="!state.apiCreate"
+                            <button v-else-if="canCreate" type="button" :title="`New ${humanify(store.opDataModel)}`" v-href="{ new:true, edit:null }" :disabled="!state.apiCreate"
                                     class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
                             </button>

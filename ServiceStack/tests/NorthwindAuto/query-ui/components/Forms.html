@@ -5,7 +5,7 @@ import { Forms, getType, onRoutesEditChange } from "../js/appInit"
 import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client"
 
 /** @typedef {{opQuery:MetadataOperationType,opPatch?:MetadataOperationType,opUpdate?:MetadataOperationType,opDelete?:MetadataOperationType,apiQuery:ApiState}} State */
-/** @typedef {{op:MetadataOperationType,apiSend?:Function,createModel?:Function,title:string?,errorSummary:string?,model:*,formLayout:InputInfo[]}} ApiState */
+/** @typedef {{op:MetadataOperationType,apiSend?:Function,apiForm?:Function,createModel?:Function,title:string?,errorSummary:string?,model:*,formLayout:InputInfo[]}} ApiState */
 
 /*minify:*/
 App.components({
@@ -29,7 +29,7 @@ App.components({
             get gridInputs() { return map(this.apiCreate, x => x.formLayout && Forms.getGridInputs(x.formLayout)) },
             done,
             submit() {
-                this.apiCreate.apiSend(Forms.formValues(this.$refs.form))
+                this.apiCreate.apiForm(Forms.formData(this.$refs.form, this.apiCreate.op))
                     .then(r => {
                         if (r.api.succeeded) {
                             save()
@@ -86,7 +86,7 @@ App.components({
                         complete()
                         let results = map(r.api.response, x => x.results)
                         if (results && results.length !== 1) {
-                            this.errorSummary = `'${routes.edit}' PrimaryKey lookup failed for '${apiQuery.op.name}', found ${results.length} results`
+                            this.errorSummary = `'${routes.edit}' PrimaryKey lookup failed for '${apiQuery.op.request.name}', found ${results.length} results`
                         }
                         if (apiQuery.errorSummary) this.errorSummary = apiQuery.errorSummary
                         this.api = r.api
@@ -113,7 +113,7 @@ App.components({
                 let pk = this.pk, useUpdateApi = this.useApiUpdate
                 if (!pk || !useUpdateApi || !routes.edit) return
 
-                let args = Forms.formValues(this.$refs.form)
+                let formData = Forms.formData(this.$refs.form, this.useApiUpdate.op)
                 let apiPatch = this.apiPatch
                 let reset = []
                 if (apiPatch) {
@@ -125,27 +125,34 @@ App.components({
                             dirtyValues[id] = origValue
                             return
                         }
-                        let newValue = args[id]
+                        let newValue = formData.get(id)
+                        let exists = newValue != null // only exists if checked 
                         let changed = input.type === 'checkbox' 
-                            ? !!newValue !== !!origValue
-                            : newValue !== origValue 
+                            ? exists !== !!origValue
+                            : input.type === 'file'
+                                ? exists
+                                : newValue !== origValue 
                         if (changed) {
                             if (newValue) {
                                 dirtyValues[id] = newValue
                             } else {
-                                reset.push(id)
+                                if (input.type !== 'file') {
+                                    reset.push(id)
+                                }
                             }
                         }
                     })
-                    args = dirtyValues
+                    Array.from(formData.keys()).filter(k => !dirtyValues[k]).forEach(k => formData.delete(k))
                 }
-                if (Object.keys(args).length <= 1 && reset.length === 0) return done()
+                formData.set(pk.name, mapGet(this.origModel, pk.name))
+                if (Array.from(formData.keys()).length <= 1 && reset.length === 0) return done()
                 
                 this.errorSummary = ''
                 let complete = delaySet(x => {
                     this.apiLoading = x
                 })
-                this.useApiUpdate.apiSend(args, reset.length > 0 ? { reset } : null)
+
+                this.useApiUpdate.apiForm(formData, reset.length > 0 ? { reset } : null)
                     .then(r => {
                         complete()
                         useUpdateApi.apiResult = r
@@ -218,7 +225,7 @@ App.components({
         <div class="flex justify-end">
             <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
             <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Create {{ dataModelName }}
+                Create {{ humanify(dataModelName) }}
             </button>
         </div>
     </div>

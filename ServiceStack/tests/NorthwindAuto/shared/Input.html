@@ -38,6 +38,11 @@ App.components({
             ariaDescribedby(input) {
                 return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
             },
+            fileChange(input,e) {
+                let files = e.target.files
+                this.model[input.id] = files && files[0] && URL.createObjectURL(files[0]) || null
+                console.log(input.id, files, this.model[input.id]) /*debug*/
+            }
         }
     }
 })
@@ -45,12 +50,33 @@ App.components({
 <!--minify-->
 <template id="input-template">
 <div v-if="input.type=='divider'" class="border-t"></div>
-<input v-else-if="input.type=='hidden'" v-bind="input" type="hidden" v-model="model[input.id]" />
+<input v-else-if="input.type=='hidden'" :name="input.id" v-bind="input" type="hidden" v-model="model[input.id]" />
+<div v-else-if="input.type=='file'" class="flex justify-between">
+    <div>
+        <label v-if="useLabel(input)" :for="input.id" :class="['block text-sm font-medium text-gray-700',labelClass(input)]"
+               v-html="useLabel(input)"></label>
+        <div class="block mt-2">
+            <span class="sr-only">{{input.help || useLabel(input)}}</span>
+            <input type="file" :name="input.id" v-bind="input" class="block w-full text-sm text-slate-500
+          file:mr-4 file:py-2 file:px-4
+          file:rounded-full file:border-0
+          file:text-sm file:font-semibold
+          file:bg-violet-50 file:text-violet-700
+          hover:file:bg-violet-100" 
+          @change="fileChange(input,event)" />
+            <p v-if="fieldError(input.id)" class="mt-2 text-sm text-red-500" :id="`${input.id}-error`" v-html="fieldError(input.id)"></p>
+            <p v-else-if="input.help" :id="`${input.id}-description`" class="text-gray-500" v-html="input.help"></p>
+        </div>
+    </div>
+    <div v-if="model[input.id]" class="shrink-0 cursor-pointer" @click="$1('#'+input.id).click()">
+        <img class="h-16 w-16 object-cover rounded-full" :src="model[input.id]" :alt="`Current ${useLabel(input)}`" />
+    </div>
+</div>
 <div v-else-if="input.type=='checkbox'" class="relative flex flex-col">
     <span>&nbsp;</span>
     <div class="flex items-start">
         <div class="flex items-center h-5 flex-col">
-            <input v-bind="input" type="checkbox" v-model="model[input.id]"
+            <input :name="input.id" v-bind="input" type="checkbox" v-model="model[input.id]"
                    :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
         </div>
@@ -66,16 +92,16 @@ App.components({
     <label v-if="useLabel(input)" :for="input.id" :class="['block text-sm font-medium text-gray-700',labelClass(input)]"
            v-html="useLabel(input)"></label>
     <div class="mt-1 relative rounded-md shadow-sm">
-        <select v-if="input.type=='select'" v-bind="input"
+        <select v-if="input.type=='select'" :name="input.id" v-bind="input"
                 :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                 :class="inputClass(input)" v-model="model[input.id]">
             <option v-if="input['data-type']=='Nullable`1'"></option>
             <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
         </select>
-        <textarea v-else-if="input.type=='textarea'" v-bind="input" :placeholder="usePlaceholder(input)"
+        <textarea v-else-if="input.type=='textarea'" :name="input.id" v-bind="input" :placeholder="usePlaceholder(input)"
                   :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                   :class="inputClass(input)" v-model="model[input.id]"></textarea>
-        <input v-else v-bind="input" v-bind="input" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
+        <input v-else :name="input.id" v-bind="input" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
                :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                :class="inputClass(input)" v-model="model[input.id]" />
 
