@@ -26,11 +26,26 @@ App.components({
             ariaDescribedby(input) {
                 return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
             },
+            isMultiple(input) {
+                return input['data-type'] === 'List`1'
+            },
             fileChange(input,e) {
                 let files = e.target.files
-                this.model[input.id] = files && files[0] && URL.createObjectURL(files[0]) || null
-                console.log(input.id, files, this.model[input.id]) /*debug*/
-            }
+                console.log(files)
+                this.model[input.id] = Array.from(files).map(f => ({ fileName:f.name, contentLength:f.size, filePath:Files.fileImageUri(f) }))
+            },
+            imgSrc(input) {
+                let val = model[input.id]
+                return typeof val == 'string'
+                    ? val
+                    : val[0].filePath
+            },
+            imgCls(src) {
+                return src.startsWith('data:') || src.endsWith('.svg') 
+                    ?  ''
+                    : 'rounded-full'
+            },
+            formatBytes:Files.formatBytes
         }
     }
 })
@@ -39,25 +54,37 @@ App.components({
 <template id="input-template">
 <div v-if="input.type=='divider'" class="border-t"></div>
 <input v-else-if="input.type=='hidden'" :name="input.id" v-bind="input" type="hidden" v-model="model[input.id]" />
-<div v-else-if="input.type=='file'" class="flex justify-between">
+<div v-else-if="input.type=='file'" :class="`flex ${!isMultiple(input) ? 'justify-between' : 'flex-col'}`">
     <div>
         <label v-if="useLabel(input)" :for="input.id" :class="['block text-sm font-medium text-gray-700',labelClass(input)]"
                v-html="useLabel(input)"></label>
         <div class="block mt-2">
             <span class="sr-only">{{input.help || useLabel(input)}}</span>
-            <input type="file" :name="input.id" v-bind="input" class="block w-full text-sm text-slate-500
-          file:mr-4 file:py-2 file:px-4
-          file:rounded-full file:border-0
-          file:text-sm file:font-semibold
-          file:bg-violet-50 file:text-violet-700
-          hover:file:bg-violet-100" 
-          @change="fileChange(input,event)" />
+            <input type="file" :name="input.id" :multiple="isMultiple(input)" v-bind="input" class="block w-full text-sm text-slate-500
+              file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
+              file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100" 
+              @change="fileChange(input,event)" />
             <p v-if="fieldError(input.id)" class="mt-2 text-sm text-red-500" :id="`${input.id}-error`" v-html="fieldError(input.id)"></p>
             <p v-else-if="input.help" :id="`${input.id}-description`" class="text-gray-500" v-html="input.help"></p>
         </div>
     </div>
-    <div v-if="model[input.id]" class="shrink-0 cursor-pointer" @click="$1('#'+input.id).click()">
-        <img class="h-16 w-16 object-cover rounded-full" :src="model[input.id]" :alt="`Current ${useLabel(input)}`" />
+    <div v-if="model[input.id] && !isMultiple(input)" class="shrink-0 cursor-pointer" @click="$1('#'+input.id).click()">
+        <img :class="`h-16 w-16 object-cover ${imgCls(imgSrc(input))}`" :src="imgSrc(input)" :alt="`Current ${useLabel(input)}`" />
+    </div>
+    <div v-else-if="model[input.id] && isMultiple(input)" class="mt-3">
+        <table>
+            <tr v-for="file in model[input.id]">
+                <td class="pr-3 py-1">
+                    <img :src="file.filePath" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`">
+                </td>
+                <td class="pr-6 align-bottom pb-2">
+                    <span>{{file.fileName}}</span>
+                </td>
+                <td class="align-bottom pb-2">
+                    <span class="text-gray-500 text-sm">{{formatBytes(file.contentLength)}}</span>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
 <div v-else-if="input.type=='checkbox'" class="relative flex flex-col">

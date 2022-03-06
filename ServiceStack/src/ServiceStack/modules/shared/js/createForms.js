@@ -290,7 +290,7 @@ function createForms(TypesMap, css, ui) {
             let inputProps = allProps.map(inputProp)
             let fullWidthTypes = ['textarea','divider']
             let configureCss = input => {
-                if (input && (fullWidthTypes.indexOf(input.type) >= 0 || input['data-type'] === 'List`1')) {
+                if (input && (fullWidthTypes.indexOf(input.type) >= 0 || (input['data-type'] === 'List`1' && input.type !== 'file'))) {
                     if (!input.css) input.css = {}
                     if (!input.css.field) input.css.field = `col-span-12`
                 }
@@ -366,8 +366,12 @@ function createForms(TypesMap, css, ui) {
             let propType = Types.typeName2(prop.type, prop.genericArgs)
             if (prop.isValueType || prop.isEnum || inputType(propType))
                 return true
-            if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
-                return true
+            if (prop.type === 'List`1') {
+                if (inputType(prop.genericArgs[0]))
+                    return true
+                if (map(prop.input, x => x.type === 'file'))
+                    return true
+            }
             console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, map(prop.genericArgs, x => inputType(x[0]))) /*debug*/
             return false
         },

@@ -81,7 +81,7 @@ public class JobApplicationComment : AuditBase
 
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
-    public string Message { get; set; }
+    public string Comment { get; set; }
 }
 
 [Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='currentColor' d='M18 19H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1M12 7a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m0-4a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m7 0h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z'/></svg>")]
@@ -203,7 +203,7 @@ public class QueryJobApplicationAttachment : QueryDb<JobApplicationAttachment>
 }
 
 [Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15'><path fill='currentColor' d='M0 4.5V0h1v4.5a1.5 1.5 0 1 0 3 0v-3a.5.5 0 0 0-1 0V5H2V1.5a1.5 1.5 0 1 1 3 0v3a2.5 2.5 0 0 1-5 0Z'/><path fill='currentColor' fill-rule='evenodd' d='M12.5 0H6v4.5A3.5 3.5 0 0 1 2.5 8H1v5.5A1.5 1.5 0 0 0 2.5 15h10a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 0ZM11 4H7v1h4V4Zm0 3H7v1h4V7Zm-7 3h7v1H4v-1Z' clip-rule='evenodd'/></svg>")]
-public class JobApplicationAttachment : AuditBase
+public class JobApplicationAttachment
 {
     [AutoIncrement]
     public int Id { get; set; }
@@ -212,7 +212,9 @@ public class JobApplicationAttachment : AuditBase
     public int JobApplicationId { get; set; }
 
     public string FileName { get; set; }
-    public string FileLocation { get; set; }
+    public string FilePath { get; set; }
+    public string ContentType { get; set; }
+    public long ContentLength { get; set; }
 }
 
 [Tag("Talent")]
@@ -336,6 +338,8 @@ public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplic
     public int ContactId { get; set; }
     public DateTime AppliedDate { get; set; }
     public JobApplicationStatus ApplicationStatus { get; set; }
+    [Input(Type = "file"), UploadTo("applications")]
+    public List<JobApplicationAttachment> Attachments { get; set; }
 }
 
 [Tag("Talent")]
@@ -347,6 +351,8 @@ public class UpdateJobApplication : IUpdateDb<JobApplication>, IReturn<JobApplic
     public int ContactId { get; set; }
     public DateTime AppliedDate { get; set; }
     public JobApplicationStatus ApplicationStatus { get; set; }
+    [Input(Type = "file"), UploadTo("applications")]
+    public List<JobApplicationAttachment> Attachments { get; set; }
 }
 
 [Tag("Talent")]
@@ -473,9 +479,10 @@ public class CreateJobApplicationComment : ICreateDb<JobApplicationComment>, IRe
 {
     [ValidateNotEmpty]
     public int JobApplicationId { get; set; }
+
     [ValidateNotEmpty]
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
-    public string Message { get; set; }
+    public string Comment { get; set; } = string.Empty;
 }
 
 [Tag("Talent")]
@@ -489,7 +496,7 @@ public class UpdateJobApplicationComment : IUpdateDb<JobApplicationComment>, IRe
     public int JobApplicationId { get; set; }
     [ValidateNotEmpty]
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
-    public string Message { get; set; }
+    public string? Comment { get; set; }
 }
 
 [Tag("Talent")]

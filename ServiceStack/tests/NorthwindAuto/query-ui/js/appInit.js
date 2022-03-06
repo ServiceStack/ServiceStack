@@ -2,7 +2,6 @@ import { combinePaths, JsonServiceClient, lastLeftPart, leftPart, resolve, trimE
 import { APP } from "../../lib/types"
 import { appApis, Crud } from "../../shared/js/core"
 import { createForms } from "../../shared/js/createForms"
-import { Types } from "../../shared/js/types"
 
 /*minify:*/
 //APP.config.debugMode = false
