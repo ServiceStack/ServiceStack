@@ -1112,36 +1112,36 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
     
     
-    public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null, CancellationToken token = default)
+    public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null, string fieldName = "file", CancellationToken token = default)
     {
         using var content = new MultipartFormDataContent();
         var fileBytes = await fileToUpload.ReadFullyAsync(token).ConfigAwait();
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var result = await SendAsync<TResponse>(HttpMethods.Post,
             ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content, token).ConfigAwait();
         return result;
     }
     
-    public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null)
+    public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null, string fieldName = "file")
     {
         using var content = new MultipartFormDataContent();
         var fileBytes = fileToUpload.ReadFully();
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var result = Send<TResponse>(HttpMethods.Post,
             ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content);
@@ -1154,7 +1154,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     }
 
     public virtual async Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
-        object request, string fieldName = "upload", CancellationToken token = default)
+        object request, string fieldName = "file", CancellationToken token = default)
     {
         var queryString = QueryStringSerializer.SerializeToString(request);
         var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
@@ -1172,11 +1172,11 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var result = await SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl),
             content, token).ConfigAwait();
@@ -1185,7 +1185,8 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
     public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
     {
-        return PostFileWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName);
+        return PostFileWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, 
+            fieldName:fieldName);
     }
 
     public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
@@ -1207,11 +1208,11 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var result = Send<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content);
         return result;

@@ -848,7 +848,7 @@ public static partial class HttpUtils
     
 
     public static HttpResponseMessage UploadFile(this HttpClient client, HttpRequestMessage httpReq, Stream fileStream, 
-        string fileName, string? mimeType = null, string accept = "*/*", string method = HttpMethods.Post, string field = "file",
+        string fileName, string? mimeType = null, string accept = "*/*", string method = HttpMethods.Post, string fieldName = "file",
         Action<HttpRequestMessage>? requestFilter = null, Action<HttpResponseMessage>? responseFilter = null)
     {
         if (httpReq.RequestUri == null)
@@ -863,11 +863,11 @@ public static partial class HttpUtils
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var httpRes = client.Send(httpReq);
         responseFilter?.Invoke(httpRes);
@@ -877,17 +877,17 @@ public static partial class HttpUtils
 
     public static Task<HttpResponseMessage> UploadFileAsync(this HttpRequestMessage httpReq, Stream fileStream,
         string fileName,
-        string? mimeType = null, string accept = "*/*", string method = HttpMethods.Post, string field = "file",
+        string? mimeType = null, string accept = "*/*", string method = HttpMethods.Post, string fieldName = "file",
         Action<HttpRequestMessage>? requestFilter = null, Action<HttpResponseMessage>? responseFilter = null,
         CancellationToken token = default)
     {
-        return Create().UploadFileAsync(httpReq, fileStream, fileName, mimeType, accept, method, field,
+        return Create().UploadFileAsync(httpReq, fileStream, fileName, mimeType, accept, method, fieldName,
             requestFilter, responseFilter, token);
     }
 
     public static async Task<HttpResponseMessage> UploadFileAsync(this HttpClient client, 
         HttpRequestMessage httpReq, Stream fileStream, string fileName,
-        string? mimeType = null, string accept = "*/*", string method = HttpMethods.Post, string field = "file",
+        string? mimeType = null, string accept = "*/*", string method = HttpMethods.Post, string fieldName = "file",
         Action<HttpRequestMessage>? requestFilter = null, Action<HttpResponseMessage>? responseFilter = null, 
         CancellationToken token = default)
     {
@@ -903,11 +903,11 @@ public static partial class HttpUtils
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();
         responseFilter?.Invoke(httpRes);

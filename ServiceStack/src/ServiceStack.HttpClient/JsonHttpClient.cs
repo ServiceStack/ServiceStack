@@ -956,18 +956,18 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null).GetSyncResponse();
     }
 
-    public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null, CancellationToken token = default)
+    public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null, string fieldName = "file", CancellationToken token = default)
     {
         using var content = new MultipartFormDataContent();
         var fileBytes = await fileToUpload.ReadFullyAsync(token).ConfigAwait();
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var result = await SendAsync<TResponse>(HttpMethods.Post,
             ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content, token).ConfigAwait();
@@ -1007,11 +1007,11 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
-            Name = "file",
+            Name = fieldName,
             FileName = fileName
         };
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
-        content.Add(fileContent, "file", fileName);
+        content.Add(fileContent, fieldName, fileName);
 
         var result = await SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl),
             content, token).ConfigAwait();

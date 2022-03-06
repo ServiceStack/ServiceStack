@@ -367,11 +367,11 @@ public class UploadLocation
         Action<IRequest,IHttpFile>? validate = null,
         Func<IRequest,IVirtualFile,object>? fileResult = null)
     {
-        this.Name = name;
-        this.VirtualFiles = virtualFiles;
+        this.Name = name ?? throw new ArgumentNullException(nameof(name));
+        this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
         this.ResolvePath = resolvePath ?? ((IRequest req, string fileName) =>
             $"/{Name}".CombineWith($"{DateTime.UtcNow:YYYY/MM/dd}", fileName));
-        this.AccessRole = accessRole;
+        this.AccessRole = accessRole ?? throw new ArgumentNullException(nameof(accessRole));;
         this.AllowExtensions = allowExtensions?.ToSet();
         this.AllowOperations = allowOperations;
         this.MaxFileCount = maxFileCount;
