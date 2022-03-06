@@ -135,7 +135,7 @@ namespace ServiceStack.Host
             this.MatchRule = matchRule;
             this.Path = path;
 
-            this.AllowsAllVerbs = verbs == null || verbs == WildCard;
+            this.AllowsAllVerbs = verbs is null or WildCard;
             if (!this.AllowsAllVerbs)
             {
                 this.AllowedVerbs = verbs?.ToUpper();

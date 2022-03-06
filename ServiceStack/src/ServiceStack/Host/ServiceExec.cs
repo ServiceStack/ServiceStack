@@ -69,6 +69,14 @@ namespace ServiceStack.Host
             return MergeAsyncActions(to);
         }
 
+        public static string GetVerbs(this Type serviceType)
+        {
+            var verbs = string.Join(",", serviceType.GetActions().Select(x => x.Name)).ToUpper();
+            if (string.IsNullOrEmpty(verbs) || verbs.IndexOf(ActionContext.AnyAction, StringComparison.Ordinal) >= 0)
+                return null;
+            return verbs;
+        }
+
         public static List<ActionMethod> GetActions(this Type serviceType)
         {
             var to = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)

@@ -1714,10 +1714,10 @@ namespace ServiceStack
             {
                 foreach (var atRestPath in atRestPaths)
                 {
-                    if (atRestPath == null) continue;
-
-                    this.Routes.Add(reqAttr.RequestType, atRestPath, 
-                        ServiceClientUtils.GetHttpMethod(reqAttr.RequestType));
+                    if (atRestPath == null) 
+                        continue;
+                    var verbs = reqAttr.Verbs ?? serviceType.GetVerbs(); 
+                    this.Routes.Add(reqAttr.RequestType, atRestPath, verbs);
                 }
             }
         }

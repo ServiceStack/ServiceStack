@@ -12,9 +12,7 @@ namespace ServiceStack
     {
         public Type RequestType { get; set; }
 
-        public DefaultRequestAttribute(Type requestType)
-        {
-            RequestType = requestType;
-        }
+        public DefaultRequestAttribute(Type requestType) => RequestType = requestType;
+        public string Verbs { get; set; }
     }
 }
