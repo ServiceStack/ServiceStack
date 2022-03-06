@@ -148,7 +148,7 @@ public static class ConfigureDbTalent
     private static Faker<JobApplicationComment> commentFaker = new Faker<JobApplicationComment>()
         .RuleFor(c => c.Id, () => 0)
         .RuleFor(c => c.AppUserId, (f) => f.Random.Int(1, 5))
-        .RuleFor(c => c.Message, (f) => f.Lorem.Paragraph())
+        .RuleFor(c => c.Comment, (f) => f.Lorem.Paragraph())
         .RuleFor(c => c.CreatedDate, (f) => f.Date.Recent(5))
         .RuleFor(c => c.ModifiedDate, () => DateTime.UtcNow)
         .RuleFor(c => c.CreatedBy, () => "SYSTEM")

@@ -31,6 +31,7 @@ public class ConfigureDb : IHostingStartup
             db.DropTable<PhoneScreen>();
             db.DropTable<Interview>();
             db.DropTable<JobApplicationAttachment>();
+            db.DropTable<JobApplicationComment>();
             db.SeedTalent(profilesDir:AppHost.ProfilesDir);
         });
 }
