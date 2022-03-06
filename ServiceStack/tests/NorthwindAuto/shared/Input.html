@@ -48,13 +48,14 @@ App.components({
                 this.model[input.id] = Array.from(files).map(f => ({ fileName:f.name, contentLength:f.size, filePath:Files.fileImageUri(f) }))
             },
             imgSrc(input) {
-                let val = model[input.id]
+                let val = this.model[input.id]
+                if (!val) return null
                 return typeof val == 'string'
                     ? val
                     : val[0].filePath
             },
             imgCls(src) {
-                return src.startsWith('data:') || src.endsWith('.svg') 
+                return !src || src.startsWith('data:') || src.endsWith('.svg') 
                     ?  ''
                     : 'rounded-full'
             },

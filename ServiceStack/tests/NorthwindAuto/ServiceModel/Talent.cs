@@ -56,7 +56,6 @@ public class Job : AuditBase
     public string Location { get; set; }
 
     public DateTime Closing { get; set; }
-
 }
 
 public enum EmploymentType
