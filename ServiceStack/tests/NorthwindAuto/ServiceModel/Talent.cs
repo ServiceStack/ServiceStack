@@ -330,9 +330,14 @@ public class QueryJobApplication : QueryDb<JobApplication>
     public int? JobId { get; set; }
 }
 
+public interface IHasJobId
+{
+    public int JobId { get; }
+}
+
 [Tag("Talent")]
 [AutoApply(Behavior.AuditCreate)]
-public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplication>
+public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplication>, IHasJobId
 {
     public int JobId { get; set; }
     public int ContactId { get; set; }
@@ -344,7 +349,7 @@ public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplic
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditModify)]
-public class UpdateJobApplication : IUpdateDb<JobApplication>, IReturn<JobApplication>
+public class UpdateJobApplication : IUpdateDb<JobApplication>, IReturn<JobApplication>, IHasJobId
 {
     public int Id { get; set; }
     public int JobId { get; set; }

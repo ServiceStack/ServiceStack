@@ -8,6 +8,7 @@ using ServiceStack.HtmlModules;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using TalentBlazor.ServiceModel;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
 
@@ -71,9 +72,7 @@ public class AppHost : AppHostBase, IHostingStartup
             new UploadLocation("users", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:(req,fileName) => $"/profiles/users/{req.GetSession().UserAuthId}.{fileName.LastRightPart('.')}"),
             new UploadLocation("applications", appDataVfs, maxFileCount:3, maxFileBytes:10_000_000,
-                resolvePath:(req,fileName) => req.Dto.GetId() != null 
-                    ? $"/uploads/applications/{req.Dto.GetId()}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}"
-                    : $"/uploads/applications/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}",
+                resolvePath:(req,fileName) => $"/uploads/applications/{((IHasJobId)req.Dto).JobId}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}",
                 accessRole:RoleNames.AllowAnon),
             new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages)
         ));
