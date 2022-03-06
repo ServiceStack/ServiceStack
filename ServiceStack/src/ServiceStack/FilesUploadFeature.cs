@@ -29,9 +29,14 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public FilesUploadFeature(string basePath, params UploadLocation[] locations)
     {
-        BasePath = basePath;
+        if (string.IsNullOrEmpty(basePath))
+            throw new ArgumentNullException(nameof(basePath));
+        if (basePath[0] != '/')
+            throw new ArgumentException($@"{nameof(basePath)} must start with '/'", nameof(basePath));
+        BasePath = basePath.TrimEnd('/');
         Locations = locations;
     }
+
     public FilesUploadFeature(params UploadLocation[] locations) : this("/uploads", locations) {}
 
     public UploadLocation? GetLocation(string name) =>
@@ -59,14 +64,16 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(PostFilesUploadService),   BasePath, BasePath.CombineWith("{Name}"));
-        appHost.RegisterService(typeof(GetFilesUploadService),    BasePath, BasePath.CombineWith("{Name}/{File*}"));
-        appHost.RegisterService(typeof(DeleteFilesUploadService), BasePath.CombineWith("{Name}/{File*}"));
+        appHost.RegisterService(typeof(StoreFileUploadService),  BasePath, BasePath.CombineWith("{Name}"), BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(GetFileUploadService),    BasePath, BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(ReplaceFileUploadService),       BasePath, BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(DeleteFileUploadService), BasePath, BasePath.CombineWith("{Name}/{Path*}"));
 
         if (Locations.Length == 0)
         {
             Locations = new[] {
-                new UploadLocation("default", appHost.VirtualFiles, resolvePath:(req,fileName) => BasePath.CombineWith(fileName))
+                new UploadLocation("default", appHost.VirtualFiles, 
+                    resolvePath:(req,fileName) => BasePath.CombineWith($"{DateTime.UtcNow:yyyy/MM/dd}",fileName))
             };
         }
         
@@ -80,6 +87,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
                     AccessRole = x.AccessRole,
                     AllowExtensions = x.AllowExtensions,
                     AllowOperations = x.AllowOperations.ToString(),
+                    MaxFileCount = x.MaxFileCount,
                     MinFileBytes = x.MinFileBytes,
                     MaxFileBytes = x.MaxFileBytes,
                 })
@@ -94,27 +102,27 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         return location;
     }
 
-    public string UploadFile(UploadLocation location, IRequest req, IAuthSession session, IHttpFile file)
-    {
-        RequestUtils.AssertAccessRole(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret());
-        var vfsPath = ResolveUploadFilePath(location, req, file);
-        location.VirtualFiles.WriteFile(vfsPath, file.InputStream);
-        return vfsPath;
-    }
-
     public async Task<string> UploadFileAsync(UploadLocation location, IRequest req, IAuthSession session, IHttpFile file, CancellationToken token=default)
     {
         await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret(), token: token);
-        var vfsPath = ResolveUploadFilePath(location, req, file);
-        await location.VirtualFiles.WriteFileAsync(vfsPath, file.InputStream, token).ConfigAwait();
-        return vfsPath;
+        var paths = ResolveUploadFilePath(location, req, file);
+        await location.VirtualFiles.WriteFileAsync(paths.VirtualPath, file.InputStream, token).ConfigAwait();
+        return paths.PublicPath;
     }
 
-    public string ResolveUploadFilePath(UploadLocation location, IRequest req, IHttpFile file)
+    public ResolvedPath ResolveUploadFilePath(UploadLocation location, IRequest req, IHttpFile file)
     {
         var canCreate = location.AllowOperations.HasFlag(FilesUploadOperation.Create);
         var canUpdate = location.AllowOperations.HasFlag(FilesUploadOperation.Update);
-        var vfsPath = location.ResolvePath(req, file.FileName);
+        var publicPath = location.ResolvePath(req, file.FileName);
+        if (string.IsNullOrEmpty(publicPath))
+            throw new Exception("ResolvePath is Empty");
+        if (publicPath[0] != '/')
+            publicPath = '/' + publicPath;
+
+        var vfsPath = publicPath.StartsWith(BasePath)
+            ? publicPath.Substring(BasePath.Length)
+            : publicPath;
 
         if (!canCreate || !canUpdate)
         {
@@ -125,27 +133,35 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
                 throw HttpError.Forbidden(Errors.NoCreateAccess.Localize(req));
         }
 
+        if (location.MaxFileCount != null && req.Files.Length > location.MaxFileCount)
+            throw new ArgumentException(Errors.ExceededMaxFileCountFmt.LocalizeFmt(req,location.MaxFileCount), file.Name);
+
+        ValidateFileUpload(location, req, file, vfsPath);
+
+        return new ResolvedPath(publicPath, vfsPath);
+    }
+
+    public void ValidateFileUpload(UploadLocation location, IRequest req, IHttpFile file, string vfsPath)
+    {
+        var param = file.Name;
         if (location.AllowExtensions != null)
         {
             var ext = vfsPath.LastRightPart('.');
             if (!location.AllowExtensions.Contains(ext))
-                throw HttpError.Forbidden(Errors.InvalidFileExtensionFmt.LocalizeFmt(string.Join(", ",
-                    location.AllowExtensions.Select(x => '.' + x).ToList().OrderBy(x => x))));
+                throw new ArgumentException(Errors.InvalidFileExtensionFmt.LocalizeFmt(req, string.Join(", ",
+                    location.AllowExtensions.Select(x => '.' + x).ToList().OrderBy(x => x))), param);
         }
 
         if (location.MinFileBytes != null && file.ContentLength < location.MinFileBytes)
-            throw HttpError.Forbidden($"Min file size: {location.MinFileBytes} bytes");
+            throw new ArgumentException(Errors.ExceededMinFileBytesFmt.LocalizeFmt(req, location.MinFileBytes), param);
         if (location.MaxFileBytes != null && file.ContentLength > location.MaxFileBytes)
-            throw HttpError.Forbidden($"Max file size: {location.MinFileBytes} bytes");
+            throw new ArgumentException(Errors.ExceededMaxFileBytesFmt.LocalizeFmt(req, location.MaxFileBytes), param);
         location.Validate?.Invoke(req, file);
-        
-        return vfsPath;
     }
 
-    public async Task<IVirtualFile> GetFileAsync(UploadLocation location, IRequest req, IAuthSession session, string file)
+    public async Task<IVirtualFile?> GetFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
         await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret());
-        var vfsPath = location.ResolvePath(req, file);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Read))
             throw HttpError.NotFound(Errors.NoReadAccess.Localize(req));
 
@@ -153,10 +169,27 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         return existingFile;
     }
 
-    public async Task<bool> DeleteFileAsync(UploadLocation location, IRequest req, IAuthSession session, string file)
+    public async Task ReplaceFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath, CancellationToken token=default)
+    {
+        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret(), token);
+        if (!location.AllowOperations.HasFlag(FilesUploadOperation.Update))
+            throw HttpError.Forbidden(Errors.NoUpdateAccess.Localize(req));
+        if (req.Files.Length != 1)
+            throw HttpError.BadRequest(Errors.BadRequest.Localize(req));
+        
+        var existingFile = location.VirtualFiles.GetFile(vfsPath);
+        if (existingFile != null)
+        {
+            var file = req.Files[0];
+            ValidateFileUpload(location, req, file, vfsPath);
+            await location.VirtualFiles.WriteFileAsync(vfsPath, file.InputStream, token).ConfigAwait();
+        }
+        else throw HttpError.NotFound(Errors.FileNotExists);
+    }
+
+    public async Task<bool> DeleteFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
         await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret());
-        var vfsPath = location.ResolvePath(req, file);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Delete))
             throw HttpError.Forbidden(Errors.NoDeleteAccess.Localize(req));
         
@@ -176,8 +209,13 @@ public class FilesUploadErrorMessages
     public string NoUpdateAccess { get; set; } = "Uploading existing files not permitted";
     public string NoCreateAccess { get; set; } = "Uploading new files not permitted";
     public string NoReadAccess { get; set; } = "File not found";
+    public string FileNotExists { get; set; } = "File not found";
+    public string BadRequest { get; set; } = "Bad Request";
     public string NoDeleteAccess { get; set; } = "Deleting file not permitted";
     public string InvalidFileExtensionFmt { get; set; } = "Supported file extensions: {0}";
+    public string ExceededMaxFileCountFmt { get; set; } = "Exceeded maximum files: {0}";
+    public string ExceededMinFileBytesFmt { get; set; } = "Min file size: {0} bytes";
+    public string ExceededMaxFileBytesFmt { get; set; } = "Max file size: {0} bytes";
 }    
 
 [Flags]
@@ -188,46 +226,58 @@ public enum FilesUploadOperation
     Create = 1 << 1,
     Update = 1 << 2,
     Delete = 1 << 3,
-    Write = Create | Update | Delete,
-    All =   Read | Create | Update | Delete,
+    Write  = Create | Update | Delete,
+    All    = Read | Create | Update | Delete,
 }
 
-public class PostFilesUpload : IReturn<PostFilesUploadResponse>, IHasBearerToken, IPost
+public class StoreFileUpload : IReturn<StoreFileUploadResponse>, IHasBearerToken, IPost
 {
     public string Name { get; set; }
-    public string File { get; set; }
+    public string Path { get; set; }
     public string? BearerToken { get; set; }
 }
 
-public class PostFilesUploadResponse
+public class StoreFileUploadResponse
 {
     public List<string> Results { get; set; }
     public ResponseStatus ResponseStatus { get; set; }
 }
 
-public class GetFilesUpload : IReturn<byte[]>, IHasBearerToken, IGet
+public class GetFileUpload : IReturn<byte[]>, IHasBearerToken, IGet
 {
     public string Name { get; set; }
-    public string File { get; set; }
+    public string Path { get; set; }
     public string? BearerToken { get; set; }
+    public bool? Attachment { get; set; }
 }
 
-public class DeleteFilesUpload : IReturn<DeleteFilesUploadResponse>, IHasBearerToken, IDelete
+public class ReplaceFileUpload : IReturn<ReplaceFileUploadResponse>, IHasBearerToken, IPut
 {
     public string Name { get; set; }
-    public string File { get; set; }
+    public string Path { get; set; }
     public string? BearerToken { get; set; }
 }
-public class DeleteFilesUploadResponse
+public class ReplaceFileUploadResponse
+{
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+public class DeleteFileUpload : IReturn<DeleteFileUploadResponse>, IHasBearerToken, IDelete
+{
+    public string Name { get; set; }
+    public string Path { get; set; }
+    public string? BearerToken { get; set; }
+}
+public class DeleteFileUploadResponse
 {
     public bool Result { get; set; }
     public ResponseStatus ResponseStatus { get; set; }
 }
 
-[DefaultRequest(typeof(PostFilesUpload))]
-public class PostFilesUploadService : Service
+[DefaultRequest(typeof(StoreFileUpload))]
+public class StoreFileUploadService : Service
 {
-    public async Task<object> Post(PostFilesUpload request)
+    public async Task<object> Any(StoreFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
         var location = feature.AssertLocation(request.Name, Request);
@@ -241,37 +291,69 @@ public class PostFilesUploadService : Service
             var path = await feature.UploadFileAsync(location, Request, session, file).ConfigAwait();
             results.Add(path);
         }
-        return new PostFilesUploadResponse {
+        return new StoreFileUploadResponse {
             Results = results,
         };
     }
 }
 
-[DefaultRequest(typeof(GetFilesUpload))]
-public class GetFilesUploadService : Service
+[DefaultRequest(typeof(GetFileUpload))]
+public class GetFileUploadService : Service
 {
-    public async Task<object> Get(GetFilesUpload request)
+    public async Task<object> Get(GetFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
         var location = feature.AssertLocation(request.Name, Request);
         var session = await Request.GetSessionAsync();
-        var file = await feature.GetFileAsync(location, Request, session, request.File).ConfigAwait();
-        return new HttpResult(file, asAttachment:true);
+        var vfsPath = location.Name.CombineWith(request.Path);
+        var file = await feature.GetFileAsync(location, Request, session, vfsPath).ConfigAwait();
+        if (file == null)
+            throw HttpError.NotFound(feature.Errors.FileNotExists);
+        var asAttachment = request.Attachment
+            ?? !FileExt.WebFormats.Contains(request.Path.LastRightPart('.'));
+        return new HttpResult(file, asAttachment:asAttachment);
     }
 }
 
-[DefaultRequest(typeof(DeleteFilesUpload))]
-public class DeleteFilesUploadService : Service
+[DefaultRequest(typeof(ReplaceFileUpload))]
+public class ReplaceFileUploadService : Service
 {
-    public async Task<object> Any(DeleteFilesUpload request)
+    public async Task<object> Any(ReplaceFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
         var location = feature.AssertLocation(request.Name, Request);
         var session = await Request.GetSessionAsync();
-        var result = await feature.DeleteFileAsync(location, Request, session, request.File).ConfigAwait();
-        return new DeleteFilesUploadResponse {
+        var vfsPath = location.Name.CombineWith(request.Path);
+        await feature.ReplaceFileAsync(location, Request, session, vfsPath).ConfigAwait();
+        return new ReplaceFileUploadResponse();
+    }
+}
+
+[DefaultRequest(typeof(DeleteFileUpload))]
+public class DeleteFileUploadService : Service
+{
+    public async Task<object> Any(DeleteFileUpload request)
+    {
+        var feature = AssertPlugin<FilesUploadFeature>();
+        var location = feature.AssertLocation(request.Name, Request);
+        var session = await Request.GetSessionAsync();
+        var vfsPath = location.Name.CombineWith(request.Path);
+        var result = await feature.DeleteFileAsync(location, Request, session, vfsPath).ConfigAwait();
+        return new DeleteFileUploadResponse {
             Result = result
         };
+    }
+}
+
+public struct ResolvedPath
+{
+    public string PublicPath { get; }
+    public string VirtualPath { get; }
+
+    public ResolvedPath(string publicPath, string virtualPath)
+    {
+        PublicPath = publicPath;
+        VirtualPath = virtualPath;
     }
 }
 
@@ -281,16 +363,18 @@ public class UploadLocation
         IVirtualFiles virtualFiles, Func<IRequest,string,string>? resolvePath = null, 
         string accessRole = RoleNames.AllowAnyUser, 
         string[]? allowExtensions = null, FilesUploadOperation allowOperations = FilesUploadOperation.All, 
-        long? minFileBytes = null, long? maxFileBytes = null,
+        int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
         Action<IRequest,IHttpFile>? validate = null,
         Func<IRequest,IVirtualFile,object>? fileResult = null)
     {
         this.Name = name;
         this.VirtualFiles = virtualFiles;
-        this.ResolvePath = resolvePath ?? ((IRequest req, string fileName) => $"/{Name}/{fileName}");
+        this.ResolvePath = resolvePath ?? ((IRequest req, string fileName) =>
+            $"/{Name}".CombineWith($"{DateTime.UtcNow:YYYY/MM/dd}", fileName));
         this.AccessRole = accessRole;
         this.AllowExtensions = allowExtensions?.ToSet();
         this.AllowOperations = allowOperations;
+        this.MaxFileCount = maxFileCount;
         this.MinFileBytes = minFileBytes;
         this.MaxFileBytes = maxFileBytes;
         this.Validate = validate;
@@ -302,6 +386,7 @@ public class UploadLocation
     public string AccessRole { get; set; }
     public HashSet<string>? AllowExtensions { get; set; }
     public FilesUploadOperation AllowOperations { get; set; }
+    public int? MaxFileCount { get; set; }
     public long? MinFileBytes { get; set; }
     public long? MaxFileBytes { get; set; }
     public Func<IRequest,string,string> ResolvePath { get; set; }
@@ -311,8 +396,26 @@ public class UploadLocation
 
 public static class FileExt
 {
-    public static string[] StandardImages { get; set; } = { "png", "jpg", "jpeg", "gif", };
     public static string[] WebImages { get; set; } = { "png", "jpg", "jpeg", "gif", "svg", "webp" };
-    public static string[] BinaryImages { get; set; } = { "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp" };
-    public static string[] Images { get; set; } = { "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp", "svg", "ico" };
+    public static string[] BinaryImages { get; set; } = { "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp", "ai", "psd", "ps" };
+    public static string[] Images { get; set; } = Combine(WebImages, BinaryImages);
+    public static string[] WebVideos { get; set; } = { "avi", "m4v", "mov", "mp4", "mpg", "mpeg", "wmv", "webm" };
+    public static string[] WebAudios { get; set; } = { "mp3", "mpa", "ogg", "wav", "wma", "mid", "webm" };
+    public static string[] BinaryDocuments { get; set; } = { "doc", "docx", "pdf", "rtf" };
+    public static string[] TextDocuments { get; set; } = { "tex", "txt", "md", "rst" };
+    public static string[] Spreadsheets { get; set; } = { "xls", "xlsm", "xlsx", "ods", "csv", "txv" };
+    public static string[] Presentations { get; set; } = { "key", "odp", "pps", "ppt", "pptx" };
+    public static string[] AllDocuments { get; set; } = Combine(BinaryDocuments, TextDocuments, Presentations, Spreadsheets);
+    public static string[] WebFormats { get; set; } = Combine(WebImages, WebVideos, WebAudios);
+
+    public static string[] Combine(params string[][] extensions)
+    {
+        var all = new List<string>();
+        foreach (var exts in extensions)
+        {
+            all.AddRange(exts);
+        }
+        var ret = all.Distinct().ToArray();
+        return ret;
+    }
 }

@@ -1712,7 +1712,8 @@ namespace ServiceStack
                 {
                     if (atRestPath == null) continue;
 
-                    this.Routes.Add(reqAttr.RequestType, atRestPath, null);
+                    this.Routes.Add(reqAttr.RequestType, atRestPath, 
+                        ServiceClientUtils.GetHttpMethod(reqAttr.RequestType));
                 }
             }
         }

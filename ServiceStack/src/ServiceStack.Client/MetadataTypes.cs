@@ -286,6 +286,7 @@ namespace ServiceStack
         public string AccessRole { get; set; }
         public HashSet<string> AllowExtensions { get; set; }
         public string AllowOperations { get; set; }
+        public int? MaxFileCount { get; set; }
         public long? MinFileBytes { get; set; }
         public long? MaxFileBytes { get; set; }
     }

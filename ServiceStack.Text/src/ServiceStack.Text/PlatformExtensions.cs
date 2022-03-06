@@ -632,7 +632,7 @@ namespace ServiceStack
                ?? (type.BaseType != null && type.BaseType != typeof(object) ? type.BaseType.GetCollectionType() : null); //e.g. ArrayOfString : List<string>
         }
 
-        static Dictionary<string, Type> GenericTypeCache = new Dictionary<string, Type>();
+        static Dictionary<string, Type> GenericTypeCache = new();
 
         public static Type GetCachedGenericType(this Type type, params Type[] argTypes)
         {

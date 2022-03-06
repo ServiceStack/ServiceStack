@@ -15,8 +15,8 @@ namespace MyApp;
 
 public class AppHost : AppHostBase, IHostingStartup
 {
-    public static string TalentBlazorDir = "C:\\src\\netcore\\TalentBlazor\\TalentBlazor\\wwwroot";
-    public static string ProfilesDir = $"{TalentBlazorDir}\\profiles";
+    public static string TalentBlazorWwwRootDir = "C:\\src\\netcore\\TalentBlazor\\TalentBlazor\\wwwroot";
+    public static string ProfilesDir = $"{TalentBlazorWwwRootDir}\\profiles";
 
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services => services.AddHttpUtilsClient())
@@ -63,12 +63,18 @@ public class AppHost : AppHostBase, IHostingStartup
         });
         //Plugins.Add(new PostmanFeature());
 
-        var uploadVfs = new FileSystemVirtualFiles(TalentBlazorDir);
+        var uploadVfs = new FileSystemVirtualFiles(TalentBlazorWwwRootDir);
         var appDataVfs = new FileSystemVirtualFiles(ContentRootDirectory.RealPath.CombineWith("App_Data"));
         Plugins.Add(new FilesUploadFeature(
-            new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages),
+            new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
+                resolvePath:(req,fileName) => $"/profiles/{fileName}"),
             new UploadLocation("users", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:(req,fileName) => $"/profiles/users/{req.GetSession().UserAuthId}.{fileName.LastRightPart('.')}"),
+            new UploadLocation("applications", appDataVfs, maxFileCount:3, maxFileBytes:10_000_000,
+                resolvePath:(req,fileName) => req.Dto.GetId() != null 
+                    ? $"/uploads/applications/{req.Dto.GetId()}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}"
+                    : $"/uploads/applications/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}",
+                accessRole:RoleNames.AllowAnon),
             new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages)
         ));
     }
