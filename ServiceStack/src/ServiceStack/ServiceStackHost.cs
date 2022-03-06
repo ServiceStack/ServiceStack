@@ -206,6 +206,10 @@ namespace ServiceStack
                 typeof(RegenerateApiKeysService),
                 typeof(ConvertSessionToTokenService),
                 typeof(GetAccessTokenService),
+                typeof(StoreFileUploadService),
+                typeof(ReplaceFileUploadService),
+                typeof(GetFileUploadService),
+                typeof(DeleteFileUploadService),
                 typeof(Validation.GetValidationRulesService),
                 typeof(Validation.ModifyValidationRulesService),
             };
