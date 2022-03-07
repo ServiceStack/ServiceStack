@@ -473,6 +473,10 @@ namespace ServiceStack
             return pathProviders;
         }
 
+        public virtual T GetVirtualFileSource<T>() where T : class => AfterInitAt != null
+            ? VirtualFileSources.GetVirtualFileSource<T>()
+            : GetVirtualFileSources().FirstOrDefault(x => x is T) as T;
+
         /// <summary>
         /// Starts the AppHost.
         /// this methods needs to be overwritten in subclass to provider a listener to start handling requests.

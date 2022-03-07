@@ -269,7 +269,7 @@ public class AutoQueryCrudReferencesTests
             db.CreateTable<Contact>();
             db.CreateTable<PhoneScreen>();
 
-            var memFs = (MemoryVirtualFiles)InsertVirtualFileSources.First(x => x is MemoryVirtualFiles);
+            var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
             Plugins.Add(new FilesUploadFeature(
                 new UploadLocation("applications", memFs, maxFileCount: 3, maxFileBytes: 10_000_000,
                     resolvePath: ctx => ctx.GetLocationPath(ctx.GetDto<IHasJobId>().JobId + $"/{ctx.DateSegment}/{ctx.FileName}"),
