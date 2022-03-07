@@ -351,6 +351,12 @@ const Files = (function () {
         let ext = lastRightPart(file.name,'.').toLowerCase()
         if (web.indexOf(ext) >= 0)
             return objectUrl(file)
+        return filePathUri(file.name)
+    }
+    function filePathUri(path) {
+        let ext = lastRightPart(path,'.').toLowerCase()
+        if (web.indexOf(ext) >= 0)
+            return path
         let keys = Object.keys(Ext)
         for (let i=0; i<keys.length; i++) {
             let k = keys[i]
@@ -373,6 +379,7 @@ const Files = (function () {
         encodeSvg,
         svgToDataUri,
         fileImageUri,
+        filePathUri,
         formatBytes,
         flush,
     }

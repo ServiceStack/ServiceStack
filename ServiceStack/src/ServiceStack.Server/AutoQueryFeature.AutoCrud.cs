@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
@@ -334,7 +335,13 @@ namespace ServiceStack
 
                 if (!AutoQuery.IncludeCrudProperties.Contains(propName))
                 {
-                    var hasProp = to.ModelDef.GetFieldDefinition(propName) != null; 
+                    var hasProp = to.ModelDef.GetFieldDefinition(propName) != null;
+                    if (!hasProp)
+                    {
+                        var modelProp = to.ModelType.GetPublicProperties()
+                            .FirstOrDefault(x => x.Name.Equals(propName, StringComparison.OrdinalIgnoreCase));
+                        hasProp = modelProp?.FirstAttribute<ReferenceAttribute>() != null;
+                    }
                     if (!hasProp
                         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                         || (AutoQuery.IgnoreCrudProperties.Contains(pi.Name) && !hasProp)
@@ -448,7 +455,7 @@ namespace ServiceStack
                             throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                     }
 
-                    var autoIntId = db.Insert<Table>(dtoValues, selectIdentity: selectIdentity);
+                    var autoIntId = db.Insert<Table>(dtoValues, selectIdentity:selectIdentity, references:true);
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 });
 
@@ -493,7 +500,7 @@ namespace ServiceStack
                             throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                     }
                     
-                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity).ConfigAwait();
+                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity:selectIdentity, references:true).ConfigAwait();
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 }).ConfigAwait();
 

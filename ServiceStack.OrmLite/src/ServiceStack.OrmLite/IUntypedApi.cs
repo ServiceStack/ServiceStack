@@ -24,6 +24,7 @@ namespace ServiceStack.OrmLite
         int UpdateAll(IEnumerable objs);
         int UpdateAll(IEnumerable objs, Action<IDbCommand> commandFilter);
         int Update(object obj);
+        Task<int> UpdateAsync(object obj, CancellationToken token);
 
         int DeleteAll();
         int Delete(object obj, object anonType);

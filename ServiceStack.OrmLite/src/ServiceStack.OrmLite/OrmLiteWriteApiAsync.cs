@@ -50,25 +50,27 @@ namespace ServiceStack.OrmLite
         /// </summary>
         public static Task<long> InsertAsync<T>(this IDbConnection dbConn, T obj, Action<IDbCommand> commandFilter, bool selectIdentity = false, bool enableIdentityInsert = false, CancellationToken token = default)
         {
-            return dbConn.Exec(dbCmd => dbCmd.InsertAsync(obj, commandFilter: commandFilter, selectIdentity: selectIdentity, enableIdentityInsert, token: token));
+            return dbConn.Exec(dbCmd => dbCmd.InsertAsync(obj, commandFilter: commandFilter, selectIdentity:selectIdentity, enableIdentityInsert, token:token));
         }
 
         /// <summary>
         /// Insert 1 POCO, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
         /// <para>var id = db.Insert(new Dictionary&lt;string,object&gt; { ["Id"] = 1, ["FirstName"] = "Jimi }, selectIdentity:true)</para>
         /// </summary>
-        public static Task<long> InsertAsync<T>(this IDbConnection dbConn, Dictionary<string,object> obj, bool selectIdentity = false, CancellationToken token = default)
+        public static Task<long> InsertAsync<T>(this IDbConnection dbConn, Dictionary<string,object> obj, bool selectIdentity = false, 
+            bool references = false, CancellationToken token = default)
         {
-            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: null, selectIdentity: selectIdentity, token));
+            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: null, selectIdentity:selectIdentity, references:references, token));
         }
 
         /// <summary>
         /// Insert 1 POCO, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
         /// <para>var id = db.Insert(new Dictionary&lt;string,object&gt; { ["Id"] = 1, ["FirstName"] = "Jimi }, dbCmd => applyFilter(dbCmd))</para>
         /// </summary>
-        public static Task<long> InsertAsync<T>(this IDbConnection dbConn, Action<IDbCommand> commandFilter, Dictionary<string,object> obj, bool selectIdentity = false, CancellationToken token = default)
+        public static Task<long> InsertAsync<T>(this IDbConnection dbConn, Action<IDbCommand> commandFilter, 
+            Dictionary<string,object> obj, bool selectIdentity = false, bool references = false, CancellationToken token = default)
         {
-            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: commandFilter, selectIdentity: selectIdentity, token));
+            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: commandFilter, selectIdentity:selectIdentity, references:references, token));
         }
 
         /// <summary>

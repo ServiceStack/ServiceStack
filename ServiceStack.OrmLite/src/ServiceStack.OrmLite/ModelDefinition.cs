@@ -278,6 +278,19 @@ namespace ServiceStack.OrmLite
         {
             return Name;
         }
+
+        public bool HasAnyReferences(IEnumerable<string> fieldNames)
+        {
+            foreach (var fieldName in fieldNames)
+            {
+                foreach (var field in ReferenceFieldDefinitionsArray)
+                {
+                    if (field.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+            }
+            return false;
+        }
     }
 
 

@@ -126,7 +126,8 @@ namespace ServiceStack.OrmLite
         ///   db.UpdateOnly&lt;Person&gt;(new Dictionary&lt;string,object&lt; { {"Id", 1}, {"FirstName", "JJ"} });
         ///   UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("Id" = 1)
         /// </summary>
-        public static int UpdateOnly<T>(this IDbConnection dbConn, Dictionary<string, object> updateFields, Action<IDbCommand> commandFilter = null)
+        public static int UpdateOnly<T>(this IDbConnection dbConn, Dictionary<string, object> updateFields, 
+            Action<IDbCommand> commandFilter = null)
         {
             return dbConn.Exec(dbCmd => dbCmd.UpdateOnly<T>(updateFields, commandFilter));
         }
@@ -137,7 +138,9 @@ namespace ServiceStack.OrmLite
         ///   db.UpdateOnly&lt;Person&gt;(new Dictionary&lt;string,object&lt; { {"FirstName", "JJ"} }, "FirstName == {0}", new[] { "Jimi" });
         ///   UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
         /// </summary>
-        public static int UpdateOnly<T>(this IDbConnection dbConn, Dictionary<string, object> updateFields, string whereExpression, object[] whereParams, Action<IDbCommand> commandFilter = null)
+        public static int UpdateOnly<T>(this IDbConnection dbConn, 
+            Dictionary<string, object> updateFields, string whereExpression, object[] whereParams, 
+            Action<IDbCommand> commandFilter = null)
         {
             return dbConn.Exec(dbCmd => dbCmd.UpdateOnly<T>(updateFields, whereExpression, whereParams, commandFilter));
         }

@@ -68,11 +68,11 @@ public class AppHost : AppHostBase, IHostingStartup
         var appDataVfs = new FileSystemVirtualFiles(ContentRootDirectory.RealPath.CombineWith("App_Data"));
         Plugins.Add(new FilesUploadFeature(
             new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
-                resolvePath:(req,fileName) => $"/profiles/{fileName}"),
+                resolvePath:ctx => $"/profiles/{ctx.FileName}"),
             new UploadLocation("users", uploadVfs, allowExtensions:FileExt.WebImages,
-                resolvePath:(req,fileName) => $"/profiles/users/{req.GetSession().UserAuthId}.{fileName.LastRightPart('.')}"),
+                resolvePath:ctx => $"/profiles/users/{ctx.UserAuthId}.{ctx.FileExtension}"),
             new UploadLocation("applications", appDataVfs, maxFileCount:3, maxFileBytes:10_000_000,
-                resolvePath:(req,fileName) => $"/uploads/applications/{((IHasJobId)req.Dto).JobId}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}",
+                resolvePath:ctx => $"/uploads/applications/{ctx.GetDto<IHasJobId>().JobId}/{ctx.DateSegment}/{ctx.FileName}",
                 readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon),
             new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages)
         ));

@@ -757,7 +757,8 @@ namespace ServiceStack.OrmLite
             OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj.ToFilterType<T>());
 
             var dialectProvider = dbCmd.GetDialectProvider();
-            var pkField = ModelDefinition<T>.Definition.PrimaryKey;
+            var modelDef = ModelDefinition<T>.Definition;
+            var pkField = modelDef.PrimaryKey;
             object id = null;
             var enableIdentityInsert = pkField?.AutoIncrement == true && obj.TryGetValue(pkField.Name, out id);
 
@@ -772,7 +773,16 @@ namespace ServiceStack.OrmLite
 
                 var ret = InsertInternal<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity);
                 if (enableIdentityInsert)
-                    return Convert.ToInt64(id);
+                    ret = Convert.ToInt64(id);
+
+                if (references && modelDef.HasAnyReferences(obj.Keys))
+                {
+                    if (pkField != null && !obj.ContainsKey(pkField.Name))
+                        obj[pkField.Name] = ret;
+
+                    var instance = obj.FromObjectDictionary<T>();
+                    dbCmd.SaveAllReferences(instance);
+                }
                 return ret;
             }
             finally
@@ -1062,11 +1072,12 @@ namespace ServiceStack.OrmLite
             return rowsAdded;
         }
 
-        internal static void SaveAllReferences<T>(this IDbCommand dbCmd, T instance)
-        {
-            var modelDef = ModelDefinition<T>.Definition;
-            var pkValue = modelDef.PrimaryKey.GetValue(instance);
+        internal static void SaveAllReferences<T>(this IDbCommand dbCmd, T instance) => 
+            SaveAllReferences(dbCmd, ModelDefinition<T>.Definition, instance);
 
+        internal static void SaveAllReferences(IDbCommand dbCmd, ModelDefinition modelDef, object instance)
+        {
+            var pkValue = modelDef.PrimaryKey.GetValue(instance);
             var fieldDefs = modelDef.ReferenceFieldDefinitionsArray;
 
             bool updateInstance = false;
@@ -1087,7 +1098,6 @@ namespace ServiceStack.OrmLite
                         {
                             refField.SetValue(oRef, pkValue);
                         }
-
                         dbCmd.CreateTypedApi(refType).SaveAll(results);
                     }
                 }
@@ -1105,7 +1115,7 @@ namespace ServiceStack.OrmLite
 
                     if (result != null)
                     {
-                        if (refField != null && refSelf == null) 
+                        if (refField != null && refSelf == null)
                             refField.SetValue(result, pkValue);
 
                         dbCmd.CreateTypedApi(refType).Save(result);
@@ -1120,10 +1130,9 @@ namespace ServiceStack.OrmLite
                     }
                 }
             }
-
             if (updateInstance)
             {
-                dbCmd.Update(instance);
+                dbCmd.CreateTypedApi(instance.GetType()).Update(instance);
             }
         }
 

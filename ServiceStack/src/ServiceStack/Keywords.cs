@@ -65,6 +65,7 @@ namespace ServiceStack
         public const string Reset = nameof(Reset);
         public const string reset = nameof(reset);
         public const string Count = nameof(Count);
+        public const string FilePath = nameof(FilePath);
         
         public const string Allows = "allows";
         public const string Embed = "embed";

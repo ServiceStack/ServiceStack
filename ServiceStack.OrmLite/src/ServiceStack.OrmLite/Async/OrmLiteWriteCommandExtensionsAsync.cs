@@ -345,13 +345,15 @@ namespace ServiceStack.OrmLite
             }
         }
 
-        internal static async Task<long> InsertAsync<T>(this IDbCommand dbCmd, Dictionary<string,object> obj, Action<IDbCommand> commandFilter, bool selectIdentity, CancellationToken token)
+        internal static async Task<long> InsertAsync<T>(this IDbCommand dbCmd, Dictionary<string,object> obj, 
+            Action<IDbCommand> commandFilter, bool selectIdentity, bool references, CancellationToken token)
         {
             OrmLiteUtils.AssertNotAnonType<T>();
             OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj.ToFilterType<T>());
 
             var dialectProvider = dbCmd.GetDialectProvider();
-            var pkField = ModelDefinition<T>.Definition.PrimaryKey;
+            var modelDef = ModelDefinition<T>.Definition;
+            var pkField = modelDef.PrimaryKey;
             object id = null;
             var enableIdentityInsert = pkField?.AutoIncrement == true && obj.TryGetValue(pkField.Name, out id);
 
@@ -366,7 +368,16 @@ namespace ServiceStack.OrmLite
 
                 var ret = await InsertInternalAsync<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity, token).ConfigAwait();
                 if (enableIdentityInsert)
-                    return Convert.ToInt64(id);
+                    ret = Convert.ToInt64(id);
+
+                if (references && modelDef.HasAnyReferences(obj.Keys))
+                {
+                    if (pkField != null && !obj.ContainsKey(pkField.Name))
+                        obj[pkField.Name] = ret;
+
+                    var instance = obj.FromObjectDictionary<T>();
+                    await dbCmd.SaveAllReferencesAsync(instance, token).ConfigAwait();
+                }
                 return ret;
             }
             finally
@@ -574,12 +585,15 @@ namespace ServiceStack.OrmLite
             return rowsAdded;
         }
 
-        public static async Task SaveAllReferencesAsync<T>(this IDbCommand dbCmd, T instance, CancellationToken token)
-        {
-            var modelDef = ModelDefinition<T>.Definition;
-            var pkValue = modelDef.PrimaryKey.GetValue(instance);
+        internal static async Task SaveAllReferencesAsync<T>(this IDbCommand dbCmd, T instance, CancellationToken token) => 
+            await SaveAllReferences(dbCmd, ModelDefinition<T>.Definition, instance, token).ConfigAwait();
 
-            var fieldDefs = modelDef.AllFieldDefinitionsArray.Where(x => x.IsReference);
+        internal static async Task SaveAllReferences(IDbCommand dbCmd, ModelDefinition modelDef, object instance, CancellationToken token)
+        {
+            var pkValue = modelDef.PrimaryKey.GetValue(instance);
+            var fieldDefs = modelDef.ReferenceFieldDefinitionsArray;
+
+            bool updateInstance = false;
             foreach (var fieldDef in fieldDefs)
             {
                 var listInterface = fieldDef.FieldType.GetTypeWithGenericInterfaceOf(typeof(IList<>));
@@ -597,7 +611,6 @@ namespace ServiceStack.OrmLite
                         {
                             refField.SetValue(oRef, pkValue);
                         }
-
                         await dbCmd.CreateTypedApi(refType).SaveAllAsync(results, token).ConfigAwait();
                     }
                 }
@@ -624,10 +637,14 @@ namespace ServiceStack.OrmLite
                         {
                             var refPkValue = refModelDef.PrimaryKey.GetValue(result);
                             refSelf.SetValue(instance, refPkValue);
-                            await dbCmd.UpdateAsync(instance, token, null).ConfigAwait();
+                            updateInstance = true;
                         }
                     }
                 }
+            }
+            if (updateInstance)
+            {
+                await dbCmd.CreateTypedApi(instance.GetType()).UpdateAsync(instance, token).ConfigAwait();
             }
         }
 

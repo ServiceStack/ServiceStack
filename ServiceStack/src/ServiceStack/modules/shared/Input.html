@@ -31,16 +31,17 @@ App.components({
             },
             fileChange(input,e) {
                 let files = e.target.files
-                console.log(files)
                 this.model[input.id] = Array.from(files).map(f => ({ fileName:f.name, contentLength:f.size, filePath:Files.fileImageUri(f) }))
             },
             imgSrc(input) {
                 let val = this.model[input.id]
                 if (!val) return null
-                return typeof val == 'string'
+                let src = typeof val == 'string'
                     ? val
                     : val[0].filePath
+                return Files.filePathUri(src)
             },
+            filePathUri(path) { return Files.filePathUri(path) },
             imgCls(src) {
                 return !src || src.startsWith('data:') || src.endsWith('.svg') 
                     ?  ''
@@ -76,7 +77,7 @@ App.components({
         <table>
             <tr v-for="file in model[input.id]">
                 <td class="pr-3 py-1">
-                    <img :src="file.filePath" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`">
+                    <img :src="filePathUri(file.filePath)" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`">
                 </td>
                 <td class="pr-6 align-bottom pb-2">
                     <span>{{file.fileName}}</span>

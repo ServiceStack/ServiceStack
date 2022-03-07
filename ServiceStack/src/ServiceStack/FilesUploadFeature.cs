@@ -73,7 +73,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         {
             Locations = new[] {
                 new UploadLocation("default", appHost.VirtualFiles, 
-                    resolvePath:(req,fileName) => BasePath.CombineWith($"{DateTime.UtcNow:yyyy/MM/dd}",fileName))
+                    resolvePath:ctx => ctx.GetLocationPath($"{DateTime.UtcNow:yyyy/MM/dd}/{ctx.FileName}"))
             };
         }
         
@@ -115,7 +115,9 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
     {
         var canCreate = location.AllowOperations.HasFlag(FilesUploadOperation.Create);
         var canUpdate = location.AllowOperations.HasFlag(FilesUploadOperation.Update);
-        var publicPath = location.ResolvePath(req, file.FileName);
+        var feature = HostContext.AppHost.AssertPlugin<FilesUploadFeature>();
+        var ctx = new FilesUploadContext(feature, location, req, file.FileName);
+        var publicPath = location.ResolvePath(ctx);
         if (string.IsNullOrEmpty(publicPath))
             throw new Exception("ResolvePath is Empty");
         if (publicPath[0] != '/')
@@ -346,7 +348,7 @@ public class DeleteFileUploadService : Service
     }
 }
 
-public struct ResolvedPath
+public readonly struct ResolvedPath
 {
     public string PublicPath { get; }
     public string VirtualPath { get; }
@@ -358,10 +360,34 @@ public struct ResolvedPath
     }
 }
 
+public readonly struct FilesUploadContext
+{
+    public IRequest Request { get; }
+    public object Dto => Request.Dto;
+    public string FileName { get; }
+    public string FileExtension => FileName.LastRightPart('.');
+    public string DateSegment => DateTime.UtcNow.ToString("yyyy/MM/dd");
+    public T GetDto<T>() => (T)Request.Dto;
+    public FilesUploadFeature Feature { get; }
+    public UploadLocation Location { get; }
+    public IAuthSession Session => Request.GetSession();
+    public string UserAuthId => Session.UserAuthId;
+
+    public FilesUploadContext(FilesUploadFeature feature, UploadLocation location, IRequest request, string fileName)
+    {
+        Feature = feature;
+        Location = location;
+        Request = request;
+        FileName = fileName;
+    }
+
+    public string GetLocationPath(string relativePath) => Feature.BasePath.CombineWith(Location.Name, relativePath);
+}
+
 public class UploadLocation
 {
     public UploadLocation(string name, 
-        IVirtualFiles virtualFiles, Func<IRequest,string,string>? resolvePath = null, 
+        IVirtualFiles virtualFiles, Func<FilesUploadContext,string>? resolvePath = null, 
         string readAccessRole = RoleNames.AllowAnyUser, string writeAccessRole = RoleNames.AllowAnyUser, 
         string[]? allowExtensions = null, FilesUploadOperation allowOperations = FilesUploadOperation.All, 
         int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
@@ -370,8 +396,8 @@ public class UploadLocation
     {
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
         this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
-        this.ResolvePath = resolvePath ?? ((IRequest req, string fileName) =>
-            $"/{Name}".CombineWith($"{DateTime.UtcNow:YYYY/MM/dd}", fileName));
+        this.ResolvePath = resolvePath ?? (ctx =>
+            $"/{ctx.Location.Name}".CombineWith($"{DateTime.UtcNow:YYYY/MM/dd}", ctx.FileName));
         this.ReadAccessRole = readAccessRole ?? throw new ArgumentNullException(nameof(readAccessRole));
         this.WriteAccessRole = writeAccessRole ?? throw new ArgumentNullException(nameof(writeAccessRole));
         this.AllowExtensions = allowExtensions?.ToSet();
@@ -392,7 +418,7 @@ public class UploadLocation
     public int? MaxFileCount { get; set; }
     public long? MinFileBytes { get; set; }
     public long? MaxFileBytes { get; set; }
-    public Func<IRequest,string,string> ResolvePath { get; set; }
+    public Func<FilesUploadContext,string> ResolvePath { get; set; }
     public Action<IRequest,IHttpFile>? Validate { get; set; }
     Func<IRequest,IVirtualFile,object>? FileResult { get; set; }
 }

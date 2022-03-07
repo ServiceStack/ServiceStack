@@ -71,7 +71,7 @@ public class PreProcessRequest : IPlugin, IHasStringId
                             var file = fileEntry.Item2;
                             var obj = new Dictionary<string, object>
                             {
-                                ["FilePath"] = entry.Key,
+                                [Keywords.FilePath] = fileEntry.Item1,
                                 [nameof(file.Name)] = file.Name,
                                 [nameof(file.FileName)] = file.FileName,
                                 [nameof(file.ContentLength)] = file.ContentLength,
