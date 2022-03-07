@@ -525,18 +525,18 @@ namespace ServiceStack
             return client.CustomMethod<TResponse>(httpVerb, requestDto);
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType, string fieldName = "file")
         {
             return client.PostFile<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, mimeType);
         }
 
-        public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file")
         {
             return client.PostFileWithRequest<TResponse>(fileToUpload, fileName, request, fieldName);
         }
 
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
-            object request, string fieldName = "upload")
+            object request, string fieldName = "file")
         {
             return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fieldName);
         }

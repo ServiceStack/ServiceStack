@@ -974,23 +974,24 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         return result;
     }
 
-    public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+    public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType, string fieldName="file")
     {
-        return PostFileAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, mimeType).GetSyncResponse();
+        return PostFileAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName:fileName, mimeType:mimeType, fieldName:fieldName).GetSyncResponse();
     }
 
-    public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload", CancellationToken token = default)
+    public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file", CancellationToken token = default)
     {
-        return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName, token);
+        return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, 
+            fileName:fileName, request:request, fieldName:fieldName, token);
     }
 
-    public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+    public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file")
     {
-        return PostFileWithRequestAsync<TResponse>(fileToUpload, fileName, request, fileName).GetSyncResponse();
+        return PostFileWithRequestAsync<TResponse>(fileToUpload, fileName:fileName, request:request, fieldName:fileName).GetSyncResponse();
     }
 
     public virtual async Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
-        object request, string fieldName = "upload", CancellationToken token = default)
+        object request, string fieldName = "file", CancellationToken token = default)
     {
         var queryString = QueryStringSerializer.SerializeToString(request);
         var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
@@ -1019,7 +1020,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     }
 
     public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
-        object request, string fieldName = "upload")
+        object request, string fieldName = "file")
     {
         return PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName).GetSyncResponse();
     }

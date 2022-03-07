@@ -1148,7 +1148,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return result;
     }
 
-    public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload", CancellationToken token = default)
+    public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file", CancellationToken token = default)
     {
         return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName, token);
     }
@@ -1183,14 +1183,14 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return result;
     }
 
-    public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+    public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file")
     {
         return PostFileWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, 
             fieldName:fieldName);
     }
 
     public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
-        object request, string fieldName = "upload")
+        object request, string fieldName = "file")
     {
         var queryString = QueryStringSerializer.SerializeToString(request);
         var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);

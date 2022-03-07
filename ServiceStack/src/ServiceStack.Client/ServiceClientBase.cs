@@ -1845,12 +1845,12 @@ namespace ServiceStack
             }
         }
 
-        public virtual TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        public virtual TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file")
         {
             return PostFileWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName);
         }
 
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "file")
         {
             var requestUri = ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl);
             var currentStreamPosition = fileToUpload.Position;
@@ -1930,7 +1930,7 @@ namespace ServiceStack
 
         public static void UploadFile(WebRequest webRequest, Stream fileStream, string fileName, string mimeType,
             string accept = null, Action<HttpWebRequest> requestFilter = null, string method = "POST",
-            string field = "file")
+            string fieldName = "file")
         {
             var httpReq = (HttpWebRequest)webRequest;
             httpReq.Method = method;
@@ -1946,7 +1946,7 @@ namespace ServiceStack
 
             var boundaryBytes = ("\r\n--" + boundary + "--\r\n").ToAsciiBytes();
 
-            var headerBytes = GetHeaderBytes(fileName, mimeType, field, boundary);
+            var headerBytes = GetHeaderBytes(fileName, mimeType, fieldName, boundary);
 
             var contentLength = fileStream.Length + headerBytes.Length + boundaryBytes.Length;
             PclExport.Instance.InitHttpWebRequest(httpReq,
@@ -1959,7 +1959,7 @@ namespace ServiceStack
             PclExport.Instance.CloseStream(outputStream);
         }
 
-        public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType, string fieldName = "file")
         {
             var currentStreamPosition = fileToUpload.Position;
             var requestUri = ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl);
@@ -1968,7 +1968,7 @@ namespace ServiceStack
             try
             {
                 var webRequest = createWebRequest();
-                UploadFile(webRequest, fileToUpload, fileName, mimeType);
+                UploadFile(webRequest, fileToUpload, fileName:fileName, mimeType:mimeType, fieldName:fieldName);
                 var webResponse = PclExport.Instance.GetResponse(webRequest);
                 return HandleResponse<TResponse>(webResponse);
             }
@@ -1983,7 +1983,7 @@ namespace ServiceStack
                     createWebRequest,
                     c =>
                     {
-                        UploadFile(c, fileToUpload, fileName, mimeType);
+                        UploadFile(c, fileToUpload, fileName:fileName, mimeType:mimeType, fieldName:fieldName);
                         return PclExport.Instance.GetResponse(c);
                     },
                     out TResponse response))
@@ -2086,23 +2086,26 @@ namespace ServiceStack
         }
 
         public static TResponse PostFile<TResponse>(this IRestClient client,
-            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType, string fieldName = "file")
         {
             using var fileStream = fileToUpload.OpenRead();
-            return client.PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
+            return client.PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, 
+                fileName:fileToUpload.Name, mimeType:mimeType, fieldName:fieldName);
         }
 
         public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
-            FileInfo fileToUpload, object request, string fieldName = "upload")
+            FileInfo fileToUpload, object request, string fieldName = "file")
         {
-            return client.PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, request, fieldName);
+            return client.PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, 
+                request:request, fieldName:fieldName);
         }
 
         public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
-            string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "file")
         {
             using var fileStream = fileToUpload.OpenRead();
-            return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
+            return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, 
+                fileName:fileToUpload.Name, request:request, fieldName:fieldName);
         }
 
         public static void PopulateRequestMetadatas(this IHasSessionId client, IEnumerable<object> requests)

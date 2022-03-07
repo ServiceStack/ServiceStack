@@ -25,9 +25,9 @@ namespace ServiceStack
 
         TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request);
 
-        TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType);
-        TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload");
-        TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload");
+        TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType, string fieldName="file");
+        TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName="file");
+        TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName="file");
         TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files);
         TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files);
     }

@@ -465,7 +465,7 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType, string fieldName)
         {
             throw new NotImplementedException();
         }
@@ -491,7 +491,7 @@ namespace ServiceStack
         }
 
         public TResponse PostFileWithRequest<TResponse>(
-            Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+            Stream fileToUpload, string fileName, object request, string fieldName = "file")
         {
             throw new NotImplementedException();
         }
@@ -588,12 +588,12 @@ namespace ServiceStack
         {
         }
 
-        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
+        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "file")
         {
             throw new NotImplementedException();
         }
 
-        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "file")
         {
             throw new NotImplementedException();
         }

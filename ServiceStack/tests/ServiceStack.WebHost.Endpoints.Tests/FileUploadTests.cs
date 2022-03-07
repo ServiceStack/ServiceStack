@@ -145,7 +145,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 request);
 
             var expectedContents = uploadFile.OpenRead().ReadToEnd();
-            Assert.That(response.Name, Is.EqualTo("upload"));
+            Assert.That(response.Name, Is.EqualTo("file"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
@@ -166,7 +166,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 uploadFile, request);
 
             var expectedContents = uploadFile.OpenRead().ReadToEnd();
-            Assert.That(response.Name, Is.EqualTo("upload"));
+            Assert.That(response.Name, Is.EqualTo("file"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
@@ -261,7 +261,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
 
             var expectedContents = uploadFile.OpenRead().ReadToEnd();
-            Assert.That(response.Name, Is.EqualTo("upload"));
+            Assert.That(response.Name, Is.EqualTo("file"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
