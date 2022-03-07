@@ -16,7 +16,10 @@ App.components({
             get dataModelName() { return map(this.apiCreate, x => x.op && x.op.dataModel && x.op.dataModel.name) },
             get errorSummary() { return map(this.apiCreate, x => x.errorSummary) },
             get gridInputs() { return map(this.apiCreate, x => x.formLayout && Forms.getGridInputs(x.formLayout)) },
-            done,
+            done() {
+                Files.flush()
+                done()
+            },
             submit() {
                 this.apiCreate.apiForm(Forms.formData(this.$refs.form, this.apiCreate.op))
                     .then(r => {
@@ -51,10 +54,13 @@ App.components({
             model: {},
             origModel: {},
             confirmDelete: false,
-            done,
             open: null,
             events: [],
             eventsCount: 0,
+            done() {
+                Files.flush()
+                done()
+            },
             updated() {
                 let pk = this.pk, state = this.state
                 if (!pk || !state || !state.opQuery || !routes.edit) return
