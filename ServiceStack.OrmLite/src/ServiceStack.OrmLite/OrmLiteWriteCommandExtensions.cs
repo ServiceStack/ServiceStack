@@ -749,7 +749,8 @@ namespace ServiceStack.OrmLite
             }
         }
         
-        internal static long Insert<T>(this IDbCommand dbCmd, Dictionary<string,object> obj, Action<IDbCommand> commandFilter, bool selectIdentity = false)
+        internal static long Insert<T>(this IDbCommand dbCmd, Dictionary<string,object> obj, 
+            Action<IDbCommand> commandFilter, bool selectIdentity = false, bool references = false)
         {
             OrmLiteUtils.AssertNotAnonType<T>();
             
@@ -1066,7 +1067,7 @@ namespace ServiceStack.OrmLite
             var modelDef = ModelDefinition<T>.Definition;
             var pkValue = modelDef.PrimaryKey.GetValue(instance);
 
-            var fieldDefs = modelDef.AllFieldDefinitionsArray.Where(x => x.IsReference);
+            var fieldDefs = modelDef.ReferenceFieldDefinitionsArray;
 
             bool updateInstance = false;
             foreach (var fieldDef in fieldDefs)

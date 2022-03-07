@@ -18,10 +18,10 @@ namespace ServiceStack.OrmLite.Support
         protected IOrmLiteDialectProvider dialectProvider;
         protected List<Into> parentResults;
         protected ModelDefinition modelDef;
-        protected List<FieldDefinition> fieldDefs;
+        protected FieldDefinition[] fieldDefs;
         protected string subSql;
 
-        public List<FieldDefinition> FieldDefs => fieldDefs;
+        public FieldDefinition[] FieldDefs => fieldDefs;
 
         public List<Into> ParentResults => parentResults;
 
@@ -41,7 +41,7 @@ namespace ServiceStack.OrmLite.Support
             parentResults = dbCmd.ExprConvertToList<Into>(sql, parentQ.Params, onlyFields:q.OnlyFields);
 
             modelDef = ModelDefinition<Into>.Definition;
-            fieldDefs = modelDef.AllFieldDefinitionsArray.Where(x => x.IsReference).ToList();
+            fieldDefs = modelDef.ReferenceFieldDefinitionsArray;
 
             var subQ = q.Clone();
             var subQSql = dialectProvider.GetLoadChildrenSubSelect(subQ);

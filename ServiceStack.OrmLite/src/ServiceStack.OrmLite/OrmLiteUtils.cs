@@ -875,9 +875,9 @@ namespace ServiceStack.OrmLite
 
             var hasChildRef = false;
 
-            foreach (var fieldDef in modelDef.AllFieldDefinitionsArray)
+            foreach (var fieldDef in modelDef.ReferenceFieldDefinitionsArray)
             {
-                if ((fieldDef.FieldType != typeof (Child) && fieldDef.FieldType != typeof (List<Child>)) || !fieldDef.IsReference) 
+                if (fieldDef.FieldType != typeof(Child) && fieldDef.FieldType != typeof(List<Child>)) 
                     continue;
                 
                 hasChildRef = true;

@@ -80,8 +80,9 @@ namespace ServiceStack.OrmLite
         public FieldDefinition[] IgnoredFieldDefinitionsArray { get; private set; }
 
         public FieldDefinition[] AllFieldDefinitionsArray { get; private set; }
+        public FieldDefinition[] ReferenceFieldDefinitionsArray { get; private set; }
 
-        private readonly object fieldDefLock = new object();
+        private readonly object fieldDefLock = new();
         private Dictionary<string, FieldDefinition> fieldDefinitionMap;
         private Func<string, string> fieldNameSanitizer;
         
@@ -254,6 +255,7 @@ namespace ServiceStack.OrmLite
             var allItems = new List<FieldDefinition>(FieldDefinitions);
             allItems.AddRange(IgnoredFieldDefinitions);
             AllFieldDefinitionsArray = allItems.ToArray();
+            ReferenceFieldDefinitionsArray = allItems.Where(x => x.IsReference).ToArray();
 
             AutoIdFields = GetAutoIdFieldDefinitions().ToArray();
 

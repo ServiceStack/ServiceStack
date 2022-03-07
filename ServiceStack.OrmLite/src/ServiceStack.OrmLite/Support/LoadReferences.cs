@@ -13,7 +13,7 @@ namespace ServiceStack.OrmLite.Support
         protected IDbCommand dbCmd;
         protected T instance;
         protected ModelDefinition modelDef;
-        protected List<FieldDefinition> fieldDefs;
+        protected FieldDefinition[] fieldDefs;
         protected object pkValue;
         protected IOrmLiteDialectProvider dialectProvider;
 
@@ -23,12 +23,12 @@ namespace ServiceStack.OrmLite.Support
             this.instance = instance;
             
             modelDef = ModelDefinition<T>.Definition;
-            fieldDefs = modelDef.AllFieldDefinitionsArray.Where(x => x.IsReference).ToList();
+            fieldDefs = modelDef.ReferenceFieldDefinitionsArray;
             pkValue = modelDef.PrimaryKey.GetValue(instance);
             dialectProvider = dbCmd.GetDialectProvider();
         }
 
-        public List<FieldDefinition> FieldDefs => fieldDefs;
+        public FieldDefinition[] FieldDefs => fieldDefs;
 
         protected string GetRefListSql(Type refType)
         {
