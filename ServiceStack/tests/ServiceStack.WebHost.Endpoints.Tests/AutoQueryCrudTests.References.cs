@@ -327,7 +327,8 @@ public class AutoQueryCrudReferencesTests
                     resolvePath: ctx => ctx.GetLocationPath((ctx.Dto is CreateJobApplication create
                         ? $"job/{create.JobId}"
                         : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
-                    readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)));
+                    readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
+            ));
         }
     }
 

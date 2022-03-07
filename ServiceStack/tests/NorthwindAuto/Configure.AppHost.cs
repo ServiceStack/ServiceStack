@@ -69,12 +69,14 @@ public class AppHost : AppHostBase, IHostingStartup
         Plugins.Add(new FilesUploadFeature(
             new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:ctx => $"/profiles/{ctx.FileName}"),
+            new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages),
             new UploadLocation("users", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:ctx => $"/profiles/users/{ctx.UserAuthId}.{ctx.FileExtension}"),
-            new UploadLocation("applications", appDataVfs, maxFileCount:3, maxFileBytes:10_000_000,
-                resolvePath:ctx => $"/uploads/applications/{ctx.GetDto<IHasJobId>().JobId}/{ctx.DateSegment}/{ctx.FileName}",
-                readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon),
-            new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages)
+            new UploadLocation("applications", appDataVfs, maxFileCount: 3, maxFileBytes: 10_000_000,
+                resolvePath: ctx => ctx.GetLocationPath((ctx.Dto is CreateJobApplication create
+                    ? $"job/{create.JobId}"
+                    : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
+                readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
         ));
     }
 
