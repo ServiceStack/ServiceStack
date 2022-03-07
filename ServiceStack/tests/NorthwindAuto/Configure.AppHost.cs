@@ -73,7 +73,7 @@ public class AppHost : AppHostBase, IHostingStartup
                 resolvePath:(req,fileName) => $"/profiles/users/{req.GetSession().UserAuthId}.{fileName.LastRightPart('.')}"),
             new UploadLocation("applications", appDataVfs, maxFileCount:3, maxFileBytes:10_000_000,
                 resolvePath:(req,fileName) => $"/uploads/applications/{((IHasJobId)req.Dto).JobId}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}",
-                accessRole:RoleNames.AllowAnon),
+                readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon),
             new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages)
         ));
     }

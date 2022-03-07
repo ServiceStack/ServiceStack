@@ -64,10 +64,10 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(StoreFileUploadService),  BasePath, BasePath.CombineWith("{Name}"), BasePath.CombineWith("{Name}/{Path*}"));
-        appHost.RegisterService(typeof(GetFileUploadService),    BasePath, BasePath.CombineWith("{Name}/{Path*}"));
-        appHost.RegisterService(typeof(ReplaceFileUploadService),       BasePath, BasePath.CombineWith("{Name}/{Path*}"));
-        appHost.RegisterService(typeof(DeleteFileUploadService), BasePath, BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(StoreFileUploadService),   BasePath, BasePath.CombineWith("{Name}"), BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(GetFileUploadService),     BasePath, BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(ReplaceFileUploadService), BasePath, BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(DeleteFileUploadService),  BasePath, BasePath.CombineWith("{Name}/{Path*}"));
 
         if (Locations.Length == 0)
         {
@@ -84,7 +84,8 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
                 BasePath = BasePath,
                 Locations = Locations.Map(x => new FilesUploadLocation {
                     Name = x.Name,
-                    AccessRole = x.AccessRole,
+                    ReadAccessRole = x.ReadAccessRole,
+                    WriteAccessRole = x.WriteAccessRole,
                     AllowExtensions = x.AllowExtensions,
                     AllowOperations = x.AllowOperations.ToString(),
                     MaxFileCount = x.MaxFileCount,
@@ -104,7 +105,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public async Task<string> UploadFileAsync(UploadLocation location, IRequest req, IAuthSession session, IHttpFile file, CancellationToken token=default)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret(), token: token);
+        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), token: token);
         var paths = ResolveUploadFilePath(location, req, file);
         await location.VirtualFiles.WriteFileAsync(paths.VirtualPath, file.InputStream, token).ConfigAwait();
         return paths.PublicPath;
@@ -161,7 +162,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public async Task<IVirtualFile?> GetFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret());
+        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.ReadAccessRole, authSecret:req.GetAuthSecret());
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Read))
             throw HttpError.NotFound(Errors.NoReadAccess.Localize(req));
 
@@ -171,7 +172,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public async Task ReplaceFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath, CancellationToken token=default)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret(), token);
+        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), token);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Update))
             throw HttpError.Forbidden(Errors.NoUpdateAccess.Localize(req));
         if (req.Files.Length != 1)
@@ -189,7 +190,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public async Task<bool> DeleteFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.AccessRole, authSecret:req.GetAuthSecret());
+        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret());
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Delete))
             throw HttpError.Forbidden(Errors.NoDeleteAccess.Localize(req));
         
@@ -361,7 +362,7 @@ public class UploadLocation
 {
     public UploadLocation(string name, 
         IVirtualFiles virtualFiles, Func<IRequest,string,string>? resolvePath = null, 
-        string accessRole = RoleNames.AllowAnyUser, 
+        string readAccessRole = RoleNames.AllowAnyUser, string writeAccessRole = RoleNames.AllowAnyUser, 
         string[]? allowExtensions = null, FilesUploadOperation allowOperations = FilesUploadOperation.All, 
         int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
         Action<IRequest,IHttpFile>? validate = null,
@@ -371,7 +372,8 @@ public class UploadLocation
         this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
         this.ResolvePath = resolvePath ?? ((IRequest req, string fileName) =>
             $"/{Name}".CombineWith($"{DateTime.UtcNow:YYYY/MM/dd}", fileName));
-        this.AccessRole = accessRole ?? throw new ArgumentNullException(nameof(accessRole));;
+        this.ReadAccessRole = readAccessRole ?? throw new ArgumentNullException(nameof(readAccessRole));
+        this.WriteAccessRole = writeAccessRole ?? throw new ArgumentNullException(nameof(writeAccessRole));
         this.AllowExtensions = allowExtensions?.ToSet();
         this.AllowOperations = allowOperations;
         this.MaxFileCount = maxFileCount;
@@ -383,7 +385,8 @@ public class UploadLocation
 
     public string Name { get; set; }
     public IVirtualFiles VirtualFiles { get; set; }
-    public string AccessRole { get; set; }
+    public string ReadAccessRole { get; set; }
+    public string WriteAccessRole { get; set; }
     public HashSet<string>? AllowExtensions { get; set; }
     public FilesUploadOperation AllowOperations { get; set; }
     public int? MaxFileCount { get; set; }

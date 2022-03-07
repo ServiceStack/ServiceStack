@@ -283,7 +283,8 @@ namespace ServiceStack
     public class FilesUploadLocation
     {
         public string Name { get; set; }
-        public string AccessRole { get; set; }
+        public string ReadAccessRole { get; set; }
+        public string WriteAccessRole { get; set; }
         public HashSet<string> AllowExtensions { get; set; }
         public string AllowOperations { get; set; }
         public int? MaxFileCount { get; set; }
