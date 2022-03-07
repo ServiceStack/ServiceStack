@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite
 {
@@ -117,11 +118,12 @@ namespace ServiceStack.OrmLite
             Action<IDbCommand> commandFilter = null,
             CancellationToken token = default)
         {
-            OrmLiteUtils.AssertNotAnonType<T>();
-
-            var whereExpr = dbCmd.GetDialectProvider().GetUpdateOnlyWhereExpression<T>(updateFields, out var exprArgs);
-            dbCmd.PrepareUpdateOnly<T>(updateFields, whereExpr, exprArgs);
-            return dbCmd.UpdateAndVerifyAsync<T>(commandFilter, updateFields.ContainsKey(ModelDefinition.RowVersionName), token);
+            return dbCmd.UpdateOnlyReferencesAsync<T>(updateFields, dbFields =>
+            {
+                var whereExpr = dbCmd.GetDialectProvider().GetUpdateOnlyWhereExpression<T>(dbFields, out var exprArgs);
+                dbCmd.PrepareUpdateOnly<T>(dbFields, whereExpr, exprArgs);
+                return dbCmd.UpdateAndVerifyAsync<T>(commandFilter, dbFields.ContainsKey(ModelDefinition.RowVersionName), token);
+            }, token);
         }
 
         public static Task<int> UpdateOnlyAsync<T>(this IDbCommand dbCmd,
@@ -131,6 +133,18 @@ namespace ServiceStack.OrmLite
             Action<IDbCommand> commandFilter = null,
             CancellationToken token = default)
         {
+            return dbCmd.UpdateOnlyReferencesAsync<T>(updateFields, dbFields =>
+            {
+                var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+                q.Where(whereExpression, whereParams);
+                q.PrepareUpdateStatement(dbCmd, dbFields);
+                return dbCmd.UpdateAndVerifyAsync<T>(commandFilter, dbFields.ContainsKey(ModelDefinition.RowVersionName), token);
+            }, token);
+        }
+
+        public static async Task<int> UpdateOnlyReferencesAsync<T>(this IDbCommand dbCmd,
+            Dictionary<string, object> updateFields, Func<Dictionary<string, object>, Task<int>> fn, CancellationToken token = default)
+        {
             OrmLiteUtils.AssertNotAnonType<T>();
             
             if (updateFields == null)
@@ -138,10 +152,27 @@ namespace ServiceStack.OrmLite
 
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.ToFilterType<T>());
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
-            q.Where(whereExpression, whereParams);
-            q.PrepareUpdateStatement(dbCmd, updateFields);
-            return dbCmd.UpdateAndVerifyAsync<T>(commandFilter, updateFields.ContainsKey(ModelDefinition.RowVersionName), token);
+            var dbFields = updateFields;
+            var modelDef = ModelDefinition<T>.Definition;
+            var hasReferences = modelDef.HasAnyReferences(updateFields.Keys); 
+            if (hasReferences)
+            {
+                dbFields = new Dictionary<string, object>();
+                foreach (var entry in updateFields)
+                {
+                    if (!modelDef.IsReference(entry.Key)) 
+                        dbFields[entry.Key] = entry.Value;
+                }
+            }
+
+            var ret = await fn(dbFields).ConfigAwait();
+
+            if (hasReferences)
+            {
+                var instance = updateFields.FromObjectDictionary<T>();
+                await dbCmd.SaveAllReferencesAsync(instance, token).ConfigAwait();
+            }
+            return ret;
         }
 
         internal static Task<int> UpdateNonDefaultsAsync<T>(this IDbCommand dbCmd, T item, Expression<Func<T, bool>> obj, CancellationToken token)

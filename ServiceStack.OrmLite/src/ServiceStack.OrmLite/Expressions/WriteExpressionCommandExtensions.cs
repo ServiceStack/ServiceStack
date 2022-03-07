@@ -212,9 +212,11 @@ namespace ServiceStack.OrmLite
             Dictionary<string, object> updateFields,
             Action<IDbCommand> commandFilter = null)
         {
-            var whereExpr = dbCmd.GetDialectProvider().GetUpdateOnlyWhereExpression<T>(updateFields, out var exprArgs);
-            dbCmd.PrepareUpdateOnly<T>(updateFields, whereExpr, exprArgs);
-            return dbCmd.UpdateAndVerify<T>(commandFilter, updateFields.ContainsKey(ModelDefinition.RowVersionName));
+            return dbCmd.UpdateOnlyReferences<T>(updateFields, dbFields => {
+                var whereExpr = dbCmd.GetDialectProvider().GetUpdateOnlyWhereExpression<T>(dbFields, out var exprArgs);
+                dbCmd.PrepareUpdateOnly<T>(dbFields, whereExpr, exprArgs);
+                return dbCmd.UpdateAndVerify<T>(commandFilter, dbFields.ContainsKey(ModelDefinition.RowVersionName));
+            });
         }
 
         public static int UpdateOnly<T>(this IDbCommand dbCmd,
@@ -223,10 +225,46 @@ namespace ServiceStack.OrmLite
             object[] whereParams,
             Action<IDbCommand> commandFilter = null)
         {
-            dbCmd.PrepareUpdateOnly<T>(updateFields, whereExpression, whereParams);
-            return dbCmd.UpdateAndVerify<T>(commandFilter, updateFields.ContainsKey(ModelDefinition.RowVersionName));
+            return dbCmd.UpdateOnlyReferences<T>(updateFields, dbFields => {
+                dbCmd.PrepareUpdateOnly<T>(dbFields, whereExpression, whereParams);
+                return dbCmd.UpdateAndVerify<T>(commandFilter, dbFields.ContainsKey(ModelDefinition.RowVersionName));
+            });
         }
 
+        public static int UpdateOnlyReferences<T>(this IDbCommand dbCmd,
+            Dictionary<string, object> updateFields, Func<Dictionary<string, object>, int> fn)
+        {
+            OrmLiteUtils.AssertNotAnonType<T>();
+            
+            if (updateFields == null)
+                throw new ArgumentNullException(nameof(updateFields));
+
+            OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.ToFilterType<T>());
+
+            var dbFields = updateFields;
+            var modelDef = ModelDefinition<T>.Definition;
+            var hasReferences = modelDef.HasAnyReferences(updateFields.Keys); 
+            if (hasReferences)
+            {
+                dbFields = new Dictionary<string, object>();
+                foreach (var entry in updateFields)
+                {
+                    if (!modelDef.IsReference(entry.Key)) 
+                        dbFields[entry.Key] = entry.Value;
+                }
+            }
+
+            var ret = fn(dbFields);
+
+            if (hasReferences)
+            {
+                var instance = updateFields.FromObjectDictionary<T>();
+                dbCmd.SaveAllReferences(instance);
+            }
+            return ret;
+        }
+
+        
         internal static void PrepareUpdateOnly<T>(this IDbCommand dbCmd, Dictionary<string, object> updateFields, string whereExpression, object[] whereParams)
         {
             if (updateFields == null)

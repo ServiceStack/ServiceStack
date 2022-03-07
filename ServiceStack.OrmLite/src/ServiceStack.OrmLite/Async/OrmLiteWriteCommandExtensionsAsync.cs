@@ -346,7 +346,7 @@ namespace ServiceStack.OrmLite
         }
 
         internal static async Task<long> InsertAsync<T>(this IDbCommand dbCmd, Dictionary<string,object> obj, 
-            Action<IDbCommand> commandFilter, bool selectIdentity, bool references, CancellationToken token)
+            Action<IDbCommand> commandFilter, bool selectIdentity, CancellationToken token)
         {
             OrmLiteUtils.AssertNotAnonType<T>();
             OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj.ToFilterType<T>());
@@ -370,7 +370,7 @@ namespace ServiceStack.OrmLite
                 if (enableIdentityInsert)
                     ret = Convert.ToInt64(id);
 
-                if (references && modelDef.HasAnyReferences(obj.Keys))
+                if (modelDef.HasAnyReferences(obj.Keys))
                 {
                     if (pkField != null && !obj.ContainsKey(pkField.Name))
                         obj[pkField.Name] = ret;

@@ -455,7 +455,7 @@ namespace ServiceStack
                             throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                     }
 
-                    var autoIntId = db.Insert<Table>(dtoValues, selectIdentity:selectIdentity, references:true);
+                    var autoIntId = db.Insert<Table>(dtoValues, selectIdentity:selectIdentity);
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 });
 
@@ -500,7 +500,7 @@ namespace ServiceStack
                             throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                     }
                     
-                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity:selectIdentity, references:true).ConfigAwait();
+                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity:selectIdentity).ConfigAwait();
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 }).ConfigAwait();
 

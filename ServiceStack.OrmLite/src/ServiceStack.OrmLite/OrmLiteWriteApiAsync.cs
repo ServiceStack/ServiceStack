@@ -57,10 +57,9 @@ namespace ServiceStack.OrmLite
         /// Insert 1 POCO, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
         /// <para>var id = db.Insert(new Dictionary&lt;string,object&gt; { ["Id"] = 1, ["FirstName"] = "Jimi }, selectIdentity:true)</para>
         /// </summary>
-        public static Task<long> InsertAsync<T>(this IDbConnection dbConn, Dictionary<string,object> obj, bool selectIdentity = false, 
-            bool references = false, CancellationToken token = default)
+        public static Task<long> InsertAsync<T>(this IDbConnection dbConn, Dictionary<string,object> obj, bool selectIdentity = false, CancellationToken token = default)
         {
-            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: null, selectIdentity:selectIdentity, references:references, token));
+            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: null, selectIdentity:selectIdentity, token));
         }
 
         /// <summary>
@@ -68,9 +67,9 @@ namespace ServiceStack.OrmLite
         /// <para>var id = db.Insert(new Dictionary&lt;string,object&gt; { ["Id"] = 1, ["FirstName"] = "Jimi }, dbCmd => applyFilter(dbCmd))</para>
         /// </summary>
         public static Task<long> InsertAsync<T>(this IDbConnection dbConn, Action<IDbCommand> commandFilter, 
-            Dictionary<string,object> obj, bool selectIdentity = false, bool references = false, CancellationToken token = default)
+            Dictionary<string,object> obj, bool selectIdentity = false, CancellationToken token = default)
         {
-            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: commandFilter, selectIdentity:selectIdentity, references:references, token));
+            return dbConn.Exec(dbCmd => dbCmd.InsertAsync<T>(obj, commandFilter: commandFilter, selectIdentity:selectIdentity, token));
         }
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace ServiceStack.OrmLite
         }
         public static Task InsertAsync<T>(this IDbConnection dbConn, params T[] objs)
         {
-            return dbConn.Exec(dbCmd => dbCmd.InsertAsync(commandFilter:null, token:default(CancellationToken), objs:objs));
+            return dbConn.Exec(dbCmd => dbCmd.InsertAsync(commandFilter:null, token:default, objs:objs));
         }
 
         /// <summary>
@@ -103,7 +102,7 @@ namespace ServiceStack.OrmLite
         /// <para>db.InsertUsingDefaultsAsync(new Person { FirstName = "Tupac", LastName = "Shakur" },</para>
         /// <para>                            new Person { FirstName = "Biggie", LastName = "Smalls" })</para>
         /// </summary>
-        public static Task InsertUsingDefaultsAsync<T>(this IDbConnection dbConn, T[] objs, CancellationToken token=default(CancellationToken))
+        public static Task InsertUsingDefaultsAsync<T>(this IDbConnection dbConn, T[] objs, CancellationToken token=default)
         {
             return dbConn.Exec(dbCmd => dbCmd.InsertUsingDefaultsAsync(objs, token));
         }
@@ -112,7 +111,7 @@ namespace ServiceStack.OrmLite
         /// Insert results from SELECT SqlExpression, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
         /// <para>db.InsertIntoSelectAsync&lt;Contact&gt;(db.From&lt;Person&gt;().Select(x => new { x.Id, Surname == x.LastName }))</para>
         /// </summary>
-        public static Task<long> InsertIntoSelectAsync<T>(this IDbConnection dbConn, ISqlExpression query, CancellationToken token=default(CancellationToken))
+        public static Task<long> InsertIntoSelectAsync<T>(this IDbConnection dbConn, ISqlExpression query, CancellationToken token=default)
         {
             return dbConn.Exec(dbCmd => dbCmd.InsertIntoSelectAsync<T>(query, commandFilter: null, token:token));
         }
@@ -375,7 +374,7 @@ namespace ServiceStack.OrmLite
         }
         public static Task<int> SaveAsync<T>(this IDbConnection dbConn, params T[] objs)
         {
-            return dbConn.Exec(dbCmd => dbCmd.SaveAsync(default(CancellationToken), objs));
+            return dbConn.Exec(dbCmd => dbCmd.SaveAsync(default, objs));
         }
 
         /// <summary>
@@ -392,7 +391,7 @@ namespace ServiceStack.OrmLite
         /// Populates all related references on the instance with its primary key and saves them. Uses '(T)Id' naming convention. E.g:
         /// <para>db.SaveAllReferences(customer)</para> 
         /// </summary>
-        public static Task SaveAllReferencesAsync<T>(this IDbConnection dbConn, T instance, CancellationToken token=default(CancellationToken))
+        public static Task SaveAllReferencesAsync<T>(this IDbConnection dbConn, T instance, CancellationToken token=default)
         {
             return dbConn.Exec(dbCmd => dbCmd.SaveAllReferencesAsync(instance, token));
         }
@@ -407,14 +406,14 @@ namespace ServiceStack.OrmLite
         }
         public static Task SaveReferencesAsync<T, TRef>(this IDbConnection dbConn, T instance, params TRef[] refs)
         {
-            return dbConn.Exec(dbCmd => dbCmd.SaveReferencesAsync(default(CancellationToken), instance, refs));
+            return dbConn.Exec(dbCmd => dbCmd.SaveReferencesAsync(default, instance, refs));
         }
 
         /// <summary>
         /// Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
         /// <para>db.SaveReference(customer, customer.Orders)</para> 
         /// </summary>
-        public static Task SaveReferencesAsync<T, TRef>(this IDbConnection dbConn, T instance, List<TRef> refs, CancellationToken token=default(CancellationToken))
+        public static Task SaveReferencesAsync<T, TRef>(this IDbConnection dbConn, T instance, List<TRef> refs, CancellationToken token=default)
         {
             return dbConn.Exec(dbCmd => dbCmd.SaveReferencesAsync(token, instance, refs.ToArray()));
         }

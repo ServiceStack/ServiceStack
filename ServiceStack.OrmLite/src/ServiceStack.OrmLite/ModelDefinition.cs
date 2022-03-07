@@ -81,6 +81,7 @@ namespace ServiceStack.OrmLite
 
         public FieldDefinition[] AllFieldDefinitionsArray { get; private set; }
         public FieldDefinition[] ReferenceFieldDefinitionsArray { get; private set; }
+        public HashSet<string> ReferenceFieldNames { get; private set; }
 
         private readonly object fieldDefLock = new();
         private Dictionary<string, FieldDefinition> fieldDefinitionMap;
@@ -256,6 +257,7 @@ namespace ServiceStack.OrmLite
             allItems.AddRange(IgnoredFieldDefinitions);
             AllFieldDefinitionsArray = allItems.ToArray();
             ReferenceFieldDefinitionsArray = allItems.Where(x => x.IsReference).ToArray();
+            ReferenceFieldNames = new HashSet<string>(ReferenceFieldDefinitionsArray.Select(x => x.Name), StringComparer.OrdinalIgnoreCase);
 
             AutoIdFields = GetAutoIdFieldDefinitions().ToArray();
 
@@ -274,20 +276,16 @@ namespace ServiceStack.OrmLite
                     || Name + "Id" == name;
         }
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
+
+        public bool IsReference(string fieldName) => ReferenceFieldNames.Contains(fieldName);
 
         public bool HasAnyReferences(IEnumerable<string> fieldNames)
         {
             foreach (var fieldName in fieldNames)
             {
-                foreach (var field in ReferenceFieldDefinitionsArray)
-                {
-                    if (field.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
+                if (ReferenceFieldNames.Contains(fieldName))
+                    return true;
             }
             return false;
         }

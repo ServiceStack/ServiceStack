@@ -750,7 +750,7 @@ namespace ServiceStack.OrmLite
         }
         
         internal static long Insert<T>(this IDbCommand dbCmd, Dictionary<string,object> obj, 
-            Action<IDbCommand> commandFilter, bool selectIdentity = false, bool references = false)
+            Action<IDbCommand> commandFilter, bool selectIdentity = false)
         {
             OrmLiteUtils.AssertNotAnonType<T>();
             
@@ -775,7 +775,7 @@ namespace ServiceStack.OrmLite
                 if (enableIdentityInsert)
                     ret = Convert.ToInt64(id);
 
-                if (references && modelDef.HasAnyReferences(obj.Keys))
+                if (modelDef.HasAnyReferences(obj.Keys))
                 {
                     if (pkField != null && !obj.ContainsKey(pkField.Name))
                         obj[pkField.Name] = ret;
