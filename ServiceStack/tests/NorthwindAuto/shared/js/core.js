@@ -448,6 +448,9 @@ export const Files = (function () {
     }
     /** @param {string} path */
     function filePathUri(path) {
+        if (!path) return null
+        if (path.startsWith('blob:') || path.startsWith('data:'))
+            return path
         let ext = lastRightPart(path,'.').toLowerCase()
         if (web.indexOf(ext) >= 0)
             return path
