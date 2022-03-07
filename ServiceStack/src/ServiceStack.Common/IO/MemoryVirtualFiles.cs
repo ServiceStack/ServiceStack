@@ -95,10 +95,11 @@ namespace ServiceStack.IO
         public void WriteFile(string filePath, Stream stream)
         {
             filePath = SanitizePath(filePath);
+            var byteContents = stream.ReadFully();
             AddFile(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
-                ByteContents = stream.ReadFully(),
+                ByteContents = byteContents,
                 FileLastModified = DateTime.UtcNow,
             });
         }

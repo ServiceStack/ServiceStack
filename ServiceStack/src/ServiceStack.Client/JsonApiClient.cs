@@ -1147,6 +1147,24 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content);
         return result;
     }
+    
+    public virtual TResponse PutFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string? mimeType = null, string fieldName = "file")
+    {
+        using var content = new MultipartFormDataContent();
+        var fileBytes = fileToUpload.ReadFully();
+        using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
+        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = fieldName,
+            FileName = fileName
+        };
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
+        content.Add(fileContent, fieldName, fileName);
+
+        var result = Send<TResponse>(HttpMethods.Put,
+            ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), content);
+        return result;
+    }
 
     public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file", CancellationToken token = default)
     {

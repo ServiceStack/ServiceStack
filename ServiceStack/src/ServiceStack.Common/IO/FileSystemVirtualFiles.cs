@@ -92,7 +92,7 @@ namespace ServiceStack.IO
             else if (contents is ReadOnlyMemory<byte> romBytes)
                 await fs.WriteAsync(romBytes, token).ConfigAwait();
             else if (contents is Stream stream)
-                await stream.CopyToAsync(fs).ConfigAwait();
+                await stream.CopyToAsync(fs, token).ConfigAwait();
             else
                 throw CreateContentNotSupportedException(contents);
         }

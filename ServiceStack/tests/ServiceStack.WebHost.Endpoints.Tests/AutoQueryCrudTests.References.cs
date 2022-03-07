@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
@@ -174,14 +174,9 @@ public class QueryJobApplication : QueryDb<JobApplication>
     public int? JobId { get; set; }
 }
 
-public interface IHasJobId
-{
-    public int JobId { get; }
-}
-
 [Tag("Talent")]
 [AutoApply(Behavior.AuditCreate)]
-public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplication>, IHasJobId
+public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplication>
 {
     public int JobId { get; set; }
     public int ContactId { get; set; }
@@ -193,7 +188,7 @@ public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplic
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditModify)]
-public class UpdateJobApplication : IUpdateDb<JobApplication>, IReturn<JobApplication>, IHasJobId
+public class UpdateJobApplication : IUpdateDb<JobApplication>, IReturn<JobApplication>
 {
     public int Id { get; set; }
     public int JobId { get; set; }
@@ -202,6 +197,18 @@ public class UpdateJobApplication : IUpdateDb<JobApplication>, IReturn<JobApplic
 
     [Input(Type = "file"), UploadTo("applications")]
     public List<JobApplicationAttachment> Attachments { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditModify)]
+public class PatchJobApplication : IPatchDb<JobApplication>, IReturn<JobApplication>
+{
+    public int Id { get; set; }
+    public int? JobId { get; set; }
+    public int? ContactId { get; set; }
+    public DateTime? AppliedDate { get; set; }
+    [Input(Type = "file"), UploadTo("applications")]
+    public List<JobApplicationAttachment>? Attachments { get; set; }
 }
 
 [Tag("Talent")]
@@ -240,15 +247,59 @@ public class AutoQueryCrudReferencesServices : Service
     public object Any(TestReferences request) => request;
 }
 
+[Route("/upload-single-string/{Id}")]
+public class UploadToSingleString : IPost, IReturn<UploadToSingleString>
+{
+    public int Id { get; set; }
+
+    [Input(Type = "file"), UploadTo("profiles")]
+    public string UploadPath { get; set; }
+}
+
+[Route("/upload-multi-string/{Id}")]
+public class UploadToMultiString : IPost, IReturn<UploadToMultiString>
+{
+    public int Id { get; set; }
+
+    [Input(Type = "file"), UploadTo("profiles")]
+    public List<string> UploadPaths { get; set; }
+}
+
+[Route("/upload-single-poco/{Id}")]
+public class UploadToSinglePoco : IPost, IReturn<UploadToSinglePoco>
+{
+    public int Id { get; set; }
+
+    [Input(Type = "file"), UploadTo("profiles")]
+    public UploadedFile UploadedFile { get; set; }
+}
+
+[Route("/upload-multi-poco/{Id}")]
+public class UploadToMultiPoco : IPost, IReturn<UploadToMultiPoco>
+{
+    public int Id { get; set; }
+
+    [Input(Type = "file"), UploadTo("profiles")]
+    public List<UploadedFile> UploadedFiles { get; set; }
+}
+
+public class FileUploadTestServices : Service
+{
+    public object Any(UploadToSingleString request) => request;
+    public object Any(UploadToMultiString request) => request;
+    public object Any(UploadToSinglePoco request) => request;
+    public object Any(UploadToMultiPoco request) => request;
+}
+
 public class AutoQueryCrudReferencesTests
 {
     private ServiceStackHost appHost;
 
     class AppHost : AppSelfHostBase
     {
-        public AppHost() : base(nameof(AutoQueryCrudReferencesTests), typeof(AutoQueryCrudReferencesServices))
-        {
-        }
+        public AppHost() : base(nameof(AutoQueryCrudReferencesTests), 
+            typeof(AutoQueryCrudReferencesServices),
+            typeof(FileUploadTestServices)) {}
 
         public override void Configure(Container container)
         {
@@ -271,8 +322,11 @@ public class AutoQueryCrudReferencesTests
 
             var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
             Plugins.Add(new FilesUploadFeature(
+                new UploadLocation("profiles", memFs),
                 new UploadLocation("applications", memFs, maxFileCount: 3, maxFileBytes: 10_000_000,
-                    resolvePath: ctx => ctx.GetLocationPath(ctx.GetDto<IHasJobId>().JobId + $"/{ctx.DateSegment}/{ctx.FileName}"),
+                    resolvePath: ctx => ctx.GetLocationPath((ctx.Dto is CreateJobApplication create
+                        ? $"job/{create.JobId}"
+                        : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
                     readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)));
         }
     }
@@ -287,13 +341,114 @@ public class AutoQueryCrudReferencesTests
     [OneTimeTearDown]
     public void OneTimeTearDown() => appHost.Dispose();
 
-    JsonApiClient CreateClient() => new JsonApiClient(Config.ListeningOn)
+    JsonApiClient CreateAuthClient() => new JsonApiClient(Config.ListeningOn)
         .Apply(c => c.AddHeader(Keywords.AuthSecret, "secret"));
+
+    JsonApiClient CreateAnonClient() => new(Config.ListeningOn);
+
+    [Test]
+    public void Does_not_allow_anon_access_by_default()
+    {
+        var anonClient = CreateAnonClient();
+        var ms = new MemoryStream("ABC".ToUtf8Bytes());
+        try
+        {
+            anonClient.PostFile<UploadToSingleString>("/upload-single-string/1", ms, "auth-test.txt", 
+                fieldName:nameof(UploadToSingleString.UploadPath));
+            Assert.Fail("Should throw");
+        }
+        catch (WebServiceException e)
+        {
+            Assert.That(e.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.Unauthorized)));
+        }
+
+        var authClient = CreateAuthClient();
+        ms.Position = 0;
+        var response = authClient.PostFile<UploadToSingleString>("/upload-single-string/1", ms, "auth-test.txt", 
+            fieldName:nameof(UploadToSingleString.UploadPath));
+        
+        try
+        {
+            anonClient.Get<string>(response.UploadPath);
+            Assert.Fail("Should throw");
+        }
+        catch (WebServiceException e)
+        {
+            Assert.That(e.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.Unauthorized)));
+        }
+        
+        var contents = authClient.Get<string>(response.UploadPath);
+        Assert.That(contents, Is.EqualTo("ABC"));
+    }
+
+    [Test]
+    public void Can_upload_to_single_string()
+    {
+        var client = CreateAuthClient();
+
+        var ms = new MemoryStream("ABC".ToUtf8Bytes());
+        var response = client.PostFile<UploadToSingleString>("/upload-single-string/1", ms, $"{nameof(UploadToSingleString)}.txt",
+            fieldName:nameof(UploadToSingleString.UploadPath));
+        response.PrintDump();
+        Assert.That(response.Id, Is.EqualTo(1));
+        Assert.That(response.UploadPath, Is.EqualTo($"/uploads/profiles/{DateTime.UtcNow:yyyy/MM/dd}/{nameof(UploadToSingleString)}.txt"));
+
+        var contents = client.Get<string>(response.UploadPath);
+        Assert.That(contents, Is.EqualTo("ABC"));
+    }
+
+    [Test]
+    public void Can_upload_to_string_list()
+    {
+        var client = CreateAuthClient();
+
+        var ms = new MemoryStream("ABC".ToUtf8Bytes());
+        var response = client.PostFile<UploadToMultiString>("/upload-multi-string/1", ms, $"{nameof(UploadToMultiString)}.txt",
+            fieldName:nameof(UploadToMultiString.UploadPaths));
+        response.PrintDump();
+        Assert.That(response.Id, Is.EqualTo(1));
+        Assert.That(response.UploadPaths[0], Is.EqualTo($"/uploads/profiles/{DateTime.UtcNow:yyyy/MM/dd}/{nameof(UploadToMultiString)}.txt"));
+
+        var contents = client.Get<string>(response.UploadPaths[0]);
+        Assert.That(contents, Is.EqualTo("ABC"));
+    }
+
+    [Test]
+    public void Can_upload_to_single_poco()
+    {
+        var client = CreateAuthClient();
+
+        var ms = new MemoryStream("ABC".ToUtf8Bytes());
+        var response = client.PostFile<UploadToSinglePoco>("/upload-single-poco/1", ms, $"{nameof(UploadToSinglePoco)}.txt",
+            fieldName:nameof(UploadToSinglePoco.UploadedFile));
+        response.PrintDump();
+        Assert.That(response.Id, Is.EqualTo(1));
+        Assert.That(response.UploadedFile.FilePath, Is.EqualTo($"/uploads/profiles/{DateTime.UtcNow:yyyy/MM/dd}/{nameof(UploadToSinglePoco)}.txt"));
+
+        var contents = client.Get<string>(response.UploadedFile.FilePath);
+        Assert.That(contents, Is.EqualTo("ABC"));
+    }
+
+    [Test]
+    public void Can_upload_to_multi_poco()
+    {
+        var client = CreateAuthClient();
+
+        var ms = new MemoryStream("ABC".ToUtf8Bytes());
+        var response = client.PostFile<UploadToMultiPoco>("/upload-multi-poco/1", ms, $"{nameof(UploadToMultiPoco)}.txt",
+            fieldName:nameof(UploadToMultiPoco.UploadedFiles));
+        response.PrintDump();
+        Assert.That(response.Id, Is.EqualTo(1));
+        Assert.That(response.UploadedFiles[0].FilePath, Is.EqualTo($"/uploads/profiles/{DateTime.UtcNow:yyyy/MM/dd}/{nameof(UploadToMultiPoco)}.txt"));
+
+        var contents = client.Get<string>(response.UploadedFiles[0].FilePath);
+        Assert.That(contents, Is.EqualTo("ABC"));
+    }
 
     [Test]
     public void Upload_FileUploads_into_AutoQuery_References()
     {
-        var client = CreateClient();
+        var client = CreateAuthClient();
         var createJob = new CreateJob
         {
             Title = "Test Job",
@@ -317,41 +472,42 @@ public class AutoQueryCrudReferencesTests
         };
         var createContactApi = client.Api(createContact);
         Assert.That(createContactApi.Succeeded);
-
+        var contactId = createContactApi.Response!.Id;
+        
+        /* ICreateDb */
         var createJobApplication = new CreateJobApplication
         {
             JobId = createJobApi.Response!.Id,
             AppliedDate = DateTime.UtcNow,
-            ContactId = createContactApi.Response!.Id,
+            ContactId = contactId,
         };
-
-        var fileContents = new MemoryStream("ABC".ToUtf8Bytes());
-
+        
         var fileName = "application.txt";
+        var fileContents = new MemoryStream("ABC".ToUtf8Bytes());
         var response = client.PostFileWithRequest<JobApplication>(fileContents, fileName, createJobApplication, 
-            fieldName: nameof(CreateJobApplication.Attachments));
-        response.PrintDump();
+            fieldName: nameof(createJobApplication.Attachments));
+        // response.PrintDump();
 
         var jobId = createJobApi.Response.Id;
         var jobApi = client.Api(new QueryJob { Id = jobId });
         Assert.That(jobApi.Response!.Results.Count, Is.EqualTo(1));
-        jobApi.Response.Results[0].PrintDump();
+        // jobApi.Response.Results[0].PrintDump();
 
         var contactApi = client.Api(new QueryContacts { Id = createContactApi.Response.Id });
         Assert.That(contactApi.Response!.Results.Count, Is.EqualTo(1));
-        contactApi.Response!.Results[0].PrintDump();
+        // contactApi.Response!.Results[0].PrintDump();
 
         var jobAppId = response.Id;
         var jobApplicationApi = client.Api(new QueryJobApplication { Id = jobAppId });
         Assert.That(jobApplicationApi.Response!.Results.Count, Is.EqualTo(1));
-        jobApplicationApi.Response!.Results[0].PrintDump();
+        // jobApplicationApi.Response!.Results[0].PrintDump();
 
         var appAttachments = jobApplicationApi.Response!.Results[0].Attachments;
         Assert.That(appAttachments.Count, Is.EqualTo(1));
         var attachment = appAttachments[0];
         Assert.That(attachment.Id, Is.GreaterThan(0));
         Assert.That(attachment.JobApplicationId, Is.EqualTo(jobAppId));
-        Assert.That(attachment.FilePath, Is.EqualTo($"/uploads/applications/{jobId}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}"));
+        Assert.That(attachment.FilePath, Is.EqualTo($"/uploads/applications/job/{jobId}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName}"));
         Assert.That(attachment.FileName, Is.EqualTo(fileName));
         Assert.That(attachment.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
         Assert.That(attachment.ContentLength, Is.GreaterThan(0));
@@ -360,6 +516,89 @@ public class AutoQueryCrudReferencesTests
         var file = memFs.GetAllFiles().FirstOrDefault(x => x.Name == fileName);
         Assert.That(file, Is.Not.Null);
         Assert.That(file!.ReadAllText(), Is.EqualTo("ABC"));
+
+        /* IUpdateDb */
+        var fileName2 = "application2.txt";
+        var fileContents2 = new MemoryStream("DEF".ToUtf8Bytes());
+        var updateJobApplication = new UpdateJobApplication {
+            Id = jobAppId,
+            JobId = jobId,
+            ContactId = contactId,
+            AppliedDate = DateTime.UtcNow.AddDays(1),
+        };
+        response = client.PostFileWithRequest<JobApplication>(fileContents2, fileName2, updateJobApplication, 
+            fieldName: nameof(updateJobApplication.Attachments));
+        // response.PrintDump();
+        
+        var file2 = memFs.GetAllFiles().FirstOrDefault(x => x.Name == fileName2);
+        Assert.That(file2, Is.Not.Null);
+        Assert.That(file2!.ReadAllText(), Is.EqualTo("DEF"));
+        
+        jobApplicationApi = client.Api(new QueryJobApplication { Id = jobAppId });
+        // jobApplicationApi.Response!.Results[0].PrintDump();
+        
+        appAttachments = jobApplicationApi.Response!.Results[0].Attachments;
+        Assert.That(appAttachments.Count, Is.EqualTo(2));
+        attachment = appAttachments[1];
+        Assert.That(attachment.Id, Is.GreaterThan(0));
+        Assert.That(attachment.JobApplicationId, Is.EqualTo(jobAppId));
+        Assert.That(attachment.FilePath, Is.EqualTo($"/uploads/applications/app/{jobAppId}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName2}"));
+        Assert.That(attachment.FileName, Is.EqualTo(fileName2));
+        Assert.That(attachment.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName2)));
+        Assert.That(attachment.ContentLength, Is.GreaterThan(0));
+        
+        /* IPatchDb */
+        var fileName3 = "application3.txt";
+        var fileContents3 = new MemoryStream("GHI".ToUtf8Bytes());
+        var patchJobApplication = new PatchJobApplication {
+            Id = jobAppId,
+        };
+        response = client.PostFileWithRequest<JobApplication>(fileContents3, fileName3, patchJobApplication, 
+            fieldName: nameof(patchJobApplication.Attachments));
+        // response.PrintDump();
+        
+        var file3 = memFs.GetAllFiles().FirstOrDefault(x => x.Name == fileName3);
+        Assert.That(file3, Is.Not.Null);
+        Assert.That(file3!.ReadAllText(), Is.EqualTo("GHI"));
+        
+        jobApplicationApi = client.Api(new QueryJobApplication { Id = jobAppId });
+        jobApplicationApi.Response!.Results[0].PrintDump();
+        
+        appAttachments = jobApplicationApi.Response!.Results[0].Attachments;
+        Assert.That(appAttachments.Count, Is.EqualTo(3));
+        attachment = appAttachments[2];
+        Assert.That(attachment.Id, Is.GreaterThan(0));
+        Assert.That(attachment.JobApplicationId, Is.EqualTo(jobAppId));
+        Assert.That(attachment.FilePath, Is.EqualTo($"/uploads/applications/app/{jobAppId}/{DateTime.UtcNow:yyyy/MM/dd}/{fileName3}"));
+        Assert.That(attachment.FileName, Is.EqualTo(fileName3));
+        Assert.That(attachment.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName3)));
+        Assert.That(attachment.ContentLength, Is.GreaterThan(0));
+
+        /* Test File Upload APIs */
+        var files = new[] { fileContents, fileContents2, fileContents3 };
+        for (var i = 0; i < appAttachments.Count; i++)
+        {
+            var filePath = appAttachments[i].FilePath;
+            var contents = client.Get<string>(filePath);
+            Assert.That(contents, Is.EqualTo(files[i].ReadToEnd()));
+
+            var updated = new MemoryStream("updated".ToUtf8Bytes());
+
+            client.PutFile<ReplaceFileUploadResponse>(filePath, updated, appAttachments[i].FileName);
+            contents = client.Get<string>(filePath);
+            Assert.That(contents, Is.EqualTo(updated.ReadToEnd()));
+
+            client.Delete<byte[]>(filePath);
+            try
+            {
+                client.Get<string>(filePath);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.NotFound)));
+            }
+        }
     }
 }
 

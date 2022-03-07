@@ -29,10 +29,15 @@ public class PreProcessRequest : IPlugin, IHasStringId
     {
         if (req.Files?.Length > 0)
         {
-            var uploadFileAsync = HandleUploadFileAsync
-                ?? throw new NotSupportedException("AppHost.HandleUploadFileAsync needs to be configured to allow file uploads in " + dto.GetType().Name);
+            var requestType = dto.GetType();
+            // ignore unless a Request DTO Property contains [UploadTo] Attribute
+            if (!HostContext.Metadata.GetOperation(requestType).RequestPropertyAttributes.Contains(typeof(UploadToAttribute)))
+                return;
 
-            var dtoProps = TypeProperties.Get(dto.GetType());
+            var uploadFileAsync = HandleUploadFileAsync
+                ?? throw new NotSupportedException("AppHost.HandleUploadFileAsync needs to be configured to allow file uploads in " + requestType.Name);
+
+            var dtoProps = TypeProperties.Get(requestType);
             var uploadedPathsMap = new Dictionary<string,List<(string,IHttpFile)>>();
             foreach (var file in req.Files)
             {
@@ -68,19 +73,16 @@ public class PreProcessRequest : IPlugin, IHasStringId
                         var to = new List<object>();
                         foreach (var fileEntry in entry.Value)
                         {
-                            var file = fileEntry.Item2;
-                            var obj = new Dictionary<string, object>
-                            {
-                                [Keywords.FilePath] = fileEntry.Item1,
-                                [nameof(file.Name)] = file.Name,
-                                [nameof(file.FileName)] = file.FileName,
-                                [nameof(file.ContentLength)] = file.ContentLength,
-                                [nameof(file.ContentType)] = file.ContentType ?? MimeTypes.GetMimeType(file.FileName),
-                            };
-                            var el = obj.FromObjectDictionary(elType);
+                            var el = CreateFromHttpFileInfo(filePath:fileEntry.Item1, file:fileEntry.Item2, elType);
                             to.Add(el);
                         }
                         dtoValues[prop.Name] = to.ConvertTo(prop.PropertyType);
+                    }
+                    else if (prop.PropertyType != typeof(object) && prop.PropertyType.IsClass)
+                    {
+                        var fileEntry = entry.Value[0];
+                        var to = CreateFromHttpFileInfo(filePath:fileEntry.Item1, file:fileEntry.Item2, prop.PropertyType);
+                        dtoValues[prop.Name] = to;
                     }
                     else throw new NotSupportedException("Cannot populated uploaded Request.Files metadata to " + prop.PropertyType.Name);
                 }
@@ -88,4 +90,20 @@ public class PreProcessRequest : IPlugin, IHasStringId
             dtoValues.PopulateInstance(dto);
         }
     }
+    
+    static object CreateFromHttpFileInfo(string filePath, IHttpFile file, Type intoType)
+    {
+        var obj = new Dictionary<string, object>
+        {
+            [Keywords.FilePath] = filePath,
+            [nameof(file.Name)] = file.Name,
+            [nameof(file.FileName)] = file.FileName,
+            [nameof(file.ContentLength)] = file.ContentLength,
+            [nameof(file.ContentType)] = file.ContentType ?? MimeTypes.GetMimeType(file.FileName),
+        };
+        var o = obj.FromObjectDictionary(intoType);
+        return o;
+    }
+
+    
 }

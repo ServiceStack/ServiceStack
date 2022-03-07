@@ -86,6 +86,7 @@ namespace ServiceStack.Host
                 RequiresAnyRole = authAttrs.OfType<RequiresAnyRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
                 RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
+                RequestPropertyAttributes = requestType.GetPublicProperties().SelectMany(x => x.AllAttributes()).Map(x => x.GetType()).ToSet(),
                 Tags = tagAttrs,
                 QueryCss = X.Map(requestType.FirstAttribute<QueryCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
                 ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
@@ -481,8 +482,7 @@ namespace ServiceStack.Host
 
         public object CreateRequestFromUrl(string relativeOrAbsoluteUrl, string method = HttpMethods.Get)
         {
-            var relativeUrl = relativeOrAbsoluteUrl.StartsWith("http:")
-                              || relativeOrAbsoluteUrl.StartsWith("https:")
+            var relativeUrl = relativeOrAbsoluteUrl.StartsWith("http:") || relativeOrAbsoluteUrl.StartsWith("https:")
                 ? relativeOrAbsoluteUrl.RightPart("://").RightPart("/")
                 : relativeOrAbsoluteUrl;
 
@@ -783,7 +783,8 @@ namespace ServiceStack.Host
         public ApiCss QueryCss { get; set; } 
         public ApiCss ExplorerCss { get; set; } 
         public List<InputInfo> FormLayout { get; set; }
-        
+        public HashSet<Type> RequestPropertyAttributes { get; set; }
+
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
         public List<IValidationRule> RequestPropertyValidationRules { get; private set; }
 
@@ -804,6 +805,7 @@ namespace ServiceStack.Host
             RequiresAnyPermission = RequiresAnyPermission?.ToList(),
             RequestTypeValidationRules = RequestTypeValidationRules?.ToList(),
             RequestPropertyValidationRules = RequestPropertyValidationRules?.ToList(),
+            RequestPropertyAttributes = RequestPropertyAttributes,
             Tags = Tags?.ToList(),
             QueryCss = QueryCss,
             ExplorerCss = ExplorerCss,

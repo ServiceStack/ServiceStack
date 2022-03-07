@@ -668,6 +668,23 @@ namespace ServiceStack
         [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
     }
 
+    /// <summary>
+    /// DTO to capture file uploaded using [UploadTo] 
+    /// </summary>
+    [DataContract]
+    public class UploadedFile
+    {
+        [DataMember(Order = 1)]
+        public string FileName { get; set; }
+        [DataMember(Order = 2)]
+        public string FilePath { get; set; }
+        [DataMember(Order = 3)]
+        public string ContentType { get; set; }
+        [DataMember(Order = 4)]
+        public long ContentLength { get; set; }
+    }
+        
+
 /* Allow metadata discovery & code-gen in *.Source.csproj builds */    
 #if !SOURCE
     [ExcludeMetadata] public partial class GetAccessToken {}

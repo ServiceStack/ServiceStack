@@ -64,17 +64,14 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(StoreFileUploadService),   BasePath, BasePath.CombineWith("{Name}"), BasePath.CombineWith("{Name}/{Path*}"));
+        appHost.RegisterService(typeof(StoreFileUploadService),   BasePath, BasePath.CombineWith("{Name}"));
         appHost.RegisterService(typeof(GetFileUploadService),     BasePath, BasePath.CombineWith("{Name}/{Path*}"));
         appHost.RegisterService(typeof(ReplaceFileUploadService), BasePath, BasePath.CombineWith("{Name}/{Path*}"));
         appHost.RegisterService(typeof(DeleteFileUploadService),  BasePath, BasePath.CombineWith("{Name}/{Path*}"));
 
         if (Locations.Length == 0)
         {
-            Locations = new[] {
-                new UploadLocation("default", appHost.VirtualFiles, 
-                    resolvePath:ctx => ctx.GetLocationPath($"{DateTime.UtcNow:yyyy/MM/dd}/{ctx.FileName}"))
-            };
+            Locations = new[] { new UploadLocation("default", appHost.VirtualFiles) };
         }
         
         appHost.AddToAppMetadata(meta =>
@@ -107,7 +104,10 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
     {
         await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), token: token);
         var paths = ResolveUploadFilePath(location, req, file);
-        await location.VirtualFiles.WriteFileAsync(paths.VirtualPath, file.InputStream, token).ConfigAwait();
+        var fs = file.InputStream;
+        if (fs.CanSeek && fs.Position != 0)
+            fs.Position = 0;
+        await location.VirtualFiles.WriteFileAsync(paths.VirtualPath, fs, token).ConfigAwait();
         return paths.PublicPath;
     }
 
@@ -185,7 +185,10 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         {
             var file = req.Files[0];
             ValidateFileUpload(location, req, file, vfsPath);
-            await location.VirtualFiles.WriteFileAsync(vfsPath, file.InputStream, token).ConfigAwait();
+            var fs = file.InputStream;
+            if (fs.CanSeek && fs.Position != 0)
+                fs.Position = 0;
+            await location.VirtualFiles.WriteFileAsync(vfsPath, fs, token).ConfigAwait();
         }
         else throw HttpError.NotFound(Errors.FileNotExists);
     }
@@ -321,7 +324,7 @@ public class GetFileUploadService : Service
 [DefaultRequest(typeof(ReplaceFileUpload))]
 public class ReplaceFileUploadService : Service
 {
-    public async Task<object> Any(ReplaceFileUpload request)
+    public async Task<object> Put(ReplaceFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
         var location = feature.AssertLocation(request.Name, Request);
@@ -335,7 +338,7 @@ public class ReplaceFileUploadService : Service
 [DefaultRequest(typeof(DeleteFileUpload))]
 public class DeleteFileUploadService : Service
 {
-    public async Task<object> Any(DeleteFileUpload request)
+    public async Task<object> Delete(DeleteFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
         var location = feature.AssertLocation(request.Name, Request);
@@ -396,11 +399,10 @@ public class UploadLocation
     {
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
         this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
-        this.ResolvePath = resolvePath ?? (ctx =>
-            $"/{ctx.Location.Name}".CombineWith($"{DateTime.UtcNow:YYYY/MM/dd}", ctx.FileName));
+        this.ResolvePath = resolvePath ?? (ctx => ctx.GetLocationPath($"{DateTime.UtcNow:yyyy/MM/dd}/{ctx.FileName}"));
         this.ReadAccessRole = readAccessRole ?? throw new ArgumentNullException(nameof(readAccessRole));
         this.WriteAccessRole = writeAccessRole ?? throw new ArgumentNullException(nameof(writeAccessRole));
-        this.AllowExtensions = allowExtensions?.ToSet();
+        this.AllowExtensions = allowExtensions?.ToSet(StringComparer.OrdinalIgnoreCase);
         this.AllowOperations = allowOperations;
         this.MaxFileCount = maxFileCount;
         this.MinFileBytes = minFileBytes;
