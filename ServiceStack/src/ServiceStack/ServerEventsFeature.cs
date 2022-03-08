@@ -66,7 +66,7 @@ namespace ServiceStack
         /// </summary>
        public Func<object, string> Serialize { get; set; }
         public Action<IResponse, string> WriteEvent { get; private set; }
-        public Func<IResponse, string, Task> WriteEventAsync { get; private set; }
+        public Func<IResponse, string, CancellationToken, Task> WriteEventAsync { get; private set; }
         /// <summary>
         /// Invoked when a connection 
         /// </summary>
@@ -105,16 +105,16 @@ namespace ServiceStack
                 }
             };
 
-            WriteEventAsync = async (res, frame) => 
+            WriteEventAsync = async (res, frame, token) => 
             {
                 if (res is IWriteEventAsync writeEvent)
                 {
-                    await writeEvent.WriteEventAsync(frame).ConfigAwait();
+                    await writeEvent.WriteEventAsync(frame, token).ConfigAwait();
                 }
                 else
                 {
-                    await MemoryProvider.Instance.WriteAsync(res.OutputStream, frame.AsMemory()).ConfigAwait();
-                    await res.FlushAsync().ConfigAwait();
+                    await MemoryProvider.Instance.WriteAsync(res.OutputStream, frame.AsMemory(), token).ConfigAwait();
+                    await res.FlushAsync(token).ConfigAwait();
                 }
             };
 
@@ -629,7 +629,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnDispose { get; set; }
         private ServerEventsFeature feature;
         public Action<IResponse, string> WriteEvent { get; set; }
-        public Func<IResponse, string, Task> WriteEventAsync { get; set; }
+        public Func<IResponse, string, CancellationToken, Task> WriteEventAsync { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
 
@@ -706,7 +706,7 @@ namespace ServiceStack
                                 await OnPublishAsync(this, response, frame).ConfigAwait();
 
                             Interlocked.Increment(ref NotificationsSent);
-                            await WriteEventAsync(response, frame).ConfigAwait();
+                            await WriteEventAsync(response, frame, token).ConfigAwait();
                         }
                         catch (Exception ex)
                         {
