@@ -29,10 +29,12 @@ function createForms(TypesMap, css, ui) {
         let type = TypesMap[propType]
         if (type && type.isEnum) {
             input.type = 'select'
-            if (type.enumValues) {
+            if (type.enumValues || type.enumDescriptions) {
                 input.allowableEntries = []
-                for (let i=0; i<type.enumNames; i++) {
-                    input.allowableEntries.push({ key:type.enumValues[i], value:type.enumNames[i] })
+                for (let i=0; i<type.enumNames.length; i++) {
+                    let key = map(type.enumValues, x => x[i]) || type.enumNames[i]
+                    let value = map(type.enumDescriptions, x => x[i]) || type.enumNames[i]
+                    input.allowableEntries.push({ key, value })
                 }
             } else {
                 input.allowableValues = type.enumNames
