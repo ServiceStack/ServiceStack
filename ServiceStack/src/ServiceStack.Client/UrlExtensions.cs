@@ -181,6 +181,10 @@ namespace ServiceStack
             return fullName;
         }
 
+        public static string ToApiUrl(this Type requestType) =>
+            "/api".CombineWith(requestType.GetOperationName());
+
+
         public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null) =>
             requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute != null
                 ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationName()}"

@@ -299,55 +299,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var hasRefreshToken = RefreshToken != null;
-                if (EnableAutoRefreshToken && hasRefreshToken)
-                {
-                    var refreshDto = new GetAccessToken {
-                        RefreshToken = RefreshToken,
-                    };
-                    var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
-
-                    this.BearerToken = null;
-                    this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
-
-                    try
-                    {
-                        var accessTokenResponse = await this.PostAsync<GetAccessTokenResponse>(uri, refreshDto, token).ConfigAwait();
-                            
-                        var accessToken = accessTokenResponse?.AccessToken;
-                        var tokenCookie = this.GetTokenCookie();
-                        var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
-
-                        if (!string.IsNullOrEmpty(accessToken))
-                        {
-                            refreshRequest.AddBearerToken(this.BearerToken = accessToken);
-                            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                        }
-                        else if (tokenCookie != null)
-                        {
-                            this.SetTokenCookie(tokenCookie);
-                        }
-                        else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-                            
-                        var refreshTokenResponse = await client.SendAsync(refreshRequest, token).ConfigAwait();
-                        return await ConvertToResponseAsync<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
-                    }
-                    catch (Exception e)
-                    {
-                        if (e.UnwrapIfSingleException() is WebServiceException refreshEx)
-                            throw new RefreshTokenException(refreshEx);
-
-                        throw;
-                    }
-                }
-
-                if (UserName != null && Password != null && client.DefaultRequestHeaders.Authorization == null)
-                {
-                    AddBasicAuth(client);
-                    httpReq = CreateRequest(httpMethod, absoluteUrl, request);
-                    var response = await client.SendAsync(httpReq, token).ConfigAwait();
-                    return await ConvertToResponseAsync<TResponse>(response, httpMethod, absoluteUrl, request, token).ConfigAwait();
-                }
+                var response = await HandleUnauthorizedResponseAsync<TResponse>(client, httpMethod, absoluteUrl, request, token).ConfigAwait();
+                if (response != null)
+                    return response;
             }
 
             return await ConvertToResponseAsync<TResponse>(httpRes, httpMethod, absoluteUrl, request, token).ConfigAwait();
@@ -430,55 +384,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var hasRefreshToken = RefreshToken != null;
-                if (EnableAutoRefreshToken && hasRefreshToken)
-                {
-                    var refreshDto = new GetAccessToken {
-                        RefreshToken = RefreshToken,
-                    };
-                    var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
-
-                    this.BearerToken = null;
-                    this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
-
-                    try
-                    {
-                        var accessTokenResponse = this.Post<GetAccessTokenResponse>(uri, refreshDto);
-                            
-                        var accessToken = accessTokenResponse.AccessToken;
-                        var tokenCookie = this.GetTokenCookie();
-                        var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
-
-                        if (!string.IsNullOrEmpty(accessToken))
-                        {
-                            refreshRequest.AddBearerToken(this.BearerToken = accessToken);
-                            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                        }
-                        else if (tokenCookie != null)
-                        {
-                            this.SetTokenCookie(tokenCookie);
-                        }
-                        else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-                            
-                        var refreshTokenResponse = client.Send(refreshRequest);
-                        return ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest);
-                    }
-                    catch (Exception e)
-                    {
-                        if (e.UnwrapIfSingleException() is WebServiceException refreshEx)
-                            throw new RefreshTokenException(refreshEx);
-
-                        throw;
-                    }
-                }
-
-                if (UserName != null && Password != null && client.DefaultRequestHeaders.Authorization == null)
-                {
-                    AddBasicAuth(client);
-                    httpReq = CreateRequest(httpMethod, absoluteUrl, request);
-                    var response = client.Send(httpReq);
-                    return ConvertToResponse<TResponse>(response, httpMethod, absoluteUrl, request);
-                }
+                var response = HandleUnauthorizedResponse<TResponse>(client, httpMethod, absoluteUrl, request);
+                if (response != null)
+                    return response;
             }
 
             return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
@@ -490,6 +398,117 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
     }
 
+    private TResponse? HandleUnauthorizedResponse<TResponse>(HttpClient client, string httpMethod, string absoluteUrl, object? request)
+    {
+        var hasRefreshToken = RefreshToken != null;
+        if (EnableAutoRefreshToken && hasRefreshToken)
+        {
+            var refreshDto = new GetAccessToken {
+                RefreshToken = RefreshToken,
+            };
+            var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
+
+            this.BearerToken = null;
+            this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
+
+            try
+            {
+                var accessTokenResponse = this.Post<GetAccessTokenResponse>(uri, refreshDto);
+
+                var accessToken = accessTokenResponse.AccessToken;
+                var tokenCookie = this.GetTokenCookie();
+                var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
+
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                }
+                else if (tokenCookie != null)
+                {
+                    this.SetTokenCookie(tokenCookie);
+                }
+                else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+
+                var refreshTokenResponse = client.Send(refreshRequest);
+                return ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest);
+            }
+            catch (Exception e)
+            {
+                if (e.UnwrapIfSingleException() is WebServiceException refreshEx)
+                    throw new RefreshTokenException(refreshEx);
+
+                throw;
+            }
+        }
+
+        if (UserName != null && Password != null && client.DefaultRequestHeaders.Authorization == null)
+        {
+            AddBasicAuth(client);
+            var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
+            var response = client.Send(httpReq);
+            return ConvertToResponse<TResponse>(response, httpMethod, absoluteUrl, request);
+        }
+        
+        return default;
+    }
+
+    private async Task<TResponse?> HandleUnauthorizedResponseAsync<TResponse>(HttpClient client, string httpMethod, string absoluteUrl, object? request,
+        CancellationToken token=default)
+    {
+        var hasRefreshToken = RefreshToken != null;
+        if (EnableAutoRefreshToken && hasRefreshToken)
+        {
+            var refreshDto = new GetAccessToken {
+                RefreshToken = RefreshToken,
+            };
+            var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
+
+            this.BearerToken = null;
+            this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
+
+            try
+            {
+                var accessTokenResponse = await this.PostAsync<GetAccessTokenResponse>(uri, refreshDto, token).ConfigAwait();
+                    
+                var accessToken = accessTokenResponse?.AccessToken;
+                var tokenCookie = this.GetTokenCookie();
+                var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
+
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                }
+                else if (tokenCookie != null)
+                {
+                    this.SetTokenCookie(tokenCookie);
+                }
+                else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+                    
+                var refreshTokenResponse = await client.SendAsync(refreshRequest, token).ConfigAwait();
+                return await ConvertToResponseAsync<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
+            }
+            catch (Exception e)
+            {
+                if (e.UnwrapIfSingleException() is WebServiceException refreshEx)
+                    throw new RefreshTokenException(refreshEx);
+
+                throw;
+            }
+        }
+
+        if (UserName != null && Password != null && client.DefaultRequestHeaders.Authorization == null)
+        {
+            AddBasicAuth(client);
+            var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
+            var response = await client.SendAsync(httpReq, token).ConfigAwait();
+            return await ConvertToResponseAsync<TResponse>(response, httpMethod, absoluteUrl, request, token).ConfigAwait();
+        }
+        
+        return default;
+    }
+    
     private static string GetAbsoluteUrl(string httpMethod, object? request, string absoluteUrl)
     {
         if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
@@ -1316,25 +1335,14 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                 content.Add(new StringContent(value), $"\"{key}\"");
         }
 
-        var disposables = new List<IDisposable>();
-        for (int i = 0; i < files.Length; i++)
+        for (var i = 0; i < files.Length; i++)
         {
             var file = files[i];
-            var fileBytes = file.Stream.ReadFully();
-            var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
-            disposables.Add(fileContent);
-            var fieldName = file.FieldName ?? $"upload{i}";
-            var fileName = file.FileName ?? $"upload{i}";
-            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-            {
-                Name = fieldName,
-                FileName = fileName,
-            };
-
-            var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
-
-            content.Add(fileContent, fileName, fileName);
+            content.AddFile(
+                fieldName: file.FieldName ?? $"upload{i}", 
+                fileName: file.FileName ?? $"upload{i}.bin", 
+                fileContents: file.Stream, 
+                mimeType:file.ContentType);
         }
 
         try
@@ -1344,7 +1352,8 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
         finally
         {
-            foreach (var d in disposables) d.Dispose();
+            foreach (var uploadFile in files) 
+                uploadFile.Stream.Dispose();
         }
     }
 
@@ -1355,6 +1364,102 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         HttpClient?.Dispose();
         HttpClient = null;
     }
+
+    public TResponse SendForm<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, MultipartFormDataContent request)
+    {
+        var client = GetHttpClient();
+        var absoluteUrl = GetAbsoluteUrl(httpMethod, request:null, relativeOrAbsoluteUrl);
+
+        var filterResponse = ResultsFilter?.Invoke(typeof(TResponse), httpMethod, absoluteUrl, request:null);
+        if (filterResponse is TResponse typedResponse)
+            return typedResponse;
+
+        var httpReq = CreateRequest(httpMethod, absoluteUrl, request:request);
+
+        try
+        {
+            var httpRes = client.Send(httpReq);
+
+            if (typeof(TResponse) == typeof(HttpResponseMessage))
+                return (TResponse)(object) httpRes;
+
+            if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                var response = HandleUnauthorizedResponse<TResponse>(client, httpMethod, absoluteUrl, request:request);
+                if (response != null)
+                    return response;
+            }
+
+            return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
+        }
+        catch (Exception e)
+        {
+            LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendForm)}: " + e.Message);
+            throw;
+        }
+    }
+    
+    public ApiResult<TResponse> ApiForm<TResponse>(string relativeOrAbsoluteUrl, MultipartFormDataContent request)
+    {
+        try
+        {
+            var result = SendForm<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, request);
+            return ApiResult.Create(result);
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult<TResponse>();
+        }
+    }
+
+    public async Task<TResponse> SendFormAsync<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token=default)
+    {
+        var client = GetHttpClient();
+        var absoluteUrl = GetAbsoluteUrl(httpMethod, request:null, relativeOrAbsoluteUrl);
+
+        var filterResponse = ResultsFilter?.Invoke(typeof(TResponse), httpMethod, absoluteUrl, request:null);
+        if (filterResponse is TResponse typedResponse)
+            return typedResponse;
+
+        var httpReq = CreateRequest(httpMethod, absoluteUrl, request:request);
+
+        try
+        {
+            var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();
+
+            if (typeof(TResponse) == typeof(HttpResponseMessage))
+                return (TResponse)(object) httpRes;
+
+            if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                var response = await HandleUnauthorizedResponseAsync<TResponse>(client, httpMethod, absoluteUrl, request:request, token).ConfigAwait();
+                if (response != null)
+                    return response;
+            }
+
+            return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
+        }
+        catch (Exception e)
+        {
+            LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendForm)}: " + e.Message);
+            throw;
+        }
+    }
+    
+    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token=default)
+    {
+        try
+        {
+            var result = await SendFormAsync<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, request, token).ConfigAwait();
+            return ApiResult.Create(result);
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult<TResponse>();
+        }
+    }
+    
 }
+
 
 #endif

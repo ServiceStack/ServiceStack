@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.Serialization;
@@ -16,6 +17,15 @@ namespace ServiceStack.Serialization
     {
         private static ILog Log = LogManager.GetLogger(typeof(StringMapTypeDeserializer));
 
+        public static Dictionary<string,IStringSerializer> ContentTypeStringSerializers { get; } = new ()
+        {
+            [MimeTypes.Json] = new JsonStringSerializer(),
+            [MimeTypes.Jsv] = new JsvStringSerializer(),
+            [MimeTypes.Csv] = new CsvStringSerializer(),
+        };
+
+        public static ConcurrentDictionary<Type,IStringSerializer> TypeStringSerializers { get; } = new ();
+
         internal class PropertySerializerEntry
         {
             public PropertySerializerEntry(SetMemberDelegate propertySetFn, ParseStringDelegate propertyParseStringFn)
@@ -31,32 +41,50 @@ namespace ServiceStack.Serialization
 
         private readonly Type type;
         private readonly Dictionary<string, PropertySerializerEntry> propertySetterMap
-            = new Dictionary<string, PropertySerializerEntry>(PclExport.Instance.InvariantComparerIgnoreCase);
+            = new(PclExport.Instance.InvariantComparerIgnoreCase);
 
         internal StringMapTypeDeserializer(Type type, ILog log) : this(type)
         {
             Log = log;
         }
 
-        public ParseStringDelegate GetParseFn(Type propertyType)
+        private static ParseStringDelegate ResolveStringParseFn(Type propType, MultiPartFieldAttribute attr)
         {
-            //Don't JSV-decode string values for string properties
-            if (propertyType == typeof(string))
-                return s => s;
+            if (attr != null)
+            {
+                if (attr.ContentType != null)
+                {
+                    if (!ContentTypeStringSerializers.TryGetValue(attr.ContentType, out var serializer))
+                        throw new NotSupportedException($"ContentType '{attr.ContentType}' not found in {nameof(StringMapTypeDeserializer)}.{nameof(ContentTypeStringSerializers)}");
+                    return s => serializer.DeserializeFromString(s, propType);
+                }
+                if (attr.StringSerializer != null)
+                {
+                    var serializer = TypeStringSerializers.GetOrAdd(attr.StringSerializer, 
+                        type => type.CreateInstance<IStringSerializer>());
+                    return s => serializer.DeserializeFromString(s, propType);
+                }
+            }
 
-            return JsvReader.GetParseFn(propertyType);
+            //Don't JSV-decode string values for string properties
+            if (propType == typeof(string))
+                return s => s;
+            return JsvReader.GetParseFn(propType);
         }
 
         public StringMapTypeDeserializer(Type type)
         {
             this.type = type;
-
+            
             foreach (var propertyInfo in type.GetSerializableProperties())
             {
                 var propertySetFn = propertyInfo.CreateSetter();
                 var propertyType = propertyInfo.PropertyType;
-                var propertyParseStringFn = GetParseFn(propertyType);
-                var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
+                var propertySerializer = new PropertySerializerEntry(propertySetFn, 
+                    ResolveStringParseFn(propertyType, propertyInfo.FirstAttribute<MultiPartFieldAttribute>()))
+                {
+                    PropertyType = propertyType
+                };
 
                 var attr = propertyInfo.FirstAttribute<DataMemberAttribute>();
                 if (attr?.Name != null)
@@ -72,8 +100,11 @@ namespace ServiceStack.Serialization
                 {
                     var fieldSetFn = fieldInfo.CreateSetter();
                     var fieldType = fieldInfo.FieldType;
-                    var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
-                    var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) { PropertyType = fieldType };
+                    var fieldSerializer = new PropertySerializerEntry(fieldSetFn,
+                        ResolveStringParseFn(fieldType, fieldInfo.FirstAttribute<MultiPartFieldAttribute>()))
+                    {
+                        PropertyType = fieldType
+                    };
 
                     propertySetterMap[fieldInfo.Name] = fieldSerializer;
                 }

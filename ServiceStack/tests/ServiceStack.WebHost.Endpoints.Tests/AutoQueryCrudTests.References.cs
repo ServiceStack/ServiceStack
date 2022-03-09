@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
@@ -283,12 +287,28 @@ public class UploadToMultiPoco : IPost, IReturn<UploadToMultiPoco>
     public List<UploadedFile> UploadedFiles { get; set; }
 }
 
+public class MultipartRequest : IPost, IReturn<MultipartRequest>
+{
+    public int Id { get; set; }
+    public string String { get; set; }
+    public Contact Contact { get; set; }
+    [MultiPartField(MimeTypes.Json)]
+    public PhoneScreen PhoneScreen { get; set; }
+    [MultiPartField(MimeTypes.Csv)]
+    public List<Contact> Contacts { get; set; }
+    [UploadTo("profiles")]
+    public string ProfileUrl { get; set; }
+    [UploadTo("applications")]
+    public List<UploadedFile> UploadedFiles { get; set; } 
+}
+
 public class FileUploadTestServices : Service
 {
     public object Any(UploadToSingleString request) => request;
     public object Any(UploadToMultiString request) => request;
     public object Any(UploadToSinglePoco request) => request;
     public object Any(UploadToMultiPoco request) => request;
+    public object Any(MultipartRequest request) => request;
 }
 
 public class AutoQueryCrudReferencesTests
@@ -601,6 +621,83 @@ public class AutoQueryCrudReferencesTests
             }
         }
     }
+
+    [Test]
+    public void Can_send_Multipart_Requests()
+    {
+        var client = CreateAuthClient();
+        
+        using var content = new MultipartFormDataContent()
+            .AddParam(nameof(MultipartRequest.Id), 1)
+            .AddParam(nameof(MultipartRequest.String), "foo")
+            .AddParam(nameof(MultipartRequest.Contact), new Contact { Id = 1, FirstName = "First", LastName = "Last" })
+            .AddJsonParam(nameof(MultipartRequest.PhoneScreen), new PhoneScreen { Id = 3, JobApplicationId = 1, Notes = "The Notes"})
+            .AddCsvParam(nameof(MultipartRequest.Contacts), new[] {
+                new Contact { Id = 2, FirstName = "First2", LastName = "Last2" },
+                new Contact { Id = 3, FirstName = "First3", LastName = "Last3" },
+            })
+            .AddFile(nameof(MultipartRequest.ProfileUrl), "profile.txt", new MemoryStream("ABC".ToUtf8Bytes()))
+            .AddFile(nameof(MultipartRequest.UploadedFiles), "uploadedFiles1.txt", new MemoryStream("DEF".ToUtf8Bytes()))
+            .AddFile(nameof(MultipartRequest.UploadedFiles), "uploadedFiles2.txt", new MemoryStream("GHI".ToUtf8Bytes()));
+        
+        var api = client.ApiForm<MultipartRequest>(typeof(MultipartRequest).ToApiUrl(), content);
+        //api.PrintDump();
+        
+        Assert.That(api.Succeeded);
+        var response = api.Response!;
+        Assert.That(response.Id, Is.EqualTo(1));
+        Assert.That(response.String, Is.EqualTo("foo"));
+        Assert.That(response.Contact.Id, Is.EqualTo(1));
+        Assert.That(response.Contact.FirstName, Is.EqualTo("First"));
+        Assert.That(response.Contacts[0].Id, Is.EqualTo(2));
+        Assert.That(response.Contacts[0].FirstName, Is.EqualTo("First2"));
+        Assert.That(response.Contacts[1].Id, Is.EqualTo(3));
+        Assert.That(response.Contacts[1].FirstName, Is.EqualTo("First3"));
+        Assert.That(response.ProfileUrl, Is.EqualTo($"/uploads/profiles/{DateTime.UtcNow:yyyy/MM/dd}/profile.txt"));
+        Assert.That(response.UploadedFiles.Count, Is.EqualTo(2));
+        Assert.That(response.UploadedFiles[0].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/uploadedFiles1.txt"));
+        Assert.That(response.UploadedFiles[1].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/uploadedFiles2.txt"));
+    }
+
+    [Test]
+    public async Task Can_send_Multipart_Requests_Async()
+    {
+        var client = CreateAuthClient();
+        
+        using var content = new MultipartFormDataContent()
+            .AddParam(nameof(MultipartRequest.Id), 1)
+            .AddParam(nameof(MultipartRequest.String), "foo")
+            .AddParam(nameof(MultipartRequest.Contact), new Contact { Id = 1, FirstName = "First", LastName = "Last" })
+            .AddJsonParam(nameof(MultipartRequest.PhoneScreen), new PhoneScreen { Id = 3, JobApplicationId = 1, Notes = "The Notes"})
+            .AddCsvParam(nameof(MultipartRequest.Contacts), new[] {
+                new Contact { Id = 2, FirstName = "First2", LastName = "Last2" },
+                new Contact { Id = 3, FirstName = "First3", LastName = "Last3" },
+            })
+            .AddFile(nameof(MultipartRequest.ProfileUrl), "async-profile.txt", new MemoryStream("ABC".ToUtf8Bytes()))
+            .AddFile(nameof(MultipartRequest.UploadedFiles), "async-uploadedFiles1.txt", new MemoryStream("DEF".ToUtf8Bytes()))
+            .AddFile(nameof(MultipartRequest.UploadedFiles), "async-uploadedFiles2.txt", new MemoryStream("GHI".ToUtf8Bytes()));
+        
+        var api = await client.ApiFormAsync<MultipartRequest>(typeof(MultipartRequest).ToApiUrl(), content);
+        
+        Assert.That(api.Succeeded);
+        var response = api.Response!;
+        Assert.That(response.Id, Is.EqualTo(1));
+        Assert.That(response.String, Is.EqualTo("foo"));
+        Assert.That(response.Contact.Id, Is.EqualTo(1));
+        Assert.That(response.Contact.FirstName, Is.EqualTo("First"));
+        Assert.That(response.Contacts[0].Id, Is.EqualTo(2));
+        Assert.That(response.Contacts[0].FirstName, Is.EqualTo("First2"));
+        Assert.That(response.Contacts[1].Id, Is.EqualTo(3));
+        Assert.That(response.Contacts[1].FirstName, Is.EqualTo("First3"));
+        Assert.That(response.ProfileUrl, Is.EqualTo($"/uploads/profiles/{DateTime.UtcNow:yyyy/MM/dd}/async-profile.txt"));
+        Assert.That(response.UploadedFiles.Count, Is.EqualTo(2));
+        Assert.That(response.UploadedFiles[0].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/async-uploadedFiles1.txt"));
+        Assert.That(response.UploadedFiles[1].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/async-uploadedFiles2.txt"));
+    }
+}
+
+public static class TempUtils
+{
 }
 
 #endif

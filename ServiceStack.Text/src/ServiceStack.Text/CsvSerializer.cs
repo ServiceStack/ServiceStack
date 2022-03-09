@@ -568,4 +568,14 @@ namespace ServiceStack.Text
             }
         }
     }
+    
+    public class CsvStringSerializer : IStringSerializer
+    {
+        public To DeserializeFromString<To>(string serializedText) => 
+            CsvSerializer.DeserializeFromString<To>(serializedText);
+        public object DeserializeFromString(string serializedText, Type type) => 
+            CsvSerializer.DeserializeFromString(type, serializedText);
+        public string SerializeToString<TFrom>(TFrom @from) => 
+            CsvSerializer.SerializeToString(@from);
+    }
 }

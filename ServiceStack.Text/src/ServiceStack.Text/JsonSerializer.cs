@@ -228,70 +228,50 @@ namespace ServiceStack.Text
 
         public static T DeserializeResponse<T>(WebRequest webRequest)
         {
-            using (var webRes = PclExport.Instance.GetResponse(webRequest))
-            using (var stream = webRes.GetResponseStream())
-            {
-                return DeserializeFromStream<T>(stream);
-            }
+            using var webRes = PclExport.Instance.GetResponse(webRequest);
+            using var stream = webRes.GetResponseStream();
+            return DeserializeFromStream<T>(stream);
         }
 
         public static object DeserializeResponse<T>(Type type, WebRequest webRequest)
         {
-            using (var webRes = PclExport.Instance.GetResponse(webRequest))
-            using (var stream = webRes.GetResponseStream())
-            {
-                return DeserializeFromStream(type, stream);
-            }
+            using var webRes = PclExport.Instance.GetResponse(webRequest);
+            using var stream = webRes.GetResponseStream();
+            return DeserializeFromStream(type, stream);
         }
 
         public static T DeserializeRequest<T>(WebRequest webRequest)
         {
-            using (var webRes = PclExport.Instance.GetResponse(webRequest))
-            {
-                return DeserializeResponse<T>(webRes);
-            }
+            using var webRes = PclExport.Instance.GetResponse(webRequest);
+            return DeserializeResponse<T>(webRes);
         }
 
         public static object DeserializeRequest(Type type, WebRequest webRequest)
         {
-            using (var webRes = PclExport.Instance.GetResponse(webRequest))
-            {
-                return DeserializeResponse(type, webRes);
-            }
+            using var webRes = PclExport.Instance.GetResponse(webRequest);
+            return DeserializeResponse(type, webRes);
         }
 
         public static T DeserializeResponse<T>(WebResponse webResponse)
         {
-            using (var stream = webResponse.GetResponseStream())
-            {
-                return DeserializeFromStream<T>(stream);
-            }
+            using var stream = webResponse.GetResponseStream();
+            return DeserializeFromStream<T>(stream);
         }
 
         public static object DeserializeResponse(Type type, WebResponse webResponse)
         {
-            using (var stream = webResponse.GetResponseStream())
-            {
-                return DeserializeFromStream(type, stream);
-            }
+            using var stream = webResponse.GetResponseStream();
+            return DeserializeFromStream(type, stream);
         }
     }
 
     public class JsonStringSerializer : IStringSerializer
     {
-        public To DeserializeFromString<To>(string serializedText)
-        {
-            return JsonSerializer.DeserializeFromString<To>(serializedText);
-        }
-
-        public object DeserializeFromString(string serializedText, Type type)
-        {
-            return JsonSerializer.DeserializeFromString(serializedText, type);
-        }
-
-        public string SerializeToString<TFrom>(TFrom @from)
-        {
-            return JsonSerializer.SerializeToString(@from);
-        }
+        public To DeserializeFromString<To>(string serializedText) => 
+            JsonSerializer.DeserializeFromString<To>(serializedText);
+        public object DeserializeFromString(string serializedText, Type type) => 
+            JsonSerializer.DeserializeFromString(serializedText, type);
+        public string SerializeToString<TFrom>(TFrom @from) => 
+            JsonSerializer.SerializeToString(@from);
     }
 }

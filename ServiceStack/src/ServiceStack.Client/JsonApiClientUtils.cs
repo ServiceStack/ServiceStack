@@ -11,6 +11,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack;
 
@@ -115,6 +117,103 @@ public static class JsonApiClientUtils
     {
         using var stream = content.ReadAsStream();
         return stream.ReadFullyAsMemory();
+    }
+
+    public static MultipartFormDataContent AddParam(this MultipartFormDataContent content, string key, string value)
+    {
+        content.Add(new StringContent(value), $"\"{key}\"");
+        return content;
+    }
+
+    public static MultipartFormDataContent AddParam(this MultipartFormDataContent content, string key, object value)
+    {
+        content.Add(new StringContent(value.ToJsv(), encoding:null, mediaType:MimeTypes.Jsv), $"\"{key}\"");
+        return content;
+    }
+
+    public static MultipartFormDataContent AddJsvParam<T>(this MultipartFormDataContent content, string key, T value)
+    {
+        content.Add(new StringContent(value.ToJsv(), encoding:null, mediaType:MimeTypes.Jsv), $"\"{key}\"");
+        return content;
+    }
+
+    public static MultipartFormDataContent AddJsonParam<T>(this MultipartFormDataContent content, string key, T value)
+    {
+        content.Add(new StringContent(value.ToJson(), encoding:null, mediaType:MimeTypes.Json), $"\"{key}\"");
+        return content;
+    }
+
+    public static MultipartFormDataContent AddCsvParam<T>(this MultipartFormDataContent content, string key, T value)
+    {
+        content.Add(new StringContent(value.ToCsv(), encoding:null, mediaType:MimeTypes.Csv), $"\"{key}\"");
+        return content;
+    }
+
+    public static HttpContent AddFileInfo(this HttpContent content, string fieldName, string fileName, string? mimeType=null)
+    {
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
+        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data") {
+            Name = fieldName,
+            FileName = fileName,
+        };
+        return content;
+    }
+
+    public static MultipartFormDataContent AddFile(this MultipartFormDataContent content, string fieldName, string fileName, Stream fileContents, string? mimeType=null)
+    {
+        content.Add(new StreamContent(fileContents)
+            .AddFileInfo(fieldName: fieldName, fileName: fileName, mimeType: mimeType));
+        return content;
+    }
+
+    public static MultipartFormDataContent AddFile(this MultipartFormDataContent content, string fieldName, string fileName, ReadOnlyMemory<byte> fileContents, string? mimeType=null)
+    {
+        content.Add(new ReadOnlyMemoryContent(fileContents)
+            .AddFileInfo(fieldName: fieldName, fileName: fileName, mimeType: mimeType));
+        return content;
+    }
+
+    public static MultipartFormDataContent AddFile(this MultipartFormDataContent content, string fieldName, FileInfo file, string? mimeType=null)
+    {
+        using var fs = file.OpenRead();
+        content.Add(new ReadOnlyMemoryContent(fs.ReadFullyAsMemory())
+            .AddFileInfo(fieldName: fieldName, fileName: file.Name, mimeType: mimeType));
+        return content;
+    }
+
+    public static async Task<MultipartFormDataContent> AddFileAsync(this MultipartFormDataContent content, string fieldName, FileInfo file, string? mimeType=null)
+    {
+        await using var fs = file.OpenRead();
+        content.Add(new ReadOnlyMemoryContent(await fs.ReadFullyAsMemoryAsync().ConfigAwait())
+            .AddFileInfo(fieldName: fieldName, fileName: file.Name, mimeType: mimeType));
+        return content;
+    }
+
+    public static MultipartFormDataContent AddFile(this MultipartFormDataContent content, string fieldName, IVirtualFile file, string? mimeType=null)
+    {
+        content.Add(file.ToHttpContent()
+            .AddFileInfo(fieldName: fieldName, fileName: file.Name, mimeType: mimeType));
+        return content;
+    }
+
+    public static HttpContent ToHttpContent(this IVirtualFile file)
+    {
+        var fileContents = file.GetContents();
+        HttpContent? httpContent = fileContents is ReadOnlyMemory<byte> romBytes
+            ? new ReadOnlyMemoryContent(romBytes)
+            : fileContents is string str
+                ? new StringContent(str)
+                : fileContents is ReadOnlyMemory<char> romChars
+                    ? new ReadOnlyMemoryContent(romChars.ToUtf8())
+                    : fileContents is byte[] bytes
+                        ? new ByteArrayContent(bytes, 0, bytes.Length)
+                        : null;
+
+        if (httpContent != null)
+            return httpContent;
+
+        using var stream = fileContents as Stream ?? file.OpenRead();
+        return new ReadOnlyMemoryContent(stream.ReadFullyAsMemory());
     }
 }
 #endif
