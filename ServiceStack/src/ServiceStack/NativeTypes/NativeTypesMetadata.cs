@@ -147,17 +147,19 @@ namespace ServiceStack.NativeTypes
                     Response = ToType(operation.ResponseType),
                     DataModel = ToTypeName(operation.DataModelType),
                     ViewModel = ToTypeName(operation.ViewModelType),
-                    RequiresAuth = operation.RequiresAuthentication,
-                    RequiredRoles = operation.RequiredRoles,
-                    RequiresAnyRole = operation.RequiresAnyRole,
-                    RequiredPermissions = operation.RequiredPermissions,
-                    RequiresAnyPermission = operation.RequiresAnyPermission,
+                    RequiresAuth = operation.RequiresAuthentication.NullIfFalse(),
+                    RequiredRoles = operation.RequiredRoles.NullIfEmpty(),
+                    RequiresAnyRole = operation.RequiresAnyRole.NullIfEmpty(),
+                    RequiredPermissions = operation.RequiredPermissions.NullIfEmpty(),
+                    RequiresAnyPermission = operation.RequiresAnyPermission.NullIfEmpty(),
                     Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
-                    Ui = new ApiUiInfo {
-                        QueryCss = operation.QueryCss,
-                        ExplorerCss = operation.ExplorerCss,
-                        FormLayout = operation.FormLayout,
-                    },
+                    Ui = operation.QueryCss == null && operation.ExplorerCss == null && operation.FormLayout == null 
+                        ? null 
+                        : new ApiUiInfo {
+                            QueryCss = operation.QueryCss,
+                            ExplorerCss = operation.ExplorerCss,
+                            FormLayout = operation.FormLayout,
+                        },
                 };
                 opType.Request.RequestType = opType;
                 metadata.Operations.Add(opType);
@@ -1355,7 +1357,7 @@ namespace ServiceStack.NativeTypes
                 {
                     if (op.ReturnType != null)
                         includedTypeNames.Add(typeof(IReturn<>).Name);
-                    if (op.ReturnsVoid)
+                    if (op.ReturnsVoid == true)
                         includedTypeNames.Add(nameof(IReturnVoid));
                 }
                 foreach (var metaType in metadata.Types)

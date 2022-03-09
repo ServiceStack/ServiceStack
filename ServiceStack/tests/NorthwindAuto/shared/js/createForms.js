@@ -339,7 +339,7 @@ export function createForms(TypesMap, css, ui) {
         resolveFormLayout(op) {
             if (!op) return null
             let allProps = typeProperties(op.request).filter(Forms.supportsProp)
-            if (op.ui.formLayout) {
+            if (op.ui && op.ui.formLayout) {
                 let allPropsMap = allProps.reduce((acc,x) => { acc[x.name] = x; return acc }, {})
                 let ret = op.ui.formLayout.map(input => ({ ...inputProp(allPropsMap[input.id]), ...input }) )
                 return ret
