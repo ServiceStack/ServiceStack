@@ -308,7 +308,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
         catch (Exception e)
         {
-            LogManager.GetLogger(GetType()).Error(e, "SendAsync: " + e.Message);
+            LogManager.GetLogger(GetType()).Error(e, nameof(SendAsync) + ": " + e.Message);
             throw;
         }
     }
@@ -393,7 +393,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
         catch (Exception e)
         {
-            LogManager.GetLogger(GetType()).Error(e, "SendAsync: " + e.Message);
+            LogManager.GetLogger(GetType()).Error(e, nameof(Send) + ": " + e.Message);
             throw;
         }
     }
@@ -509,8 +509,10 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return default;
     }
     
-    private static string GetAbsoluteUrl(string httpMethod, object? request, string absoluteUrl)
+    private string GetAbsoluteUrl(string httpMethod, object? request, string relativeOrAbsoluteUrl)
     {
+        var absoluteUrl = ToAbsoluteUrl(relativeOrAbsoluteUrl);
+        
         if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
         {
             var queryString = QueryStringSerializer.SerializeToString(request);
@@ -1441,7 +1443,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
         catch (Exception e)
         {
-            LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendForm)}: " + e.Message);
+            LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendFormAsync)}: " + e.Message);
             throw;
         }
     }
