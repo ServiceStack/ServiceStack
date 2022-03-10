@@ -852,6 +852,17 @@ namespace ServiceStack
                     if (type.Namespace != null)
                         allTypes[type.Namespace + "." + type.Name] = type;
                 }
+                // Some times Types only appear in Response Types
+                foreach (var op in app.Api.Operations)
+                {
+                    var type = op.Response;
+                    if (type == null || allTypes.ContainsKey(type.Name)) 
+                        continue;
+                    
+                    allTypes[type.Name] = type;
+                    if (type.Namespace != null)
+                        allTypes[type.Namespace + "." + type.Name] = type;
+                }
                 app.Cache = new AppMetadataCache(allOps, allTypes);
             }
             return app.Cache;
