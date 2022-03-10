@@ -17,6 +17,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.Text.Common;
@@ -349,7 +350,7 @@ namespace ServiceStack.Text
         {
             var type = value?.GetType();
             
-            if (type == null || !type.IsClass || value is string || value is Type)
+            if (type is not { IsClass: true } || value is string or Type)
                 return false;
 
             if (parentValues == null)
@@ -408,12 +409,19 @@ namespace ServiceStack.Text
                         continue;
 
                     var mi = pi.GetGetMethod(nonPublic:false);
-                    var pValue = mi != null ? mi.Invoke(value, null) : null;
-                    if (pValue == null)
-                        continue;
+                    try
+                    {
+                        var pValue = mi != null ? mi.Invoke(value, null) : null;
+                        if (pValue == null)
+                            continue;
 
-                    if (CheckValue(pValue))
-                        return true;
+                        if (CheckValue(pValue))
+                            return true;
+                    }
+                    catch (TargetInvocationException e)
+                    {
+                        Tracer.Instance.WriteError($"Failed to access property {type.Name}.{pi.Name}: {e.InnerException?.Message}", e);
+                    }
                 }
             }
 
