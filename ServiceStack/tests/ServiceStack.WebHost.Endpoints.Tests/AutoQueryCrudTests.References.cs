@@ -641,7 +641,7 @@ public class AutoQueryCrudReferencesTests
             .AddFile(nameof(MultipartRequest.UploadedFiles), "uploadedFiles2.txt", new MemoryStream("GHI".ToUtf8Bytes()));
         
         var api = client.ApiForm<MultipartRequest>(typeof(MultipartRequest).ToApiUrl(), content);
-        //api.PrintDump();
+        if (!api.Succeeded) api.PrintDump();
         
         Assert.That(api.Succeeded);
         var response = api.Response!;
@@ -678,6 +678,7 @@ public class AutoQueryCrudReferencesTests
             .AddFile(nameof(MultipartRequest.UploadedFiles), "async-uploadedFiles2.txt", new MemoryStream("GHI".ToUtf8Bytes()));
         
         var api = await client.ApiFormAsync<MultipartRequest>(typeof(MultipartRequest).ToApiUrl(), content);
+        if (!api.Succeeded) api.PrintDump();
         
         Assert.That(api.Succeeded);
         var response = api.Response!;
@@ -694,10 +695,6 @@ public class AutoQueryCrudReferencesTests
         Assert.That(response.UploadedFiles[0].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/async-uploadedFiles1.txt"));
         Assert.That(response.UploadedFiles[1].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/async-uploadedFiles2.txt"));
     }
-}
-
-public static class TempUtils
-{
 }
 
 #endif
