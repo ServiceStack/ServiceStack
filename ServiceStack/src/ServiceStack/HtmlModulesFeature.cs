@@ -114,6 +114,17 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
             component.Register(appHost);
         }
     }
+
+    /// <summary>
+    /// Flush HtmlModules cache so it's output is recreated on next request
+    /// </summary>
+    public void Flush()
+    {
+        foreach (var component in Modules)
+        {
+            component.Flush();
+        }
+    }
 }
 
 public class HtmlModuleContext
@@ -330,6 +341,12 @@ public class HtmlModule
     private byte[]? cachedBytes; 
     private ConcurrentDictionary<string, byte[]> zipCache = new();
 
+    public void Flush()
+    {
+        zipCache.Clear();
+        indexFragments = null;
+    }
+    
     public void Register(IAppHost appHost)
     {
         VirtualFiles ??= appHost.VirtualFiles;
