@@ -333,6 +333,7 @@ public class AutoQueryCrudReferencesTests
             });
 
             Plugins.Add(new AutoQueryFeature());
+            ScriptContext.ScriptMethods.Add(new MyValidators()); // Avoid Startup Exception for missing validator in DebugMode
 
             using var db = container.Resolve<IDbConnectionFactory>().Open();
             db.CreateTable<Job>();
