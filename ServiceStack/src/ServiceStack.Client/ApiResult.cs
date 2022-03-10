@@ -52,7 +52,7 @@ public class ApiResult<TResponse> : IHasErrorStatus
 
     public string? ErrorMessage => Error?.Message;
 
-    public ResponseError[] Errors => Error?.Errors.ToArray() ?? TypeConstants<ResponseError>.EmptyArray;
+    public ResponseError[] Errors => Error?.Errors?.ToArray() ?? TypeConstants<ResponseError>.EmptyArray;
 
     public string? ErrorSummary => Error != null && Errors.Length == 0
         ? Error.Message
