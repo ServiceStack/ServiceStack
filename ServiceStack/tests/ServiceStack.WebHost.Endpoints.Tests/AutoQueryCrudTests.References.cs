@@ -329,6 +329,7 @@ public class AutoQueryCrudReferencesTests
             SetConfig(new HostConfig
             {
                 AdminAuthSecret = "secret",
+                DebugMode = true,
             });
 
             Plugins.Add(new AutoQueryFeature());
