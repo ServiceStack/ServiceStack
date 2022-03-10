@@ -408,9 +408,9 @@ namespace ServiceStack.Text
                     if (pi.GetIndexParameters().Length > 0)
                         continue;
 
-                    var mi = pi.GetGetMethod(nonPublic:false);
                     try
                     {
+                        var mi = pi.GetGetMethod(nonPublic:false);
                         var pValue = mi != null ? mi.Invoke(value, null) : null;
                         if (pValue == null)
                             continue;

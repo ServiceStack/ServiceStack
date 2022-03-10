@@ -641,7 +641,7 @@ public class AutoQueryCrudReferencesTests
             .AddFile(nameof(MultipartRequest.UploadedFiles), "uploadedFiles2.txt", new MemoryStream("GHI".ToUtf8Bytes()));
         
         var api = client.ApiForm<MultipartRequest>(typeof(MultipartRequest).ToApiUrl(), content);
-        if (!api.Succeeded) api.PrintDump();
+        if (!api.Succeeded) api.Errors.PrintDump();
         
         Assert.That(api.Succeeded);
         var response = api.Response!;
@@ -678,7 +678,7 @@ public class AutoQueryCrudReferencesTests
             .AddFile(nameof(MultipartRequest.UploadedFiles), "async-uploadedFiles2.txt", new MemoryStream("GHI".ToUtf8Bytes()));
         
         var api = await client.ApiFormAsync<MultipartRequest>(typeof(MultipartRequest).ToApiUrl(), content);
-        if (!api.Succeeded) api.PrintDump();
+        if (!api.Succeeded) api.Errors.PrintDump();
         
         Assert.That(api.Succeeded);
         var response = api.Response!;
