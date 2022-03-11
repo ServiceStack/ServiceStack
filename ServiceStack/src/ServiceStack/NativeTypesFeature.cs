@@ -27,6 +27,7 @@ namespace ServiceStack
                     typeof(StringLengthAttribute),
                     typeof(IgnoreAttribute),
                     typeof(IgnoreDataMemberAttribute),
+                    typeof(ComputedAttribute),
                     typeof(MetaAttribute),
                     typeof(RequiredAttribute),
                     typeof(ReferencesAttribute),

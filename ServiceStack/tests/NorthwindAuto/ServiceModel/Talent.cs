@@ -11,6 +11,7 @@ public class Contact : AuditBase
     [AutoIncrement]
     public int Id { get; set; }
 
+    [Computed]
     public string DisplayName => FirstName + " " + LastName;
     [Format(FormatMethods.IconRounded)]
     public string ProfileUrl { get; set; }
