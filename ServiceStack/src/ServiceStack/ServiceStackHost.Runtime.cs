@@ -766,6 +766,8 @@ namespace ServiceStack
         /// </summary>
         public virtual bool SetCookieFilter(IRequest req, Cookie cookie)
         {
+            if (req.Response.HasStarted)
+                return false;
 #pragma warning disable CS0618
             return AllowSetCookie(req, cookie.Name);
 #pragma warning restore CS0618
