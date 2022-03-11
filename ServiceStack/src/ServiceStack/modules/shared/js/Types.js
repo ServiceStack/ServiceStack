@@ -55,6 +55,13 @@ let Types = (function() {
     }
     let Primitives = ['string','number','symbol','boolean']
     function isPrimitive (value) { return Primitives.indexOf(typeof value) >= 0 }
-    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, isPrimitive, })
+    function propHasAttr(p, attr) {
+        return p && p.attributes && p.attributes.some(x => x.name === attr) 
+    }
+    function getProp(type, name) {
+        let nameLower = name.toLowerCase()
+        return type && type.properties && type.properties.find(p => p.name.toLowerCase() === nameLower)
+    }
+    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, isPrimitive, propHasAttr, getProp, })
 })()
 /*:minify*/

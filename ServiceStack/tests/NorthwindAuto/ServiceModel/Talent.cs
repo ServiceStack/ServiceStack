@@ -57,6 +57,11 @@ public class Job : AuditBase
     public string Location { get; set; }
 
     public DateTime Closing { get; set; }
+    
+    public Job()
+    {
+        Applications = new List<JobApplication>();
+    }
 }
 
 public enum EmploymentType
@@ -119,6 +124,9 @@ public class JobApplication : AuditBase
 
     [Reference, Ref(Model = nameof(Interview), RefId = nameof(Id))]
     public Interview Interview { get; set; }
+
+    [Reference, Ref(Model = nameof(JobOffer), RefId = nameof(Id))]
+    public JobOffer JobOffer { get; set; }
 }
 
 [Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='currentColor' d='M18 11c1.49 0 2.87.47 4 1.26V8c0-1.11-.89-2-2-2h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h7.68A6.995 6.995 0 0 1 18 11zm-8-7h4v2h-4V4z'/><path fill='currentColor' d='M18 13c-2.76 0-5 2.24-5 5s2.24 5 5 5s5-2.24 5-5s-2.24-5-5-5zm1.65 7.35L17.5 18.2V15h1v2.79l1.85 1.85l-.7.71z'/></svg>")]
@@ -171,6 +179,28 @@ public class Interview : AuditBase
 
     [IntlRelativeTime]
     public DateTime BookingTime { get; set; }
+
+    [References(typeof(JobApplication))]
+    public int JobApplicationId { get; set; }
+
+    [References(typeof(AppUser))]
+    public int AppUserId { get; set; }
+
+    [Reference, Format(FormatMethods.Hidden)]
+    public AppUser AppUser { get; set; }
+
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    public string Notes { get; set; }
+}
+
+[Icon(Svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" role=\"img\" width=\"1em\" height=\"1em\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 48 48\"><path fill=\"#78909C\" d=\"M40 41H8c-2.2 0-4-1.8-4-4V16.1c0-1.3.6-2.5 1.7-3.3L24 0l18.3 12.8c1.1.7 1.7 2 1.7 3.3V37c0 2.2-1.8 4-4 4z\"/><path fill=\"#AED581\" d=\"M14 1h20v31H14z\"/><g fill=\"#558B2F\"><path d=\"M13 0v33h22V0H13zm20 31H15V2h18v29z\"/><path d=\"M34 3c0 1.7-.3 3-2 3s-3-1.3-3-3s1.3-2 3-2s2 .3 2 2zM16 1c1.7 0 3 .3 3 2s-1.3 3-3 3s-2-1.3-2-3s.3-2 2-2z\"/><circle cx=\"24\" cy=\"8\" r=\"2\"/><circle cx=\"24\" cy=\"20\" r=\"6\"/></g><path fill=\"#CFD8DC\" d=\"M40 41H8c-2.2 0-4-1.8-4-4V17l20 13l20-13v20c0 2.2-1.8 4-4 4z\"/></svg>")]
+public class JobOffer : AuditBase
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+
+    [IntlNumber(Currency = NumberCurrency.USD)]
+    public int SalaryOffer{ get; set; }
 
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
@@ -392,6 +422,8 @@ public class CreatePhoneScreen : ICreateDb<PhoneScreen>, IReturn<PhoneScreen>
     public int JobApplicationId { get; set; }
     [ValidateNotEmpty(Message = "An employee to perform the phone screening must be selected.")]
     public int AppUserId { get; set; }
+
+    public JobApplicationStatus ApplicationStatus { get; set; }
 }
 
 [Tag("Talent")]
@@ -406,6 +438,8 @@ public class UpdatePhoneScreen : IPatchDb<PhoneScreen>, IReturn<PhoneScreen>
     [ValidateNotEmpty]
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string? Notes { get; set; }
+
+    public JobApplicationStatus? ApplicationStatus { get; set; }
 }
 
 [Tag("Talent")]
@@ -426,6 +460,8 @@ public class CreateInterview : ICreateDb<Interview>, IReturn<Interview>
     public int JobApplicationId { get; set; }
     [ValidateNotEmpty(Message = "An employee to perform interview must be selected.")]
     public int AppUserId { get; set; }
+
+    public JobApplicationStatus ApplicationStatus { get; set; }
 }
 
 [Tag("Talent")]
@@ -440,6 +476,30 @@ public class UpdateInterview : IPatchDb<Interview>, IReturn<Interview>
     [ValidateNotEmpty]
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string? Notes { get; set; }
+
+    public JobApplicationStatus? ApplicationStatus { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditQuery)]
+public class QueryJobOffer : QueryDb<JobOffer>
+{
+    public int? Id { get; set; }
+    public int? JobApplicationId { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditCreate)]
+public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
+{
+    [ValidateNotNull]
+    public int SalaryOffer{ get; set; }
+    [ValidateNotEmpty]
+    public int JobApplicationId { get; set; }
+
+    public JobApplicationStatus ApplicationStatus { get; set; }
+    [ValidateNotEmpty]
+    public string Notes { get; set; }
 }
 
 [Tag("Talent")]
@@ -526,4 +586,16 @@ public class DeleteJobApplicationComment : IDeleteDb<JobApplicationComment>, IRe
 {
     [ValidateNotEmpty]
     public int Id { get; set; }
+}
+
+[Tag("Talent")]
+public class TalentStats : IGet, IReturn<TalentStatsResponse>
+{
+}
+
+public class TalentStatsResponse
+{
+    public long TotalJobs { get; set; }
+    public long TotalContacts { get; set; }
+    public long TotalJobApplications { get; set; }
 }

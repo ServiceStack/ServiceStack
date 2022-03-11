@@ -34,9 +34,9 @@ App.components({
             get column() { return map(filter(), x => x.column) },
             get columnType() { return map(this.column, x => x.type) },
             get columnName() { return map(this.column, x => x.name) },
-            get topRight() { return map(filter(), x => x.topRight) },
-            get topRightX() { return map(this.topRight, x => x.x) },
-            get topRightY() { return map(this.topRight, x => x.y) },
+            get topLeft() { return map(filter(), x => x.topLeft) },
+            get topLeftX() { return map(this.topLeft, x => x.x) },
+            get topLeftY() { return map(this.topLeft, x => x.y) },
             get filterRules() { return filterRules(this.columnType) },
             done,
             inputClass(cls) { return cls + ' ' + inputClass() },
@@ -57,6 +57,8 @@ App.components({
                 return filterValue(filterRule(this.columnType, filter.key), this.columnType, filter)
             },
             updated() {
+                this.newQuery = '%'
+                map(this.$refs.txtFilter, x => x.focus())
                 this.prefs = refresh()
                 if (this.isEnum) {
                     this.selectedEnums = refreshEnums()
@@ -67,6 +69,9 @@ App.components({
                 setTimeout(() => this.save(), 300)
             },
             save() {
+                if (this.newValue) {
+                    this.addFilter()
+                }
                 if (this.isEnum) {
                     this.prefs.filters = [{ key:'%In', name:'In', value:this.selectedEnums.join(',')}]
                 }
@@ -119,7 +124,7 @@ App.components({
 </script>
 <template id="filter-column-template">
 <div class="fixed z-20 inset-0 overflow-y-auto" @click="done" @vue:mounted="updated">
-    <div class="absolute" :style="`top:${topRightY}px;width:${topRightX}px`" @click.stop="">
+    <div class="absolute" :style="`top:${topLeftY}px;left:${topLeftX}px`" @click.stop="">
         <div class="absolute top-0 right-0 bg-white border rounded normal-case text-sm shadow w-80">
             <div class="p-4">
                 <h3 class="text-base font-medium mb-3">Sort</h3>
@@ -161,7 +166,7 @@ App.components({
                         <select :class="inputClass('w-32 mr-1')" v-model="newQuery">
                             <option v-for="c in filterRules" :value="c.value">{{c.name}}</option>
                         </select>
-                        <input :class="inputClass('w-32 mr-1')" v-if="valueType !== 'none'" type="text" v-model="newValue" @keyup.enter="addFilter" />
+                        <input ref="txtFilter" :class="inputClass('w-32 mr-1')" v-if="valueType !== 'none'" type="text" v-model="newValue" @keyup.enter="addFilter" />
                         <div class="pt-1">
                             <button type="button" @click="addFilter" 
                                     class="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">

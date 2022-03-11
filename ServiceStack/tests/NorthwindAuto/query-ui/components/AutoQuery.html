@@ -61,9 +61,31 @@ function apiState(op) {
     }
 }
 
-let Lookup = {}
-function lookupLabel(model,id,label) {
-    return Lookup[model] && Lookup[model][id] && Lookup[model][id][label] || '' 
+/** @param {string} opName */
+function createState(opName) {
+    let op = opName && APP.api.operations.find(x => x.request.name === opName)
+    if (!op) {
+        console.log('!createState.op') /*debug*/
+        return null
+    }
+    let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
+    let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
+
+    let ret = {
+        opQuery: op,
+        opCreate: findOp(Crud.isCreate),
+        opPatch: findOp(Crud.isPatch),
+        opUpdate: findOp(Crud.isUpdate),
+        opDelete: findOp(Crud.isDelete),
+    }
+    Object.assign(ret, {
+        apiQuery: hasApi(op),
+        apiCreate: hasApi(ret.opCreate),
+        apiPatch: hasApi(ret.opPatch),
+        apiUpdate: hasApi(ret.opUpdate),
+        apiDelete: hasApi(ret.opDelete),
+    })
+    return ret
 }
 
 let OP_STATE = {}
@@ -73,34 +95,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
     /** @return {MetadataTypeName} */
     let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
-    
-
-    /** @param {string} opName */
-    function createState(opName) {
-        let op = opName && APP.api.operations.find(x => x.request.name === opName)
-        if (!op) {
-            console.log('!createState.op') /*debug*/
-            return null
-        }
-        let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
-        let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
-        
-        let ret = {
-            opQuery: op,
-            opCreate: findOp(Crud.isCreate),
-            opPatch: findOp(Crud.isPatch),
-            opUpdate: findOp(Crud.isUpdate),
-            opDelete: findOp(Crud.isDelete),
-        }
-        Object.assign(ret, {
-            apiQuery: hasApi(op),
-            apiCreate: hasApi(ret.opCreate),
-            apiPatch: hasApi(ret.opPatch),
-            apiUpdate: hasApi(ret.opUpdate),
-            apiDelete: hasApi(ret.opDelete),
-        })
-        return ret
-    }
     
     return {
         $template: `#autoquery-template`,
@@ -249,45 +243,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 
                 let results = this.results 
                 if (!r.api.succeeded || results.length === 0) return
-                let pending = 0
-                this.columns.forEach(c => {
-                    let refLabel = c.ref && c.ref.refLabel
-                    if (refLabel) {
-                        let refId = c.ref.refId
-                        let lookupOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === c.ref.model)
-                        if (lookupOp) {
-                            let lookupIds = uniq(results.map(x => mapGet(x, c.name)).filter(x => x != null))
-                            let modelLookup = Lookup[c.ref.model] 
-                            if (!modelLookup) Lookup[c.ref.model] = modelLookup = {}
-                            let existingIds = []
-                            
-                            Object.keys(Lookup[c.ref.model]).forEach(pk => {
-                                if (mapGet(modelLookup[pk], refLabel) != null) {
-                                    existingIds.push(pk)
-                                }
-                            })
-                            let newIds = lookupIds.filter(id => existingIds.indexOf(`${id}`) === -1)
-                            console.log('lookup', c.ref.model, lookupIds, existingIds, newIds)
-                            if (newIds.length === 0) return
-
-                            //https://localhost:5001/api/QueryEmployees?IdIn=1,2,3&fields=Id,LastName&jsconfig=edv
-                            let queryArgs = { [c.ref.refId + 'In']:newIds,fields:[refId,refLabel].join(','), jsconfig:'edv' }
-                            let lookupRequest = createRequest(lookupOp, queryArgs)
-
-                            apiSend(createClient, lookupRequest)
-                                .then(r => {
-                                    if (!r.api.succeeded) return
-                                    (r.api.response.results || []).forEach(x => {
-                                        let id = mapGet(x, refId)
-                                        let val = mapGet(x, refLabel)
-                                        if (!modelLookup[id]) modelLookup[id] = {}
-                                        modelLookup[id][refLabel] = val
-                                    })
-                                    this.refreshResults()
-                                })
-                        }
-                    }
-                })
+                Forms.fetchLookupValues(results, this.columns, () => this.refreshResults())
             })
         },
 
@@ -313,6 +269,10 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             if (skipRefresh) return
             this.search()
         },
+        updatePrefs(prefs) {
+            settings.saveOp(routes.op, x => Object.assign(x, prefs))
+            this.updated()
+        },
         
         sub:null,
         unmounted:App.unsubscribe,
@@ -322,6 +282,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         },
     }
 })
+
+
 /*:minify*/
 </script>
 <!--minify-->
@@ -333,7 +295,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
     </div>
     <div v-if="invalidAccess" class="w-body md:w-body overflow-auto" v-scope="EnsureAccess({ store, message:() => invalidAccess, $on:updated })"></div>
     <div v-else-if="hasState" class="pt-1">
-        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => viewModelColumns, save:updated })"></div>
+        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => viewModelColumns, prefs:() => settings.op(routes.op), save:updatePrefs })"></div>
         <div class="p-1 flex flex-wrap">
             <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('query-prefs')">
                 <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
@@ -406,7 +368,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 <div v-else v-scope="EditForm({ store, routes, settings, state:() => state, save:updated, done:() => routes.to({ edit:null }) })"></div>
             </div>
             <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save:updated, done:() => filter=null })" class="relative"></div>
-            <div v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
+            <div ref="results" v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
         </div>
         <div class="p-4 flex items-center">
             <div class="flex justify-between w-full">
@@ -443,7 +405,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 
 <script>
 import { mapGet } from "@servicestack/client"
-import { getType, getIcon } from "../js/appInit"
+import { getType } from "../js/appInit"
 
 App.components({
     Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
@@ -461,9 +423,12 @@ App.components({
             get columns() { return columns().filter(c => !c.format || c.format.method !== 'hidden') || [] },
             get results() { return results() || [] },
             selectColumn(column,e) {
+                let dialogWidth = 318
+                let tableRect = this.$refs.results.getBoundingClientRect()
                 let div = e.target.tagName === 'DIV' ? e.target : e.target.closest('DIV')
                 let rect = div.getBoundingClientRect()
-                let args = { column, topRight:{ x:Math.floor(rect.x + rect.width), y:Math.floor(rect.y + rect.height + 1) } }
+                let minLeft = tableRect.x + dialogWidth + 25
+                let args = { column, topLeft:{ x:Math.max(Math.floor(rect.x + rect.width), minLeft), y:Math.floor(rect.y + rect.height + 1) } }
                 onFilter(args)
             },
             fieldName(name) { return humanify(name) },
@@ -476,37 +441,7 @@ App.components({
             refInfo(row, column) {
                 let val = mapGet(row,column.name)
                 if (val == null || Array.isArray(val) && val.length === 0) return null
-                let ref = column.ref
-                if (ref) {
-                    let refIdValue = ref.selfId == null 
-                        ? mapGet(row, column.name)
-                        : mapGet(row, ref.selfId)
-                    let isRefType = typeof refIdValue == 'object'
-                    if (isRefType) {
-                        refIdValue = mapGet(refIdValue, ref.refId)
-                    }
-                    let queryOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === ref.model)
-                    if (queryOp) {
-                        let href = { op:queryOp.request.name, skip:null, $qs: { [ref.refId]: refIdValue } }
-                        
-                        let html = this.format(row,column)
-                        if (ref.refLabel) {
-                            let colModel = this.columns.find(x => x.type === ref.model)
-                            let modelValue = colModel && mapGet(row, colModel.name)
-                            if (modelValue) {
-                                let label = mapGet(modelValue, ref.refLabel)
-                                if (label) {
-                                    html = label
-                                }
-                            } else {
-                                let label = lookupLabel(ref.model, refIdValue, ref.refLabel)
-                                html = label ? label : `${ref.model}: ${html}`
-                            }
-                        }
-                        return { href, icon:getIcon({ op:queryOp }), html }
-                    }
-                }
-                return null
+                return Forms.refInfo(row,column,this.columns)
             },
         }
     },
@@ -527,6 +462,7 @@ App.components({
         }
     },
 })
+
 </script>
 <!--minify-->
 <template id="results-template">

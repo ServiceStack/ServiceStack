@@ -1,20 +1,17 @@
 <script minify>
 App.components({
-    QueryPrefs({ id, store, routes, columns, settings, save }) {
-        let refreshPrefs = () => settings.op(routes.op)
+    QueryPrefs({ id, store, routes, columns, prefs, save, replace }) {
         let maxLimit = APP.plugins.autoQuery.maxLimit
         let allTakes = [10,25,50,100,250,500,1000]
-        
         return {
             $template: Modal.dialog({ $template:'#query-prefs-template', id }),
             store, routes,
             get columns() { return columns().filter(c => !c.format || c.format.method !== 'hidden') },
-            prefs: refreshPrefs(),
+            prefs: prefs(),
             get takes() { return allTakes.filter(x => x <= maxLimit) },
             save() {
-                settings.saveOp(routes.op, x => Object.assign(x, this.prefs))
+                save(this.prefs)
                 this.close()
-                save()
             },
             close() {
                 Modal.hide(id)
@@ -22,8 +19,8 @@ App.components({
             sub:null,
             unmounted: App.unsubscribe,
             mounted() {
-                this.prefs = refreshPrefs()
-                this.sub = App.events.subscribe(`modal:${id}`, () => this.prefs = refreshPrefs())
+                this.prefs = prefs()
+                this.sub = App.events.subscribe(`modal:${id}`, () => this.prefs = prefs())
             },
         }
     },

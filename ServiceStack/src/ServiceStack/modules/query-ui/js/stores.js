@@ -22,17 +22,28 @@ let routes = App.usePageRoutes({
 let settings = {
     events: {
         op(op) { return `settings:${op}` },
+        lookup(op) { return `settings:lookup:${op}` },
         opProp(op,name) { return `settings:${op}.${name}` },
     },
     op(op) { 
         return Object.assign({ take:25, selectedColumns:[] },
             map(localStorage.getItem(`query-ui/op:${op}`), x => JSON.parse(x))) 
     },
+    lookup(op) {
+        return Object.assign({ take:10, selectedColumns:[] },
+            map(localStorage.getItem(`query-ui/lookup:${op}`), x => JSON.parse(x)))
+    },
     saveOp(op, fn) {
         let setting = this.op(op)
         fn(setting)
         localStorage.setItem(`query-ui/op:${op}`, JSON.stringify(setting))
         App.events.publish(this.events.op(op), setting)
+    },
+    saveLookup(op, fn) {
+        let setting = this.lookup(op)
+        fn(setting)
+        localStorage.setItem(`query-ui/lookup:${op}`, JSON.stringify(setting))
+        App.events.publish(this.events.lookup(op), setting)
     },
     opProp(op,name) {
         return Object.assign({ sort:null, filters:[] },
@@ -55,6 +66,7 @@ let store = PetiteVue.reactive({
     api: null,
     auth: window.AUTH,
     baseUrl: BASE_URL,
+    modalLookup: null,
     get useLang() { return routes.lang || 'csharp' },
     init() {
         setBodyClass({ page: routes.op })

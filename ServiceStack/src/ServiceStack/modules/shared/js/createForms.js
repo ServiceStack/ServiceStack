@@ -16,6 +16,12 @@ function createForms(TypesMap, css, ui) {
     let _id = 0;
     let inputId = input => input && (input.id || `__${input.type||'undefined'}${_id++}`)
     let colClass = fields => `col-span-12` + (fields === 2 ? ' sm:col-span-6' : fields === 3 ? ' sm:col-span-4' : fields === 4 ? ' sm:col-span-3' : '')
+    function getType(typeRef) {
+        return !typeRef ? null
+            : typeof typeRef == 'string'
+                ? TypesMap[typeRef]
+                : TypesMap[typeRef.name]
+    }
     function inputType(typeName) {
         if (!typeName) return null
         typeName = Types.unwrap(Types.alias(typeName))
@@ -226,8 +232,92 @@ function createForms(TypesMap, css, ui) {
         if (keys.length > 2) sb.push('...')
         return '<span title="' + enc(displayObj(val)) + '">{ ' + sb.join(', ') + ' }</span>'
     }
+    let Lookup = {}
+    function lookupLabel(model,id,label) {
+        return Lookup[model] && Lookup[model][id] && Lookup[model][id][label] || ''
+    }
+    function refInfo(row, prop, props) {
+        let ref = prop.ref
+        if (ref) {
+            let refIdValue = ref.selfId == null
+                ? mapGet(row, prop.name)
+                : mapGet(row, ref.selfId)
+            let isRefType = typeof refIdValue == 'object'
+            if (isRefType) {
+                refIdValue = mapGet(refIdValue, ref.refId)
+            }
+            let queryOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === ref.model)
+            if (queryOp != null) {
+                let href = { op:queryOp.request.name, skip:null, edit:null, new:null, $qs: { [ref.refId]: refIdValue } }
+                let html = Forms.format(mapGet(row,prop.name), prop)
+                if (ref.refLabel != null) {
+                    let colModel = props.find(x => x.type === ref.model)
+                    let modelValue = colModel && mapGet(row, colModel.name)
+                    if (modelValue != null) {
+                        let label = mapGet(modelValue, ref.refLabel)
+                        if (label != null) {
+                            html = label
+                        }
+                    } else {
+                        let label = lookupLabel(ref.model, refIdValue, ref.refLabel)
+                        html = label != null ? label : `${ref.model}: ${html}`
+                    }
+                }
+                return { href, icon:getIcon({ op:queryOp }), html }
+            }
+        }
+        return null
+    }
+    function fetchLookupValues(results, props, refreshFn) {
+        props.forEach(c => {
+            let refLabel = c.ref && c.ref.refLabel
+            if (refLabel) {
+                let refId = c.ref.refId
+                let lookupOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === c.ref.model)
+                if (lookupOp) {
+                    let lookupIds = uniq(results.map(x => mapGet(x, c.name)).filter(x => x != null))
+                    let modelLookup = Lookup[c.ref.model]
+                    if (!modelLookup) Lookup[c.ref.model] = modelLookup = {}
+                    let existingIds = []
+                    Object.keys(Lookup[c.ref.model]).forEach(pk => {
+                        if (mapGet(modelLookup[pk], refLabel) != null) {
+                            existingIds.push(pk)
+                        }
+                    })
+                    let newIds = lookupIds.filter(id => existingIds.indexOf(`${id}`) === -1)
+                    //console.log('lookup', c.ref.model, lookupIds, existingIds, newIds) /*debug*/
+                    if (newIds.length === 0) return
+                    // /api/QueryEmployees?IdIn=1,2,3&fields=Id,LastName&jsconfig=edv
+                    let dataModel = getType({ name:c.ref.model })
+                    let isComputed = Types.propHasAttr(c,'Computed') || Types.propHasAttr(Types.getProp(dataModel, refLabel),'Computed')
+                    let fields = !isComputed ? [refId,refLabel].join(',') : null
+                    let queryArgs = { [c.ref.refId + 'In']:newIds,fields,jsconfig:'edv' }
+                    let lookupRequest = createRequest(lookupOp, queryArgs)
+                    apiSend(createClient, lookupRequest)
+                        .then(r => {
+                            if (!r.api.succeeded) return
+                            (r.api.response.results || []).forEach(x => {
+                                let id = mapGet(x, refId)
+                                let val = mapGet(x, refLabel)
+                                if (!modelLookup[id]) modelLookup[id] = {}
+                                modelLookup[id][refLabel] = val
+                            })
+                            if (refreshFn) refreshFn()
+                        })
+                }
+            }
+        })
+    }
+    function createPropState(prop,opName, callback) {
+        let prefs = settings.lookup(opName)
+        let state = Object.assign(createState(opName), { prop, opName, prefs, callback })
+        state.dataModel = getType(state.opQuery.dataModel)
+        state.viewModel = getType(state.opQuery.viewModel)
+        return state
+    }
     return {
         getId,
+        getType,
         inputId,
         colClass,
         inputProp,
@@ -236,18 +326,53 @@ function createForms(TypesMap, css, ui) {
         relativeTime,
         relativeTimeFromMs,
         relativeTimeFromDate,
+        Lookup,lookupLabel,refInfo,fetchLookupValues,
         theme,
         formClass: theme.form + (css.form ? ' ' + css.form : ''),
         gridClass: css.fieldset,
+        forCreate(type) {
+            return field => {
+                field.prop = this.getFormProp(field.id, type)
+            }
+        },
         forEdit(type) {
             let pk = getPrimaryKey(type)
             if (!pk) return null
             return field => {
+                field.prop = this.getFormProp(field.id, type)
                 if (field.id.toLowerCase() === pk.name.toLowerCase()) {
                     if (!field.input) field.input = {}
                     field.input.disabled = true
                 }
             }
+        },
+        getFormProp(id, type) {
+            let idLower = id && id.toLowerCase()
+            let typeProps = id && type && typeProperties(type)
+            let prop = typeProps && typeProps.find(x => x.name.toLowerCase() === idLower)
+            if (!prop) {
+                console.error(`'${id}' Property not found in ${type && type.name}`)
+                return null
+            }
+            if (!prop.ref) {
+                let crudRef = map(type.implements, x => x.find(x => Crud.AnyWrite.indexOf(x.name) >= 0))
+                let dataModel = map(crudRef && crudRef.genericArgs[0], name => getType({ name }))
+                prop.ref = map(dataModel, x => x.properties && map(x.properties.find(p => p.name.toLowerCase() === idLower), p => p.ref))
+                if (prop.ref) {
+                    prop.refInfo = row => {
+                        let ret = refInfo(row, prop, typeProps)
+                        return ret
+                    }
+                    prop.refLookup = callback => {
+                        let queryOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === prop.ref.model)
+                        let state = createPropState(prop, queryOp.request.name, callback)
+                        state.refresh = () => Object.assign(state, createPropState(prop, queryOp.request.name, callback))
+                        store.modalLookup = state
+                        App.transition('modal-lookup', true)
+                    }
+                }
+            }
+            return prop
         },
         getGridInputs(formLayout, f) {
             let to = []

@@ -1,0 +1,281 @@
+<script>
+import { delaySet, humanify, mapGet } from "@servicestack/client"
+
+/*minify:*/
+App.components({
+    ModalLookup(state, store, routes, settings) {
+        return {
+            $template: '#modal-lookup-template',
+            get state() { return store.modalLookup }, 
+            store, routes, settings,
+            open: null,
+            filter: null,
+            filters: [],
+            filtersCount: 0,
+            apiResult: null,
+
+            get prefs() { return map(this.state, x => x.prefs) },
+            get take() { return map(this.prefs, x => parseInt(x.take)) || 10 },
+            get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
+            get total() { return this.apiResult && map(this.apiResult.api.response, x => x.total) || 0 },
+            get apiLoading() { return map(this.state, x => x.apiQuery && x.apiQuery.apiLoading || false) },
+            get canFirst() { return this.skip > 0 },
+            get canPrev() { return this.skip > 0 },
+            get canNext() { return this.results.length >= this.take },
+            get canLast() { return this.results.length >= this.take },
+            min(num1,num2) { return Math.min(num1, num2) },
+
+            get dataModel() { return map(this.state, x => x.dataModel) },
+            get dataModelName() { return map(this.dataModel, x => x.name) },
+            get viewModel() { return map(this.state, x => x.viewModel) },
+            get viewModelColumns() { return Forms.typeProperties(this.viewModel) },
+            get columns() {
+                if (!this.state) return []
+                let only = this.prefs.selectedColumns.length > 0 ? this.prefs.selectedColumns : null
+                let opColumns = this.state
+                    ? only
+                        ? only.map(name => this.viewModelColumns.find(x => x.name === name))
+                        : this.viewModelColumns
+                    : []
+                return opColumns.filter(x => !!x)
+            },
+            selectColumn(column,e) {
+                let dialogWidth = 318
+                let div = e.target.tagName === 'DIV' ? e.target : e.target.closest('DIV')
+                let rect = div.getBoundingClientRect()
+                let minLeft = dialogWidth + 30
+                let args = { column, topLeft:{ x:Math.max(Math.floor(rect.x + 30), minLeft), y:Math.floor(110) } }
+                this.filter = args
+            },
+            selectRow(row) {
+                let val = mapGet(row, this.state.prop.ref.refId)
+                this.state.callback(val)
+                this.close()
+            },
+            fieldName(name) { return humanify(name) },
+            getId(row) { return Forms.getId(getType(routes.op),row) },
+            /** @param {*} row
+             *  @param {MetadataPropertyType} column */
+            format(row, column) {
+                return Forms.format(mapGet(row,column.name), column)
+            },
+            refInfo(row, column) {
+                let val = mapGet(row,column.name)
+                if (val == null || Array.isArray(val) && val.length === 0) return null
+                return Forms.refInfo(row,column,this.columns)
+            },
+            close() {
+                App.transition('modal-lookup', false, () => store.modalLookup = null)
+            },
+            search() {
+                return this.apiSend()
+            },
+            refreshResults() {
+                let hold = this.apiResult
+                this.apiResult = null
+                App.nextTick(() => this.apiResult = hold)
+            },
+            createRequestArgs() {
+                let args = {
+                    include:'total',
+                    take:this.take,
+                }
+                if (this.skip > 0) args.skip = this.skip
+                if (this.prefs.selectedColumns.length > 0) {
+                    args.fields = this.prefs.selectedColumns.join(',')
+                }
+                let orderBy = []
+                this.filters.forEach(f => {
+                    if (f.sort) orderBy.push((f.sort === 'DESC' ? '-' : '') + f.column.name)
+                    f.filters.forEach(filter => {
+                        let k = filter.key.replace('%', f.column.name)
+                        args[k] = filter.value
+                    })
+                })
+                let qs = queryString(location.search)
+                Object.keys(qs).forEach(k => {
+                    let field = this.viewModelColumns.find(x => x.name === k)
+                    if (field) args[k] = qs[k]
+                })
+                if (orderBy.length > 0) {
+                    args.orderBy = orderBy.join(',')
+                }
+                return args
+            },
+            apiSend() {
+                let state = this.state
+                if (!state) return
+
+                let requestDto = state.apiQuery.createRequest(this.createRequestArgs())
+                if (!requestDto) return
+
+                state.jsonError = null
+                let complete = delaySet(x => {
+                    this.apiResult = null
+                    state.apiQuery.apiLoading = x
+                })
+                return apiSend(createClient, requestDto).then(r => {
+                    complete()
+                    this.apiResult =  r
+
+                    let results = this.results
+                    if (!r.api.succeeded || results.length === 0) return
+                    Forms.fetchLookupValues(results, this.columns, () => this.refreshResults())
+                })
+            },
+            nextSkip(skip) {
+                skip += this.skip
+                if (typeof this.total == 'number') {
+                    const lastPage = Math.floor(this.total / this.take) * this.take
+                    if (skip > lastPage) return lastPage
+                }
+                if (skip < 0) return 0
+                return skip
+            },
+            skipTo(skip) {
+                this.skip = this.nextSkip(skip)
+                this.search()
+            },
+            updated() {
+                if (!this.state) return
+                this.skip = parseInt(this.skip) || 0
+                this.state.refresh()
+                this.filters = this.columns
+                    .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
+                this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
+                this.search()
+            },
+            updatePrefs(prefs) {
+                if (!this.state) return
+                this.state.prefs = prefs
+                settings.saveLookup(this.state.opName, x => Object.assign(x, prefs))
+                this.updated()
+            },
+            
+            sub:null,
+            unmounted:App.unsubscribe,
+            mounted() {
+                this.sub = App.events.subscribe('modal-lookup', args => this.updated())
+                this.updated()
+            },
+        }
+    }
+})
+/*:minify*/
+</script>
+<!--minify-->
+<template id="modal-lookup-template">
+<div id="modal-lookup" data-transition-for="modal-lookup" style="display:none" @click="close" @vue:mounted="mounted"
+     class="fixed z-20 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div v-if="prefs" v-scope="QueryPrefs({ id:'lookup-prefs', routes, store, settings, columns:() => viewModelColumns, prefs:() => prefs, save:updatePrefs })"></div>
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div data-transition="{
+                entering: { cls:'ease-out duration-300', from:'opacity-0',   to:'opacity-100'},
+                leaving:  { cls:'ease-in duration-200',  from:'opacity-100', to:'opacity-0' } 
+            }" data-transition-for="modal-lookup" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity opacity-0" aria-hidden="true"></div>
+        <!-- This element is to trick the browser into centering the modal contents. -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div @click.stop="" data-transition="{
+                entering: { cls:'ease-out duration-300', from:'opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95', to:'opacity-100 translate-y-0 sm:scale-100'}, 
+                leaving:  { cls:'ease-in duration-200',  from:'opacity-100 translate-y-0 sm:scale-100', to:'opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'} 
+            }" data-transition-for="modal-lookup"
+             class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-prose lg:max-w-screen-md xl:max-w-screen-lg 2xl:max-w-screen-xl sm:w-full opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+            <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+                <button type="button" @click="close"
+                        class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span class="sr-only">Close</span>
+                    <!-- Heroicon name: outline/x -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="pt-2 px-1 overflow-auto" style="min-height:580px">
+                <div class="mt-3 pl-5 flex items-center">
+                    <h3 class="text-xl leading-6 font-medium text-gray-900 mr-3">Select {{humanify(dataModelName)}}</h3>
+                    <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('lookup-prefs')">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
+                    </button>
+                    <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="First page" :disabled="!canFirst" @click="skipTo(-total)">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
+                    </button>
+                    <button type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="Previous page" :disabled="!canPrev" @click="skipTo(-take)">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+                    </button>
+                    <button type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="Next page" :disabled="!canNext" @click="skipTo(take)">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+                    </button>
+                    <button type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                            title="Last page" :disabled="!canLast" @click="skipTo(total)">
+                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
+                    </button>
+                    <div class="px-4 text-lg">
+                        <span v-if="apiLoading">Querying...</span>
+                        <span v-else-if="results.length"><span class="hidden xl:inline">Showing Results</span> {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
+                        <span v-else-if="apiResult">No Results</span>
+                    </div>
+                    <div v-if="filtersCount" class="pl-2">
+                        <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
+                                class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                            <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="mr-1">
+                                {{filtersCount}} {{ filtersCount === 1 ? 'Filter' : 'Filters' }}
+                            </span>
+                            <svg v-if="open!=='filters'"
+                                 class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            <svg v-else
+                                 class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
+                <div v-if="apiLoading" v-scope="Loading()"></div>
+                <div class="pb-4">
+                    <div class="py-2 align-middle inline-block min-w-full sm:px-2 lg:px-4">
+                        <div class="md:shadow overflow-hidden border-b border-gray-200 md:rounded-lg">
+                            <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save:updated, done:() => filter=null })" class="relative"></div>
+                            <table ref="table" class="table-array min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                <tr>
+                                    <th v-for="c in columns" :key="c.name" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                        <div @click="selectColumn(c,$event)" class="flex justify-between items-center text-sm cursor-pointer hover:text-gray-900">
+                                            <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
+                                            <div v-scope="SettingsIcons({ routes, settings, name:() => c.name })"></div>
+                                        </div>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(row,index) in results" :class="`${index % 2 == 0 ? 'bg-white' : 'bg-gray-50'} cursor-pointer hover:bg-yellow-50`"
+                                    @click="selectRow(row)">
+                                    <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <div v-if="refInfo(row,c)" class="flex">
+                                            <span class="mr-1" v-scope="Image(refInfo(row,c).icon, { cls:'w-5 h-5' })"></span>
+                                            <div v-html="map(refInfo(row,c),x => x.html)"></div>
+                                        </div>
+                                        <div v-else v-html="format(row,c)"></div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+</template>
+<!--/minify-->

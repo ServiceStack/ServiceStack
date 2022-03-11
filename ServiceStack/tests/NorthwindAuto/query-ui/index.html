@@ -45,6 +45,7 @@ DEBUG = true /*debug*/
                 <div v-if="store.op">
                     <div class="w-body md:w-body overflow-auto">
                         <div v-scope="AutoQuery({ store, routes, settings })"></div>
+                        <div v-scope="ModalLookup(store.modalLookup, store, routes, settings)"></div>
                     </div>
                 </div>
                 <div class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto" v-else v-scope="Welcome({ store })"></div>

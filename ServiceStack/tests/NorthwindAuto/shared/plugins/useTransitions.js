@@ -35,6 +35,7 @@ App.plugin({
                     el.style.display = enter ? null : 'none'
                 }, duration * 2)
             })
+            App.events.publish(prop, enter)
             return enter
         }
         this.transition = transition
