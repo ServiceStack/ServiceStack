@@ -19,7 +19,7 @@ function apiState(op) {
         get api() { return map(this.apiResult, x => x.api) },
         createRequest: args => createRequest(op,args),
         model: createModel(),
-        title: op.request.description || humanify(op.request.name),
+        title: Forms.opTitle(op),
         get error(){ return this.apiResult && this.apiResult.api.error },
         get errorSummary() {
             if (!formLayout) return null

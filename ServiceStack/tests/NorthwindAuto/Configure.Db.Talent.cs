@@ -19,6 +19,7 @@ public static class ConfigureDbTalent
         db.CreateTableIfNotExists<JobApplicationEvent>();
         db.CreateTableIfNotExists<PhoneScreen>();
         db.CreateTableIfNotExists<Interview>();
+        db.CreateTableIfNotExists<JobOffer>();
         db.CreateTableIfNotExists<JobApplicationAttachment>();
         db.CreateTableIfNotExists<JobApplicationComment>();
 
@@ -256,6 +257,4 @@ public static class ConfigureDbTalent
             db.Insert(comment);
         }
     }
-
-
 }

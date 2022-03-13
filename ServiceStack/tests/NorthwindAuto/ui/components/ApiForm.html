@@ -40,7 +40,7 @@ App.component('ApiForm', ({ store, routes }) => {
                     let except = this.formLayout.map(input => input.id).filter(x => x)
                     return this.apiResult && this.apiResult.api.summaryMessage(except)   
                 },
-                title: s.op.request.description || humanify(s.op.request.name),
+                title: Forms.opTitle(op),
                 get apiRequestJson() { return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || '' },
                 formLayout: Forms.resolveFormLayout(s.op),
             }))

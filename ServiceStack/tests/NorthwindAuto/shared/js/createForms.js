@@ -270,8 +270,9 @@ export function createForms(TypesMap, css, ui) {
             if (Types.isPrimitive(val[0])) {
                 return obj.join(',')
             }
-            obj = val[0]
+            if (val[0] != null) obj = val[0]
         }
+        if (obj == null) return ''
         
         let keys = Object.keys(obj)
         let sb = []
@@ -396,6 +397,17 @@ export function createForms(TypesMap, css, ui) {
         theme,
         formClass: theme.form + (css.form ? ' ' + css.form : ''),
         gridClass: css.fieldset,
+
+        /** @param {MetadataOperationType} op */
+        opTitle(op) {
+            return op.request.description || humanify(op.request.name).replace(/^Patch/,'Update')
+        },
+        /** @param {MetadataType} type */
+        forExplorer(type) {
+            return field => {
+                field.prop = this.getFormProp(field.id, type)
+            }
+        },
         /** @param {MetadataType} type */
         forCreate(type) {
             return field => {
