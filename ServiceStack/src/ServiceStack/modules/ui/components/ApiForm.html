@@ -35,7 +35,7 @@ App.component('ApiForm', ({ store, routes }) => {
                     let except = this.formLayout.map(input => input.id).filter(x => x)
                     return this.apiResult && this.apiResult.api.summaryMessage(except)   
                 },
-                title: Forms.opTitle(op),
+                title: Forms.opTitle(s.op),
                 get apiRequestJson() { return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || '' },
                 formLayout: Forms.resolveFormLayout(s.op),
             }))
@@ -80,10 +80,16 @@ App.component('ApiForm', ({ store, routes }) => {
             if (!this.hasState) return
             this.state.formJson = JSON.stringify(Forms.formValues(e.target.tagName === 'FORM' ? e.target : e.target.form), undefined, 4)
         },
-        onJsonFormInput(e) { this.updateRequestDto(e.target.value) },
+        onJsonFormInput(e) { 
+            this.updateRequestDto(e.target.value) 
+        },
         onAjaxFormSubmit(e) {
             this.saveForm(e.target)
-            this.apiSend()
+            if (HttpMethods.hasRequestBody(this.state.op.method)) {
+                this.apiForm(e.target)
+            } else {
+                this.apiSend()
+            }
         },
         onJsonFormSubmit(e) {
             if (!this.hasState) return
@@ -105,6 +111,19 @@ App.component('ApiForm', ({ store, routes }) => {
             state.apiResult = null
             let complete = delaySet(x => state.apiLoading = x)
             apiSend(createClient, state.requestDto).then(r => {
+                state.apiResult = r
+                complete()
+            })
+        },
+        apiForm(form) {
+            if (!this.hasState) return
+            let state = this.state
+            let formData = Forms.formData(form, state.op)
+            let requestDto = createDto(state.opName,{})
+            state.jsonError = null
+            state.apiResult = null
+            let complete = delaySet(x => state.apiLoading = x)
+            return apiForm(createClient, requestDto, formData).then(r => {
                 state.apiResult = r
                 complete()
             })

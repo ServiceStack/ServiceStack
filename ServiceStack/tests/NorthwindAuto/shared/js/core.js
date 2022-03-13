@@ -191,6 +191,9 @@ export const Crud = {
 /** @param {AuthenticateResponse} [session] */
 export const isAdminAuth = session => map(session, x => x.roles && x.roles.indexOf('Admin') >= 0)
 
+/** @param {any[]|null} arr */
+export const hasItems = arr => arr && arr.length > 0
+
 /** @param {MetadataOperationType?} op 
     @param {AuthenticateResponse|null} auth */
 export function canAccess(op, auth) {
@@ -202,7 +205,6 @@ export function canAccess(op, auth) {
     if (isAdminAuth(auth))
         return true;
     const userRoles = auth.roles || []
-    const hasItems = arr => arr && arr.length > 0 
     if (hasItems(op.requiredRoles) && !op.requiredRoles.every(role => userRoles.indexOf(role) >= 0))
         return false
     if (hasItems(op.requiresAnyRole) && !op.requiresAnyRole.some(role => userRoles.indexOf(role) >= 0))

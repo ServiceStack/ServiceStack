@@ -137,6 +137,7 @@ const Crud = {
     isDelete: op => hasInterface(op, Crud.Delete),
 }
 const isAdminAuth = session => map(session, x => x.roles && x.roles.indexOf('Admin') >= 0)
+const hasItems = arr => arr && arr.length > 0
 function canAccess(op, auth) {
     if (!op) return false
     if (!op.requiresAuth)
@@ -146,7 +147,6 @@ function canAccess(op, auth) {
     if (isAdminAuth(auth))
         return true;
     const userRoles = auth.roles || []
-    const hasItems = arr => arr && arr.length > 0 
     if (hasItems(op.requiredRoles) && !op.requiredRoles.every(role => userRoles.indexOf(role) >= 0))
         return false
     if (hasItems(op.requiresAnyRole) && !op.requiresAnyRole.some(role => userRoles.indexOf(role) >= 0))

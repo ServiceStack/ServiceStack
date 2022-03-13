@@ -7,7 +7,7 @@ App.components({
             $template: '#sidebar-nav-template',
             store,
             $on: $on || null,
-            label(op) { return op.request.inherits.genericArgs[0] },
+            label(op) { return humanify(op.dataModel.name) },
             getIcon,
         }
     },

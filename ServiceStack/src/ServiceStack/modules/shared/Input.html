@@ -3,7 +3,8 @@ App.components({
     Input({ input, prop, model, api }) {
         return {
             $template: '#input-template',
-            input, prop,
+            get input() { return resolve(input) },
+            get prop() { return resolve(prop) },
             get model() { return  resolve(model) || {} },
             get error() { return resolve(api, x => x && x.error) },
             kvpValues(input) {
@@ -31,7 +32,15 @@ App.components({
             },
             fileChange(input,e) {
                 let files = e.target.files
-                this.model[input.id] = Array.from(files).map(f => ({ fileName:f.name, contentLength:f.size, filePath:Files.fileImageUri(f) }))
+                this.model[input.id] = Array.from(files)
+                    .map(f => ({ fileName:f.name, contentLength:f.size, filePath:Files.fileImageUri(f) }))
+            },
+            hasValidFile(input) { 
+                return map(this.model[input.id], x => typeof x != 'string' || !x.startsWith('C:\\fakepath\\')) 
+            },
+            fileList(input) {
+                let files = this.model[input.id] || []
+                return files.filter(f => typeof f == 'object')
             },
             imgSrc(input) {
                 let val = this.model[input.id]
@@ -69,7 +78,7 @@ App.components({
                v-html="useLabel(input)"></label>
         <div class="block mt-2">
             <span class="sr-only">{{input.help || useLabel(input)}}</span>
-            <input type="file" :name="input.id" :multiple="isMultiple(input)" v-bind="input" class="block w-full text-sm text-slate-500
+            <input ref="inputFile" type="file" :name="input.id" :multiple="isMultiple(input)" v-bind="input" class="block w-full text-sm text-slate-500
               file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
               file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100" 
               @change="fileChange(input,event)" />
@@ -77,12 +86,12 @@ App.components({
             <p v-else-if="input.help" :id="`${input.id}-description`" class="text-gray-500" v-html="input.help"></p>
         </div>
     </div>
-    <div v-if="model[input.id] && !isMultiple(input)" class="shrink-0 cursor-pointer" @click="$1('#'+input.id).click()">
+    <div v-if="!isMultiple(input) && hasValidFile(input)" class="shrink-0 cursor-pointer" @click="$1('#'+input.id).click()">
         <img :class="`h-16 w-16 object-cover ${imgCls(imgSrc(input))}`" :src="imgSrc(input)" :alt="`Current ${useLabel(input)}`" />
     </div>
-    <div v-else-if="model[input.id] && isMultiple(input)" class="mt-3">
+    <div v-else-if="isMultiple(input) && fileList(input).length" class="mt-3">
         <table>
-            <tr v-for="file in model[input.id]">
+            <tr v-for="file in fileList(input)">
                 <td class="pr-3 py-1">
                     <img :src="filePathUri(file.filePath)" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`">
                 </td>

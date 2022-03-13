@@ -1,5 +1,6 @@
 <script minify>
 import { getIcon } from "../js/appInit"
+import { humanify } from "@servicestack/client"
 
 App.components({
     Sidebar: '#sidebar-template',
@@ -9,7 +10,7 @@ App.components({
             $template: '#sidebar-nav-template',
             store,
             $on: $on || null,
-            label(op) { return op.request.inherits.genericArgs[0] },
+            label(op) { return humanify(op.dataModel.name) },
             getIcon,
         }
     },

@@ -403,7 +403,7 @@ export function createForms(TypesMap, css, ui) {
             return op.request.description || humanify(op.request.name).replace(/^Patch/,'Update')
         },
         /** @param {MetadataType} type */
-        forExplorer(type) {
+        forAutoForm(type) {
             return field => {
                 field.prop = this.getFormProp(field.id, type)
             }
@@ -432,9 +432,10 @@ export function createForms(TypesMap, css, ui) {
             let typeProps = id && type && typeProperties(type)
             let prop = typeProps && typeProps.find(x => x.name.toLowerCase() === idLower)
             if (!prop) {
-                console.error(`'${id}' Property not found in ${type && type.name}`)
+                if (!id.startsWith('__')) console.error(`'${id}' Property not found in ${type && type.name}`)
                 return null
             }
+            if (typeof settings != 'object' || typeof settings.lookup != 'function') return prop // disable in API Explorer
             if (!prop.ref) {
                 let crudRef = map(type.implements, x => x.find(x => Crud.AnyWrite.indexOf(x.name) >= 0))
                 let dataModel = map(crudRef && crudRef.genericArgs[0], name => getType({ name }))
