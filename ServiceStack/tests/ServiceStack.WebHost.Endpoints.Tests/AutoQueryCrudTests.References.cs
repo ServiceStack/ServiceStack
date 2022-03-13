@@ -182,7 +182,9 @@ public class QueryJobApplication : QueryDb<JobApplication>
 [AutoApply(Behavior.AuditCreate)]
 public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplication>
 {
+    [ValidateGreaterThan(0)]
     public int JobId { get; set; }
+    [ValidateGreaterThan(0)]
     public int ContactId { get; set; }
     public DateTime AppliedDate { get; set; }
 

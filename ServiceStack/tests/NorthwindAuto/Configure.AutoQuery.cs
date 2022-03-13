@@ -55,8 +55,8 @@ namespace MyApp
                         */
                         IncludeService = op => !op.ReferencesAny(nameof(Booking),
                             nameof(Player),nameof(GameItem),nameof(Profile),nameof(Level),nameof(PlayerGameItem),
-                            nameof(Contact),nameof(Job),nameof(JobApplication),nameof(JobApplicationEvent),nameof(JobApplicationAttachment),
-                            nameof(PhoneScreen),nameof(Interview)),
+                            nameof(Job),nameof(JobApplication),nameof(JobApplicationEvent),nameof(JobApplicationAttachment),nameof(JobOffer),
+                            nameof(Contact),nameof(PhoneScreen),nameof(Interview)),
                     },
                 });
 

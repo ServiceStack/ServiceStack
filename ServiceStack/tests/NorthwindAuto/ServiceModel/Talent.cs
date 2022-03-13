@@ -41,8 +41,8 @@ public class Job : AuditBase
     [AutoIncrement]
     public int Id { get; set; }
 
-    [Reference]
-    public List<JobApplication> Applications { get; set; }
+    [Reference] 
+    public List<JobApplication> Applications { get; set; } = new();
 
     public string Title { get; set; }
     public string Description { get; set; }
@@ -57,11 +57,6 @@ public class Job : AuditBase
     public string Location { get; set; }
 
     public DateTime Closing { get; set; }
-    
-    public Job()
-    {
-        Applications = new List<JobApplication>();
-    }
 }
 
 public enum EmploymentType
@@ -331,7 +326,9 @@ public class CreateJob : ICreateDb<Job>, IReturn<Job>
 {
     public string Title { get; set; }
 
+    [ValidateGreaterThan(0)]
     public int SalaryRangeLower { get; set; }
+    [ValidateGreaterThan(0)]
     public int SalaryRangeUpper { get; set; }
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Description { get; set; }
@@ -377,7 +374,9 @@ public class QueryJobApplication : QueryDb<JobApplication>
 [AutoApply(Behavior.AuditCreate)]
 public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplication>
 {
+    [ValidateGreaterThan(0)]
     public int JobId { get; set; }
+    [ValidateGreaterThan(0)]
     public int ContactId { get; set; }
     public DateTime AppliedDate { get; set; }
     public JobApplicationStatus ApplicationStatus { get; set; }
@@ -418,9 +417,9 @@ public class QueryPhoneScreen : QueryDb<PhoneScreen>
 [AutoApply(Behavior.AuditCreate)]
 public class CreatePhoneScreen : ICreateDb<PhoneScreen>, IReturn<PhoneScreen>
 {
-    [ValidateNotEmpty]
+    [ValidateGreaterThan(0)]
     public int JobApplicationId { get; set; }
-    [ValidateNotEmpty(Message = "An employee to perform the phone screening must be selected.")]
+    [ValidateGreaterThan(0, Message = "An employee to perform the phone screening must be selected.")]
     public int AppUserId { get; set; }
 
     public JobApplicationStatus ApplicationStatus { get; set; }
@@ -430,12 +429,8 @@ public class CreatePhoneScreen : ICreateDb<PhoneScreen>, IReturn<PhoneScreen>
 [AutoApply(Behavior.AuditModify)]
 public class UpdatePhoneScreen : IPatchDb<PhoneScreen>, IReturn<PhoneScreen>
 {
-    [ValidateNotEmpty]
     public int Id { get; set; }
-    [ValidateNotEmpty]
     public int? JobApplicationId { get; set; }
-
-    [ValidateNotEmpty]
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string? Notes { get; set; }
 
@@ -456,9 +451,9 @@ public class CreateInterview : ICreateDb<Interview>, IReturn<Interview>
 {
     [ValidateNotNull]
     public DateTime? BookingTime { get; set; }
-    [ValidateNotEmpty]
+    [ValidateGreaterThan(0)]
     public int JobApplicationId { get; set; }
-    [ValidateNotEmpty(Message = "An employee to perform interview must be selected.")]
+    [ValidateGreaterThan(0, Message = "An employee to perform interview must be selected.")]
     public int AppUserId { get; set; }
 
     public JobApplicationStatus ApplicationStatus { get; set; }
@@ -468,12 +463,10 @@ public class CreateInterview : ICreateDb<Interview>, IReturn<Interview>
 [AutoApply(Behavior.AuditModify)]
 public class UpdateInterview : IPatchDb<Interview>, IReturn<Interview>
 {
-    [ValidateNotEmpty]
+    [ValidateGreaterThan(0)]
     public int Id { get; set; }
-    [ValidateNotEmpty]
     public int? JobApplicationId { get; set; }
 
-    [ValidateNotEmpty]
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string? Notes { get; set; }
 
@@ -492,9 +485,9 @@ public class QueryJobOffer : QueryDb<JobOffer>
 [AutoApply(Behavior.AuditCreate)]
 public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
 {
-    [ValidateNotNull]
+    [ValidateGreaterThan(0)]
     public int SalaryOffer{ get; set; }
-    [ValidateNotEmpty]
+    [ValidateGreaterThan(0)]
     public int JobApplicationId { get; set; }
 
     public JobApplicationStatus ApplicationStatus { get; set; }
@@ -557,7 +550,7 @@ public class QueryJobApplicationComments : QueryDb<JobApplicationComment>
 [AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
 public class CreateJobApplicationComment : ICreateDb<JobApplicationComment>, IReturn<JobApplicationComment>
 {
-    [ValidateNotEmpty]
+    [ValidateGreaterThan(0)]
     public int JobApplicationId { get; set; }
 
     [ValidateNotEmpty]
@@ -570,11 +563,10 @@ public class CreateJobApplicationComment : ICreateDb<JobApplicationComment>, IRe
 [AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
 public class UpdateJobApplicationComment : IPatchDb<JobApplicationComment>, IReturn<JobApplicationComment>
 {
-    [ValidateNotEmpty]
     public int Id { get; set; }
-    [ValidateNotEmpty]
+    
     public int? JobApplicationId { get; set; }
-    [ValidateNotEmpty]
+
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string? Comment { get; set; }
 }
@@ -584,7 +576,6 @@ public class UpdateJobApplicationComment : IPatchDb<JobApplicationComment>, IRet
 [AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
 public class DeleteJobApplicationComment : IDeleteDb<JobApplicationComment>, IReturnVoid
 {
-    [ValidateNotEmpty]
     public int Id { get; set; }
 }
 
