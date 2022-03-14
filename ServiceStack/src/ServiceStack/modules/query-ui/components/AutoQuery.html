@@ -260,64 +260,70 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
     <div v-if="invalidAccess" class="w-body md:w-body overflow-auto" v-scope="EnsureAccess({ store, message:() => invalidAccess, $on:updated })"></div>
     <div v-else-if="hasState" class="pt-1">
         <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => viewModelColumns, prefs:() => settings.op(routes.op), save:updatePrefs })"></div>
-        <div class="p-1 flex flex-wrap">
-            <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('query-prefs')">
-                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
-            </button>
-            <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']" 
-                    title="First page" :disabled="!canFirst" v-href="{ skip:nextSkip(-total) }">
-                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
-            </button>
-            <button type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
-                    title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
-                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
-            </button>
-            <button type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
-                    title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
-                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
-            </button>
-            <button type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
-                    title="Last page" :disabled="!canLast" v-href="{ skip:nextSkip(total) }">
-                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
-            </button>
-            <div class="px-4 text-lg">
-                <span v-if="apiLoading">Querying...</span>
-                <span v-else-if="results.length"><span class="hidden xl:inline">Showing Results</span> {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
-                <span v-else-if="apiResult">No Results</span>
-            </div>
-            <div class="pl-2">
-                <button type="button" @click="downloadCsv" title="Download CSV" 
-                        class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd"/><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z"/><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z"/></svg>
-                    <span class="text-green-900">Excel</span>
+        <div class="pl-1 pt-1 flex flex-wrap">
+            <div class="flex pb-1 sm:pb-0">
+                <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('query-prefs')">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
+                </button>
+                <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                        title="First page" :disabled="!canFirst" v-href="{ skip:nextSkip(-total) }">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
+                </button>
+                <button type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                        title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+                </button>
+                <button type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                        title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+                </button>
+                <button type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                        title="Last page" :disabled="!canLast" v-href="{ skip:nextSkip(total) }">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
                 </button>
             </div>
-            <div class="pl-2">
-                <button type="button" @click="copyApiUrl" title="Copy API URL"
-                        class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <svg v-if="copied" class="w-5 h-5 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
-                    <span>Copy URL</span>
-                </button>
+            <div class="flex pb-1 sm:pb-0">
+                <div class="px-4 text-lg">
+                    <span v-if="apiLoading">Querying...</span>
+                    <span v-else-if="results.length"><span class="hidden xl:inline">Showing Results</span> {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
+                    <span v-else-if="apiResult">No Results</span>
+                </div>
             </div>
-            <div v-if="filtersCount" class="pl-2">
-                <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
-                        class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
-                    <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
-                    </svg>
-                    <span class="mr-1">
-                        {{filtersCount}} {{ filtersCount === 1 ? 'Filter' : 'Filters' }}
-                    </span>
-                    <svg v-if="open!=='filters'" 
-                         class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                    <svg v-else 
-                         class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
-                    </svg>
-                </button>
+            <div class="flex pb-1 sm:pb-0">
+                <div class="pl-2">
+                    <button type="button" @click="downloadCsv" title="Download CSV"
+                            class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd"/><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z"/><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z"/></svg>
+                        <span class="text-green-900">Excel</span>
+                    </button>
+                </div>
+                <div class="pl-2">
+                    <button type="button" @click="copyApiUrl" title="Copy API URL"
+                            class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg v-if="copied" class="w-5 h-5 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+                        <span>Copy URL</span>
+                    </button>
+                </div>
+                <div v-if="filtersCount" class="pl-2">
+                    <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
+                            class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                        <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="mr-1">
+                            {{filtersCount}} {{ filtersCount === 1 ? 'Filter' : 'Filters' }}
+                        </span>
+                        <svg v-if="open!=='filters'"
+                             class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <svg v-else
+                             class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
         <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>

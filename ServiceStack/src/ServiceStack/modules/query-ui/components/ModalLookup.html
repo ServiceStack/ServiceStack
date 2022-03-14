@@ -181,53 +181,61 @@ App.components({
                 </button>
             </div>
             <div class="pt-2 px-1 overflow-auto" style="min-height:580px">
-                <div class="mt-3 pl-5 flex items-center">
-                    <h3 class="text-xl leading-6 font-medium text-gray-900 mr-3">Select {{humanify(dataModelName)}}</h3>
-                    <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('lookup-prefs')">
-                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
-                    </button>
-                    <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
-                            title="First page" :disabled="!canFirst" @click="skipTo(-total)">
-                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
-                    </button>
-                    <button type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
-                            title="Previous page" :disabled="!canPrev" @click="skipTo(-take)">
-                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
-                    </button>
-                    <button type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
-                            title="Next page" :disabled="!canNext" @click="skipTo(take)">
-                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
-                    </button>
-                    <button type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
-                            title="Last page" :disabled="!canLast" @click="skipTo(total)">
-                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
-                    </button>
-                    <div class="px-4 text-lg">
-                        <span v-if="apiLoading">Querying...</span>
-                        <span v-else-if="results.length"><span class="hidden xl:inline">Showing Results</span> {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
-                        <span v-else-if="apiResult">No Results</span>
-                    </div>
-                    <div v-if="filtersCount" class="pl-2">
-                        <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
-                                class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
-                            <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="mr-1">
-                                {{filtersCount}} {{ filtersCount === 1 ? 'Filter' : 'Filters' }}
-                            </span>
-                            <svg v-if="open!=='filters'"
-                                 class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                            </svg>
-                            <svg v-else
-                                 class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
-                            </svg>
+                <div class="mt-3 pl-5 flex flex-wrap items-center">
+                    <h3 class="hidden sm:block text-xl leading-6 font-medium text-gray-900 mr-3">
+                        Select <span class="hidden md:inline">{{humanify(dataModelName)}}</span>
+                    </h3>
+                    <div class="flex pb-1 sm:pb-0">
+                        <button type="button" class="sm:pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('lookup-prefs')">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="First page" :disabled="!canFirst" @click="skipTo(-total)">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="Previous page" :disabled="!canPrev" @click="skipTo(-take)">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="Next page" :disabled="!canNext" @click="skipTo(take)">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="Last page" :disabled="!canLast" @click="skipTo(total)">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
                         </button>
                     </div>
+                    <div class="flex pb-1 sm:pb-0">
+                        <div class="px-4 text-lg">
+                            <span v-if="apiLoading">Querying...</span>
+                            <span v-else-if="results.length"><span class="hidden xl:inline">Showing Results</span> {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
+                            <span v-else-if="apiResult">No Results</span>
+                        </div>
+                    </div>
+                    <div class="flex pb-1 sm:pb-0">
+                        <div v-if="filtersCount" class="sm:pl-2">
+                            <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
+                                    class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                                <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="mr-1">
+                                    {{filtersCount}} {{ filtersCount === 1 ? 'Filter' : 'Filters' }}
+                                </span>
+                                <svg v-if="open!=='filters'"
+                                     class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                </svg>
+                                <svg v-else
+                                     class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
+                <div v-if="open==='filters'" class="border-b border-gray-200 py-8" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
                 <div v-if="apiLoading" v-scope="Loading()"></div>
                 <div v-else class="mt-3 flex flex-col">
                     <div class="-mx-1">
