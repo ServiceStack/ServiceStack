@@ -208,7 +208,7 @@ App.components({
         <div class="flex justify-end">
             <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
             <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Create {{ humanify(dataModelName) }}
+                Create <span class="ml-1 hidden sm:inline">{{ humanify(dataModelName) }}</span>
             </button>
         </div>
     </div>
@@ -300,7 +300,7 @@ App.components({
         </div>
         <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6 flex flex-wrap justify-between">
             <div>
-                <div v-if="apiDelete">
+                <div v-if="apiDelete && !(apiLoading && !breakpoints.sm)">
                     <input id="confirmDelete" type="checkbox" v-model="confirmDelete"
                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
                     <label for="confirmDelete" class="mx-1 select-none">confirm</label>
@@ -314,7 +314,7 @@ App.components({
             <div class="flex justify-end">
                 <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
                 <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Update <span class="hidden sm:inline">{{ humanify(dataModelName) }}</span>
+                    Update <span class="ml-1 hidden sm:inline">{{ humanify(dataModelName) }}</span>
                 </button>
             </div>
         </div>

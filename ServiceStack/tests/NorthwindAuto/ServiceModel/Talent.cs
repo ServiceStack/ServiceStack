@@ -40,22 +40,17 @@ public class Job : AuditBase
 {
     [AutoIncrement]
     public int Id { get; set; }
-
-    [Reference] 
-    public List<JobApplication> Applications { get; set; } = new();
-
     public string Title { get; set; }
-    public string Description { get; set; }
-
+    public EmploymentType EmploymentType { get; set; }
+    public string Company { get; set; }
+    public string Location { get; set; }
     [IntlNumber(Currency = NumberCurrency.USD)]
     public int SalaryRangeLower { get; set; }
     [IntlNumber(Currency = NumberCurrency.USD)]
     public int SalaryRangeUpper { get; set; }
-
-    public EmploymentType EmploymentType { get; set; }
-    public string Company { get; set; }
-    public string Location { get; set; }
-
+    public string Description { get; set; }
+    [Reference]
+    public List<JobApplication> Applications { get; set; } = new();
     public DateTime Closing { get; set; }
 }
 
@@ -139,9 +134,9 @@ public class JobApplicationEvent : AuditBase
     [Reference, Format(FormatMethods.Hidden)]
     public AppUser AppUser { get; set; }
 
-    public JobApplicationStatus? Status { get; set; }
-
     public string Description { get; set; }
+
+    public JobApplicationStatus? Status { get; set; }
 
     public DateTime EventDate { get; set; }
 
@@ -188,14 +183,14 @@ public class Interview : AuditBase
     public string Notes { get; set; }
 }
 
-[Icon(Svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" role=\"img\" width=\"1em\" height=\"1em\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 48 48\"><path fill=\"#78909C\" d=\"M40 41H8c-2.2 0-4-1.8-4-4V16.1c0-1.3.6-2.5 1.7-3.3L24 0l18.3 12.8c1.1.7 1.7 2 1.7 3.3V37c0 2.2-1.8 4-4 4z\"/><path fill=\"#AED581\" d=\"M14 1h20v31H14z\"/><g fill=\"#558B2F\"><path d=\"M13 0v33h22V0H13zm20 31H15V2h18v29z\"/><path d=\"M34 3c0 1.7-.3 3-2 3s-3-1.3-3-3s1.3-2 3-2s2 .3 2 2zM16 1c1.7 0 3 .3 3 2s-1.3 3-3 3s-2-1.3-2-3s.3-2 2-2z\"/><circle cx=\"24\" cy=\"8\" r=\"2\"/><circle cx=\"24\" cy=\"20\" r=\"6\"/></g><path fill=\"#CFD8DC\" d=\"M40 41H8c-2.2 0-4-1.8-4-4V17l20 13l20-13v20c0 2.2-1.8 4-4 4z\"/></svg>")]
+[Icon(Svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" role=\"img\" width=\"1em\" height=\"1em\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 36 36\"><path fill=\"currentColor\" d=\"M18 2a16 16 0 1 0 16 16A16 16 0 0 0 18 2Zm7.65 21.59c-1 3-3.61 3.84-5.9 4v2a1.25 1.25 0 0 1-2.5 0v-2A11.47 11.47 0 0 1 11 25a1.25 1.25 0 1 1 1.71-1.83a9.11 9.11 0 0 0 4.55 1.94v-6.28a9.63 9.63 0 0 1-3.73-1.41a4.8 4.8 0 0 1-1.91-5.84c.59-1.51 2.42-3.23 5.64-3.51V6.25a1.25 1.25 0 0 1 2.5 0v1.86a9.67 9.67 0 0 1 4.9 2A1.25 1.25 0 0 1 23 11.95a7.14 7.14 0 0 0-3.24-1.31v6.13c.6.13 1.24.27 1.91.48a5.85 5.85 0 0 1 3.69 2.82a4.64 4.64 0 0 1 .29 3.52Z\" class=\"clr-i-solid clr-i-solid-path-1\"/><path fill=\"currentColor\" d=\"M20.92 19.64c-.4-.12-.79-.22-1.17-.3v5.76c2-.2 3.07-.9 3.53-2.3a2.15 2.15 0 0 0-.15-1.58a3.49 3.49 0 0 0-2.21-1.58Z\" class=\"clr-i-solid clr-i-solid-path-2\"/><path fill=\"currentColor\" d=\"M13.94 12.48a2.31 2.31 0 0 0 1 2.87a6.53 6.53 0 0 0 2.32.92v-5.72c-2.1.25-3.07 1.29-3.32 1.93Z\" class=\"clr-i-solid clr-i-solid-path-3\"/><path fill=\"none\" d=\"M0 0h36v36H0z\"/></svg>")]
 public class JobOffer : AuditBase
 {
     [AutoIncrement]
     public int Id { get; set; }
 
     [IntlNumber(Currency = NumberCurrency.USD)]
-    public int SalaryOffer{ get; set; }
+    public int SalaryOffer { get; set; }
 
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
@@ -486,7 +481,7 @@ public class QueryJobOffer : QueryDb<JobOffer>
 public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
 {
     [ValidateGreaterThan(0)]
-    public int SalaryOffer{ get; set; }
+    public int SalaryOffer { get; set; }
     [ValidateGreaterThan(0)]
     public int JobApplicationId { get; set; }
 
@@ -564,7 +559,7 @@ public class CreateJobApplicationComment : ICreateDb<JobApplicationComment>, IRe
 public class UpdateJobApplicationComment : IPatchDb<JobApplicationComment>, IReturn<JobApplicationComment>
 {
     public int Id { get; set; }
-    
+
     public int? JobApplicationId { get; set; }
 
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
@@ -588,5 +583,8 @@ public class TalentStatsResponse
 {
     public long TotalJobs { get; set; }
     public long TotalContacts { get; set; }
-    public long TotalJobApplications { get; set; }
+    public int AvgSalaryExpectation { get; set; }
+    public int AvgSalaryLower { get; set; }
+    public int AvgSalaryUpper { get; set; }
+    public decimal PreferredRemotePercentage { get; set; }
 }

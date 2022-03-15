@@ -2,6 +2,7 @@
 /*minify:*/
 App.components({
     ModalLookup(state, store, routes, settings) {
+        let emptyPrefs = {take:10,selectedColumns:[]}
         return {
             $template: '#modal-lookup-template',
             get state() { return store.modalLookup }, 
@@ -11,7 +12,7 @@ App.components({
             filters: [],
             filtersCount: 0,
             apiResult: null,
-            get prefs() { return map(this.state, x => x.prefs) },
+            prefs: map(store.modalLookup, s => s.createPrefs()) || emptyPrefs,
             get take() { return map(this.prefs, x => parseInt(x.take)) || 10 },
             get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
             get total() { return this.apiResult && map(this.apiResult.api.response, x => x.total) || 0 },
@@ -25,23 +26,13 @@ App.components({
             get dataModelName() { return map(this.dataModel, x => x.name) },
             get viewModel() { return map(this.state, x => x.viewModel) },
             get viewModelColumns() { return Forms.typeProperties(this.viewModel) },
-            get columns() {
-                if (!this.state) return []
-                let only = this.prefs.selectedColumns.length > 0 ? this.prefs.selectedColumns : null
-                let opColumns = this.state
-                    ? only
-                        ? only.map(name => this.viewModelColumns.find(x => x.name === name))
-                        : this.viewModelColumns
-                    : []
-                return opColumns.filter(x => !!x)
-            },
+            get columns() { return map(this.state, s => s.selectedColumns(this.prefs)) || [] },
             selectColumn(column,e) {
                 let dialogWidth = 318
                 let div = e.target.tagName === 'DIV' ? e.target : e.target.closest('DIV')
                 let rect = div.getBoundingClientRect()
                 let minLeft = dialogWidth + 30
-                let args = { column, topLeft:{ x:Math.max(Math.floor(rect.x + 30), minLeft), y:Math.floor(110) } }
-                this.filter = args
+                this.filter = { column, topLeft:{ x:Math.max(Math.floor(rect.x + 30), minLeft), y:Math.floor(110) } }
             },
             selectRow(row) {
                 let val = mapGet(row, this.state.prop.ref.refId)
@@ -131,6 +122,7 @@ App.components({
                 if (!this.state) return
                 this.skip = parseInt(this.skip) || 0
                 this.state.refresh()
+                this.prefs = this.state.createPrefs()
                 this.filters = this.columns
                     .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
                 this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
@@ -138,7 +130,7 @@ App.components({
             },
             updatePrefs(prefs) {
                 if (!this.state) return
-                this.state.prefs = prefs
+                this.prefs = prefs
                 settings.saveLookup(this.state.opName, x => Object.assign(x, prefs))
                 this.updated()
             },
@@ -180,7 +172,7 @@ App.components({
                     </svg>
                 </button>
             </div>
-            <div class="pt-2 px-1 overflow-auto" style="min-height:580px">
+            <div class="pt-2 px-1 overflow-auto" style="min-height:620px">
                 <div class="mt-3 pl-5 flex flex-wrap items-center">
                     <h3 class="hidden sm:block text-xl leading-6 font-medium text-gray-900 mr-3">
                         Select <span class="hidden md:inline">{{humanify(dataModelName)}}</span>

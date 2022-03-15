@@ -239,9 +239,10 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             })
             return apiSend(createClient, requestDto).then(r => {
                 complete()
-                this.apiResult =  r
+                /**: Fix for iOS which doesn't pick up reactive update on initial onload */
+                App.nextTick(() => this.apiResult = r) /*debug*/
 
-                let results = this.results 
+                let results = this.results
                 if (!r.api.succeeded || results.length === 0) return
                 Forms.fetchLookupValues(results, this.columns, () => this.refreshResults())
             })

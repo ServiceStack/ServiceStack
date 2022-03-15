@@ -1,4 +1,11 @@
 /*minify:*/
+/**
+ * Implements https://tailwindui.com transition states by encoding in data-transition attr, e.g:
+ * data-transition="{ 
+ *   entering: { cls:'transition ease-in-out duration-300 transform', from:'-translate-x-full', to:'translate-x-0'}, 
+ *   leaving:  { cls:'transition ease-in-out duration-300 transform', from:'translate-x-0',     to:'-translate-x-full' } 
+ * }" data-transition-for="sidebar"
+ */
 App.plugin({
     useTransitions(transitions) {
         function transition(prop, enter) {
@@ -16,14 +23,14 @@ App.plugin({
                     }
                     if (nextTransition.cls) {
                         if (el.className.indexOf(nextTransition.cls) < 0) el.className += ` ${nextTransition.cls}`
-                        ;let clsDuration = nextTransition.cls.split(' ').find(x => x.startsWith('duration-'))
+                        let clsDuration = nextTransition.cls.split(' ').find(x => x.startsWith('duration-'))
                         if (clsDuration) {
                             duration = parseInt(clsDuration.split('-')[1])
                         }
                     }
                     el.className = el.className.replace(` ${prevTransition.to}`, '').trim()
                     el.className += ` ${nextTransition.from}`
-                    ;setTimeout(() => {
+                    setTimeout(() => {
                         el.className = el.className.replace(nextTransition.from, nextTransition.to).trim()
                     }, duration)
                 }

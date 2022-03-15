@@ -5,7 +5,7 @@ App.components({
         let allTakes = [10,25,50,100,250,500,1000]
         return {
             $template: Modal.dialog({ $template:'#query-prefs-template', id }),
-            store, routes,
+            id, store, routes,
             get columns() { return columns().filter(c => !c.format || c.format.method !== 'hidden') },
             prefs: prefs(),
             get takes() { return allTakes.filter(x => x <= maxLimit) },
@@ -30,18 +30,18 @@ App.components({
 <div  class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
     <div class="">
         <div class="mt-3 text-center sm:mt-0 sm:mx-4 sm:text-left">
-            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Query Preferences</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Query Preferences</h3>
             <div class="mt-4">
-                <label for="takes" class="block text-sm font-medium text-gray-700">Results per page</label>
-                <select id="takes" v-model="prefs.take" 
+                <label :for="`${id}-allColumns`" class="block text-sm font-medium text-gray-700">Results per page</label>
+                <select :id="`${id}-allColumns`" v-model="prefs.take" 
                         class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option v-for="take in takes" :value="take" :selected="take === prefs.take">{{take}}</option>
                 </select>
             </div>
             <div class="mt-4 flex items-center py-4 border-b border-gray-200">
-                <input type="radio" id="allColumns" @click="prefs.selectedColumns=[]" :checked="prefs.selectedColumns.length===0"
+                <input type="radio" :id="`${id}-allColumns`" @click="prefs.selectedColumns=[]" :checked="prefs.selectedColumns.length===0"
                        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
-                <label class="ml-3 block text-gray-700" for="allColumns">View all columns</label>
+                <label class="ml-3 block text-gray-700" :for="`${id}-allColumns`">View all columns</label>
             </div>
             <div class="mt-4">
                 <div class="pb-2 px-4">

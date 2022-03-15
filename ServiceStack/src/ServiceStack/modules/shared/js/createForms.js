@@ -310,10 +310,15 @@ function createForms(TypesMap, css, ui) {
         })
     }
     function createPropState(prop,opName, callback) {
-        let prefs = settings.lookup(opName)
-        let state = Object.assign(createState(opName), { prop, opName, prefs, callback })
+        let state = Object.assign(createState(opName), { prop, opName, callback })
         state.dataModel = getType(state.opQuery.dataModel)
         state.viewModel = getType(state.opQuery.viewModel)
+        state.viewModelColumns = typeProperties(state.viewModel)
+        state.createPrefs = () => settings.lookup(opName)
+        state.selectedColumns = prefs => map(state,
+            s => (hasItems(prefs.selectedColumns)
+                ? prefs.selectedColumns.map(name => s.viewModelColumns.find(x => x.name === name))
+                : s.viewModelColumns).filter(x => !!x)) || []
         return state
     }
     return {
