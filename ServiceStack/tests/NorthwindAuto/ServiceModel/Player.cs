@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
@@ -78,7 +79,7 @@ public class Player : AuditBase
     public List<PlayerGameItem> GameItems { get; set; }   // 1:M Reference Type saved separately
 
     [Reference]
-    [Format("hidden")]
+    [Format(FormatMethods.Hidden)]
     public Profile Profile { get; set; }            // 1:1 Reference Type saved separately
     public int ProfileId { get; set; }              // 1:1 Self Ref Id on Parent Table
 
@@ -121,7 +122,11 @@ public class CreateProfile : ICreateDb<Profile>, IReturn<IdResponse>
     [ValidateInclusiveBetween(0,100)]
     public int Energy { get; set; }
 
+    [Input(Type = "file"), UploadTo("profiles")]
     public string? ProfileUrl { get; set; }
+    
+    [Input(Type = "file"), UploadTo("files")]
+    public string? CoverUrl { get; set; }
 }
 
 
@@ -140,7 +145,11 @@ public class UpdateProfile : IPatchDb<Profile>, IReturn<IdResponse>
     [ValidateInclusiveBetween(0,100)]
     public int? Energy { get; set; }
 
+    [Input(Type = "file"), UploadTo("profiles")]
     public string? ProfileUrl { get; set; }
+    
+    [Input(Type = "file"), UploadTo("files")]
+    public string? CoverUrl { get; set; }
 }
 
 [Tag("Game")]
@@ -168,8 +177,12 @@ public class Profile : AuditBase
     [CheckConstraint("Energy BETWEEN 0 AND 100")]   // Creates RDBMS Check Constraint
     public int Energy { get; set; }
 
-    [Format("icon")]
+    [Format(FormatMethods.Icon)]
     public string? ProfileUrl { get; set; }
+
+    [Format(FormatMethods.Attachment)]
+    public string? CoverUrl { get; set; }
+    
     public Dictionary<string, string>? Meta { get; set; }
 }
 

@@ -76,7 +76,7 @@ App.components({
                     App.nextTick(() => this.model[input.id] = value)
                 })
             },
-            formatBytes:Files.formatBytes
+            formatBytes:Files.formatBytes,
         }
     }
 })
@@ -100,13 +100,13 @@ App.components({
         </div>
     </div>
     <div v-if="!isMultiple(input) && hasValidFile(input)" class="shrink-0 cursor-pointer" @click="$1('#'+input.id).click()">
-        <img :class="`h-16 w-16 object-cover ${imgCls(imgSrc(input))}`" :src="imgSrc(input)" :alt="`Current ${useLabel(input)}`" />
+        <img :class="`h-16 w-16 object-cover ${imgCls(imgSrc(input))}`" :src="imgSrc(input)" :alt="`Current ${useLabel(input)}`" onerror="iconOnError(this)" />
     </div>
     <div v-else-if="isMultiple(input) && fileList(input).length" class="mt-3">
         <table>
             <tr v-for="file in fileList(input)">
                 <td class="pr-3 py-1">
-                    <img :src="filePathUri(file.filePath)" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`">
+                    <img :src="filePathUri(file.filePath)" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`" onerror="iconOnError(this)">
                 </td>
                 <td class="pr-6 align-bottom pb-2">
                     <span>{{file.fileName}}</span>

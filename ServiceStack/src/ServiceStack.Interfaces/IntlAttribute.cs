@@ -39,6 +39,11 @@ public static class FormatMethods
     /// Render Image URL as an img icon
     /// </summary>
     public const string IconRounded = "iconRounded";
+
+    /// <summary>
+    /// Register download link containing file name and file extension icon  
+    /// </summary>
+    public const string Attachment = "attachment";
     
     /// <summary>
     /// Hides field from being displayed in search results

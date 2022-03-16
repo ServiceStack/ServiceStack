@@ -239,6 +239,7 @@ public class JobApplicationAttachment
     public int JobApplicationId { get; set; }
 
     public string FileName { get; set; }
+    [Format(FormatMethods.Attachment)]
     public string FilePath { get; set; }
     public string ContentType { get; set; }
     public long ContentLength { get; set; }
@@ -428,7 +429,6 @@ public class UpdatePhoneScreen : IPatchDb<PhoneScreen>, IReturn<PhoneScreen>
     public int? JobApplicationId { get; set; }
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string? Notes { get; set; }
-
     public JobApplicationStatus? ApplicationStatus { get; set; }
 }
 

@@ -64,6 +64,7 @@ public static class ConfigureDbPlayers
                 HighScore = 100,
                 GamesPlayed = 10,
                 ProfileUrl = "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80",
+                CoverUrl = "files/cover.docx",
                 Meta = new Dictionary<string, string>
                 {
                     {"Quote", "I am gamer"}
@@ -97,6 +98,7 @@ public static class ConfigureDbPlayers
                 HighScore = 50,
                 GamesPlayed = 20,
                 ProfileUrl = "https://images.unsplash.com/photo-1504703395950-b89145a5425b?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80",
+                CoverUrl = "files/profile.jpg",
                 Meta = new Dictionary<string, string>
                 {
                     {"Quote", "I am, game"}

@@ -70,6 +70,8 @@ public class AppHost : AppHostBase, IHostingStartup
             new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:ctx => $"/profiles/{ctx.FileName}"),
             new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages),
+            new UploadLocation("files", GetVirtualFileSource<FileSystemVirtualFiles>(),
+                resolvePath:ctx => $"/files/{ctx.FileName}"),
             new UploadLocation("users", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:ctx => $"/profiles/users/{ctx.UserAuthId}.{ctx.FileExtension}"),
             new UploadLocation("applications", appDataVfs, maxFileCount: 3, maxFileBytes: 10_000_000,
