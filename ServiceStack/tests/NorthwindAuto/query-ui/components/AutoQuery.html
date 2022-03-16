@@ -4,7 +4,6 @@ import { Crud, map, canAccess, createRequest, apiSend, apiForm, invalidAccessMes
 import { Forms, getOp, resolveApiUrl, onRoutesEditChange } from "../js/appInit"
 import { Types } from "../../shared/js/Types"
 
-/*minify:*/
 /** @param {MetadataOperationType} op */
 function apiState(op) {
     if (!op) return null
@@ -91,9 +90,9 @@ function createState(opName) {
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
     /** @return {MetadataTypeName} */
-    let dataModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).dataModel
+    let dataModelRef = () => routes.op && APP.api.operations.find(x => x.request.name === routes.op).dataModel
     /** @return {MetadataTypeName} */
-    let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
+    let viewModelRef = () => routes.op && APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
     
     return {
@@ -240,8 +239,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             return apiSend(createClient, requestDto).then(r => {
                 complete()
                 /**: Fix for iOS which doesn't pick up reactive update on initial onload */
-                App.nextTick(() => this.apiResult = r) /*debug*/
-
+                App.nextTick(() => this.apiResult = r)
                 let results = this.results
                 if (!r.api.succeeded || results.length === 0) return
                 Forms.fetchLookupValues(results, this.columns, () => this.refreshResults())
@@ -283,9 +281,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         },
     }
 })
-
-
-/*:minify*/
 </script>
 <!--minify-->
 <template id="autoquery-template">
@@ -410,10 +405,9 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 </template>
 <!--/minify-->
 
-<script>
+<script minify>
 import { mapGet } from "@servicestack/client"
 import { getType } from "../js/appInit"
-
 App.components({
     Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
         return {
@@ -469,7 +463,6 @@ App.components({
         }
     },
 })
-
 </script>
 <!--minify-->
 <template id="results-template">

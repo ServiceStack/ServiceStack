@@ -1,4 +1,4 @@
-<script>
+<script minify>
 function filterRules(type) {
     let c = APP.plugins.autoQuery.viewerConventions
     if (!Types.isString(type)) c = c.filter(x => x.types !== 'string')
@@ -116,6 +116,7 @@ App.components({
     },
 })
 </script>
+<!--minify-->
 <template id="filter-column-template">
 <div class="fixed z-20 inset-0 overflow-y-auto" @click="done" @vue:mounted="updated">
     <div class="absolute" :style="`top:${topLeftY}px;left:${topLeftX}px`" @click.stop="">
@@ -232,3 +233,4 @@ App.components({
     </div>
 </div>
 </template>
+<!--/minify-->

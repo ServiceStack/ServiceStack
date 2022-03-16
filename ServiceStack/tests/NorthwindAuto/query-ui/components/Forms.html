@@ -7,7 +7,6 @@ import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client
 /** @typedef {{opQuery:MetadataOperationType,opPatch?:MetadataOperationType,opUpdate?:MetadataOperationType,opDelete?:MetadataOperationType,apiQuery:ApiState}} State */
 /** @typedef {{op:MetadataOperationType,apiSend?:Function,apiForm?:Function,createModel?:Function,title:string?,errorSummary:string?,model:*,formLayout:InputInfo[]}} ApiState */
 
-/*minify:*/
 App.components({
     CreateForm({ store, routes, settings, state, save, done }) {
         return {
@@ -212,7 +211,6 @@ App.components({
        }
     }
 })
-/*:minify*/
 </script>
 <!--minify-->
 <template id="create-form-template">

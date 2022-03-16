@@ -1,5 +1,4 @@
 <script minify>
-/*minify:*/
 function apiState(op) {
     if (!op) return null
     let formLayout = Forms.resolveFormLayout(op)
@@ -78,8 +77,8 @@ function createState(opName) {
 }
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
-    let dataModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).dataModel
-    let viewModelRef = () => APP.api.operations.find(x => x.request.name === routes.op).viewModel
+    let dataModelRef = () => routes.op && APP.api.operations.find(x => x.request.name === routes.op).dataModel
+    let viewModelRef = () => routes.op && APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
     return {
         $template: `#autoquery-template`,
@@ -209,7 +208,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             })
             return apiSend(createClient, requestDto).then(r => {
                 complete()
-                App.nextTick(() => this.apiResult = r) /*debug*/
+                App.nextTick(() => this.apiResult = r)
                 let results = this.results
                 if (!r.api.succeeded || results.length === 0) return
                 Forms.fetchLookupValues(results, this.columns, () => this.refreshResults())
@@ -248,7 +247,6 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         },
     }
 })
-/*:minify*/
 </script>
 <!--minify-->
 <template id="autoquery-template">
@@ -372,7 +370,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
     </div>
 </template>
 <!--/minify-->
-<script>
+<script minify>
 App.components({
     Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
         return {

@@ -1,5 +1,4 @@
-<script>
-/*minify:*/
+<script minify>
 App.components({
     ModalLookup(state, store, routes, settings) {
         let emptyPrefs = {take:10,selectedColumns:[]}
@@ -143,7 +142,6 @@ App.components({
         }
     }
 })
-/*:minify*/
 </script>
 <!--minify-->
 <template id="modal-lookup-template">
@@ -155,7 +153,6 @@ App.components({
                 entering: { cls:'ease-out duration-300', from:'opacity-0',   to:'opacity-100'},
                 leaving:  { cls:'ease-in duration-200',  from:'opacity-100', to:'opacity-0' } 
             }" data-transition-for="modal-lookup" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity opacity-0" aria-hidden="true"></div>
-        <!-- This element is to trick the browser into centering the modal contents. -->
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         <div @click.stop="" data-transition="{
                 entering: { cls:'ease-out duration-300', from:'opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95', to:'opacity-100 translate-y-0 sm:scale-100'}, 
@@ -166,7 +163,6 @@ App.components({
                 <button type="button" @click="close"
                         class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <span class="sr-only">Close</span>
-                    <!-- Heroicon name: outline/x -->
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>

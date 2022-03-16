@@ -1,5 +1,4 @@
-<script>
-import { resolve } from "@servicestack/client"
+<script minify>
 import { Types, inputClass } from "../../shared/js/core"
 import { enumValues, isEnum } from "../js/appInit"
 
@@ -122,6 +121,7 @@ App.components({
     },
 })
 </script>
+<!--minify-->
 <template id="filter-column-template">
 <div class="fixed z-20 inset-0 overflow-y-auto" @click="done" @vue:mounted="updated">
     <div class="absolute" :style="`top:${topLeftY}px;left:${topLeftX}px`" @click.stop="">
@@ -238,3 +238,4 @@ App.components({
     </div>
 </div>
 </template>
+<!--/minify-->
