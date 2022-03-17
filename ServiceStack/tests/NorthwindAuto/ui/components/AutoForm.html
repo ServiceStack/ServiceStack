@@ -12,8 +12,9 @@ App.components({
             /** @type State */
             get state() { return state && state() || emptyState },
             get api() { return map(this.state, x => x.apiResult && x.apiResult.api) },
-            formClass: Forms.formClass,
-            gridClass: Forms.gridClass,
+            get css() { return map(this.state, x => x.op.ui && x.op.ui.explorerCss) },
+            get formClass() { return map(this.css, x => x.form) || Forms.formClass },
+            get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
             get title() { return this.state && this.state.title },
             get gridInputs() {
                 return map(this.state, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forAutoForm(x.op.request)))

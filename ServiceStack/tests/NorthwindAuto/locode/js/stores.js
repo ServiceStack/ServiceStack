@@ -145,7 +145,7 @@ let store = PetiteVue.reactive({
             login:args => this.login(args, opt && opt.$on),
             api: () => this.api
         })
-        : NoAuth({ message:`${APP.app.serviceName} AutoQuery UI` })
+        : NoAuth({ message:`${APP.app.serviceName} UI` })
     },
 
     login(args, $on) {
