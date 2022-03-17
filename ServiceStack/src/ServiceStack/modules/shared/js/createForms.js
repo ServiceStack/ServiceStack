@@ -237,6 +237,11 @@ function createForms(TypesMap, css, ui) {
     function lookupLabel(model,id,label) {
         return Lookup[model] && Lookup[model][id] && Lookup[model][id][label] || ''
     }
+    function setLookupLabel(model,id,label,value) {
+        if (!Lookup[model]) Lookup[model] = {}
+        let modelLookup = Lookup[model][id] || (Lookup[model][id] = {})
+        modelLookup[label] = value
+    }
     function refInfo(row, prop, props) {
         let ref = prop.ref
         if (ref) {
@@ -258,6 +263,7 @@ function createForms(TypesMap, css, ui) {
                         let label = mapGet(modelValue, ref.refLabel)
                         if (label != null) {
                             html = label
+                            setLookupLabel(ref.model, refIdValue, ref.refLabel, label)
                         }
                     } else {
                         let label = lookupLabel(ref.model, refIdValue, ref.refLabel)
@@ -300,8 +306,8 @@ function createForms(TypesMap, css, ui) {
                             (r.api.response.results || []).forEach(x => {
                                 let id = mapGet(x, refId)
                                 let val = mapGet(x, refLabel)
-                                if (!modelLookup[id]) modelLookup[id] = {}
-                                modelLookup[id][refLabel] = val
+                                let modelLookupLabels = modelLookup[id] || (modelLookup[id] = {})
+                                modelLookupLabels[refLabel] = val
                             })
                             if (refreshFn) refreshFn()
                         })

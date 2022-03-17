@@ -64,6 +64,7 @@ App.components({
                 })
             },
             formatBytes:Files.formatBytes,
+            toAppUrl,
         }
     }
 })
@@ -92,14 +93,17 @@ App.components({
     <div v-else-if="isMultiple(input) && fileList(input).length" class="mt-3">
         <table>
             <tr v-for="file in fileList(input)">
-                <td class="pr-3 py-1">
-                    <img :src="filePathUri(file.filePath)" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`" onerror="iconOnError(this)">
-                </td>
                 <td class="pr-6 align-bottom pb-2">
-                    <span>{{file.fileName}}</span>
+                    <div class="flex w-full">
+                        <img :src="filePathUri(file.filePath)" :class="`mr-2 h-8 w-8 object-cover ${imgCls(file.filePath)}`" onerror="iconOnError(this)">
+                        <a v-if="file.filePath && !file.filePath.startsWith('data:') && !file.filePath.startsWith('blob:')" :href="toAppUrl(file.filePath)" :title="file.filePath" target="_blank">
+                            {{file.fileName}}
+                        </a>
+                        <span v-else>{{file.fileName}}</span>
+                    </div>
                 </td>
-                <td class="align-bottom pb-2">
-                    <span class="text-gray-500 text-sm">{{formatBytes(file.contentLength)}}</span>
+                <td class="align-top pb-2 whitespace-nowrap">
+                    <span class="text-gray-500 text-sm bg-white">{{formatBytes(file.contentLength)}}</span>
                 </td>
             </tr>
         </table>

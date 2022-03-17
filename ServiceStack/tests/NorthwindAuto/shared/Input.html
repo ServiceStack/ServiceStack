@@ -1,7 +1,6 @@
 <script minify>
 import { resolve, humanify } from "@servicestack/client"
-import { inputClass } from "./js/core"
-import { Files } from "../query-ui/js/appInit"
+import { Files, inputClass, toAppUrl } from "./js/core"
 
 App.components({
     /** @param {{input:InputInfo,model:*,api:ApiResult}} args */
@@ -77,6 +76,7 @@ App.components({
                 })
             },
             formatBytes:Files.formatBytes,
+            toAppUrl,
         }
     }
 })
@@ -105,14 +105,17 @@ App.components({
     <div v-else-if="isMultiple(input) && fileList(input).length" class="mt-3">
         <table>
             <tr v-for="file in fileList(input)">
-                <td class="pr-3 py-1">
-                    <img :src="filePathUri(file.filePath)" :class="`h-8 w-8 object-cover ${imgCls(file.filePath)}`" onerror="iconOnError(this)">
-                </td>
                 <td class="pr-6 align-bottom pb-2">
-                    <span>{{file.fileName}}</span>
+                    <div class="flex w-full">
+                        <img :src="filePathUri(file.filePath)" :class="`mr-2 h-8 w-8 object-cover ${imgCls(file.filePath)}`" onerror="iconOnError(this)">
+                        <a v-if="file.filePath && !file.filePath.startsWith('data:') && !file.filePath.startsWith('blob:')" :href="toAppUrl(file.filePath)" :title="file.filePath" target="_blank">
+                            {{file.fileName}}
+                        </a>
+                        <span v-else>{{file.fileName}}</span>
+                    </div>
                 </td>
-                <td class="align-bottom pb-2">
-                    <span class="text-gray-500 text-sm">{{formatBytes(file.contentLength)}}</span>
+                <td class="align-top pb-2 whitespace-nowrap">
+                    <span class="text-gray-500 text-sm bg-white">{{formatBytes(file.contentLength)}}</span>
                 </td>
             </tr>
         </table>
@@ -177,7 +180,6 @@ App.components({
                :class="inputClass(input)" v-model="model[input.id]" />
 
         <div v-if="fieldError(input.id)" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <!---: Heroicon name: solid/exclamation-circle -->
             <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
             </svg>

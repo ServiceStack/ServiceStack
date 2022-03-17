@@ -16,7 +16,9 @@ namespace MyApp;
 
 public class AppHost : AppHostBase, IHostingStartup
 {
-    public static string TalentBlazorWwwRootDir = "C:\\src\\netcore\\TalentBlazor\\TalentBlazor\\wwwroot";
+    public static string TalentBlazorDir = "C:\\src\\netcore\\TalentBlazor\\TalentBlazor";
+    public static string TalentBlazorAppDataDir = TalentBlazorDir + "\\App_Data";
+    public static string TalentBlazorWwwRootDir = TalentBlazorDir + "\\wwwroot";
     public static string ProfilesDir = $"{TalentBlazorWwwRootDir}\\profiles";
 
     public void Configure(IWebHostBuilder builder) => builder
@@ -65,7 +67,7 @@ public class AppHost : AppHostBase, IHostingStartup
         //Plugins.Add(new PostmanFeature());
 
         var uploadVfs = new FileSystemVirtualFiles(TalentBlazorWwwRootDir);
-        var appDataVfs = new FileSystemVirtualFiles(ContentRootDirectory.RealPath.CombineWith("App_Data"));
+        var appDataVfs = new FileSystemVirtualFiles(TalentBlazorAppDataDir);
         Plugins.Add(new FilesUploadFeature(
             new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:ctx => $"/profiles/{ctx.FileName}"),

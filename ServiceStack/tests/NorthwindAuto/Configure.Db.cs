@@ -33,6 +33,7 @@ public class ConfigureDb : IHostingStartup
             db.DropTable<JobApplicationAttachment>();
             db.DropTable<JobApplicationComment>();
             db.SeedTalent(profilesDir:AppHost.ProfilesDir);
+            db.SeedAttachments(appHost, sourceDir:AppHost.TalentBlazorAppDataDir);
         });
 }
 
