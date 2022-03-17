@@ -54,7 +54,8 @@ public class QueryBookings : QueryDb<Booking>
 // [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), Template = SqlTemplate.IsNotNull)]
 // public class DeletedBookings : QueryDb<Booking> {}
 
-[Tag("Bookings"), Description("Create a new Booking"), LocodeCss(Field="col-span-12 sm:col-span-6")]
+[Tag("Bookings"), Description("Create a new Booking")]
+[LocodeCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-8 gap-2", Form = "border overflow-hidden max-w-screen-lg")]
 [Route("/bookings", "POST")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditCreate)]
@@ -75,6 +76,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 }
 
 [Tag("Bookings"), Description("Update an existing Booking")]//, QueryStyles(Rows="col-span-12 sm:col-span-4")
+[LocodeCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-6 gap-8", Form = "border border-indigo-500 overflow-hidden max-w-screen-lg")]
 [ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditModify)]
 [Field(nameof(BookingEndDate), LabelCss = "text-gray-800", InputCss = "bg-gray-100")]

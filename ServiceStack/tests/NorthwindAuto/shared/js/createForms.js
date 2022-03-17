@@ -83,22 +83,7 @@ export function createForms(TypesMap, css, ui) {
     /** @param {MetadataType} type
         @return {MetadataPropertyType[]} */
     function typeProperties(type) {
-        if (!type) return []
-        let props = []
-        let existing = {}
-        let addProps = xs => xs.forEach(p => {
-            if (existing[p.name]) return
-            existing[p.name] = 1
-            props.push(p)
-        })
-        
-        while (type) {
-            if (type.properties) addProps(type.properties)
-            type = type.inherits ? TypesMap[type.inherits.name] : null
-        }
-        return props.map(prop => prop.type.endsWith('[]')
-            ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
-            : prop)
+        return Types.typeProperties(TypesMap, type)
     }
 
     /** @param {MetadataType} type */

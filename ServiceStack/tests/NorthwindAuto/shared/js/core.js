@@ -95,8 +95,9 @@ export function createDto(name, obj) {
     return new dtoCtor(obj)
 }
 
-/** @param {AppMetadata} app */
-export function appApis(app) {
+/** @param {AppMetadata} app 
+ *  @param {string} appName */
+export function appApis(app,appName) {
     let api = app.api
     let CACHE = {}
     let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
@@ -112,6 +113,21 @@ export function appApis(app) {
     })
     api.types.forEach(type => TypesMap[type.name] = type)
     api.types.forEach(type => FullTypesMap[Types.key(type)] = type)
+
+    let cssName = appName + 'Css'
+    api.operations.forEach(op => {
+        /** @type {ApiCss} */
+        let appCss = op.ui && op.ui[cssName]
+        if (appCss) {
+            Types.typeProperties(TypesMap, op.request).forEach(prop => {
+                if (appCss.field) {
+                    if (!prop.input) prop.input = {}
+                    if (!prop.input.css) prop.input.css = {}
+                    if (!prop.input.css.field) prop.input.css.field = appCss.field
+                }
+            })
+        }
+    })
 
     /** @param {string} opName */
     function getOp(opName) {

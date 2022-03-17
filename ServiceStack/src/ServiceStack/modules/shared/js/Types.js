@@ -62,6 +62,23 @@ let Types = (function() {
         let nameLower = name.toLowerCase()
         return type && type.properties && type.properties.find(p => p.name.toLowerCase() === nameLower)
     }
-    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, isPrimitive, propHasAttr, getProp, })
+    function typeProperties(TypesMap, type) {
+        if (!type) return []
+        let props = []
+        let existing = {}
+        let addProps = xs => xs.forEach(p => {
+            if (existing[p.name]) return
+            existing[p.name] = 1
+            props.push(p)
+        })
+        while (type) {
+            if (type.properties) addProps(type.properties)
+            type = type.inherits ? TypesMap[type.inherits.name] : null
+        }
+        return props.map(prop => prop.type.endsWith('[]')
+            ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
+            : prop)
+    }
+    return ({ alias, unwrap, typeName2, isNumber, isString, isArray, typeName, formatValue, key, equals, isPrimitive, propHasAttr, getProp, typeProperties, })
 })()
 /*:minify*/

@@ -44,7 +44,7 @@ let alwaysHideTags = APP.ui.alwaysHideTags || !DEBUG && APP.ui.hideTags
 if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
-let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP)
+let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,'locode')
 let Forms = createForms(TypesMap, APP.ui.locode.css, APP.ui)
 let onRoutesEditChange = () => {}
 /*:minify*/

@@ -63,7 +63,7 @@ function createDto(name, obj) {
     }
     return new dtoCtor(obj)
 }
-function appApis(app) {
+function appApis(app,appName) {
     let api = app.api
     let CACHE = {}
     let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
@@ -79,6 +79,19 @@ function appApis(app) {
     })
     api.types.forEach(type => TypesMap[type.name] = type)
     api.types.forEach(type => FullTypesMap[Types.key(type)] = type)
+    let cssName = appName + 'Css'
+    api.operations.forEach(op => {
+        let appCss = op.ui && op.ui[cssName]
+        if (appCss) {
+            Types.typeProperties(TypesMap, op.request).forEach(prop => {
+                if (appCss.field) {
+                    if (!prop.input) prop.input = {}
+                    if (!prop.input.css) prop.input.css = {}
+                    if (!prop.input.css.field) prop.input.css.field = appCss.field
+                }
+            })
+        }
+    })
     function getOp(opName) {
         return OpsMap[opName]
     }

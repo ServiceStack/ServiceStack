@@ -63,21 +63,7 @@ function createForms(TypesMap, css, ui) {
         return pad4(d.getFullYear()) + '-' + padInt(d.getMonth() + 1) + '-' + padInt(d.getDate()) 
     }
     function typeProperties(type) {
-        if (!type) return []
-        let props = []
-        let existing = {}
-        let addProps = xs => xs.forEach(p => {
-            if (existing[p.name]) return
-            existing[p.name] = 1
-            props.push(p)
-        })
-        while (type) {
-            if (type.properties) addProps(type.properties)
-            type = type.inherits ? TypesMap[type.inherits.name] : null
-        }
-        return props.map(prop => prop.type.endsWith('[]')
-            ? {...prop, type:'List`1', genericArgs:[prop.type.substring(0,prop.type.length-2)] }
-            : prop)
+        return Types.typeProperties(TypesMap, type)
     }
     function isCrud(type) {
         return map(type.inherits, x => Crud.AnyRead.indexOf(x.name) >= 0) ||

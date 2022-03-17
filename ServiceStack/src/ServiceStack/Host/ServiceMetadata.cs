@@ -89,8 +89,8 @@ namespace ServiceStack.Host
                 RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequestPropertyAttributes = requestType.GetPublicProperties().SelectMany(x => x.AllAttributes()).Map(x => x.GetType()).ToSet(),
                 Tags = tagAttrs,
-                LocodeCss = X.Map(requestType.FirstAttribute<LocodeCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
-                ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
+                LocodeCss = X.Map(requestType.FirstAttribute<LocodeCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
+                ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
             };
 
             this.OperationsMap[requestType] = operation;
