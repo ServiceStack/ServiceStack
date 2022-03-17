@@ -120,37 +120,36 @@ public static class ConfigureDbTalent
     public static void SeedAttachments(this IDbConnection db, ServiceStackHost appHost, string sourceDir)
     {
         sourceDir.AssertDir();
-        var jobApps = db.LoadSelect<JobApplication>();
         var resumeFileInfo = new FileInfo(Path.Join(sourceDir, "sample_resume.pdf"));
         var coverFileInfo = new FileInfo(Path.Join(sourceDir, "sample_coverletter.pdf"));
-        var now = DateTime.UtcNow;
 
-        JobApplicationAttachment CreatePdfAttachment(JobApplication jobApp, FileInfo fileInfo)
-        {
-            var newName = $"{fileInfo.Name.WithoutExtension().Replace("sample_", "")}_{jobApp.Position.Title.ToLower().Replace(" ", "_")}.pdf";
-            var relativePath = $"applications/app/{jobApp.JobId}/{now:yyyy/MM/dd}/{newName}";
-            var attachment = new JobApplicationAttachment
-            {
-                FilePath = $"/uploads/{relativePath}",
-                FileName = newName,
-                ContentLength = fileInfo.Length,
-                ContentType = "application/pdf",
-                JobApplicationId = jobApp.Id
-            };
-            var destFile = new FileInfo(Path.Join(sourceDir, relativePath));
-            if (!destFile.Exists)
-            {
-                destFile.DirectoryName.AssertDir();
-                File.Copy(fileInfo.FullName, destFile.FullName);
-            }
-            return attachment;
-        }
-
+        var jobApps = db.LoadSelect<JobApplication>();
         foreach (var jobApp in jobApps)
         {
-            db.Save(CreatePdfAttachment(jobApp, resumeFileInfo));
-            db.Save(CreatePdfAttachment(jobApp, coverFileInfo));
+            db.Save(sourceDir.CreatePdfAttachment(jobApp, resumeFileInfo));
+            db.Save(sourceDir.CreatePdfAttachment(jobApp, coverFileInfo));
         }
+    }
+
+    static JobApplicationAttachment CreatePdfAttachment(this string sourceDir, JobApplication jobApp, FileInfo fileInfo)
+    {
+        var newName = $"{fileInfo.Name.WithoutExtension().Replace("sample_", "")}_{jobApp.Position.Title.ToLower().Replace(" ", "_")}.pdf";
+        var relativePath = $"applications/app/{jobApp.JobId}/{DateTime.UtcNow:yyyy/MM/dd}/{newName}";
+        var attachment = new JobApplicationAttachment
+        {
+            FilePath = $"/uploads/{relativePath}",
+            FileName = newName,
+            ContentLength = fileInfo.Length,
+            ContentType = "application/pdf",
+            JobApplicationId = jobApp.Id
+        };
+        var destFile = new FileInfo(Path.Join(sourceDir, relativePath));
+        if (!destFile.Exists)
+        {
+            destFile.DirectoryName.AssertDir();
+            File.Copy(fileInfo.FullName, destFile.FullName);
+        }
+        return attachment;
     }
 
     private static Faker<PhoneScreen> phoneScreenFaker = new Faker<PhoneScreen>()
