@@ -859,8 +859,8 @@ namespace ServiceStack
             if (url == null)
                 throw new ArgumentNullException(nameof(url));
 
-            return url.StartsWith("http://")
-                ? "https" + url.Substring(4)
+            return url.TrimStart().StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                ? "https://" + url.RightPart("://")
                 : url;
         }
 
