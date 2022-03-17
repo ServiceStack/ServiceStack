@@ -60,10 +60,10 @@ public class PublishTasks
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
-        // copy to modules/query-ui
+        // copy to modules/locode
         transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("query-ui")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("query-ui").AssertDir()), 
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode").AssertDir()), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());

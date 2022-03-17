@@ -144,7 +144,7 @@ namespace ServiceStack
             new() {Name = "Not Exists", Value = "%IsNull", ValueType = "none"},
         };
 
-        public HtmlModule HtmlModule { get; set; } = new("/modules/query-ui", "/query-ui");
+        public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode");
 
         public AutoQueryFeature()
         {

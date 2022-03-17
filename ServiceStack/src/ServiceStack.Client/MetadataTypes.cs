@@ -509,7 +509,7 @@ namespace ServiceStack
         /// <summary>
         /// The default styles to use for rendering AutoQuery UI Forms 
         /// </summary>
-        public QueryUi Query { get; set; } 
+        public LocodeUi Locode { get; set; } 
         
         /// <summary>
         /// The default styles to use for rendering API Explorer Forms 
@@ -535,9 +535,10 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
-    public class QueryUi
+    public class LocodeUi
     {
         public ApiCss Css { get; set; }
+        public AppTags Tags { get; set; }
         public int MaxFieldLength { get; set; }
         public int MaxNestedFields { get; set; }
         public int MaxNestedFieldLength { get; set; }
@@ -547,6 +548,7 @@ namespace ServiceStack
     public class ExplorerUi
     {
         public ApiCss Css { get; set; }
+        public AppTags Tags { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -569,6 +571,13 @@ namespace ServiceStack
         public string Field { get; set; }
         public string Input { get; set; }
         public string Label { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class AppTags
+    {
+        public string Default { get; set; }
+        public string Other { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -606,7 +615,7 @@ namespace ServiceStack
 
     public class ApiUiInfo : IMeta
     {
-        public ApiCss QueryCss { get; set; } 
+        public ApiCss LocodeCss { get; set; } 
         public ApiCss ExplorerCss { get; set; } 
         public List<InputInfo> FormLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }

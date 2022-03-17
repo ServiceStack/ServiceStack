@@ -153,10 +153,10 @@ namespace ServiceStack.NativeTypes
                     RequiredPermissions = operation.RequiredPermissions.NullIfEmpty(),
                     RequiresAnyPermission = operation.RequiresAnyPermission.NullIfEmpty(),
                     Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
-                    Ui = operation.QueryCss == null && operation.ExplorerCss == null && operation.FormLayout == null 
+                    Ui = operation.LocodeCss == null && operation.ExplorerCss == null && operation.FormLayout == null 
                         ? null 
                         : new ApiUiInfo {
-                            QueryCss = operation.QueryCss,
+                            LocodeCss = operation.LocodeCss,
                             ExplorerCss = operation.ExplorerCss,
                             FormLayout = operation.FormLayout,
                         },

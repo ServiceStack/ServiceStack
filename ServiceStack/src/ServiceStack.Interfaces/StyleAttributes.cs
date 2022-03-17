@@ -12,7 +12,7 @@ public class ExplorerCssAttribute : AttributeBase
 }
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-public class QueryCssAttribute : AttributeBase
+public class LocodeCssAttribute : AttributeBase
 {
     public string? Form { get; set; }
     public string? Fieldset { get; set; }

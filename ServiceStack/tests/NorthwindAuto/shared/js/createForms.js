@@ -24,6 +24,7 @@ export function createForms(TypesMap, css, ui) {
         ...'byte,short,int,long,ushort,uint,ulong,float,double,decimal'.split(',').reduce(useType('number'), {}),
         ...'string,Guid,Uri'.split(',').reduce(useType('text'), {}),
     }
+    let FloatTypes = 'float,double,decimal'.split(',')
     
     let _id = 0;
     let inputId = input => input && (input.id || `__${input.type||'undefined'}${_id++}`)
@@ -47,6 +48,8 @@ export function createForms(TypesMap, css, ui) {
         let id = toCamelCase(prop.name), idLower = id.toLowerCase()
         let propType = Types.unwrap(Types.typeName2(prop.type, prop.genericArgs))
         let input = { id, type:inputType(propType), 'data-type': prop.type }
+        /**: allow decimals in number input */
+        if (FloatTypes.indexOf(propType) >= 0) input.step = '0.01'
         if (prop.genericArgs) input['data-args'] = prop.genericArgs.join(',')
         let type = TypesMap[propType]
         if (type && type.isEnum) {
@@ -229,9 +232,9 @@ export function createForms(TypesMap, css, ui) {
         ? formatter(defaultFormats.number)
         : v => v
 
-    let maxFieldLength = map(ui.query, x => x.maxFieldLength) || 150
-    let maxNestedFields = map(ui.query, x => x.maxNestedFields) || 2
-    let maxNestedFieldLength = map(ui.query, x => x.maxNestedFieldLength) || 30
+    let maxFieldLength = map(ui.locode, x => x.maxFieldLength) || 150
+    let maxNestedFields = map(ui.locode, x => x.maxNestedFields) || 2
+    let maxNestedFieldLength = map(ui.locode, x => x.maxNestedFieldLength) || 30
 
     /** @param {string} s
      *  @param {number} len */

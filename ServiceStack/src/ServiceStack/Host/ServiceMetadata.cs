@@ -89,7 +89,7 @@ namespace ServiceStack.Host
                 RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequestPropertyAttributes = requestType.GetPublicProperties().SelectMany(x => x.AllAttributes()).Map(x => x.GetType()).ToSet(),
                 Tags = tagAttrs,
-                QueryCss = X.Map(requestType.FirstAttribute<QueryCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
+                LocodeCss = X.Map(requestType.FirstAttribute<LocodeCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
                 ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Fieldset = x.Fieldset, Field = x.Field }),
             };
 
@@ -781,7 +781,7 @@ namespace ServiceStack.Host
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         public List<TagAttribute> Tags { get; set; }
-        public ApiCss QueryCss { get; set; } 
+        public ApiCss LocodeCss { get; set; } 
         public ApiCss ExplorerCss { get; set; } 
         public List<InputInfo> FormLayout { get; set; }
         public HashSet<Type> RequestPropertyAttributes { get; set; }
@@ -808,7 +808,7 @@ namespace ServiceStack.Host
             RequestPropertyValidationRules = RequestPropertyValidationRules?.ToList(),
             RequestPropertyAttributes = RequestPropertyAttributes,
             Tags = Tags?.ToList(),
-            QueryCss = QueryCss,
+            LocodeCss = LocodeCss,
             ExplorerCss = ExplorerCss,
             FormLayout = FormLayout,
         };

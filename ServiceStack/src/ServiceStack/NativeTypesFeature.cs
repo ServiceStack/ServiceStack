@@ -66,7 +66,7 @@ namespace ServiceStack
                     typeof(InputAttribute),
                     typeof(FieldAttribute),
                     typeof(FieldCssAttribute),
-                    typeof(QueryCssAttribute),
+                    typeof(LocodeCssAttribute),
                     typeof(ExplorerCssAttribute),
 
                     typeof(Intl),

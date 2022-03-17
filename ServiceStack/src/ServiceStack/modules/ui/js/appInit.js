@@ -32,8 +32,9 @@ ssTags.map(tag => ({
     expanded: true,
     operations: ssOps.filter(op => op.tags.indexOf(tag) >= 0)
 })).forEach(nav => sideNav.push(nav))
+let tags = APP.ui.explorer.tags
 let other = {
-    tag: appTags.length > 0 ? 'other' : 'APIs',
+    tag: appTags.length > 0 ? tags.other : tags.default,
     expanded: true,
     operations: [...appOps, ...ssOps].filter(op => op.tags.length === 0)
 }

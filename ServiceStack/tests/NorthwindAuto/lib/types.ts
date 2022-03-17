@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-03-01 19:09:55
+Date: 2022-03-18 00:20:58
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -226,19 +226,29 @@ export class ApiCss
     public constructor(init?: Partial<ApiCss>) { (Object as any).assign(this, init); }
 }
 
-export class QueryUi
+export class AppTags
+{
+    public default: string;
+    public other: string;
+
+    public constructor(init?: Partial<AppTags>) { (Object as any).assign(this, init); }
+}
+
+export class LocodeUi
 {
     public css: ApiCss;
+    public tags: AppTags;
     public maxFieldLength: number;
     public maxNestedFields: number;
     public maxNestedFieldLength: number;
 
-    public constructor(init?: Partial<QueryUi>) { (Object as any).assign(this, init); }
+    public constructor(init?: Partial<LocodeUi>) { (Object as any).assign(this, init); }
 }
 
 export class ExplorerUi
 {
     public css: ApiCss;
+    public tags: AppTags;
 
     public constructor(init?: Partial<ExplorerUi>) { (Object as any).assign(this, init); }
 }
@@ -270,7 +280,7 @@ export class UiInfo
     public alwaysHideTags: string[];
     public adminLinks: LinkInfo[];
     public theme: ThemeInfo;
-    public query: QueryUi;
+    public locode: LocodeUi;
     public explorer: ExplorerUi;
     public defaultFormats: ApiFormat;
     public meta: { [index: string]: string; };
@@ -335,6 +345,7 @@ export class InputInfo
     public maxLength?: number;
     public allowableValues: string[];
     public allowableEntries: KeyValuePair<String,String>[];
+    public options: string;
     public ignore?: boolean;
     public css: FieldCss;
     public meta: { [index: string]: string; };
@@ -441,6 +452,29 @@ export class RequestLogsInfo
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<RequestLogsInfo>) { (Object as any).assign(this, init); }
+}
+
+export class FilesUploadLocation
+{
+    public name: string;
+    public readAccessRole: string;
+    public writeAccessRole: string;
+    public allowExtensions: string[];
+    public allowOperations: string;
+    public maxFileCount?: number;
+    public minFileBytes?: number;
+    public maxFileBytes?: number;
+
+    public constructor(init?: Partial<FilesUploadLocation>) { (Object as any).assign(this, init); }
+}
+
+export class FilesUploadInfo
+{
+    public basePath: string;
+    public locations: FilesUploadLocation[];
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<FilesUploadInfo>) { (Object as any).assign(this, init); }
 }
 
 export class MetadataTypeName
@@ -579,6 +613,7 @@ export class PluginInfo
     public validation: ValidationInfo;
     public sharpPages: SharpPagesInfo;
     public requestLogs: RequestLogsInfo;
+    public filesUpload: FilesUploadInfo;
     public adminUsers: AdminUsersInfo;
     public meta: { [index: string]: string; };
 
@@ -653,7 +688,7 @@ export class MetadataRoute
 
 export class ApiUiInfo
 {
-    public queryCss: ApiCss;
+    public locodeCss: ApiCss;
     public explorerCss: ApiCss;
     public formLayout: InputInfo[];
     public meta: { [index: string]: string; };
@@ -666,13 +701,13 @@ export class MetadataOperationType
     public request: MetadataType;
     public response: MetadataType;
     public actions: string[];
-    public returnsVoid: boolean;
+    public returnsVoid?: boolean;
     public method: string;
     public returnType: MetadataTypeName;
     public routes: MetadataRoute[];
     public dataModel: MetadataTypeName;
     public viewModel: MetadataTypeName;
-    public requiresAuth: boolean;
+    public requiresAuth?: boolean;
     public requiredRoles: string[];
     public requiresAnyRole: string[];
     public requiredPermissions: string[];
@@ -910,8 +945,8 @@ export class MetadataApp implements IReturn<AppMetadata>
 /**
 * Sign In
 */
-// @Route("/auth")
-// @Route("/auth/{provider}")
+// @Route("/auth", "OPTIONS,GET,POST,DELETE")
+// @Route("/auth/{provider}", "OPTIONS,GET,POST,DELETE")
 // @Api(Description="Sign In")
 // @DataContract
 export class Authenticate implements IReturn<AuthenticateResponse>, IPost
@@ -979,7 +1014,7 @@ export class Authenticate implements IReturn<AuthenticateResponse>, IPost
     public createResponse() { return new AuthenticateResponse(); }
 }
 
-// @Route("/assignroles")
+// @Route("/assignroles", "POST")
 // @DataContract
 export class AssignRoles implements IReturn<AssignRolesResponse>, IPost
 {
@@ -1001,7 +1036,7 @@ export class AssignRoles implements IReturn<AssignRolesResponse>, IPost
     public createResponse() { return new AssignRolesResponse(); }
 }
 
-// @Route("/unassignroles")
+// @Route("/unassignroles", "POST")
 // @DataContract
 export class UnAssignRoles implements IReturn<UnAssignRolesResponse>, IPost
 {

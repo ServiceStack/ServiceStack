@@ -33,32 +33,32 @@ let settings = {
     },
     op(op) { 
         return Object.assign({ take:25, selectedColumns:[] },
-            map(localStorage.getItem(`query-ui/op:${op}`), x => JSON.parse(x))) 
+            map(localStorage.getItem(`locode/op:${op}`), x => JSON.parse(x))) 
     },
     lookup(op) {
         return Object.assign({ take:10, selectedColumns:[] },
-            map(localStorage.getItem(`query-ui/lookup:${op}`), x => JSON.parse(x)))
+            map(localStorage.getItem(`locode/lookup:${op}`), x => JSON.parse(x)))
     },
     saveOp(op, fn) {
         let setting = this.op(op)
         fn(setting)
-        localStorage.setItem(`query-ui/op:${op}`, JSON.stringify(setting))
+        localStorage.setItem(`locode/op:${op}`, JSON.stringify(setting))
         App.events.publish(this.events.op(op), setting)
     },
     saveLookup(op, fn) {
         let setting = this.lookup(op)
         fn(setting)
-        localStorage.setItem(`query-ui/lookup:${op}`, JSON.stringify(setting))
+        localStorage.setItem(`locode/lookup:${op}`, JSON.stringify(setting))
         App.events.publish(this.events.lookup(op), setting)
     },
     opProp(op,name) {
         return Object.assign({ sort:null, filters:[] },
-            map(localStorage.getItem(`query-ui/op:${op}.${name}`), x => JSON.parse(x)))
+            map(localStorage.getItem(`locode/op:${op}.${name}`), x => JSON.parse(x)))
     },
     saveOpProp(op, name, fn) {
         let setting = this.opProp(op, name)
         fn(setting)
-        localStorage.setItem(`query-ui/op:${op}.${name}`, JSON.stringify(setting))
+        localStorage.setItem(`locode/op:${op}.${name}`, JSON.stringify(setting))
         App.events.publish(this.events.opProp(op,name), setting)
     },
 }

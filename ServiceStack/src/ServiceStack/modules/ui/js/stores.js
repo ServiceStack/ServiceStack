@@ -14,13 +14,13 @@ let routes = App.usePageRoutes({
     extend: {
         queryHref() {
             let op = this.op && OpsMap[this.op]
-            if (op && APP.ui.modules.indexOf('/query-ui') >= 0) {
+            if (op && APP.ui.modules.indexOf('/locode') >= 0) {
                 if (Crud.isQuery(op)) {
-                    return `/query-ui/${this.op}`
+                    return `/locode/${this.op}`
                 } else if (Crud.isCrud(op)) {
                     let queryOp = APP.api.operations.find(x => Crud.isQuery(x) && Types.equals(op.dataModel,x.dataModel))
                     if (queryOp)
-                        return `/query-ui/${queryOp.request.name}`
+                        return `/locode/${queryOp.request.name}`
                 }
             }
             return ''

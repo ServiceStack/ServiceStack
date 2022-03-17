@@ -54,7 +54,7 @@ public class QueryBookings : QueryDb<Booking>
 // [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), Template = SqlTemplate.IsNotNull)]
 // public class DeletedBookings : QueryDb<Booking> {}
 
-[Tag("Bookings"), Description("Create a new Booking"), QueryCss(Field="col-span-12 sm:col-span-4")]
+[Tag("Bookings"), Description("Create a new Booking"), LocodeCss(Field="col-span-12 sm:col-span-6")]
 [Route("/bookings", "POST")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditCreate)]
