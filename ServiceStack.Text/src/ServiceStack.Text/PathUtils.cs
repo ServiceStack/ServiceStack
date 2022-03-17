@@ -107,6 +107,9 @@ namespace ServiceStack
             return dirPath;
         }
 
+        public static string AssertDir(this DirectoryInfo dirInfo) => dirInfo?.FullName.AssertDir();
+        public static string AssertDir(this FileInfo fileInfo) => fileInfo.DirectoryName?.AssertDir();
+
         private static readonly char[] Slashes = { '/', '\\' };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] //only trim/allocate if need to

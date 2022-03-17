@@ -56,10 +56,8 @@ namespace ServiceStack
 
         public override string ReadAllText(string filePath)
         {
-            using (var reader = File.OpenText(filePath))
-            {
-                return reader.ReadToEnd();
-            }
+            using var reader = File.OpenText(filePath);
+            return reader.ReadToEnd();
         }
 
         public override bool FileExists(string filePath)

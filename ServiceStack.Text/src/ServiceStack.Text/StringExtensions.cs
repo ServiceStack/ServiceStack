@@ -85,7 +85,7 @@ namespace ServiceStack
             {
                 return UrlEncode(value);
             }
-            return String.IsNullOrEmpty(value) || !JsWriter.HasAnyEscapeChars(value)
+            return string.IsNullOrEmpty(value) || !JsWriter.HasAnyEscapeChars(value)
                 ? value
                 : Concat
                     (
@@ -99,7 +99,7 @@ namespace ServiceStack
         {
             const int startingQuotePos = 1;
             const int endingQuotePos = 2;
-            return String.IsNullOrEmpty(value) || value[0] != JsWriter.QuoteChar
+            return string.IsNullOrEmpty(value) || value[0] != JsWriter.QuoteChar
                     ? value
                     : value.Substring(startingQuotePos, value.Length - endingQuotePos)
                         .Replace(TypeSerializer.DoubleQuoteString, JsWriter.QuoteString);
@@ -140,7 +140,7 @@ namespace ServiceStack
 
         public static string UrlDecode(this string text)
         {
-            if (String.IsNullOrEmpty(text)) return null;
+            if (string.IsNullOrEmpty(text)) return null;
 
             var bytes = new List<byte>();
 
@@ -170,7 +170,7 @@ namespace ServiceStack
 
         public static string HexUnescape(this string text, params char[] anyCharOf)
         {
-            if (String.IsNullOrEmpty(text)) return null;
+            if (string.IsNullOrEmpty(text)) return null;
             if (anyCharOf == null || anyCharOf.Length == 0) return text;
 
             var sb = StringBuilderThreadStatic.Allocate();
@@ -480,7 +480,7 @@ namespace ServiceStack
 
         public static string WithoutExtension(this string filePath)
         {
-            if (String.IsNullOrEmpty(filePath)) 
+            if (string.IsNullOrEmpty(filePath)) 
                 return null;
 
             var extPos = filePath.LastIndexOf('.');
@@ -492,7 +492,7 @@ namespace ServiceStack
 
         public static string GetExtension(this string filePath)
         {
-            if (String.IsNullOrEmpty(filePath)) 
+            if (string.IsNullOrEmpty(filePath)) 
                 return null;
 
             var extPos = filePath.LastIndexOf('.');
@@ -501,13 +501,13 @@ namespace ServiceStack
 
         public static string ParentDirectory(this string filePath)
         {
-            if (String.IsNullOrEmpty(filePath)) return null;
+            if (string.IsNullOrEmpty(filePath)) return null;
 
             var dirSep = filePath.IndexOf(PclExport.Instance.DirSep) != -1
-                         ? PclExport.Instance.DirSep
-                         : filePath.IndexOf(PclExport.Instance.AltDirSep) != -1
-                            ? PclExport.Instance.AltDirSep 
-                            : (char)0;
+                ? PclExport.Instance.DirSep
+                : filePath.IndexOf(PclExport.Instance.AltDirSep) != -1
+                    ? PclExport.Instance.AltDirSep 
+                    : (char)0;
 
             return dirSep == 0 ? null : filePath.TrimEnd(dirSep).SplitOnLast(dirSep)[0];
         }
@@ -593,76 +593,32 @@ namespace ServiceStack
             }
         }
 
-        public static T FromCsv<T>(this string csv)
-        {
-            return CsvSerializer.DeserializeFromString<T>(csv);
-        }
+        public static T FromCsv<T>(this string csv) => CsvSerializer.DeserializeFromString<T>(csv);
+        public static string FormatWith(this string text, params object[] args) => Format(text, args);
+        public static string Fmt(this string text, params object[] args) => Format(text, args);
+        public static string Fmt(this string text, IFormatProvider provider, params object[] args) => Format(provider, text, args);
+        public static string Fmt(this string text, object arg1) => Format(text, arg1);
+        public static string Fmt(this string text, object arg1, object arg2) => Format(text, arg1, arg2);
+        public static string Fmt(this string text, object arg1, object arg2, object arg3) => Format(text, arg1, arg2, arg3);
 
-        public static string FormatWith(this string text, params object[] args)
-        {
-            return Format(text, args);
-        }
-
-        public static string Fmt(this string text, params object[] args)
-        {
-            return Format(text, args);
-        }
-        public static string Fmt(this string text, IFormatProvider provider, params object[] args)
-        {
-            return Format(provider, text, args);
-        }
-
-        public static string Fmt(this string text, object arg1)
-        {
-            return Format(text, arg1);
-        }
-
-        public static string Fmt(this string text, object arg1, object arg2)
-        {
-            return Format(text, arg1, arg2);
-        }
-
-        public static string Fmt(this string text, object arg1, object arg2, object arg3)
-        {
-            return Format(text, arg1, arg2, arg3);
-        }
-
-        public static bool StartsWithIgnoreCase(this string text, string startsWith)
-        {
-            return text != null
-                && text.StartsWith(startsWith, PclExport.Instance.InvariantComparisonIgnoreCase);
-        }
-
-        public static bool EndsWithIgnoreCase(this string text, string endsWith)
-        {
-            return text != null
-                && text.EndsWith(endsWith, PclExport.Instance.InvariantComparisonIgnoreCase);
-        }
+        public static bool StartsWithIgnoreCase(this string text, string startsWith) =>
+            text != null && text.StartsWith(startsWith, StringComparison.InvariantCultureIgnoreCase);
+        public static bool EndsWithIgnoreCase(this string text, string endsWith) =>
+            text != null && text.EndsWith(endsWith, StringComparison.InvariantCultureIgnoreCase);
 
         public static string ReadAllText(this string filePath)
         {
-            return PclExport.Instance.ReadAllText(filePath);
+            using var reader = File.OpenText(filePath);
+            return reader.ReadToEnd();
         }
 
-        public static bool FileExists(this string filePath)
-        {
-            return PclExport.Instance.FileExists(filePath);
-        }
+        public static bool FileExists(this string filePath) => File.Exists(filePath);
 
-        public static bool DirectoryExists(this string dirPath)
-        {
-            return PclExport.Instance.DirectoryExists(dirPath);
-        }
+        public static bool DirectoryExists(this string dirPath) => Directory.Exists(dirPath);
 
-        public static void CreateDirectory(this string dirPath)
-        {
-            PclExport.Instance.CreateDirectory(dirPath);
-        }
+        public static void CreateDirectory(this string dirPath) => Directory.CreateDirectory(dirPath);
 
-        public static int IndexOfAny(this string text, params string[] needles)
-        {
-            return IndexOfAny(text, 0, needles);
-        }
+        public static int IndexOfAny(this string text, params string[] needles) => IndexOfAny(text, 0, needles);
 
         public static int IndexOfAny(this string text, int startIndex, params string[] needles)
         {
@@ -680,21 +636,19 @@ namespace ServiceStack
             return firstPos;
         }
 
-        public static string ExtractContents(this string fromText, string startAfter, string endAt)
-        {
-            return ExtractContents(fromText, startAfter, startAfter, endAt);
-        }
+        public static string ExtractContents(this string fromText, string startAfter, string endAt) => 
+            ExtractContents(fromText, startAfter, startAfter, endAt);
 
         public static string ExtractContents(this string fromText, string uniqueMarker, string startAfter, string endAt)
         {
-            if (String.IsNullOrEmpty(uniqueMarker))
+            if (string.IsNullOrEmpty(uniqueMarker))
                 throw new ArgumentNullException(nameof(uniqueMarker));
-            if (String.IsNullOrEmpty(startAfter))
+            if (string.IsNullOrEmpty(startAfter))
                 throw new ArgumentNullException(nameof(startAfter));
-            if (String.IsNullOrEmpty(endAt))
+            if (string.IsNullOrEmpty(endAt))
                 throw new ArgumentNullException(nameof(endAt));
 
-            if (String.IsNullOrEmpty(fromText)) return null;
+            if (string.IsNullOrEmpty(fromText)) return null;
 
             var markerPos = fromText.IndexOf(uniqueMarker, StringComparison.Ordinal);
             if (markerPos == -1) return null;
@@ -709,12 +663,9 @@ namespace ServiceStack
             return fromText.Substring(startPos, endPos - startPos);
         }
 
-        static readonly Regex StripHtmlRegEx = new Regex(@"<(.|\n)*?>", PclExport.Instance.RegexOptions);
+        static readonly Regex StripHtmlRegEx = new(@"<(.|\n)*?>", RegexOptions.Compiled);
 
-        public static string StripHtml(this string html)
-        {
-            return String.IsNullOrEmpty(html) ? null : StripHtmlRegEx.Replace(html, "");
-        }
+        public static string StripHtml(this string html) => string.IsNullOrEmpty(html) ? null : StripHtmlRegEx.Replace(html, "");
 
         public static string Quoted(this string text)
         {
@@ -734,12 +685,12 @@ namespace ServiceStack
                     : text;
         }
 
-        static readonly Regex StripBracketsRegEx = new Regex(@"\[(.|\n)*?\]", PclExport.Instance.RegexOptions);
-        static readonly Regex StripBracesRegEx = new Regex(@"\((.|\n)*?\)", PclExport.Instance.RegexOptions);
+        static readonly Regex StripBracketsRegEx = new(@"\[(.|\n)*?\]", PclExport.Instance.RegexOptions);
+        static readonly Regex StripBracesRegEx = new(@"\((.|\n)*?\)", RegexOptions.Compiled);
 
         public static string StripMarkdownMarkup(this string markdown)
         {
-            if (String.IsNullOrEmpty(markdown)) return null;
+            if (string.IsNullOrEmpty(markdown)) return null;
             markdown = StripBracketsRegEx.Replace(markdown, "");
             markdown = StripBracesRegEx.Replace(markdown, "");
             markdown = markdown
@@ -810,7 +761,7 @@ namespace ServiceStack
 
         public static string ToLowercaseUnderscore(this string value)
         {
-            if (String.IsNullOrEmpty(value)) return value;
+            if (string.IsNullOrEmpty(value)) return value;
             value = value.ToCamelCase();
 
             var sb = StringBuilderThreadStatic.Allocate();
@@ -841,13 +792,13 @@ namespace ServiceStack
 
         public static string SafeSubstring(this string value, int startIndex)
         {
-            if (String.IsNullOrEmpty(value)) return Empty;
+            if (string.IsNullOrEmpty(value)) return Empty;
             return SafeSubstring(value, startIndex, value.Length);
         }
 
         public static string SafeSubstring(this string value, int startIndex, int length)
         {
-            if (String.IsNullOrEmpty(value) || length <= 0) return Empty;
+            if (string.IsNullOrEmpty(value) || length <= 0) return Empty;
             if (startIndex < 0) startIndex = 0;
             if (value.Length >= (startIndex + length))
                 return value.Substring(startIndex, length);
@@ -874,45 +825,28 @@ namespace ServiceStack
             return PclExport.Instance.IsAnonymousType(type);
         }
 
-        public static int CompareIgnoreCase(this string strA, string strB)
-        {
-            return Compare(strA, strB, PclExport.Instance.InvariantComparisonIgnoreCase);
-        }
-
-        public static bool EndsWithInvariant(this string str, string endsWith)
-        {
-            return str.EndsWith(endsWith, PclExport.Instance.InvariantComparison);
-        }
+        public static int CompareIgnoreCase(this string strA, string strB) => 
+            Compare(strA, strB, StringComparison.InvariantCultureIgnoreCase);
+        public static bool EndsWithInvariant(this string str, string endsWith) => 
+            str.EndsWith(endsWith, StringComparison.InvariantCulture);
 
         private static readonly Regex InvalidVarCharsRegex = new(@"[^A-Za-z0-9_]", RegexOptions.Compiled);
         private static readonly Regex ValidVarCharsRegex = new(@"^[A-Za-z0-9_]+$", RegexOptions.Compiled);
         private static readonly Regex InvalidVarRefCharsRegex = new(@"[^A-Za-z0-9._]", RegexOptions.Compiled);
         private static readonly Regex ValidVarRefCharsRegex = new(@"^[A-Za-z0-9._]+$", RegexOptions.Compiled);
-        
         private static readonly Regex SplitCamelCaseRegex = new("([A-Z]|[0-9]+)", RegexOptions.Compiled);
-        private static readonly Regex HttpRegex = new(@"^http://",
-            PclExport.Instance.RegexOptions | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-        public static T ToEnum<T>(this string value)
-        {
-            return (T)Enum.Parse(typeof(T), value, true);
-        }
+        public static T ToEnum<T>(this string value) => (T)Enum.Parse(typeof(T), value, true);
 
         public static T ToEnumOrDefault<T>(this string value, T defaultValue)
         {
-            if (String.IsNullOrEmpty(value)) return defaultValue;
+            if (string.IsNullOrEmpty(value)) return defaultValue;
             return (T)Enum.Parse(typeof(T), value, true);
         }
 
-        public static string SplitCamelCase(this string value)
-        {
-            return SplitCamelCaseRegex.Replace(value, " $1").TrimStart();
-        }
+        public static string SplitCamelCase(this string value) => SplitCamelCaseRegex.Replace(value, " $1").TrimStart();
 
-        public static string ToInvariantUpper(this char value)
-        {
-            return PclExport.Instance.ToInvariantUpper(value);
-        }
+        public static string ToInvariantUpper(this char value) => value.ToString().ToUpperInvariant();
 
         public static string ToEnglish(this string camelCase)
         {
@@ -923,26 +857,18 @@ namespace ServiceStack
         public static string ToHttps(this string url)
         {
             if (url == null)
-            {
                 throw new ArgumentNullException(nameof(url));
-            }
-            return HttpRegex.Replace(url.Trim(), "https://");
+
+            return url.StartsWith("http://")
+                ? "https" + url.Substring(4)
+                : url;
         }
 
-        public static bool IsEmpty(this string value)
-        {
-            return String.IsNullOrEmpty(value);
-        }
+        public static bool IsEmpty(this string value) => string.IsNullOrEmpty(value);
+        public static bool IsNullOrEmpty(this string value) => string.IsNullOrEmpty(value);
 
-        public static bool IsNullOrEmpty(this string value)
-        {
-            return String.IsNullOrEmpty(value);
-        }
-
-        public static bool EqualsIgnoreCase(this string value, string other)
-        {
-            return String.Equals(value, other, StringComparison.OrdinalIgnoreCase);
-        }
+        public static bool EqualsIgnoreCase(this string value, string other) => 
+            string.Equals(value, other, StringComparison.OrdinalIgnoreCase);
 
         public static string ReplaceFirst(this string haystack, string needle, string replacement)
         {
@@ -960,7 +886,8 @@ namespace ServiceStack
         {
             foreach (var testMatch in testMatches)
             {
-                if (text.Contains(testMatch)) return true;
+                if (text.Contains(testMatch)) 
+                    return true;
             }
             return false;
         }
@@ -969,7 +896,8 @@ namespace ServiceStack
         {
             foreach (var testMatch in testMatches)
             {
-                if (text.IndexOf(testMatch, comparisonType) >= 0) return true;
+                if (text.IndexOf(testMatch, comparisonType) >= 0) 
+                    return true;
             }
             return false;
         }
@@ -983,15 +911,9 @@ namespace ServiceStack
         public static string SafeVarRef(this string text) => !string.IsNullOrEmpty(text) 
             ? InvalidVarRefCharsRegex.Replace(text, "_") : null;
 
-        public static string Join(this List<string> items)
-        {
-            return string.Join(JsWriter.ItemSeperatorString, items.ToArray());
-        }
+        public static string Join(this List<string> items) => string.Join(JsWriter.ItemSeperatorString, items.ToArray());
 
-        public static string Join(this List<string> items, string delimeter)
-        {
-            return string.Join(delimeter, items.ToArray());
-        }
+        public static string Join(this List<string> items, string delimiter) => string.Join(delimiter, items.ToArray());
 
         public static string ToParentPath(this string path)
         {
@@ -1309,13 +1231,13 @@ namespace ServiceStack.Text
         [Obsolete("Use ConvertTo<T>")]
         public static T To<T>(this string value, T defaultValue)
         {
-            return String.IsNullOrEmpty(value) ? defaultValue : TypeSerializer.DeserializeFromString<T>(value);
+            return string.IsNullOrEmpty(value) ? defaultValue : TypeSerializer.DeserializeFromString<T>(value);
         }
 
         [Obsolete("Use ConvertTo<T>")]
         public static T ToOrDefaultValue<T>(this string value)
         {
-            return String.IsNullOrEmpty(value) ? default(T) : TypeSerializer.DeserializeFromString<T>(value);
+            return string.IsNullOrEmpty(value) ? default(T) : TypeSerializer.DeserializeFromString<T>(value);
         }
 
         [Obsolete("Use ConvertTo<T>")]
