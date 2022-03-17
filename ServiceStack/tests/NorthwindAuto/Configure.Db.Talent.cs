@@ -29,7 +29,6 @@ public static class ConfigureDbTalent
 
             var now = DateTime.UtcNow;
             var jobFaker = new Faker<Job>()
-                //.CustomInstantiator(f => new Job())
                 .RuleFor(j => j.Description, (faker, job1) => faker.Lorem.Paragraphs(3))
                 .RuleFor(j => j.Title, (faker, job1) => faker.Name.JobTitle())
                 .RuleFor(j => j.Company, (faker, job1) => faker.Company.CompanyName())
@@ -47,7 +46,6 @@ public static class ConfigureDbTalent
                 .RuleFor(j => j.ModifiedBy, () => "SYSTEM");
 
             var contactFaker = new Faker<Contact>()
-                //.CustomInstantiator(f => new Contact())
                 .RuleFor(c => c.FirstName, ((faker, contact1) => faker.Name.FirstName()))
                 .RuleFor(c => c.LastName, ((faker, contact1) => faker.Name.LastName()))
                 .RuleFor(c => c.Email,
@@ -68,7 +66,6 @@ public static class ConfigureDbTalent
                 .RuleFor(c => c.ModifiedBy, () => "SYSTEM");
 
             var jobAppFaker = new Faker<JobApplication>()
-                //.CustomInstantiator(f => new JobApplication())
                 .RuleFor(j => j.ApplicationStatus,
                     ((faker, application) => faker.Random.Enum<JobApplicationStatus>()))
                 .RuleFor(j => j.AppliedDate, (faker, application) => faker.Date.Recent(21))
@@ -101,7 +98,7 @@ public static class ConfigureDbTalent
                 var faker = new Faker();
                 var uniqueJobIndexes = Enumerable.Range(0, jobs.Count - 1)
                     .OrderBy(x => faker.Random.Int()).Take(8);
-                var lastIndex = 0;
+
                 foreach (var index in uniqueJobIndexes)
                 {
                     var job = jobs[index];
@@ -120,6 +117,42 @@ public static class ConfigureDbTalent
         }
     }
 
+    public static void SeedAttachments(this IDbConnection db, ServiceStackHost appHost, string sourceDir)
+    {
+        sourceDir.AssertDir();
+        var jobApps = db.LoadSelect<JobApplication>();
+        var resumeFileInfo = new FileInfo(Path.Join(sourceDir, "sample_resume.pdf"));
+        var coverFileInfo = new FileInfo(Path.Join(sourceDir, "sample_coverletter.pdf"));
+        var now = DateTime.UtcNow;
+
+        JobApplicationAttachment CreatePdfAttachment(JobApplication jobApp, FileInfo fileInfo)
+        {
+            var newName = $"{fileInfo.Name.WithoutExtension().Replace("sample_", "")}_{jobApp.Position.Title.ToLower().Replace(" ", "_")}.pdf";
+            var relativePath = $"applications/app/{jobApp.JobId}/{now:yyyy/MM/dd}/{newName}";
+            var attachment = new JobApplicationAttachment
+            {
+                FilePath = $"/uploads/{relativePath}",
+                FileName = newName,
+                ContentLength = fileInfo.Length,
+                ContentType = "application/pdf",
+                JobApplicationId = jobApp.Id
+            };
+            var destFile = new FileInfo(Path.Join(sourceDir, relativePath));
+            if (!destFile.Exists)
+            {
+                destFile.DirectoryName.AssertDir();
+                File.Copy(fileInfo.FullName, destFile.FullName);
+            }
+            return attachment;
+        }
+
+        foreach (var jobApp in jobApps)
+        {
+            db.Save(CreatePdfAttachment(jobApp, resumeFileInfo));
+            db.Save(CreatePdfAttachment(jobApp, coverFileInfo));
+        }
+    }
+
     private static Faker<PhoneScreen> phoneScreenFaker = new Faker<PhoneScreen>()
         .RuleFor(p => p.Id, () => 0)
         .RuleFor(p => p.AppUserId, (faker, screen) => faker.Random.Int(1, 5))
@@ -130,6 +163,15 @@ public static class ConfigureDbTalent
         .RuleFor(p => p.ModifiedBy, () => "SYSTEM");
 
     private static Faker<Interview> interviewFaker = new Faker<Interview>()
+        .RuleFor(p => p.Id, () => 0)
+        .RuleFor(p => p.AppUserId, (faker, screen) => faker.Random.Int(1, 5))
+        .RuleFor(p => p.Notes, (faker, screen) => faker.Lorem.Paragraph())
+        .RuleFor(p => p.CreatedDate, () => DateTime.UtcNow)
+        .RuleFor(p => p.ModifiedDate, () => DateTime.UtcNow)
+        .RuleFor(p => p.CreatedBy, () => "SYSTEM")
+        .RuleFor(p => p.ModifiedBy, () => "SYSTEM");
+
+    private static Faker<JobOffer> jobOfferFaker = new Faker<JobOffer>()
         .RuleFor(p => p.Id, () => 0)
         .RuleFor(p => p.AppUserId, (faker, screen) => faker.Random.Int(1, 5))
         .RuleFor(p => p.Notes, (faker, screen) => faker.Lorem.Paragraph())
@@ -173,13 +215,26 @@ public static class ConfigureDbTalent
         var baseDate = (new DateTime(now.Year, now.Month, now.Day)) - TimeSpan.FromDays(3);
         var eventDate = baseDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
 
-        // TODO generate attachments here
+        if (status >= JobApplicationStatus.Offer)
+        {
+            eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
+            appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
+            appEvent.Description = JobApplicationStatus.Offer.ToDescription();
+            appEvent.EventDate = eventDate;
+            appEvent.Status = JobApplicationStatus.Offer;
+            db.Insert(appEvent);
+            var offer = jobOfferFaker.Generate();
+            offer.JobApplicationId = jobApp.Id;
+            offer.SalaryOffer = FakerInstance.Random.Int(jobApp.Position.SalaryRangeLower, jobApp.Position.SalaryRangeUpper);
+            offer.AppUserId = FakerInstance.Random.Int(1, 5);
+            db.Insert(offer);
+        }
 
         if (status >= JobApplicationStatus.InterviewCompleted)
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
             appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
-            appEvent.Description = "Completed interview";
+            appEvent.Description = JobApplicationStatus.InterviewCompleted.ToDescription();
             appEvent.EventDate = eventDate;
             appEvent.Status = JobApplicationStatus.InterviewCompleted;
             db.Insert(appEvent);
@@ -194,11 +249,11 @@ public static class ConfigureDbTalent
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
             appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
-            appEvent.Description = "Advanced to interview";
+            appEvent.Description = JobApplicationStatus.Interview.ToDescription();
             appEvent.Status = JobApplicationStatus.Interview;
             appEvent.EventDate = eventDate;
             db.Insert(appEvent);
-            if(status == JobApplicationStatus.Interview)
+            if (status == JobApplicationStatus.Interview)
             {
                 var interview = interviewFaker.Generate();
                 interview.JobApplicationId = jobApp.Id;
@@ -212,7 +267,7 @@ public static class ConfigureDbTalent
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
             appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
-            appEvent.Description = "Completed phone screening";
+            appEvent.Description = JobApplicationStatus.PhoneScreeningCompleted.ToDescription();
             appEvent.EventDate = eventDate;
             appEvent.Status = JobApplicationStatus.PhoneScreeningCompleted;
             db.Insert(appEvent);
@@ -226,11 +281,11 @@ public static class ConfigureDbTalent
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
             appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
-            appEvent.Description = "Advanced to phone screening";
+            appEvent.Description = JobApplicationStatus.PhoneScreening.ToDescription();
             appEvent.Status = JobApplicationStatus.PhoneScreening;
             appEvent.EventDate = eventDate;
             db.Insert(appEvent);
-            if(status == JobApplicationStatus.PhoneScreening)
+            if (status == JobApplicationStatus.PhoneScreening)
             {
                 var screen = phoneScreenFaker.Generate();
                 screen.JobApplicationId = jobApp.Id;
@@ -243,14 +298,14 @@ public static class ConfigureDbTalent
         {
             eventDate = eventDate - TimeSpan.FromDays(FakerInstance.Random.Int(1, 3));
             appEvent.AppUserId = FakerInstance.Random.Int(1, 5);
-            appEvent.Description = "Applied";
+            appEvent.Description = JobApplicationStatus.Applied.ToDescription();
             appEvent.Status = JobApplicationStatus.Applied;
             appEvent.EventDate = eventDate;
             db.Insert(appEvent);
         }
 
         var numOfComments = FakerInstance.Random.Int(1, 5);
-        for (var i = 0;  i < numOfComments; i++)
+        for (var i = 0; i < numOfComments; i++)
         {
             var comment = commentFaker.Generate();
             comment.JobApplicationId = jobApp.Id;
