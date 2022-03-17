@@ -6,6 +6,8 @@ using System.Web;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;
@@ -235,6 +237,27 @@ namespace ServiceStack
                 response.App.ServiceName = appHost.ServiceName;
             if (response.App.JsTextCase == null)
                 response.App.JsTextCase = $"{Text.JsConfig.TextCase}";
+
+            var view = req.Dto is MetadataApp dto ? dto.View?.ToLower() : null;
+            if (uiFeature?.PreserveAttributesNamed != null && view is "locode" or "explorer" or "admin-ui")
+            {
+                var preserveAttrs = uiFeature.PreserveAttributesNamed.Map(x => x.LastLeftPart("Attribute"));
+                var allTypes = response.Api.GetAllTypes().ToList(); 
+                allTypes.ForEach(type => {
+                    if (type.Attributes?.Count > 0)
+                    {
+                        type.Attributes = type.Attributes.Where(x => preserveAttrs.Contains(x.Name)).ToList().NullIfEmpty();;
+                    }
+                    foreach (var prop in type.Properties.Safe())
+                    {
+                        if (prop.Attributes?.Count > 0)
+                            prop.Attributes = prop.Attributes.Where(x => preserveAttrs.Contains(x.Name)).ToList().NullIfEmpty();
+                        if (prop.Namespace == nameof(System))
+                            prop.Namespace = null;
+                        prop.DataMember = null;
+                    }
+                });
+            }
 
             foreach (var fn in feature.AppMetadataFilters)
             {

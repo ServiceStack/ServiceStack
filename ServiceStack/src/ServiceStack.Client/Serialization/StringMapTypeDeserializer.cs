@@ -40,8 +40,7 @@ namespace ServiceStack.Serialization
         }
 
         private readonly Type type;
-        private readonly Dictionary<string, PropertySerializerEntry> propertySetterMap
-            = new(PclExport.Instance.InvariantComparerIgnoreCase);
+        private readonly Dictionary<string, PropertySerializerEntry> propertySetterMap = new(StringComparer.OrdinalIgnoreCase);
 
         internal StringMapTypeDeserializer(Type type, ILog log) : this(type)
         {

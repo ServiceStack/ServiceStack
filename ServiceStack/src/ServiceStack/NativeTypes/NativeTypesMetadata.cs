@@ -1485,18 +1485,19 @@ namespace ServiceStack.NativeTypes
             return attr;
         }
 
-        public static List<MetadataType> GetAllTypes(this MetadataTypes metadata)
+        public static IEnumerable<MetadataType> GetAllTypes(this MetadataTypes metadata)
         {
-            var map = new Dictionary<string, MetadataType>();
             foreach (var op in metadata.Operations)
             {
                 if (!(op.Request.Namespace ?? "").StartsWith("System"))
-                    map[op.Request.Name] = op.Request;
+                    yield return op.Request;
                 if (op.Response != null && !(op.Response.Namespace ?? "").StartsWith("System"))
-                    map[op.Response.Name] = op.Response;
+                    yield return op.Response;
             }
-            metadata.Types.Each(x => map[x.Name] = x);
-            return map.Values.ToList();
+            foreach (var type in metadata.Types.Safe())
+            {
+                yield return type;
+            }
         }
 
         public static List<MetadataType> GetAllTypesOrdered(this MetadataTypes metadata)

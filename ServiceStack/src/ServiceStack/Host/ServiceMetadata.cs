@@ -1048,7 +1048,7 @@ namespace ServiceStack.Host
             (flag & feature) != 0;
 
         public static bool? NullIfFalse(this bool value) => value ? true : (bool?)null;
-        public static List<string>? NullIfEmpty(this List<string> value) => value?.Count > 0 ? value : null;
+        public static List<T>? NullIfEmpty<T>(this List<T> value) => value?.Count > 0 ? value : null;
         public static int? NullIfMinValue(this int value) => value != int.MinValue ? value : (int?)null;
 
         public static Dictionary<string, string[]> ToMetadataServiceRoutes(this Dictionary<Type, string[]> serviceRoutes,
@@ -1062,7 +1062,6 @@ namespace ServiceStack.Host
             filter?.Invoke(to);
             return to;
         }
-        
 
         public static bool ForceInclude(this MetadataTypesConfig config, Type type) =>
             HostContext.Metadata.ForceInclude.Contains(type);
@@ -1074,7 +1073,5 @@ namespace ServiceStack.Host
                     : type.Name == x.Name && type.Namespace == x.Namespace);
 
         internal static bool ForceInclude(this Type type) => HostContext.Metadata.ForceInclude.Contains(type);
-
     }
-    
 }

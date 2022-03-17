@@ -1,5 +1,5 @@
 /* Options:
-Date: 2022-03-18 00:20:58
+Date: 2022-03-18 03:22:59
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -935,6 +935,8 @@ export class QueryResponse<T>
 // @DataContract
 export class MetadataApp implements IReturn<AppMetadata>
 {
+    // @DataMember(Order=1)
+    public view: string;
 
     public constructor(init?: Partial<MetadataApp>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'MetadataApp'; }

@@ -12,8 +12,9 @@ App.components({
         return {
             $template: '#create-form-template',
             store, routes, settings,
-            formClass: Forms.formClass,
-            gridClass: Forms.gridClass,
+            get css() { return map(this.apiCreate, x => x.op.ui && x.op.ui.locodeCss) },
+            get formClass() { return map(this.css, x => x.form) || Forms.formClass },
+            get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
             /** @type State */
             get state() { return state && state() },
             /** @type ApiState|null */
@@ -47,8 +48,9 @@ App.components({
         return {
             $template: '#edit-form-template',
             store, routes, settings,
-            formClass: Forms.formClass,
-            gridClass: Forms.gridClass,
+            get css() { return map(this.useApiUpdate, x => x.op.ui && x.op.ui.locodeCss) },
+            get formClass() { return map(this.css, x => x.form) || Forms.formClass },
+            get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
             /** @type State */
             get state() { return state && state() },
             /** @type ApiState|null */

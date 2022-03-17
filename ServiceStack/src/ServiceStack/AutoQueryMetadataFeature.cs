@@ -210,7 +210,7 @@ namespace ServiceStack
                 }
             }
 
-            var allTypes = metadataTypes.GetAllTypes();
+            var allTypes = metadataTypes.GetAllTypes().ToList();
             var types = allTypes.Where(x => includeTypeNames.Contains(x.Name)).ToList();
 
             //Add referenced types to type name search

@@ -332,7 +332,11 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public partial class MetadataApp : IReturn<AppMetadata> { }
+    public partial class MetadataApp : IReturn<AppMetadata>
+    {
+        [DataMember(Order = 1)]
+        public string View { get; set; }
+    }
 
     [DataContract]
     public class GetFile : IReturn<FileContent>, IGet

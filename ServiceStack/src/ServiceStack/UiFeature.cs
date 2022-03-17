@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ServiceStack.DataAnnotations;
 using ServiceStack.HtmlModules;
 using ServiceStack.Model;
 
@@ -28,6 +29,14 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
             module.VirtualFiles = appHost.VirtualFileSources);
     
     public Action<IAppHost> Configure { get; set; }
+
+    /// <summary>
+    /// Only Attributes used in built-in UIs are returned in /metadata/app.json  
+    /// </summary>
+    public List<string> PreserveAttributesNamed { get; set; } = new()
+    {
+        nameof(ComputedAttribute),
+    };
 
     public UiFeature()
     {
