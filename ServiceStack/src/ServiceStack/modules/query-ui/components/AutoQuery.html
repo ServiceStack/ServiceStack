@@ -209,7 +209,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             return apiSend(createClient, requestDto).then(r => {
                 complete()
                 App.nextTick(() => this.apiResult = r)
-                let results = this.results
+                let results = map(r.api.response, x => x.results) || []
                 if (!r.api.succeeded || results.length === 0) return
                 Forms.fetchLookupValues(results, this.columns, () => this.refreshResults())
             })

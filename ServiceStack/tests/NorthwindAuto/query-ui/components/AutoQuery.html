@@ -240,7 +240,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 complete()
                 /**: Fix for iOS which doesn't pick up reactive update on initial onload */
                 App.nextTick(() => this.apiResult = r)
-                let results = this.results
+                let results = map(r.api.response, x => x.results) || []
                 if (!r.api.succeeded || results.length === 0) return
                 Forms.fetchLookupValues(results, this.columns, () => this.refreshResults())
             })
