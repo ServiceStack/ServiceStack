@@ -73,7 +73,7 @@ namespace ServiceStack
         public Action<MetadataTypes, MetadataTypesConfig, IRequest> MetadataTypesFilter { get; set; }
         public Action<MetadataType, IRequest> TypeFilter { get; set; }
         public Action<MetadataOperationType, IRequest> ServiceFilter { get; set; }
-        
+
         public Func<MetadataType, bool> IncludeType { get; set; }
         public Func<MetadataOperationType, bool> IncludeService { get; set; }
 
@@ -1390,6 +1390,10 @@ namespace ServiceStack
                         continue;
                     
                     genServices.ServiceFilter(op, req);
+                    
+                    genServices.TypeFilter?.Invoke(op.Request, req);
+                    if (op.Response is { Type: null })
+                        genServices.TypeFilter?.Invoke(op.Response, req);
                 }
             }
             if (genServices.TypeFilter != null)
@@ -1403,7 +1407,6 @@ namespace ServiceStack
                 }
             }
             genServices.MetadataTypesFilter?.Invoke(crudMetadataTypes, typesConfig, req);
-
             
             return new Tuple<MetadataTypes, MetadataTypesConfig>(crudMetadataTypes, typesConfig);
         }
