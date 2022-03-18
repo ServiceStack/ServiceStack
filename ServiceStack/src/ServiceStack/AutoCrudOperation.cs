@@ -174,25 +174,93 @@ namespace ServiceStack
         private static List<string> crudWriteInterfaces;
         private static List<string> CrudWriteNames => crudWriteInterfaces ??= CrudInterfaceMetadataNames(Write); 
 
+        /// <summary>
+        /// Is AutoQuery or Crud Request API
+        /// </summary>
         public static bool IsCrud(this MetadataOperationType op) => op.IsCrudRead() || op.IsCrudWrite();
-
-        public static bool IsCrudWrite(this MetadataOperationType op) => op.Request.IsCrudWrite();
+        /// <summary>
+        /// Is AutoQuery Request DTO 
+        /// </summary>
         public static bool IsCrudRead(this MetadataOperationType op) => op.Request.IsCrudRead();
-        
-        public static bool IsCrudApi(this MetadataType type) => type.IsCrudRead() || type.IsCrudWrite();
+        /// <summary>
+        /// Is Crud Request DTO 
+        /// </summary>
+        public static bool IsCrudWrite(this MetadataOperationType op) => op.Request.IsCrudWrite();
+        /// <summary>
+        /// Is AutoQuery or Crud Request DTO
+        /// </summary>
+        public static bool IsCrud(this MetadataType type) => type.IsCrudRead() || type.IsCrudWrite();
+        /// <summary>
+        /// Is AutoQuery Request DTO 
+        /// </summary>
+        public static bool IsCrudRead(this MetadataType type) => type.IsAutoQuery();
+        /// <summary>
+        /// Is AutoQuery Request DTO 
+        /// </summary>
+        public static bool IsAutoQuery(this MetadataType type) => 
+            type.Inherits is { Name: "QueryDb`1" or "QueryDb`2" };
+        /// <summary>
+        /// Is AutoQuery Request DTO 
+        /// </summary>
+        public static bool IsAutoQueryData(this MetadataType type) => 
+            type.Inherits is { Name: "QueryData`1" or "QueryData`2" };
+        /// <summary>
+        /// Is Crud Request DTO 
+        /// </summary>
         public static bool IsCrudWrite(this MetadataType type) => 
             type.Implements?.Any(iface => CrudWriteNames.Contains(iface.Name)) == true;
-        public static bool IsCrudRead(this MetadataType type) => 
-            type.Inherits?.Name == typeof(QueryDb<>).Name || type.Inherits?.Name == typeof(QueryDb<,>).Name;
+        /// <summary>
+        /// Is AutoQuery or Crud Request DTO for Data Model 
+        /// </summary>
+        public static bool IsCrud(this MetadataType type, string model) =>
+            type.IsCrudRead(model) || type.IsCrudWrite(model);
+        /// <summary>
+        /// Is Crud Request DTO for Data Model 
+        /// </summary>
+        public static bool IsCrudWrite(this MetadataType type, string model) =>
+            type.IsCrudWrite() && type.Implements.Any(x => CrudWriteNames.Contains(x.Name) && x.FirstGenericArg() == model);
+        /// <summary>
+        /// Is AutoQuery Request DTO for Data Model 
+        /// </summary>
+        public static bool IsCrudRead(this MetadataType type, string model) => type.IsAutoQuery(model);
+        /// <summary>
+        /// Is AutoQuery Request DTO for Data Model 
+        /// </summary>
+        public static bool IsAutoQuery(this MetadataType type, string model) => 
+            type.IsAutoQuery() && type.Inherits.FirstGenericArg() == model;
 
-        public static bool IsCrudApiOrType(this MetadataType type, string forModel) =>
-            type.IsCrudRead(forModel) || type.IsCrudWrite(forModel) || type.Name == forModel;
-        public static bool IsCrudApi(this MetadataType type, string forModel) =>
-            type.IsCrudRead(forModel) || type.IsCrudWrite(forModel);
-        public static bool IsCrudWrite(this MetadataType type, string forModel) => 
-            type.IsCrudWrite() && type.GenericArgs?.Length > 0 && type.GenericArgs[0] == forModel;
-        public static bool IsCrudRead(this MetadataType type, string forModel) => 
-            type.IsCrudRead() && type.GenericArgs?.Length > 0 && type.GenericArgs[0] == forModel;
+        /// <summary>
+        /// Is ICreateDb or ISaveDb Crud Request DTO 
+        /// </summary>
+        public static bool IsCrudCreate(this MetadataType type) => 
+            type.Implements?.Any(iface => iface.Name is "ICreateDb`1" or "ISaveDb`1") == true;
+        /// <summary>
+        /// Is ICreateDb or ISaveDb Crud Request DTO for Data Model 
+        /// </summary>
+        public static bool IsCrudCreate(this MetadataType type, string model) => 
+            type.Implements?.Any(iface => (iface.Name is "ICreateDb`1" or "ISaveDb`1") && iface.FirstGenericArg() == model) == true;
+        /// <summary>
+        /// Is IPatchDb, IUpdateDb or ISaveDb Crud Request DTO 
+        /// </summary>
+        public static bool IsCrudUpdate(this MetadataType type) => 
+            type.Implements?.Any(iface => iface.Name is "IPatchDb`1" or "IUpdateDb`1" or "ISaveDb`1") == true;
+        /// <summary>
+        /// Is IPatchDb, IUpdateDb or ISaveDb Crud Request DTO for Data Model
+        /// </summary>
+        public static bool IsCrudUpdate(this MetadataType type, string model) => 
+            type.Implements?.Any(iface => (iface.Name is "IPatchDb`1" or "IUpdateDb`1" or "ISaveDb`1") && iface.FirstGenericArg() == model) == true;
+        /// <summary>
+        /// Is IDeleteDb Crud Request DTO 
+        /// </summary>
+        public static bool IsCrudDelete(this MetadataType type) => 
+            type.Implements?.Any(iface => iface.Name is "IDeleteDb`1") == true;
+        /// <summary>
+        /// Is IDeleteDb Crud Request DTO for Data Model 
+        /// </summary>
+        public static bool IsCrudDelete(this MetadataType type, string model) => 
+            type.Implements?.Any(iface => iface.Name is "IDeleteDb`1" && iface.FirstGenericArg() == model) == true;
+        
+        public static string FirstGenericArg(this MetadataTypeName type) => type.GenericArgs?.Length > 0 ? type.GenericArgs[0] : null;
         
         public static bool IsRequestDto(this MetadataType type) => HostContext.AppHost?.Metadata.OperationNamesMap.ContainsKey(type.Name) == true
             || type.ImplementsAny(ApiInterfaces) || type.InheritsAny(ApiBaseTypes);
