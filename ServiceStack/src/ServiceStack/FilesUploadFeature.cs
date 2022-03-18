@@ -236,50 +236,6 @@ public enum FilesUploadOperation
     All    = Read | Create | Update | Delete,
 }
 
-public class StoreFileUpload : IReturn<StoreFileUploadResponse>, IHasBearerToken, IPost
-{
-    public string Name { get; set; }
-    public string Path { get; set; }
-    public string? BearerToken { get; set; }
-}
-
-public class StoreFileUploadResponse
-{
-    public List<string> Results { get; set; }
-    public ResponseStatus ResponseStatus { get; set; }
-}
-
-public class GetFileUpload : IReturn<byte[]>, IHasBearerToken, IGet
-{
-    public string Name { get; set; }
-    public string Path { get; set; }
-    public string? BearerToken { get; set; }
-    public bool? Attachment { get; set; }
-}
-
-public class ReplaceFileUpload : IReturn<ReplaceFileUploadResponse>, IHasBearerToken, IPut
-{
-    public string Name { get; set; }
-    public string Path { get; set; }
-    public string? BearerToken { get; set; }
-}
-public class ReplaceFileUploadResponse
-{
-    public ResponseStatus ResponseStatus { get; set; }
-}
-
-public class DeleteFileUpload : IReturn<DeleteFileUploadResponse>, IHasBearerToken, IDelete
-{
-    public string Name { get; set; }
-    public string Path { get; set; }
-    public string? BearerToken { get; set; }
-}
-public class DeleteFileUploadResponse
-{
-    public bool Result { get; set; }
-    public ResponseStatus ResponseStatus { get; set; }
-}
-
 [DefaultRequest(typeof(StoreFileUpload))]
 public class StoreFileUploadService : Service
 {
