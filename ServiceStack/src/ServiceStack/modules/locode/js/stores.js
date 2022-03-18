@@ -129,7 +129,7 @@ let store = PetiteVue.reactive({
             login:args => this.login(args, opt && opt.$on),
             api: () => this.api
         })
-        : NoAuth({ message:`${APP.app.serviceName} UI` })
+        : NoAuth({ message:`Welcome to ${APP.app.serviceName}` })
     },
     login(args, $on) {
         let provider = routes.provider || 'credentials'
