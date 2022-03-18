@@ -429,24 +429,13 @@ public static class FileExt
 {
     public static string[] WebImages { get; set; } = { "png", "jpg", "jpeg", "gif", "svg", "webp" };
     public static string[] BinaryImages { get; set; } = { "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp", "ai", "psd", "ps" };
-    public static string[] Images { get; set; } = Combine(WebImages, BinaryImages);
+    public static string[] Images { get; set; } = WebImages.CombineDistinct(BinaryImages);
     public static string[] WebVideos { get; set; } = { "avi", "m4v", "mov", "mp4", "mpg", "mpeg", "wmv", "webm" };
     public static string[] WebAudios { get; set; } = { "mp3", "mpa", "ogg", "wav", "wma", "mid", "webm" };
     public static string[] BinaryDocuments { get; set; } = { "doc", "docx", "pdf", "rtf" };
     public static string[] TextDocuments { get; set; } = { "tex", "txt", "md", "rst" };
     public static string[] Spreadsheets { get; set; } = { "xls", "xlsm", "xlsx", "ods", "csv", "txv" };
     public static string[] Presentations { get; set; } = { "key", "odp", "pps", "ppt", "pptx" };
-    public static string[] AllDocuments { get; set; } = Combine(BinaryDocuments, TextDocuments, Presentations, Spreadsheets);
-    public static string[] WebFormats { get; set; } = Combine(WebImages, WebVideos, WebAudios);
-
-    public static string[] Combine(params string[][] extensions)
-    {
-        var all = new List<string>();
-        foreach (var exts in extensions)
-        {
-            all.AddRange(exts);
-        }
-        var ret = all.Distinct().ToArray();
-        return ret;
-    }
+    public static string[] AllDocuments { get; set; } = BinaryDocuments.CombineDistinct(TextDocuments, Presentations, Spreadsheets);
+    public static string[] WebFormats { get; set; } = WebImages.CombineDistinct(WebVideos, WebAudios);
 }

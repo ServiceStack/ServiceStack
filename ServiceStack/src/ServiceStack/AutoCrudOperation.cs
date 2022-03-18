@@ -193,6 +193,38 @@ namespace ServiceStack
             type.IsCrudWrite() && type.GenericArgs?.Length > 0 && type.GenericArgs[0] == forModel;
         public static bool IsCrudRead(this MetadataType type, string forModel) => 
             type.IsCrudRead() && type.GenericArgs?.Length > 0 && type.GenericArgs[0] == forModel;
+        
+        public static bool IsRequestDto(this MetadataType type) => HostContext.AppHost?.Metadata.OperationNamesMap.ContainsKey(type.Name) == true
+            || type.ImplementsAny(ApiInterfaces) || type.InheritsAny(ApiBaseTypes);
+        
+        public static string[] ApiMarkerInterfaces { get; } = {
+            nameof(IGet),
+            nameof(IPost),
+            nameof(IPut),
+            nameof(IDelete),
+            nameof(IPatch),
+            nameof(IOptions),
+            nameof(IStream),
+        };
+        public static string[] ApiReturnInterfaces { get; } = {
+            typeof(IReturn<>).Name,
+            nameof(IReturnVoid),
+        };
+        public static string[] ApiCrudInterfaces { get; } = {
+            typeof(ICreateDb<>).Name,
+            typeof(IUpdateDb<>).Name,
+            typeof(IPatchDb<>).Name,
+            typeof(IDeleteDb<>).Name,
+            typeof(ISaveDb<>).Name,
+        };
+        public static string[] ApiQueryBaseTypes { get; } = {
+            typeof(QueryDb<>).Name,
+            typeof(QueryDb<,>).Name,
+            typeof(QueryData<>).Name,
+            typeof(QueryData<,>).Name,
+        };
+        public static HashSet<string> ApiInterfaces { get; } = ApiMarkerInterfaces.CombineSet(ApiReturnInterfaces, ApiCrudInterfaces); 
+        public static HashSet<string> ApiBaseTypes { get; } = ApiQueryBaseTypes.ToSet(); 
     }
     
     public struct AutoQueryDtoType

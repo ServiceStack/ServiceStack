@@ -774,7 +774,13 @@ namespace ServiceStack
         public static bool InheritsAny(this MetadataType type, params string[] typeNames) =>
             type.Inherits != null && typeNames.Contains(type.Inherits.Name);
 
+        public static bool InheritsAny(this MetadataType type, HashSet<string> typeNames) =>
+            type.Inherits != null && typeNames.Contains(type.Inherits.Name);
+
         public static bool ImplementsAny(this MetadataType type, params string[] typeNames) =>
+            type.Implements != null && type.Implements.Any(i => typeNames.Contains(i.Name));
+
+        public static bool ImplementsAny(this MetadataType type, HashSet<string> typeNames) =>
             type.Implements != null && type.Implements.Any(i => typeNames.Contains(i.Name));
 
         public static bool ReferencesAny(this MetadataOperationType op, params string[] typeNames) =>

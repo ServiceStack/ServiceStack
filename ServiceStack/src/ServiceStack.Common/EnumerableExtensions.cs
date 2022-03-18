@@ -506,6 +506,47 @@ namespace ServiceStack
             }
             return typeof(string);
         }
-        
+     
+        public static T[] CombineDistinct<T>(this T[] original, params T[][] others)
+        {
+            var count = original.Length;
+            foreach (var arr in others)
+            {
+                count += arr.Length;
+            }
+            
+            var all = new List<T>(count);
+            all.AddRange(original);
+            foreach (var arr in others)
+            {
+                all.AddRange(arr);
+            }
+            var ret = all.Distinct().ToArray();
+            return ret;
+        }
+
+        public static HashSet<T> CombineSet<T>(this T[] original, params T[][] others)
+        {
+            var count = original.Length;
+            foreach (var arr in others)
+            {
+                count += arr.Length;
+            }
+            
+            var to = new HashSet<T>(count);
+            foreach (var item in original)
+            {
+                to.Add(item);
+            }
+            foreach (var arr in others)
+            {
+                foreach (var item in arr)
+                {
+                    to.Add(item);
+                }
+            }
+            return to;
+        }
+
     }
 }
