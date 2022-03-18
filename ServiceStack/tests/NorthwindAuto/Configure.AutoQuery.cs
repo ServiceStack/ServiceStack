@@ -3,6 +3,7 @@ using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.Html;
 using TalentBlazor.ServiceModel;
 
 // In Configure.AppHost
@@ -32,6 +33,18 @@ namespace MyApp
                             op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));
                             if (op.Request.Name.IndexOf("User", StringComparison.Ordinal) >= 0)
                                 op.Request.AddAttributeIfNotExists(new ValidateIsAdminAttribute());
+                            
+                            switch (op.Request.Name)
+                            {
+                                case "CreateEmployee":
+                                case "UpdateEmployee":
+                                case "PatchEmployee":
+                                    op.Request.Properties.First(x => x.Name == "PhotoPath")
+                                        .AddAttribute(new InputAttribute { Type = Input.Types.File })
+                                        .AddAttribute(new UploadToAttribute("employees"));
+                                    break;
+                            }
+                            
                         },
                         /* Example adding attributes to generated Type
                         TypeFilter = (type, req) =>
@@ -98,6 +111,12 @@ namespace MyApp
                         case "OrderDetail":
                             type.Property("UnitPrice").Format = currency;
                             type.Property("Discount").Format = percent;
+                            break;
+                        case "Employee":
+                            type.Property("PhotoPath").Format = new FormatInfo { Method = FormatMethods.IconRounded };
+                            type.Property("ReportsTo").Ref = new RefInfo { Model = "Employee", RefId = "Id", RefLabel = "LastName" };
+                            type.ReorderProperty("PhotoPath", before: "Title");
+                            type.ReorderProperty("ReportsTo", after: "Title");
                             break;
                         case "EmployeeTerritory":
                             type.Property("TerritoryId").Ref = new() { Model = "Territory", RefId = "Id", RefLabel = "TerritoryDescription" };
