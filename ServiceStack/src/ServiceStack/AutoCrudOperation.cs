@@ -250,6 +250,16 @@ namespace ServiceStack
         public static bool IsCrudUpdate(this MetadataType type, string model) => 
             type.Implements?.Any(iface => (iface.Name is "IPatchDb`1" or "IUpdateDb`1" or "ISaveDb`1") && iface.FirstGenericArg() == model) == true;
         /// <summary>
+        /// Is ICreateDb, IPatchDb, IUpdateDb or ISaveDb Crud Request DTO 
+        /// </summary>
+        public static bool IsCrudCreateOrUpdate(this MetadataType type) => 
+            type.Implements?.Any(iface => iface.Name is "ICreateDb`1" or "IPatchDb`1" or "IUpdateDb`1" or "ISaveDb`1") == true;
+        /// <summary>
+        /// Is ICreateDb, IPatchDb, IUpdateDb or ISaveDb Crud Request DTO for Data Model
+        /// </summary>
+        public static bool IsCrudCreateOrUpdate(this MetadataType type, string model) => 
+            type.Implements?.Any(iface => (iface.Name is "ICreateDb`1" or "IPatchDb`1" or "IUpdateDb`1" or "ISaveDb`1") && iface.FirstGenericArg() == model) == true;
+        /// <summary>
         /// Is IDeleteDb Crud Request DTO 
         /// </summary>
         public static bool IsCrudDelete(this MetadataType type) => 
