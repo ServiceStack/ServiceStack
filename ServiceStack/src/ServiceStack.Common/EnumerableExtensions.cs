@@ -527,13 +527,7 @@ namespace ServiceStack
 
         public static HashSet<T> CombineSet<T>(this T[] original, params T[][] others)
         {
-            var count = original.Length;
-            foreach (var arr in others)
-            {
-                count += arr.Length;
-            }
-            
-            var to = new HashSet<T>(count);
+            var to = new HashSet<T>();
             foreach (var item in original)
             {
                 to.Add(item);
