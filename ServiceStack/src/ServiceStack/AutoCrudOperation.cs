@@ -176,11 +176,23 @@ namespace ServiceStack
 
         public static bool IsCrud(this MetadataOperationType op) => op.IsCrudRead() || op.IsCrudWrite();
 
-        public static bool IsCrudWrite(this MetadataOperationType op) => 
-            op.Request.Implements?.Any(iface => CrudWriteNames.Contains(iface.Name)) == true;
+        public static bool IsCrudWrite(this MetadataOperationType op) => op.Request.IsCrudWrite();
+        public static bool IsCrudRead(this MetadataOperationType op) => op.Request.IsCrudRead();
+        
+        public static bool IsCrudApi(this MetadataType type) => type.IsCrudRead() || type.IsCrudWrite();
+        public static bool IsCrudWrite(this MetadataType type) => 
+            type.Implements?.Any(iface => CrudWriteNames.Contains(iface.Name)) == true;
+        public static bool IsCrudRead(this MetadataType type) => 
+            type.Inherits?.Name == typeof(QueryDb<>).Name || type.Inherits?.Name == typeof(QueryDb<,>).Name;
 
-        public static bool IsCrudRead(this MetadataOperationType op) => 
-            op.Request.Inherits?.Name == typeof(QueryDb<>).Name || op.Request.Inherits?.Name == typeof(QueryDb<,>).Name;
+        public static bool IsCrudApiOrType(this MetadataType type, string forModel) =>
+            type.IsCrudRead(forModel) || type.IsCrudWrite(forModel) || type.Name == forModel;
+        public static bool IsCrudApi(this MetadataType type, string forModel) =>
+            type.IsCrudRead(forModel) || type.IsCrudWrite(forModel);
+        public static bool IsCrudWrite(this MetadataType type, string forModel) => 
+            type.IsCrudWrite() && type.GenericArgs?.Length > 0 && type.GenericArgs[0] == forModel;
+        public static bool IsCrudRead(this MetadataType type, string forModel) => 
+            type.IsCrudRead() && type.GenericArgs?.Length > 0 && type.GenericArgs[0] == forModel;
     }
     
     public struct AutoQueryDtoType
