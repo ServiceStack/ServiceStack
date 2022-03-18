@@ -1129,6 +1129,40 @@ namespace ServiceStack
             var prop = type.Properties?.FirstOrDefault(x => x.Name == name);
             if (prop != null) configure(prop);
         }
+        
+        public static MetadataPropertyType ReorderProperty(this MetadataType type, string name, string before = null, string after = null)
+        {
+            var prop = type.Property(name);
+            if (prop == null) 
+                return null;
+            var beforeProp = before != null
+                ? type.Properties.FirstOrDefault(x => x.Name.Equals(before, StringComparison.OrdinalIgnoreCase))
+                : null;
+            if (beforeProp != null)
+                return type.ReorderProperty(name, Math.Max(0, type.Properties.IndexOf(beforeProp)));
+            var afterProp = after != null
+                ? type.Properties.FirstOrDefault(x => x.Name.Equals(after, StringComparison.OrdinalIgnoreCase))
+                : null;
+            if (afterProp != null)
+                return type.ReorderProperty(name, Math.Max(0, type.Properties.IndexOf(afterProp) + 1));
+            return prop;
+        }
+    
+        public static MetadataPropertyType ReorderProperty(this MetadataType type, string name, int index)
+        {
+            var prop = type.Property(name);
+            if (prop == null)
+                return null;
+            type.Properties.Remove(prop);
+            type.Properties.Insert(index, prop);
+            var order = 1;
+            foreach (var p in type.Properties)
+            {
+                if (p.DataMember?.Order != null)
+                    p.DataMember.Order = order++;
+            }
+            return prop;
+        }
 
         public static void EachProperty(this MetadataType type, Func<MetadataPropertyType,bool> where, Action<MetadataPropertyType> configure)
         {

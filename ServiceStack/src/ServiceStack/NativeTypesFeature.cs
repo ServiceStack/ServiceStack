@@ -63,6 +63,8 @@ namespace ServiceStack
                     typeof(ValidateInclusiveBetweenAttribute),
                     typeof(ValidateExclusiveBetweenAttribute),
                     
+                    typeof(RefAttribute), 
+                    typeof(IconAttribute),
                     typeof(InputAttribute),
                     typeof(FieldAttribute),
                     typeof(FieldCssAttribute),
