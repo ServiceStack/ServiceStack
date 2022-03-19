@@ -205,6 +205,7 @@ namespace ServiceStack
         /// </summary>
         public string ValueFormat { get; set; }
 
+        public AutoFilterAttribute() {}
         public AutoFilterAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));
         public AutoFilterAttribute(string field, string template)
         {
@@ -334,6 +335,7 @@ namespace ServiceStack
     {
         public string To { get; set; }
         public AutoMapAttribute(string to) => To = to ?? throw new ArgumentNullException(nameof(to));
+        public AutoMapAttribute() {}
     }
     
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
@@ -345,6 +347,7 @@ namespace ServiceStack
         public string Field { get; set; }
         
         public AutoPopulateAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));
+        public AutoPopulateAttribute() {}
     }
     
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
