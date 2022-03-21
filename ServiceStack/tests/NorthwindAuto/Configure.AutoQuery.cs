@@ -1,3 +1,4 @@
+using Chinook.ServiceModel.Types;
 using Microsoft.AspNetCore.Hosting;
 using MyApp.ServiceModel;
 using ServiceStack;
@@ -79,6 +80,8 @@ namespace MyApp
                     [nameof(CrudEvent)] = Svg.CreateImage(Svg.Body.History),
                     [nameof(UserAuthDetails)] = Svg.CreateImage(Svg.Body.UserDetails),
                     [nameof(UserAuthRole)] = Svg.CreateImage(Svg.Body.UserShield),
+                  
+                    // Northwind
                     ["Category"] = Svg.CreateImage("<path fill='currentColor' d='M20 5h-9.586L8.707 3.293A.997.997 0 0 0 8 3H4c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V7c0-1.103-.897-2-2-2z'/>"),
                     ["Customer"] = Svg.CreateImage("<path fill='currentColor' d='M19 2H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4l2.29 2.29c.39.39 1.02.39 1.41 0L15 20h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 3.3c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7S9.3 9.49 9.3 8s1.21-2.7 2.7-2.7zM18 16H6v-.9c0-2 4-3.1 6-3.1s6 1.1 6 3.1v.9z'/>"),
                     ["Employee"] = Svg.CreateImage("<path fill='currentColor' d='M19.745 4a2.25 2.25 0 0 1 2.25 2.25v11.505a2.25 2.25 0 0 1-2.25 2.25H4.25A2.25 2.25 0 0 1 2 17.755V6.25A2.25 2.25 0 0 1 4.25 4h15.495Zm0 1.5H4.25a.75.75 0 0 0-.75.75v11.505c0 .414.336.75.75.75l2.749-.001L7 15.75a1.75 1.75 0 0 1 1.606-1.744L8.75 14h6.495a1.75 1.75 0 0 1 1.744 1.607l.006.143l-.001 2.754h2.751a.75.75 0 0 0 .75-.75V6.25a.75.75 0 0 0-.75-.75ZM12 7a3 3 0 1 1 0 6a3 3 0 0 1 0-6Z'/>"),
@@ -90,11 +93,50 @@ namespace MyApp
                     ["Shipper"] = Svg.CreateImage("<path fill='currentColor' d='M4 10.4V4a1 1 0 0 1 1-1h5V1h4v2h5a1 1 0 0 1 1 1v6.4l1.086.326a1 1 0 0 1 .682 1.2l-1.516 6.068A4.992 4.992 0 0 1 16 16a4.992 4.992 0 0 1-4 2a4.992 4.992 0 0 1-4-2a4.992 4.992 0 0 1-4.252 1.994l-1.516-6.068a1 1 0 0 1 .682-1.2L4 10.4zm2-.6L12 8l2.754.826l1.809.543L18 9.8V5H6v4.8zM4 20a5.978 5.978 0 0 0 4-1.528A5.978 5.978 0 0 0 12 20a5.978 5.978 0 0 0 4-1.528A5.978 5.978 0 0 0 20 20h2v2h-2a7.963 7.963 0 0 1-4-1.07A7.963 7.963 0 0 1 12 22a7.963 7.963 0 0 1-4-1.07A7.963 7.963 0 0 1 4 22H2v-2h2z'/>"),
                     ["Supplier"] = Svg.CreateImage("<path fill='currentColor' d='M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z'/>"),
                     ["Territory"] = Svg.CreateImage("<path fill='currentColor' d='M12 3L2 12h3v8h14v-8h3L12 3m0 4.7c2.1 0 3.8 1.7 3.8 3.8c0 3-3.8 6.5-3.8 6.5s-3.8-3.5-3.8-6.5c0-2.1 1.7-3.8 3.8-3.8m0 2.3a1.5 1.5 0 0 0-1.5 1.5A1.5 1.5 0 0 0 12 13a1.5 1.5 0 0 0 1.5-1.5A1.5 1.5 0 0 0 12 10Z'/>"),
+                    
+                    // Chinook
+                    [nameof(Albums)] = Svg.CreateImage("<g fill='none' stroke-width='1.5'><path stroke='currentColor' d='M2 17.4V2.6a.6.6 0 0 1 .6-.6h14.8a.6.6 0 0 1 .6.6v14.8a.6.6 0 0 1-.6.6H2.6a.6.6 0 0 1-.6-.6Z'/><path stroke='currentColor' stroke-linecap='round' d='M8 22h13.4a.6.6 0 0 0 .6-.6V8'/><path fill='currentColor' d='M11 12.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 0 1 3 0Z'/><path stroke='currentColor' stroke-linecap='round' d='M11 12.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 0 1 3 0Zm0 0V6.6a.6.6 0 0 1 .6-.6H13'/></g>"),
+                    [nameof(Artists)] = Svg.CreateImage("<path fill='currentColor' d='M21 2H3v18h6l3 3l3-3h6V2zm-9 3.3c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7S9.3 9.49 9.3 8s1.21-2.7 2.7-2.7zM18 16H6v-.9c0-2 4-3.1 6-3.1s6 1.1 6 3.1v.9z'/>"),
+                    [nameof(Genres)] = Svg.CreateImage("<path fill='currentColor' d='M20 18V8H4v10h16m0-12a2 2 0 0 1 2 2v10c0 1.1-.9 2-2 2H4a2 2 0 0 1-2-2V6c0-1.11.89-2 2-2h6l2 2h8m-2 3v2h-2v4c0 1.11-.89 2-2 2a2 2 0 1 1 0-4c.17 0 .34 0 .5.06V9H18Z'/>"),
+                    [nameof(MediaTypes)] = Svg.CreateImage("<path fill='currentColor' d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm8-6l2-1.06v4.12L14 16v1c0 .55-.45 1-1 1H9c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h4c.55 0 1 .45 1 1v1z'/>"),
+                    [nameof(Playlists)] = Svg.CreateImage("<path fill='currentColor' d='M15 6H3v2h12V6m0 4H3v2h12v-2M3 16h8v-2H3v2M17 6v8.18c-.31-.11-.65-.18-1-.18a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3V8h3V6h-5Z'/>"),
+                    [nameof(Tracks)] = Svg.CreateImage("<path fill='currentColor' d='M12 3v9.28a4.39 4.39 0 0 0-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z'/>"),
+                    [nameof(Customers)] = Svg.CreateImage("<path fill='currentColor' d='M19 2H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4l2.29 2.29c.39.39 1.02.39 1.41 0L15 20h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 3.3c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7S9.3 9.49 9.3 8s1.21-2.7 2.7-2.7zM18 16H6v-.9c0-2 4-3.1 6-3.1s6 1.1 6 3.1v.9z'/>"),
+                    [nameof(Employees)] = Svg.CreateImage("<path fill='currentColor' d='M19.745 4a2.25 2.25 0 0 1 2.25 2.25v11.505a2.25 2.25 0 0 1-2.25 2.25H4.25A2.25 2.25 0 0 1 2 17.755V6.25A2.25 2.25 0 0 1 4.25 4h15.495Zm0 1.5H4.25a.75.75 0 0 0-.75.75v11.505c0 .414.336.75.75.75l2.749-.001L7 15.75a1.75 1.75 0 0 1 1.606-1.744L8.75 14h6.495a1.75 1.75 0 0 1 1.744 1.607l.006.143l-.001 2.754h2.751a.75.75 0 0 0 .75-.75V6.25a.75.75 0 0 0-.75-.75ZM12 7a3 3 0 1 1 0 6a3 3 0 0 1 0-6Z'/>"),
+                    [nameof(Invoices)] = Svg.CreateImage("<path fill='currentColor' d='M21 11h-3V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v14c0 1.654 1.346 3 3 3h14c1.654 0 3-1.346 3-3v-6a1 1 0 0 0-1-1zM5 19a1 1 0 0 1-1-1V5h12v13c0 .351.061.688.171 1H5zm15-1a1 1 0 0 1-2 0v-5h2v5z'/><path fill='currentColor' d='M6 7h8v2H6zm0 4h8v2H6zm5 4h3v2h-3z'/>"),
+                    [nameof(InvoiceItems)] = Svg.CreateImage("<g fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'><path d='M11 5h10m-10 7h10m-10 7h10'/><rect width='4' height='4' x='3' y='3' rx='1'/><rect width='4' height='4' x='3' y='10' rx='1'/><rect width='4' height='4' x='3' y='17' rx='1'/></g>"),
+                };
+                Dictionary<string, RefInfo> references = new() {
+                    [nameof(Albums.ArtistId)] = new RefInfo { Model = nameof(Artists), RefId = nameof(Albums.ArtistId), RefLabel = nameof(Artists.Name) },
+                    [nameof(Tracks.AlbumId)] = new RefInfo { Model = nameof(Albums), RefId = nameof(Tracks.AlbumId), RefLabel = nameof(Albums.Title) },
+                    [nameof(Tracks.MediaTypeId)] = new RefInfo { Model = nameof(MediaTypes), RefId = nameof(Tracks.MediaTypeId), RefLabel = nameof(MediaTypes.Name) },
+                    [nameof(Tracks.GenreId)] = new RefInfo { Model = nameof(Genres), RefId = nameof(Tracks.GenreId), RefLabel = nameof(Genres.Name) },
                 };
                 appHost.ConfigureTypes(type =>
                 {
                     if (icons.TryGetValue(type.Name, out var icon))
                         type.Icon = icon;
+
+                    if (type.HasNamedConnection("chinook"))
+                    {
+                        type.Properties.Each(prop => {
+                            if (references.TryGetValue(prop.Name, out var refInfo))
+                                prop.Ref = refInfo;
+                        });
+                        
+                        if (type.Name == nameof(Tracks))
+                        {
+                            type.Property(nameof(Tracks.Bytes)).Format = new FormatInfo { Method = FormatMethods.Bytes };
+                            type.Property(nameof(Tracks.Milliseconds)).Format = new Intl(IntlFormat.DateTime) {
+                                Minute = DatePart.Digits2,
+                                Second = DatePart.Digits2,
+                                FractionalSecondDigits = 3,
+                            }.ToFormat();
+                            type.Property(nameof(Tracks.UnitPrice)).Format = new IntlNumber(NumberStyle.Currency) {
+                                Currency = NumberCurrency.USD
+                            }.ToFormat();
+                        }
+                    }
 
                     switch (type.Name)
                     {

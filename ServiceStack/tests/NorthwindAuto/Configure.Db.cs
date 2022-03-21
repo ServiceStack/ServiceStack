@@ -12,10 +12,15 @@ namespace MyApp;
 public class ConfigureDb : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
-        .ConfigureServices((context, services) => services.AddSingleton<IDbConnectionFactory>(
-            new OrmLiteConnectionFactory(
+        .ConfigureServices((context, services) =>
+        {
+            var dbFactory = new OrmLiteConnectionFactory(
                 context.Configuration.GetConnectionString("DefaultConnection") ?? ":memory:",
-                SqliteDialect.Provider)))
+                SqliteDialect.Provider);
+            services.AddSingleton<IDbConnectionFactory>(dbFactory);
+            dbFactory.RegisterConnection("chinook", 
+                context.Configuration.GetConnectionString("ChinookConnection"), SqliteDialect.Provider);
+        })
         .ConfigureAppHost(appHost =>
         {
             // Create non-existing Table and add Seed Data Example
