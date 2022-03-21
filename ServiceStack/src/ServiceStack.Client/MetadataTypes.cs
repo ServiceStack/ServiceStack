@@ -1209,6 +1209,8 @@ namespace ServiceStack
                 type.Properties?.RemoveAll(x => x.Name == name);
         }
 
-        public static bool IsSystemType(this MetadataPropertyType prop) => prop.Namespace?.StartsWith("System") == true;
+        public static bool IsSystemType(this MetadataPropertyType prop) =>
+            prop.PropertyType?.Namespace?.StartsWith("System") == true ||
+            prop.Namespace?.StartsWith("System") == true;
     }
 }

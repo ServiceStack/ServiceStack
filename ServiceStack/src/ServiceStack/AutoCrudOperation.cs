@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace ServiceStack
 {
@@ -269,12 +270,36 @@ namespace ServiceStack
         /// </summary>
         public static bool IsCrudDelete(this MetadataType type, string model) => 
             type.Implements?.Any(iface => iface.Name is "IDeleteDb`1" && iface.FirstGenericArg() == model) == true;
-        
+
+        /// <summary>
+        /// Retrieve AutoQuery Data Model from AutoQuery CRUD APIs
+        /// </summary>
+        public static string CrudModel(this MetadataType type) => 
+            type.Inherits is { Name: "QueryDb`1" or "QueryDb`2" } 
+                ? type.Inherits.FirstGenericArg() 
+                : type.Implements?.FirstOrDefault(iface => CrudWriteNames.Contains(iface.Name)).FirstGenericArg();
+
         public static string FirstGenericArg(this MetadataTypeName type) => type.GenericArgs?.Length > 0 ? type.GenericArgs[0] : null;
         
         public static bool IsRequestDto(this MetadataType type) => HostContext.AppHost?.Metadata.OperationNamesMap.ContainsKey(type.Name) == true
             || type.ImplementsAny(ApiInterfaces) || type.InheritsAny(ApiBaseTypes);
-        
+
+        private static Type[] AutoQueryInterfaceTypes = new[]
+        {
+            typeof(IQueryDb<>),
+            typeof(IQueryDb<,>),
+            typeof(ICreateDb<>),
+            typeof(IUpdateDb<>),
+            typeof(IPatchDb<>),
+            typeof(IDeleteDb<>),
+            typeof(ISaveDb<>),
+        };
+        public static bool HasNamedConnection(this MetadataType type, string name) => type.Type != null && 
+            (type.Type.FirstAttribute<NamedConnectionAttribute>()?.Name == name || 
+             type.Type.FirstAttribute<ConnectionInfo>()?.NamedConnection == name || 
+             X.Map(type.Type.GetTypeWithGenericTypeDefinitionOfAny(AutoQueryInterfaceTypes), 
+                 x => x.FirstGenericArg()?.FirstAttribute<NamedConnectionAttribute>()?.Name == name));
+
         public static string[] ApiMarkerInterfaces { get; } = {
             nameof(IGet),
             nameof(IPost),

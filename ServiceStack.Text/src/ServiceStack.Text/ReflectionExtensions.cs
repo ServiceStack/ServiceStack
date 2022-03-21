@@ -113,6 +113,10 @@ namespace ServiceStack
             return null;
         }
 
+        public static Type FirstGenericArg(this Type type) => type.IsGenericType || type.IsGenericTypeDefinition
+            ? type.GetGenericArguments().FirstOrDefault()
+            : null;
+
         public static Type GetTypeWithInterfaceOf(this Type type, Type interfaceType)
         {
             if (type == interfaceType) return interfaceType;
@@ -132,6 +136,19 @@ namespace ServiceStack
             {
                 if (t == interfaceType)
                     return true;
+            }
+            return false;
+        }
+
+        public static bool HasAnyInterface(this Type type, Type[] interfaceTypes)
+        {
+            foreach (var t in type.GetInterfaces())
+            {
+                foreach (var interfaceType in interfaceTypes)
+                {
+                    if (t == interfaceType)
+                        return true;
+                }
             }
             return false;
         }
