@@ -15,9 +15,11 @@ DEBUG = true /*debug*/
 /*shared:css/ui.css */
 </style>
 <!--shared:custom-head-->
+<!--file:custom-head.html-->
 </head>
 <body class="loading noauth">
 <!--shared:custom-body-->
+<!--file:custom-body.html-->
 
 <div class="when-loading"></div>
 
@@ -63,8 +65,7 @@ DEBUG = true /*debug*/
 Object.assign(window, exports)
 
 /*shared/js:core,Types,createForms */
-import { $1, $$, humanify, combinePaths } from "@servicestack/client"
-import { setBodyClass, styleProperty, setStyleProperty, setFavIcon } from "../shared/js/core"
+import { setBodyClass } from "../shared/js/core"
 
 function loadApp(app) { window.APP = app }
 function loadAuth(auth) { 
@@ -119,5 +120,6 @@ App.nextTick(() => {
 </script>
 
 <!--shared:custom-end-->
+<!--file:custom-end.html-->
 </body>
 </html>
