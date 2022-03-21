@@ -1014,51 +1014,17 @@ namespace ServiceStack.NativeTypes
     {
         public static List<MetadataPropertyType> PopulatePrimaryKey(this List<MetadataPropertyType> props)
         {
-            //sync with https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/OrmLiteConfigExtensions.cs
-            var hasPkAttr = props
-                .FirstOrDefault(p => p.PropertyType?.HasAttributeCached<PrimaryKeyAttribute>() == true);
+            var hasPkAttr = 
+                props.FirstOrDefault(p => p.PropertyInfo?.HasAttributeCached<PrimaryKeyAttribute>() == true) ??
+                props.FirstOrDefault(p => p.Name.Equals(Keywords.Id, StringComparison.OrdinalIgnoreCase)) ??
+                props.FirstOrDefault(p => p.PropertyInfo?.HasAttributeCached<AutoIncrementAttribute>() == true) ??
+                props.FirstOrDefault(p => p.PropertyInfo?.HasAttributeCached<AutoIdAttribute>() == true);
 
             if (hasPkAttr != null)
             {
                 hasPkAttr.IsPrimaryKey = true;
             }
-            else
-            {
-                var objProperties = props
-                    .Where(x => x.PropertyInfo != null).Map(x => x.PropertyInfo);
-                if (objProperties.Count == 0)
-                    return props;
 
-                foreach (var prop in props)
-                {
-                    var propertyInfo = prop.PropertyInfo;
-                    if (propertyInfo == null) 
-                        continue;
-                    
-                    var isNullableType = propertyInfo.PropertyType.IsNullableType();
-                    
-                    var propertyType = isNullableType
-                        ? Nullable.GetUnderlyingType(propertyInfo.PropertyType)
-                        : propertyInfo.PropertyType;
-                    
-                    var referenceAttr = propertyInfo.FirstAttribute<ReferenceAttribute>();
-                    var isReference = referenceAttr != null && propertyType?.IsClass == true;
-                    var isIgnored = propertyInfo.HasAttributeCached<IgnoreAttribute>() || isReference;
-
-                    var isAutoId = propertyInfo.HasAttributeCached<AutoIdAttribute>();
-                    
-                    var isPrimaryKey = propertyInfo.Name == Keywords.Id
-                       || propertyInfo.HasAttributeNamed(nameof(PrimaryKeyAttribute))
-                       || isAutoId;
-
-                    if (isPrimaryKey)
-                    {
-                        prop.IsPrimaryKey = true;
-                        return props;
-                    }
-                }
-            }
-            
             return props;
         }
 
