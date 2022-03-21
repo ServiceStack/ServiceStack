@@ -31,6 +31,11 @@ public static class FormatMethods
     public const string Currency = "currency";
     
     /// <summary>
+    /// Human Readable File Size
+    /// </summary>
+    public const string Bytes = "bytes";
+    
+    /// <summary>
     /// Render Image URL as an img icon
     /// </summary>
     public const string Icon = "icon";

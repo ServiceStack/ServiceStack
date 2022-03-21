@@ -431,6 +431,9 @@ function toAppUrl(url) {
 function currency(val) {
     return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(val)
 }
+function bytes(val) {
+    return Files.formatBytes(val)
+}
 function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`
 }

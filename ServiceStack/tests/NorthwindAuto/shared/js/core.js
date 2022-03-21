@@ -540,6 +540,10 @@ export function toAppUrl(url) {
 export function currency(val) {
     return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(val)
 }
+/** @param {number} val */
+export function bytes(val) {
+    return Files.formatBytes(val)
+}
 /** @param {string} url */
 export function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`
