@@ -906,10 +906,30 @@ namespace ServiceStack
             }
         }
 
+        public static void EachOperation(this AppMetadata app, Action<MetadataOperationType> configure, Predicate<MetadataOperationType> where) 
+        {
+            foreach (var entry in app.GetCache().OperationsMap)
+            {
+                if (!where(entry.Value))
+                    continue;
+                configure(entry.Value);
+            }
+        }
+
         public static void EachType(this AppMetadata app, Action<MetadataType> configure) 
         {
             foreach (var entry in app.GetCache().TypesMap)
             {
+                configure(entry.Value);
+            }
+        }
+
+        public static void EachType(this AppMetadata app, Action<MetadataType> configure, Predicate<MetadataType> where) 
+        {
+            foreach (var entry in app.GetCache().TypesMap)
+            {
+                if (!where(entry.Value))
+                    continue;
                 configure(entry.Value);
             }
         }
@@ -1178,6 +1198,15 @@ namespace ServiceStack
             {
                 configure(prop);
             }
+        }
+
+        public static void RemoveProperty(this MetadataType type, Predicate<MetadataPropertyType> where) => 
+            type.Properties?.RemoveAll(where);
+
+        public static void RemoveProperty(this MetadataType type, string name)
+        {
+            if (name != null) 
+                type.Properties?.RemoveAll(x => x.Name == name);
         }
 
         public static bool IsSystemType(this MetadataPropertyType prop) => prop.Namespace?.StartsWith("System") == true;

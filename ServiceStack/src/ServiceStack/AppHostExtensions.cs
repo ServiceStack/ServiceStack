@@ -44,6 +44,11 @@ namespace ServiceStack
 
         public static void ConfigureTypes(this IAppHost appHost, Action<MetadataType> configure) => 
             appHost.Metadata.ConfigureMetadataTypes.Add(configure);
+        public static void ConfigureTypes(this IAppHost appHost, Action<MetadataType> configure, Predicate<MetadataType> where) => 
+            appHost.Metadata.ConfigureMetadataTypes.Add(type => {
+                if (where(type))
+                    configure(type);
+            });
 
         public static void RegisterServices(this IAppHost appHost, Dictionary<Type, string[]> serviceRoutes)
         {
