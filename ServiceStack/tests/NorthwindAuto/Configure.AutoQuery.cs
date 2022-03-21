@@ -33,22 +33,17 @@ namespace MyApp
                             op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));
                             if (op.Request.Name.IndexOf("User", StringComparison.Ordinal) >= 0)
                                 op.Request.AddAttributeIfNotExists(new ValidateIsAdminAttribute());
-                            
-                            switch (op.Request.Name)
-                            {
-                                case "CreateEmployee":
-                                case "UpdateEmployee":
-                                case "PatchEmployee":
-                                    op.Request.Properties.First(x => x.Name == "PhotoPath")
-                                        .AddAttribute(new InputAttribute { Type = Input.Types.File })
-                                        .AddAttribute(new UploadToAttribute("employees"));
-                                    break;
-                            }
-                            
                         },
-                        /* Example adding attributes to generated Type
                         TypeFilter = (type, req) =>
                         {
+                            if (type.IsCrudCreateOrUpdate("Employee"))
+                            {
+                                type.Property("PhotoPath")
+                                    .AddAttribute(new InputAttribute { Type = Input.Types.File })
+                                    .AddAttribute(new UploadToAttribute("employees"));
+                            }
+                            
+                            /* Example adding attributes to generated Type
                             switch (type.Name)
                             {
                                 case "Order":
@@ -64,8 +59,8 @@ namespace MyApp
                                         .AddAttribute(new IntlNumber(NumberStyle.Percent));
                                     break;
                             }
+                            */
                         },
-                        */
                         IncludeService = op => !op.ReferencesAny(nameof(Booking),
                             nameof(Player),nameof(GameItem),nameof(Profile),nameof(Level),nameof(PlayerGameItem),
                             nameof(Job),nameof(JobApplication),nameof(JobApplicationEvent),nameof(JobApplicationAttachment),nameof(JobOffer),
