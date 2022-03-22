@@ -158,6 +158,7 @@ namespace MyApp
                         case "EmployeeTerritory":
                             type.Property("TerritoryId").Ref = new() { Model = "Territory", RefId = "Id", RefLabel = "TerritoryDescription" };
                             break;
+                        case "Supplier":
                         case "Customer":
                             type.Property("Phone").Format = new FormatInfo { Method = FormatMethods.LinkPhone };
                             type.Property("Fax").Format = new FormatInfo { Method = FormatMethods.LinkPhone };
