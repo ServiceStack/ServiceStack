@@ -544,6 +544,12 @@ export function currency(val) {
 export function bytes(val) {
     return Files.formatBytes(val)
 }
+/** @param {string} val */
+export function link(val, opt) {
+    if (!opt) opt = {}
+    let attrs = Object.assign({})
+    return `<a>${val}</a>`
+}
 /** @param {string} url */
 export function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`

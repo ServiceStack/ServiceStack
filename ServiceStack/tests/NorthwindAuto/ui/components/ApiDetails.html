@@ -112,26 +112,26 @@ function addReferencedTypes(allTypesMap, type) {
                     <span class="flex-grow text-gray-500 mr-2">Authentication <span class="hidden lg:inline lg:ml-1">Required</span></span>
                     <span class="svg-lock w-5 h-5"></span>
                 </div>
-                <div v-if="hasItems(op.requiredRoles)" class="mb-3 flex justify-end">
+                <div v-if="hasItems(op.requiredRoles)" class="mb-3 flex flex-wrap justify-end">
                 <span v-for="role in op.requiredRoles" title="required role"
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   {{role}}
                 </span>
                 </div>
-                <div v-if="hasItems(op.requiredPermissions)" class="mb-3 flex justify-end">
+                <div v-if="hasItems(op.requiredPermissions)" class="mb-3 flex flex-wrap justify-end">
                 <span v-for="perm in op.requiredPermissions" title="required permission"
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                   {{perm}}
                 </span>
                 </div>
-                <div v-if="hasItems(op.requiresAnyRole)" class="mb-3 flex justify-end">
+                <div v-if="hasItems(op.requiresAnyRole)" class="mb-3 flex flex-wrap justify-end">
                     <span class="text-gray-400 mr-2">any role</span>
                     <span v-for="role in op.requiresAnyRole" title="role"
                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   {{role}}
                 </span>
                 </div>
-                <div v-if="hasItems(op.requiresAnyPermission)" class="mb-3 flex justify-end">
+                <div v-if="hasItems(op.requiresAnyPermission)" class="mb-3 flex flex-wrap justify-end">
                     <span class="text-gray-400 mr-2">any permission</span>
                     <span v-for="perm in op.requiresAnyPermission" title="permission"
                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">

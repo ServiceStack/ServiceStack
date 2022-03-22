@@ -13,13 +13,13 @@
                 <div class="mt-4 sm:mt-0 sm:pt-1 sm:text-left">
                     <p class="text-sm font-medium text-gray-600">Welcome back,</p>
                     <p class="text-xl font-bold text-gray-900 sm:text-2xl mb-2">{{ store.displayName }}</p>
-                    <div v-if="store.authRoles.length" class="mb-2 flex">
+                    <div v-if="store.authRoles.length" class="mb-2 flex flex-wrap">
                         <span v-for="role in store.authRoles" title="Role"
                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           {{role}}
                         </span>
                     </div>
-                    <div v-if="store.authPermissions.length" class="mb-2 flex">
+                    <div v-if="store.authPermissions.length" class="mb-2 flex flex-wrap">
                         <span v-for="perm in store.authPermissions" title="Permission"
                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                           {{perm}}
