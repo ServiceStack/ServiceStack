@@ -70,6 +70,7 @@ public class Player : AuditBase
     [Alias("Surname")]                              // Maps to [Surname] RDBMS column
     public string LastName { get; set; }
 
+    [Format(FormatMethods.LinkEmail)]
     [Index(Unique = true)]                          // Creates Unique Index
     public string Email { get; set; }
 

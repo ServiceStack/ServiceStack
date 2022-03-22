@@ -1,4 +1,5 @@
-import { apiValue, isDate, mapGet, padInt, $1, enc, resolve, lastRightPart, combinePaths, leftPart } from "@servicestack/client"
+import { apiValue, isDate, mapGet, padInt, $1, enc, resolve, omit } from "@servicestack/client"
+import { lastRightPart, combinePaths, leftPart, appendQueryString } from "@servicestack/client"
 import { MetadataOperationType, AuthenticateResponse } from "../../lib/types"
 import { Types } from "./Types"
 /*minify:*/
@@ -544,11 +545,43 @@ export function currency(val) {
 export function bytes(val) {
     return Files.formatBytes(val)
 }
-/** @param {string} val */
-export function link(val, opt) {
+/** @param {string} tag
+ *  @param {string} [child]
+ *  @param {*} [attrs] */
+export function htmlTag(tag,child,attrs) {
+    if (!attrs) attrs = {}
+    let cls = attrs.cls || attrs.className || attrs['class']
+    if (cls) {
+        attrs = omit(attrs,['cls','class','className'])
+        attrs['class'] = cls
+    }
+    return `<${tag}` + Object.keys(attrs).reduce((acc,k) => `${acc} ${k}="${enc(attrs[k])}"`, '') + `>${child||''}</${tag}>`
+}
+
+/** @param {*} attrs */
+function linkAttrs(attrs) {
+    return Object.assign({target:'_blank',rel:'noopener','class':'text-blue-600'},attrs)
+}
+/** @param {string} href 
+ *  @param {*} [opt] */
+export function link(href, opt) {
+    return htmlTag('a', href, linkAttrs({ ...opt, href }))
+}
+/** @param {string} email
+ *  @param {*} [opt] */
+export function linkMailTo(email, opt) {
     if (!opt) opt = {}
-    let attrs = Object.assign({})
-    return `<a>${val}</a>`
+    let { subject, body } = opt
+    let attrs = omit(opt, ['subject','body'])
+    let args = {}
+    if (subject) args.subject = subject
+    if (body) args.body = body
+    return htmlTag('a', email, linkAttrs({...attrs, href:`mailto:${appendQueryString(email,args)}` }))
+}
+/** @param {string} tel
+ *  @param {*} [opt] */
+export function linkTel(tel, opt) {
+    return htmlTag('a', tel, linkAttrs({...opt, href:`tel:${tel}` }))
 }
 /** @param {string} url */
 export function icon(url) {

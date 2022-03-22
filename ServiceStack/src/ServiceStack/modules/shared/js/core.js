@@ -434,6 +434,33 @@ function currency(val) {
 function bytes(val) {
     return Files.formatBytes(val)
 }
+function htmlTag(tag,child,attrs) {
+    if (!attrs) attrs = {}
+    let cls = attrs.cls || attrs.className || attrs['class']
+    if (cls) {
+        attrs = omit(attrs,['cls','class','className'])
+        attrs['class'] = cls
+    }
+    return `<${tag}` + Object.keys(attrs).reduce((acc,k) => `${acc} ${k}="${enc(attrs[k])}"`, '') + `>${child||''}</${tag}>`
+}
+function linkAttrs(attrs) {
+    return Object.assign({target:'_blank',rel:'noopener','class':'text-blue-600'},attrs)
+}
+function link(href, opt) {
+    return htmlTag('a', href, linkAttrs({ ...opt, href }))
+}
+function linkMailTo(email, opt) {
+    if (!opt) opt = {}
+    let { subject, body } = opt
+    let attrs = omit(opt, ['subject','body'])
+    let args = {}
+    if (subject) args.subject = subject
+    if (body) args.body = body
+    return htmlTag('a', email, linkAttrs({...attrs, href:`mailto:${appendQueryString(email,args)}` }))
+}
+function linkTel(tel, opt) {
+    return htmlTag('a', tel, linkAttrs({...opt, href:`tel:${tel}` }))
+}
 function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`
 }

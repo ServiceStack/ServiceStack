@@ -1,43 +1,6 @@
-/* Options:
-Date: 2022-03-20 13:19:58
-Version: 6.03
-Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: https://localhost:5001
-UsePath: /crud/all/csharp
-
-//GlobalNamespace: 
-//MakePartial: False
-//MakeVirtual: False
-//MakeInternal: False
-//MakeDataContractsExtensible: False
-//AddReturnMarker: True
-//AddDescriptionAsComments: True
-//AddDataContractAttributes: False
-//AddIndexesToDataMembers: True
-//AddGeneratedCodeAttributes: False
-//AddResponseStatus: False
-//AddImplicitVersion: 
-//InitializeCollections: False
-//ExportValueTypes: False
-//IncludeTypes: 
-//ExcludeTypes: 
-//AddNamespaces: 
-//AddDefaultXmlNamespace: 
-//IncludeCrudOperations: 
-//Schema: 
-//NamedConnection: 
-//IncludeTables: 
-//ExcludeTables: 
-*/
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using Chinook.ServiceModel.Types;
-using Chinook.ServiceModel;
 
 namespace Chinook.ServiceModel
 {

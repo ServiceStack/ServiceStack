@@ -51,6 +51,24 @@ public static class FormatMethods
     public const string Attachment = "attachment";
     
     /// <summary>
+    /// Linkify URLs
+    /// options: added as attributes to &lt;a&gt; element, use 'cls' or 'className' for class attribute.
+    /// </summary>
+    public const string Link = "link";
+    
+    /// <summary>
+    /// Linkify Emails with mailto:
+    /// options: {subject:'Subject',body:'Email Body'} all other options added as HTML attributes
+    /// </summary>
+    public const string LinkEmail = "linkMailTo";
+    
+    /// <summary>
+    /// Linkify Phone number with tel:
+    /// options: added as attributes to &lt;a&gt; element, use 'cls' or 'className' for class attribute.
+    /// </summary>
+    public const string LinkPhone = "linkTel";
+    
+    /// <summary>
     /// Hides field from being displayed in search results
     /// </summary>
     public const string Hidden = "hidden";

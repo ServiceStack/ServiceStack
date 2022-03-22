@@ -120,7 +120,7 @@ namespace MyApp
                     if (type.HasNamedConnection("chinook"))
                     {
                         type.Properties.Each(prop => {
-                            if (references.TryGetValue(prop.Name, out var refInfo))
+                            if (prop.IsPrimaryKey != true && references.TryGetValue(prop.Name, out var refInfo))
                                 prop.Ref = refInfo;
                         });
                         
@@ -157,6 +157,10 @@ namespace MyApp
                             break;
                         case "EmployeeTerritory":
                             type.Property("TerritoryId").Ref = new() { Model = "Territory", RefId = "Id", RefLabel = "TerritoryDescription" };
+                            break;
+                        case "Customer":
+                            type.Property("Phone").Format = new FormatInfo { Method = FormatMethods.LinkPhone };
+                            type.Property("Fax").Format = new FormatInfo { Method = FormatMethods.LinkPhone };
                             break;
                     }
                 });

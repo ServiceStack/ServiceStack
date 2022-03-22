@@ -26,7 +26,9 @@ public class Contact : AuditBase
     public EmploymentType PreferredWorkType { get; set; }
     public string PreferredLocation { get; set; }
 
+    [Format(FormatMethods.LinkEmail, Options = "{target:'_self',subject:'New Job Opportunity',body:'We have an exciting new opportunity...',cls:'text-green-600'}")]
     public string Email { get; set; }
+    [Format(FormatMethods.LinkPhone)]
     public string Phone { get; set; }
 
     public string About { get; set; }
