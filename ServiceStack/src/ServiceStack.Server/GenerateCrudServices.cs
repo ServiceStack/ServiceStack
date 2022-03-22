@@ -32,12 +32,29 @@ namespace ServiceStack
     //TODO: persist AutoCrud
     public class GenerateCrudServices : IGenerateCrudServices
     {
+        /// <summary>
+        /// List of AutoQuery Operations to generate
+        /// </summary>
         public List<string> IncludeCrudOperations { get; set; } = new() {
             AutoCrudOperation.Query,
             AutoCrudOperation.Create,
             AutoCrudOperation.Update,
             AutoCrudOperation.Patch,
             AutoCrudOperation.Delete,
+        };
+
+        /// <summary>
+        /// List of Tables to be excluded.
+        /// All Tables used for built-in ServiceStack features are excluded by default
+        /// </summary>
+        public List<string> ExcludeTables { get; set; } = new()
+        {
+            nameof(UserAuth),
+            nameof(UserAuthDetails),
+            nameof(ApiKey),
+            nameof(CrudEvent),
+            nameof(CacheEntry),
+            nameof(ConfigSetting),
         };
 
         /// <summary>
@@ -880,10 +897,17 @@ namespace ServiceStack
             var metadata = req.Resolve<INativeTypesMetadata>();
             IGenerateCrudServices genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
 
+            var excludeTables = genServices.ExcludeTables;
+            if (request.ExcludeTables?.Count > 0)
+            {
+                excludeTables = new List<string>(genServices.ExcludeTables);
+                excludeTables.AddRange(request.ExcludeTables);
+            }
+
             var dbFactory = req.TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
-                ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables)
-                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables).Tables;
+                ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, excludeTables)
+                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, excludeTables).Tables;
 
             var appHost = HostContext.AppHost;
             request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? appHost.GetBaseUrl(req);

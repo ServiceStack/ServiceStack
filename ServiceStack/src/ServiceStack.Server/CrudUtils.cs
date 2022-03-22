@@ -69,6 +69,7 @@ namespace ServiceStack
     public interface IGenerateCrudServices
     {
         List<string> IncludeCrudOperations { get; set; }
+        List<string> ExcludeTables { get; set; }
 
         /// <summary>
         /// Generate services 
