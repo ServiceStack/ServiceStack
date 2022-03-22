@@ -1782,6 +1782,9 @@ namespace ServiceStack.OrmLite
                 }
 
                 var leftEnum = left as EnumMemberAccess;
+                //The real type should be read when a non-direct member is accessed. For example Sql.TableAlias(x.State, "p"),alias conversion should be performed when "x.State" is an enum 
+                if (leftEnum == null && left is PartialSqlString pss && pss.EnumMember != null) leftEnum = pss.EnumMember;
+
                 var rightEnum = right as EnumMemberAccess;
 
                 var rightNeedsCoercing = leftEnum != null && rightEnum == null;
@@ -2846,6 +2849,7 @@ namespace ServiceStack.OrmLite
         {
             List<object> args = this.VisitInSqlExpressionList(m.Arguments);
             object quotedColName = args[0];
+            var columnEnumMemberAccess = args[0] as EnumMemberAccess;
             args.RemoveAt(0);
 
             string statement;
@@ -2901,7 +2905,7 @@ namespace ServiceStack.OrmLite
                     throw new NotSupportedException();
             }
 
-            return new PartialSqlString(statement);
+            return new PartialSqlString(statement, columnEnumMemberAccess);
         }
 
         protected string ConvertInExpressionToSql(MethodCallExpression m, object quotedColName)
@@ -3099,11 +3103,18 @@ namespace ServiceStack.OrmLite
     {
         public static PartialSqlString Null = new("null");
         
-        public PartialSqlString(string text)
+        public PartialSqlString(string text) : this(text, null)
+        {
+        }
+
+       public PartialSqlString(string text, EnumMemberAccess enumMember)
         {
             Text = text;
+            EnumMember = enumMember;
         }
+
         public string Text { get; internal set; }
+        public readonly EnumMemberAccess EnumMember;
         public override string ToString() => Text;
 
         protected bool Equals(PartialSqlString other) => Text == other.Text;
