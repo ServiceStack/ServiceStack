@@ -12,7 +12,7 @@ public class CommonJsGenerator : ILangGenerator
     /// <summary>
     /// Split assignment expression into smaller batches to avoid "Uncaught RangeError: Maximum call stack size exceeded" in Chrome/Blink
     /// </summary>
-    public static int BatchSize { get; set; } = 200;
+    public static int BatchSize { get; set; } = 100;
     
     public bool WithoutOptions { get; set; }
     public List<string> AddQueryParamOptions { get; set; }
