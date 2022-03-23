@@ -1062,8 +1062,8 @@ public static partial class HttpUtils
     {
         if (name.Equals(HttpHeaders.Authorization, StringComparison.OrdinalIgnoreCase))
         {
-            httpReq.Headers.Authorization =
-                new AuthenticationHeaderValue(value.LeftPart(' '), value.RightPart(' '));
+            var scheme = value.IndexOf(' ') == -1 ? "Bearer" : value.LeftPart(' ');
+            httpReq.Headers.Authorization = new AuthenticationHeaderValue(scheme, value.RightPart(' '));
         }
         else if (name.Equals(HttpHeaders.ContentType, StringComparison.OrdinalIgnoreCase))
         {
