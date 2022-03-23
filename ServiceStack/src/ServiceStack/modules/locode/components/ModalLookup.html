@@ -133,6 +133,9 @@ App.components({
                 settings.saveLookup(this.state.opName, x => Object.assign(x, prefs))
                 this.updated()
             },
+            complexProp(column) {
+                return Forms.complexProp(column)
+            },
             sub:null,
             unmounted:App.unsubscribe,
             mounted() {
@@ -235,7 +238,10 @@ App.components({
                                     <tr>
                                         <th v-for="c in columns" :key="c.name"
                                             scope="col" class="whitespace-nowrap sticky top-0 z-10 border-b border-gray-300 bg-gray-50 bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8">
-                                            <div @click="selectColumn(c,$event)" class="flex justify-between items-center text-sm cursor-pointer hover:text-gray-900">
+                                            <div v-if="complexProp(c)" class="flex justify-between items-center text-sm">
+                                                <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
+                                            </div>
+                                            <div v-else @click="selectColumn(c,$event)" class="flex justify-between items-center text-sm cursor-pointer hover:text-gray-900">
                                                 <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
                                                 <div v-scope="SettingsIcons({ routes, settings, name:() => c.name })"></div>
                                             </div>

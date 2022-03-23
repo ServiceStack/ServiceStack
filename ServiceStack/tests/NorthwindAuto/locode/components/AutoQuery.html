@@ -106,9 +106,11 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         filtersCount: 0,
         state: createState(routes.op),
         prefs: refreshPrefs(),
+        hasPrefs: settings.hasPrefs(routes.op),
         get take() { return parseInt(this.prefs && this.prefs.take || 25) },
         apiResult: null,
         get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
+        get errorSummary() { return this.apiResult && this.apiResult.api.summaryMessage() },
         get total() { return this.apiResult && map(this.apiResult.api.response, x => x.total) || 0 },
         get apiLoading() { return map(this.state, x => x.apiQuery && x.apiQuery.apiLoading || false) },
 
@@ -259,6 +261,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         updated() {
             this.skip = parseInt(routes.skip) || 0
             this.prefs = refreshPrefs()
+            this.hasPrefs = settings.hasPrefs(routes.op)
             this.state = createState(routes.op)
             this.filters = this.columns
                 .map(column => ({ column, ...settings.opProp(routes.op, column.name)}))
@@ -270,6 +273,10 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         },
         updatePrefs(prefs) {
             settings.saveOp(routes.op, x => Object.assign(x, prefs))
+            this.updated()
+        },
+        clearPrefs() {
+            settings.clearPrefs(routes.op)
             this.updated()
         },
         
@@ -337,6 +344,12 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                         <span>Copy URL</span>
                     </button>
                 </div>
+                <div v-if="hasPrefs" class="pl-2">
+                    <button type="button" @click="clearPrefs" title="Reset Preferences &amp; Filters"
+                            class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/></svg>
+                    </button>
+                </div>
                 <div v-if="filtersCount" class="pl-2">
                     <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
                             class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
@@ -359,6 +372,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             </div>
         </div>
         <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save:updated, done:() => open='' })"></div>
+        <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
         <div v-else-if="results.length">
             <div v-if="routes.new" class="p-4">
@@ -444,6 +458,9 @@ App.components({
                 if (val == null || Array.isArray(val) && val.length === 0) return null
                 return Forms.refInfo(row,column,this.columns)
             },
+            complexProp(column) {
+                return Forms.complexProp(column)
+            },
         }
     },
     SettingsIcons({ routes, settings, name }) {
@@ -453,7 +470,6 @@ App.components({
             prefs: null,
             get sort() { return map(this.prefs, x => x.sort) },
             get filters() { return map(this.prefs, x => x.filters || []) },
-
             sub:null,
             unmounted: App.unsubscribe,
             mounted() {
@@ -486,7 +502,10 @@ App.components({
                             </button>
                         </th>
                         <th v-for="c in columns" :key="c.name" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            <div @click="selectColumn(c,$event)" class="flex justify-between items-center text-sm cursor-pointer hover:text-gray-900">
+                            <div v-if="complexProp(c)" class="flex justify-between items-center text-sm">
+                                <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
+                            </div>
+                            <div v-else @click="selectColumn(c,$event)" class="flex justify-between items-center text-sm cursor-pointer hover:text-gray-900">
                                 <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
                                 <div v-scope="SettingsIcons({ routes, settings, name:() => c.name })"></div>
                             </div>

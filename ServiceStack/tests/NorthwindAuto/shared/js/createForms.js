@@ -583,6 +583,10 @@ export function createForms(TypesMap, css, ui) {
             })
             return groups
         },
+        complexProp(prop) {
+            let propType = Types.typeName2(prop.type, prop.genericArgs)
+            return !(prop.isValueType || prop.isEnum || inputType(propType));
+        },
         supportsProp(prop) {
             let propType = Types.typeName2(prop.type, prop.genericArgs)
             if (prop.isValueType || prop.isEnum || inputType(propType))

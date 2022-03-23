@@ -55,6 +55,15 @@ let settings = {
         localStorage.setItem(`locode/op:${op}.${name}`, JSON.stringify(setting))
         App.events.publish(this.events.opProp(op,name), setting)
     },
+    hasPrefs(op) {
+        let prefixes = [`locode/op:${op}`,`locode/lookup:${op}`]
+        return Object.keys(localStorage).some(k => prefixes.some(p => k.startsWith(p)))
+    },
+    clearPrefs(op) {
+        let prefixes = [`locode/op:${op}`,`locode/lookup:${op}`]
+        let removeKeys = Object.keys(localStorage).filter(k => prefixes.some(p => k.startsWith(p)))
+        removeKeys.forEach(k => localStorage.removeItem(k))
+    }
 }
 let store = PetiteVue.reactive({
     previewResult: null,
