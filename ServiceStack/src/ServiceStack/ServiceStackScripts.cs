@@ -61,23 +61,10 @@ namespace ServiceStack
                 throw new ArgumentNullException(nameof(requestName));
 
             var requestType = AssertRequestType(requestName);
-            var requestDto = ToRequestDto(requestType, properties);
+            var requestDto = appHost.Metadata.CreateRequestDto(requestType, properties);
 
             var url = requestDto.ToUrl(httpMethod, "json");
             return url;
-        }
-        
-        private static object ToRequestDto(Type requestType, object dto)
-        {
-            if (dto == null)
-                return requestType.CreateInstance();
-            
-            var requestDto = dto.GetType() == requestType
-                ? dto
-                : dto is Dictionary<string, object> objDictionary
-                    ? objDictionary.FromObjectDictionary(requestType)
-                    : dto.ConvertTo(requestType);
-            return requestDto;
         }
 
         private Type AssertRequestType(string requestName)
@@ -113,7 +100,7 @@ namespace ServiceStack
 
                 var responseType = appHost.Metadata.GetResponseTypeByRequest(requestType);
 
-                var requestDto = ToRequestDto(requestType, dto);
+                var requestDto = appHost.Metadata.CreateRequestDto(requestType, dto);
 
                 var response = gateway.Send(responseType, requestDto);
                 return response;

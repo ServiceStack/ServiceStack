@@ -162,7 +162,7 @@ namespace ServiceStack.Host
         public List<Operation> GetOperationsByTags(string[] tags) => 
             Operations.Where(x => x.Tags.Any(t => Array.IndexOf(tags, t.Name) >= 0)).ToList();
 
-        public Operation GetOperation(Type requestType)
+        public Operation? GetOperation(Type? requestType)
         {
             if (requestType == null)
                 return null;
@@ -181,7 +181,7 @@ namespace ServiceStack.Host
                 .ToList();
         }
 
-        public Type GetOperationType(string operationTypeName)
+        public Type? GetOperationType(string operationTypeName)
         {
             var opName = operationTypeName.ToLowerInvariant();
             if (!OperationNamesMap.TryGetValue(opName, out var operation))
@@ -197,19 +197,19 @@ namespace ServiceStack.Host
             return operation?.RequestType;
         }
 
-        public Type GetServiceTypeByRequest(Type requestType)
+        public Type? GetServiceTypeByRequest(Type requestType)
         {
             OperationsMap.TryGetValue(requestType, out var operation);
             return operation?.ServiceType;
         }
 
-        public Type GetServiceTypeByResponse(Type responseType)
+        public Type? GetServiceTypeByResponse(Type responseType)
         {
             OperationsResponseMap.TryGetValue(responseType, out var operation);
             return operation?.ServiceType;
         }
 
-        public Type GetResponseTypeByRequest(Type requestType)
+        public Type? GetResponseTypeByRequest(Type requestType)
         {
             OperationsMap.TryGetValue(requestType, out var operation);
             return operation?.ResponseType;
@@ -427,7 +427,7 @@ namespace ServiceStack.Host
                     : RequestAttributes.External);
         }
 
-        private HashSet<Type> allDtos;
+        private HashSet<Type>? allDtos;
         public HashSet<Type> GetAllDtos()
         {
             if (allDtos != null)
@@ -443,9 +443,9 @@ namespace ServiceStack.Host
             return allDtos = to;
         }
 
-        private Dictionary<string, Type> dtoTypesMap;
+        private Dictionary<string, Type>? dtoTypesMap;
         private HashSet<string> duplicateTypeNames;
-        public Type FindDtoType(string typeName)
+        public Type? FindDtoType(string typeName)
         {
             var opType = GetOperationType(typeName ?? throw new ArgumentNullException(nameof(typeName)));
             if (opType != null)
@@ -475,10 +475,10 @@ namespace ServiceStack.Host
             return dtoType;
         }
 
-        public RestPath FindRoute(string pathInfo, string method = HttpMethods.Get)
+        public RestPath? FindRoute(string pathInfo, string method = HttpMethods.Get)
         {
             var route = RestHandler.FindMatchingRestPath(method, pathInfo, out _);
-            return (RestPath)route;
+            return route as RestPath;
         }
 
         public object CreateRequestFromUrl(string relativeOrAbsoluteUrl, string method = HttpMethods.Get)
@@ -515,7 +515,7 @@ namespace ServiceStack.Host
             return requestDto;
         }
 
-        public static void AddReferencedTypes(HashSet<Type> to, Type type)
+        public static void AddReferencedTypes(HashSet<Type> to, Type? type)
         {
             if (type == null || to.Contains(type) || !IsDtoType(type))
                 return;
@@ -575,12 +575,12 @@ namespace ServiceStack.Host
             }
         }
 
-        private static bool IsDtoType(Type type) => type != null &&
-             type.Namespace?.StartsWith("System") == false &&
-             type.IsClass && type != typeof(string) &&
-             !type.IsGenericType &&
-             !type.IsArray &&
-             !type.HasInterface(typeof(IService));
+        private static bool IsDtoType(Type? type) => type != null &&
+            type.Namespace?.StartsWith("System") == false &&
+            type.IsClass && type != typeof(string) &&
+            !type.IsGenericType &&
+            !type.IsArray &&
+            !type.HasInterface(typeof(IService));
 
         public List<MetadataType> GetMetadataTypesForOperation(IRequest httpReq, Operation op)
         {
@@ -690,12 +690,12 @@ namespace ServiceStack.Host
             }
         }
 
-        static MetadataType FindMetadataType(MetadataTypes metadataTypes, Type type)
+        static MetadataType? FindMetadataType(MetadataTypes metadataTypes, Type? type)
         {
             return type == null ? null : FindMetadataType(metadataTypes, type.Name, type.Namespace);
         }
 
-        static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace = null)
+        static MetadataType? FindMetadataType(MetadataTypes metadataTypes, string name, string? @namespace = null)
         {
             if (@namespace != null 
                 && @namespace.StartsWith("System") 
@@ -756,6 +756,19 @@ namespace ServiceStack.Host
             return to;
         }
         
+        public object CreateRequestDto(Type requestType, object? dto)
+        {
+            if (dto == null)
+                return requestType.CreateInstance();
+            
+            var requestDto = dto.GetType() == requestType
+                ? dto
+                : dto is Dictionary<string, object> objDictionary
+                    ? objDictionary.FromObjectDictionary(requestType)
+                    : dto.ConvertTo(requestType);
+            return requestDto;
+        }
+        
     }
 
     public class Operation : ICloneable
@@ -764,30 +777,30 @@ namespace ServiceStack.Host
 
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
-        public Type ResponseType { get; set; }
+        public Type? ResponseType { get; set; }
         public Type DataModelType => AutoCrudOperation.GetModelType(RequestType);
         public Type ViewModelType => AutoCrudOperation.GetViewModelType(RequestType, ResponseType);
-        public RestrictAttribute RestrictTo { get; set; }
-        public List<string> Actions { get; set; }
+        public RestrictAttribute? RestrictTo { get; set; }
+        public List<string>? Actions { get; set; }
         public bool ReturnsVoid => ResponseType == null;
         public bool IsOneWay => ResponseType == null;
         public string Method { get; set; }
-        public List<RestPath> Routes { get; set; }
-        public List<IRequestFilterBase> RequestFilterAttributes { get; set; }
-        public List<IResponseFilterBase> ResponseFilterAttributes { get; set; }
+        public List<RestPath>? Routes { get; set; }
+        public List<IRequestFilterBase>? RequestFilterAttributes { get; set; }
+        public List<IResponseFilterBase>? ResponseFilterAttributes { get; set; }
         public bool RequiresAuthentication { get; set; }
-        public List<string> RequiredRoles { get; set; }
-        public List<string> RequiresAnyRole { get; set; }
-        public List<string> RequiredPermissions { get; set; }
-        public List<string> RequiresAnyPermission { get; set; }
-        public List<TagAttribute> Tags { get; set; }
-        public ApiCss LocodeCss { get; set; } 
-        public ApiCss ExplorerCss { get; set; } 
-        public List<InputInfo> FormLayout { get; set; }
-        public HashSet<Type> RequestPropertyAttributes { get; set; }
+        public List<string>? RequiredRoles { get; set; }
+        public List<string>? RequiresAnyRole { get; set; }
+        public List<string>? RequiredPermissions { get; set; }
+        public List<string>? RequiresAnyPermission { get; set; }
+        public List<TagAttribute>? Tags { get; set; }
+        public ApiCss? LocodeCss { get; set; } 
+        public ApiCss? ExplorerCss { get; set; } 
+        public List<InputInfo>? FormLayout { get; set; }
+        public HashSet<Type>? RequestPropertyAttributes { get; set; }
 
-        public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
-        public List<IValidationRule> RequestPropertyValidationRules { get; private set; }
+        public List<ITypeValidator>? RequestTypeValidationRules { get; private set; }
+        public List<IValidationRule>? RequestPropertyValidationRules { get; private set; }
 
         object ICloneable.Clone() => Clone();
         public Operation Clone() => new() {
@@ -842,7 +855,7 @@ namespace ServiceStack.Host
             }
         }
 
-        public void AddRequestPropertyValidationRules(List<IValidationRule> propertyValidators)
+        public void AddRequestPropertyValidationRules(List<IValidationRule>? propertyValidators)
         {
             if (propertyValidators != null)
             {
@@ -869,13 +882,13 @@ namespace ServiceStack.Host
     public class OperationDto
     {
         public string Name { get; set; }
-        public string ResponseName { get; set; }
+        public string? ResponseName { get; set; }
         public string ServiceName { get; set; }
-        public List<string> RestrictTo { get; set; }
-        public List<string> VisibleTo { get; set; }
-        public List<string> Actions { get; set; }
-        public List<string> Routes { get; set; }
-        public List<string> Tags { get; set; }
+        public List<string>? RestrictTo { get; set; }
+        public List<string>? VisibleTo { get; set; }
+        public List<string>? Actions { get; set; }
+        public List<string>? Routes { get; set; }
+        public List<string>? Tags { get; set; }
     }
 
     public class XsdMetadata
@@ -1013,6 +1026,9 @@ namespace ServiceStack.Host
 
         private static string GetRequestParamType(Operation op, string name, string defaultType = "body")
         {
+            if (op.Routes == null || op.Routes.Count == 0)
+                return "query";
+            
             if (op.Routes.Any(x => x.IsVariable(name)))
                 return "path";
 
@@ -1035,7 +1051,7 @@ namespace ServiceStack.Host
         public static bool IsArray(this MetadataPropertyType prop) => 
             prop.Type.IndexOf('[') >= 0;
 
-        public static bool IsInterface(this MetadataType type) => 
+        public static bool IsInterface(this MetadataType? type) => 
             type != null && type.IsInterface.GetValueOrDefault();
 
         public static bool IsAbstract(this MetadataType type) => 
@@ -1052,7 +1068,7 @@ namespace ServiceStack.Host
         public static int? NullIfMinValue(this int value) => value != int.MinValue ? value : (int?)null;
 
         public static Dictionary<string, string[]> ToMetadataServiceRoutes(this Dictionary<Type, string[]> serviceRoutes,
-            Action<Dictionary<string,string[]>> filter=null)
+            Action<Dictionary<string,string[]>>? filter=null)
         {
             var to = new Dictionary<string,string[]>();
             foreach (var entry in serviceRoutes.Safe())
