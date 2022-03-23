@@ -188,23 +188,19 @@ namespace ServiceStack.Host
             var responseStreamWriter = GetStreamSerializer(contentType);
             if (responseStreamWriter != null)
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    responseStreamWriter(req, response, ms);
-                    ms.Position = 0;
-                    return ms.ToArray();
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                responseStreamWriter(req, response, ms);
+                ms.Position = 0;
+                return ms.ToArray();
             }
 
             var responseWriterAsync = GetStreamSerializerAsync(contentType);
             if (responseWriterAsync != null)
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    responseWriterAsync(req, response, ms).Wait();
-                    ms.Position = 0;
-                    return ms.ToArray();
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                responseWriterAsync(req, response, ms).Wait();
+                ms.Position = 0;
+                return ms.ToArray();
             }
 
             throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
@@ -213,30 +209,28 @@ namespace ServiceStack.Host
         public string SerializeToString(IRequest req, object response)
         {
             var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
+            return SerializeToString(req, response, contentType);
+        }
 
+        public string SerializeToString(IRequest req, object response, string contentType)
+        {
             if (ContentTypeStringSerializers.TryGetValue(contentType, out var stringSerializer))
-            {
                 return stringSerializer(req, response);
-            }
 
             var responseStreamWriter = GetStreamSerializer(contentType);
             if (responseStreamWriter != null)
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    responseStreamWriter(req, response, ms);
-                    return ms.ReadToEnd();
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                responseStreamWriter(req, response, ms);
+                return ms.ReadToEnd();
             }
 
             var responseWriterAsync = GetStreamSerializerAsync(contentType);
             if (responseWriterAsync != null)
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    responseWriterAsync(req, response, ms).Wait();
-                    return ms.ReadToEnd();
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                responseWriterAsync(req, response, ms).Wait();
+                return ms.ReadToEnd();
             }
 
             throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
