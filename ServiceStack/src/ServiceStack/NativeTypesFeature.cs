@@ -67,6 +67,7 @@ namespace ServiceStack
                     typeof(IconAttribute),
                     typeof(InputAttribute),
                     typeof(FieldAttribute),
+                    typeof(FormatAttribute),
                     typeof(FieldCssAttribute),
                     typeof(LocodeCssAttribute),
                     typeof(ExplorerCssAttribute),
