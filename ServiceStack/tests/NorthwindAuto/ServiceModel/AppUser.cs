@@ -14,6 +14,7 @@ public class AppUser : IUserAuth
     public string DisplayName { get; set; }
 
     [Index]
+    [Format(FormatMethods.LinkEmail)]
     public string Email { get; set; }
 
     // Custom Properties
