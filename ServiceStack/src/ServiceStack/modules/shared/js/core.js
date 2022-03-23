@@ -159,15 +159,17 @@ function canAccess(op, auth) {
         return false
     if (isAdminAuth(auth))
         return true;
-    const userRoles = auth.roles || []
-    if (hasItems(op.requiredRoles) && !op.requiredRoles.every(role => userRoles.indexOf(role) >= 0))
+    let { userRoles, userPermissions } = auth
+    let [roles, permissions] = [userRoles || [], userPermissions || []]
+    let [requiredRoles, requiredPermissions, requiresAnyRole, requiresAnyPermission] = [
+        op.requiredRoles || [], op.requiredPermissions || [], op.requiresAnyRole || [], op.requiresAnyPermission || []]
+    if (!requiredRoles.every(role => roles.indexOf(role) >= 0))
         return false
-    if (hasItems(op.requiresAnyRole) && !op.requiresAnyRole.some(role => userRoles.indexOf(role) >= 0))
+    if (!requiresAnyRole.some(role => roles.indexOf(role) >= 0))
         return false
-    const userPermissions = auth.permissions || []
-    if (hasItems(op.requiredPermissions) && !op.requiredRoles.every(perm => userPermissions.indexOf(perm) >= 0))
+    if (!requiredPermissions.every(perm => permissions.indexOf(perm) >= 0))
         return false
-    if (hasItems(op.requiresAnyPermission) && !op.requiresAnyPermission.every(perm => userPermissions.indexOf(perm) >= 0))
+    if (!requiresAnyPermission.every(perm => permissions.indexOf(perm) >= 0))
         return false
     return true
 }
@@ -176,17 +178,21 @@ function invalidAccessMessage(op, auth) {
     if (!auth) {
         return `<b>${op.request.name}</b> requires Authentication`
     }
-    let { roles, permissions } = auth
+    let { userRoles, userPermissions } = auth
+    let [roles, permissions] = [userRoles || [], userPermissions || []] 
     if (roles.indexOf('Admin') >= 0) return null
-    let missingRoles = op.requiredRoles.filter(x => roles.indexOf(x) < 0)
+    let [requiredRoles, requiredPermissions, requiresAnyRole, requiresAnyPermission] = [
+        op.requiredRoles || [], op.requiredPermissions || [], op.rFequiresAnyRole || [], op.requiresAnyPermission || []]
+    let missingRoles = requiredRoles.filter(x => roles.indexOf(x) < 0)
     if (missingRoles.length > 0)
         return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    let missingPerms = op.requiredPermissions.filter(x => permissions.indexOf(x) < 0)
+    let missingPerms = requiredPermissions.filter(x => permissions.indexOf(x) < 0)
     if (missingPerms.length > 0)
         return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+    missingRoles = requiresAnyRole.filter(x => roles.indexOf(x) < 0)
     if (missingRoles.length > 0)
         return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    missingPerms = op.requiresAnyPermission.filter(x => permissions.indexOf(x) < 0)
+    missingPerms = requiresAnyPermission.filter(x => permissions.indexOf(x) < 0)
     if (missingPerms.length > 0)
         return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
     return null
