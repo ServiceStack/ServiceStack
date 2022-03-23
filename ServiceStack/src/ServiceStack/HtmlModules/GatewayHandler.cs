@@ -51,6 +51,8 @@ public class GatewayHandler : IHtmlModulesHandler
                 }
                 var sb = StringBuilderCache.Allocate();
                 var value = HostContext.ContentTypes.SerializeToString(ctx.Request, response, MimeTypes.Json);
+                if (string.IsNullOrEmpty(value))
+                    value = "null";
                 sb.Append(varName).Append('=').Append(value).Append(';').AppendLine();
                 return StringBuilderCache.ReturnAndFree(sb).AsMemory().ToUtf8();
             }

@@ -12,7 +12,7 @@ App.components({
             /** @type State */
             get state() { return state && state() || emptyState },
             get api() { return map(this.state, x => x.apiResult && x.apiResult.api) },
-            get css() { return map(this.state, x => x.op.ui && x.op.ui.explorerCss) },
+            get css() { return map(this.state, x => x.op && x.op.ui && x.op.ui.explorerCss) },
             get formClass() { return map(this.css, x => x.form) || Forms.formClass },
             get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
             get title() { return this.state && this.state.title },

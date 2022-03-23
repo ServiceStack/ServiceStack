@@ -205,7 +205,7 @@ export const Crud = {
     isDelete: op => hasInterface(op, Crud.Delete),
 }
 
-/** @param {AuthenticateResponse} [session] */
+/** @param {{roles:string[]}} [session] */
 export const isAdminAuth = session => map(session, x => x.roles && x.roles.indexOf('Admin') >= 0)
 
 /** @param {any[]|null} arr */
@@ -222,8 +222,7 @@ export function canAccess(op, auth) {
     if (isAdminAuth(auth))
         return true;
 
-    let { userRoles, userPermissions } = auth
-    let [roles, permissions] = [userRoles || [], userPermissions || []]
+    let [roles, permissions] = [auth.roles || [], auth.permissions || []]
     let [requiredRoles, requiredPermissions, requiresAnyRole, requiresAnyPermission] = [
         op.requiredRoles || [], op.requiredPermissions || [], op.requiresAnyRole || [], op.requiresAnyPermission || []]
 
@@ -246,12 +245,12 @@ export function invalidAccessMessage(op, auth) {
     if (!auth) {
         return `<b>${op.request.name}</b> requires Authentication`
     }
-    let { userRoles, userPermissions } = auth
-    let [roles, permissions] = [userRoles || [], userPermissions || []] 
-    if (roles.indexOf('Admin') >= 0) return null
+    if (isAdminAuth(auth))
+        return null;
+    let [roles, permissions] = [auth.roles || [], auth.permissions || []]
     let [requiredRoles, requiredPermissions, requiresAnyRole, requiresAnyPermission] = [
-        op.requiredRoles || [], op.requiredPermissions || [], op.rFequiresAnyRole || [], op.requiresAnyPermission || []]
-
+        op.requiredRoles || [], op.requiredPermissions || [], op.requiresAnyRole || [], op.requiresAnyPermission || []]
+    
     let missingRoles = requiredRoles.filter(x => roles.indexOf(x) < 0)
     if (missingRoles.length > 0)
         return `Requires ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
