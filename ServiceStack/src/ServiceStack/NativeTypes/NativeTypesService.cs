@@ -239,7 +239,7 @@ namespace ServiceStack.NativeTypes
             return typeScript;
         }
 
-        [AddHeader(ContentType = MimeTypes.PlainText)]
+        [AddHeader(ContentType = MimeTypes.JavaScript)]
         public object Any(TypesCommonJs request)
         {
             string Generate()
