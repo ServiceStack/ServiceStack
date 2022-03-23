@@ -9,6 +9,11 @@ namespace ServiceStack.NativeTypes.TypeScript;
 
 public class CommonJsGenerator : ILangGenerator
 {
+    /// <summary>
+    /// Split assignment expression into smaller batches to avoid "Uncaught RangeError: Maximum call stack size exceeded" in Chrome/Blink
+    /// </summary>
+    public static int BatchSize { get; set; } = 200;
+    
     public bool WithoutOptions { get; set; }
     public List<string> AddQueryParamOptions { get; set; }
 
@@ -151,16 +156,20 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;");
 
+        var symbols = AllTypes.Where(type => !type.IsInterface.GetValueOrDefault() || type.IsEnum.GetValueOrDefault());
         var exports = new StringBuilder();
-        foreach (var type in AllTypes
-            .Where(type => !type.IsInterface.GetValueOrDefault() || type.IsEnum.GetValueOrDefault()))
+        foreach (var batch in symbols.BatchesOf(BatchSize))
         {
-            if (exports.Length > 0)
-                exports.Append(" = ");
-            exports.Append($"exports.{Type(type.Name, type.GenericArgs)}");
+            foreach (var type in batch)
+            {
+                if (exports.Length > 0)
+                    exports.Append(" = ");
+                exports.Append($"exports.{Type(type.Name, type.GenericArgs)}");
+            }
+            exports.AppendLine(" = void 0;");
+            sb.AppendLine(exports.ToString());
+            exports.Clear();
         }
-        exports.AppendLine(" = void 0;");
-        sb.AppendLine(exports.ToString());
         
         //ServiceStack core interfaces
         foreach (var type in AllTypes)
