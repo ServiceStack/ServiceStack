@@ -1,5 +1,5 @@
-<script minify>
-import { GetCrudEvents } from "../../lib/types"
+ <script minify>
+import { APP, GetCrudEvents } from "../../lib/types"
 import { map } from "../../shared/js/core"
 import { Forms, getType, onRoutesEditChange } from "../js/appInit"
 import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client"
@@ -107,7 +107,8 @@ App.components({
                 
                 this.eventsCount = 0
                 this.events = []
-                apiSend(createClient, new GetCrudEvents({
+                if (this.canAccessCrudEvents) {
+                    apiSend(createClient, new GetCrudEvents({
                         modelId: routes.edit,
                         model: this.dataModelName,
                         include: 'total',
@@ -119,6 +120,7 @@ App.components({
                             this.events = r.api.response.results
                         }
                     })
+                }
             },
             submit() {
                 let pk = this.pk, useUpdateApi = this.useApiUpdate
