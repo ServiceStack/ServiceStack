@@ -68,10 +68,12 @@ import { combinePaths, humanify, $1 } from "@servicestack/client"
 import { setFavIcon, setBodyClass } from "../shared/js/core"
 
 /*gateway:window.APP=MetadataApp({view:'locode',jsconfig:'eccn'})*/
-/*gateway:var auth=Authenticate({jsconfig:'eccn'})*/
-window.AUTH = !auth || auth.responseStatus ? null : auth
-setBodyClass({ auth })
+function loadAuth(auth) {
+    window.AUTH = !auth || auth.responseStatus ? null : auth
+    setBodyClass({ auth })
+}
 </script>
+<script src="../auth?callback=loadAuth&jsconfig=eccn"></script>
 <script src="../js/petite-vue.js?vfx=hash"></script>
 <script>
 document.title = APP.app.serviceName
