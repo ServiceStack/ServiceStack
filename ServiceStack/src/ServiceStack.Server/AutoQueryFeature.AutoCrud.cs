@@ -187,6 +187,7 @@ namespace ServiceStack
 
     public class CrudContext
     {
+        public ServiceStackHost AppHost { get; private set; }
         public IRequest Request { get; private set; }
         public IDbConnection Db { get; private set; }
         public ICrudEvents Events { get; private set; }
@@ -206,6 +207,8 @@ namespace ServiceStack
         public object Response { get; set; }
         
         public long? RowsUpdated { get; set; }
+        
+        public string NamedConnection { get; set; }
 
         internal void SetResult(AutoQuery.ExecValue result)
         {
@@ -226,9 +229,11 @@ namespace ServiceStack
             var responseType = appHost.Metadata.GetOperation(requestType)?.ResponseType;
             var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
             return new CrudContext {
+                AppHost = appHost,
                 Operation = operation,
                 Request = request ?? throw new ArgumentNullException(nameof(request)),
                 Db = db ?? throw new ArgumentNullException(nameof(db)),
+                NamedConnection = appHost.TryResolve<IAutoQueryDb>().GetDbNamedConnection(typeof(Table)), 
                 Events = appHost.TryResolve<ICrudEvents>(),
                 Dto = dto,
                 ModelType = typeof(Table),

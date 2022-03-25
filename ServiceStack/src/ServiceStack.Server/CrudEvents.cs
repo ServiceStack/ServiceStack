@@ -193,16 +193,23 @@ namespace ServiceStack
         /// <summary>
         /// Additional DB Connections CrudEvent's should be persisted in
         /// </summary>
-        public List<string> NamedConnections { get; } = new List<string>();
+        public List<string> NamedConnections { get; } = new();
 
         private IDbConnectionFactory DbFactory { get; }
         public OrmLiteCrudEvents(IDbConnectionFactory dbFactory) => DbFactory = dbFactory;
-        
+
+        public bool ShouldRecord(CrudContext context) => context.NamedConnection != null
+            ? NamedConnections.Contains(context.NamedConnection)
+            : !ExcludePrimaryDb;
+
         /// <summary>
         /// Record an CrudEvent Sync
         /// </summary>
         public void Record(CrudContext context)
         {
+            if (!ShouldRecord(context))
+                return;
+            
             var row = ToEvent(context);
             if (EventFilter != null)
             {
@@ -218,6 +225,9 @@ namespace ServiceStack
         /// </summary>
         public Task RecordAsync(CrudContext context)
         {
+            if (!ShouldRecord(context))
+                return Task.CompletedTask;
+            
             var row = ToEvent(context);
             if (EventFilter != null)
             {
@@ -272,17 +282,13 @@ namespace ServiceStack
         {
             if (!ExcludePrimaryDb)
             {
-                using (var db = DbFactory.OpenDbConnection())
-                {
-                    db.CreateTableIfNotExists<T>();
-                }
+                using var db = DbFactory.OpenDbConnection();
+                db.CreateTableIfNotExists<T>();
             }
             foreach (var namedConnection in NamedConnections)
             {
-                using (var db = DbFactory.OpenDbConnection(namedConnection))
-                {
-                    db.CreateTableIfNotExists<T>();
-                }
+                using var db = DbFactory.OpenDbConnection(namedConnection);
+                db.CreateTableIfNotExists<T>();
             }
         }
 
@@ -311,17 +317,13 @@ namespace ServiceStack
         {
             if (!ExcludePrimaryDb)
             {
-                using (var db = DbFactory.OpenDbConnection())
-                {
-                    db.DropAndCreateTable<T>();
-                }
+                using var db = DbFactory.OpenDbConnection();
+                db.DropAndCreateTable<T>();
             }
             foreach (var namedConnection in NamedConnections)
             {
-                using (var db = DbFactory.OpenDbConnection(namedConnection))
-                {
-                    db.DropAndCreateTable<T>();
-                }
+                using var db = DbFactory.OpenDbConnection(namedConnection);
+                db.DropAndCreateTable<T>();
             }
             return this;
         }

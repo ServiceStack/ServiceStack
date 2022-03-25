@@ -860,6 +860,14 @@ namespace ServiceStack
             return dbFactory.OpenDbConnection();
         }
 
+        public virtual string GetDbNamedConnection(IRequest req)
+        {
+            if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
+                return connInfo.NamedConnection;
+            var namedConnectionAttr = req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
+            return namedConnectionAttr?.Name;
+        }
+
         /// <summary>
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
         /// Called by itself, <see cref="Service"></see> and ViewPageBase

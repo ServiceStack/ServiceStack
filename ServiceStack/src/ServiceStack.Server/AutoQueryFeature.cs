@@ -623,7 +623,12 @@ namespace ServiceStack
         /// Generic API to resolve the DB Connection to use for this request
         /// </summary>
         IDbConnection GetDb<From>(IRequest req = null);
-        
+                
+        /// <summary>
+        /// Non-generic API to resolve the DB Named Connection to use for this request 
+        /// </summary>
+        string GetDbNamedConnection(Type fromType, IRequest req = null);
+
         /// <summary>
         /// Generate an untyped AutoQuery Query Builder
         /// </summary>
@@ -988,14 +993,19 @@ namespace ServiceStack
             return response;
         }
 
-        public IDbConnection GetDb<From>(IRequest req = null) => GetDb(typeof(From), req);
-        public IDbConnection GetDb(Type fromType, IRequest req = null)
+        public string GetDbNamedConnection(Type fromType, IRequest req = null)
         {
             var namedConnection = UseNamedConnection;
             var attr = fromType.FirstAttribute<NamedConnectionAttribute>();
-            if (attr != null)
-                namedConnection = attr.Name;
+            return attr != null 
+                ? attr.Name 
+                : namedConnection ?? (req != null ? HostContext.AppHost.GetDbNamedConnection(req) : null);
+        }
 
+        public IDbConnection GetDb<From>(IRequest req = null) => GetDb(typeof(From), req);
+        public IDbConnection GetDb(Type fromType, IRequest req = null)
+        {
+            var namedConnection = GetDbNamedConnection(fromType, req);
             return namedConnection == null 
                 ? HostContext.AppHost.GetDbConnection(req)
                 : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection(namedConnection);
