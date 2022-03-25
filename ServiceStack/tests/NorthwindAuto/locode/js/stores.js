@@ -22,6 +22,10 @@ let routes = App.usePageRoutes({
                 ? appendQueryString(`/ui/${this.op}`, args || {})
                 : ''
         },
+        onEditChange(fn) {
+            onRoutesEditChange = fn
+            if (fn) fn()
+        }
     }
 })
 

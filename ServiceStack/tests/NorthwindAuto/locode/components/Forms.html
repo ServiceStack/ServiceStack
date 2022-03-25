@@ -195,11 +195,8 @@ App.components({
                     })
             },
             
-            mounted() {
-                onRoutesEditChange = () => this.updated()
-                this.updated()
-            },
-            unmounted() { onRoutesEditChange = null },
+            mounted() { routes.onEditChange(() => this.updated()) },
+            unmounted() { routes.onEditChange(null) },
             
             expand:{},
             expanded(id) { return !!this.expand[id] },
