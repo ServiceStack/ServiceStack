@@ -46,5 +46,4 @@ if (alwaysHideTags) {
 }
 let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,'locode')
 let Forms = createForms(OpsMap, TypesMap, APP.ui.locode.css, APP.ui)
-let onRoutesEditChange = () => {}
 /*:minify*/

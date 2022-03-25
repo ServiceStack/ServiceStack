@@ -80,12 +80,15 @@ App.plugin({
         })
 
         if (handlers) {
-            if (handlers.init)
-                this.events.subscribe('route:init', args => handlers.init(args))
-            if (handlers.to)
-                this.events.subscribe('route:to', args => handlers.to(args))
-            if (handlers.nav)
-                this.events.subscribe('route:nav', args => handlers.nav(args))
+            let init = handlers.init && handlers.init.bind(store)
+            if (init)
+                this.events.subscribe('route:init', args => init(args))
+            let to = handlers.to && handlers.to.bind(store)
+            if (to)
+                this.events.subscribe('route:to', args => to(args))
+            let nav = handlers.nav && handlers.nav.bind(store)
+            if (nav)
+                this.events.subscribe('route:nav', args => nav(args))
         }
         
         this.onStart(app => store.start())

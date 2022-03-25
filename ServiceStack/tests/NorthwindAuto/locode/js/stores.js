@@ -10,11 +10,17 @@ let breakpoints = App.useBreakpoints({
     }
 })
 
+let onRoutesEditChange = () => {}
+let lastEditState = null
+
 let routes = App.usePageRoutes({
     page:'op',
     queryKeys:'tab,provider,preview,body,doc,skip,new,edit'.split(','),
     handlers: {
-        nav(state) { console.log('nav', state) } /*debug*/
+        nav(state) { 
+            console.log('nav', state) /*debug*/
+            this.update()
+        }
     },
     extend: {
         uiHref(args) {
@@ -24,7 +30,17 @@ let routes = App.usePageRoutes({
         },
         onEditChange(fn) {
             onRoutesEditChange = fn
-            if (fn) fn()
+            if (fn == null) lastEditState = null
+            this.update()
+        },
+        update() {
+            if (this.edit && onRoutesEditChange) {
+                let newState = `${this.op}:${this.edit}`
+                if (newState !== lastEditState) {
+                    lastEditState = newState
+                    onRoutesEditChange()
+                }
+            }
         }
     }
 })
