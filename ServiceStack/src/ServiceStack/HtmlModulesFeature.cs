@@ -141,7 +141,9 @@ public class HtmlModuleContext
     /// </summary>
     public IVirtualFile AssertFile(string virtualPath) => AssertFile(VirtualFiles, virtualPath);
 
-    public IVirtualFile AssertFile(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)
+    public IVirtualFile AssertFile(IVirtualPathProvider vfs, string virtualPath) =>
+        AppHost.VirtualFileSources.GetMemoryVirtualFiles().GetFile(virtualPath)
+        ?? vfs.GetFile(virtualPath)
         ?? throw HttpError.NotFound($"{virtualPath} does not exist");
 
     public Func<IVirtualFile, string> FileContentsResolver => Module.FileContentsResolver != null

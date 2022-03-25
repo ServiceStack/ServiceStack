@@ -34,7 +34,6 @@ public class AppHost : AppHostBase, IHostingStartup
     public override void Configure(Container container)
     {
         // JsConfig.Init(new Config { TextCase = TextCase.PascalCase });
-            
         SetConfig(new HostConfig
         {
             //DebugMode = false,
@@ -42,13 +41,15 @@ public class AppHost : AppHostBase, IHostingStartup
             AdminAuthSecret = "secret",
         });
 
-        // Register Database Connection, see: https://github.com/ServiceStack/ServiceStack.OrmLite#usage
-        // container.AddSingleton<IDbConnectionFactory>(c =>
-        //     new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider));
+        var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
+        var files = VirtualFiles.GetDirectory("custom").GetAllFiles();
+        files.Each(file => memFs.WriteFile($"locode/{file.Name}", file));
+        GlobalRequestFilters.Add((req, res, dto) => {
+            files.Each(file => memFs.WriteFile($"locode/{file.Name}", file));
+        });
 
         ConfigurePlugin<UiFeature>(feature => {
             Console.WriteLine(@"ConfigurePlugin<UiFeature>...");
-            //feature.Module.EnableHttpCaching = true;
             feature.Module.Configure((appHost, module) =>
             {
                 module.VirtualFiles = appHost.VirtualFiles;
