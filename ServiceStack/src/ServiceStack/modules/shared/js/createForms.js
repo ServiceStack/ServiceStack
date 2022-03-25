@@ -1,5 +1,6 @@
 /*minify:*/
-function createForms(TypesMap, css, ui) {
+function createForms(OpsMap, TypesMap, css, ui) {
+    let operations = Object.values(OpsMap)
     let { theme, defaultFormats } = ui
     if (!defaultFormats) defaultFormats = {}
     if (!defaultFormats.locale) {
@@ -240,7 +241,7 @@ function createForms(TypesMap, css, ui) {
             if (isRefType) {
                 refIdValue = mapGet(refIdValue, ref.refId)
             }
-            let queryOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === ref.model)
+            let queryOp = operations.find(op => Crud.isQuery(op) && op.dataModel.name === ref.model)
             if (queryOp != null) {
                 let href = { op:queryOp.request.name, skip:null, edit:null, new:null, $qs: { [ref.refId]: refIdValue } }
                 let html = Forms.format(mapGet(row,prop.name), prop)
@@ -268,7 +269,7 @@ function createForms(TypesMap, css, ui) {
             let refLabel = c.ref && c.ref.refLabel
             if (refLabel) {
                 let refId = c.ref.refId
-                let lookupOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === c.ref.model)
+                let lookupOp = operations.find(op => Crud.isQuery(op) && op.dataModel.name === c.ref.model)
                 if (lookupOp) {
                     let lookupIds = uniq(results.map(x => mapGet(x, c.name)).filter(x => x != null))
                     let modelLookup = Lookup[c.ref.model]
@@ -367,38 +368,36 @@ function createForms(TypesMap, css, ui) {
                 let crudRef = map(type.implements, x => x.find(x => Crud.AnyWrite.indexOf(x.name) >= 0))
                 let dataModel = map(crudRef && crudRef.genericArgs[0], name => getType({ name }))
                 prop.ref = map(dataModel, x => x.properties && map(x.properties.find(p => p.name.toLowerCase() === idLower), p => p.ref))
-                if (prop.ref) {
-                    prop.refInfo = row => {
-                        let ret = refInfo(row, prop, typeProps)
-                        return ret
-                    }
-                    prop.refLookup = callback => {
-                        let queryOp = APP.api.operations.find(op => Crud.isQuery(op) && op.dataModel.name === prop.ref.model)
-                        let state = createPropState(prop, queryOp.request.name, callback)
-                        state.refresh = () => Object.assign(state, createPropState(prop, queryOp.request.name, callback))
-                        store.modalLookup = state
-                        App.transition('modal-lookup', true)
-                    }
+            }
+            if (prop.ref) {
+                prop.refInfo = row => {
+                    let ret = refInfo(row, prop, typeProps)
+                    return ret
+                }
+                prop.refLookup = callback => {
+                    let queryOp = operations.find(op => Crud.isQuery(op) && op.dataModel.name === prop.ref.model)
+                    let state = createPropState(prop, queryOp.request.name, callback)
+                    state.refresh = () => Object.assign(state, createPropState(prop, queryOp.request.name, callback))
+                    store.modalLookup = state
+                    App.transition('modal-lookup', true)
                 }
             }
             return prop
         },
         getGridInputs(formLayout, f) {
-            let to = []
-            if (formLayout) {
-                formLayout.forEach(input => {
-                    if (input.ignore) return
-                    let id = inputId(input)
-                    if (id.startsWith('__')) console.log(`!id ${id}`, input) /*debug*/
-                    let field = { id, input, rowClass: input.css && input.css.field || css.field }
-                    if (input.type === 'hidden' && (field.rowClass||'').indexOf('hidden') === -1) {
-                        field.rowClass = field.rowClass ? `${field.rowClass} hidden` : 'hidden'
-                    }
-                    if (f) f(field)
-                    to.push(field)
-                })
+            if (!formLayout) return []
+            return formLayout.map(input => this.getGridInput(input, f))
+        },
+        getGridInput(input, f) {
+            if (input.ignore) return
+            let id = inputId(input)
+            if (id.startsWith('__')) console.log(`!id ${id}`, input) /*debug*/
+            let field = { id, input, rowClass: input.css && input.css.field || css.field }
+            if (input.type === 'hidden' && (field.rowClass||'').indexOf('hidden') === -1) {
+                field.rowClass = field.rowClass ? `${field.rowClass} hidden` : 'hidden'
             }
-            return to
+            if (f) f(field)
+            return field
         },
         getFieldError(error, id) { return error && error.errors &&
             map(error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase()), x => x.message)

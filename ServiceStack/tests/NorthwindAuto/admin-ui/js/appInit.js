@@ -23,6 +23,6 @@ function createClient(fn) {
 let client = createClient()
 
 export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,'admin-ui')
-export let Forms = createForms(TypesMap, APP.plugins.adminUsers.css, APP.ui)
+export let Forms = createForms(OpsMap, TypesMap, APP.plugins.adminUsers.css, APP.ui)
 
 /*:minify*/

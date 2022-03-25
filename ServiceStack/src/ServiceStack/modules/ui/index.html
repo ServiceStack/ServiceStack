@@ -13,6 +13,7 @@ DEBUG = true /*debug*/
 <style>
 /*file:css/app.css */
 /*shared:css/ui.css */
+/*file:custom.css */
 </style>
 <!--shared:custom-head-->
 </head>
@@ -84,13 +85,16 @@ let App = new PetiteVueApp()
 <!--shared:Alert,AuthNav,Brand,CloseButton,CopyIcon,CopyLine,Image,Input,Loading,PreviewObject,SignIn,ErrorSummary-->
 <!--files:components/*.html-->
 <!--files:docs/*.html-->
+<!--file:custom.html-->
 <script minify>
 let docComponents = window.APP.api.operations.map(op => op.request.name).filter(name => window[name + 'Docs'])
-document.write(`<template id='doc-component-template'><div v-if="false"></div>`)
+let sb = []
+sb.push(`<template id='doc-component-template'><div v-if="false"></div>`)
 docComponents.forEach(x => {
-    document.write(`<div v-else-if="routes.op === '${x}'" v-scope="${x}Docs({ op:() => op, store, routes, breakpoints })"></div>`)
+    sb.push(`<div v-else-if="routes.op === '${x}'" v-scope="${x}Docs({ op:() => op, store, routes, breakpoints })"></div>`)
 })
-document.write(`</template>`)
+sb.push(`</template>`)
+document.write(sb.join(''))
 App.components({
     DocComponent() {
         return {
@@ -147,6 +151,7 @@ App.nextTick(() => {
        setStyleProperty({ '--sidebar-width': sidebarWidth })
     }
 })
+/*file:custom.js */
 </script>
 <!--shared:custom-end-->
 </body>

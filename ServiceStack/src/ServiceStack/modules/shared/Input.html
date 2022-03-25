@@ -1,6 +1,10 @@
 <script minify>
 App.components({
-    Input({ input, prop, model, api }) {
+    Input({ input, prop, field, model, api }) {
+        if (!input)
+            input = field.input
+        if (!prop)
+            prop = field.prop
         return {
             $template: '#input-template',
             get input() { return resolve(input) },
@@ -109,7 +113,7 @@ App.components({
         </table>
     </div>
 </div>
-<div v-else-if="prop && prop.refInfo">
+<div v-else-if="!input.disabled && prop && prop.refInfo" class="lookup-field">
     <input type="hidden" :name="input.id" v-model="model[input.id]" />
     <div v-if="useLabel(input)" class="flex justify-between">
         <label :for="input.id" :class="['block text-sm font-medium text-gray-700',labelClass(input)]"
@@ -117,13 +121,13 @@ App.components({
         <span class="text-sm text-gray-500 pr-3">{{model[input.id]}}</span>
     </div>
     <div v-if="prop.refInfo(model)" class="mt-1 relative">
-        <button type="button" class="flex relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        <button type="button" class="lookup flex relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 @click="prop.refLookup(value => updateLookup(input,value))"
                 aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
           <span class="w-full inline-flex truncate">
             <span class="text-blue-700 flex cursor-pointer">
                 <span class="mr-1" v-scope="Image(prop.refInfo(model).icon, { cls:'w-5 h-5' })"></span>
-                <span v-html="map(prop.refInfo(model),x => x.html)"></span>
+                <span v-html="map(prop.refInfo(model),x => x.html || input.placeholder || '')"></span>
             </span>
           </span>
             <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -133,6 +137,7 @@ App.components({
             </span>
         </button>
     </div>
+    <p v-if="fieldError(input.id)" class="mt-2 text-sm text-red-500" :id="`${input.id}-error`" v-html="fieldError(input.id)"></p>
 </div>
 <div v-else-if="input.type=='checkbox'" class="relative flex flex-col">
     <span>&nbsp;</span>

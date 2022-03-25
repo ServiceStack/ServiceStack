@@ -13,13 +13,12 @@ DEBUG = true /*debug*/
 <style>
 /*file:css/app.css */
 /*shared:css/ui.css */
+/*file:custom.css */
 </style>
 <!--shared:custom-head-->
-<!--file:custom-head.html-->
 </head>
 <body class="loading noauth">
 <!--shared:custom-body-->
-<!--file:custom-body.html-->
 <div class="when-loading"></div>
 <div v-scope class="app">
 <div class="flex">
@@ -76,6 +75,30 @@ let App = new PetiteVueApp()
 </script>
 <!--shared:Alert,AuthNav,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,ModalDialog,PreviewObject-->
 <!--files:components/*.html-->
+<!--file:custom.html-->
+<script minify>
+function hasNewComponent(dataModel) { return window[`New${dataModel}`] != null }
+function hasEditComponent(dataModel) { return window[`Edit${dataModel}`] != null }
+let DataModels = uniq(window.APP.api.operations.filter(op => op.dataModel).map(op => op.dataModel.name))
+let newComponents = DataModels.filter(hasNewComponent)
+let sb = []
+sb.push(`<template id='new-component-template'><div v-if="false"></div>`)
+newComponents.forEach(x => {
+    sb.push(`<div v-else-if="store.opDataModel === '${x}'" v-scope="New${x}({ store, routes, settings, state, save, done })"></div>`)
+})
+sb.push(`</template>`)
+let editComponents = DataModels.filter(hasEditComponent)
+sb.push(`<template id='edit-component-template'><div v-if="false"></div>`)
+editComponents.forEach(x => {
+    sb.push(`<div v-else-if="store.opDataModel === '${x}'" v-scope="Edit${x}({ store, routes, settings, state, save, done })"></div>`)
+})
+sb.push(`</template>`)
+document.write(sb.join(''))
+App.components({
+    NewComponent: '#new-component-template',    
+    EditComponent: '#edit-component-template', 
+})
+</script>
 <script>
 App.build({
     app: APP.app,
@@ -98,8 +121,8 @@ App.nextTick(() => {
        setStyleProperty({ '--sidebar-width': sidebarWidth })
     }
 })
+/*file:custom.js */
 </script>
 <!--shared:custom-end-->
-<!--file:custom-end.html-->
 </body>
 </html>
