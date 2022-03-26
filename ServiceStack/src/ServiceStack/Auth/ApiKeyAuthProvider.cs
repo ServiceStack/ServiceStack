@@ -539,11 +539,18 @@ namespace ServiceStack
             var authRepo = appHost.GetAuthRepositoryAsync(req);
             if (authRepo == null)
                 throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
-
             if (authRepo is IManageApiKeysAsync manageApiKeysAsync)
                 return manageApiKeysAsync;
             if (authRepo is IManageApiKeys manageApiKeys)
                 return new ManageApiKeysAsyncWrapper(manageApiKeys);
+
+            if (authRepo is UserAuthRepositoryAsyncWrapper wrapper)
+            {
+                if (wrapper.AuthRepo is IManageApiKeysAsync wrapperApiKeysAsync)
+                    return wrapperApiKeysAsync;
+                if (wrapper.AuthRepo is IManageApiKeys wrapperApiKeys)
+                    return new ManageApiKeysAsyncWrapper(wrapperApiKeys);
+            }
             
             throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
         }
