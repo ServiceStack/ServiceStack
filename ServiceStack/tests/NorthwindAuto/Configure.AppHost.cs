@@ -83,6 +83,11 @@ public class AppHost : AppHostBase, IHostingStartup
                     : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
                 readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
         ));
+
+        Metadata.ForceInclude = new() { 
+            typeof(GetAccessToken)
+        };
+        Plugins.Add(new ServiceStack.Api.OpenApi.OpenApiFeature());
     }
 
     public override string? GetCompressionType(IRequest request)

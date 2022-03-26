@@ -1058,7 +1058,7 @@ namespace ServiceStack.Host
             type.IsAbstract.GetValueOrDefault() || type.Name == nameof(AuthUserSession);
 
         public static bool ExcludesFeature(this Type type, Feature feature) => 
-            type.FirstAttribute<ExcludeAttribute>()?.Feature.Has(feature) == true;
+            type.FirstAttribute<ExcludeAttribute>()?.Feature.Has(feature) == true && !HostContext.Metadata.ForceInclude.Contains(type);
 
         public static bool Has(this Feature feature, Feature flag) => 
             (flag & feature) != 0;

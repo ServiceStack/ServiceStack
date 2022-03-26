@@ -4,7 +4,10 @@ namespace MyApp.ServiceModel;
 
 [Tag("hello"), Tag("todos"), Tag("auth")]
 [Route("/greet/{Name}")]
-public class Greet : IReturn<HelloResponse> {}
+public class Greet : IReturn<HelloResponse>
+{
+    public string Name { get; set; }
+}
 
 [Tag("hello")]
 [Route("/hello/{Name}")]
