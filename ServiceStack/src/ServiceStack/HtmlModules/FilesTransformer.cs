@@ -106,18 +106,9 @@ public class FilesTransformer
             }
             else
             {
-                HtmlModuleBlock? endBlock = null;
-                foreach (var x in options.BlockTransformers)
+                if (trimmedLine.EndsWith(inBlock.EndTag))
                 {
-                    if (trimmedLine.EqualTo(x.EndTag))
-                    {
-                        endBlock = x;
-                        break;
-                    }
-                }
-                if (endBlock != null)
-                {
-                    var blockOutput = endBlock.Transform(blockLines);
+                    var blockOutput = inBlock.Transform(blockLines);
                     if (blockOutput != null)
                     {
                         sb.AppendLine(blockOutput);
@@ -135,7 +126,7 @@ public class FilesTransformer
             HtmlModuleBlock? startBlock = null;
             foreach (var x in options.BlockTransformers)
             {
-                if (trimmedLine.EqualTo(x.StartTag))
+                if (trimmedLine.StartsWith(x.StartTag))
                 {
                     startBlock = x;
                     break;
@@ -143,8 +134,17 @@ public class FilesTransformer
             }
             if (startBlock != null)
             {
-                inBlock = startBlock;
-                continue;
+                var withoutStartTag = trimmedLine.Substring(startBlock.StartTag.Length);
+                if (withoutStartTag.EndsWith(startBlock.EndTag))
+                {
+                    var blockLine = withoutStartTag.Substring(0, withoutStartTag.Length - startBlock.EndTag.Length);
+                    line = startBlock.Transform(blockLine);
+                }
+                else
+                {
+                    inBlock = startBlock;
+                    continue;
+                }
             }
 
             sb.AppendLine(line);

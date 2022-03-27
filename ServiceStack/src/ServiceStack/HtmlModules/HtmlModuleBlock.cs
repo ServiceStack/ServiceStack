@@ -38,6 +38,12 @@ public class RawBlock : HtmlModuleBlock
     public RawBlock(string startTag, string endTag, Run behaviour = Run.Always) : base(startTag, endTag, behaviour) {}
 }
 
+public class RemoveBlock : HtmlModuleBlock
+{
+    public RemoveBlock(string startTag, string endTag, Run behaviour = Run.Always) : base(startTag, endTag, behaviour) {}
+    public override string? Transform(string block) => null;
+}
+
 public class MinifyBlock : HtmlModuleBlock
 {
     public ICompressor Compressor { get; }
