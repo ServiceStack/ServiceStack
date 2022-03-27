@@ -1,5 +1,3 @@
-/** @template T 
- *  @typedef {import("@servicestack/client").ApiResult} ApiResult */
 import { ApiResult } from "@servicestack/client"
 import { APP, Authenticate, AuthenticateResponse, LinkInfo, AdminUsersInfo } from "../../lib/types"
 import { useTransitions } from "../../shared/plugins/useTransitions"

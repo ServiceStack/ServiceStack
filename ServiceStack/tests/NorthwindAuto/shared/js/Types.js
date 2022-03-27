@@ -2,9 +2,6 @@ import { leftPart, mapGet } from "@servicestack/client"
 import { MetadataType, MetadataPropertyType } from "../../lib/types"
 /*minify:*/
 
-/** @typedef {{namespace:string,name:string}} TypeRef 
-    @typedef {{name:string,genericArgs:string[]}} MetaType */
-
 export let Types = (function() {
     let NumTypesMap = {
         Byte: 'byte',
@@ -42,7 +39,7 @@ export let Types = (function() {
             return alias(name)
         return leftPart(alias(name), '`') + '<' + genericArgs.join(',') + '>'
     }
-    /** @param {MetaType} metaType */
+    /** @param {{name:string,genericArgs:string[]}} metaType */
     function typeName(metaType) { return metaType && typeName2(metaType.name, metaType.genericArgs) }
     /** @param {string} type */
     function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
@@ -52,12 +49,12 @@ export let Types = (function() {
     function isString(type) { return type && type.toLowerCase() === 'string' }
     /** @param {string} type */
     function isArray(type) { return type.startsWith('List<') || type.endsWith('[]') }
-    /** @param {TypeRef} typeRef */
+    /** @param {{namespace:string,name:string}} typeRef */
     function key(typeRef) {
         return !typeRef ? null : (typeRef.namespace || '') + '.' + typeRef.name
     }
-    /** @param {TypeRef} a
-        @param {TypeRef} b */
+    /** @param {{namespace:string,name:string}} a
+        @param {{namespace:string,name:string}} b */
     function equals(a,b) {
         return (a && b) && a.name === b.name && ((!a.namespace || !b.namespace) || a.namespace === b.namespace)
     }
