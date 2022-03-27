@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
@@ -19,6 +20,7 @@ public class PublishTasks
     readonly string ProjectDir = Path.GetFullPath("../../../../NorthwindAuto");
     string FromModulesDir => Path.GetFullPath(".");
     string ToModulesDir => Path.GetFullPath("../../src/ServiceStack/modules");
+    readonly string NetCoreTestsDir = Path.GetFullPath("../../../");
     string[] IgnoreUiFiles = { };
     string[] IgnoreAdminUiFiles = { };
 
@@ -159,5 +161,94 @@ export declare var APP:AppMetadata
         
         Directory.SetCurrentDirectory(ProjectDir);
         File.WriteAllText(Path.GetFullPath("./lib/types.ts"), dtos);
+    }
+
+    [Test]
+    public async Task Create_TypeScript_Definitions()
+    {
+        Directory.SetCurrentDirectory(NetCoreTestsDir);
+        // Directory.GetCurrentDirectory().Print();
+        
+        await ProcessUtils.RunShellAsync("rd /q /s types && tsc",
+            onOut:   Console.WriteLine, 
+            onError: Console.Error.WriteLine);
+    }
+
+    [Test]
+    public async Task Create_TypeScript_Definitions_Dist()
+    {
+        Directory.SetCurrentDirectory(NetCoreTestsDir);
+        FileSystemVirtualFiles.RecreateDirectory("dist");
+        new[] { "client", "shared", "ui", "locode", "admin-ui", "wip" }
+            .Each(dir => Directory.CreateDirectory($"dist/{dir}"));
+
+        File.Copy("../NorthwindAuto/node_modules/@servicestack/client/dist/index.d.ts", "dist/client/index.d.ts");
+
+        var memFs = new MemoryVirtualFiles();
+        var typesFs = new FileSystemVirtualFiles("types");
+        var distFs = new FileSystemVirtualFiles("dist");
+
+        // shared
+        var typesFile = typesFs.GetFile("lib/types.d.ts");
+        memFs.WriteFile("0_" + typesFile.Name, typesFile);
+        memFs.TransformAndCopy("shared", typesFs, distFs);
+        memFs.Clear();
+
+        memFs.TransformAndCopy("locode", typesFs, distFs);
+        memFs.Clear();
+        memFs.TransformAndCopy("ui", typesFs, distFs);
+        memFs.Clear();
+        memFs.TransformAndCopy("admin-ui", typesFs, distFs);
+        memFs.Clear();
+        
+        FileSystemVirtualFiles.DeleteDirectoryRecursive("dist/wip");
+    }
+}
+
+public static class TypeScriptDefinitionUtils
+{
+    private static string Header = @"import { ApiResult, JsonServiceClient } from '../client'
+import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from '../shared'
+";
+    
+    static FilesTransformer TransformerOptions = new()
+    {
+        FileExtensions =
+        {
+            ["ts"] = new FileTransformerOptions
+            {
+                // BlockTransformers = {
+                //     new RemoveBlock("/**", "*/", Run.IgnoreInDebug),
+                // },
+                LineTransformers = new()
+                {
+                    new RemoveLineStartingWith(new[] { "import " }, ignoreWhiteSpace:false, Run.Always),
+                    new RemoveLineStartingWith("export {};", ignoreWhiteSpace:false, Run.Always),
+                    new RemoveLineStartingWith("export type App = import(", ignoreWhiteSpace:false, Run.Always),
+                    new RemoveLineStartingWith("export type Breakpoints = import(", ignoreWhiteSpace:false, Run.Always),
+                },
+            },
+        }
+    };
+
+    public static void TransformAndCopy(this MemoryVirtualFiles memFs, string path, FileSystemVirtualFiles typesFs, FileSystemVirtualFiles distFs)
+    {
+        var i = memFs.GetAllFiles().Count() + 1;
+        typesFs.GetDirectory(path).GetAllFiles()
+            .Each(file => memFs.WriteFile(++i + "_" + file.Name, file));
+
+        TransformerOptions.CopyAll(
+            source: memFs, 
+            target: new FileSystemVirtualFiles("dist/wip"),
+            cleanTarget:true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        
+        var sb = new StringBuilder();
+        if (path != "shared")
+            sb.AppendLine(Header);
+
+        distFs.GetDirectory("wip").GetAllFiles()
+            .Each(file => sb.AppendLine(file.ReadAllText()));
+        distFs.WriteFile($"{path}/index.d.ts", sb.ToString());
     }
 }
