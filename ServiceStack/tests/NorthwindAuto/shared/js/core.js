@@ -1,6 +1,6 @@
 import { apiValue, isDate, mapGet, padInt, $1, enc, resolve, omit } from "@servicestack/client"
 import { lastRightPart, combinePaths, leftPart, appendQueryString } from "@servicestack/client"
-import { MetadataOperationType, AuthenticateResponse } from "../../lib/types"
+import { AppMetadata, ImageInfo, MetadataOperationType, MetadataType, AuthenticateResponse } from "../../lib/types"
 import { Types } from "./Types"
 /*minify:*/
 
@@ -10,7 +10,7 @@ import { Types } from "./Types"
     @returns {V|null} */
 export function map(o, f) { return o == null ? null : f(o) }
 
-/** @param {{[key:string]:string}} obj */
+/** @param {{[key:string]:string|any}} obj */
 export function setBodyClass(obj) {
     let bodyCls = document.body.classList
     Object.keys(obj).forEach(name => {
@@ -398,6 +398,8 @@ function opSortName(op) {
     return sort1 + `_` + op.request.name
 }
 
+/** @param {MetadataOperationType[]} ops
+ *  @return {MetadataOperationType[]} */
 export function sortOps(ops) {
     ops.sort((a,b) => opSortName(a).localeCompare(opSortName(b)))
     return ops

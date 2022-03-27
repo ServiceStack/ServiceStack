@@ -1,7 +1,7 @@
 <script minify>
 import { delaySet, humanify, createUrl, uniq } from "@servicestack/client"
 import { Crud, map, canAccess, createRequest, apiSend, apiForm, invalidAccessMessage } from "../../shared/js/core"
-import { Forms, getOp, resolveApiUrl } from "../js/appInit"
+import { Forms, getOp, resolveApiUrl } from "../js/init"
 import { Types } from "../../shared/js/Types"
 
 /** @param {MetadataOperationType} op */
@@ -456,7 +456,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
 
 <script minify>
 import { mapGet } from "@servicestack/client"
-import { getType } from "../js/appInit"
+import { getType } from "../js/init"
 App.components({
     Results({ store, routes, settings, state, dataModel, columns, results, onFilter }) {
         return {

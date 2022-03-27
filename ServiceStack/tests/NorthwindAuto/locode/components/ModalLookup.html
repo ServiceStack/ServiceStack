@@ -54,7 +54,7 @@ App.components({
                 return Forms.refInfo(row,column,this.columns)
             },
             close() {
-                App.transition('modal-lookup', false, () => store.modalLookup = null)
+                transition('modal-lookup', false, () => store.modalLookup = null)
             },
             search() {
                 return this.apiSend()

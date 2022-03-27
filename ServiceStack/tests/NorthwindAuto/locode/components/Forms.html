@@ -1,7 +1,7 @@
  <script minify>
 import { APP, GetCrudEvents } from "../../lib/types"
 import { map } from "../../shared/js/core"
-import { Forms, getType } from "../js/appInit"
+import { Forms, getType } from "../js/init"
 import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client"
 
 /** @typedef {{opQuery:MetadataOperationType,opPatch?:MetadataOperationType,opUpdate?:MetadataOperationType,opDelete?:MetadataOperationType,apiQuery:ApiState}} State */
@@ -86,11 +86,12 @@ App.components({
             
             updated() {
                 let pk = this.pk, state = this.state
+                console.log('Forms.updated', pk, state && state.opQuery != null, routes.edit)
                 if (!pk || !state || !state.opQuery || !routes.edit) return
                 
                 /** @type ApiState */
                 let apiQuery = apiState(state.opQuery)
-                this.errorSummary = ''
+                this.errorSummary = '' 
                 let complete = delaySet(x => this.apiLoading = x)
                 apiQuery.apiSend({ [pk.name]:routes.edit })
                     .then(r => {

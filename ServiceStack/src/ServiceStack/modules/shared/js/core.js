@@ -1,5 +1,10 @@
 /*minify:*/
+/** @template T,V
+    @param {*} o
+    @param {(a:T) => V} f
+    @returns {V|null} */
 function map(o, f) { return o == null ? null : f(o) }
+/** @param {{[key:string]:string|any}} obj */
 function setBodyClass(obj) {
     let bodyCls = document.body.classList
     Object.keys(obj).forEach(name => {
@@ -12,6 +17,7 @@ function setBodyClass(obj) {
         }
     })
 }
+/** @param {string} name */
 function styleProperty(name) {
     return document.documentElement.style.getPropertyValue(name)
 }
@@ -19,21 +25,28 @@ function setStyleProperty(props) {
     let style = document.documentElement.style
     Object.keys(props).forEach(name => style.setProperty(name, props[name]))
 }
+/** @param {boolean} [invalid=false] 
+    @param {string} [cls] */
 function inputClass(invalid,cls) {
     return ['block w-full sm:text-sm rounded-md disabled:bg-gray-100 disabled:shadow-none', !invalid
         ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300'
         : 'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500',
         '',cls].join(' ')
 }
+/** @param {*} o
+    @param {string} id */
 function mapGetForInput(o, id) {
     let ret = apiValue(mapGet(o,id))
     return isDate(ret)
         ?  `${ret.getFullYear()}-${padInt(ret.getMonth() + 1)}-${padInt(ret.getDate())}`
         : ret
 }
+/** @param {ImageInfo} icon
+    @param {string} defaultSrc */
 function setFavIcon(icon, defaultSrc) {
     setFavIconSrc(icon.uri || defaultSrc)
 }
+/** @param {string} src */
 function setFavIconSrc(src) {
     let link = $1("link[rel~='icon']")
     if (!link) {
@@ -47,7 +60,11 @@ function highlight(src, language) {
     if (!language) language = 'csharp'
     return hljs.highlight(src, { language }).value
 }
+/** @param {MetadataOperationType} op
+    @param {*?} args */
 function createRequest(op,args) { return !op ? null : createDto(op.request.name,args) }
+/** @param {string} name
+    @param {*} obj */
 function createDto(name, obj) {
     let dtoCtor = window[name]
     if (!dtoCtor) {
@@ -63,6 +80,8 @@ function createDto(name, obj) {
     }
     return new dtoCtor(obj)
 }
+/** @param {AppMetadata} app 
+ *  @param {string} appName */
 function appApis(app,appName) {
     let api = app.api
     let CACHE = {}
@@ -81,6 +100,7 @@ function appApis(app,appName) {
     api.types.forEach(type => FullTypesMap[Types.key(type)] = type)
     let cssName = appName + 'Css'
     api.operations.forEach(op => {
+        /** @type {ApiCss} */
         let appCss = op.ui && op.ui[cssName]
         if (appCss) {
             Types.typeProperties(TypesMap, op.request).forEach(prop => {
@@ -92,18 +112,24 @@ function appApis(app,appName) {
             })
         }
     })
+    /** @param {string} opName */
     function getOp(opName) {
         return OpsMap[opName]
     }
+    /** @param {{namespace:string?,name:string}|string} typeRef
+        @return {MetadataType} */
     function getType(typeRef) {
         return !typeRef ? null 
             : typeof typeRef == 'string' 
                 ? TypesMap[typeRef]
                 : FullTypesMap[Types.key(typeRef)] || TypesMap[typeRef.name]
     }
+    /** @param {string} type */
     function isEnum(type) {
         return type && map(TypesMap[type], x => x.isEnum) === true
     }
+    /** @param {string} type
+        @return {{key:string,value:string}[]} */
     function enumValues(type) {
         let enumType = type && map(TypesMap[type], x => x.isEnum ? x : null)
         if (!enumType) return []
@@ -119,6 +145,7 @@ function appApis(app,appName) {
     }
     let defaultIcon = app.ui.theme.modelIcon ||
         { svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12v6s0 3 7 3s7-3 7-3v-6"/><path d="M5 6v6s0 3 7 3s7-3 7-3V6"/><path d="M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z"/></g></svg>` }
+    /** @param {{op:MetadataOperationType?,type:MetadataType?}} opt */
     function getIcon({op,type}) {
         if (op) {
             let img = map(op.request, x => x.icon)
@@ -134,6 +161,8 @@ function appApis(app,appName) {
     }
     return { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon }
 }
+/** @param {MetadataOperationType} op
+    @param {string} cls */
 const hasInterface = (op,cls) => resolve(op.request.implements.some(i => i.name === cls))
 const Crud = {
     Create:'ICreateDb`1',
@@ -149,8 +178,12 @@ const Crud = {
     isPatch: op => hasInterface(op, Crud.Patch),
     isDelete: op => hasInterface(op, Crud.Delete),
 }
+/** @param {{roles:string[]}} [session] */
 const isAdminAuth = session => map(session, x => x.roles && x.roles.indexOf('Admin') >= 0)
+/** @param {any[]|null} arr */
 const hasItems = arr => arr && arr.length > 0
+/** @param {MetadataOperationType?} op 
+    @param {AuthenticateResponse|null} auth */
 function canAccess(op, auth) {
     if (!op) return false
     if (!op.requiresAuth)
@@ -172,6 +205,8 @@ function canAccess(op, auth) {
         return false
     return true
 }
+/** @param {MetadataOperationType} op
+    @param {{roles:string[],permissions:string[]}} auth */
 function invalidAccessMessage(op, auth) {
     if (!op || !op.requiresAuth) return null
     if (!auth) {
@@ -196,6 +231,7 @@ function invalidAccessMessage(op, auth) {
         return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
     return null
 }
+/** @param {string} str */
 function parseCookie(str) {
     return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
         let key = v[0] && v[0].trim() && decodeURIComponent(v[0].trim())
@@ -203,6 +239,9 @@ function parseCookie(str) {
         return acc
     }, {});
 }
+/** @param {function} createClient
+    @param {*} requestDto
+    @param {*} [queryArgs] */
 function apiSend(createClient, requestDto, queryArgs) {
     if (!requestDto) throw new Error('!requestDto')
     let opName = requestDto.getTypeName()
@@ -231,6 +270,10 @@ function apiSend(createClient, requestDto, queryArgs) {
         cookies,
     }))
 }
+/** @param {function} createClient
+    @param {*} requestDto
+    @param {FormData} formData
+    @param {*} [queryArgs] */
 function apiForm(createClient, requestDto, formData, queryArgs) {
     if (!requestDto) throw new Error('!requestDto')
     let opName = requestDto.getTypeName()
@@ -259,6 +302,8 @@ function apiForm(createClient, requestDto, formData, queryArgs) {
         cookies,
     }))
 }
+/** @param {string} text
+    @param {number} [timeout=3000] */
 function copy(text,timeout) {
     if (typeof timeout != 'number') timeout = 3000
     this.copied = true
@@ -270,6 +315,8 @@ function copy(text,timeout) {
     document.body.removeChild($el)
     setTimeout(() => this.copied = false, timeout)
 }
+/** @param {ImageInfo} icon 
+ *  @param {*} [opt] */
 function iconHtml(icon, opt) {
     if (!icon) return ''
     if (!opt) opt = {}
@@ -301,12 +348,15 @@ function iconHtml(icon, opt) {
     return ''
 }
 let SORT_METHODS = ['GET','POST','PATCH','PUT','DELETE']
+/** @param {MetadataOperationType} op */
 function opSortName(op) {
     // group related services by model or inherited generic type
     let group = map(op.dataModel, x => x.name) || map(op.request.inherits, x => x.genericArgs && x.genericArgs[0]) 
     let sort1 = group ? group + map(SORT_METHODS.indexOf(op.method || 'ANY'), x => x === -1 ? '' : x.toString()) : 'z'
     return sort1 + `_` + op.request.name
 }
+/** @param {MetadataOperationType[]} ops
+ *  @return {MetadataOperationType[]} */
 function sortOps(ops) {
     ops.sort((a,b) => opSortName(a).localeCompare(opSortName(b)))
     return ops
@@ -339,12 +389,14 @@ const Files = (function () {
     }
     //<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M14 0a5 5 0 0 1 5 5v12a7 7 0 1 1-14 0V9h2v8a5 5 0 0 0 10 0V5a3 3 0 1 0-6 0v12a1 1 0 1 0 2 0V6h2v11a3 3 0 1 1-6 0V5a5 5 0 0 1 5-5Z"/></svg>
     const symbols = /[\r\n%#()<>?[\\\]^`{|}]/g
+    /** @param {string} s */
     function encodeSvg(s) {
         s = s.replace(/"/g, `'`)
         s = s.replace(/>\s+</g, `><`)
         s = s.replace(/\s{2,}/g, ` `)
         return s.replace(symbols, encodeURIComponent)
     }
+    /** @param {string} svg */
     function svgToDataUri(svg) {
         return "data:image/svg+xml;utf8," + encodeSvg(svg)
     }
@@ -364,23 +416,27 @@ const Files = (function () {
         })
         Track = []
     }
+    /** @param {string} path */
     function getFileName(path) {
         if (!path) return null
         let noQs = leftPart(path,'?')
         return lastRightPart(noQs,'/')
     }
+    /** @param {string} path */
     function getExt(path) {
         let fileName = getFileName(path)
         if (fileName == null || fileName.indexOf('.') === -1)
             return null
         return lastRightPart(fileName,'.').toLowerCase()
     }
+    /** @param {File} file */
     function fileImageUri(file) {
         let ext = getExt(file.name)
         if (web.indexOf(ext) >= 0)
             return objectUrl(file)
         return filePathUri(file.name)
     }
+    /** @param {string} path */
     function canPreview(path) {
         if (!path) return false
         if (path.startsWith('blob:') || path.startsWith('data:'))
@@ -388,6 +444,7 @@ const Files = (function () {
         let ext = getExt(path)
         return ext && web.indexOf(ext) >= 0;
     }
+    /** @param {string} path */
     function filePathUri(path) {
         if (!path) return null
         let ext = getExt(path)
@@ -407,6 +464,8 @@ const Files = (function () {
     }
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+    /** @param {number} bytes
+     *  @param {number} [d=2] */
     function formatBytes(bytes, d = 2) {
         if (bytes === 0) return '0 Bytes'
         const dm = d < 0 ? 0 : d
@@ -433,12 +492,17 @@ function toAppUrl(url) {
         ? url
         : combinePaths(BASE_URL, url)
 }
+/** @param {number} val */
 function currency(val) {
     return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(val)
 }
+/** @param {number} val */
 function bytes(val) {
     return Files.formatBytes(val)
 }
+/** @param {string} tag
+ *  @param {string} [child]
+ *  @param {*} [attrs] */
 function htmlTag(tag,child,attrs) {
     if (!attrs) attrs = {}
     let cls = attrs.cls || attrs.className || attrs['class']
@@ -448,12 +512,17 @@ function htmlTag(tag,child,attrs) {
     }
     return `<${tag}` + Object.keys(attrs).reduce((acc,k) => `${acc} ${k}="${enc(attrs[k])}"`, '') + `>${child||''}</${tag}>`
 }
+/** @param {*} attrs */
 function linkAttrs(attrs) {
     return Object.assign({target:'_blank',rel:'noopener','class':'text-blue-600'},attrs)
 }
+/** @param {string} href 
+ *  @param {*} [opt] */
 function link(href, opt) {
     return htmlTag('a', href, linkAttrs({ ...opt, href }))
 }
+/** @param {string} email
+ *  @param {*} [opt] */
 function linkMailTo(email, opt) {
     if (!opt) opt = {}
     let { subject, body } = opt
@@ -463,15 +532,20 @@ function linkMailTo(email, opt) {
     if (body) args.body = body
     return htmlTag('a', email, linkAttrs({...attrs, href:`mailto:${appendQueryString(email,args)}` }))
 }
+/** @param {string} tel
+ *  @param {*} [opt] */
 function linkTel(tel, opt) {
     return htmlTag('a', tel, linkAttrs({...opt, href:`tel:${tel}` }))
 }
+/** @param {string} url */
 function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`
 }
+/** @param {string} url */
 function iconRounded(url) {
     return `<img class="w-8 h-8 rounded-full" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`
 }
+/** @param {string} url */
 function attachment(url) {
     let fileName = Files.getFileName(url)
     let ext = Files.getExt(fileName)
@@ -480,10 +554,14 @@ function attachment(url) {
         : iconFallbackSrc(url)
     return `<a class="flex" href="${toAppUrl(url)}" title="${url}" target="_blank"><img class="w-6 h-6" src="${imgSrc}" onerror="iconOnError(this,'att')"><span class="pl-1">${fileName}</span></a>`
 }
+/** @param {HTMLImageElement} img
+    @param {string} [fallbackSrc] */
 function iconOnError(img,fallbackSrc) {
     img.onerror = null
     img.src = iconFallbackSrc(img.src,fallbackSrc)
 }
+/** @param {string} src
+    @param {string} [fallbackSrc] */
 function iconFallbackSrc(src,fallbackSrc) {
     return Files.extSrc(lastRightPart(src,'.').toLowerCase())
         || (fallbackSrc

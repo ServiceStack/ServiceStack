@@ -1,4 +1,5 @@
 import { leftPart, mapGet } from "@servicestack/client"
+import { MetadataType, MetadataPropertyType } from "../../lib/types"
 /*minify:*/
 
 /** @typedef {{namespace:string,name:string}} TypeRef 

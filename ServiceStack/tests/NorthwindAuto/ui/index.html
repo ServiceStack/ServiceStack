@@ -88,8 +88,8 @@ function loadAuth(auth) {
 document.title = APP.app.serviceName
 setFavIcon(APP.ui.brandIcon, combinePaths(APP.app.baseUrl, '/metadata/svg/servicestack.datauri'))
 
-/*shared/js:PetiteVueApp */
-let App = new PetiteVueApp()
+/*shared/js:createApp */
+let App = createApp(PetiteVue)
 /*plugins:* */
 
 /*files:js/*.js */

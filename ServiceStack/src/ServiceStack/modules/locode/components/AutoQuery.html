@@ -1,4 +1,5 @@
 <script minify>
+/** @param {MetadataOperationType} op */
 function apiState(op) {
     if (!op) return null
     let formLayout = Forms.resolveFormLayout(op)
@@ -27,11 +28,14 @@ function apiState(op) {
             let except = formLayout.map(input => input.id).filter(x => x)
             return this.apiResult && this.apiResult.api.summaryMessage(except)
         },
+        /** @param {string} id */
         fieldError(id) {
             let error = this.error
             let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
             return fieldError && fieldError.message
         },
+        /** @param {string} propName
+            @param {({id:string,input:InputInfo,rowClass:string}) => void} [f] */
         field(propName, f) {
             let propLower = propName.toLowerCase()
             let input = (formLayout || []).find(input => (input.id||'').toLowerCase() === propLower)
@@ -45,6 +49,8 @@ function apiState(op) {
             if (f) f(field)
             return field
         },
+        /** @param {*} [dtoArgs] 
+            @param {*} [queryArgs]*/
         apiSend(dtoArgs,queryArgs) {
             let requestDto = this.createRequest(dtoArgs)
             let complete = delaySet(x => {
@@ -71,6 +77,7 @@ function apiState(op) {
         }
     }
 }
+/** @param {string} opName */
 function createState(opName) {
     let op = opName && APP.api.operations.find(x => x.request.name === opName)
     if (!op) {
@@ -97,7 +104,9 @@ function createState(opName) {
 }
 let OP_STATE = {}
 App.component('AutoQuery', ({ store, routes, settings }) => {
+    /** @return {MetadataTypeName} */
     let dataModelRef = () => routes.op && APP.api.operations.find(x => x.request.name === routes.op).dataModel
+    /** @return {MetadataTypeName} */
     let viewModelRef = () => routes.op && APP.api.operations.find(x => x.request.name === routes.op).viewModel
     let refreshPrefs = () => settings.op(routes.op)
     return {
@@ -440,6 +449,8 @@ App.components({
             },
             fieldName(name) { return humanify(name) },
             getId(row) { return Forms.getId(getType(routes.op),row) },
+            /** @param {*} row
+             *  @param {MetadataPropertyType} column */
             format(row, column) { 
                 return Forms.format(mapGet(row,column.name), column)
             },

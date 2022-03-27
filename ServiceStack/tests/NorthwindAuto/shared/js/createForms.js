@@ -1,9 +1,11 @@
 import { humanify, padInt, toDate, mapGet, apiValue, isDate, indexOfAny, fromXsdDuration, enc, uniq } from "@servicestack/client"
 import { Types } from "./Types"
-import { Forms } from "../../ui/js/appInit"
+import { Forms } from "../../ui/js/init"
 import { Crud, map } from "./core";
-import { OpsMap, TypesMap } from "../../locode/js/appInit";
+import { OpsMap, TypesMap } from "../../locode/js/init";
 /*minify:*/
+
+import { MetadataOperationType, MetadataType, MetadataPropertyType, ApiCss, UiInfo, InputInfo } from "../../lib/types"
 
 /** @typedef {{namespace:string,name:string}} TypeRef
     @typedef {{name:string,genericArgs:string[]}} MetaType */
@@ -460,19 +462,19 @@ export function createForms(OpsMap, TypesMap, css, ui) {
                     let state = createPropState(prop, queryOp.request.name, callback)
                     state.refresh = () => Object.assign(state, createPropState(prop, queryOp.request.name, callback))
                     store.modalLookup = state
-                    App.transition('modal-lookup', true)
+                    transition('modal-lookup', true)
                 }
             }
             return prop
         },
         /** @param {InputInfo[]} formLayout
-            @param {({id:string,input:InputInfo,rowClass:string}) => void} [f] */
+            @param {({id,input,rowClass}) => void} [f] */
         getGridInputs(formLayout, f) {
             if (!formLayout) return []
             return formLayout.map(input => this.getGridInput(input, f))
         },
         /** @param {InputInfo} input
-            @param {({id:string,input:InputInfo,rowClass:string}) => void} [f] */
+            @param {({id,input,rowClass}) => void} [f] */
         getGridInput(input, f) {
             if (input.ignore) return
             let id = inputId(input)

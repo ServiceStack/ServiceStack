@@ -1,9 +1,10 @@
 <script minify>
 App.components({
+    /** @param {{input:InputInfo,model:*,api:ApiResult}} args */
     Input({ input, prop, field, model, api }) {
-        if (!input)
+        if (!input && field)
             input = field.input
-        if (!prop)
+        if (!prop && field)
             prop = field.prop
         return {
             $template: '#input-template',
@@ -11,23 +12,31 @@ App.components({
             get prop() { return resolve(prop) },
             get model() { return  resolve(model) || {} },
             get error() { return resolve(api, x => x && x.error) },
+            /** @param {InputInfo} input */
             kvpValues(input) {
                 return resolve(input.allowableEntries) || (resolve(input.allowableValues)||[]).map(x => ({ key:x, value:x }))
             },
+            /** @param {InputInfo} input */
             useLabel(input) {
                 return input.label != null ? input.label : humanify(input.id)
             },
+            /** @param {InputInfo} input */
             usePlaceholder(input) {
                 return input.placeholder || '' 
             },
+            /** @param {string} id */
             fieldError(id) {
                 let error = this.error
                 let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
                 return fieldError && fieldError.message
             },
+            /** @param {string} id */
             hasError(id) { return !!this.fieldError(id) },
+            /** @param {InputInfo} input */
             labelClass(input) { return input.css && input.css.label || '' },
+            /** @param {InputInfo} input */
             inputClass(input) { return inputClass(this.fieldError(input.id), input.css && input.css.input) },
+            /** @param {InputInfo} input */
             ariaDescribedby(input) {
                 return this.fieldError(input.id) ? `${input.id}-error` : input.help ? `${input.id}-description` : null
             },

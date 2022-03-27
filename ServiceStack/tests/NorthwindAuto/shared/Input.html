@@ -5,9 +5,9 @@ import { Files, inputClass, toAppUrl } from "./js/core"
 App.components({
     /** @param {{input:InputInfo,model:*,api:ApiResult}} args */
     Input({ input, prop, field, model, api }) {
-        if (!input)
+        if (!input && field)
             input = field.input
-        if (!prop)
+        if (!prop && field)
             prop = field.prop
         return {
             $template: '#input-template',

@@ -1,4 +1,6 @@
 /*minify:*/
+/** @typedef {{namespace:string,name:string}} TypeRef 
+    @typedef {{name:string,genericArgs:string[]}} MetaType */
 let Types = (function() {
     let NumTypesMap = {
         Byte: 'byte',
@@ -18,9 +20,12 @@ let Types = (function() {
         Boolean: 'bool',
         ...NumTypesMap,
     }
+    /** @param {string} type */
     function alias(type) {
         return Aliases[type] || type
     }
+    /** @param {string} name
+     @param {string[]} genericArgs */
     function typeName2(name, genericArgs) {
         if (!name) return ''
         if (!genericArgs)
@@ -33,17 +38,27 @@ let Types = (function() {
             return alias(name)
         return leftPart(alias(name), '`') + '<' + genericArgs.join(',') + '>'
     }
+    /** @param {MetaType} metaType */
     function typeName(metaType) { return metaType && typeName2(metaType.name, metaType.genericArgs) }
+    /** @param {string} type */
     function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
+    /** @param {string} type */
     function isNumber(type) { return type && NumTypes.indexOf(type) >= 0 }
+    /** @param {string} type */
     function isString(type) { return type && type.toLowerCase() === 'string' }
+    /** @param {string} type */
     function isArray(type) { return type.startsWith('List<') || type.endsWith('[]') }
+    /** @param {TypeRef} typeRef */
     function key(typeRef) {
         return !typeRef ? null : (typeRef.namespace || '') + '.' + typeRef.name
     }
+    /** @param {TypeRef} a
+        @param {TypeRef} b */
     function equals(a,b) {
         return (a && b) && a.name === b.name && ((!a.namespace || !b.namespace) || a.namespace === b.namespace)
     }
+    /** @param {string} type
+        @param {*} value */
     function formatValue(type,value) {
         if (!type) return value
         type = unwrap(type)
@@ -55,13 +70,20 @@ let Types = (function() {
     }
     let Primitives = ['string','number','symbol','boolean']
     function isPrimitive (value) { return Primitives.indexOf(typeof value) >= 0 }
+    /** @param {MetadataPropertyType} p
+     *  @param {string} attr */
     function propHasAttr(p, attr) {
         return p && p.attributes && p.attributes.some(x => x.name === attr) 
     }
+    /** @param {MetadataType} type
+     *  @param {string} name */
     function getProp(type, name) {
         let nameLower = name.toLowerCase()
         return type && type.properties && type.properties.find(p => p.name.toLowerCase() === nameLower)
     }
+    /** @param {{[index:string]:MetadataType}} TypesMap
+        @param {MetadataType} type
+        @return {MetadataPropertyType[]} */
     function typeProperties(TypesMap, type) {
         if (!type) return []
         let props = []

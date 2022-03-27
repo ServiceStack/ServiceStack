@@ -11,6 +11,7 @@ App.components({
             filters: [],
             filtersCount: 0,
             apiResult: null,
+            /** @type {{take: number, selectedColumns: []}} */
             prefs: map(store.modalLookup, s => s.createPrefs()) || emptyPrefs,
             get take() { return map(this.prefs, x => parseInt(x.take)) || 10 },
             get results() { return this.apiResult && map(this.apiResult.api.response, x => x.results) || [] },
@@ -40,6 +41,8 @@ App.components({
             },
             fieldName(name) { return humanify(name) },
             getId(row) { return Forms.getId(getType(routes.op),row) },
+            /** @param {*} row
+             *  @param {MetadataPropertyType} column */
             format(row, column) {
                 return Forms.format(mapGet(row,column.name), column)
             },
@@ -49,7 +52,7 @@ App.components({
                 return Forms.refInfo(row,column,this.columns)
             },
             close() {
-                App.transition('modal-lookup', false, () => store.modalLookup = null)
+                transition('modal-lookup', false, () => store.modalLookup = null)
             },
             search() {
                 return this.apiSend()

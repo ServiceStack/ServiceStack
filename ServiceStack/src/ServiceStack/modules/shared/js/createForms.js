@@ -1,4 +1,10 @@
 /*minify:*/
+/** @typedef {{namespace:string,name:string}} TypeRef
+    @typedef {{name:string,genericArgs:string[]}} MetaType */
+/** @param {{[op:string]:MetadataOperationType}} OpsMap
+ *  @param {{[op:string]:MetadataType}} TypesMap
+ *  @param {ApiCss} css 
+ *  @param {UiInfo} ui */
 function createForms(OpsMap, TypesMap, css, ui) {
     let operations = Object.values(OpsMap)
     let { theme, defaultFormats } = ui
@@ -18,6 +24,8 @@ function createForms(OpsMap, TypesMap, css, ui) {
     let _id = 0;
     let inputId = input => input && (input.id || `__${input.type||'undefined'}${_id++}`)
     let colClass = fields => `col-span-12` + (fields === 2 ? ' sm:col-span-6' : fields === 3 ? ' sm:col-span-4' : fields === 4 ? ' sm:col-span-3' : '')
+    /** @param {{namespace:string?,name:string}|string} typeRef
+        @return {MetadataType} */
     function getType(typeRef) {
         return !typeRef ? null
             : typeof typeRef == 'string'
@@ -63,18 +71,23 @@ function createForms(OpsMap, TypesMap, css, ui) {
     function dateFmt(d) { 
         return pad4(d.getFullYear()) + '-' + padInt(d.getMonth() + 1) + '-' + padInt(d.getDate()) 
     }
+    /** @param {MetadataType} type
+        @return {MetadataPropertyType[]} */
     function typeProperties(type) {
         return Types.typeProperties(TypesMap, type)
     }
+    /** @param {MetadataType} type */
     function isCrud(type) {
         return map(type.inherits, x => Crud.AnyRead.indexOf(x.name) >= 0) ||
             map(type.implements, x => x.some(iFace => Crud.AnyWrite.indexOf(iFace.name) >= 0))
     }
+    /** @param {MetadataType} type */
     function crudModel(type) {
         return map(type.inherits, x => Crud.AnyRead.indexOf(x.name) >= 0) 
             ? type.inherits.genericArgs[0]
             : map(map(type.implements, x => x.find(iFace => Crud.AnyWrite.indexOf(iFace.name) >= 0)), x => x.genericArgs[0])
     }
+    /** @param {MetadataType} type */
     function getPrimaryKey(type) {
         if (!type) return null
         let typeProps = typeProperties(type)
@@ -91,9 +104,12 @@ function createForms(OpsMap, TypesMap, css, ui) {
         } 
         return ret || null
     }
+    /** @param {MetadataType} type 
+     *  @param {*} row */
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
     let nowMs = () => new Date().getTime() + (defaultFormats.assumeUtc ? new Date().getTimezoneOffset() * 1000 * 60 : 0)
     let DateChars = ['/','T',':','-']
+    /** @param {string|Date|number} val */
     function toRelativeNumber(val) {
         if (val == null) return NaN
         if (typeof val == 'number')
@@ -121,12 +137,16 @@ function createForms(OpsMap, TypesMap, css, ui) {
         minute: 60 * 1000,
         second: 1000
     }
+    /** @param {number} elapsedMs
+     *  @param {Intl.RelativeTimeFormat} [rtf] */
     function relativeTimeFromMs(elapsedMs,rtf) {
         for (let u in units) {
             if (Math.abs(elapsedMs) > units[u] || u === 'second')
                 return (rtf || defaultRtf).format(Math.round(elapsedMs/units[u]), u)
         }
     }
+    /** @param {string|Date|number} val
+     *  @param {Intl.RelativeTimeFormat} [rtf] */
     function relativeTime(val,rtf) {
         let num = toRelativeNumber(val)
         if (!isNaN(num))
@@ -134,6 +154,8 @@ function createForms(OpsMap, TypesMap, css, ui) {
         console.error(`Cannot convert ${val}:${typeof val} to relativeTime`)
         return ''
     }
+    /** @param {Date} d
+     *  @param {Date} [from] */
     let relativeTimeFromDate = (d,from) => 
         relativeTimeFromMs(d.getTime()-(from ? from.getTime() : nowMs()))
     let Formatters = {}
@@ -180,12 +202,16 @@ function createForms(OpsMap, TypesMap, css, ui) {
     let maxFieldLength = map(ui.locode, x => x.maxFieldLength) || 150
     let maxNestedFields = map(ui.locode, x => x.maxNestedFields) || 2
     let maxNestedFieldLength = map(ui.locode, x => x.maxNestedFieldLength) || 30
+    /** @param {string} s
+     *  @param {number} len */
     function trunc(s, len) { return s.length > len ? s.substring(0,len) + '...' : s }
+    /** @param {string} s */
     function scrubStr(s) {
         return s.substring(0, 6) === '/Date('
             ? dateFmt(toDate(s))
             : s
     }
+    /** @param {*} o */
     function scrub(o) {
         if (o == null) return null
         if (typeof o == 'string') return scrubStr(o)
@@ -223,14 +249,24 @@ function createForms(OpsMap, TypesMap, css, ui) {
         return '<span title="' + enc(displayObj(val)) + '">{ ' + sb.join(', ') + ' }</span>'
     }
     let Lookup = {}
+    /** @param {*} model
+     *  @param {*} id
+     *  @param {string} label */
     function lookupLabel(model,id,label) {
         return Lookup[model] && Lookup[model][id] && Lookup[model][id][label] || ''
     }
+    /** @param {*} model
+     *  @param {*} id
+     *  @param {string} label 
+     *  @param {*} value */
     function setLookupLabel(model,id,label,value) {
         if (!Lookup[model]) Lookup[model] = {}
         let modelLookup = Lookup[model][id] || (Lookup[model][id] = {})
         modelLookup[label] = value
     }
+    /** @param {*} row
+     *  @param {MetadataPropertyType} prop
+     *  @param {MetadataPropertyType[]} props */
     function refInfo(row, prop, props) {
         let ref = prop.ref
         if (ref) {
@@ -264,6 +300,9 @@ function createForms(OpsMap, TypesMap, css, ui) {
         }
         return null
     }
+    /** @param {any[]} results
+     *  @param {MetadataPropertyType[]} props
+     *  @param {Function} refreshFn */
     function fetchLookupValues(results, props, refreshFn) {
         props.forEach(c => {
             let refLabel = c.ref && c.ref.refLabel
@@ -331,20 +370,25 @@ function createForms(OpsMap, TypesMap, css, ui) {
         theme,
         formClass: theme.form + (css.form ? ' ' + css.form : ''),
         gridClass: css.fieldset,
+        /** @param {MetadataOperationType} op */
         opTitle(op) {
             return op.request.description || humanify(op.request.name).replace(/^Patch/,'Update')
         },
+        /** @param {MetadataType} type */
         forAutoForm(type) {
             return field => {
                 field.prop = this.getFormProp(field.id, type)
             }
         },
+        /** @param {MetadataType} type */
         forCreate(type) {
             return field => {
                 field.prop = this.getFormProp(field.id, type)
             }
         },
+        /** @param {MetadataType} type */
         forEdit(type) {
+            /** @param {InputInfo} input */
             let pk = getPrimaryKey(type)
             if (!pk) return null
             return field => {
@@ -379,15 +423,19 @@ function createForms(OpsMap, TypesMap, css, ui) {
                     let state = createPropState(prop, queryOp.request.name, callback)
                     state.refresh = () => Object.assign(state, createPropState(prop, queryOp.request.name, callback))
                     store.modalLookup = state
-                    App.transition('modal-lookup', true)
+                    transition('modal-lookup', true)
                 }
             }
             return prop
         },
+        /** @param {InputInfo[]} formLayout
+            @param {({id,input,rowClass}) => void} [f] */
         getGridInputs(formLayout, f) {
             if (!formLayout) return []
             return formLayout.map(input => this.getGridInput(input, f))
         },
+        /** @param {InputInfo} input
+            @param {({id,input,rowClass}) => void} [f] */
         getGridInput(input, f) {
             if (input.ignore) return
             let id = inputId(input)
@@ -414,6 +462,7 @@ function createForms(OpsMap, TypesMap, css, ui) {
         isRequired(input) {
             return input.required || false
         },
+        /** @param {MetadataOperationType} op */
         resolveFormLayout(op) {
             if (!op) return null
             let allProps = typeProperties(op.request).filter(Forms.supportsProp)
@@ -424,6 +473,7 @@ function createForms(OpsMap, TypesMap, css, ui) {
             }
             let inputProps = allProps.map(inputProp)
             let fullWidthTypes = ['textarea','divider']
+            /** @param {InputInfo} input */
             let configureCss = input => {
                 if (input && (fullWidthTypes.indexOf(input.type) >= 0 || (input['data-type'] === 'List`1' && input.type !== 'file'))) {
                     if (!input.css) input.css = {}
@@ -456,6 +506,8 @@ function createForms(OpsMap, TypesMap, css, ui) {
             })
             return obj
         },
+        /** @param {Element} form
+         *  @param {MetadataOperationType} op */
         formData(form,op) {
             let formData = new FormData(form)
             Array.from(form.elements).forEach(e => {
@@ -531,6 +583,8 @@ function createForms(OpsMap, TypesMap, css, ui) {
                     : o.trim()
             return o
         },
+        /** @param {*} o
+         *  @param {MetadataPropertyType} prop */
         format(o, prop) {
             if (o == null) return ''
             let val = apiValue(o)

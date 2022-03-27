@@ -1,3 +1,6 @@
+/**: Used by .d.ts */
+import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo } from "../../lib/types"
+
 import { JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 import { createForms } from "../../shared/js/createForms"

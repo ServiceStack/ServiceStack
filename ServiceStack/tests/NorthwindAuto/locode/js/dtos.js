@@ -1,5 +1,7 @@
 import { QueryDb, QueryResponse } from "../../lib/types"
 
+exports.GetCrudEvents = void 0
+
 var GetCrudEvents = /** @class */ (function (_super) {
     __extends(GetCrudEvents, _super)
     function GetCrudEvents(init) {
@@ -12,3 +14,5 @@ var GetCrudEvents = /** @class */ (function (_super) {
     GetCrudEvents.prototype.getMethod = function () { return 'GET' }
     return GetCrudEvents
 }(QueryDb))
+
+exports.GetCrudEvents = GetCrudEvents 

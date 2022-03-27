@@ -2,10 +2,10 @@
 function ModalDialog() {
     this.show = function(id) {
         App.events.publish(`modal:${id}`)
-        App.transition(id, true)
+        transition(id, true)
     }
     this.hide = function (id) {
-        App.transition(id, false)
+        transition(id, false)
     }
     this.dialog = function({ $template, id, close }) {
         let $slot = $template && $1($template)

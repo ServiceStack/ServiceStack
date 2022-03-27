@@ -1,4 +1,7 @@
-import { combinePaths, JsonServiceClient, lastLeftPart, leftPart, resolve, trimEnd } from "@servicestack/client"
+/**: Used by .d.ts */
+import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo } from "../../lib/types"
+
+import { combinePaths, JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 import { appApis, Crud } from "../../shared/js/core"
 import { createForms } from "../../shared/js/createForms"
@@ -9,6 +12,9 @@ let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
 
+/** @param {Function} [fn]
+ *  @return {JsonServiceClient}
+ */
 export function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
         c.bearerToken = bearerToken
@@ -31,7 +37,8 @@ APP.api.operations.forEach(op => {
 
 let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack') && Crud.isQuery(op))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
-let sideNav = appTags.map(tag => ({
+/** @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
+export let sideNav = appTags.map(tag => ({
     tag,
     expanded: true,
     operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
