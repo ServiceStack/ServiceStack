@@ -1,0 +1,31 @@
+{
+  // Change this to match your project
+  "include": [
+    "../NorthwindAuto/shared/**/*.js",
+    "../NorthwindAuto/admin-ui/js/init.js",
+    "../NorthwindAuto/admin-ui/js/stores.js",
+    "../NorthwindAuto/locode/js/init.js",
+    "../NorthwindAuto/locode/js/stores.js",
+    "../NorthwindAuto/ui/js/init.js",
+    "../NorthwindAuto/ui/js/stores.js"
+  ],
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES5", "ES2020"],
+    // Tells TypeScript to read JS files, as
+    // normally they are ignored as source files
+    "allowJs": true,
+    // Generate d.ts files
+    "declaration": true,
+    // This compiler run should
+    // only output d.ts files
+    "emitDeclarationOnly": true,
+    // Types should go into this directory.
+    // Removing this would place the .d.ts files
+    // next to the .js files
+    "outDir": "types",
+    // go to js file when using IDE functions like
+    // "Go to Definition" in VSCode
+    "declarationMap": false
+  }
+}
