@@ -20,9 +20,11 @@ public class FileHandler : IHtmlModulesHandler
         return ctx.Cache($"{Name}:{ctx.Module.DirPath}:{path}", _ =>
         {
             var useVfs = VirtualFilesResolver?.Invoke(ctx) ?? ctx.VirtualFiles;
-            return ctx.FileContentsResolver(ctx.AssertFile(useVfs, path.StartsWith("/")
+            var content = ctx.FileContentsResolver(ctx.AssertFile(useVfs, path.StartsWith("/")
                 ? path
-                : ctx.Module.DirPath.CombineWith(path))).AsMemory().ToUtf8();
+                : ctx.Module.DirPath.CombineWith(path)));
+            content += Environment.NewLine;
+            return content.AsMemory().ToUtf8();
         });
     }
 }
