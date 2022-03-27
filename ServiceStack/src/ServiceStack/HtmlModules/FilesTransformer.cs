@@ -173,7 +173,7 @@ public class FilesTransformer
     public static void RecreateDirectory(string dirPath, int timeoutMs = 1000) =>
         FileSystemVirtualFiles.RecreateDirectory(dirPath, timeoutMs);
     
-    public void CopyAll(FileSystemVirtualFiles source, FileSystemVirtualFiles target,
+    public void CopyAll(IVirtualFiles source, FileSystemVirtualFiles target,
         bool cleanTarget = false,
         Func<IVirtualFile, bool>? ignore = null, 
         Action<IVirtualFile, string>? afterCopy = null)
