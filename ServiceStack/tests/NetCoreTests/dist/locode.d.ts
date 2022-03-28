@@ -1,5 +1,5 @@
-import { ApiResult, JsonServiceClient } from '../client'
-import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from '../shared'
+import { ApiResult, JsonServiceClient } from './client'
+import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from './shared'
 
 /** @param {Function} [fn]
  *  @return {JsonServiceClient}
@@ -250,3 +250,4 @@ export type LocodeRoutesExtend = {
     uiHref(any: any): string;
 };
 
+export declare var App:App

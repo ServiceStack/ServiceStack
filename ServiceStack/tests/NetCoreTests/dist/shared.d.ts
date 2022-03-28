@@ -986,11 +986,12 @@ declare function getFileName(path: string): any;
 declare function flush(): void;
 
 /** @typedef {<T>(args:T) => T} Identity */
-/** @typedef {{subscribe:function(string,Function):void,publish:function(string,any):void}} EventBusFn */
 /** @typedef {{
-    events: EventBusFn;
-    readonly petite: any;
-    components: function(Object.<string,Function>): void;
+    events: {
+        subscribe: function(string, Function): { unsubscribe: function():void },
+        publish: function(string, any): void
+    };
+    readonly petite: any;    components: function(Object.<string,Function>): void;
     component: function(string, any): void;
     template: function(string, string): void;
     templates: function(Object.<string,string>): void;
@@ -1018,12 +1019,13 @@ export function createApp(PetiteVue: {
     reactive: Identity;
 }): App;
 export type Identity = <T>(args: T) => T;
-export type EventBusFn = {
-    subscribe: (arg0: string, arg1: Function) => void;
-    publish: (arg0: string, arg1: any) => void;
-};
 export type App = {
-    events: EventBusFn;
+    events: {
+        subscribe: (arg0: string, arg1: Function) => {
+            unsubscribe: () => void;
+        };
+        publish: (arg0: string, arg1: any) => void;
+    };
     readonly petite: any;
     components: (arg0: {
         [x: string]: Function;

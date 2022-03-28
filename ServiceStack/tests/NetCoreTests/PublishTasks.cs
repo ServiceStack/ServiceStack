@@ -185,10 +185,7 @@ export declare var APP:AppMetadata
         Directory.Move("types/ui", "types/explorer");
 
         FileSystemVirtualFiles.RecreateDirectory("dist");
-        new[] { "client", "shared", "explorer", "locode", "admin-ui" }
-            .Each(dir => Directory.CreateDirectory($"dist/{dir}"));
-
-        File.Copy("../NorthwindAuto/node_modules/@servicestack/client/dist/index.d.ts", "dist/client/index.d.ts");
+        File.Copy("../NorthwindAuto/node_modules/@servicestack/client/dist/index.d.ts", "dist/client.d.ts");
 
         var memFs = new MemoryVirtualFiles();
         var typesFs = new FileSystemVirtualFiles("types");
@@ -211,9 +208,10 @@ export declare var APP:AppMetadata
 
 public static class TypeScriptDefinitionUtils
 {
-    private static string Header = @"import { ApiResult, JsonServiceClient } from '../client'
-import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from '../shared'
+    private static string Header = @"import { ApiResult, JsonServiceClient } from './client'
+import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from './shared'
 ";
+    private static string Footer = @"export declare var App:App";
     
     static FilesTransformer TransformerOptions = new()
     {
@@ -251,9 +249,11 @@ import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, T
         var sb = new StringBuilder();
         if (path != "shared")
             sb.AppendLine(Header);
-
         wipFs.GetAllFiles()
             .Each(file => sb.AppendLine(file.ReadAllText()));
-        distFs.WriteFile($"{path}/index.d.ts", sb.ToString());
+        if (path != "shared")
+            sb.AppendLine(Footer);
+        
+        distFs.WriteFile($"{path}.d.ts", sb.ToString());
     }
 }

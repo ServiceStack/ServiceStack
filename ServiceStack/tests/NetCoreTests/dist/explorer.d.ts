@@ -1,5 +1,5 @@
-import { ApiResult, JsonServiceClient } from '../client'
-import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from '../shared'
+import { ApiResult, JsonServiceClient } from './client'
+import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from './shared'
 
 export function createClient(fn: any): any;
 /** @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
@@ -227,3 +227,4 @@ export type UiRoutesExtend = {
     queryHref(): string;
 };
 
+export declare var App:App
