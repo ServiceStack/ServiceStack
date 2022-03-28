@@ -1,5 +1,3 @@
-/** @template T 
- *  @typedef {import("@servicestack/client").ApiResult} ApiResult */
 /*minify:*/
 /** @type {function(string, boolean?): boolean} */
 let transition = useTransitions(App, { sidebar: true })

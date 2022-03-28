@@ -167,7 +167,6 @@ export declare var APP:AppMetadata
     public async Task Create_TypeScript_Definitions()
     {
         Directory.SetCurrentDirectory(NetCoreTestsDir);
-        // Directory.GetCurrentDirectory().Print();
         
         await ProcessUtils.RunShellAsync("rd /q /s types && tsc",
             onOut:   Console.WriteLine, 
@@ -175,11 +174,18 @@ export declare var APP:AppMetadata
     }
 
     [Test]
-    public async Task Create_TypeScript_Definitions_Dist()
+    public async Task Create_TypeScript_Definitions_Publish()
     {
         Directory.SetCurrentDirectory(NetCoreTestsDir);
+        await ProcessUtils.RunShellAsync("rd /q /s types && tsc",
+            onOut:   Console.WriteLine, 
+            onError: Console.Error.WriteLine);
+        
+        // Export API Explorer's .d.ts to 'explorer' 
+        Directory.Move("types/ui", "types/explorer");
+
         FileSystemVirtualFiles.RecreateDirectory("dist");
-        new[] { "client", "shared", "ui", "locode", "admin-ui", "wip" }
+        new[] { "client", "shared", "explorer", "locode", "admin-ui" }
             .Each(dir => Directory.CreateDirectory($"dist/{dir}"));
 
         File.Copy("../NorthwindAuto/node_modules/@servicestack/client/dist/index.d.ts", "dist/client/index.d.ts");
@@ -188,20 +194,18 @@ export declare var APP:AppMetadata
         var typesFs = new FileSystemVirtualFiles("types");
         var distFs = new FileSystemVirtualFiles("dist");
 
-        // shared
         var typesFile = typesFs.GetFile("lib/types.d.ts");
         memFs.WriteFile("0_" + typesFile.Name, typesFile);
         memFs.TransformAndCopy("shared", typesFs, distFs);
-        memFs.Clear();
 
-        memFs.TransformAndCopy("locode", typesFs, distFs);
         memFs.Clear();
-        memFs.TransformAndCopy("ui", typesFs, distFs);
+        memFs.TransformAndCopy("locode", typesFs, distFs);
+        
+        memFs.Clear();
+        memFs.TransformAndCopy("explorer", typesFs, distFs);
+        
         memFs.Clear();
         memFs.TransformAndCopy("admin-ui", typesFs, distFs);
-        memFs.Clear();
-        
-        FileSystemVirtualFiles.DeleteDirectoryRecursive("dist/wip");
     }
 }
 
@@ -237,9 +241,10 @@ import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, T
         typesFs.GetDirectory(path).GetAllFiles()
             .Each(file => memFs.WriteFile(++i + "_" + file.Name, file));
 
+        var wipFs = new MemoryVirtualFiles();
         TransformerOptions.CopyAll(
             source: memFs, 
-            target: new FileSystemVirtualFiles("dist/wip"),
+            target: wipFs,
             cleanTarget:true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
@@ -247,7 +252,7 @@ import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, T
         if (path != "shared")
             sb.AppendLine(Header);
 
-        distFs.GetDirectory("wip").GetAllFiles()
+        wipFs.GetAllFiles()
             .Each(file => sb.AppendLine(file.ReadAllText()));
         distFs.WriteFile($"{path}/index.d.ts", sb.ToString());
     }
