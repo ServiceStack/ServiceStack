@@ -23,7 +23,6 @@ public class FileHandler : IHtmlModulesHandler
             var content = ctx.FileContentsResolver(ctx.AssertFile(useVfs, path.StartsWith("/")
                 ? path
                 : ctx.Module.DirPath.CombineWith(path)));
-            content += Environment.NewLine;
             return content.AsMemory().ToUtf8();
         });
     }

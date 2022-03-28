@@ -109,10 +109,7 @@ public class FilesTransformer
                 if (trimmedLine.EndsWith(inBlock.EndTag))
                 {
                     var blockOutput = inBlock.Transform(blockLines);
-                    if (blockOutput != null)
-                    {
-                        sb.AppendLine(blockOutput);
-                    }
+                    sb.AppendLine(blockOutput); // always append new line for JS ASI
                     inBlock = null;
                     blockLines.Clear();
                     continue;

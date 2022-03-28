@@ -57,7 +57,7 @@ public class PublishTasks
         // copy to modules/ui
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui").AssertDir()), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
@@ -65,7 +65,7 @@ public class PublishTasks
         // copy to modules/locode
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode").AssertDir()), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
@@ -73,7 +73,7 @@ public class PublishTasks
         // copy to modules/admin-ui
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui").AssertDir()), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui")), 
             cleanTarget: true,
             ignore: file => IgnoreAdminUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
@@ -81,7 +81,7 @@ public class PublishTasks
         // copy to modules/shared
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared").AssertDir()),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")),
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }
