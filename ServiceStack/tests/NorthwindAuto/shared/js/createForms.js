@@ -469,13 +469,13 @@ export function createForms(OpsMap, TypesMap, css, ui) {
             return prop
         },
         /** @param {InputInfo[]} formLayout
-            @param {({id,input,rowClass}) => void} [f] */
+            @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
         getGridInputs(formLayout, f) {
             if (!formLayout) return []
             return formLayout.map(input => this.getGridInput(input, f))
         },
         /** @param {InputInfo} input
-            @param {({id,input,rowClass}) => void} [f] */
+            @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
         getGridInput(input, f) {
             if (input.ignore) return
             let id = inputId(input)

@@ -1112,22 +1112,22 @@ export function createForms(OpsMap: {
     forEdit(type: MetadataType): (field: any) => void;
     getFormProp(id: any, type: any): MetadataPropertyType;
     /** @param {InputInfo[]} formLayout
-        @param {({id,input,rowClass}) => void} [f] */
-    getGridInputs(formLayout: InputInfo[], f?: ({ id, input, rowClass }: {
-        id: any;
-        input: any;
-        rowClass: any;
+        @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
+    getGridInputs(formLayout: InputInfo[], f?: (args: {
+        id;
+        input: InputInfo;
+        rowClass: string;
     }) => void): {
         id: any;
         input: InputInfo;
         rowClass: string;
     }[];
     /** @param {InputInfo} input
-        @param {({id,input,rowClass}) => void} [f] */
-    getGridInput(input: InputInfo, f?: ({ id, input, rowClass }: {
+        @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
+    getGridInput(input: InputInfo, f?: (args: {
         id: any;
-        input: any;
-        rowClass: any;
+        input: InputInfo;
+        rowClass: string;
     }) => void): {
         id: any;
         input: InputInfo;

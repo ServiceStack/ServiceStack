@@ -216,7 +216,21 @@ public static class TypeScriptDefinitionUtils
 import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from './shared'
 ";
     private static string Footer = @"export declare var App:App";
-    
+
+    private static Dictionary<string, string> Headers = new()
+    {
+        ["locode"] = Header,
+        ["explorer"] = Header,
+        ["admin"] = Header,
+    };
+
+    private static Dictionary<string, string> Footers = new()
+    {
+        ["locode"] = Footer,
+        ["explorer"] = Footer,
+        ["admin"] = Footer,
+    };
+
     static FilesTransformer TransformerOptions = new()
     {
         FileExtensions =
@@ -251,12 +265,12 @@ import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputIn
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
         var sb = new StringBuilder();
-        if (path != "shared")
-            sb.AppendLine(Header);
+        if (Headers.TryGetValue(path, out var header))
+            sb.AppendLine(header);
         wipFs.GetAllFiles()
             .Each(file => sb.AppendLine(file.ReadAllText()));
-        if (path != "shared")
-            sb.AppendLine(Footer);
+        if (Footers.TryGetValue(path, out var footer))
+            sb.AppendLine(footer);
         
         distFs.WriteFile($"{path}.d.ts", sb.ToString());
     }

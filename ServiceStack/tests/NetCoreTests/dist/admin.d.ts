@@ -65,19 +65,19 @@ export let Forms: {
     forCreate(type: MetadataType): (field: any) => void;
     forEdit(type: MetadataType): (field: any) => void;
     getFormProp(id: any, type: any): MetadataPropertyType;
-    getGridInputs(formLayout: InputInfo[], f?: ({ id, input, rowClass }: {
+    getGridInputs(formLayout: InputInfo[], f?: (args: {
         id: any;
-        input: any;
-        rowClass: any;
+        input: InputInfo;
+        rowClass: string;
     }) => void): {
         id: any;
         input: InputInfo;
         rowClass: string;
     }[];
-    getGridInput(input: InputInfo, f?: ({ id, input, rowClass }: {
+    getGridInput(input: InputInfo, f?: (args: {
         id: any;
-        input: any;
-        rowClass: any;
+        input: InputInfo;
+        rowClass: string;
     }) => void): {
         id: any;
         input: InputInfo;
