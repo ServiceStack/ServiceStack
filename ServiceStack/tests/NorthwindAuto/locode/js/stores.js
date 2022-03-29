@@ -2,8 +2,8 @@
 import { APP, Authenticate, AuthenticateResponse, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, LinkInfo, ThemeInfo } from "../../lib/types"
 /** @typedef {import("../../shared/plugins/useBreakpoints").Breakpoints} Breakpoints */
 
-import { appendQueryString, humanify, ApiResult } from "@servicestack/client"
-import { setBodyClass, invalidAccessMessage, sortOps } from "../../shared/js/core"
+import { appendQueryString, humanify, ApiResult, delaySet } from "@servicestack/client"
+import { setBodyClass, sortOps, Crud, map, canAccess, createRequest, apiSend, apiForm, invalidAccessMessage } from "../../shared/js/core"
 import { useTransitions } from "../../shared/plugins/useTransitions"
 import { useBreakpoints } from "../../shared/plugins/useBreakpoints"
 import { usePageRoutes } from "../../shared/plugins/usePageRoutes"
@@ -357,4 +357,111 @@ export let store = App.reactive({
 })
 
 App.events.subscribe('route:nav', args => store.init())
+
+/** @param {MetadataOperationType} op */
+export function apiState(op) {
+    if (!op) return null
+    let formLayout = Forms.resolveFormLayout(op)
+    function createModel(args) {
+        let ret = Forms.populateModel(createRequest(op), formLayout)
+        if (args) Object.keys(args).forEach(k => {
+            ret[k] = Forms.apiValue(args[k])
+        })
+        return ret
+    }
+    return {
+        op,
+        client,
+        apiState,
+        formLayout,
+        createModel,
+        apiLoading: false,
+        apiResult: null,
+        get api() { return map(this.apiResult, x => x.api) },
+        createRequest: args => createRequest(op,args),
+        model: createModel(),
+        title: Forms.opTitle(op),
+        get error(){ return this.apiResult && this.apiResult.api.error },
+        get errorSummary() {
+            if (!formLayout) return null
+            let except = formLayout.map(input => input.id).filter(x => x)
+            return this.apiResult && this.apiResult.api.summaryMessage(except)
+        },
+        /** @param {string} id */
+        fieldError(id) {
+            let error = this.error
+            let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
+            return fieldError && fieldError.message
+        },
+        /** @param {string} propName
+            @param {(args:{id:string,input:InputInfo,rowClass:string}) => void} [f] */
+        field(propName, f) {
+            let propLower = propName.toLowerCase()
+            let input = (formLayout || []).find(input => (input.id||'').toLowerCase() === propLower)
+            let inputFn = Crud.isCreate(op)
+                ? Forms.forCreate(op.request)
+                : Crud.isPatch(op) || Crud.isUpdate(op)
+                    ? Forms.forEdit(op.request)
+                    : null
+            let field = input && Forms.getGridInput(input, inputFn)
+            //console.log('inputFn',inputFn, field.prop)
+            if (f) f(field)
+            return field
+        },
+        /** @param {*} [dtoArgs]
+         @param {*} [queryArgs]*/
+        apiSend(dtoArgs,queryArgs) {
+            let requestDto = this.createRequest(dtoArgs)
+            let complete = delaySet(x => {
+                this.apiResult = null
+                this.apiLoading = x
+            })
+            return apiSend(createClient, requestDto, queryArgs).then(r => {
+                complete()
+                this.apiResult = r
+                return this.apiResult
+            })
+        },
+        apiForm(formData,queryArgs) {
+            let requestDto = this.createRequest()
+            let complete = delaySet(x => {
+                this.apiResult = null
+                this.apiLoading = x
+            })
+            return apiForm(createClient, requestDto, formData, queryArgs).then(r => {
+                complete()
+                this.apiResult = r
+                return this.apiResult
+            })
+        }
+    }
+}
+
+/** @param {string} opName */
+export function createState(opName) {
+    let op = opName && APP.api.operations.find(x => x.request.name === opName)
+    if (!op) {
+        console.log('!createState.op') /*debug*/
+        return null
+    }
+    let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
+    let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
+
+    let ret = {
+        opQuery: op,
+        opCreate: findOp(Crud.isCreate),
+        opPatch: findOp(Crud.isPatch),
+        opUpdate: findOp(Crud.isUpdate),
+        opDelete: findOp(Crud.isDelete),
+    }
+    Object.assign(ret, {
+        apiQuery: hasApi(op),
+        apiCreate: hasApi(ret.opCreate),
+        apiPatch: hasApi(ret.opPatch),
+        apiUpdate: hasApi(ret.opUpdate),
+        apiDelete: hasApi(ret.opDelete),
+    })
+    return ret
+}
+
 /*:minify*/

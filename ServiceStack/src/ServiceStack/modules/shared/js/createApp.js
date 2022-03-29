@@ -1,10 +1,11 @@
 /*minify:*/
 /** @typedef {<T>(args:T) => T} Identity */
-/** @typedef {{subscribe:function(string,Function):void,publish:function(string,any):void}} EventBusFn */
 /** @typedef {{
-    events: EventBusFn;
-    readonly petite: any;
-    components: function(Object.<string,Function>): void;
+    events: { 
+        subscribe: function(string, Function): { unsubscribe: function():void }, 
+        publish: function(string, any): void 
+    };
+    readonly petite: any;    components: function(Object.<string,Function>): void;
     component: function(string, any): void;
     template: function(string, string): void;
     templates: function(Object.<string,string>): void;
@@ -19,7 +20,7 @@
     unsubscribe: function(): void;
     createApp: function(any): any;
     nextTick: function(Function): void;
-    reactive: Identity; 
+    reactive: Identity;
 }} App
 */
 /** App to register and build a PetiteVueApp
@@ -32,8 +33,7 @@ function createApp(PetiteVue) {
     let Props = {}
     let OnStart = []
     let petite = null
-    /** @type {EventBusFn} */
-    let events = new EventBus()
+    let events = createBus()
     function assertNotBuilt(name) {
         if (petite)
             throw new Error(`Cannot call App.${name}() after App is built`)
