@@ -176,10 +176,12 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             this.updated()
         },
         updatePrefs(prefs) {
+            this.lastState = null
             settings.saveOp(routes.op, x => Object.assign(x, prefs))
             this.updated()
         },
         clearPrefs() {
+            this.lastState = null
             settings.clearPrefs(routes.op)
             this.updated()
         },
