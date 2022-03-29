@@ -5,7 +5,7 @@ import { Types } from "./Types"
 /*minify:*/
 
 /** @template T,V
-    @param {*} o
+    @param {T} o
     @param {(a:T) => V} f
     @returns {V|null} */
 export function map(o, f) { return o == null ? null : f(o) }
@@ -101,9 +101,13 @@ export function createDto(name, obj) {
 export function appApis(app,appName) {
     let api = app.api
     let CACHE = {}
+    /** @type Record<number,string> */
     let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
+    /** @type Record<string,MetadataOperationType> */
     let OpsMap = {}
+    /** @type Record<string,MetadataType> */
     let TypesMap = {}
+    /** @type Record<string,MetadataType> */
     let FullTypesMap = {}
     api.operations.forEach(op => {
         OpsMap[op.request.name] = op

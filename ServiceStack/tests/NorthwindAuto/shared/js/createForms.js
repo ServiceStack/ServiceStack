@@ -3,18 +3,91 @@ import { humanify, padInt, toDate, mapGet, apiValue, isDate, indexOfAny, fromXsd
 import { Types } from "./Types"
 import { Forms } from "../../ui/js/init"
 import { Crud, map } from "./core";
-import { OpsMap, TypesMap } from "../../locode/js/init";
-/*minify:*/
-
 import { MetadataOperationType, MetadataType, MetadataPropertyType, ApiCss, UiInfo, InputInfo } from "../../lib/types"
 
-/** @typedef {{namespace:string,name:string}} TypeRef
-    @typedef {{name:string,genericArgs:string[]}} MetaType */
+/*minify:*/
+
+/** @typedef {{
+    getId: (type: MetadataType, row: any) => any;
+    getType: (typeRef: string | {
+        namespace: string;
+        name: string;
+    }) => MetadataType;
+    inputId: (input: any) => any;
+    colClass: (fields: any) => string;
+    inputProp: (prop: any) => {
+        id: any;
+        type: any;
+        'data-type': any;
+    };
+    getPrimaryKey: (type: MetadataType) => any;
+    typeProperties: (type: MetadataType) => MetadataPropertyType[];
+    relativeTime: (val: string | number | Date, rtf?: Intl.RelativeTimeFormat) => string;
+    relativeTimeFromMs: (elapsedMs: number, rtf?: Intl.RelativeTimeFormat) => string;
+    relativeTimeFromDate: (d: Date, from?: Date) => string;
+    Lookup: {};
+    lookupLabel: (model: any, id: any, label: string) => any;
+    refInfo: (row: any, prop: MetadataPropertyType, props: MetadataPropertyType[]) => {
+        href: {
+            op: string;
+            skip: any;
+            edit: any;
+            new: any;
+            $qs: {
+                [x: string]: any;
+            };
+        };
+        icon: any;
+        html: any;
+    };
+    fetchLookupValues: (results: any[], props: MetadataPropertyType[], refreshFn: () => void) => void;
+    theme: ThemeInfo;
+    formClass: string;
+    gridClass: string;
+    opTitle(op: MetadataOperationType): any;
+    forAutoForm(type: MetadataType): (field: any) => void;
+    forCreate(type: MetadataType): (field: any) => void;
+    forEdit(type: MetadataType): (field: any) => void;
+    getFormProp(id: any, type: any): MetadataPropertyType;
+    getGridInputs(formLayout: InputInfo[], f?: (args: {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    }) => void): {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    }[];
+    getGridInput(input: InputInfo, f?: (args: {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    }) => void): {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    };
+    getFieldError(error: any, id: any): any;
+    kvpValues(input: any): any;
+    useLabel(input: any): any;
+    usePlaceholder(input: any): any;
+    isRequired(input: any): any;
+    resolveFormLayout(op: MetadataOperationType): InputInfo[];
+    formValues(form: any): {};
+    formData(form: any, op: MetadataOperationType): any;
+    groupTypes(allTypes: any): any[];
+    complexProp(prop: any): boolean;
+    supportsProp(prop: any): boolean;
+    populateModel(model: any, formLayout: any): any;
+    apiValue(o: any): any;
+    format(o: any, prop: MetadataPropertyType): any;
+}} Forms */
 
 /** @param {{[op:string]:MetadataOperationType}} OpsMap
  *  @param {{[op:string]:MetadataType}} TypesMap
  *  @param {ApiCss} css 
- *  @param {UiInfo} ui */
+ *  @param {UiInfo} ui
+ *  @return Forms */
 export function createForms(OpsMap, TypesMap, css, ui) {
     let operations = Object.values(OpsMap)
     let { theme, defaultFormats } = ui
@@ -334,7 +407,7 @@ export function createForms(OpsMap, TypesMap, css, ui) {
     }
     /** @param {any[]} results
      *  @param {MetadataPropertyType[]} props
-     *  @param {Function} refreshFn */
+     *  @param {() => void} refreshFn */
     function fetchLookupValues(results, props, refreshFn) {
         props.forEach(c => {
             let refLabel = c.ref && c.ref.refLabel
@@ -394,7 +467,8 @@ export function createForms(OpsMap, TypesMap, css, ui) {
         return state
     }
 
-    return {
+    /** @type Forms */
+    let ret = {
         getId,
         getType,
         inputId,
@@ -547,7 +621,7 @@ export function createForms(OpsMap, TypesMap, css, ui) {
             })
             return obj
         },
-        /** @param {Element} form
+        /** @param {HTMLFormElement} form
          *  @param {MetadataOperationType} op */
         formData(form,op) {
             let formData = new FormData(form)
@@ -649,6 +723,7 @@ export function createForms(OpsMap, TypesMap, css, ui) {
                 : `${ret}`
         }
     }
+    return ret
 }
 
 /*:minify*/

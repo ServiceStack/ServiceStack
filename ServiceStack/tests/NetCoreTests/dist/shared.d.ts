@@ -783,10 +783,10 @@ export declare class GetCrudEvents extends QueryDb<CrudEvent> implements IReturn
 export declare var APP: AppMetadata;
 
 /** @template T,V
-    @param {*} o
+    @param {T} o
     @param {(a:T) => V} f
     @returns {V|null} */
-export function map<T, V>(o: any, f: (a: T) => V): V;
+export function map<T, V>(o: T, f: (a: T) => V): V;
 /** @param {{[key:string]:string|any}} obj */
 export function setBodyClass(obj: {
     [key: string]: any;
@@ -813,14 +813,11 @@ export function createDto(name: string, obj: any): any;
  *  @param {string} appName */
 export function appApis(app: AppMetadata, appName: string): {
     CACHE: {};
-    HttpErrors: {
-        401: string;
-        403: string;
-    };
-    OpsMap: {};
-    TypesMap: {};
-    FullTypesMap: {};
-    getOp: (opName: string) => any;
+    HttpErrors: Record<number, string>;
+    OpsMap: Record<string, MetadataOperationType>;
+    TypesMap: Record<string, MetadataType>;
+    FullTypesMap: Record<string, MetadataType>;
+    getOp: (opName: string) => MetadataOperationType;
     getType: (typeRef: {
         namespace: string | null;
         name: string;
@@ -833,7 +830,9 @@ export function appApis(app: AppMetadata, appName: string): {
     getIcon: ({ op, type }: {
         op: MetadataOperationType | null;
         type: MetadataType | null;
-    }) => any;
+    }) => {
+        svg: string;
+    };
 };
 /** @param {MetadataOperationType?} op
     @param {AuthenticateResponse|null} auth */
@@ -1055,22 +1054,12 @@ export type App = {
     reactive: Identity;
 };
 
-/** @typedef {{namespace:string,name:string}} TypeRef
-    @typedef {{name:string,genericArgs:string[]}} MetaType */
-/** @param {{[op:string]:MetadataOperationType}} OpsMap
- *  @param {{[op:string]:MetadataType}} TypesMap
- *  @param {ApiCss} css
- *  @param {UiInfo} ui */
-export function createForms(OpsMap: {
-    [op: string]: MetadataOperationType;
-}, TypesMap: {
-    [op: string]: MetadataType;
-}, css: ApiCss, ui: UiInfo): {
+/** @typedef {{
     getId: (type: MetadataType, row: any) => any;
-    getType: (typeRef: {
-        namespace: string | null;
+    getType: (typeRef: string | {
+        namespace: string;
         name: string;
-    } | string) => MetadataType;
+    }) => MetadataType;
     inputId: (input: any) => any;
     colClass: (fields: any) => string;
     inputProp: (prop: any) => {
@@ -1080,7 +1069,7 @@ export function createForms(OpsMap: {
     };
     getPrimaryKey: (type: MetadataType) => any;
     typeProperties: (type: MetadataType) => MetadataPropertyType[];
-    relativeTime: (val: string | Date | number, rtf?: Intl.RelativeTimeFormat) => string;
+    relativeTime: (val: string | number | Date, rtf?: Intl.RelativeTimeFormat) => string;
     relativeTimeFromMs: (elapsedMs: number, rtf?: Intl.RelativeTimeFormat) => string;
     relativeTimeFromDate: (d: Date, from?: Date) => string;
     Lookup: {};
@@ -1098,23 +1087,17 @@ export function createForms(OpsMap: {
         icon: any;
         html: any;
     };
-    fetchLookupValues: (results: any[], props: MetadataPropertyType[], refreshFn: Function) => void;
+    fetchLookupValues: (results: any[], props: MetadataPropertyType[], refreshFn: () => void) => void;
     theme: ThemeInfo;
     formClass: string;
     gridClass: string;
-    /** @param {MetadataOperationType} op */
     opTitle(op: MetadataOperationType): any;
-    /** @param {MetadataType} type */
     forAutoForm(type: MetadataType): (field: any) => void;
-    /** @param {MetadataType} type */
     forCreate(type: MetadataType): (field: any) => void;
-    /** @param {MetadataType} type */
     forEdit(type: MetadataType): (field: any) => void;
     getFormProp(id: any, type: any): MetadataPropertyType;
-    /** @param {InputInfo[]} formLayout
-        @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
     getGridInputs(formLayout: InputInfo[], f?: (args: {
-        id;
+        id: any;
         input: InputInfo;
         rowClass: string;
     }) => void): {
@@ -1122,8 +1105,6 @@ export function createForms(OpsMap: {
         input: InputInfo;
         rowClass: string;
     }[];
-    /** @param {InputInfo} input
-        @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
     getGridInput(input: InputInfo, f?: (args: {
         id: any;
         input: InputInfo;
@@ -1138,28 +1119,100 @@ export function createForms(OpsMap: {
     useLabel(input: any): any;
     usePlaceholder(input: any): any;
     isRequired(input: any): any;
-    /** @param {MetadataOperationType} op */
     resolveFormLayout(op: MetadataOperationType): InputInfo[];
     formValues(form: any): {};
-    /** @param {Element} form
-     *  @param {MetadataOperationType} op */
-    formData(form: Element, op: MetadataOperationType): any;
+    formData(form: any, op: MetadataOperationType): any;
     groupTypes(allTypes: any): any[];
     complexProp(prop: any): boolean;
     supportsProp(prop: any): boolean;
     populateModel(model: any, formLayout: any): any;
     apiValue(o: any): any;
-    /** @param {*} o
-     *  @param {MetadataPropertyType} prop */
     format(o: any, prop: MetadataPropertyType): any;
-};
-export type TypeRef = {
-    namespace: string;
-    name: string;
-};
-export type MetaType = {
-    name: string;
-    genericArgs: string[];
+}} Forms */
+/** @param {{[op:string]:MetadataOperationType}} OpsMap
+ *  @param {{[op:string]:MetadataType}} TypesMap
+ *  @param {ApiCss} css
+ *  @param {UiInfo} ui
+ *  @return Forms */
+export function createForms(OpsMap: {
+    [op: string]: MetadataOperationType;
+}, TypesMap: {
+    [op: string]: MetadataType;
+}, css: ApiCss, ui: UiInfo): Forms;
+export type Forms = {
+    getId: (type: MetadataType, row: any) => any;
+    getType: (typeRef: string | {
+        namespace: string;
+        name: string;
+    }) => MetadataType;
+    inputId: (input: any) => any;
+    colClass: (fields: any) => string;
+    inputProp: (prop: any) => {
+        id: any;
+        type: any;
+        'data-type': any;
+    };
+    getPrimaryKey: (type: MetadataType) => any;
+    typeProperties: (type: MetadataType) => MetadataPropertyType[];
+    relativeTime: (val: string | number | Date, rtf?: Intl.RelativeTimeFormat) => string;
+    relativeTimeFromMs: (elapsedMs: number, rtf?: Intl.RelativeTimeFormat) => string;
+    relativeTimeFromDate: (d: Date, from?: Date) => string;
+    Lookup: {};
+    lookupLabel: (model: any, id: any, label: string) => any;
+    refInfo: (row: any, prop: MetadataPropertyType, props: MetadataPropertyType[]) => {
+        href: {
+            op: string;
+            skip: any;
+            edit: any;
+            new: any;
+            $qs: {
+                [x: string]: any;
+            };
+        };
+        icon: any;
+        html: any;
+    };
+    fetchLookupValues: (results: any[], props: MetadataPropertyType[], refreshFn: () => void) => void;
+    theme: ThemeInfo;
+    formClass: string;
+    gridClass: string;
+    opTitle(op: MetadataOperationType): any;
+    forAutoForm(type: MetadataType): (field: any) => void;
+    forCreate(type: MetadataType): (field: any) => void;
+    forEdit(type: MetadataType): (field: any) => void;
+    getFormProp(id: any, type: any): MetadataPropertyType;
+    getGridInputs(formLayout: InputInfo[], f?: (args: {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    }) => void): {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    }[];
+    getGridInput(input: InputInfo, f?: (args: {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    }) => void): {
+        id: any;
+        input: InputInfo;
+        rowClass: string;
+    };
+    getFieldError(error: any, id: any): any;
+    kvpValues(input: any): any;
+    useLabel(input: any): any;
+    usePlaceholder(input: any): any;
+    isRequired(input: any): any;
+    resolveFormLayout(op: MetadataOperationType): InputInfo[];
+    formValues(form: any): {};
+    formData(form: any, op: MetadataOperationType): any;
+    groupTypes(allTypes: any): any[];
+    complexProp(prop: any): boolean;
+    supportsProp(prop: any): boolean;
+    populateModel(model: any, formLayout: any): any;
+    apiValue(o: any): any;
+    format(o: any, prop: MetadataPropertyType): any;
 };
 
 export namespace Types {
@@ -1228,7 +1281,7 @@ declare function typeProperties(TypesMap: {
 }, type: MetadataType): MetadataPropertyType[];
 
 /** @typedef {import('../js/createApp').App} App */
-/** @typedef {{'2xl':boolean,xl:boolean,lg:boolean,md:boolean,sm:boolean}} Breakpoints */
+/** @typedef {Record<'2xl'|'xl'|'lg'|'md'|'sm',boolean>} Breakpoints */
 /**
  * Returns a reactive store that maintains different resolution states:
  * Defaults: 2xl:1536, xl:1280, lg:1024, md:768, sm:640
@@ -1239,18 +1292,12 @@ declare function typeProperties(TypesMap: {
  * @param {{handlers: {change({previous: *, current: *}): void}}} options
  * @returns {Breakpoints & {previous:Breakpoints,current:Breakpoints,snap:()=>void}}
  */
-export function useBreakpoints(App: App, options: any): Breakpoints & {
+export function useBreakpoints(App: App, options: any): Record<"2xl" | "xl" | "lg" | "md" | "sm", boolean> & {
     previous: Breakpoints;
     current: Breakpoints;
     snap: () => void;
 };
-export type Breakpoints = {
-    '2xl': boolean;
-    xl: boolean;
-    lg: boolean;
-    md: boolean;
-    sm: boolean;
-};
+export type Breakpoints = Record<'2xl' | 'xl' | 'lg' | 'md' | 'sm', boolean>;
 
 /** @typedef {import('../js/createApp').App} App */
 /**

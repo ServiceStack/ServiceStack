@@ -408,8 +408,8 @@ export function apiState(op) {
             if (f) f(field)
             return field
         },
-        /** @param {*} [dtoArgs]
-         @param {*} [queryArgs]*/
+        /** @param {Record<string,any>} dtoArgs
+            @param {Record<string,any>} [queryArgs]*/
         apiSend(dtoArgs,queryArgs) {
             let requestDto = this.createRequest(dtoArgs)
             let complete = delaySet(x => {
@@ -422,6 +422,8 @@ export function apiState(op) {
                 return this.apiResult
             })
         },
+        /** @param {FormData} formData
+            @param {Record<string,any>} [queryArgs]*/
         apiForm(formData,queryArgs) {
             let requestDto = this.createRequest()
             let complete = delaySet(x => {
@@ -437,31 +439,48 @@ export function apiState(op) {
     }
 }
 
-/** @param {string} opName */
+/** @typedef {ReturnType<apiState>} ApiState */
+/** @typedef {{
+    opPatch: MetadataOperationType, 
+    apiPatch: ApiState, 
+    apiUpdate: ApiState, 
+    opQuery: MetadataOperationType, 
+    apiQuery: ApiState, 
+    opCreate: MetadataOperationType, 
+    opUpdate: MetadataOperationType, 
+    opDelete: MetadataOperationType, 
+    apiCreate: ApiState, 
+    apiDelete: ApiState
+}} State 
+ */
+
+/**
+ * @param {string} opName
+ * @return {State}
+ */
 export function createState(opName) {
     let op = opName && APP.api.operations.find(x => x.request.name === opName)
-    if (!op) {
-        console.log('!createState.op') /*debug*/
-        return null
-    }
-    let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
-    let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
+    if (op) {
+        let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
+        /** @type {(op:MetadataOperationType) => ApiState} */
+        let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
 
-    let ret = {
-        opQuery: op,
-        opCreate: findOp(Crud.isCreate),
-        opPatch: findOp(Crud.isPatch),
-        opUpdate: findOp(Crud.isUpdate),
-        opDelete: findOp(Crud.isDelete),
+        let ret = {
+            opQuery:   op,
+            opCreate:  findOp(Crud.isCreate),
+            opPatch:   findOp(Crud.isPatch),
+            opUpdate:  findOp(Crud.isUpdate),
+            opDelete:  findOp(Crud.isDelete),
+            apiQuery:  hasApi(op),
+            apiCreate: hasApi(ret.opCreate),
+            apiPatch:  hasApi(ret.opPatch),
+            apiUpdate: hasApi(ret.opUpdate),
+            apiDelete: hasApi(ret.opDelete),
+        }
+        return ret
     }
-    Object.assign(ret, {
-        apiQuery: hasApi(op),
-        apiCreate: hasApi(ret.opCreate),
-        apiPatch: hasApi(ret.opPatch),
-        apiUpdate: hasApi(ret.opUpdate),
-        apiDelete: hasApi(ret.opDelete),
-    })
-    return ret
+
+    console.log('!createState.op') /*debug*/
 }
 
 /*:minify*/

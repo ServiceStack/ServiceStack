@@ -213,9 +213,10 @@ export declare var APP:AppMetadata
 public static class TypeScriptDefinitionUtils
 {
     private static string Header = @"import { ApiResult, JsonServiceClient } from './client'
-import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from './shared'
+import { App, Forms, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from './shared'
 ";
-    private static string Footer = @"export declare var App:App";
+    private static string Footer = @"export declare var App:App
+export declare var Forms:Forms";
 
     private static Dictionary<string, string> Headers = new()
     {
@@ -226,8 +227,36 @@ import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputIn
 
     private static Dictionary<string, string> Footers = new()
     {
-        ["locode"] = Footer,
-        ["explorer"] = Footer,
+        ["locode"] = Footer + @"
+export interface CreateComponentArgs {
+    store: typeof store;
+    routes: typeof routes;
+    settings: typeof settings;
+    state: () => State;
+    save: () => void;
+    done: () => void;
+}
+export declare type CreateComponent = (args:CreateComponentArgs) => Record<string,any>;
+
+export interface EditComponentArgs {
+    store: typeof store;
+    routes: typeof routes;
+    settings: typeof settings;
+    state: () => State;
+    save: () => void;
+    done: () => void;
+}
+export declare type EditComponent = (args:EditComponentArgs) => Record<string,any>;",
+        
+        ["explorer"] = Footer + @"
+export interface DocComponentArgs {
+    store: typeof store;
+    routes: typeof routes;
+    breakpoints: typeof breakpoints;
+    op: () => MetadataOperationType;
+}
+export declare type DocComponent = (args:DocComponentArgs) => Record<string,any>;",
+        
         ["admin"] = Footer,
     };
 
@@ -246,6 +275,7 @@ import { App, MetadataOperationType, MetadataType, MetadataPropertyType, InputIn
                     new RemoveLineStartingWith("export {};", ignoreWhiteSpace:false, Run.Always),
                     new RemoveLineStartingWith("export type App = import(", ignoreWhiteSpace:false, Run.Always),
                     new RemoveLineStartingWith("export type Breakpoints = import(", ignoreWhiteSpace:false, Run.Always),
+                    new RemoveLineStartingWith("export let Forms: import(", ignoreWhiteSpace:false, Run.Always),
                 },
             },
         }

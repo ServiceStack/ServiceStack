@@ -23,7 +23,7 @@ export let breakpoints = useBreakpoints(App, {
 /** @typedef {{op?:string,tab?:string,lang?:string,provider?:string,preview?:string,body?:string,doc?:string,detailSrc?:string,form?:string,response?:string}} UiRoutes */
 /** @typedef {{queryHref(): string}} UiRoutesExtend */
 /** @type {UiRoutes & UiRoutesExtend & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}} */
-let routes = usePageRoutes(App,{
+export let routes = usePageRoutes(App,{
     page:'op',
     queryKeys:'tab,lang,provider,preview,body,doc,detailSrc,form,response'.split(','),
     handlers: {
