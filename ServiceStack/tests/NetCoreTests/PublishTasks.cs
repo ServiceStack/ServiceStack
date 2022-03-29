@@ -183,6 +183,7 @@ export declare var APP:AppMetadata
         
         // Export API Explorer's .d.ts to 'explorer' 
         Directory.Move("types/ui", "types/explorer");
+        Directory.Move("types/admin-ui", "types/admin");
 
         FileSystemVirtualFiles.RecreateDirectory("dist");
         File.Copy("../NorthwindAuto/node_modules/@servicestack/client/dist/index.d.ts", "dist/client.d.ts");
@@ -202,7 +203,10 @@ export declare var APP:AppMetadata
         memFs.TransformAndCopy("explorer", typesFs, distFs);
         
         memFs.Clear();
-        memFs.TransformAndCopy("admin-ui", typesFs, distFs);
+        memFs.TransformAndCopy("admin", typesFs, distFs);
+
+        var libFs = new FileSystemVirtualFiles("../../../../servicestack-ui".AssertDir());
+        libFs.CopyFrom(distFs.GetAllFiles());
     }
 }
 

@@ -111,6 +111,43 @@ export let Forms: {
     format(o: any, prop: MetadataPropertyType): any;
 };
 
+/** @param {MetadataOperationType} op */
+export function apiState(op: MetadataOperationType): {
+    op: MetadataOperationType;
+    client: any;
+    apiState: typeof apiState;
+    formLayout: any;
+    createModel: (args: any) => any;
+    apiLoading: boolean;
+    apiResult: any;
+    readonly api: any;
+    createRequest: (args: any) => any;
+    model: any;
+    title: any;
+    readonly error: any;
+    readonly errorSummary: any;
+    /** @param {string} id */
+    fieldError(id: string): any;
+    /** @param {string} propName
+        @param {(args:{id:string,input:InputInfo,rowClass:string}) => void} [f] */
+    field(propName: string, f?: (args: {
+        id: string;
+        input: InputInfo;
+        rowClass: string;
+    }) => void): any;
+    /** @param {*} [dtoArgs]
+     @param {*} [queryArgs]*/
+    apiSend(dtoArgs?: any, queryArgs?: any): any;
+    apiForm(formData: any, queryArgs: any): any;
+};
+/** @param {string} opName */
+export function createState(opName: string): {
+    opQuery: MetadataOperationType;
+    opCreate: MetadataOperationType;
+    opPatch: MetadataOperationType;
+    opUpdate: MetadataOperationType;
+    opDelete: MetadataOperationType;
+};
 /** @type {function(string, boolean?): boolean} */
 export let transition: (arg0: string, arg1: boolean | null) => boolean;
 /** @type {Breakpoints & {previous: Breakpoints, current: Breakpoints, snap: (function(): void)}} */
