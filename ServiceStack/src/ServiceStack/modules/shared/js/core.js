@@ -1,6 +1,6 @@
 /*minify:*/
 /** @template T,V
-    @param {*} o
+    @param {T} o
     @param {(a:T) => V} f
     @returns {V|null} */
 function map(o, f) { return o == null ? null : f(o) }
@@ -80,14 +80,16 @@ function createDto(name, obj) {
     }
     return new dtoCtor(obj)
 }
-/** @param {AppMetadata} app 
- *  @param {string} appName */
-function appApis(app,appName) {
+function appObjects(app,appName) {
     let api = app.api
     let CACHE = {}
+    /** @type Record<number,string> */
     let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
+    /** @type Record<string,MetadataOperationType> */
     let OpsMap = {}
+    /** @type Record<string,MetadataType> */
     let TypesMap = {}
+    /** @type Record<string,MetadataType> */
     let FullTypesMap = {}
     api.operations.forEach(op => {
         OpsMap[op.request.name] = op
@@ -112,24 +114,56 @@ function appApis(app,appName) {
             })
         }
     })
-    /** @param {string} opName */
+    return {
+        /** Global Cache */
+        CACHE,
+        /** HTTP Errors specially handled by Locode */
+        HttpErrors,
+        /** Map of Request DTO names to `MetadataOperationType` */
+        OpsMap,
+        /** Map of DTO names to `MetadataType` */
+        TypesMap,
+        /** Map of DTO namespace + names to `MetadataType` */
+        FullTypesMap,
+    }
+}
+/** 
+ * Generic functionality around AppMetadata   
+ * @param {AppMetadata} app 
+ * @param {string} appName 
+ * @return {{
+    getType: (typeRef:({namespace?: string, name: string})|string) => null|MetadataType, 
+    isEnum: (type:string) => boolean, 
+    getOp: (opName:string) => MetadataOperationType, 
+    enumValues: (type:string) => {key: string, value: string}[], 
+    getIcon: (args:{op?: MetadataOperationType, type?: MetadataType}) => {svg:string}
+}}
+ */
+function appApis(app,appName) {
+    let { OpsMap, TypesMap, FullTypesMap } = appObjects(app, appName)
+    /** Find `MetadataOperationType` by API name
+     * @param {string} opName */
     function getOp(opName) {
         return OpsMap[opName]
     }
-    /** @param {{namespace:string?,name:string}|string} typeRef
-        @return {MetadataType} */
+    /** Find `MetadataType` by DTO name 
+     * @param {{namespace:string?,name:string}|string} typeRef
+     * @return {MetadataType} */
     function getType(typeRef) {
         return !typeRef ? null 
             : typeof typeRef == 'string' 
                 ? TypesMap[typeRef]
                 : FullTypesMap[Types.key(typeRef)] || TypesMap[typeRef.name]
     }
-    /** @param {string} type */
+    /** Check whether a Type is an Enum 
+     * @param {string} type 
+     * @return {boolean} */
     function isEnum(type) {
         return type && map(TypesMap[type], x => x.isEnum) === true
     }
-    /** @param {string} type
-        @return {{key:string,value:string}[]} */
+    /** Get Enum Values of an Enum Type 
+     * @param {string} type
+     * @return {{key:string,value:string}[]} */
     function enumValues(type) {
         let enumType = type && map(TypesMap[type], x => x.isEnum ? x : null)
         if (!enumType) return []
@@ -145,7 +179,11 @@ function appApis(app,appName) {
     }
     let defaultIcon = app.ui.theme.modelIcon ||
         { svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12v6s0 3 7 3s7-3 7-3v-6"/><path d="M5 6v6s0 3 7 3s7-3 7-3V6"/><path d="M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z"/></g></svg>` }
-    /** @param {{op:MetadataOperationType?,type:MetadataType?}} opt */
+    /** 
+     * Get API Icon
+     * @param {{op:MetadataOperationType?,type:MetadataType?}} opt
+     * @return {{svg:string}}
+     */
     function getIcon({op,type}) {
         if (op) {
             let img = map(op.request, x => x.icon)
@@ -159,7 +197,7 @@ function appApis(app,appName) {
         }
         return defaultIcon
     }
-    return { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon }
+    return { getOp, getType, isEnum, enumValues, getIcon }
 }
 /** @param {MetadataOperationType} op
     @param {string} cls */

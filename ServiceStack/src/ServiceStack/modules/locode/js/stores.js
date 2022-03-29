@@ -1,8 +1,16 @@
 /** @typedef {import("../../shared/plugins/useBreakpoints").Breakpoints} Breakpoints */
 /*minify:*/
-/** @type {function(string, boolean?): boolean} */
+/** 
+ * Execute tailwindui.com transition definition rules
+ * 
+ * @type {(prop:string,enter?:boolean) => boolean}
+ * */
 let transition = useTransitions(App, { sidebar: true, 'select-columns': false })
-/** @type {Breakpoints & {previous: Breakpoints, current: Breakpoints, snap: (function(): void)}} */
+/** 
+ * Reactive store to maintain & programatically access Tailwind's responsive breakpoints
+ * @remarks
+ * @type {Breakpoints & {previous: Breakpoints, current: Breakpoints, snap: (function(): void)}} 
+ * */
 let breakpoints = useBreakpoints(App, {
     handlers: {
         change({ previous, current }) { console.log('breakpoints.change', previous, current) } /*debug*/
@@ -12,7 +20,11 @@ let onRoutesEditChange = null
 let lastEditState = null
 /** @typedef {{op?:string,tab?:string,provider?:string,preview?:string,body?:string,doc?:string,skip?:string,new?:string,edit?:string}} LocodeRoutes */
 /** @typedef {{onEditChange(any): void, update(): void, uiHref(any): string}} LocodeRoutesExtend */
-/** @type {LocodeRoutes & LocodeRoutesExtend & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}} */
+/**
+ * The App's reactive `routes`  navigation component used for all App navigation
+ * @remarks
+ * @type {LocodeRoutes & LocodeRoutesExtend & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}} 
+ */
 let routes = usePageRoutes(App,{
     page:'op',
     queryKeys:'tab,provider,preview,body,doc,skip,new,edit'.split(','),
@@ -48,7 +60,10 @@ let routes = usePageRoutes(App,{
         }
     }
 })
-/** @type {{
+/** 
+ * Manage users query & filter preferences in the Users browsers localStorage
+ * @remarks
+ * @type {{
     op: (op:string) => any, 
     lookup: (op:string) => any, 
     saveOp: (op:string, fn:Function) => void, 
@@ -61,8 +76,9 @@ let routes = usePageRoutes(App,{
         opProp: (op:string, name:string) => string
     }, 
     opProp: (op:string, name:string) => any, 
-    clearPrefs: (op:string) => void
- }} */
+    clearPrefs: (op:string) => void }}
+ *
+ */
 let settings = {
     events: {
         /** @param {string} op */
@@ -126,7 +142,10 @@ let settings = {
         removeKeys.forEach(k => localStorage.removeItem(k))
     }
 }
-/** @type {{
+/** 
+ * App's primary reactive store maintaining global functionality for Locode Apps
+ * @remarks
+ * @type {{
     cachedFetch: (url:string) => Promise<string>, 
     copied: boolean, 
     sideNav: {expanded: boolean, operations: MetadataOperationType[], tag: string}[], 
@@ -325,7 +344,10 @@ let store = App.reactive({
     hasRole(role) { return this.auth && this.auth.roles.indexOf(role) >= 0 },
 })
 App.events.subscribe('route:nav', args => store.init())
-/** @param {MetadataOperationType} op */
+/** 
+ * Create a new state for an API that encapsulates its invocation and execution
+ * @param {MetadataOperationType} op 
+ */
 function apiState(op) {
     if (!op) return null
     let formLayout = Forms.resolveFormLayout(op)
@@ -375,8 +397,8 @@ function apiState(op) {
             if (f) f(field)
             return field
         },
-        /** @param {*} [dtoArgs]
-         @param {*} [queryArgs]*/
+        /** @param {Record<string,any>} dtoArgs
+            @param {Record<string,any>} [queryArgs]*/
         apiSend(dtoArgs,queryArgs) {
             let requestDto = this.createRequest(dtoArgs)
             let complete = delaySet(x => {
@@ -389,6 +411,8 @@ function apiState(op) {
                 return this.apiResult
             })
         },
+        /** @param {FormData} formData
+            @param {Record<string,any>} [queryArgs]*/
         apiForm(formData,queryArgs) {
             let requestDto = this.createRequest()
             let complete = delaySet(x => {
@@ -403,29 +427,63 @@ function apiState(op) {
         }
     }
 }
-/** @param {string} opName */
+/**
+ * Create a new state for an API that encapsulates its invocation and execution
+ * @typedef {ReturnType<apiState>} ApiState 
+ */
+/** 
+ * All CRUD API States available for this operation
+ * @typedef {{
+    opQuery: MetadataOperationType|null, 
+    opCreate: MetadataOperationType|null, 
+    opPatch: MetadataOperationType|null, 
+    opUpdate: MetadataOperationType|null, 
+    opDelete: MetadataOperationType|null, 
+    apiQuery: ApiState|null,
+    apiCreate: ApiState|null,
+    apiPatch: ApiState|null,
+    apiUpdate: ApiState|null,
+    apiDelete: ApiState|null
+}} State 
+ */
+/**
+ * @param {string} opName
+ * @return {State}
+ * @internal
+ */
 function createState(opName) {
     let op = opName && APP.api.operations.find(x => x.request.name === opName)
-    if (!op) {
-        console.log('!createState.op') /*debug*/
-        return null
+    if (op) {
+        /** @param f
+         *  @returns {MetadataOperationType|null} */
+        function findOp(f) {
+            return APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
+        }
+        /** @param {MetadataOperationType} op
+         *  @returns {ApiState|null} */
+        function hasApi(op) { 
+            return canAccess(op,store.auth) ? apiState(op) : null 
+        }
+        let { opQuery, opCreate, opPatch, opUpdate, opDelete } = {
+            opQuery:   op,
+            opCreate:  findOp(Crud.isCreate),
+            opPatch:   findOp(Crud.isPatch),
+            opUpdate:  findOp(Crud.isUpdate),
+            opDelete:  findOp(Crud.isDelete),
+        }
+        return {
+            opQuery,
+            opCreate, 
+            opPatch, 
+            opUpdate, 
+            opDelete,
+            apiQuery:  hasApi(op),
+            apiCreate: hasApi(opCreate),
+            apiPatch:  hasApi(opPatch),
+            apiUpdate: hasApi(opUpdate),
+            apiDelete: hasApi(opDelete),
+        }
     }
-    let findOp = f => APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
-    let hasApi = op => canAccess(op,store.auth) ? apiState(op) : null
-    let ret = {
-        opQuery: op,
-        opCreate: findOp(Crud.isCreate),
-        opPatch: findOp(Crud.isPatch),
-        opUpdate: findOp(Crud.isUpdate),
-        opDelete: findOp(Crud.isDelete),
-    }
-    Object.assign(ret, {
-        apiQuery: hasApi(op),
-        apiCreate: hasApi(ret.opCreate),
-        apiPatch: hasApi(ret.opPatch),
-        apiUpdate: hasApi(ret.opUpdate),
-        apiDelete: hasApi(ret.opDelete),
-    })
-    return ret
+    console.log('!createState.op') /*debug*/
 }
 /*:minify*/

@@ -14,6 +14,8 @@ function createClient(fn) {
     })
 }
 let client = createClient()
-let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,'admin-ui')
+let appName = 'admin-ui'
+let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap } = appObjects(APP,appName)
+let { getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,appName)
 let Forms = createForms(OpsMap, TypesMap, APP.plugins.adminUsers.css, APP.ui)
 /*:minify*/

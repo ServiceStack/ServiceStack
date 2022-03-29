@@ -14,6 +14,14 @@ import { $$ } from "@servicestack/client"
  * @return {(prop:string,enter?:boolean) => boolean}
  */
 export function useTransitions(App, transitions) {
+
+    /**
+     * Invoke a named Tailwind Transition animation definition
+     * 
+     * @param {string} prop
+     * @param {boolean} [enter]
+     * @return {boolean}
+     */
     function transition(prop, enter) {
         let transitionEls = $$(`[data-transition-for=${prop}]`)
         transitionEls.forEach(el => {

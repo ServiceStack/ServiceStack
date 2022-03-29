@@ -3,7 +3,7 @@ import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, T
 
 import { combinePaths, JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
-import { appApis, Crud } from "../../shared/js/core"
+import { appApis, appObjects, Crud } from "../../shared/js/core"
 import { createForms } from "../../shared/js/createForms"
 
 /*minify:*/
@@ -12,8 +12,14 @@ let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
 
-/** @param {Function} [fn]
- *  @return {JsonServiceClient}
+/** 
+ * Create a new `JsonServiceStack` client instance configured with the authenticated user
+ * 
+ * @remarks
+ * For typical API requests it's recommended to use the UI's pre-configured **client** instance
+ * 
+ * @param {Function} [fn]
+ * @return {JsonServiceClient}
  */
 export function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
@@ -26,10 +32,21 @@ export function createClient(fn) {
         if (fn) fn(c)
     })
 }
+
+/**
+ * App's pre-configured `JsonServiceClient` instance for making typed API requests
+ * @type {JsonServiceClient}
+ */
 export let client = createClient()
 
-/** @param {string} op */
-export let resolveApiUrl = (op) => combinePaths(client.replyBaseUrl,op) 
+/** 
+ * Resolve Absolute URL for API Name
+ * @param {string} op 
+ * @return {string}
+ */
+export function resolveApiUrl(op) { 
+    return combinePaths(client.replyBaseUrl,op) 
+} 
 
 APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
@@ -65,7 +82,9 @@ if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 
-export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,'locode')
+let appName = 'locode'
+export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap } = appObjects(APP,appName)
+export let { getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,appName)
 export let Forms = createForms(OpsMap, TypesMap, APP.ui.locode.css, APP.ui)
 
 /*:minify*/

@@ -429,7 +429,7 @@ function createForms(OpsMap, TypesMap, css, ui) {
                 : s.viewModelColumns).filter(x => !!x)) || []
         return state
     }
-    /** @type FormsType */
+    /** @type Forms */
     let ret = {
         getId,
         getType,

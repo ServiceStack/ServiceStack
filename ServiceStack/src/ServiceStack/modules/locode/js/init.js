@@ -3,8 +3,14 @@
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
-/** @param {Function} [fn]
- *  @return {JsonServiceClient}
+/** 
+ * Create a new `JsonServiceStack` client instance configured with the authenticated user
+ * 
+ * @remarks
+ * For typical API requests it's recommended to use the UI's pre-configured **client** instance
+ * 
+ * @param {Function} [fn]
+ * @return {JsonServiceClient}
  */
 function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
@@ -17,9 +23,19 @@ function createClient(fn) {
         if (fn) fn(c)
     })
 }
+/**
+ * App's pre-configured `JsonServiceClient` instance for making typed API requests
+ * @type {JsonServiceClient}
+ */
 let client = createClient()
-/** @param {string} op */
-let resolveApiUrl = (op) => combinePaths(client.replyBaseUrl,op) 
+/** 
+ * Resolve Absolute URL for API Name
+ * @param {string} op 
+ * @return {string}
+ */
+function resolveApiUrl(op) { 
+    return combinePaths(client.replyBaseUrl,op) 
+} 
 APP.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
@@ -49,6 +65,8 @@ let alwaysHideTags = APP.ui.alwaysHideTags || !DEBUG && APP.ui.hideTags
 if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
-let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,'locode')
+let appName = 'locode'
+let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap } = appObjects(APP,appName)
+let { getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,appName)
 let Forms = createForms(OpsMap, TypesMap, APP.ui.locode.css, APP.ui)
 /*:minify*/
