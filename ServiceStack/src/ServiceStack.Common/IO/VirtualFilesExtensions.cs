@@ -201,14 +201,12 @@ namespace ServiceStack.IO
         {
             foreach (var file in srcFiles)
             {
-                using (var stream = file.OpenRead())
-                {
-                    var dstPath = toPath != null ? toPath(file) : file.VirtualPath;
-                    if (dstPath == null)
-                        continue;
+                using var stream = file.OpenRead();
+                var dstPath = toPath != null ? toPath(file) : file.VirtualPath;
+                if (dstPath == null)
+                    continue;
 
-                    pathProvider.WriteFile(dstPath, stream);
-                }
+                pathProvider.WriteFile(dstPath, stream);
             }
         }
     }
