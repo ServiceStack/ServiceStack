@@ -9,6 +9,7 @@ node_modules/
 /env-vars.bat
 ServiceStack/tests/NorthwindAuto/shared/css/ui.css
 ServiceStack/tests/NetCoreTests/types/
+ServiceStack/tests/NetCoreTests/dist/
 
 *.txt
 *.suo
