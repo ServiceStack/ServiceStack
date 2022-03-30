@@ -79,6 +79,43 @@ public class RemoveLineEndingWith : HtmlModuleLine
     }
 }
 
+public class RemoveLineContaining : HtmlModuleLine
+{
+    public string[] Tokens { get; }
+    
+    public RemoveLineContaining(string token, Run behaviour=Run.Always)
+        : this(new[]{ token }, behaviour) {}
+    
+    public RemoveLineContaining(string[] tokens, Run behaviour=Run.Always)
+    {
+        Tokens = tokens;
+        Behaviour = behaviour;
+    }
+
+    public override ReadOnlyMemory<char> Transform(ReadOnlyMemory<char> line)
+    {
+        foreach (var token in Tokens)
+        {
+            if (line.IndexOf(token) >= 0)
+                return default;
+        }
+        return line;
+    }
+}
+
+public class ApplyToLineContaining : HtmlModuleLine
+{
+    public string Token { get; }
+    private Func<ReadOnlyMemory<char>, ReadOnlyMemory<char>> Fn { get; }
+    public ApplyToLineContaining(string token, Func<ReadOnlyMemory<char>, ReadOnlyMemory<char>> fn, Run behaviour=Run.Always)
+    {
+        Token = token;
+        Fn = fn;
+        Behaviour = behaviour;
+    }
+    public override ReadOnlyMemory<char> Transform(ReadOnlyMemory<char> line) => line.IndexOf(Token) >= 0 ? Fn(line) : line;
+}
+
 public class RemovePrefixesFromLine : HtmlModuleLine
 {
     public string[] Prefixes { get; }
