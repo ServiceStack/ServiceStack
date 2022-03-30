@@ -152,15 +152,13 @@ public class PublishTasks
         var baseUrl = "http://localhost:20000";
         using var appHost = new AppHost().Init().Start(baseUrl);
         
+        var sb = new StringBuilder("import { ApiResult } from './client';\n\n");
         var dtos = baseUrl.CombineWith("/types/typescript").GetStringFromUrl();
-        dtos += @"
-// declare Types used in /ui 
-// @ts-ignore
-export declare var APP:AppMetadata
-";
-        
+        sb.AppendLine(dtos);
+        sb.AppendTypeDefinitionFile(filePath:Path.Combine(NetCoreTestsDir, "custom", "types.d.ts"));
+
         Directory.SetCurrentDirectory(ProjectDir);
-        File.WriteAllText(Path.GetFullPath("./lib/types.ts"), dtos);
+        File.WriteAllText(Path.GetFullPath("./lib/types.ts"), sb.ToString());
     }
 
     [Test]
@@ -187,6 +185,7 @@ export declare var APP:AppMetadata
 
         FileSystemVirtualFiles.RecreateDirectory("dist");
         File.Copy("../NorthwindAuto/node_modules/@servicestack/client/dist/index.d.ts", "dist/client.d.ts");
+        File.Copy("../NorthwindAuto/node_modules/@servicestack/client/dist/index.d.ts", "../NorthwindAuto/lib/client.d.ts", overwrite:true);
 
         var memFs = new MemoryVirtualFiles();
         var typesFs = new FileSystemVirtualFiles("types");
@@ -213,75 +212,30 @@ export declare var APP:AppMetadata
 public static class TypeScriptDefinitionUtils
 {
     private static string Header = @"import { ApiResult, JsonServiceClient } from './client'
-import { App, Forms, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, Breakpoints, AuthenticateResponse, AdminUsersInfo } from './shared'
+import { App, Meta, Forms, Routes, Breakpoints, Transition, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo, LinkInfo, AuthenticateResponse, AdminUsersInfo } from './shared'
 ";
-    private static string Footer = @"export declare var App:App
-export declare var Forms:Forms";
+    private static string Footer = @"export let App:App;";
 
     private static Dictionary<string, string> Headers = new()
     {
-        ["locode"] = Header,
-        ["explorer"] = Header,
-        ["admin"] = Header,
+        ["shared"] = "import { ApiResult } from './client';",
+        ["explorer"] = Header + "import { ExplorerRoutes, ExplorerRoutesExtend, ExplorerStore } from './shared';",
+        ["locode"] = Header + "import { LocodeRoutes, LocodeRoutesExtend, LocodeStore, LocodeSettings, ApiState, CrudApisState } from './shared';",
+        ["admin"] = Header + "import { AdminRoutes, AdminStore } from './shared';",
     };
-
-    private static Dictionary<string, string> Footers = new()
-    {
-        ["locode"] = Footer + @"
-/** Method arguments of custom Create Form Components */
-export interface CreateComponentArgs {
-    store: typeof store;
-    routes: typeof routes;
-    settings: typeof settings;
-    state: () => State;
-    save: () => void;
-    done: () => void;
-}
-/** Method Signature of custom Create Form Components */
-export declare type CreateComponent = (args:CreateComponentArgs) => Record<string,any>;
-
-/** Method arguments of custom Edit Form Components */
-export interface EditComponentArgs {
-    store: typeof store;
-    routes: typeof routes;
-    settings: typeof settings;
-    state: () => State;
-    save: () => void;
-    done: () => void;
-}
-/** Method signature of custom Edit Form Components */
-export declare type EditComponent = (args:EditComponentArgs) => Record<string,any>;",
-        
-        ["explorer"] = Footer + @"
-/** Method arguments of custom Doc Components */
-export interface DocComponentArgs {
-    store: typeof store;
-    routes: typeof routes;
-    breakpoints: typeof breakpoints;
-    op: () => MetadataOperationType;
-}
-/** Method Signature of custom Doc Components */
-export declare type DocComponent = (args:DocComponentArgs) => Record<string,any>;",
-        
-        ["admin"] = Footer,
-    };
-
+    
     static FilesTransformer TransformerOptions = new()
     {
         FileExtensions =
         {
             ["ts"] = new FileTransformerOptions
             {
-                // BlockTransformers = {
-                //     new RemoveBlock("/**", "*/", Run.IgnoreInDebug),
-                // },
                 LineTransformers = new()
                 {
                     new RemoveLineStartingWith(new[] { "import " }, ignoreWhiteSpace:false, Run.Always),
                     new RemoveLineStartingWith("export {};", ignoreWhiteSpace:false, Run.Always),
-                    new RemoveLineStartingWith("export type App = import(", ignoreWhiteSpace:false, Run.Always),
-                    new RemoveLineStartingWith("export type Breakpoints = import(", ignoreWhiteSpace:false, Run.Always),
-                    new RemoveLineStartingWith("export let Forms: import(", ignoreWhiteSpace:false, Run.Always),
+                    new RemoveLineContaining("= import(", Run.Always),
+                    new ApplyToLineContaining(": import(", line => $"{line.LeftPart(':')}:{line.LastRightPart('.')}".AsMemory(), Run.Always),
                 },
             },
         }
@@ -302,12 +256,28 @@ export declare type DocComponent = (args:DocComponentArgs) => Record<string,any>
         
         var sb = new StringBuilder();
         if (Headers.TryGetValue(path, out var header))
-            sb.AppendLine(header);
+            sb.AppendLine(header).AppendLine();
         wipFs.GetAllFiles()
             .Each(file => sb.AppendLine(file.ReadAllText()));
-        if (Footers.TryGetValue(path, out var footer))
-            sb.AppendLine(footer);
+
+        sb.AppendTypeDefinitionFile(Path.Combine(distFs.RootDirectory.RealPath, "..", "custom", $"{path}.d.ts"));
         
         distFs.WriteFile($"{path}.d.ts", sb.ToString());
     }
+    
+    public static void AppendTypeDefinitionFile(this StringBuilder sb, string filePath)
+    {
+        if (!File.Exists(filePath))
+            return;
+        
+        var file = new FileInfo(filePath);
+        using var sr = file.OpenRead();
+        foreach (var line in sr.ReadLines())
+        {
+            if (line.StartsWith("import "))
+                continue;
+            sb.AppendLine(line);
+        }
+    }
+
 }

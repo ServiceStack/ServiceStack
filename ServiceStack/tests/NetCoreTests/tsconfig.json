@@ -11,7 +11,7 @@
   ],
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["ES5", "ES2020"],
+    "lib": ["DOM", "ES5", "ES2020"],
     // Tells TypeScript to read JS files, as
     // normally they are ignored as source files
     "allowJs": true,
