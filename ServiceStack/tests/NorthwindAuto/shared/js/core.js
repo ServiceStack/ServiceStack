@@ -9,10 +9,10 @@ import { Files } from "./Files"
  * @example
  * let a = b()?.c // equivalent to:
  * let a = map(b(), x => x.c)
- * @template {Object} T
- * @template {Object} V
+ * @template T,V
  * @param {T} o
- * @param {(o:T) => V} f
+ * @param {(T) => V} f
+ * @return {V|null}
  */
 export function map(o, f) { return o == null ? null : f(o) }
 

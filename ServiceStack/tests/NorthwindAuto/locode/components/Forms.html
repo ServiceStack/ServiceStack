@@ -1,5 +1,5 @@
  <script minify>
-import { Server, GetCrudEvents, CreateComponentArgs, EditComponentArgs, ApiCss, MetadataType, ApiState } from "../../lib/types"
+import { Server, GetCrudEvents, CreateComponentArgs, EditComponentArgs, ApiCss, MetadataType, CrudApisState, ApiState } from "../../lib/types"
 import { map } from "../../shared/js/core"
 import { Meta, Forms } from "../js/init"
 import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client"
@@ -14,9 +14,7 @@ App.components({
             get css() { return map(this.apiCreate, x => x.op.ui && x.op.ui.locodeCss) },
             get formClass() { return map(this.css, x => x.form) || Forms.formClass },
             get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
-            /** @type State */
             get state() { return state && state() },
-            /** @type ApiState|null */
             get apiCreate() { return map(this.state, x => x.apiCreate) },
             /** @type ApiResult */
             get api() { return map(this.apiCreate, x => x.api) },
@@ -52,7 +50,7 @@ App.components({
             get css() { return map(this.useApiUpdate, x => x.op.ui && x.op.ui.locodeCss) },
             get formClass() { return map(this.css, x => x.form) || Forms.formClass },
             get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
-            /** @type State */
+            /** @type CrudApisState */
             get state() { return state && state() },
             /** @type ApiState|null */
             get apiPatch() { return map(this.state, x => x.apiPatch) },

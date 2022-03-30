@@ -288,7 +288,7 @@ App.events.subscribe('route:nav', args => store.init())
 /** 
  * Create a new state for an API that encapsulates its invocation and execution
  * @param {MetadataOperationType} op
- * @return {ApiState} */
+ * @return {ApiState|null} */
 function apiState(op) {
     if (!op) return null
     let formLayout = Forms.resolveFormLayout(op)
