@@ -1,6 +1,6 @@
 <script minify>
 function filterRules(type) {
-    let c = APP.plugins.autoQuery.viewerConventions
+    let c = Server.plugins.autoQuery.viewerConventions
     if (!Types.isString(type)) c = c.filter(x => x.types !== 'string')
     return c
 }

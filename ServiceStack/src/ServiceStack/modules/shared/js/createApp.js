@@ -1,28 +1,4 @@
 /*minify:*/
-/** @typedef {<T>(args:T) => T} Identity */
-/** @typedef {{
- *     events: { 
- *         subscribe: function(string, Function): { unsubscribe: function():void }, 
- *         publish: function(string, any): void 
- *     };
- *     readonly petite: any;    components: function(Object.<string,Function>): void;
- *     component: function(string, any): void;
- *     template: function(string, string): void;
- *     templates: function(Object.<string,string>): void;
- *     directive: function(string, Function): void;
- *     prop: function(string, any): void;
- *     props: function(Object.<string,any>): void;
- *     build: function(Object.<string,any>): any;
- *     plugin: function(Object.<string,any>): void;
- *     import: function(string): Promise<any>;
- *     onStart: function(Function): void;
- *     start: function(): void;
- *     unsubscribe: function(): void;
- *     createApp: function(any): any;
- *     nextTick: function(Function): void;
- *     reactive: Identity;
- * }} App
- */
 /** App to register and build a PetiteVueApp
  * @param {{createApp:(initialData?:any) => any,nextTick:(fn:Function) => void,reactive:Identity}} PetiteVue 
  * @returns {App}
@@ -63,7 +39,7 @@ function createApp(PetiteVue) {
     return {
         events,
         get petite() { return petite },
-        /** @param {{[index:string]:Function}} components */
+        /** @param {Record<string,Function>} components */
         components(components) {
             assertNotBuilt('components')
             Object.keys(components).forEach(name => register(name, components[name]))
@@ -80,7 +56,7 @@ function createApp(PetiteVue) {
             assertNotBuilt('template')
             register(name, template(name, $template))
         },
-        /** @param {{[index:string]:string}} templates */
+        /** @param {Record<string,string>} templates */
         templates(templates) {
             assertNotBuilt('template')
             Object.keys(templates).forEach(name => register(name, template(name, templates[name])))
@@ -97,12 +73,12 @@ function createApp(PetiteVue) {
             assertNotBuilt('prop')
             Props[name] = val
         },
-        /** @param {{[index:string]:any}} props */
+        /** @param {Record<string,any>} props */
         props(props) {
             assertNotBuilt('props')
             Object.assign(Props, props)
         },
-        /** @param {{[index:string]:any}} args */
+        /** @param {Record<string,any>} args */
         build(args) {
             if (!PetiteVue)
                 throw new ReferenceError('PetiteVue is not defined')
@@ -114,13 +90,6 @@ function createApp(PetiteVue) {
             })
             Object.keys(Directives).forEach(name => petite.directive(name, Directives[name]))
             return petite
-        },
-        /** @param {{[index:string]:any}} plugins */
-        plugin(plugins) {
-            Object.keys(plugins).forEach(name => {
-                let f = plugins[name]
-                this[name] = typeof f == 'function' ? f.bind(this) : f
-            })
         },
         /** @param {string} src
          *  @return {Promise<any>} */

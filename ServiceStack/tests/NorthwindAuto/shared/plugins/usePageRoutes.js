@@ -1,10 +1,10 @@
 import { queryString, leftPart, each } from "@servicestack/client"
+import { App, Routes } from "../../lib/types"
 
 /*minify:*/
 
-/** @typedef {import('../js/createApp').App} App */
-
 /**
+ * @template {Record<<string,Function>} T
  * Maintain page route state:
  *  - /{pageKey}?{queryKeys}
  * @remarks
@@ -13,8 +13,8 @@ import { queryString, leftPart, each } from "@servicestack/client"
  *   route:to   - navigated by to()
  *   route:nav  - fired for both
  * @param {App} App
- * @param {{page:string,queryKeys:string[],handlers?:{init?:(args:any)=>void,to?:(args:any)=>void,nav?:(args:any)=>void},extend?:Object<string,function>}} opt 
- * @return {* & {page:string,set:(args:any)=>void,state:any,to:(args:any)=>void,href:(args:any)=>string}}
+ * @param {{page:string,queryKeys:string[],handlers?:{init?:(args:any)=>void,to?:(args:any)=>void,nav?:(args:any)=>void},extend?:T}} opt 
+ * @return {T & Routes}
  */
 export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
     if (typeof page  != 'string' || page === '')
@@ -22,10 +22,20 @@ export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
     if (typeof queryKeys == 'undefined' || !queryKeys.length)
         throw new Error('Array of queryKeys is required')
 
-    let allKeys = [page,...queryKeys] 
-    let getPage = () => leftPart(location.href.substring(document.baseURI.length),'?')
-    let state = store => each(allKeys, (o, key) => store[key] ? o[key] = store[key] : null)
-    
+    let allKeys = [page,...queryKeys]
+    /** @return {string} */
+    function getPage() {
+        return leftPart(location.href.substring(document.baseURI.length),'?')
+    }
+
+    /** @param {Record<string, any>} store
+     *  @return {Record<string, any>} */
+    function state(store) { 
+        return each(allKeys, (o, key) => store[key] ? o[key] = store[key] : null) 
+    }
+
+    /** @param {string} name
+     *  @param {Record<string,any>} args */
     let publish = (name,args) => {
         events.publish('route:' + name, args)
         events.publish('route:nav',args)
@@ -45,6 +55,7 @@ export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
             this.set({ [page]:getPage(), ...(location.search ? queryString(location.search) : {}) })
             publish('init', state(this))
         },
+        /** @param {Record<string, any>} args */
         set(args) {
             if (typeof args['$page'] != 'undefined') args[page] = args['$page']
             Object.keys(args).forEach(k => {
@@ -54,6 +65,7 @@ export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
             })
         },
         get state() { return state(this) },
+        /** @param { Record<string, any>} args */
         to(args) {
             this.set(args)
             let cleanArgs = state(this)
@@ -62,6 +74,7 @@ export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
             history.pushState(cleanArgs, this[page], href)
             publish('to', cleanArgs)
         },
+        /** @param { Record<string, any>} args */
         href(args) {
             /**: can't mutate reactive stores before createApp() */
             if (args && typeof args['$page'] != 'undefined') args[page] = args['$page']

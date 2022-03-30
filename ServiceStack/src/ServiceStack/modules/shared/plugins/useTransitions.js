@@ -1,5 +1,4 @@
 /*minify:*/
-/** @typedef {import('../js/createApp').App} App */
 /**
  * Implements https://tailwindui.com transition states by encoding in data-transition attr
  * @example
@@ -8,17 +7,14 @@
  *   leaving:  { cls:'transition ease-in-out duration-300 transform', from:'translate-x-0',     to:'-translate-x-full' } 
  * }" data-transition-for="sidebar"
  * @param {App} App
- * @param {{[index:string]:boolean}} transitions
- * @return {(prop:string,enter?:boolean) => boolean}
+ * @param {Record<string,boolean>} transitions
+ * @return {Transition}
  */
 function useTransitions(App, transitions) {
-    /**
-     * Invoke a named Tailwind Transition animation definition
-     * 
-     * @param {string} prop
-     * @param {boolean} [enter]
-     * @return {boolean}
-     */
+    /** Invoke a named Tailwind Transition animation definition 
+     *  @param {string} prop
+     *  @param {boolean} enter
+     *  @return {boolean} */
     function transition(prop, enter) {
         let transitionEls = $$(`[data-transition-for=${prop}]`)
         transitionEls.forEach(el => {

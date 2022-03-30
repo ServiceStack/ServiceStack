@@ -2,14 +2,16 @@
 import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo } from "../../lib/types"
 
 import { combinePaths, JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
-import { APP } from "../../lib/types"
-import { createMeta, appObjects, Crud } from "../../shared/js/core"
-import { createForms } from "../../shared/js/createForms"
+import { Server } from "../../lib/types"
+import { Crud } from "../../shared/js/core"
+import { createForms, createMeta } from "../../shared/js/createForms"
 
 /*minify:*/
-//APP.config.debugMode = false
+//Server.config.debugMode = false
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
+/** @type {string|null} */
 let bearerToken = null
+/** @type {string|null} */
 let authsecret = null
 
 /** 
@@ -26,33 +28,28 @@ export function createClient(fn) {
         c.bearerToken = bearerToken
         c.enableAutoRefreshToken = false
         if (authsecret) c.headers.set('authsecret', authsecret)
-        let apiFmt = APP.httpHandlers['ApiHandlers.Json']
+        let apiFmt = Server.httpHandlers['ApiHandlers.Json']
         if (apiFmt)
             c.basePath = apiFmt.replace('/{Request}', '')
         if (fn) fn(c)
     })
 }
 
-/**
- * App's pre-configured `JsonServiceClient` instance for making typed API requests
- * @type {JsonServiceClient}
- */
+/** App's pre-configured `JsonServiceClient` instance for making typed API requests */
 export let client = createClient()
 
-/** 
- * Resolve Absolute URL for API Name
+/** Resolve Absolute URL for API Name
  * @param {string} op 
- * @return {string}
- */
+ * @return {string} */
 export function resolveApiUrl(op) { 
     return combinePaths(client.replyBaseUrl,op) 
 } 
 
-APP.api.operations.forEach(op => {
+Server.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
 
-let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack') && Crud.isQuery(op))
+let appOps = Server.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack') && Crud.isQuery(op))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
 /** Organized data structure to render Sidebar
  * @remarks
@@ -63,7 +60,7 @@ export let sideNav = appTags.map(tag => ({
     operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
 }))
 
-let ssOps = APP.api.operations.filter(op => op.request.namespace.startsWith('ServiceStack') && Crud.isQuery(op))
+let ssOps = Server.api.operations.filter(op => op.request.namespace.startsWith('ServiceStack') && Crud.isQuery(op))
 let ssTags = Array.from(new Set(ssOps.flatMap(op => op.tags))).sort()
 ssTags.map(tag => ({
     tag,
@@ -71,7 +68,7 @@ ssTags.map(tag => ({
     operations: ssOps.filter(op => op.tags.indexOf(tag) >= 0)
 })).forEach(nav => sideNav.push(nav))
 
-let tags = APP.ui.locode.tags
+let tags = Server.ui.locode.tags
 let other = {
     tag: appTags.length > 0 ? tags.other : tags.default,
     expanded: true,
@@ -79,13 +76,13 @@ let other = {
 }
 if (other.operations.length > 0) sideNav.push(other)
 
-let alwaysHideTags = APP.ui.alwaysHideTags || !DEBUG && APP.ui.hideTags
+let alwaysHideTags = Server.ui.alwaysHideTags || !DEBUG && Server.ui.hideTags
 if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 
 let appName = 'locode'
-export let Meta = createMeta(APP, appName)
-export let Forms = createForms(Meta, APP.ui.locode.css, APP.ui)
+export let Meta = createMeta(Server, appName)
+export let Forms = createForms(Meta, Server.ui.locode.css, Server.ui)
 
 /*:minify*/

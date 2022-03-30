@@ -1,7 +1,7 @@
 import { $$ } from "@servicestack/client"
-/*minify:*/
+import { App, Transition } from "../../lib/types"
 
-/** @typedef {import('../js/createApp').App} App */
+/*minify:*/
 
 /**
  * Implements https://tailwindui.com transition states by encoding in data-transition attr
@@ -11,18 +11,15 @@ import { $$ } from "@servicestack/client"
  *   leaving:  { cls:'transition ease-in-out duration-300 transform', from:'translate-x-0',     to:'-translate-x-full' } 
  * }" data-transition-for="sidebar"
  * @param {App} App
- * @param {{[index:string]:boolean}} transitions
- * @return {(prop:string,enter?:boolean) => boolean}
+ * @param {Record<string,boolean>} transitions
+ * @return {Transition}
  */
 export function useTransitions(App, transitions) {
 
-    /**
-     * Invoke a named Tailwind Transition animation definition
-     * 
-     * @param {string} prop
-     * @param {boolean} [enter]
-     * @return {boolean}
-     */
+    /** Invoke a named Tailwind Transition animation definition 
+     *  @param {string} prop
+     *  @param {boolean} enter
+     *  @return {boolean} */
     function transition(prop, enter) {
         let transitionEls = $$(`[data-transition-for=${prop}]`)
         transitionEls.forEach(el => {

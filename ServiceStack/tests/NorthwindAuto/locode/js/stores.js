@@ -1,6 +1,6 @@
 /**: Also used by .d.ts */
-import { APP, Authenticate, AuthenticateResponse, MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, LinkInfo, ThemeInfo } from "../../lib/types"
-/** @typedef {import("../../shared/plugins/useBreakpoints").Breakpoints} Breakpoints */
+import { Server, Breakpoints, Transition, Routes, LocodeRoutes, LocodeRoutesExtend, LocodeStore, LocodeSettings } from "../../lib/types"
+import { CrudApisState, ApiState, Authenticate, AuthenticateResponse, MetadataOperationType, InputInfo, LinkInfo } from "../../lib/types"
 
 import { appendQueryString, humanify, ApiResult, delaySet } from "@servicestack/client"
 import { setBodyClass, sortOps, Crud, map, canAccess, createRequest, apiSend, apiForm, invalidAccessMessage } from "../../shared/js/core"
@@ -12,14 +12,12 @@ import { Meta, sideNav } from "./init"
 /*minify:*/
 /** 
  * Execute tailwindui.com transition definition rules
- * @remarks
- * @type {(prop:string,enter?:boolean) => boolean}
+ * @type {Transition}
  * */
 export let transition = useTransitions(App, { sidebar: true, 'select-columns': false })
 
 /** 
  * Reactive store to maintain & programatically access Tailwind's responsive breakpoints
- * @remarks
  * @type {Breakpoints & {previous: Breakpoints, current: Breakpoints, snap: (function(): void)}} 
  * */
 export let breakpoints = useBreakpoints(App, {
@@ -31,16 +29,8 @@ export let breakpoints = useBreakpoints(App, {
 let onRoutesEditChange = null
 let lastEditState = null
 
-/** Custom route params used in Locode 
- * @typedef {{op?:string,tab?:string,provider?:string,preview?:string,body?:string,doc?:string,skip?:string,new?:string,edit?:string}} LocodeRoutes */
-/** Route methods used in Locode 
- * @typedef {{onEditChange(any): void, update(): void, uiHref(any): string}} LocodeRoutesExtend */
-
-/**
- * The App's reactive `routes` navigation component used for all App navigation
- * @remarks
- * @type {LocodeRoutes & LocodeRoutesExtend & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}} 
- */
+/** The App's reactive `routes` navigation component used for all App navigation
+ * @type {LocodeRoutes & LocodeRoutesExtend & Routes} */
 export let routes = usePageRoutes(App,{
     page:'op',
     queryKeys:'tab,provider,preview,body,doc,skip,new,edit'.split(','),
@@ -53,7 +43,7 @@ export let routes = usePageRoutes(App,{
     /** @type LocodeRoutesExtend */
     extend: {
         uiHref(args) {
-            return this.op && APP.ui.modules.indexOf('/ui') >= 0
+            return this.op && Server.ui.modules.indexOf('/ui') >= 0
                 ? appendQueryString(`/ui/${this.op}`, args || {})
                 : ''
         },
@@ -77,25 +67,8 @@ export let routes = usePageRoutes(App,{
     }
 })
 
-/** 
- * Manage users query & filter preferences in the Users browsers localStorage
- * @remarks
- * @type {{
- *     op: (op:string) => any, 
- *     lookup: (op:string) => any, 
- *     saveOp: (op:string, fn:Function) => void, 
- *     hasPrefs: (op:string) => boolean, 
- *     saveOpProp: (op:string, name:string, fn:Function)=> void, 
- *     saveLookup: (op:string, fn:Function) => void, 
- *     events: {
- *         op: (op:string) => string, 
- *         lookup: (op:string) => string, 
- *         opProp: (op:string, name:string) => string
- *     }, 
- *     opProp: (op:string, name:string) => any, 
- *     clearPrefs: (op:string) => void 
- * }}
- */
+/** Manage users query & filter preferences in the Users browsers localStorage
+ * @type {LocodeSettings} */
 export let settings = {
     events: {
         /** @param {string} op */
@@ -160,43 +133,8 @@ export let settings = {
     }
 }
 
-/** 
- * App's primary reactive store maintaining global functionality for Locode Apps
- * @remarks
- * @type {{
- *     cachedFetch: (url:string) => Promise<string>, 
- *     copied: boolean, 
- *     sideNav: {expanded: boolean, operations: MetadataOperationType[], tag: string}[], 
- *     auth: AuthenticateResponse, 
- *     readonly displayName: string|null, 
- *     login: (args:any, $on?:Function) => void, 
- *     detailSrcResult: any, 
- *     logout: () => void, 
- *     readonly isServiceStackType: boolean, 
- *     readonly opViewModel: string, 
- *     api: ApiResult<AuthenticateResponse>, 
- *     modalLookup: any|null, 
- *     init: () => void, 
- *     readonly op: MetadataOperationType, 
- *     debug: boolean, 
- *     readonly filteredSideNav: {tag: string, operations: MetadataOperationType[], expanded: boolean}[], 
- *     readonly authProfileUrl: string|null, 
- *     previewResult: string|null, 
- *     readonly opDesc: string, 
- *     toggle: (tag:string) => void, 
- *     readonly opDataModel: string, 
- *     readonly authRoles: string[], 
- *     filter: string, 
- *     baseUrl: string, 
- *     readonly authLinks: LinkInfo[], 
- *     readonly opName: string, 
- *     SignIn: (opt:any) => Function, 
- *     hasRole: (role:string) => boolean, 
- *     readonly authPermissions: string[], 
- *     readonly useLang: string,  
- *     invalidAccess: () => string|null
- * }}
- */
+/** App's primary reactive store maintaining global functionality for Locode Apps
+ * @type {LocodeStore} */
 export let store = App.reactive({
     /** @type {string|null} */
     previewResult: null,
@@ -206,7 +144,7 @@ export let store = App.reactive({
     sideNav,
     detailSrcResult: {},
     /** @type {boolean} */
-    debug: APP.config.debugMode,
+    debug: Server.config.debugMode,
     /** @type {ApiResult<AuthenticateResponse>} */
     api: null,
     /** @type {AuthenticateResponse} */
@@ -252,7 +190,7 @@ export let store = App.reactive({
     },
 
     /** @return {MetadataOperationType} */
-    get op() { return routes.op ? APP.api.operations.find(op => op.request.name === routes.op) : null },
+    get op() { return routes.op ? Server.api.operations.find(op => op.request.name === routes.op) : null },
     /** @return {string} */
     get opName() { return this.op && this.op.request.name },
     /** @return {string} */
@@ -293,22 +231,22 @@ export let store = App.reactive({
      *  @return {Function}
      *  @constructor */
     SignIn(opt) {
-        return APP.plugins.auth
+        return Server.plugins.auth
         ? SignIn({
-            plugin: APP.plugins.auth,
+            plugin: Server.plugins.auth,
             provider:() => routes.provider,
             login:args => this.login(args, opt && opt.$on),
             api: () => this.api
         })
-        : NoAuth({ message:`Welcome to ${APP.app.serviceName}` })
+        : NoAuth({ message:`Welcome to ${Server.app.serviceName}` })
     },
 
     /** @param {any} args
      *  @param {Function} [$on] */
     login(args, $on) {
         let provider = routes.provider || 'credentials'
-        let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
-            || APP.plugins.auth.authProviders[0]
+        let authProvider = Server.plugins.auth.authProviders.find(x => x.name === provider)
+            || Server.plugins.auth.authProviders[0]
         if (!authProvider)
             throw new Error("!authProvider")
         let auth = new Authenticate()
@@ -354,7 +292,7 @@ export let store = App.reactive({
     /** @return {LinkInfo[]} */
     get authLinks() {
         let to = []
-        let roleLinks = this.auth && APP.plugins.auth && APP.plugins.auth.roleLinks || {} 
+        let roleLinks = this.auth && Server.plugins.auth && Server.plugins.auth.roleLinks || {} 
         if (Object.keys(roleLinks).length > 0) {
             this.authRoles.forEach(role => {
                 if (!roleLinks[role]) return;
@@ -383,8 +321,8 @@ App.events.subscribe('route:nav', args => store.init())
 
 /** 
  * Create a new state for an API that encapsulates its invocation and execution
- * @param {MetadataOperationType} op 
- */
+ * @param {MetadataOperationType} op
+ * @return {ApiState} */
 export function apiState(op) {
     if (!op) return null
     let formLayout = Forms.resolveFormLayout(op)
@@ -413,7 +351,8 @@ export function apiState(op) {
             let except = formLayout.map(input => input.id).filter(x => x)
             return this.apiResult && this.apiResult.api.summaryMessage(except)
         },
-        /** @param {string} id */
+        /** @param {string} id 
+         *  @return {string|null} */
         fieldError(id) {
             let error = this.error
             let fieldError = error && error.errors && error.errors.find(x => x.fieldName.toLowerCase() === id.toLowerCase());
@@ -465,40 +404,19 @@ export function apiState(op) {
     }
 }
 
-/**
- * Create a new state for an API that encapsulates its invocation and execution
- * @typedef {ReturnType<apiState>} ApiState 
- */
-
-/** 
- * All CRUD API States available for this operation
- * @typedef {{
- * opQuery: MetadataOperationType|null, 
- *     opCreate: MetadataOperationType|null, 
- *     opPatch: MetadataOperationType|null, 
- *     opUpdate: MetadataOperationType|null, 
- *     opDelete: MetadataOperationType|null, 
- *     apiQuery: ApiState|null,
- *     apiCreate: ApiState|null,
- *     apiPatch: ApiState|null,
- *     apiUpdate: ApiState|null,
- *     apiDelete: ApiState|null
- * }} State
- */
-
 /** 
  * Return all CRUD API States available for this operation
  * @param {string} opName
- * @return {State}
+ * @return {CrudApisState}
  */
 export function createState(opName) {
-    let op = opName && APP.api.operations.find(x => x.request.name === opName)
+    let op = opName && Server.api.operations.find(x => x.request.name === opName)
     if (op) {
 
         /** @param f
          *  @returns {MetadataOperationType|null} */
         function findOp(f) {
-            return APP.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
+            return Server.api.operations.find(x => f(x) && Types.equals(op.dataModel,x.dataModel))
         }
 
         /** @param {MetadataOperationType} op

@@ -1,93 +1,15 @@
-import { ThemeInfo } from "../../lib/types"
+import { Forms, Meta } from "../../lib/types"
 import { humanify, padInt, toDate, mapGet, apiValue, isDate, indexOfAny, fromXsdDuration, enc, uniq } from "@servicestack/client"
 import { Types } from "./Types"
-import { Forms } from "../../ui/js/init"
 import { Crud, map } from "./core";
 import { MetadataOperationType, MetadataType, MetadataPropertyType, ApiCss, UiInfo, InputInfo } from "../../lib/types"
 
 /*minify:*/
 
-/** @typedef {{
- * getId: (type: MetadataType, row: any) => any;
- *     getType: (typeRef: string | {
- *         namespace: string;
- *         name: string;
- *     }) => MetadataType;
- *     inputId: (input: any) => any;
- *     colClass: (fields: any) => string;
- *     inputProp: (prop: any) => {
- *         id: any;
- *         type: any;
- *         'data-type': any;
- *     };
- *     getPrimaryKey: (type: MetadataType) => any;
- *     typeProperties: (type: MetadataType) => MetadataPropertyType[];
- *     relativeTime: (val: string | number | Date, rtf?: Intl.RelativeTimeFormat) => string;
- *     relativeTimeFromMs: (elapsedMs: number, rtf?: Intl.RelativeTimeFormat) => string;
- *     relativeTimeFromDate: (d: Date, from?: Date) => string;
- *     Lookup: {};
- *     lookupLabel: (model: any, id: any, label: string) => any;
- *     refInfo: (row: any, prop: MetadataPropertyType, props: MetadataPropertyType[]) => {
- *         href: {
- *             op: string;
- *             skip: any;
- *             edit: any;
- *             new: any;
- *             $qs: {
- *                 [x: string]: any;
- *             };
- *         };
- *         icon: any;
- *         html: any;
- *     };
- *     fetchLookupValues: (results: any[], props: MetadataPropertyType[], refreshFn: () => void) => void;
- *     theme: ThemeInfo;
- *     formClass: string;
- *     gridClass: string;
- *     opTitle(op: MetadataOperationType): any;
- *     forAutoForm(type: MetadataType): (field: any) => void;
- *     forCreate(type: MetadataType): (field: any) => void;
- *     forEdit(type: MetadataType): (field: any) => void;
- *     getFormProp(id: any, type: any): MetadataPropertyType;
- *     getGridInputs(formLayout: InputInfo[], f?: (args: {
- *         id: any;
- *         input: InputInfo;
- *         rowClass: string;
- *     }) => void): {
- *         id: any;
- *         input: InputInfo;
- *         rowClass: string;
- *     }[];
- *     getGridInput(input: InputInfo, f?: (args: {
- *         id: any;
- *         input: InputInfo;
- *         rowClass: string;
- *     }) => void): {
- *         id: any;
- *         input: InputInfo;
- *         rowClass: string;
- *     };
- *     getFieldError(error: any, id: any): any;
- *     kvpValues(input: any): any;
- *     useLabel(input: any): any;
- *     usePlaceholder(input: any): any;
- *     isRequired(input: any): any;
- *     resolveFormLayout(op: MetadataOperationType): InputInfo[];
- *     formValues(form: any): {};
- *     formData(form: any, op: MetadataOperationType): any;
- *     groupTypes(allTypes: any): any[];
- *     complexProp(prop: any): boolean;
- *     supportsProp(prop: any): boolean;
- *     populateModel(model: any, formLayout: any): any;
- *     apiValue(o: any): any;
- *     format(o: any, prop: MetadataPropertyType): any;
- * }} Forms
- */
-
 /** @param {Meta} Meta
  *  @param {ApiCss} css 
  *  @param {UiInfo} ui
- *  @return Forms */
+ *  @return {Forms} */
 export function createForms(Meta, css, ui) {
     let { OpsMap, TypesMap, getIcon } = Meta
     let operations = Object.values(OpsMap)
@@ -118,7 +40,6 @@ export function createForms(Meta, css, ui) {
                 ? TypesMap[typeRef]
                 : TypesMap[typeRef.name]
     }
-    
 
     function inputType(typeName) {
         if (!typeName) return null
@@ -468,8 +389,8 @@ export function createForms(Meta, css, ui) {
         return state
     }
 
-    /** @type Forms */
-    let ret = {
+    /** @type {Forms} */
+    return {
         getId,
         getType,
         inputId,
@@ -724,7 +645,6 @@ export function createForms(Meta, css, ui) {
                 : `${ret}`
         }
     }
-    return ret
 }
 
 
@@ -769,28 +689,15 @@ export function appObjects(app,appName) {
         }
     })
 
-    return {
-        /** Global Cache */
-        CACHE,
-        /** HTTP Errors specially handled by Locode */
-        HttpErrors,
-        /** Map of Request DTO names to `MetadataOperationType` */
-        OpsMap,
-        /** Map of DTO names to `MetadataType` */
-        TypesMap,
-        /** Map of DTO namespace + names to `MetadataType` */
-        FullTypesMap,
-    }
+    return { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, }
 }
-
-/** Generic functionality around AppMetadata
- * @typedef {ReturnType<createMeta>} Meta
- */
 
 /**
  * Generic functionality around AppMetadata
+ * @remarks
  * @param {AppMetadata} app
  * @param {string} appName
+ * @return {Meta}
  */
 export function createMeta(app,appName) {
 
@@ -839,11 +746,9 @@ export function createMeta(app,appName) {
     let defaultIcon = app.ui.theme.modelIcon ||
         { svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12v6s0 3 7 3s7-3 7-3v-6"/><path d="M5 6v6s0 3 7 3s7-3 7-3V6"/><path d="M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z"/></g></svg>` }
 
-    /**
-     * Get API Icon
+    /** Get API Icon
      * @param {{op:MetadataOperationType?,type:MetadataType?}} opt
-     * @return {{svg:string}}
-     */
+     * @return {{svg:string}} */
     function getIcon({op,type}) {
         if (op) {
             let img = map(op.request, x => x.icon)

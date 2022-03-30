@@ -62,12 +62,12 @@ DEBUG = true /*debug*/
 <script src="../types/js?vfx=hash"></script>
 <script>
 Object.assign(window, exports)
-/*shared/js:core,Types,createForms */
+/*shared/js:core,Files,Types,createForms */
 import { combinePaths, humanify, $1,uniq } from "@servicestack/client"
-import { APP } from "../lib/types"
+import { Server } from "../lib/types"
 import { setFavIcon, setBodyClass } from "../shared/js/core"
 
-/*gateway:window.APP=MetadataApp({view:'locode',jsconfig:'eccn'})*/
+/*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn'})*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth
     setBodyClass({ auth })
@@ -77,8 +77,8 @@ function loadAuth(auth) {
 <script src="../js/petite-vue.js?vfx=hash"></script>
 <script>
 
-document.title = APP.app.serviceName
-setFavIcon(APP.ui.brandIcon, combinePaths(APP.app.baseUrl, '/metadata/svg/servicestack.datauri'))
+document.title = Server.app.serviceName
+setFavIcon(Server.ui.brandIcon, combinePaths(Server.app.baseUrl, '/metadata/svg/servicestack.datauri'))
 
 /*shared/js:createApp */
 let App = createApp(PetiteVue)
@@ -95,7 +95,7 @@ let App = createApp(PetiteVue)
 /**: crude workaround for PetiteVue's lack of dynamic components */
 function hasNewComponent(dataModel) { return window[`New${dataModel}`] != null }
 function hasEditComponent(dataModel) { return window[`Edit${dataModel}`] != null }
-let DataModels = uniq(window.APP.api.operations.filter(op => op.dataModel).map(op => op.dataModel.name))
+let DataModels = uniq(window.Server.api.operations.filter(op => op.dataModel).map(op => op.dataModel.name))
 
 let newComponents = DataModels.filter(hasNewComponent)
 let sb = []
@@ -121,11 +121,11 @@ App.components({
 
 <script>
 App.build({
-    app: APP.app,
-    ui: APP.ui,
-    serviceName: APP.app.serviceName,
-    get plugins() { return APP.plugins },
-    get api() { return APP.api },
+    app: Server.app,
+    ui: Server.ui,
+    serviceName: Server.app.serviceName,
+    get plugins() { return Server.plugins },
+    get api() { return Server.api },
     store,
     get request() { return this.store.op && this.store.op.request },
     humanify,

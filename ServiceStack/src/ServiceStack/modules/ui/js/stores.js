@@ -1,9 +1,8 @@
-/** @typedef {import("../../shared/plugins/useBreakpoints").Breakpoints} Breakpoints */
 /*minify:*/
 /**
  * Execute tailwindui.com transition definition rules
  * @remarks
- * @type {(prop:string,enter?:boolean) => boolean}
+ * @type {Transition}
  * */
 let transition = useTransitions(App, { sidebar: true })
 /** @type {Breakpoints & {previous: Breakpoints, current: Breakpoints, snap: (function(): void)}} */
@@ -12,15 +11,8 @@ let breakpoints = useBreakpoints(App, {
         change({ previous, current }) { console.log('breakpoints.change', previous, current) } /*debug*/
     }
 })
-/** Custom route params used in API Explorer
- * @typedef {{op?:string,tab?:string,lang?:string,provider?:string,preview?:string,body?:string,doc?:string,detailSrc?:string,form?:string,response?:string}} UiRoutes */
-/** Route methods used in API Explorer
- * @typedef {{queryHref(): string}} UiRoutesExtend */
-/**
- * The App's reactive `routes` navigation component used for all App navigation
- * @remarks
- * @type {UiRoutes & UiRoutesExtend & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}}
- */
+/** The App's reactive `routes` navigation component used for all App navigation
+ * @type {ExplorerRoutes & ExplorerRoutesExtend & Routes} */
 let routes = usePageRoutes(App,{
     page:'op',
     queryKeys:'tab,lang,provider,preview,body,doc,detailSrc,form,response'.split(','),
@@ -30,11 +22,11 @@ let routes = usePageRoutes(App,{
     extend: {
         queryHref() {
             let op = this.op && Meta.OpsMap[this.op]
-            if (op && APP.ui.modules.indexOf('/locode') >= 0) {
+            if (op && Server.ui.modules.indexOf('/locode') >= 0) {
                 if (Crud.isQuery(op)) {
                     return `/locode/${this.op}`
                 } else if (Crud.isCrud(op)) {
-                    let queryOp = APP.api.operations.find(x => Crud.isQuery(x) && Types.equals(op.dataModel,x.dataModel))
+                    let queryOp = Server.api.operations.find(x => Crud.isQuery(x) && Types.equals(op.dataModel,x.dataModel))
                     if (queryOp)
                         return `/locode/${queryOp.request.name}`
                 }
@@ -44,49 +36,8 @@ let routes = usePageRoutes(App,{
     }
 })
 let cleanSrc = src => src.trim();
-/**
- * App's primary reactive store maintaining global functionality for API Explorer
- * @remarks
- * @type {{
- * cachedFetch: (url:string) => Promise<string>,
- *     copied: boolean, 
- *     readonly opTabs: {[p: string]: string}, 
- *     sideNav: {expanded: boolean, operations: MetadataOperationType[], tag: string}[], 
- *     auth: AuthenticateResponse, 
- *     readonly displayName: string|null, 
- *     loadLang: () => void, 
- *     langCache: () => {op: string, lang: string, url: string}, 
- *     login: (args:any, $on?:Function) => void, 
- *     detailSrcResult: {}, 
- *     logout: () => void, 
- *     readonly isServiceStackType: boolean, 
- *     api: ApiResult<AuthenticateResponse>, 
- *     init: () => void, 
- *     readonly op: MetadataOperationType|null, 
- *     debug: boolean, 
- *     readonly filteredSideNav: {tag: string, operations: MetadataOperationType[], expanded: boolean}[], 
- *     readonly authProfileUrl: string|null, 
- *     previewResult: string|null, 
- *     readonly activeLangSrc: string|null, 
- *     readonly previewCache: {preview: string, url: string, lang: string}|null, 
- *     toggle: (tag:string) => void, 
- *     getTypeUrl: (types: string) => string, 
- *     readonly authRoles: string[], 
- *     filter: string, 
- *     loadDetailSrc: () => void, 
- *     baseUrl: string, 
- *     readonly activeDetailSrc: string, 
- *     readonly authLinks: LinkInfo[], 
- *     readonly opName: string, 
- *     readonly previewSrc: string, 
- *     SignIn: (opt:any) => Function,
- *     hasRole: (role:string) => boolean, 
- *     loadPreview: () => void, 
- *     readonly authPermissions: string[], 
- *     readonly useLang: string, 
- *     invalidAccess: () => string|null
- * }}
- */
+/** App's primary reactive store maintaining global functionality for API Explorer 
+ * @type {ExplorerStore} */
 let store = App.reactive({
     /** @type {string|null} */
     previewResult: null,
@@ -96,7 +47,7 @@ let store = App.reactive({
     sideNav,
     detailSrcResult: {},
     /** @type {boolean} */
-    debug: APP.config.debugMode,
+    debug: Server.config.debugMode,
     /** @type {ApiResult<AuthenticateResponse>} */
     api: null,
     /** @type {AuthenticateResponse} */
@@ -208,7 +159,7 @@ let store = App.reactive({
     get activeDetailSrc() { return routes.detailSrc && this.detailSrcResult[this.getTypeUrl(routes.detailSrc)] },
     /** @return {MetadataOperationType|null} */
     get op() {
-        return routes.op ? APP.api.operations.find(op => op.request.name === routes.op) : null
+        return routes.op ? Server.api.operations.find(op => op.request.name === routes.op) : null
     },
     /** @return {string} */
     get opName() { return this.op && this.op.request.name },
@@ -254,21 +205,21 @@ let store = App.reactive({
      *  @return {Function}
      *  @constructor */
     SignIn(opt) {
-        return APP.plugins.auth
+        return Server.plugins.auth
         ? SignIn({
-            plugin: APP.plugins.auth,
+            plugin: Server.plugins.auth,
             provider:() => routes.provider,
             login:args => this.login(args, opt && opt.$on),
             api: () => this.api,
         })
-        : NoAuth({ message:`${APP.app.serviceName} API Explorer` })
+        : NoAuth({ message:`${Server.app.serviceName} API Explorer` })
     },
     /** @param {any} args
      *  @param {Function} [$on] */
     login(args, $on) {
         let provider = routes.provider || 'credentials'
-        let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
-            || APP.plugins.auth.authProviders[0]
+        let authProvider = Server.plugins.auth.authProviders.find(x => x.name === provider)
+            || Server.plugins.auth.authProviders[0]
         if (!authProvider)
             throw new Error("!authProvider")
         let auth = new Authenticate()
@@ -310,7 +261,7 @@ let store = App.reactive({
     /** @return {LinkInfo[]} */
     get authLinks() {
         let to = []
-        let roleLinks = this.auth && APP.plugins.auth && APP.plugins.auth.roleLinks || {} 
+        let roleLinks = this.auth && Server.plugins.auth && Server.plugins.auth.roleLinks || {} 
         if (Object.keys(roleLinks).length > 0) {
             this.authRoles.forEach(role => {
                 if (!roleLinks[role]) return;

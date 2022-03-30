@@ -1,8 +1,11 @@
 import { leftPart, mapGet } from "@servicestack/client"
 import { MetadataType, MetadataPropertyType } from "../../lib/types"
+import { Types } from "../../lib/types"
 /*minify:*/
 
-export let Types = (function() {
+/** APIs to inspect .NET Types 
+ * @type {Types} */
+export const Types = (function() {
     let NumTypesMap = {
         Byte: 'byte',
         Int16: 'short',
@@ -21,12 +24,15 @@ export let Types = (function() {
         Boolean: 'bool',
         ...NumTypesMap,
     }
-    /** @param {string} type */
+    /** Return underlying Type if nullable
+     * @param {string} type */
     function alias(type) {
         return Aliases[type] || type
     }
     /** @param {string} name
-     @param {string[]} genericArgs */
+     * @param {string[]} genericArgs
+     * @return {string}
+     */
     function typeName2(name, genericArgs) {
         if (!name) return ''
         if (!genericArgs)
@@ -35,11 +41,11 @@ export let Types = (function() {
             return alias(genericArgs[0]) + '?'
         if (name.endsWith('[]'))
             return `List<${alias(name.substring(0,name.length-2))}>`
-                ;if (genericArgs.length === 0)
+                if (genericArgs.length === 0)
             return alias(name)
         return leftPart(alias(name), '`') + '<' + genericArgs.join(',') + '>'
     }
-    /** @param {{name:string,genericArgs:string[]}} metaType */
+    /** @param {metaType:{name:string,genericArgs:string[]}} metaType */
     function typeName(metaType) { return metaType && typeName2(metaType.name, metaType.genericArgs) }
     /** @param {string} type */
     function unwrap(type) { return type && type.endsWith('?') ? type.substring(0,type.length-1) : type }
@@ -49,17 +55,18 @@ export let Types = (function() {
     function isString(type) { return type && type.toLowerCase() === 'string' }
     /** @param {string} type */
     function isArray(type) { return type.startsWith('List<') || type.endsWith('[]') }
-    /** @param {{namespace:string,name:string}} typeRef */
+    /** @param {typeRef:{namespace:string,name:string}} typeRef */
     function key(typeRef) {
         return !typeRef ? null : (typeRef.namespace || '') + '.' + typeRef.name
     }
-    /** @param {{namespace:string,name:string}} a
-        @param {{namespace:string,name:string}} b */
+    /** @param {a: {namespace:string,name:string}} a
+     *  @param {b: {namespace:string,name:string}} b */
     function equals(a,b) {
         return (a && b) && a.name === b.name && ((!a.namespace || !b.namespace) || a.namespace === b.namespace)
     }
     /** @param {string} type
-        @param {*} value */
+     * @param {any} value
+     * @return {any} */
     function formatValue(type,value) {
         if (!type) return value
         type = unwrap(type)

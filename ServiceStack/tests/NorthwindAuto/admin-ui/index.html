@@ -69,11 +69,11 @@ DEBUG = true /*debug*/
 <script>
 Object.assign(window, exports) //import
 
-/*shared/js:core,Types,createForms */
+/*shared/js:core,Files,Types,createForms */
 import { $1, humanify, combinePaths } from "@servicestack/client"
 import { setBodyClass } from "../shared/js/core"
 
-/*gateway:window.APP=MetadataApp({view:'locode',jsconfig:'eccn'})*/
+/*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn'})*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth
     setBodyClass({ auth })
@@ -83,8 +83,8 @@ function loadAuth(auth) {
 <script src="../js/petite-vue.js?vfx=hash"></script>
 
 <script>
-document.title = APP.app.serviceName
-setFavIcon(APP.ui.brandIcon, combinePaths(APP.app.baseUrl, '/metadata/svg/servicestack.datauri'))
+document.title = Server.app.serviceName
+setFavIcon(Server.ui.brandIcon, combinePaths(Server.app.baseUrl, '/metadata/svg/servicestack.datauri'))
 
 /*shared/js:createApp */
 let App = createApp(PetiteVue)
@@ -97,16 +97,16 @@ let App = createApp(PetiteVue)
 <!--files:components/*.html-->
 
 <script>
-let api = APP.api
+let api = Server.api
 let allTypes =  [...api.operations.map(x => x.request), ...api.operations.map(x => x.response), ...api.types.map(x => x)]
     .filter(x => x).reduce((acc,x) => { acc[x.name] = x; return acc }, {})
 
 App.build({
-    app: APP.app,
-    ui: APP.ui,
+    app: Server.app,
+    ui: Server.ui,
     api,
-    serviceName: APP.app.serviceName,
-    get plugins() { return APP.plugins },
+    serviceName: Server.app.serviceName,
+    get plugins() { return Server.plugins },
     allTypes,
     store,
     get request() { return this.store.op && this.store.op.request },

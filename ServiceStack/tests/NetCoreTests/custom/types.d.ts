@@ -14,6 +14,9 @@ export type Breakpoints = Record<'2xl' | 'xl' | 'lg' | 'md' | 'sm', boolean>;
 /** Return self or reactive proxy of self */
 export type Identity = <T>(args: T) => T;
 
+/** Return self or reactive proxy of self */
+export type MapFn = <T,V>(o:T, f:(o:T) => V) => V | null;
+
 /** Invoke a Tailwind Definition Rule */
 export type Transition = (prop:string,enter:boolean) => boolean;
 
@@ -182,6 +185,66 @@ export type Routes = {
     href: (args: Record<string, any>) => string;
 }
 
+/** APIs for resolving SVG icons and data URIs for different File Types */
+interface Files {
+    /** Get Icon SVG for .ext */
+    extSvg(ext: string): string | null;
+    /** Get Icon src for .ext */
+    extSrc(ext: string): string | null;
+    /** Return file extension (without '.; prefix) of path or URI */
+    getExt(path: string): string | null;
+    /** Encode SVG for embedding in Data URI */
+    encodeSvg(s: string): string;
+    /** Return whether path is a URI to a previewable image */
+    canPreview(path: string): boolean;
+    /** Return file name part of URI or file path */
+    getFileName(path: string): string | null;
+    /** Format bytes into human-readable file size */
+    formatBytes(bytes: number, d?: number): string;
+    /** Get the Icon src for a file path or URI, previewable resources will return self, otherwise returns SVG URI of .ext */
+    filePathUri(path: string): string | null;
+    /** Convert SVG to Data URI */
+    svgToDataUri(svg: string): string;
+    /** Return Image URI of INPUT file attachments */
+    fileImageUri(file: File | MediaSource): string;
+    /** Clear all remaining Image URIs of INPUT file attachments */
+    flush(): void;
+}
+export let Files:Files
+
+/** APIs to inspect .NET Types */
+interface Types {
+    /** Return well-known C# alias for its .NET Type name */
+    alias(type: string): any;
+    /** Return underlying Type if nullable */
+    unwrap(type: string): string;
+    /** Resolve well-known C# Type Name from Type Ref */
+    typeName(metaType:{name:string,genericArgs:string[]}): string;
+    /** Resolve well-known C# Type Name from Name and Generic Args */
+    typeName2(name: string, genericArgs: string[]): string;
+    /** Return true if .NET Type is numeric */
+    isNumber(type: string): boolean;
+    /** Return true if .NET Type is a string */
+    isString(type: string): boolean;
+    /** Return true if .NET Type is a collection */
+    isArray(type: string): boolean;
+    /** Return true if typeof is a scalar value (string|number|symbol|boolean) */
+    isPrimitive(type: string): boolean;
+    /** Return value suitable for human display */
+    formatValue(type: string, value: any): any;
+    /** Create a unique key string from a Type Ref */
+    key(typeRef:{namespace:string,name:string}): string | null;
+    /** Return true if both Type Refs are equivalent */
+    equals(a:{namespace:string,name:string},b:{namespace:string,name:string}): boolean;
+    /** Return true if Property has named Attribute */
+    propHasAttr(p: MetadataPropertyType, attr: string): boolean;
+    /** Return named property on Type (case-insensitive) */
+    getProp(type: MetadataType, name: string): MetadataPropertyType;
+    /** Return all properties of a Type, inc. base class properties  */
+    typeProperties(TypesMap, type): MetadataPropertyType[];
+}
+export let Types:Types
+
 
 ///=== EXPLORER ===///
 
@@ -244,65 +307,16 @@ export type ExplorerStore = {
     invalidAccess: () => string | null;
 };
 
-/** APIs for resolving SVG icons and data URIs for different File Types */
-interface Files {
-    /** Get Icon SVG for .ext */
-    extSvg: (ext: string) => string | null;
-    /** Get Icon src for .ext */
-    extSrc: (ext: string) => string | null;
-    /** Return file extension (without '.; prefix) of path or URI */
-    getExt: (path: string) => string | null;
-    /** Encode SVG for embedding in Data URI */
-    encodeSvg: (s: string) => string;
-    /** Return whether path is a URI to a previewable image */
-    canPreview: (path: string) => boolean;
-    /** Return file name part of URI or file path */
-    getFileName: (path: string) => string | null;
-    /** Format bytes into human-readable file size */
-    formatBytes: (bytes: number, d?: number) => string;
-    /** Get the Icon src for a file path or URI, previewable resources will return self, otherwise returns SVG URI of .ext */
-    filePathUri: (path: string) => string | null;
-    /** Convert SVG to Data URI */
-    svgToDataUri: (svg: string) => string;
-    /** Return Image URI of INPUT file attachments */
-    fileImageUri: (file: File | MediaSource) => string;
-    /** Clear all remaining Image URIs of INPUT file attachments */
-    flush: () => void;
+/** Method arguments of custom Doc Components */
+export interface DocComponentArgs {
+    store: ExplorerStore;
+    routes: ExplorerRoutes & Routes;
+    breakpoints: Breakpoints;
+    op: () => MetadataOperationType;
 }
-export let Files:Files 
 
-/** APIs to inspect .NET Types */
-interface Types {
-    /** Return well-known C# alias for its .NET Type name */
-    alias: (type: string) => any;
-    /** Return underlying Type if nullable */
-    unwrap: (type: string) => string;
-    /** Resolve well-known C# Type Name from Type Ref */
-    typeName: (metaType:{name:string,genericArgs:string[]}) => string;
-    /** Resolve well-known C# Type Name from Name and Generic Args */
-    typeName2: (name: string, genericArgs: string[]) => string;
-    /** Return true if .NET Type is numeric */
-    isNumber:  (type: string) => boolean;
-    /** Return true if .NET Type is a string */
-    isString:  (type: string) => boolean;
-    /** Return true if .NET Type is a collection */
-    isArray:   (type: string) => boolean;
-    /** Return true if typeof is a scalar value (string|number|symbol|bolean) */
-    isPrimitive: (type: string) => boolean;
-    /** Return value suitable for human display */
-    formatValue: (type: string, value: any) => any;
-    /** Create a unique key string from a Type Ref */
-    key: (typeRef:{namespace:string,name:string}) => string | null;
-    /** Return true if both Type Refs are equivalent */
-    equals: (a:{namespace:string,name:string},b:{namespace:string,name:string}) => boolean;
-    /** Return true if Property has named Attribute */
-    propHasAttr: (p: MetadataPropertyType, attr: string) => boolean;
-    /** Return named property on Type (case-insensitive) */
-    getProp: (type: MetadataType, name: string) => MetadataPropertyType;
-    /** Return all properties of a Type, inc. base class properties  */
-    typeProperties: (TypesMap, type) => MetadataPropertyType[];
-}
-export let Types:Types
+/** Method Signature of custom Doc Components */
+export declare type DocComponent = (args:DocComponentArgs) => Record<string,any>;
 
 ///=== LOCODE ===///
 
@@ -412,6 +426,29 @@ export type CrudApisState = {
     apiDelete: ApiState | null;
 };
 
+/** Method arguments of custom Create Form Components */
+export interface CreateComponentArgs {
+    store: LocodeStore;
+    routes: LocodeRoutes & LocodeRoutesExtend & Routes;
+    settings: LocodeSettings;
+    state: () => CrudApisState;
+    save: () => void;
+    done: () => void;
+}
+/** Method Signature of custom Create Form Components */
+export declare type CreateComponent = (args:CreateComponentArgs) => Record<string,any>;
+
+/** Method arguments of custom Edit Form Components */
+export interface EditComponentArgs {
+    store: LocodeStore;
+    routes: LocodeRoutes & LocodeRoutesExtend & Routes;
+    settings: LocodeSettings;
+    state: () => CrudApisState;
+    save: () => void;
+    done: () => void;
+}
+/** Method signature of custom Edit Form Components */
+export declare type EditComponent = (args:EditComponentArgs) => Record<string,any>;
 
 ///=== ADMIN ===///
 

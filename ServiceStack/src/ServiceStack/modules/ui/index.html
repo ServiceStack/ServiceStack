@@ -65,8 +65,8 @@ DEBUG = true /*debug*/
 <script src="../types/js?vfx=hash"></script>
 <script>
 Object.assign(window, exports)
-/*shared/js:core,Types,createForms */
-/*gateway:window.APP=MetadataApp({view:'locode',jsconfig:'eccn'})*/
+/*shared/js:core,Files,Types,createForms */
+/*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn'})*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth
     setBodyClass({ auth })
@@ -75,8 +75,8 @@ function loadAuth(auth) {
 <script src="../auth?callback=loadAuth&jsconfig=eccn"></script>
 <script src="../js/petite-vue.js?vfx=hash"></script>
 <script>
-document.title = APP.app.serviceName
-setFavIcon(APP.ui.brandIcon, combinePaths(APP.app.baseUrl, '/metadata/svg/servicestack.datauri'))
+document.title = Server.app.serviceName
+setFavIcon(Server.ui.brandIcon, combinePaths(Server.app.baseUrl, '/metadata/svg/servicestack.datauri'))
 /*shared/js:createApp */
 let App = createApp(PetiteVue)
 /*plugins:* */
@@ -87,7 +87,7 @@ let App = createApp(PetiteVue)
 <!--files:docs/*.html-->
 <!--file:custom.html-->
 <script minify>
-let docComponents = window.APP.api.operations.map(op => op.request.name).filter(name => window[name + 'Docs'])
+let docComponents = window.Server.api.operations.map(op => op.request.name).filter(name => window[name + 'Docs'])
 let sb = []
 sb.push(`<template id='doc-component-template'><div v-if="false"></div>`)
 docComponents.forEach(x => {
@@ -100,7 +100,7 @@ App.components({
         return {
             $template: '#doc-component-template',
             store, routes, breakpoints,
-            get op() { return APP.api.operations.find(op => op.request.name === routes.op) }
+            get op() { return Server.api.operations.find(op => op.request.name === routes.op) }
         }
     }
 })
@@ -118,11 +118,11 @@ App.directive('highlightjs', ({ effect, get, el}) => {
     })
 })
 App.build({
-    app: APP.app,
-    ui: APP.ui,
-    serviceName: APP.app.serviceName,
-    get plugins() { return APP.plugins },
-    get api() { return APP.api },
+    app: Server.app,
+    ui: Server.ui,
+    serviceName: Server.app.serviceName,
+    get plugins() { return Server.plugins },
+    get api() { return Server.api },
     langs: {
         csharp: "C#",
         typescript: "TypeScript",

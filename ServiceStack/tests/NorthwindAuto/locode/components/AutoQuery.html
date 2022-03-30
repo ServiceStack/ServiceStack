@@ -54,7 +54,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             const to = []
             const existingKeys = {}
     
-            APP.api.operations.forEach(op => {
+            Server.api.operations.forEach(op => {
                 if (!op.dataModel)
                     return
     

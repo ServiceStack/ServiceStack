@@ -1,5 +1,5 @@
 /*minify:*/
-//APP.config.debugMode = false
+//Server.config.debugMode = false
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
 let bearerToken = null
 let authsecret = null
@@ -8,17 +8,17 @@ function createClient(fn) {
         c.bearerToken = bearerToken
         c.enableAutoRefreshToken = false
         if (authsecret) c.headers.set('authsecret', authsecret)
-        let apiFmt = APP.httpHandlers['ApiHandlers.Json']
+        let apiFmt = Server.httpHandlers['ApiHandlers.Json']
         if (apiFmt)
             c.basePath = apiFmt.replace('/{Request}', '')
         if (fn) fn(c)
     })
 }
 let client = createClient()
-APP.api.operations.forEach(op => {
+Server.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
-let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack'))
+let appOps = Server.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack'))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
 /** @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
 let sideNav = appTags.map(tag => ({
@@ -26,25 +26,25 @@ let sideNav = appTags.map(tag => ({
     expanded: true,
     operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
 }))
-let ssOps = APP.api.operations.filter(op => op.request.namespace.startsWith('ServiceStack'))
+let ssOps = Server.api.operations.filter(op => op.request.namespace.startsWith('ServiceStack'))
 let ssTags = Array.from(new Set(ssOps.flatMap(op => op.tags))).sort()
 ssTags.map(tag => ({
     tag,
     expanded: true,
     operations: ssOps.filter(op => op.tags.indexOf(tag) >= 0)
 })).forEach(nav => sideNav.push(nav))
-let tags = APP.ui.explorer.tags
+let tags = Server.ui.explorer.tags
 let other = {
     tag: appTags.length > 0 ? tags.other : tags.default,
     expanded: true,
     operations: [...appOps, ...ssOps].filter(op => op.tags.length === 0)
 }
 if (other.operations.length > 0) sideNav.push(other)
-let alwaysHideTags = APP.ui.alwaysHideTags || !DEBUG && APP.ui.hideTags
+let alwaysHideTags = Server.ui.alwaysHideTags || !DEBUG && Server.ui.hideTags
 if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 let appName = 'explorer'
-let Meta = createMeta(APP, appName)
-let Forms = createForms(Meta, APP.ui.explorer.css, APP.ui)
+let Meta = createMeta(Server, appName)
+let Forms = createForms(Meta, Server.ui.explorer.css, Server.ui)
 /*:minify*/

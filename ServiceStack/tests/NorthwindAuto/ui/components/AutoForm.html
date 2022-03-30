@@ -1,10 +1,9 @@
 <script minify>
 import { Forms } from "../js/init"
-
-/** @typedef {{title:string,errorSummary:string,model:*,formLayout:InputInfo[],error:ResponseStatus}} State */
+import { CrudApisState } from "../../lib/types"
 
 App.components({
-    /** @param {{state:() => State}} */
+    /** @param {{state:() => CrudApisState}} */
     AutoForm({ state, onsubmit, oninput }) {
         let emptyState = { model:{} }
         return {

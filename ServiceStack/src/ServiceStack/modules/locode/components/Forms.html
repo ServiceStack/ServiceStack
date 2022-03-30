@@ -1,11 +1,11 @@
  <script minify>
-/** @typedef {{opQuery:MetadataOperationType,opPatch?:MetadataOperationType,opUpdate?:MetadataOperationType,opDelete?:MetadataOperationType,apiQuery:ApiState}} State */
-/** @typedef {{op:MetadataOperationType,apiSend?:Function,apiForm?:Function,createModel?:Function,title:string?,errorSummary:string?,model:*,formLayout:InputInfo[]}} ApiState */
 App.components({
+    /** @param {CreateComponentArgs} args */
     CreateForm({ store, routes, settings, state, save, done }) {
         return {
             $template: '#create-form-template',
             store, routes, settings,
+            /** @type {ApiCss} */
             get css() { return map(this.apiCreate, x => x.op.ui && x.op.ui.locodeCss) },
             get formClass() { return map(this.css, x => x.form) || Forms.formClass },
             get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
@@ -38,10 +38,12 @@ App.components({
             }
         }
     },
+    /** @param {EditComponentArgs} args */
     EditForm({ store, routes, settings, state, save, done }) {
         return {
             $template: '#edit-form-template',
             store, routes, settings,
+            /** @type {ApiCss} */
             get css() { return map(this.useApiUpdate, x => x.op.ui && x.op.ui.locodeCss) },
             get formClass() { return map(this.css, x => x.form) || Forms.formClass },
             get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
@@ -56,13 +58,14 @@ App.components({
             /** @type ApiState|null */
             get useApiUpdate() { return this.apiPatch || this.apiUpdate },
             get title() { return map(this.useApiUpdate, x => x.title) },
+            /** @type {MetadataType} */
             get dataModel() { return map(this.useApiUpdate, x => x.op && x.op.dataModel) },
             get dataModelName() { return map(this.dataModel, x => x.name) },
             get pk() { return Forms.getPrimaryKey(Meta.getType(this.dataModel)) },
             get gridInputs() {
                 return map(this.useApiUpdate, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forEdit(x.op.request)))  
             },
-            get canAccessCrudEvents() { return APP.plugins.autoQuery.crudEventsServices && store.hasRole(APP.plugins.autoQuery.accessRole) },
+            get canAccessCrudEvents() { return Server.plugins.autoQuery.crudEventsServices && store.hasRole(Server.plugins.autoQuery.accessRole) },
             api: null,
             apiLoading: false,
             errorSummary: null,

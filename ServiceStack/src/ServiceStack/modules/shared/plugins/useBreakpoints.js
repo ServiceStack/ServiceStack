@@ -1,6 +1,4 @@
 /*minify:*/
-/** @typedef {import('../js/createApp').App} App */
-/** @typedef {Record<'2xl'|'xl'|'lg'|'md'|'sm',boolean>} Breakpoints */
 /**
  * Returns a reactive store that maintains different resolution states:
  * 

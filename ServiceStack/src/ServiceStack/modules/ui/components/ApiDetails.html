@@ -14,8 +14,8 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
             return this.request && this.request.name
         },
         predefinedRoute(opName) {
-            let apiFmt = APP.httpHandlers['ApiHandlers.Json']
-                || (APP.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
+            let apiFmt = Server.httpHandlers['ApiHandlers.Json']
+                || (Server.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
             return apiFmt ? apiFmt.replace('{Request}', opName) : ''
         },
         opReferencedTypes(op) {

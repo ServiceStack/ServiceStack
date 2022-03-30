@@ -1,15 +1,13 @@
-/**: Used by .d.ts */
-import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, ThemeInfo } from "../../lib/types"
-
 import { JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
-import { APP } from "../../lib/types"
-import { createForms } from "../../shared/js/createForms"
-import { createMeta, appObjects } from "../../shared/js/core"
+import { Server } from "../../lib/types"
+import { createForms, createMeta } from "../../shared/js/createForms"
 
 /*minify:*/
 
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
+/** @type {string|null} */
 let bearerToken = null
+/** @type {string|null} */
 let authsecret = null
 
 function createClient(fn) {
@@ -17,16 +15,18 @@ function createClient(fn) {
         c.bearerToken = bearerToken
         c.enableAutoRefreshToken = false
         if (authsecret) c.headers.set('authsecret', authsecret)
-        let apiFmt = APP.httpHandlers['ApiHandlers.Json']
+        let apiFmt = Server.httpHandlers['ApiHandlers.Json']
         if (apiFmt)
             c.basePath = apiFmt.replace('/{Request}', '')
         if (fn) fn(c)
     })
 }
-let client = createClient()
+
+/** App's pre-configured `JsonServiceClient` instance for making typed API requests */
+export let client = createClient()
 
 let appName = 'admin-ui'
-export let Meta = createMeta(APP, appName)
-export let Forms = createForms(Meta, APP.plugins.adminUsers.css, APP.ui)
+export let Meta = createMeta(Server, appName)
+export let Forms = createForms(Meta, Server.plugins.adminUsers.css, Server.ui)
 
 /*:minify*/

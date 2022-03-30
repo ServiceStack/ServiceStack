@@ -1,9 +1,7 @@
 import { each, on } from "@servicestack/client"
+import { App, Breakpoints } from "../../lib/types"
 
 /*minify:*/
-
-/** @typedef {import('../js/createApp').App} App */
-/** @typedef {Record<'2xl'|'xl'|'lg'|'md'|'sm',boolean>} Breakpoints */
 
 /**
  * Returns a reactive store that maintains different resolution states:

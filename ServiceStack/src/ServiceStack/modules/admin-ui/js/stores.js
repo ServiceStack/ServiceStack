@@ -1,16 +1,13 @@
 /*minify:*/
 /**
  * Execute tailwindui.com transition definition rules
- * @remarks
- * @type {(prop:string,enter?:boolean) => boolean}
+ * @type {Transition}
  * */
 let transition = useTransitions(App, { sidebar: true })
-/** Route methods used in Admin UI
- * @typedef {{tab?:string,provider?:string,q?:string,page?:string,sort?:string,new?:string,edit?:string}} AdminRoutes */
 /**
  * The App's reactive `routes` navigation component used for all App navigation
  * @remarks
- * @type {AdminRoutes & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}}
+ * @type {AdminRoutes & Routes}
  */
 let routes = usePageRoutes(App,{
     page:'admin',
@@ -22,45 +19,23 @@ let routes = usePageRoutes(App,{
 /**
  * App's primary reactive store maintaining global functionality for Admin UI
  * @remarks
- * @type {{
- *     adminLink(string): LinkInfo, 
- *     init(): void, 
- *     cachedFetch(string): Promise<unknown>, 
- *     debug: boolean, 
- *     copied: boolean, 
- *     auth: AuthenticateResponse|null, 
- *     readonly authProfileUrl: string|null, 
- *     readonly displayName: null, 
- *     readonly link: LinkInfo, 
- *     readonly isAdmin: boolean, 
- *     login(any): void, 
- *     readonly adminUsers: AdminUsersInfo, 
- *     readonly authRoles: string[], 
- *     filter: string, 
- *     baseUrl: string, 
- *     logout(): void, 
- *     readonly authLinks: LinkInfo[], 
- *     SignIn(): Function, 
- *     readonly adminLinks: LinkInfo[], 
- *     api: ApiResult<AuthenticateResponse>|null, 
- *     readonly authPermissions: *
- * }}
+ * @type {AdminStore}
  */
 let store = App.reactive({
     copied: false,
     filter: '',
-    debug: APP.config.debugMode,
+    debug: Server.config.debugMode,
     api: null,
     auth: window.AUTH,
     baseUrl: BASE_URL,
     init() {
         setBodyClass({ page: routes.admin })
     },
-    get adminUsers() { return APP.plugins.adminUsers },
+    get adminUsers() { return Server.plugins.adminUsers },
     /** @param {string|any} id
      *  @return {LinkInfo} */
-    adminLink(id) { return APP.ui.adminLinks.find(x => x.id === id) },
-    get adminLinks() { return APP.ui.adminLinks },
+    adminLink(id) { return Server.ui.adminLinks.find(x => x.id === id) },
+    get adminLinks() { return Server.ui.adminLinks },
     get link() { return this.adminLink(routes.admin) },
     /** @param {string} url
      *  @return {Promise<any>} */
@@ -86,20 +61,20 @@ let store = App.reactive({
         })
     },
     SignIn() {
-        return APP.plugins.auth
+        return Server.plugins.auth
         ? SignIn({
-            plugin: APP.plugins.auth,
+            plugin: Server.plugins.auth,
             provider:() => routes.provider,
             login:args => this.login(args),
             api: () => this.api,
         })
-        : NoAuth({ message:`${APP.app.serviceName} API Explorer` })
+        : NoAuth({ message:`${Server.app.serviceName} API Explorer` })
     },
     /** @param {any} args */
     login(args) {
         let provider = routes.provider || 'credentials'
-        let authProvider = APP.plugins.auth.authProviders.find(x => x.name === provider)
-            || APP.plugins.auth.authProviders[0]
+        let authProvider = Server.plugins.auth.authProviders.find(x => x.name === provider)
+            || Server.plugins.auth.authProviders[0]
         if (!authProvider)
             throw new Error("!authProvider")
         let auth = new Authenticate()
@@ -138,7 +113,7 @@ let store = App.reactive({
     /** @return {LinkInfo[]} */
     get authLinks() {
         let to = []
-        let roleLinks = this.auth && APP.plugins.auth && APP.plugins.auth.roleLinks || {} 
+        let roleLinks = this.auth && Server.plugins.auth && Server.plugins.auth.roleLinks || {} 
         if (Object.keys(roleLinks).length > 0) {
             this.authRoles.forEach(role => {
                 if (!roleLinks[role]) return;
