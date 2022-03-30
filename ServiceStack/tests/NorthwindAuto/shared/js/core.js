@@ -4,13 +4,20 @@ import { AppMetadata, ImageInfo, MetadataOperationType, MetadataType, Authentica
 import { Types } from "./Types"
 /*minify:*/
 
-/** @template T,V
-    @param {T} o
-    @param {(a:T) => V} f
-    @returns {V|null} */
+/**
+ * Alt solution to optional chaining by only executing fn accessor if object is not null
+ * @example
+ * let a = b()?.c // equivalent to:
+ * let a = map(b(), x => x.c)
+ * @template T,V
+ * @param {T} o
+ * @param {(a:T) => V} f
+ * @returns {V|null} 
+ */
 export function map(o, f) { return o == null ? null : f(o) }
 
-/** @param {{[key:string]:string|any}} obj */
+/** Set class on document.body if truthy otherwise set `no{class}`
+ * @param {{[key:string]:string|any}} obj */
 export function setBodyClass(obj) {
     let bodyCls = document.body.classList
     Object.keys(obj).forEach(name => {
@@ -24,7 +31,8 @@ export function setBodyClass(obj) {
     })
 }
 
-/** @param {string} name */
+/** Get CSS style property value 
+ * @param {string} name */
 export function styleProperty(name) {
     return document.documentElement.style.getPropertyValue(name)
 }
@@ -33,8 +41,9 @@ export function setStyleProperty(props) {
     Object.keys(props).forEach(name => style.setProperty(name, props[name]))
 }
 
-/** @param {boolean} [invalid=false] 
-    @param {string} [cls] */
+/** Tailwind CSS classes for standard Input controls 
+ * @param {boolean} [invalid=false]
+ * @param {string} [cls] */
 export function inputClass(invalid,cls) {
     return ['block w-full sm:text-sm rounded-md disabled:bg-gray-100 disabled:shadow-none', !invalid
         ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300'
@@ -42,8 +51,9 @@ export function inputClass(invalid,cls) {
         '',cls].join(' ')
 }
 
-/** @param {*} o
-    @param {string} id */
+/** Get object value from map by (case-insensitive) id and if required convert API value for usage in HTML Inputs 
+ * @param {*} o
+ * @param {string} id */
 function mapGetForInput(o, id) {
     let ret = apiValue(mapGet(o,id))
     return isDate(ret)
@@ -51,13 +61,15 @@ function mapGetForInput(o, id) {
         : ret
 }
 
-/** @param {ImageInfo} icon
-    @param {string} defaultSrc */
+/** Set the browser's page fav icon by icon 
+ * @param {ImageInfo} icon
+ * @param {string} defaultSrc */
 export function setFavIcon(icon, defaultSrc) {
     setFavIconSrc(icon.uri || defaultSrc)
 }
 
-/** @param {string} src */
+/** Set the browser's page fav icon by src 
+ * @param {string} src */
 export function setFavIconSrc(src) {
     let link = $1("link[rel~='icon']")
     if (!link) {
@@ -68,18 +80,25 @@ export function setFavIconSrc(src) {
     link.href = src
 }
 
+/**
+ * High-level API around highlight.js to add syntax highlighting to language source cde
+ * @param {string} src
+ * @param {string} language
+ * @return {string}
+ */
 export function highlight(src, language) {
     if (!language) language = 'csharp'
     return hljs.highlight(src, { language }).value
 }
 
-
-/** @param {MetadataOperationType} op
-    @param {*?} args */
+/** Create Request DTO from MetadataOperationType and map of args 
+ * @param {MetadataOperationType} op
+ * @param {*?} args */
 export function createRequest(op,args) { return !op ? null : createDto(op.request.name,args) }
 
-/** @param {string} name
-    @param {*} obj */
+/** Create Request DTO from API Name and map of args
+ * @param {string} name
+ * @param {*} obj */
 export function createDto(name, obj) {
     let dtoCtor = window[name]
     if (!dtoCtor) {
@@ -96,142 +115,15 @@ export function createDto(name, obj) {
     return new dtoCtor(obj)
 }
 
-export function appObjects(app,appName) {
-    let api = app.api
-    let CACHE = {}
-    /** @type Record<number,string> */
-    let HttpErrors = { 401:'Unauthorized', 403:'Forbidden' }
-    /** @type Record<string,MetadataOperationType> */
-    let OpsMap = {}
-    /** @type Record<string,MetadataType> */
-    let TypesMap = {}
-    /** @type Record<string,MetadataType> */
-    let FullTypesMap = {}
-    api.operations.forEach(op => {
-        OpsMap[op.request.name] = op
-        TypesMap[op.request.name] = op.request
-        FullTypesMap[Types.key(op.request)] = op.request
-        if (op.response) TypesMap[op.response.name] = op.response
-        if (op.response) FullTypesMap[Types.key(op.response)] = op.response
-    })
-    api.types.forEach(type => TypesMap[type.name] = type)
-    api.types.forEach(type => FullTypesMap[Types.key(type)] = type)
-
-    let cssName = appName + 'Css'
-    api.operations.forEach(op => {
-        /** @type {ApiCss} */
-        let appCss = op.ui && op.ui[cssName]
-        if (appCss) {
-            Types.typeProperties(TypesMap, op.request).forEach(prop => {
-                if (appCss.field) {
-                    if (!prop.input) prop.input = {}
-                    if (!prop.input.css) prop.input.css = {}
-                    if (!prop.input.css.field) prop.input.css.field = appCss.field
-                }
-            })
-        }
-    })
-    
-    return {
-        /** Global Cache */
-        CACHE,
-        /** HTTP Errors specially handled by Locode */
-        HttpErrors,
-        /** Map of Request DTO names to `MetadataOperationType` */
-        OpsMap,
-        /** Map of DTO names to `MetadataType` */
-        TypesMap,
-        /** Map of DTO namespace + names to `MetadataType` */
-        FullTypesMap,
-    }
-}
-
-/** 
- * Generic functionality around AppMetadata   
- * @param {AppMetadata} app 
- * @param {string} appName 
- * @return {{
-    getType: (typeRef:({namespace?: string, name: string})|string) => null|MetadataType, 
-    isEnum: (type:string) => boolean, 
-    getOp: (opName:string) => MetadataOperationType, 
-    enumValues: (type:string) => {key: string, value: string}[], 
-    getIcon: (args:{op?: MetadataOperationType, type?: MetadataType}) => {svg:string}
-}}
- */
-export function appApis(app,appName) {
-
-    let { OpsMap, TypesMap, FullTypesMap } = appObjects(app, appName)
-
-    /** Find `MetadataOperationType` by API name
-     * @param {string} opName */
-    function getOp(opName) {
-        return OpsMap[opName]
-    }
-
-    /** Find `MetadataType` by DTO name 
-     * @param {{namespace:string?,name:string}|string} typeRef
-     * @return {MetadataType} */
-    function getType(typeRef) {
-        return !typeRef ? null 
-            : typeof typeRef == 'string' 
-                ? TypesMap[typeRef]
-                : FullTypesMap[Types.key(typeRef)] || TypesMap[typeRef.name]
-    }
-
-    /** Check whether a Type is an Enum 
-     * @param {string} type 
-     * @return {boolean} */
-    function isEnum(type) {
-        return type && map(TypesMap[type], x => x.isEnum) === true
-    }
-    
-    /** Get Enum Values of an Enum Type 
-     * @param {string} type
-     * @return {{key:string,value:string}[]} */
-    function enumValues(type) {
-        let enumType = type && map(TypesMap[type], x => x.isEnum ? x : null)
-        if (!enumType) return []
-        if (enumType.enumValues) {
-            let ret = []
-            for (let i=0; i<enumType.enumNames; i++) {
-                ret.push({ key:enumType.enumValues[i], value:enumType.enumNames[i] })
-            }
-            return ret
-        } else {
-            return enumType.enumNames.map(x => ({ key:x, value:x }))
-        }
-    }
-    
-    let defaultIcon = app.ui.theme.modelIcon ||
-        { svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12v6s0 3 7 3s7-3 7-3v-6"/><path d="M5 6v6s0 3 7 3s7-3 7-3V6"/><path d="M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z"/></g></svg>` }
-
-    /** 
-     * Get API Icon
-     * @param {{op:MetadataOperationType?,type:MetadataType?}} opt
-     * @return {{svg:string}}
-     */
-    function getIcon({op,type}) {
-        if (op) {
-            let img = map(op.request, x => x.icon)
-                || map(getType(op.viewModel), x => x.icon)
-                || map(getType(op.dataModel), x => x.icon)
-            if (img)
-                return img
-        }
-        if (type && type.icon) {
-            return type.icon
-        }
-        return defaultIcon
-    }
-
-    return { getOp, getType, isEnum, enumValues, getIcon }
-}
-
-
-/** @param {MetadataOperationType} op
-    @param {string} cls */
+/** Check if operation implements class name 
+ * @param {MetadataOperationType} op
+ * @param {string} cls */
 const hasInterface = (op,cls) => resolve(op.request.implements.some(i => i.name === cls))
 
+/**
+ * API around CRUD APIs
+ * @type {{Delete: string, AnyWrite: string[], isCreate: (function(*): any), Create: string, isDelete: (function(*): any), AnyRead: string[], isQuery: (function(*): boolean|null), isCrud: (function(*): boolean|null), Update: string, Patch: string, isUpdate: (function(*): any), isPatch: (function(*): any)}}
+ */
 export const Crud = {
     Create:'ICreateDb`1',
     Update:'IUpdateDb`1',
@@ -247,14 +139,17 @@ export const Crud = {
     isDelete: op => hasInterface(op, Crud.Delete),
 }
 
-/** @param {{roles:string[]}} [session] */
+/** Check if authenticated session has Admin role 
+ * @param {{roles:string[]}} [session] */
 export const isAdminAuth = session => map(session, x => x.roles && x.roles.indexOf('Admin') >= 0)
 
-/** @param {any[]|null} arr */
-export const hasItems = arr => arr && arr.length > 0
+/** Check if array is not null or empty
+ * @param {any[]|null} arr */
+export function hasItems(arr) { return arr && arr.length > 0 }
 
-/** @param {MetadataOperationType?} op 
-    @param {AuthenticateResponse|null} auth */
+/** Check if Auth Session has access to API 
+ * @param {MetadataOperationType?} op
+ * @param {AuthenticateResponse|null} auth */
 export function canAccess(op, auth) {
     if (!op) return false
     if (!op.requiresAuth)
@@ -280,8 +175,9 @@ export function canAccess(op, auth) {
     return true
 }
 
-/** @param {MetadataOperationType} op
-    @param {{roles:string[],permissions:string[]}} auth */
+/** Return error message if Auth Session cannot access API 
+ * @param {MetadataOperationType} op
+ * @param {{roles:string[],permissions:string[]}} auth */
 export function invalidAccessMessage(op, auth) {
     if (!op || !op.requiresAuth) return null
     if (!auth) {
@@ -309,7 +205,9 @@ export function invalidAccessMessage(op, auth) {
     return null
 }
 
-/** @param {string} str */
+/** Parse cookie string into Map 
+ * @param {string} str 
+ * @return {Record<string,string>} */
 export function parseCookie(str) {
     return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
         let key = v[0] && v[0].trim() && decodeURIComponent(v[0].trim())
@@ -318,9 +216,10 @@ export function parseCookie(str) {
     }, {});
 }
 
-/** @param {function} createClient
-    @param {*} requestDto
-    @param {*} [queryArgs] */
+/** High-level API to invoke an API Request by Request DTO and optional queryString args 
+ * @param {function} createClient
+ * @param {*} requestDto
+ * @param {*} [queryArgs] */
 export function apiSend(createClient, requestDto, queryArgs) {
     if (!requestDto) throw new Error('!requestDto')
     let opName = requestDto.getTypeName()
@@ -350,10 +249,11 @@ export function apiSend(createClient, requestDto, queryArgs) {
     }))
 }
 
-/** @param {function} createClient
-    @param {*} requestDto
-    @param {FormData} formData
-    @param {*} [queryArgs] */
+/** High-level API to invoke an API Request by Request DTO, FormData and optional queryString args
+ * @param {function} createClient
+ * @param {*} requestDto
+ * @param {FormData} formData
+ * @param {*} [queryArgs] */
 export function apiForm(createClient, requestDto, formData, queryArgs) {
     if (!requestDto) throw new Error('!requestDto')
     let opName = requestDto.getTypeName()
@@ -383,8 +283,9 @@ export function apiForm(createClient, requestDto, formData, queryArgs) {
     }))
 }
 
-/** @param {string} text
-    @param {number} [timeout=3000] */
+/** Utility to copy text to OS clipboard 
+ * @param {string} text
+ * @param {number} [timeout=3000] */
 export function copy(text,timeout) {
     if (typeof timeout != 'number') timeout = 3000
     this.copied = true
@@ -397,8 +298,9 @@ export function copy(text,timeout) {
     setTimeout(() => this.copied = false, timeout)
 }
 
-/** @param {ImageInfo} icon 
- *  @param {*} [opt] */
+/** Render ImageInfo into HTML IMG  
+ * @param {ImageInfo} icon 
+ * @param {*} [opt] */
 export function iconHtml(icon, opt) {
     if (!icon) return ''
     if (!opt) opt = {}
@@ -440,13 +342,15 @@ function opSortName(op) {
     return sort1 + `_` + op.request.name
 }
 
-/** @param {MetadataOperationType[]} ops
- *  @return {MetadataOperationType[]} */
+/** Sort & group operations operations in logical order 
+ * @param {MetadataOperationType[]} ops
+ * @return {MetadataOperationType[]} */
 export function sortOps(ops) {
     ops.sort((a,b) => opSortName(a).localeCompare(opSortName(b)))
     return ops
 }
 
+/** Wrapper around SVG icons for File Types */
 export const Files = (function () {
     let web = 'png,jpg,jpeg,gif,svg,webp'.split(',') 
     const Ext = {
@@ -581,6 +485,11 @@ export const Files = (function () {
     }
 })()
 
+/**
+ * Return absolute URL from relative URL 
+ * @param url
+ * @return {*|string}
+ */
 export function toAppUrl(url) {
     return !url || typeof BASE_URL != 'string' || url.indexOf('://') >= 0 
         ? url
@@ -588,17 +497,21 @@ export function toAppUrl(url) {
 }
 
 /**: format methods */
-/** @param {number} val */
+
+/** Format number into USD currency 
+ * @param {number} val */
 export function currency(val) {
     return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(val)
 }
-/** @param {number} val */
+/** Format bytes into human-readable file size 
+ * @param {number} val */
 export function bytes(val) {
     return Files.formatBytes(val)
 }
-/** @param {string} tag
- *  @param {string} [child]
- *  @param {*} [attrs] */
+/** HTML Tag builder 
+ * @param {string} tag
+ * @param {string} [child]
+ * @param {*} [attrs] */
 export function htmlTag(tag,child,attrs) {
     if (!attrs) attrs = {}
     let cls = attrs.cls || attrs.className || attrs['class']
@@ -613,13 +526,15 @@ export function htmlTag(tag,child,attrs) {
 function linkAttrs(attrs) {
     return Object.assign({target:'_blank',rel:'noopener','class':'text-blue-600'},attrs)
 }
-/** @param {string} href 
- *  @param {*} [opt] */
+/** Create formatted HTML A URL links  
+ * @param {string} href 
+ * @param {*} [opt] */
 export function link(href, opt) {
     return htmlTag('a', href, linkAttrs({ ...opt, href }))
 }
-/** @param {string} email
- *  @param {*} [opt] */
+/** Create formatted HTML A mailto: links
+ * @param {string} email
+ * @param {*} [opt] */
 export function linkMailTo(email, opt) {
     if (!opt) opt = {}
     let { subject, body } = opt
@@ -629,20 +544,24 @@ export function linkMailTo(email, opt) {
     if (body) args.body = body
     return htmlTag('a', email, linkAttrs({...attrs, href:`mailto:${appendQueryString(email,args)}` }))
 }
-/** @param {string} tel
- *  @param {*} [opt] */
+/** Create formatted HTML A tel: links
+ * @param {string} tel
+ * @param {*} [opt] */
 export function linkTel(tel, opt) {
     return htmlTag('a', tel, linkAttrs({...opt, href:`tel:${tel}` }))
 }
-/** @param {string} url */
+/** Create HTML IMG Icon from URL 
+ * @param {string} url */
 export function icon(url) {
     return `<img class="w-6 h-6" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`
 }
-/** @param {string} url */
+/** Create rounded HTML IMG Icon from URL
+ * @param {string} url */
 export function iconRounded(url) {
     return `<img class="w-8 h-8 rounded-full" title="${url}" src="${toAppUrl(url)}" onerror="iconOnError(this)">`
 }
-/** @param {string} url */
+/** Create HTML Link for file attachment
+ * @param {string} url */
 export function attachment(url) {
     let fileName = Files.getFileName(url)
     let ext = Files.getExt(fileName)
@@ -651,14 +570,16 @@ export function attachment(url) {
         : iconFallbackSrc(url)
     return `<a class="flex" href="${toAppUrl(url)}" title="${url}" target="_blank"><img class="w-6 h-6" src="${imgSrc}" onerror="iconOnError(this,'att')"><span class="pl-1">${fileName}</span></a>`
 }
-/** @param {HTMLImageElement} img
-    @param {string} [fallbackSrc] */
+/** Handle IMG onerror to populate fallback icon 
+ * @param {HTMLImageElement} img
+ * @param {string} [fallbackSrc] */
 export function iconOnError(img,fallbackSrc) {
     img.onerror = null
     img.src = iconFallbackSrc(img.src,fallbackSrc)
 }
-/** @param {string} src
-    @param {string} [fallbackSrc] */
+/** Create icon with fallback 
+ * @param {string} src
+ * @param {string} [fallbackSrc] */
 export function iconFallbackSrc(src,fallbackSrc) {
     return Files.extSrc(lastRightPart(src,'.').toLowerCase())
         || (fallbackSrc
@@ -667,8 +588,10 @@ export function iconFallbackSrc(src,fallbackSrc) {
         || Files.svgToDataUri(Files.Icons.doc)
 }
 
-// marker fn, special-cased to hide from query results
+/** marker fn, special-cased to hide from query results
+ * @param o
+ * @return {string}
+ */
 export function hidden(o) { return '' }
-
 
 /*:minify*/

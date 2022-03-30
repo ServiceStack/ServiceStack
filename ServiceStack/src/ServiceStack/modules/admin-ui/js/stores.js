@@ -1,8 +1,17 @@
 /*minify:*/
-/** @type {function(string, boolean?): boolean} */
+/**
+ * Execute tailwindui.com transition definition rules
+ * @remarks
+ * @type {(prop:string,enter?:boolean) => boolean}
+ * */
 let transition = useTransitions(App, { sidebar: true })
-/** @typedef {{tab?:string,provider?:string,q?:string,page?:string,sort?:string,new?:string,edit?:string}} AdminRoutes */
-/** @type {AdminRoutes & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}} */
+/** Route methods used in Admin UI
+ * @typedef {{tab?:string,provider?:string,q?:string,page?:string,sort?:string,new?:string,edit?:string}} AdminRoutes */
+/**
+ * The App's reactive `routes` navigation component used for all App navigation
+ * @remarks
+ * @type {AdminRoutes & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}}
+ */
 let routes = usePageRoutes(App,{
     page:'admin',
     queryKeys:'tab,provider,q,page,sort,new,edit'.split(','),
@@ -11,29 +20,31 @@ let routes = usePageRoutes(App,{
     }
 })
 /**
+ * App's primary reactive store maintaining global functionality for Admin UI
+ * @remarks
  * @type {{
-    adminLink(string): LinkInfo, 
-    init(): void, 
-    cachedFetch(string): Promise<unknown>, 
-    debug: boolean, 
-    copied: boolean, 
-    auth: AuthenticateResponse|null, 
-    readonly authProfileUrl: string|null, 
-    readonly displayName: null, 
-    readonly link: LinkInfo, 
-    readonly isAdmin: boolean, 
-    login(any): void, 
-    readonly adminUsers: AdminUsersInfo, 
-    readonly authRoles: string[], 
-    filter: string, 
-    baseUrl: string, 
-    logout(): void, 
-    readonly authLinks: LinkInfo[], 
-    SignIn(): Function, 
-    readonly adminLinks: LinkInfo[], 
-    api: ApiResult<AuthenticateResponse>|null, 
-    readonly authPermissions: *
-    }}
+ *     adminLink(string): LinkInfo, 
+ *     init(): void, 
+ *     cachedFetch(string): Promise<unknown>, 
+ *     debug: boolean, 
+ *     copied: boolean, 
+ *     auth: AuthenticateResponse|null, 
+ *     readonly authProfileUrl: string|null, 
+ *     readonly displayName: null, 
+ *     readonly link: LinkInfo, 
+ *     readonly isAdmin: boolean, 
+ *     login(any): void, 
+ *     readonly adminUsers: AdminUsersInfo, 
+ *     readonly authRoles: string[], 
+ *     filter: string, 
+ *     baseUrl: string, 
+ *     logout(): void, 
+ *     readonly authLinks: LinkInfo[], 
+ *     SignIn(): Function, 
+ *     readonly adminLinks: LinkInfo[], 
+ *     api: ApiResult<AuthenticateResponse>|null, 
+ *     readonly authPermissions: *
+ * }}
  */
 let store = App.reactive({
     copied: false,
@@ -55,7 +66,7 @@ let store = App.reactive({
      *  @return {Promise<any>} */
     cachedFetch(url) {
         return new Promise((resolve,reject) => {
-            let src = CACHE[url]
+            let src = Meta.CACHE[url]
             if (src) {
                 resolve(src)
             } else {
@@ -65,7 +76,7 @@ let store = App.reactive({
                         else throw r.statusText
                     })
                     .then(src => {
-                        resolve(CACHE[url] = src)
+                        resolve(Meta.CACHE[url] = src)
                     })
                     .catch(e => {
                         console.error(`fetchCache (${url}):`, e)
@@ -105,7 +116,7 @@ let store = App.reactive({
             .then(r => {
                 this.api = r
                 if (r.error && !r.error.message)
-                    r.error.message = HttpErrors[r.errorCode] || r.errorCode
+                    r.error.message = Meta.HttpErrors[r.errorCode] || r.errorCode
                 if (this.api.succeeded) {
                     this.auth = this.api.response
                     setBodyClass({ auth: this.auth })

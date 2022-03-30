@@ -8,7 +8,7 @@ App.components({
             store,
             $on: $on || null,
             label(op) { return humanify(op.dataModel.name) },
-            getIcon,
+            getIcon: Meta.getIcon,
         }
     },
 })

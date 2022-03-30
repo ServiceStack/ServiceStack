@@ -40,7 +40,7 @@ App.components({
                 this.close()
             },
             fieldName(name) { return humanify(name) },
-            getId(row) { return Forms.getId(getType(routes.op),row) },
+            getId(row) { return Forms.getId(Meta.getType(routes.op),row) },
             /** @param {*} row
              *  @param {MetadataPropertyType} column */
             format(row, column) {

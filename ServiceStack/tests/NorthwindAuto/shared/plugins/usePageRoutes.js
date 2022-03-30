@@ -7,6 +7,7 @@ import { queryString, leftPart, each } from "@servicestack/client"
 /**
  * Maintain page route state:
  *  - /{pageKey}?{queryKeys}
+ * @remarks
  * Events:
  *   route:init - loaded from URL
  *   route:to   - navigated by to()

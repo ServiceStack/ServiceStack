@@ -4,7 +4,7 @@ import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, T
 import { JsonServiceClient, lastLeftPart, leftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 import { createForms } from "../../shared/js/createForms";
-import { appApis, appObjects } from "../../shared/js/core";
+import { createMeta, appObjects } from "../../shared/js/core";
 /*minify:*/
 //APP.config.debugMode = false
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI,'/'),'/')
@@ -58,10 +58,7 @@ if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 
-let cleanSrc = src => src.trim();
-
 let appName = 'explorer'
-export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap } = appObjects(APP,appName)
-export let { getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,appName)
-export let Forms = createForms(OpsMap, TypesMap, APP.ui.explorer.css, APP.ui)
+export let Meta = createMeta(APP, appName)
+export let Forms = createForms(Meta, APP.ui.explorer.css, APP.ui)
 /*:minify*/

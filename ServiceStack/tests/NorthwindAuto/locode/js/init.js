@@ -3,7 +3,7 @@ import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, T
 
 import { combinePaths, JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
-import { appApis, appObjects, Crud } from "../../shared/js/core"
+import { createMeta, appObjects, Crud } from "../../shared/js/core"
 import { createForms } from "../../shared/js/createForms"
 
 /*minify:*/
@@ -54,7 +54,9 @@ APP.api.operations.forEach(op => {
 
 let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack') && Crud.isQuery(op))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
-/** @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
+/** Organized data structure to render Sidebar
+ * @remarks
+ * @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
 export let sideNav = appTags.map(tag => ({
     tag,
     expanded: true,
@@ -83,8 +85,7 @@ if (alwaysHideTags) {
 }
 
 let appName = 'locode'
-export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap } = appObjects(APP,appName)
-export let { getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,appName)
-export let Forms = createForms(OpsMap, TypesMap, APP.ui.locode.css, APP.ui)
+export let Meta = createMeta(APP, appName)
+export let Forms = createForms(Meta, APP.ui.locode.css, APP.ui)
 
 /*:minify*/

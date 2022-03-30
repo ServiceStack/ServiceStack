@@ -3,6 +3,7 @@
 /**
  * Maintain page route state:
  *  - /{pageKey}?{queryKeys}
+ * @remarks
  * Events:
  *   route:init - loaded from URL
  *   route:to   - navigated by to()

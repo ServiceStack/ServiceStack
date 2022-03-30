@@ -1,14 +1,22 @@
 import { each, on } from "@servicestack/client"
 
 /*minify:*/
+
 /** @typedef {import('../js/createApp').App} App */
 /** @typedef {Record<'2xl'|'xl'|'lg'|'md'|'sm',boolean>} Breakpoints */
+
 /**
  * Returns a reactive store that maintains different resolution states:
- * Defaults: 2xl:1536, xl:1280, lg:1024, md:768, sm:640
- * E.g. at 1200px: { 2xl:false, xl:false, lg:true, md:true, sm:true }
+ * 
+ * @remarks
  * Events:
  *   breakpoint:change - the browser width changed breakpoints
+ * 
+ * @defaultValue { 2xl:1536, xl:1280, lg:1024, md:768, sm:640 }
+ * 
+ * @example
+ * E.g. at 1200px: { 2xl:false, xl:false, lg:true, md:true, sm:true }
+ * 
  * @param {App} App
  * @param {{handlers: {change({previous: *, current: *}): void}}} options
  * @returns {Breakpoints & {previous:Breakpoints,current:Breakpoints,snap:()=>void}}

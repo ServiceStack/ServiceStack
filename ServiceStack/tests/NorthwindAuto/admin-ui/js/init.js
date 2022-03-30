@@ -4,7 +4,7 @@ import { MetadataOperationType, MetadataType, MetadataPropertyType, InputInfo, T
 import { JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { APP } from "../../lib/types"
 import { createForms } from "../../shared/js/createForms"
-import { appApis, appObjects } from "../../shared/js/core"
+import { createMeta, appObjects } from "../../shared/js/core"
 
 /*minify:*/
 
@@ -26,8 +26,7 @@ function createClient(fn) {
 let client = createClient()
 
 let appName = 'admin-ui'
-export let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap } = appObjects(APP,appName)
-export let { getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,appName)
-export let Forms = createForms(OpsMap, TypesMap, APP.plugins.adminUsers.css, APP.ui)
+export let Meta = createMeta(APP, appName)
+export let Forms = createForms(Meta, APP.plugins.adminUsers.css, APP.ui)
 
 /*:minify*/

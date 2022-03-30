@@ -1,5 +1,5 @@
 <script minify>
-import { getIcon } from "../js/init"
+import { Meta } from "../js/init"
 import { humanify } from "@servicestack/client"
 
 App.components({
@@ -11,7 +11,7 @@ App.components({
             store,
             $on: $on || null,
             label(op) { return humanify(op.dataModel.name) },
-            getIcon,
+            getIcon: Meta.getIcon,
         }
     },
 })

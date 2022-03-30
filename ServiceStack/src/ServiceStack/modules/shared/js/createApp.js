@@ -1,28 +1,28 @@
 /*minify:*/
 /** @typedef {<T>(args:T) => T} Identity */
 /** @typedef {{
-    events: { 
-        subscribe: function(string, Function): { unsubscribe: function():void }, 
-        publish: function(string, any): void 
-    };
-    readonly petite: any;    components: function(Object.<string,Function>): void;
-    component: function(string, any): void;
-    template: function(string, string): void;
-    templates: function(Object.<string,string>): void;
-    directive: function(string, Function): void;
-    prop: function(string, any): void;
-    props: function(Object.<string,any>): void;
-    build: function(Object.<string,any>): any;
-    plugin: function(Object.<string,any>): void;
-    import: function(string): Promise<any>;
-    onStart: function(Function): void;
-    start: function(): void;
-    unsubscribe: function(): void;
-    createApp: function(any): any;
-    nextTick: function(Function): void;
-    reactive: Identity;
-}} App
-*/
+ *     events: { 
+ *         subscribe: function(string, Function): { unsubscribe: function():void }, 
+ *         publish: function(string, any): void 
+ *     };
+ *     readonly petite: any;    components: function(Object.<string,Function>): void;
+ *     component: function(string, any): void;
+ *     template: function(string, string): void;
+ *     templates: function(Object.<string,string>): void;
+ *     directive: function(string, Function): void;
+ *     prop: function(string, any): void;
+ *     props: function(Object.<string,any>): void;
+ *     build: function(Object.<string,any>): any;
+ *     plugin: function(Object.<string,any>): void;
+ *     import: function(string): Promise<any>;
+ *     onStart: function(Function): void;
+ *     start: function(): void;
+ *     unsubscribe: function(): void;
+ *     createApp: function(any): any;
+ *     nextTick: function(Function): void;
+ *     reactive: Identity;
+ * }} App
+ */
 /** App to register and build a PetiteVueApp
  * @param {{createApp:(initialData?:any) => any,nextTick:(fn:Function) => void,reactive:Identity}} PetiteVue 
  * @returns {App}

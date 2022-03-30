@@ -41,7 +41,9 @@ APP.api.operations.forEach(op => {
 })
 let appOps = APP.api.operations.filter(op => !op.request.namespace.startsWith('ServiceStack') && Crud.isQuery(op))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
-/** @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
+/** Organized data structure to render Sidebar
+ * @remarks
+ * @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
 let sideNav = appTags.map(tag => ({
     tag,
     expanded: true,
@@ -66,7 +68,6 @@ if (alwaysHideTags) {
     sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
 }
 let appName = 'locode'
-let { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap } = appObjects(APP,appName)
-let { getOp, getType, isEnum, enumValues, getIcon } = appApis(APP,appName)
-let Forms = createForms(OpsMap, TypesMap, APP.ui.locode.css, APP.ui)
+let Meta = createMeta(APP, appName)
+let Forms = createForms(Meta, APP.ui.locode.css, APP.ui)
 /*:minify*/

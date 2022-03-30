@@ -228,6 +228,7 @@ export declare var Forms:Forms";
     private static Dictionary<string, string> Footers = new()
     {
         ["locode"] = Footer + @"
+/** Method arguments of custom Create Form Components */
 export interface CreateComponentArgs {
     store: typeof store;
     routes: typeof routes;
@@ -236,8 +237,10 @@ export interface CreateComponentArgs {
     save: () => void;
     done: () => void;
 }
+/** Method Signature of custom Create Form Components */
 export declare type CreateComponent = (args:CreateComponentArgs) => Record<string,any>;
 
+/** Method arguments of custom Edit Form Components */
 export interface EditComponentArgs {
     store: typeof store;
     routes: typeof routes;
@@ -246,15 +249,18 @@ export interface EditComponentArgs {
     save: () => void;
     done: () => void;
 }
+/** Method signature of custom Edit Form Components */
 export declare type EditComponent = (args:EditComponentArgs) => Record<string,any>;",
         
         ["explorer"] = Footer + @"
+/** Method arguments of custom Doc Components */
 export interface DocComponentArgs {
     store: typeof store;
     routes: typeof routes;
     breakpoints: typeof breakpoints;
     op: () => MetadataOperationType;
 }
+/** Method Signature of custom Doc Components */
 export declare type DocComponent = (args:DocComponentArgs) => Record<string,any>;",
         
         ["admin"] = Footer,

@@ -1,6 +1,10 @@
 /** @typedef {import("../../shared/plugins/useBreakpoints").Breakpoints} Breakpoints */
 /*minify:*/
-/** @type {function(string, boolean?): boolean} */
+/**
+ * Execute tailwindui.com transition definition rules
+ * @remarks
+ * @type {(prop:string,enter?:boolean) => boolean}
+ * */
 let transition = useTransitions(App, { sidebar: true })
 /** @type {Breakpoints & {previous: Breakpoints, current: Breakpoints, snap: (function(): void)}} */
 let breakpoints = useBreakpoints(App, {
@@ -8,9 +12,15 @@ let breakpoints = useBreakpoints(App, {
         change({ previous, current }) { console.log('breakpoints.change', previous, current) } /*debug*/
     }
 })
-/** @typedef {{op?:string,tab?:string,lang?:string,provider?:string,preview?:string,body?:string,doc?:string,detailSrc?:string,form?:string,response?:string}} UiRoutes */
-/** @typedef {{queryHref(): string}} UiRoutesExtend */
-/** @type {UiRoutes & UiRoutesExtend & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}} */
+/** Custom route params used in API Explorer
+ * @typedef {{op?:string,tab?:string,lang?:string,provider?:string,preview?:string,body?:string,doc?:string,detailSrc?:string,form?:string,response?:string}} UiRoutes */
+/** Route methods used in API Explorer
+ * @typedef {{queryHref(): string}} UiRoutesExtend */
+/**
+ * The App's reactive `routes` navigation component used for all App navigation
+ * @remarks
+ * @type {UiRoutes & UiRoutesExtend & {page: string, set: (function(any): void), state: any, to: (function(any): void), href: (function(any): string)}}
+ */
 let routes = usePageRoutes(App,{
     page:'op',
     queryKeys:'tab,lang,provider,preview,body,doc,detailSrc,form,response'.split(','),
@@ -19,7 +29,7 @@ let routes = usePageRoutes(App,{
     },
     extend: {
         queryHref() {
-            let op = this.op && OpsMap[this.op]
+            let op = this.op && Meta.OpsMap[this.op]
             if (op && APP.ui.modules.indexOf('/locode') >= 0) {
                 if (Crud.isQuery(op)) {
                     return `/locode/${this.op}`
@@ -33,45 +43,49 @@ let routes = usePageRoutes(App,{
         },
     }
 })
-/** @type {{
-    cachedFetch: (url:string) => Promise<string>,
-    copied: boolean, 
-    readonly opTabs: {[p: string]: string}, 
-    sideNav: {expanded: boolean, operations: MetadataOperationType[], tag: string}[], 
-    auth: AuthenticateResponse, 
-    readonly displayName: string|null, 
-    loadLang: () => void, 
-    langCache: () => {op: string, lang: string, url: string}, 
-    login: (args:any, $on?:Function) => void, 
-    detailSrcResult: {}, 
-    logout: () => void, 
-    readonly isServiceStackType: boolean, 
-    api: ApiResult<AuthenticateResponse>, 
-    init: () => void, 
-    readonly op: MetadataOperationType|null, 
-    debug: boolean, 
-    readonly filteredSideNav: {tag: string, operations: MetadataOperationType[], expanded: boolean}[], 
-    readonly authProfileUrl: string|null, 
-    previewResult: string|null, 
-    readonly activeLangSrc: string|null, 
-    readonly previewCache: {preview: string, url: string, lang: string}|null, 
-    toggle: (tag:string) => void, 
-    getTypeUrl: (types: string) => string, 
-    readonly authRoles: string[], 
-    filter: string, 
-    loadDetailSrc: () => void, 
-    baseUrl: string, 
-    readonly activeDetailSrc: string, 
-    readonly authLinks: LinkInfo[], 
-    readonly opName: string, 
-    readonly previewSrc: string, 
-    SignIn: (opt:any) => Function,
-    hasRole: (role:string) => boolean, 
-    loadPreview: () => void, 
-    readonly authPermissions: string[], 
-    readonly useLang: string, 
-    invalidAccess: () => string|null
-}}
+let cleanSrc = src => src.trim();
+/**
+ * App's primary reactive store maintaining global functionality for API Explorer
+ * @remarks
+ * @type {{
+ * cachedFetch: (url:string) => Promise<string>,
+ *     copied: boolean, 
+ *     readonly opTabs: {[p: string]: string}, 
+ *     sideNav: {expanded: boolean, operations: MetadataOperationType[], tag: string}[], 
+ *     auth: AuthenticateResponse, 
+ *     readonly displayName: string|null, 
+ *     loadLang: () => void, 
+ *     langCache: () => {op: string, lang: string, url: string}, 
+ *     login: (args:any, $on?:Function) => void, 
+ *     detailSrcResult: {}, 
+ *     logout: () => void, 
+ *     readonly isServiceStackType: boolean, 
+ *     api: ApiResult<AuthenticateResponse>, 
+ *     init: () => void, 
+ *     readonly op: MetadataOperationType|null, 
+ *     debug: boolean, 
+ *     readonly filteredSideNav: {tag: string, operations: MetadataOperationType[], expanded: boolean}[], 
+ *     readonly authProfileUrl: string|null, 
+ *     previewResult: string|null, 
+ *     readonly activeLangSrc: string|null, 
+ *     readonly previewCache: {preview: string, url: string, lang: string}|null, 
+ *     toggle: (tag:string) => void, 
+ *     getTypeUrl: (types: string) => string, 
+ *     readonly authRoles: string[], 
+ *     filter: string, 
+ *     loadDetailSrc: () => void, 
+ *     baseUrl: string, 
+ *     readonly activeDetailSrc: string, 
+ *     readonly authLinks: LinkInfo[], 
+ *     readonly opName: string, 
+ *     readonly previewSrc: string, 
+ *     SignIn: (opt:any) => Function,
+ *     hasRole: (role:string) => boolean, 
+ *     loadPreview: () => void, 
+ *     readonly authPermissions: string[], 
+ *     readonly useLang: string, 
+ *     invalidAccess: () => string|null
+ * }}
  */
 let store = App.reactive({
     /** @type {string|null} */
@@ -125,12 +139,12 @@ let store = App.reactive({
     loadLang() {
         if (!this.activeLangSrc) {
             let cache = this.langCache()
-            if (CACHE[cache.url]) {
-                this.langResult = { cache, result: CACHE[cache.url] }
+            if (Meta.CACHE[cache.url]) {
+                this.langResult = { cache, result: Meta.CACHE[cache.url] }
             } else {
                 this.cachedFetch(cache.url)
                     .then(src => {
-                        this.langResult = { cache, result: CACHE[cache.url] = cleanSrc(src) }
+                        this.langResult = { cache, result: Meta.CACHE[cache.url] = cleanSrc(src) }
                         if (!this.activeLangSrc) {
                             this.loadLang()
                         }
@@ -153,15 +167,15 @@ let store = App.reactive({
         if (!this.previewSrc) {
             let cache = this.previewCache
             if (!cache) return
-            if (CACHE[cache.url]) {
-                this.previewResult = { type:'src', ...cache, result: CACHE[cache.url] }
+            if (Meta.CACHE[cache.url]) {
+                this.previewResult = { type:'src', ...cache, result: Meta.CACHE[cache.url] }
             } else {
                 this.cachedFetch(cache.url)
                     .then(src => {
                         this.previewResult = {
                             type:'src',
                             ...cache,
-                            result: CACHE[cache.url] = cache.lang ? cleanSrc(src) : src
+                            result: Meta.CACHE[cache.url] = cache.lang ? cleanSrc(src) : src
                         }
                     })
             }
@@ -182,11 +196,11 @@ let store = App.reactive({
     loadDetailSrc() {
         if (!routes.detailSrc) return
         let cache = { url: this.getTypeUrl(routes.detailSrc) }
-        if (CACHE[cache.url]) {
-            this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] }
+        if (Meta.CACHE[cache.url]) {
+            this.detailSrcResult[cache.url] = { ...cache, result: Meta.CACHE[cache.url] }
         } else {
             this.cachedFetch(cache.url).then(src => {
-                this.detailSrcResult[cache.url] = { ...cache, result: CACHE[cache.url] = cleanSrc(src) }
+                this.detailSrcResult[cache.url] = { ...cache, result: Meta.CACHE[cache.url] = cleanSrc(src) }
             })
         }
     },
@@ -217,7 +231,7 @@ let store = App.reactive({
      *  @returns {Promise<string>} */
     cachedFetch(url) {
         return new Promise((resolve,reject) => {
-            let src = CACHE[url]
+            let src = Meta.CACHE[url]
             if (src) {
                 resolve(src)
             } else {
@@ -227,7 +241,7 @@ let store = App.reactive({
                         else throw r.statusText
                     })
                     .then(src => {
-                        resolve(CACHE[url] = src)
+                        resolve(Meta.CACHE[url] = src)
                     })
                     .catch(e => {
                         console.error(`fetchCache (${url}):`, e)
@@ -271,7 +285,7 @@ let store = App.reactive({
             .then(r => {
                 this.api = r
                 if (r.error && !r.error.message)
-                    r.error.message = HttpErrors[r.errorCode] || r.errorCode
+                    r.error.message = Meta.HttpErrors[r.errorCode] || r.errorCode
                 if (this.api.succeeded) {
                     this.auth = this.api.response
                     setBodyClass({ auth: this.auth })

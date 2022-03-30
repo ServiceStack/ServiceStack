@@ -58,7 +58,7 @@ App.components({
             get title() { return map(this.useApiUpdate, x => x.title) },
             get dataModel() { return map(this.useApiUpdate, x => x.op && x.op.dataModel) },
             get dataModelName() { return map(this.dataModel, x => x.name) },
-            get pk() { return Forms.getPrimaryKey(getType(this.dataModel)) },
+            get pk() { return Forms.getPrimaryKey(Meta.getType(this.dataModel)) },
             get gridInputs() {
                 return map(this.useApiUpdate, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forEdit(x.op.request)))  
             },

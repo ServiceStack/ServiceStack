@@ -1,5 +1,7 @@
 <script minify>
 import { delaySet, humanify, mapGet } from "@servicestack/client"
+import { Meta, Forms } from "../js/init"
+
 App.components({
     ModalLookup(state, store, routes, settings) {
         let emptyPrefs = {take:10,selectedColumns:[]}
@@ -42,7 +44,7 @@ App.components({
                 this.close()
             },
             fieldName(name) { return humanify(name) },
-            getId(row) { return Forms.getId(getType(routes.op),row) },
+            getId(row) { return Forms.getId(Meta.getType(routes.op),row) },
             /** @param {*} row
              *  @param {MetadataPropertyType} column */
             format(row, column) {

@@ -1,6 +1,6 @@
 <script minify>
 import { hasItems } from "../../shared/js/core"
-import { Forms } from "../../locode/js/init"
+import { Meta, Forms } from "../../locode/js/init"
 
 App.component('ApiDetails', ({ store, routes, breakpoints }) => {
     return {
@@ -35,10 +35,10 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
         inheritedTypes(typeRef) {
             if (!typeRef) return ''
             let types = [typeRef.name]
-            let metaType = TypesMap[typeRef.name]
+            let metaType = Meta.TypesMap[typeRef.name]
             while (metaType != null && metaType.inherits != null) {
                 types.push(metaType.inherits.name)
-                metaType = TypesMap[metaType.inherits.name]
+                metaType = Meta.TypesMap[metaType.inherits.name]
             }
             return types.join(',')
         },
@@ -59,15 +59,15 @@ function addReferencedTypes(allTypesMap, type) {
     if (allTypesMap[type.name]) return
     allTypesMap[type.name] = type
     if (type.inherits) {
-        addReferencedTypes(allTypesMap, TypesMap[type.inherits.name])
+        addReferencedTypes(allTypesMap, Meta.TypesMap[type.inherits.name])
         if (type.inherits.genericArgs) {
-            type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
+            type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, Meta.TypesMap[argType]))
         }
     }
     Forms.typeProperties(type).forEach(prop => {
-        addReferencedTypes(allTypesMap, TypesMap[prop.type])
+        addReferencedTypes(allTypesMap, Meta.TypesMap[prop.type])
         if (type.genericArgs) {
-            type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, TypesMap[argType]))
+            type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, Meta.TypesMap[argType]))
         }
     })
     return allTypesMap

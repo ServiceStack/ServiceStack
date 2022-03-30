@@ -28,10 +28,10 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         get canNext() { return this.results.length >= this.take },
         get canLast() { return this.results.length >= this.take },
         min(num1,num2) { return Math.min(num1, num2) },
-        get dataModel() { return getType(dataModelRef()) },
-        get viewModel() { return getType(viewModelRef()) },
+        get dataModel() { return Meta.getType(dataModelRef()) },
+        get viewModel() { return Meta.getType(viewModelRef()) },
         get viewModelColumns() { return Forms.typeProperties(this.viewModel) },
-        get invalidAccess() { return invalidAccessMessage(getOp(routes.op), store.auth) },
+        get invalidAccess() { return invalidAccessMessage(Meta.getOp(routes.op), store.auth) },
         get invalidCreateAccess() { return map(this.state, x => invalidAccessMessage(x.opCreate, store.auth)) },
         get invalidUpdateAccess() { return !this.canUpdate && map(this.state, x => invalidAccessMessage(x.opPatch, store.auth) || invalidAccessMessage(x.opUpdate, store.auth)) },
         get accessibleAutoQueryTables() {
@@ -350,7 +350,7 @@ App.components({
                 onFilter(args)
             },
             fieldName(name) { return humanify(name) },
-            getId(row) { return Forms.getId(getType(routes.op),row) },
+            getId(row) { return Forms.getId(Meta.getType(routes.op),row) },
             /** @param {*} row
              *  @param {MetadataPropertyType} column */
             format(row, column) { 

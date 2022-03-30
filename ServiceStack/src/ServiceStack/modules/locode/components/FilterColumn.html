@@ -35,8 +35,8 @@ App.components({
             done,
             inputClass(cls) { return cls + ' ' + inputClass() },
             get valueType() { return map(filterRule(this.columnType, this.newQuery), x => x.valueType) },
-            get isEnum() { return isEnum(this.columnType) },
-            get enumValues() { return enumValues(this.columnType) },
+            get isEnum() { return Meta.isEnum(this.columnType) },
+            get enumValues() { return Meta.enumValues(this.columnType) },
             get enumProps() {  },
             addFilter() {
                 if (!this.newQuery) return
@@ -102,7 +102,7 @@ App.components({
                 settings.saveOpProp(routes.op, column.name, x => Object.assign(x,prefs))
                 this.save()
             },
-            isEnum,
+            isEnum: Meta.isEnum,
             enumValues(filters) {
                 return (filters && filters[0] && filters[0].value || '').split(',')
             },

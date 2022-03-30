@@ -1,7 +1,8 @@
 /*minify:*/
 /** @typedef {import('../js/createApp').App} App */
 /**
- * Implements https://tailwindui.com transition states by encoding in data-transition attr, e.g:
+ * Implements https://tailwindui.com transition states by encoding in data-transition attr
+ * @example
  * data-transition="{ 
  *   entering: { cls:'transition ease-in-out duration-300 transform', from:'-translate-x-full', to:'translate-x-0'}, 
  *   leaving:  { cls:'transition ease-in-out duration-300 transform', from:'translate-x-0',     to:'-translate-x-full' } 

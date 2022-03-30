@@ -1,7 +1,7 @@
  <script minify>
 import { APP, GetCrudEvents } from "../../lib/types"
 import { map } from "../../shared/js/core"
-import { Forms, getType } from "../js/init"
+import { Meta, Forms } from "../js/init"
 import { delaySet, mapGet, toDate, toLocalISOString } from "@servicestack/client"
 
 /** @typedef {{opQuery:MetadataOperationType,opPatch?:MetadataOperationType,opUpdate?:MetadataOperationType,opDelete?:MetadataOperationType,apiQuery:ApiState}} State */
@@ -64,7 +64,7 @@ App.components({
             get title() { return map(this.useApiUpdate, x => x.title) },
             get dataModel() { return map(this.useApiUpdate, x => x.op && x.op.dataModel) },
             get dataModelName() { return map(this.dataModel, x => x.name) },
-            get pk() { return Forms.getPrimaryKey(getType(this.dataModel)) },
+            get pk() { return Forms.getPrimaryKey(Meta.getType(this.dataModel)) },
             get gridInputs() {
                 return map(this.useApiUpdate, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forEdit(x.op.request)))  
             },
