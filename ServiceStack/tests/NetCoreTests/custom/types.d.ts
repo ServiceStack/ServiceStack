@@ -14,9 +14,6 @@ export type Breakpoints = Record<'2xl' | 'xl' | 'lg' | 'md' | 'sm', boolean>;
 /** Return self or reactive proxy of self */
 export type Identity = <T>(args: T) => T;
 
-/** Return self or reactive proxy of self */
-export type MapFn = <T,V>(o:T, f:(o:T) => V) => V | null;
-
 /** Invoke a Tailwind Definition Rule */
 export type Transition = (prop:string,enter:boolean) => boolean;
 

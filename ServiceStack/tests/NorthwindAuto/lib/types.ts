@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-03-31 04:05:40
+Date: 2022-03-31 17:50:09
 Version: 6.03
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1184,9 +1184,6 @@ export type Breakpoints = Record<'2xl' | 'xl' | 'lg' | 'md' | 'sm', boolean>;
 
 /** Return self or reactive proxy of self */
 export type Identity = <T>(args: T) => T;
-
-/** Return self or reactive proxy of self */
-export type MapFn = <T,V>(o:T, f:(o:T) => V) => V | null;
 
 /** Invoke a Tailwind Definition Rule */
 export type Transition = (prop:string,enter:boolean) => boolean;
