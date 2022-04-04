@@ -201,7 +201,7 @@ namespace ServiceStack.OrmLite
             if (modelDef.RowVersion == null || !updateFields.TryGetValue(ModelDefinition.RowVersionName, out var rowVersion))
             {
                 args = new[] { idValue };
-                return "(" + pkField.FieldName + " = {0})";
+                return "(" + dialectProvider.GetQuotedColumnName(pkField.FieldName) + " = {0})";
             }
 
             args = new[] { idValue, rowVersion };
