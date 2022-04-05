@@ -1232,7 +1232,7 @@ export type App = {
     unsubscribe: () => void;
     /** PetiteVue.createApp - create PetiteVue instance */
     createApp: (args: any) => any;
-    /** PetiteVue.nextTick - register callback to be fired afterA next async loop */
+    /** PetiteVue.nextTick - register callback to be fired after next async loop */
     nextTick: (f: Function) => void;
     /** PetiteVue.reactive - create a reactive store */
     reactive: Identity;

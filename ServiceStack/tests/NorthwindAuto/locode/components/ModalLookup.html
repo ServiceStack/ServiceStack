@@ -249,7 +249,7 @@ App.components({
                         <div class="inline-block min-w-full py-2 align-middle">
                             <div class="shadow-sm ring-1 ring-black ring-opacity-5">
                                 <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save, done:() => filter=null })" class="relative"></div>
-                                <table ref="table" class="min-w-full border-separate" style="border-spacing:0">
+                                <table class="min-w-full border-separate" style="border-spacing:0">
                                     <thead class="bg-gray-50">
                                     <tr>
                                         <th v-for="c in columns" :key="c.name"

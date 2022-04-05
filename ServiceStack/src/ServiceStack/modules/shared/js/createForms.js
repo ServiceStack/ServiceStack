@@ -354,19 +354,21 @@ function createForms(Meta, css, ui) {
      */
     function createPropState(prop, opName, callback) {
         let state = createState(opName)
+        let viewModel = getType(state.opQuery.viewModel) 
         /** @type {CrudApisStateProp} */
         let propState = Object.assign(state, { prop, opName, callback,
             dataModel: getType(state.opQuery.dataModel),
-            viewModel: getType(state.opQuery.viewModel),
-            viewModelColumns: typeProperties(state.viewModel),
+            viewModel,
+            viewModelColumns: typeProperties(viewModel),
             createPrefs: () => settings.lookup(opName),
             /** @return {MetadataPropertyType[]} */
             selectedColumns: prefs => []
         })
-        propState.selectedColumns = prefs => map(propState,
-        s => (hasItems(prefs.selectedColumns)
-            ? prefs.selectedColumns.map(name => s.viewModelColumns.find(x => x.name === name))
-            : s.viewModelColumns).filter(x => !!x)) || []
+        propState.selectedColumns = prefs => {
+            return propState && hasItems(prefs.selectedColumns)
+                ? prefs.selectedColumns.map(name => propState.viewModelColumns.find(x => x.name === name))
+                : propState.viewModelColumns.filter(x => !!x) || []
+        }
         return propState
     }
     /** @param {*} o

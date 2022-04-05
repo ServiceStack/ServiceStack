@@ -372,7 +372,7 @@ function apiState(op) {
 /** 
  * Return all CRUD API States available for this operation
  * @param {string} opName
- * @return {CrudApisState}
+ * @return {CrudApisState|null}
  */
 function createState(opName) {
     let op = opName && Server.api.operations.find(x => x.request.name === opName)
@@ -385,7 +385,9 @@ function createState(opName) {
         /** @param {MetadataOperationType} op
          *  @returns {ApiState|null} */
         function hasApi(op) { 
-            return canAccess(op,store.auth) ? apiState(op) : null 
+            return canAccess(op,store.auth)
+                ? apiState(op) 
+                : null 
         }
         let { opQuery, opCreate, opPatch, opUpdate, opDelete } = {
             opQuery:   op,
