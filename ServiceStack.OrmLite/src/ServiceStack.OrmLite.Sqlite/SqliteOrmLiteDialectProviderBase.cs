@@ -202,7 +202,7 @@ namespace ServiceStack.OrmLite.Sqlite
         public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
         {
             var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
-                .SqlFmt(GetTableName(tableName, schema));
+                .SqlFmt(this, GetTableName(tableName, schema));
 
             dbCmd.CommandText = sql;
             var result = dbCmd.LongScalar();
@@ -213,7 +213,7 @@ namespace ServiceStack.OrmLite.Sqlite
         public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null)
         {
             var sql = "PRAGMA table_info({0})"
-                .SqlFmt(GetTableName(tableName, schema));
+                .SqlFmt(this, GetTableName(tableName, schema));
 
             var columns = db.SqlList<Dictionary<string, object>>(sql);
             foreach (var column in columns)
