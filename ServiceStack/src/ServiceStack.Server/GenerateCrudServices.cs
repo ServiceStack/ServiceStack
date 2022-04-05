@@ -15,14 +15,6 @@ using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
-using ServiceStack.NativeTypes.CSharp;
-using ServiceStack.NativeTypes.Dart;
-using ServiceStack.NativeTypes.FSharp;
-using ServiceStack.NativeTypes.Java;
-using ServiceStack.NativeTypes.Kotlin;
-using ServiceStack.NativeTypes.Swift;
-using ServiceStack.NativeTypes.TypeScript;
-using ServiceStack.NativeTypes.VbNet;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -103,6 +95,8 @@ namespace ServiceStack
 
         public Func<ColumnSchema, IOrmLiteDialectProvider, Type> ResolveColumnType { get; set; }
         
+        public Action<GenerateMissingServicesContext> GenerateMissingServicesFilter { get; set; }
+
         public Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
         {
             var dataType = column.DataType;
@@ -215,24 +209,36 @@ namespace ServiceStack
             }
             foreach (var assembly in feature.LoadFromAssemblies)
             {
-                var asmAqTypes = assembly.GetTypes().Where(x =>
-                    x.HasInterface(typeof(IQueryDb)) || x.HasInterface(typeof(ICrud)));
-
-                foreach (var aqType in asmAqTypes)
+                var asmTypes = assembly.GetTypes();
+                foreach (var type in asmTypes)
                 {
-                    try
+                    var aqType = type.HasInterface(typeof(IQueryDb)) || type.HasInterface(typeof(ICrud));
+                    if (aqType)
                     {
-                        ServiceMetadata.AddReferencedTypes(dtoTypes, aqType);
+                        try
+                        {
+                            ServiceMetadata.AddReferencedTypes(dtoTypes, type);
+                        }
+                        catch (Exception ex)
+                        {
+                            appHost.NotifyStartupException(ex, type.Name, nameof(GenerateMissingServices));
+                        }
                     }
-                    catch (Exception ex)
+                    else if (ServiceMetadata.IsDtoType(type))
                     {
-                        appHost.NotifyStartupException(ex, aqType.Name, nameof(GenerateMissingServices));
+                        dtoTypes.Add(type);
                     }
                 }
             }
             foreach (var dtoType in dtoTypes)
             {
                 generatedTypes[key(dtoType)] = dtoType;
+            }
+
+            if (GenerateMissingServicesFilter != null)
+            {
+                var ctx = new GenerateMissingServicesContext(metadataTypes, existingMetaTypesMap, generatedTypes);
+                GenerateMissingServicesFilter(ctx);
             }
 
             foreach (var metaType in metadataTypes)
@@ -288,7 +294,7 @@ namespace ServiceStack
         private static void ThrowCouldNotResolveType(string name) =>
             throw new NotSupportedException($"Could not resolve type '{name}'");
 
-        private static readonly Dictionary<string, Type> ServiceStackModelTypes = new Dictionary<string, Type> {
+        private static readonly Dictionary<string, Type> ServiceStackModelTypes = new() {
             { nameof(UserAuth), typeof(UserAuth) },
             { nameof(IUserAuth), typeof(IUserAuth) },                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
             { nameof(UserAuthDetails), typeof(UserAuthDetails) },
@@ -418,7 +424,7 @@ namespace ServiceStack
         private static readonly CustomAttributeBuilder DefaultDataContractCtorBuilder = new CustomAttributeBuilder(
             DataContractCtor,
             TypeConstants.EmptyObjectArray,
-            new PropertyInfo[0], TypeConstants.EmptyObjectArray);
+            Array.Empty<PropertyInfo>(), TypeConstants.EmptyObjectArray);
         private static readonly Attribute dataContractAttr = new DataContractAttribute();
         private static readonly Attribute dataMemberAttr = new DataMemberAttribute();
 
@@ -1434,9 +1440,22 @@ namespace ServiceStack
             
             return new Tuple<MetadataTypes, MetadataTypesConfig>(crudMetadataTypes, typesConfig);
         }
-        
     }
-    
+
+    public class GenerateMissingServicesContext
+    {
+        public List<MetadataType> MetadataTypes { get; }
+        public Dictionary<Tuple<string, string>, MetadataType> ExistingMetaTypesMap { get; }
+        public Dictionary<Tuple<string, string>, Type> GeneratedTypes { get; }
+        
+        public GenerateMissingServicesContext(List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, Dictionary<Tuple<string, string>, Type> generatedTypes)
+        {
+            MetadataTypes = metadataTypes;
+            ExistingMetaTypesMap = existingMetaTypesMap;
+            GeneratedTypes = generatedTypes;
+        }
+    }
+
     [Restrict(VisibilityTo = RequestAttributes.None)]
     [DefaultRequest(typeof(CrudCodeGenTypes))]
     public class CrudCodeGenTypesService : Service

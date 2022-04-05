@@ -575,7 +575,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private static bool IsDtoType(Type? type) => type != null &&
+        public static bool IsDtoType(Type? type) => type != null &&
             type.Namespace?.StartsWith("System") == false &&
             type.IsClass && type != typeof(string) &&
             !type.IsGenericType &&
