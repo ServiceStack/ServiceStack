@@ -105,8 +105,12 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 take:this.take,
             }
             if (this.skip > 0) args.skip = this.skip
-            if (this.prefs.selectedColumns.length > 0) {
-                args.fields = this.prefs.selectedColumns.join(',')
+            let selectedColumns = this.prefs.selectedColumns 
+            if (selectedColumns.length > 0) {
+                let pk = Forms.getPrimaryKey(Meta.getType(routes.op))
+                if (selectedColumns.indexOf(pk.name) === -1)
+                    selectedColumns = [pk.name, ...selectedColumns]
+                args.fields = selectedColumns.join(',')
             }
             let orderBy = []
             this.filters.forEach(f => {

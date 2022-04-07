@@ -353,7 +353,6 @@ export function createForms(Meta, css, ui) {
                         }
                     })
                     let newIds = lookupIds.filter(id => existingIds.indexOf(`${id}`) === -1)
-                    //console.log('lookup', c.ref.model, lookupIds, existingIds, newIds) /*debug*/
                     if (newIds.length === 0) return
 
                     // /api/QueryEmployees?IdIn=1,2,3&fields=Id,LastName&jsconfig=edv

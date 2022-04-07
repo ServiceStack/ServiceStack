@@ -36,15 +36,12 @@ let routes = usePageRoutes(App,{
         onEditChange(fn) {
             onRoutesEditChange = fn
             if (fn == null) lastEditState = null
-            console.log('onEditChange', fn != null, lastEditState, this.edit)
             this.update()
         },
         update() {
-            console.log('update', this.edit, onRoutesEditChange, lastEditState)
             if (this.edit && onRoutesEditChange) {
                 let newState = `${this.op}:${this.edit}`
                 if (lastEditState == null || newState !== lastEditState) {
-                    console.log('onRoutesEditChange.update', onRoutesEditChange, newState, lastEditState)
                     lastEditState = newState
                     onRoutesEditChange()
                 }
@@ -335,7 +332,6 @@ function apiState(op) {
                     ? Forms.forEdit(op.request)
                     : null
             let field = input && Forms.getGridInput(input, inputFn)
-            //console.log('inputFn',inputFn, field.prop)
             if (f) f(field)
             return field
         },

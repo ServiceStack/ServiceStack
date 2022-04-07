@@ -79,7 +79,6 @@ App.components({
             },
             updated() {
                 let pk = this.pk, state = this.state
-                console.log('Forms.updated', pk, state && state.opQuery != null, routes.edit)
                 if (!pk || !state || !state.opQuery || !routes.edit) return
                 /** @type ApiState */
                 let apiQuery = apiState(state.opQuery)
