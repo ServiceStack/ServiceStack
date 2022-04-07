@@ -143,6 +143,13 @@ namespace ServiceStack
             
             var q = AutoQuery.CreateQuery(request, Request, useDb);
             var response = await AutoQuery.ExecuteAsync(request, q, Request, useDb).ConfigAwait();
+
+            // EventDate is populated in UTC but in some RDBMS (SQLite) it doesn't preserve UTC Kind, so we set it here
+            foreach (var result in response.Results)
+            {
+                if (result.EventDate.Kind == DateTimeKind.Unspecified)
+                    result.EventDate = DateTime.SpecifyKind(result.EventDate, DateTimeKind.Utc);
+            }
             
             return response;
         }
