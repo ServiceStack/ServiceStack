@@ -16,8 +16,11 @@ namespace MyApp
 
         public void Configure(IServiceCollection services)
         {
-            services.AddSingleton<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+            var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+            dbFactory.RegisterConnection("pgsql", new OrmLiteConnectionFactory(
+                Environment.GetEnvironmentVariable("PGSQL_CONNECTION"),
+                PostgreSqlDialect.Provider));
+            services.AddSingleton<IDbConnectionFactory>(dbFactory);
         }
 
         public void Configure(IAppHost appHost)
@@ -29,6 +32,16 @@ namespace MyApp
                 db.CreateBooking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
                 db.CreateBooking("Booking 2", RoomType.Double, 12, 120, "manager@email.com");
                 db.CreateBooking("Booking the 3rd", RoomType.Suite, 13, 130, "employee@email.com");
+            }
+            
+            using var dbPgsql = appHost.Resolve<IDbConnectionFactory>().Open("pgsql");
+            if (dbPgsql.CreateTableIfNotExists<Table1>())
+            {
+                dbPgsql.Insert(new Table1 { Name = "Table1" });
+            }
+            if (dbPgsql.CreateTableIfNotExists<Table2>())
+            {
+                dbPgsql.Insert(new Table2 { Name = "Table2" });
             }
         }
     }

@@ -30,7 +30,11 @@ public class ConfigureAutoQuery : IConfigureAppHost, IConfigureServices // : IHo
         appHost.Plugins.Add(new AutoQueryFeature {
             MaxLimit = 100,
             GenerateCrudServices = new GenerateCrudServices {
-                AutoRegister = true,
+                CreateServices = new ()
+                {
+                    new CreateCrudServices(),
+                    new CreateCrudServices { NamedConnection = "pgsql", Schema = "acme" },
+                },
                 ServiceFilter = (op, req) =>
                 {
                     op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));
