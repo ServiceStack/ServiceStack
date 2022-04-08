@@ -34,10 +34,11 @@ namespace ServiceStack
             return list == null || list.Count == 0;
         }
 
-        //TODO: make it work
         public static IEnumerable<TFrom> SafeWhere<TFrom>(this List<TFrom> list, Func<TFrom, bool> predicate)
         {
-            return list.Where(predicate);
+            return list == null 
+                ? Array.Empty<TFrom>() 
+                : list.Where(predicate);
         }
 
         public static int NullableCount<T>(this List<T> list)
