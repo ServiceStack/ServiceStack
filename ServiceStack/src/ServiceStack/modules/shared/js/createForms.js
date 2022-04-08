@@ -111,7 +111,8 @@ function createForms(Meta, css, ui) {
     /** @param {MetadataType} type 
      *  @param {*} row */
     function getId(type,row) { return map(getPrimaryKey(type), pk => mapGet(row, pk.name)) }
-    let nowMs = () => new Date().getTime() + (defaultFormats.assumeUtc ? new Date().getTimezoneOffset() * 1000 * 60 : 0)
+    // Calc TZOffset: (defaultFormats.assumeUtc ? new Date().getTimezoneOffset() * 1000 * 60 : 0)
+    let nowMs = () => new Date().getTime()
     let DateChars = ['/','T',':','-']
     /** @param {string|Date|number} val */
     function toRelativeNumber(val) {
