@@ -899,17 +899,24 @@ namespace ServiceStack
                 idValue = context.Id.ConvertTo(context.IdProp.PropertyInfo.PropertyType);
                 context.IdProp.PublicSetter(response, idValue);
             }
+            
             if (context.CountProp != null && context.RowsUpdated != null)
             {
                 context.CountProp.PublicSetter(response, context.RowsUpdated.ConvertTo(context.CountProp.PropertyInfo.PropertyType));
             }
-
-            if (context.ResultProp != null && context.Id != null)
+            
+            if (idValue != null && context.ResponseType == typeof(Table))
+            {
+                var result = await context.Db.SingleByIdAsync<Table>(idValue).ConfigAwait();
+                response = result.ConvertTo(context.ResponseType);
+            }
+            else if (context.ResultProp != null && context.Id != null)
             {
                 var result = await context.Db.SingleByIdAsync<Table>(context.Id).ConfigAwait();
                 context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
             }
-
+            
+            
             if (context.RowVersionProp != null)
             {
                 if (AutoMappingUtils.IsDefaultValue(idValue))
@@ -999,11 +1006,11 @@ namespace ServiceStack
             return dtoValues;
         }
         
-        private async Task<Dictionary<string, object>> CreateDtoValuesAsync(IRequest req, object dto, bool skipDefaults = false)
+        private Task<Dictionary<string, object>> CreateDtoValuesAsync(IRequest req, object dto, bool skipDefaults = false)
         {
             var meta = AutoCrudMetadata.Create(dto.GetType());
             var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
-            return dtoValues;
+            return Task.FromResult(dtoValues);
         }
         
         private Dictionary<string, object> ResolveDtoValues(AutoCrudMetadata meta, IRequest req, object dto, bool skipDefaults=false)

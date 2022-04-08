@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -18,6 +16,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
+using DescriptionAttribute = ServiceStack.DataAnnotations.DescriptionAttribute;
 
 namespace ServiceStack.WebHost.Endpoints.Tests;
 
@@ -53,6 +52,24 @@ public enum EmploymentType
     Contract
 }
 
+public enum JobApplicationStatus
+{
+    [Description("Application was received")]
+    Applied,
+    [Description("Advanced to phone screening")]
+    PhoneScreening,
+    [Description("Completed phone screening")]
+    PhoneScreeningCompleted,
+    [Description("Advanced to interview")]
+    Interview,
+    [Description("Interview was completed")]
+    InterviewCompleted,
+    [Description("Advanced to offer")]
+    Offer,
+    [Description("Application was denied")]
+    Disqualified
+}
+
 [Icon(Svg =
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='currentColor' d='M18 19H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1M12 7a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m0-4a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m7 0h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z'/></svg>")]
 public class JobApplication : ServiceStack.AuditBase
@@ -72,6 +89,8 @@ public class JobApplication : ServiceStack.AuditBase
 
     [Reference, Ref(Model = nameof(PhoneScreen), RefId = nameof(Id))]
     public PhoneScreen PhoneScreen { get; set; }
+
+    public JobApplicationStatus ApplicationStatus { get; set; }
 }
 
 [Icon(Svg =
@@ -94,10 +113,14 @@ public class PhoneScreen : ServiceStack.AuditBase
 {
     [AutoIncrement] public int Id { get; set; }
 
-    [References(typeof(JobApplication))] public int JobApplicationId { get; set; }
+    [References(typeof(JobApplication))] 
+    public int JobApplicationId { get; set; }
 
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Notes { get; set; }
+
+    [ReferenceField(typeof(JobApplication), nameof(JobApplicationId))]
+    public JobApplicationStatus? ApplicationStatus { get; set; }
 }
 
 [Icon(Svg =
@@ -187,6 +210,7 @@ public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplic
     [ValidateGreaterThan(0)]
     public int ContactId { get; set; }
     public DateTime AppliedDate { get; set; }
+    public JobApplicationStatus ApplicationStatus { get; set; }
 
     [Input(Type = "file"), UploadTo("applications")]
     public List<JobApplicationAttachment> Attachments { get; set; }
@@ -200,6 +224,7 @@ public class UpdateJobApplication : IUpdateDb<JobApplication>, IReturn<JobApplic
     public int JobId { get; set; }
     public int ContactId { get; set; }
     public DateTime AppliedDate { get; set; }
+    public JobApplicationStatus ApplicationStatus { get; set; }
 
     [Input(Type = "file"), UploadTo("applications")]
     public List<JobApplicationAttachment> Attachments { get; set; }
@@ -243,6 +268,24 @@ public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
     public string? ProfileUrl { get; set; }
     public int? SalaryExpectation { get; set; }
 }
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditQuery)]
+public class QueryPhoneScreen : QueryDb<PhoneScreen>
+{
+    public int? Id { get; set; }
+    public int? JobApplicationId { get; set; }
+}
+
+[Tag("Talent")]
+[AutoApply(Behavior.AuditCreate)]
+public class CreatePhoneScreen : ICreateDb<PhoneScreen>, IReturn<PhoneScreen>
+{
+    [ValidateGreaterThan(0)]
+    public int JobApplicationId { get; set; }
+    public string Notes { get; set; }
+}
+
 
 public class TestReferences : IReturn<TestReferences>
 {
@@ -337,6 +380,7 @@ public class AutoQueryCrudReferencesTests
             Plugins.Add(new AutoQueryFeature());
             ScriptContext.ScriptMethods.Add(new MyValidators()); // Avoid Startup Exception for missing validator in DebugMode
 
+            OrmLiteUtils.PrintSql();
             using var db = container.Resolve<IDbConnectionFactory>().Open();
             db.CreateTable<Job>();
             db.CreateTable<JobApplication>();
@@ -698,6 +742,59 @@ public class AutoQueryCrudReferencesTests
         Assert.That(response.UploadedFiles.Count, Is.EqualTo(2));
         Assert.That(response.UploadedFiles[0].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/async-uploadedFiles1.txt"));
         Assert.That(response.UploadedFiles[1].FilePath, Is.EqualTo($"/uploads/applications/app/1/{DateTime.UtcNow:yyyy/MM/dd}/async-uploadedFiles2.txt"));
+    }
+
+    [Test]
+    public void Does_populate_ReferenceField()
+    {
+        var client = CreateAuthClient();
+        var createJobApi = client.Api(new CreateJob
+        {
+            Title = "Test Job",
+            Description = "Test Job Description",
+            SalaryRangeLower = 100000,
+            SalaryRangeUpper = 200000,
+            Company = "Test Company",
+            Closing = DateTime.UtcNow.AddDays(10),
+            Location = "Remote",
+            EmploymentType = EmploymentType.FullTime,
+        });
+        Assert.That(createJobApi.Succeeded);
+
+        var createContactApi = client.Api(new CreateContact {
+            FirstName = "Test",
+            LastName = "Contact",
+            ProfileUrl = "/profiles/users/1.jpg",
+            SalaryExpectation = 200000,
+        });
+        Assert.That(createContactApi.Succeeded);
+        var contactId = createContactApi.Response!.Id;
+
+        var createJobAppApi = client.Api(new CreateJobApplication {
+            JobId = createJobApi.Response!.Id,
+            AppliedDate = DateTime.UtcNow,
+            ContactId = contactId,
+            ApplicationStatus = JobApplicationStatus.PhoneScreening,
+        });
+        Assert.That(createJobAppApi.Response!.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+        
+        var jobAppId = createJobAppApi.Response!.Id;
+        var createPhoneScreenApi = client.Api(new CreatePhoneScreen {
+            JobApplicationId = jobAppId,
+            Notes = JobApplicationStatus.PhoneScreening.ToDescription()
+        });
+        Assert.That(createPhoneScreenApi.Succeeded);
+
+        using var db = appHost.TryResolve<IDbConnectionFactory>().Open();
+        db.Select<PhoneScreen>().PrintDump();
+
+        var queryPhoneScreenApi = client.Api(new QueryPhoneScreen { JobApplicationId = jobAppId });
+        queryPhoneScreenApi.Response.PrintDump();
+        var phoneScreen = queryPhoneScreenApi.Response!.Results[0];
+        Assert.That(phoneScreen.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+
+        var single = db.LoadSingleById<PhoneScreen>(phoneScreen.Id);
+        Assert.That(single.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
     }
 }
 

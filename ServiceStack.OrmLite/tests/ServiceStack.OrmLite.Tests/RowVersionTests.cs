@@ -90,7 +90,6 @@ namespace ServiceStack.OrmLite.Tests
         [AutoIncrement]
         public int Id { get; set; }
 
-        [Reference]
         public int ModelWithOptimisticChildrenId { get; set; }
 
         public string Text { get; set; }

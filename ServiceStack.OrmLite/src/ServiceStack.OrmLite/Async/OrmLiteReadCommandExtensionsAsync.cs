@@ -395,6 +395,10 @@ namespace ServiceStack.OrmLite
                 {
                     await loadRef.SetRefFieldList(fieldDef, listInterface.GetGenericArguments()[0], token).ConfigAwait();
                 }
+                else if (fieldDef.FieldReference != null)
+                {
+                    await loadRef.SetFieldReference(fieldDef, fieldDef.FieldReference, token).ConfigAwait();
+                }
                 else
                 {
                     await loadRef.SetRefField(fieldDef, fieldDef.FieldType, token).ConfigAwait();
@@ -421,6 +425,10 @@ namespace ServiceStack.OrmLite
                 if (listInterface != null)
                 {
                     await loadList.SetRefFieldListAsync(fieldDef, listInterface.GetGenericArguments()[0], token).ConfigAwait();
+                }
+                else if (fieldDef.FieldReference != null)
+                {
+                    await loadList.SetFieldReferenceAsync(fieldDef, fieldDef.FieldReference, token).ConfigAwait();
                 }
                 else
                 {

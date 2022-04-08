@@ -17,6 +17,7 @@ namespace ServiceStack.OrmLite
 {
     public class FieldDefinition
     {
+        public ModelDefinition ModelDef { get; set; }
         public string Name { get; set; }
 
         public string Alias { get; set; }
@@ -126,6 +127,8 @@ namespace ServiceStack.OrmLite
         public string BelongToModelName { get; set; }
 
         public bool IsReference { get; set; }
+        
+        public FieldReference FieldReference { get; set; }
 
         public string CustomFieldDefinition { get; set; }
 
@@ -191,6 +194,7 @@ namespace ServiceStack.OrmLite
                 CustomSelect = CustomSelect,
                 BelongToModelName = BelongToModelName,
                 IsReference = IsReference,
+                FieldReference = FieldReference,
                 CustomFieldDefinition = CustomFieldDefinition,
                 IsRefType = IsRefType,
             };
@@ -232,5 +236,38 @@ namespace ServiceStack.OrmLite
             }
             return ForeignKeyName;
         }
+    }
+
+    public class FieldReference
+    {
+        public FieldDefinition FieldDef { get; }
+
+        public FieldReference(FieldDefinition fieldDef) => FieldDef = fieldDef;
+
+        /// <summary>
+        /// Foreign Key Table name
+        /// </summary>
+        public Type RefModel { get; set; }
+
+        private ModelDefinition refModelDef;
+        public ModelDefinition RefModelDef => refModelDef ??= RefModel.GetModelDefinition();
+    
+        /// <summary>
+        /// The Field name on current Model to use for the Foreign Key Table Lookup 
+        /// </summary>
+        public string RefId { get; set; }
+
+        private FieldDefinition refIdFieldDef;
+        public FieldDefinition RefIdFieldDef => refIdFieldDef ??= FieldDef.ModelDef.GetFieldDefinition(RefId)
+            ?? throw new ArgumentException($"Could not find '{RefId}' in '{RefModel.Name}'");
+    
+        /// <summary>
+        /// Specify Field to reference (if different from property name)
+        /// </summary>
+        public string RefField { get; set; }
+
+        private FieldDefinition refFieldDef;
+        public FieldDefinition RefFieldDef => refFieldDef ??= RefModelDef.GetFieldDefinition(RefField)
+            ?? throw new ArgumentException($"Could not find '{RefField}' in '{RefModelDef.Name}'");
     }
 }

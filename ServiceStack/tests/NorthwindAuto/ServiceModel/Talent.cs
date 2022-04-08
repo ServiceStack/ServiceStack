@@ -161,6 +161,9 @@ public class PhoneScreen : AuditBase
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
 
+    [ReferenceField(typeof(JobApplication), nameof(JobApplicationId))]
+    public JobApplicationStatus? ApplicationStatus { get; set; }
+
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Notes { get; set; }
 }
@@ -182,6 +185,9 @@ public class Interview : AuditBase
 
     [Reference, Format(FormatMethods.Hidden)]
     public AppUser AppUser { get; set; }
+
+    [ReferenceField(typeof(JobApplication), nameof(JobApplicationId))]
+    public JobApplicationStatus? ApplicationStatus { get; set; }
 
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
     public string Notes { get; set; }

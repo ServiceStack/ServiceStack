@@ -121,6 +121,25 @@ namespace ServiceStack.OrmLite.Support
             return sqlRef;
         }
 
+        protected string GetFieldReferenceSql(FieldDefinition fieldDef, FieldReference fieldRef)
+        {
+            var refModelDef = fieldRef.RefModelDef;
+            
+            var useSubSql = $"SELECT {dialectProvider.GetQuotedColumnName(fieldRef.RefIdFieldDef)} FROM "
+                + subSql.RightPart("FROM");
+
+            var pk = dialectProvider.GetQuotedColumnName(refModelDef.PrimaryKey);
+            var sqlRef = $"SELECT {pk}, {dialectProvider.GetQuotedColumnName(fieldRef.RefFieldDef)} " +
+                         $"FROM {dialectProvider.GetQuotedTableName(refModelDef)} " +
+                         $"WHERE {pk} " +
+                         $"IN ({useSubSql})";
+
+            if (OrmLiteConfig.LoadReferenceSelectFilter != null)
+                sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
+
+            return sqlRef;
+        }
+
         protected Dictionary<object, object> CreateRefMap()
         {
             return OrmLiteConfig.IsCaseInsensitive
@@ -191,6 +210,28 @@ namespace ServiceStack.OrmLite.Support
                 }
             }
         }
+
+        protected void SetFieldReferenceChildResults(FieldDefinition fieldDef, FieldReference fieldRef, IList childResults)
+        {
+            var map = CreateRefMap();
+
+            var refField = fieldRef.RefModelDef.PrimaryKey;
+            foreach (var result in childResults)
+            {
+                var refValue = refField.GetValue(result);
+                var refFieldValue = fieldRef.RefFieldDef.GetValue(result);
+                map[refValue] = refFieldValue;
+            }
+
+            foreach (var result in parentResults)
+            {
+                var fkValue = fieldRef.RefIdFieldDef.GetValue(result);
+                if (map.TryGetValue(fkValue, out var childResult))
+                {
+                    fieldDef.SetValue(result, childResult);
+                }
+            }
+        }
     }
 
     internal class LoadListSync<Into, From> : LoadList<Into, From>
@@ -231,6 +272,13 @@ namespace ServiceStack.OrmLite.Support
                 SetRefFieldChildResults(fieldDef, refField, childResults);
             }
         }
+
+        public void SetFieldReference(FieldDefinition fieldDef, FieldReference fieldRef)
+        {
+            var sqlRef = GetFieldReferenceSql(fieldDef, fieldRef);
+            var childResults = dbCmd.ConvertToList(fieldRef.RefModel, sqlRef);
+            SetFieldReferenceChildResults(fieldDef, fieldRef, childResults);
+        }
     }
 
 #if ASYNC
@@ -253,7 +301,6 @@ namespace ServiceStack.OrmLite.Support
         public async Task SetRefFieldAsync(FieldDefinition fieldDef, Type refType, CancellationToken token)
         {
             var refModelDef = refType.GetModelDefinition();
-
             var refSelf = modelDef.GetSelfRefFieldDefIfExists(refModelDef, fieldDef);
             var refField = refSelf == null
                 ? modelDef.GetRefFieldDef(refModelDef, refType)
@@ -271,6 +318,13 @@ namespace ServiceStack.OrmLite.Support
                 var childResults = await dbCmd.ConvertToListAsync(refType, sqlRef, token).ConfigAwait();
                 SetRefFieldChildResults(fieldDef, refField, childResults);
             }
+        }
+
+        public async Task SetFieldReferenceAsync(FieldDefinition fieldDef, FieldReference fieldRef, CancellationToken token)
+        {
+            var sqlRef = GetFieldReferenceSql(fieldDef, fieldRef);
+            var childResults = await dbCmd.ConvertToListAsync(fieldRef.RefModel, sqlRef, token).ConfigAwait();
+            SetFieldReferenceChildResults(fieldDef, fieldRef, childResults);
         }
     }
 #endif

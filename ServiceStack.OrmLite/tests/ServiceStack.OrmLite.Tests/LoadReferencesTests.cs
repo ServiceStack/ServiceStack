@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Tests.UseCase;
 using ServiceStack.Text;
+using DescriptionAttribute = ServiceStack.DataAnnotations.DescriptionAttribute;
 
 namespace ServiceStack.OrmLite.Tests
 {
@@ -179,7 +182,50 @@ namespace ServiceStack.OrmLite.Tests
         [Reference]
         public SelfCustomerAddress WorkAddress { get; set; }
     }
+    
+    public class JobApplication
+    {
+        [AutoIncrement] public int Id { get; set; }
 
+        [References(typeof(Customer))] public int CustomerId { get; set; }
+
+        [Reference] public Customer Applicant { get; set; }
+
+        public DateTime AppliedDate { get; set; }
+
+        [Reference, Ref(Model = nameof(PhoneScreen), RefId = nameof(Id))]
+        public PhoneScreen PhoneScreen { get; set; }
+
+        public JobApplicationStatus ApplicationStatus { get; set; }
+    }
+    public class PhoneScreen
+    {
+        [AutoIncrement] public int Id { get; set; }
+
+        [References(typeof(JobApplication))] 
+        public int JobApplicationId { get; set; }
+        public string Notes { get; set; }
+
+        [ReferenceField(typeof(JobApplication), nameof(JobApplicationId))]
+        public JobApplicationStatus? ApplicationStatus { get; set; }
+    }
+    public enum JobApplicationStatus
+    {
+        [Description("Application was received")]
+        Applied,
+        [Description("Advanced to phone screening")]
+        PhoneScreening,
+        [Description("Completed phone screening")]
+        PhoneScreeningCompleted,
+        [Description("Advanced to interview")]
+        Interview,
+        [Description("Interview was completed")]
+        InterviewCompleted,
+        [Description("Advanced to offer")]
+        Offer,
+        [Description("Application was denied")]
+        Disqualified
+    }
 
     [TestFixtureOrmLite]
     public class LoadReferencesTests : OrmLiteProvidersTestBase
@@ -212,6 +258,11 @@ namespace ServiceStack.OrmLite.Tests
             db.CreateTable<SelfCustomerAddress>();
             db.CreateTable<MultiSelfCustomer>();
             db.CreateTable<SelfCustomer>();
+            
+            db.DropTable<JobApplication>();
+            db.DropTable<PhoneScreen>();
+            db.CreateTable<PhoneScreen>();
+            db.CreateTable<JobApplication>();
         }
 
         [SetUp]
@@ -242,22 +293,7 @@ namespace ServiceStack.OrmLite.Tests
         [Test]
         public void Can_Save_and_Load_References()
         {
-            var customer = new Customer
-            {
-                Name = "Customer 1",
-                PrimaryAddress = new CustomerAddress
-                {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-                Orders = new[] {
-                    new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
-                    new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
-                }.ToList(),
-            };
-
+            var customer = CreateCustomer();
             db.Save(customer);
 
             Assert.That(customer.Id, Is.GreaterThan(0));
@@ -275,6 +311,27 @@ namespace ServiceStack.OrmLite.Tests
 
             Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
             Assert.That(dbCustomer.Orders.Count, Is.EqualTo(2));
+        }
+
+        private static Customer CreateCustomer()
+        {
+            var customer = new Customer
+            {
+                Name = "Customer 1",
+                PrimaryAddress = new CustomerAddress
+                {
+                    AddressLine1 = "1 Humpty Street",
+                    City = "Humpty Doo",
+                    State = "Northern Territory",
+                    Country = "Australia"
+                },
+                Orders = new[]
+                {
+                    new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
+                    new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
+                }.ToList(),
+            };
+            return customer;
         }
 
         [Test]
@@ -744,6 +801,54 @@ namespace ServiceStack.OrmLite.Tests
 
             dbOrders = db.Select(orderQuery);
             Assert.That(dbOrders.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Does_populate_ReferenceField_ApplicationStatus()
+        {
+            var customer = CreateCustomer();
+            db.Save(customer);
+
+            var jobAppId = (int) db.Insert(new JobApplication {
+                AppliedDate = DateTime.UtcNow,
+                CustomerId = customer.Id,
+                ApplicationStatus = JobApplicationStatus.PhoneScreening,
+            }, selectIdentity:true);
+        
+            var phoneScreenId = db.Insert(new PhoneScreen {
+                JobApplicationId = jobAppId,
+                Notes = JobApplicationStatus.PhoneScreening.ToDescription()
+            }, selectIdentity:true);
+
+            var results = db.LoadSelect<PhoneScreen>(x => x.JobApplicationId == jobAppId);
+            Assert.That(results[0].ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+
+            var single = db.LoadSingleById<PhoneScreen>(phoneScreenId);
+            Assert.That(single.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+        }
+
+        [Test]
+        public async Task Does_populate_ReferenceField_ApplicationStatus_Async()
+        {
+            var customer = CreateCustomer();
+            await db.SaveAsync(customer);
+
+            var jobAppId = (int) await db.InsertAsync(new JobApplication {
+                AppliedDate = DateTime.UtcNow,
+                CustomerId = customer.Id,
+                ApplicationStatus = JobApplicationStatus.PhoneScreening,
+            }, selectIdentity:true);
+        
+            var phoneScreenId = await db.InsertAsync(new PhoneScreen {
+                JobApplicationId = jobAppId,
+                Notes = JobApplicationStatus.PhoneScreening.ToDescription()
+            }, selectIdentity:true);
+
+            var results = await db.LoadSelectAsync<PhoneScreen>(x => x.JobApplicationId == jobAppId);
+            Assert.That(results[0].ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+
+            var single = await db.LoadSingleByIdAsync<PhoneScreen>(phoneScreenId);
+            Assert.That(single.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
         }
     }
 
