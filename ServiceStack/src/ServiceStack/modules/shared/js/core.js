@@ -349,19 +349,19 @@ function htmlTag(tag,child,attrs) {
     }
     return `<${tag}` + Object.keys(attrs).reduce((acc,k) => `${acc} ${k}="${enc(attrs[k])}"`, '') + `>${child||''}</${tag}>`
 }
-/** @param {*} attrs */
+/** @param {{href:string,cls?:string,target?:string,rel?:string}} attrs */
 function linkAttrs(attrs) {
     return Object.assign({target:'_blank',rel:'noopener','class':'text-blue-600'},attrs)
 }
 /** Create formatted HTML A URL links  
- * @param {string} href 
- * @param {*} [opt] */
+ * @param {string} href
+ * @param {{cls?:string,target?:string,rel?:string}} [opt] */
 function link(href, opt) {
     return htmlTag('a', href, linkAttrs({ ...opt, href }))
 }
 /** Create formatted HTML A mailto: links
  * @param {string} email
- * @param {*} [opt] */
+ * @param {{subject?:string,body?:string,cls?:string,target?:string,rel?:string}} [opt] */
 function linkMailTo(email, opt) {
     if (!opt) opt = {}
     let { subject, body } = opt
@@ -373,7 +373,7 @@ function linkMailTo(email, opt) {
 }
 /** Create formatted HTML A tel: links
  * @param {string} tel
- * @param {*} [opt] */
+ * @param {{cls?:string,target?:string,rel?:string}} [opt] */
 function linkTel(tel, opt) {
     return htmlTag('a', tel, linkAttrs({...opt, href:`tel:${tel}` }))
 }
@@ -414,7 +414,7 @@ function iconFallbackSrc(src,fallbackSrc) {
             : null)
         || Files.extSrc('doc')
 }
-/** marker fn, special-cased to hide from query results
+/** Hides field from being displayed in search results
  * @param o
  * @return {string}
  */
