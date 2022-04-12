@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "::set-output name=run_id::$(\
             gh run list \
-              --workflow \"myget-pack.yml\" \
+              --workflow 'myget-pack.yml' \
               --json conclusion,headSha,status,databaseId \
               --jq ".[] | select( .conclusion == \"success\" and .headSha == \"${{ github.sha }}\") | .databaseId" \
           )"
