@@ -22,12 +22,15 @@ jobs:
               --json conclusion,headSha,status,databaseId \
               --jq ".[] | select( .conclusion == \"success\" and .headSha == \"${{github.sha}}\") | .databaseId" \
           )"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: myget-pack.yml
-          run_id: ${{steps.get_run_id.run_id}}
+          run_id: 2153260637
+          # run_id: ${{steps.get_run_id.run_id}}
           # workflow_conclusion: success
           name: ServiceStack Packages
           commit: ${{ github.sha }}
