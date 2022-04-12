@@ -12,12 +12,22 @@ jobs:
         with:
           dotnet-version: '6.0'
           include-prerelease: true
+          
+      - name: Get Run ID
+        id: get_run_id
+        run: |
+          echo "::set-output name=run_id::$(\
+            gh run list \
+              --workflow \"myget-pack.yml\" \
+              --json conclusion,headSha,status,databaseId \
+              --jq ".[] | select( .conclusion == \"success\" and .headSha == \"${{ github.sha }}\") | .databaseId" \
+          )"
 
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: myget-pack.yml
-          run_id: 2152869823
+          run_id: ${{steps.get_run_id.run_id}}
           # workflow_conclusion: success
           name: ServiceStack Packages
           commit: ${{ github.sha }}
