@@ -311,7 +311,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save, done:() => open='' })"></div>
         <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
-        <div v-else-if="results.length">
+        <div v-else>
             <div v-if="routes.new" class="p-4">
                 <div v-if="!canCreate" v-scope="EnsureAccess({ store, message:() => invalidCreateAccess, $on:updated })"></div>
                 <div v-else-if="hasNewComponent" v-scope="NewComponent({ store, routes, settings, state:() => state, save, done:() => routes.to({ new:null }) })"></div>
@@ -322,8 +322,10 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
                 <div v-else-if="hasEditComponent" v-scope="EditComponent({ store, routes, settings, state:() => state, save, done:() => routes.to({ edit:null }) })"></div>
                 <div v-else v-scope="EditForm({ store, routes, settings, state:() => state, save, done:() => routes.to({ edit:null }) })"></div>
             </div>
-            <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save, done:() => filter=null })" class="relative"></div>
-            <div ref="results" v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
+            <div v-if="results.length">
+                <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save, done:() => filter=null })" class="relative"></div>
+                <div ref="results" v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
+            </div>
         </div>
         <div class="p-4 flex items-center">
             <div class="flex justify-between w-full">

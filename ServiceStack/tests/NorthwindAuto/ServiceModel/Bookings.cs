@@ -26,7 +26,7 @@ public class Booking : AuditBase
     public decimal Cost { get; set; }
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
-    [IntlRelativeTime]
+    [Computed, IntlRelativeTime]
     public TimeSpan TimeAgo => DateTime.UtcNow - this.BookingStartDate;
 }
 
