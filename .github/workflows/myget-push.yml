@@ -27,8 +27,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: myget-pack.yml
-          run_id: 2153096768
-          # run_id: ${{steps.get_run_id.run_id}}
+          run_id: ${{steps.get_run_id.run_id}}
           # workflow_conclusion: success
           name: ServiceStack Packages
           commit: ${{ github.sha }}
