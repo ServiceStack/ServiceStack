@@ -762,7 +762,7 @@ namespace ServiceStack.Redis.Tests
             private readonly Type[] _genericArguments;
             private readonly object[] _allAttributes;
             public bool IsDefined(Type attributeType)
-                => _allAttributes.Any(a => attributeType.IsAssignableFrom(a.GetType()));
+                => _allAttributes.Any(attributeType.IsInstanceOfType);
             internal static T[] Clone<T>(T[] source)
             {
                 if (source is null) return null;
