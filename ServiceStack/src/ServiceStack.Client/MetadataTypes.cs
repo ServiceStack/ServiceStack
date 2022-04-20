@@ -1147,6 +1147,7 @@ namespace ServiceStack
 
         public static MetadataPropertyType Property(this MetadataType type, string name) =>
             type.Properties?.FirstOrDefault(x => x.Name == name);
+       
         public static MetadataPropertyType RequiredProperty(this MetadataType type, string name) =>
             type.Properties?.FirstOrDefault(x => x.Name == name) ?? throw new Exception($"{type.Name} does not contain property ${name}");
 
@@ -1156,6 +1157,9 @@ namespace ServiceStack
             if (prop != null) configure(prop);
         }
         
+        /// <summary>
+        /// Reorder where the DB Column appears in Type (changes API & UI ordering)
+        /// </summary>
         public static MetadataPropertyType ReorderProperty(this MetadataType type, string name, string before = null, string after = null)
         {
             var prop = type.Property(name);
@@ -1174,6 +1178,9 @@ namespace ServiceStack
             return prop;
         }
     
+        /// <summary>
+        /// Reorder where the DB Column appears in Type (changes API & UI ordering)
+        /// </summary>
         public static MetadataPropertyType ReorderProperty(this MetadataType type, string name, int index)
         {
             var prop = type.Property(name);
@@ -1190,6 +1197,9 @@ namespace ServiceStack
             return prop;
         }
 
+        /// <summary>
+        /// Apply custom lambda to each matching property
+        /// </summary>
         public static void EachProperty(this MetadataType type, Func<MetadataPropertyType,bool> where, Action<MetadataPropertyType> configure)
         {
             if (type.Properties == null) 
@@ -1200,9 +1210,15 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Omit properties that match filter from inclusion in code-gen type
+        /// </summary>
         public static void RemoveProperty(this MetadataType type, Predicate<MetadataPropertyType> where) => 
             type.Properties?.RemoveAll(where);
 
+        /// <summary>
+        /// Omit property from inclusion in code-gen type
+        /// </summary>
         public static void RemoveProperty(this MetadataType type, string name)
         {
             if (name != null) 
