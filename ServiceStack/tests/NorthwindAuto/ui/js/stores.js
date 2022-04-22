@@ -1,4 +1,5 @@
 /**: Also used by .d.ts */
+import { combinePaths } from "../../lib/client"
 import { Server, Routes, Breakpoints, Transition, ExplorerStore, ExplorerRoutes, ExplorerRoutesExtend } from "../../lib/types"
 import { Authenticate, AuthenticateResponse, MetadataOperationType, LinkInfo } from "../../lib/types"
 
@@ -218,6 +219,9 @@ export let store = App.reactive({
             if (src) {
                 resolve(src)
             } else {
+                if (url[0] === '/') {
+                    url = combinePaths(BASE_URL, url)
+                }
                 fetch(url)
                     .then(r => {
                         if (r.ok) return r.text()

@@ -186,6 +186,9 @@ let store = App.reactive({
             if (src) {
                 resolve(src)
             } else {
+                if (url[0] === '/') {
+                    url = combinePaths(BASE_URL, url)
+                }
                 fetch(url)
                     .then(r => {
                         if (r.ok) return r.text()
