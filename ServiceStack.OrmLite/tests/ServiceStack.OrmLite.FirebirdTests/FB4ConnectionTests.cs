@@ -18,7 +18,7 @@ namespace ServiceStack.OrmLite.FirebirdTests
         public void Can_create_connection_to_blank_database()
         {
             var connString =
-                $"User=SYSDBA;Password=masterkey;Database=/ormlite-tests/ormlite-tests.fdb;DataSource=localhost;Dialect=3;charset=utf8;";
+                $"User=SYSDBA;Password=masterkey;Database=C:\\ORMLITE-TESTS\\FIREBIRD\\TEST.fdb;DataSource=127.0.0.1;Dialect=3;charset=utf8;";
             using (var db = connString.OpenDbConnection())
             {
             }
