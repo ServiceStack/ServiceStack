@@ -558,10 +558,10 @@ namespace ServiceStack
         }
 
         public object PartialUpdate<Table>(object dto, IRequest req, IDbConnection db = null) =>
-            UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch);
+            UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch, db);
 
         public Task<object> PartialUpdateAsync<Table>(object dto, IRequest req, IDbConnection db = null) =>
-            UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch);
+            UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db);
 
         private object UpdateInternal<Table>(IRequest req, object dto, string operation, IDbConnection db = null)
         {
