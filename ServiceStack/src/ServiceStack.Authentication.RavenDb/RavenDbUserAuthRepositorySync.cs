@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace ServiceStack.Authentication.RavenDb
 {
-    public partial class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IQueryUserAuth, ICustomUserAuth
+    public partial class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IQueryUserAuth, ICustomUserAuth, IManageApiKeys
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -483,6 +483,44 @@ namespace ServiceStack.Authentication.RavenDb
         IUserAuthDetails ICustomUserAuth.CreateUserAuthDetails()
         {
             return Activator.CreateInstance<TUserAuthDetails>();
+        }
+        #endregion
+
+        #region IManageApiKeys
+        public bool ApiKeyExists(string apiKey)
+        {
+            using var session = documentStore.OpenSession();
+            var key = session.Load<ApiKey>(apiKey);
+            return key != null;
+        }
+
+        public ApiKey GetApiKey(string apiKey)
+        {
+            using var session = documentStore.OpenSession();
+            return session.Load<ApiKey>(apiKey);
+        }
+
+        public List<ApiKey> GetUserApiKeys(string userId)
+        {
+            using var session = documentStore.OpenSession();
+            return session.Query<ApiKey>()
+                .Where(key =>
+                    key.UserAuthId == userId
+                    && key.CancelledDate == null
+                    && (key.ExpiryDate == null || key.ExpiryDate >= DateTime.UtcNow)
+                ).ToList();
+        }
+
+        public void InitApiKeySchema()
+        {
+        }
+
+        public void StoreAll(IEnumerable<ApiKey> apiKeys)
+        {
+            using var session = documentStore.OpenSession();
+            foreach (ApiKey apiKey in apiKeys)
+                session.Store(apiKey);
+            session.SaveChanges();
         }
         #endregion
     }
