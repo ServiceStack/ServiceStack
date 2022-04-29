@@ -232,6 +232,13 @@ namespace ServiceStack.OrmLite.Firebird
                 StringBuilderCacheAlt.ReturnAndFree(sbColumnValues),
                 strReturning.Length > 0 ? "RETURNING " + strReturning : "");
         }
+
+        public override string GetLastInsertIdSqlSuffix<T>()
+        {
+            var modelDef = GetModel(typeof(T));
+            var pkName = NamingStrategy.GetColumnName(modelDef.PrimaryKey.FieldName);
+            return $" RETURNING \"{pkName}\"";
+        }
     }
 }
 

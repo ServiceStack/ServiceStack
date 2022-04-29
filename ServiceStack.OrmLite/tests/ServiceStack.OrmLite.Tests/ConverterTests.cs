@@ -59,7 +59,7 @@ namespace ServiceStack.OrmLite.Tests
         {
             using var db = OpenDbConnection();
             if (Dialect == Dialect.Firebird) //Exceeds row limit
-                DialectProvider.GetStringConverter().MaxColumnDefinition = "VARCHAR(4000)";
+                DialectProvider.GetStringConverter().MaxColumnDefinition = "BLOB SUB_TYPE 1 SEGMENT SIZE 8192";
 
             db.DropAndCreateTable<AllTypes>();
             db.GetLastSql().Print();

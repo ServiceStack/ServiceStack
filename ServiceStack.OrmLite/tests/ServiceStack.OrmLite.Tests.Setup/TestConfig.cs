@@ -290,9 +290,9 @@ namespace ServiceStack.OrmLite.Tests
                 
                     [Tuple.Create(Dialect.Oracle, OracleDb.V11)] = EnvironmentVariable(new[]{ "ORACLE11_CONNECTION", "ORACLE_CONNECTION" }, "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
                 
-                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V3)] = EnvironmentVariable(new[]{ "FIREBIRD3_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=/firebird/data/test.gdb;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;"),
+                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V3)] = EnvironmentVariable(new[]{ "FIREBIRD3_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=/firebird/data/test.gdb;DataSource=127.0.0.1;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;"),
 
-                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V4)] = EnvironmentVariable(new[]{ "FIREBIRD4_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=c:\ormlite-tests\firebird\test.fdb;DataSource=localhost;Dialect=3;charset=utf8;MinPoolSize=0;MaxPoolSize=100;"),
+                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V4)] = EnvironmentVariable(new[]{ "FIREBIRD4_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=c:\ormlite-tests\firebird\test.fdb;DataSource=127.0.0.1;Dialect=3;charset=utf8;MinPoolSize=0;MaxPoolSize=100;"),
                 };
             }
             catch (Exception e)
