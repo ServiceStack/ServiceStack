@@ -345,8 +345,14 @@ namespace ServiceStack.Redis
         ValueTask IRedisClientAsync.UnWatchAsync(CancellationToken token)
             => NativeAsync.UnWatchAsync(token);
 
-        ValueTask<long> IRedisClientAsync.AppendToValueAsync(string key, string value, CancellationToken token)
+        ValueTask<long> IRedisClientAsync.AppendToAsync(string key, string value, CancellationToken token)
             => NativeAsync.AppendAsync(key, value.ToUtf8Bytes(), token);
+
+        async ValueTask<string> IRedisClientAsync.SliceAsync(string key, int fromIndex, int toIndex, CancellationToken token) =>
+            (await NativeAsync.GetRangeAsync(key, fromIndex, toIndex, token).ConfigureAwait(false)).FromUtf8Bytes();
+
+        ValueTask<long> IRedisClientAsync.InsertAtAsync(string key, int offset, string value, CancellationToken token) =>
+            NativeAsync.SetRangeAsync(key, offset, value.ToUtf8Bytes(), token);
 
         async ValueTask<object> IRedisClientAsync.StoreObjectAsync(object entity, CancellationToken token)
         {

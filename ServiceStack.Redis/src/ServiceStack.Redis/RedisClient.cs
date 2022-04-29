@@ -263,25 +263,13 @@ namespace ServiceStack.Redis
             return bytes?.FromUtf8Bytes();
         }
 
-        public string GetAndSetValue(string key, string value)
-        {
-            return GetSet(key, value.ToUtf8Bytes()).FromUtf8Bytes();
-        }
+        public string GetAndSetValue(string key, string value) => GetSet(key, value.ToUtf8Bytes()).FromUtf8Bytes();
 
-        public bool ContainsKey(string key)
-        {
-            return Exists(key) == Success;
-        }
+        public bool ContainsKey(string key) => Exists(key) == Success;
 
-        public bool Remove(string key)
-        {
-            return Del(key) == Success;
-        }
+        public bool Remove(string key) => Del(key) == Success;
 
-        public bool Remove(byte[] key)
-        {
-            return Del(key) == Success;
-        }
+        public bool Remove(byte[] key) => Del(key) == Success;
 
         public bool RemoveEntry(params string[] keys)
         {
@@ -290,55 +278,31 @@ namespace ServiceStack.Redis
             return Del(keys) == Success;
         }
 
-        public long IncrementValue(string key)
-        {
-            return Incr(key);
-        }
+        public long IncrementValue(string key) => Incr(key);
 
-        public long IncrementValueBy(string key, int count)
-        {
-            return IncrBy(key, count);
-        }
+        public long IncrementValueBy(string key, int count) => IncrBy(key, count);
 
-        public long IncrementValueBy(string key, long count)
-        {
-            return IncrBy(key, count);
-        }
+        public long IncrementValueBy(string key, long count) => IncrBy(key, count);
 
-        public double IncrementValueBy(string key, double count)
-        {
-            return IncrByFloat(key, count);
-        }
+        public double IncrementValueBy(string key, double count) => IncrByFloat(key, count);
 
-        public long DecrementValue(string key)
-        {
-            return Decr(key);
-        }
+        public long DecrementValue(string key) => Decr(key);
 
-        public long DecrementValueBy(string key, int count)
-        {
-            return DecrBy(key, count);
-        }
+        public long DecrementValueBy(string key, int count) => DecrBy(key, count);
 
-        public long AppendToValue(string key, string value)
-        {
-            return base.Append(key, value.ToUtf8Bytes());
-        }
+        public long AppendTo(string key, string value) => base.Append(key, value.ToUtf8Bytes());
 
-        public void RenameKey(string fromName, string toName)
-        {
-            base.Rename(fromName, toName);
-        }
+        public string Slice(string key, int fromIndex, int toIndex) =>
+            base.GetRange(key, fromIndex, toIndex).FromUtf8Bytes();
 
-        public long GetStringCount(string key)
-        {
-            return base.StrLen(key);
-        }
+        public long InsertAt(string key, int offset, string value) =>
+            base.SetRange(key, offset, value.ToUtf8Bytes());
 
-        public string GetRandomKey()
-        {
-            return RandomKey();
-        }
+        public void RenameKey(string fromName, string toName) => base.Rename(fromName, toName);
+
+        public long GetStringCount(string key) => base.StrLen(key);
+
+        public string GetRandomKey() => RandomKey();
 
         public bool ExpireEntryIn(string key, TimeSpan expireIn)
         {

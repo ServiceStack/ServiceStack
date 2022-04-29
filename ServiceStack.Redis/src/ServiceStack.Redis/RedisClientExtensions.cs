@@ -1,15 +1,21 @@
-﻿namespace ServiceStack.Redis
-{
-    public static partial class RedisClientExtensions
-    {
-        public static string GetHostString(this IRedisClient redis)
-        {
-            return "{0}:{1}".Fmt(redis.Host, redis.Port);
-        }
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-        public static string GetHostString(this RedisEndpoint config)
-        {
-            return "{0}:{1}".Fmt(config.Host, config.Port);
-        }
-    }
+namespace ServiceStack.Redis;
+
+public static partial class RedisClientExtensions
+{
+    public static string GetHostString(this IRedisClient redis) => $"{redis.Host}:{redis.Port}";
+
+    public static string GetHostString(this RedisEndpoint config) => $"{config.Host}:{config.Port}";
+
+    [Obsolete("Use AppendTo")]
+    public static long AppendToValue(this IRedisClient redis, string key, string value) =>
+        redis.AppendTo(key, value);
+    
+    [Obsolete("Use AppendToAsync")]
+    public static ValueTask<long> AppendToValueAsync(this IRedisClientAsync redis, string key, string value, CancellationToken token = default) =>
+        redis.AppendToAsync(key, value, token);
+    
 }

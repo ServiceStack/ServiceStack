@@ -93,7 +93,9 @@ namespace ServiceStack.Redis
         List<T> GetValues<T>(List<string> keys);
         Dictionary<string, string> GetValuesMap(List<string> keys);
         Dictionary<string, T> GetValuesMap<T>(List<string> keys);
-        long AppendToValue(string key, string value);
+        long AppendTo(string key, string value);
+        string Slice(string key, int fromIndex, int toIndex);
+        long InsertAt(string key, int offset, string value);
         void RenameKey(string fromName, string toName);
 
         //store POCOs as hash
