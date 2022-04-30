@@ -10,6 +10,7 @@ DEBUG = true /*debug*/
 <style>
 /*file:css/app.css */
 /*shared:css/ui.css */
+/*file:custom.css */
 </style>
 <!--shared:custom-head-->
 </head>
@@ -81,6 +82,7 @@ let App = createApp(PetiteVue)
 </script>
 <!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject-->
 <!--files:components/*.html-->
+<!--file:custom.html-->
 <script>
 let api = Server.api
 let allTypes =  [...api.operations.map(x => x.request), ...api.operations.map(x => x.response), ...api.types.map(x => x)]
@@ -100,6 +102,7 @@ App.build({
 $1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
 App.start()
 App.nextTick(() => document.body.classList.remove('loading'))
+/*file:custom.js */
 </script>
 <!--shared:custom-end-->
 </body>
