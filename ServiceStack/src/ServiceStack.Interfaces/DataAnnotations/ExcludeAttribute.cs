@@ -3,7 +3,7 @@
 namespace ServiceStack.DataAnnotations
 {
     /// <summary>
-    /// Mark types that are to be excluded from specified features
+    /// Mark types that are to be excluded from metadata & specified endpoints
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ExcludeAttribute : AttributeBase
@@ -16,6 +16,9 @@ namespace ServiceStack.DataAnnotations
         }
     }
 
+    /// <summary>
+    /// Exclude API from all Metadata Services
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class ExcludeMetadataAttribute : ExcludeAttribute
     {

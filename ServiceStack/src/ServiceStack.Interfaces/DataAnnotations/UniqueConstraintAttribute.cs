@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace ServiceStack.DataAnnotations
 {
+    /// <summary>
+    /// Define a unique multi column RDBMS column constraint
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
     public class UniqueConstraintAttribute : AttributeBase
     {

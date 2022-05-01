@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack;
 
 /// <summary>
-/// Capture longer description about a Type
+/// Document a longer form description about a Type
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public class NotesAttribute : AttributeBase

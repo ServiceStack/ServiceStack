@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.DataAnnotations
 {
     /// <summary>
-    /// Decimal length attribute.
+    /// Create RDBMS Column with specified decimal scale & precision
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class DecimalLengthAttribute : AttributeBase

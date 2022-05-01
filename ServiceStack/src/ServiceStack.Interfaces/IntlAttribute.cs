@@ -4,7 +4,7 @@ using System.Reflection;
 namespace ServiceStack;
 
 /// <summary>
-/// Configure property to use JS Intl.NumberFormat formatter 
+/// Configure result field to use JavaScript's Intl.NumberFormat formatter 
 /// </summary>
 public class IntlNumber : Intl
 {
@@ -17,7 +17,7 @@ public class IntlNumber : Intl
 }
 
 /// <summary>
-/// Configure property to use JS Intl.DateTimeFormat formatter 
+/// Configure result field to use JavaScript's Intl.DateTimeFormat formatter 
 /// </summary>
 public class IntlDateTime : Intl
 {
@@ -32,7 +32,7 @@ public class IntlDateTime : Intl
 }
 
 /// <summary>
-/// Configure property to use JS Intl.RelativeTimeFormat formatter 
+/// Configure result field to use JavaScript's Intl.RelativeTimeFormat formatter 
 /// </summary>
 public class IntlRelativeTime : Intl
 {
@@ -46,7 +46,7 @@ public class IntlRelativeTime : Intl
 }
 
 /// <summary>
-/// Configure property to use JS Intl formatter 
+/// Configure result field to use a JavaScript Intl formatter 
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class Intl : MetadataAttributeBase

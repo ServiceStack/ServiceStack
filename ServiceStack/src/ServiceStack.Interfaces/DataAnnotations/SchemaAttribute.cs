@@ -3,7 +3,7 @@
 namespace ServiceStack.DataAnnotations
 {
     /// <summary>
-    /// Used to annotate an Entity with its DB schema
+    /// Define which RDBMS Schema Data Model belongs to
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class SchemaAttribute : AttributeBase

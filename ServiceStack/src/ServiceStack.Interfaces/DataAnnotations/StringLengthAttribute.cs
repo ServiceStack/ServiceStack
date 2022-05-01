@@ -4,6 +4,9 @@
 
 namespace ServiceStack.DataAnnotations
 {
+    /// <summary>
+    /// Define the RDBMS Column Definition variable character length
+    /// </summary>
     public class StringLengthAttribute : AttributeBase
     {
         public const int MaxText = int.MaxValue;

@@ -5,6 +5,9 @@ using System;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// Document a short description for an API Property
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class ApiMemberAttribute : AttributeBase
     {

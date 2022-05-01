@@ -112,6 +112,9 @@ namespace ServiceStack
         List = 2,
     }
 
+    /// <summary>
+    /// Change the default querying behaviour of filter properties in AutoQuery APIs
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class QueryDbAttribute : AttributeBase
     {
@@ -125,6 +128,9 @@ namespace ServiceStack
         public QueryTerm DefaultTerm { get; set; }
     }
 
+    /// <summary>
+    /// Change the default querying behaviour of filter properties in AutoQuery Data APIs
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class QueryDataAttribute : AttributeBase
     {
@@ -138,6 +144,9 @@ namespace ServiceStack
         public QueryTerm DefaultTerm { get; set; }
     }
 
+    /// <summary>
+    /// Define to use a custom AutoQuery filter
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryDbFieldAttribute : AttributeBase
     {
@@ -175,7 +184,7 @@ namespace ServiceStack
     }
     
     /// <summary>
-    /// Apply additional Filter to AutoQuery Requests
+    /// Apply additional pre-configured filters to AutoQuery APIs
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class AutoFilterAttribute : ScriptValueAttribute
@@ -241,6 +250,9 @@ namespace ServiceStack
         public const string CaseInsensitiveLike = "UPPER({Field}) LIKE UPPER({Value})";
     }
 
+    /// <summary>
+    /// Define to use a custom AutoQuery Data filter
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryDataFieldAttribute : AttributeBase
     {
@@ -318,6 +330,9 @@ namespace ServiceStack
         NonDefaults,
     }
     
+    /// <summary>
+    /// Change the update behavior to only update non-default values
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AutoUpdateAttribute : AttributeBase
     {
@@ -325,11 +340,17 @@ namespace ServiceStack
         public AutoUpdateAttribute(AutoUpdateStyle style) => Style = style;
     }
     
+    /// <summary>
+    /// Specify to fallback default values when not provided
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AutoDefaultAttribute : ScriptValueAttribute
     {
     }
     
+    /// <summary>
+    /// Map System Input properties to Data Model fields
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AutoMapAttribute : AttributeBase
     {
@@ -338,6 +359,9 @@ namespace ServiceStack
         public AutoMapAttribute() {}
     }
     
+    /// <summary>
+    /// Populate data models with generic user & system info
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class AutoPopulateAttribute : ScriptValueAttribute
     {
@@ -350,6 +374,9 @@ namespace ServiceStack
         public AutoPopulateAttribute() {}
     }
     
+    /// <summary>
+    /// Ignore mapping Request DTO property to Data Model
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AutoIgnoreAttribute : AttributeBase {}
 

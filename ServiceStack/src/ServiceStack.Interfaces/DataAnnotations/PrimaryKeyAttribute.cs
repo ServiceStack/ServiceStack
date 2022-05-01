@@ -3,8 +3,7 @@ using System;
 namespace ServiceStack.DataAnnotations
 {
     /// <summary>
-    /// Primary key attribute.
-    /// use to indicate that property is part of the pk
+    /// Treat this property is the Primary Key of the table
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class PrimaryKeyAttribute : AttributeBase

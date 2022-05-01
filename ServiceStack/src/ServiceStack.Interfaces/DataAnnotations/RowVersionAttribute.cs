@@ -3,7 +3,7 @@
 namespace ServiceStack.DataAnnotations
 {
     /// <summary>
-    /// Used to indicate that property is a row version incremented automatically by the database
+    /// Treat property as an automatically incremented RDBMS Row Version 
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class RowVersionAttribute : AttributeBase

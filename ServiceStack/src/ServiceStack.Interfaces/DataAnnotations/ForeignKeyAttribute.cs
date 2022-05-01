@@ -2,6 +2,9 @@
 
 namespace ServiceStack.DataAnnotations
 {
+    /// <summary>
+    /// Define an RDBMS Foreign Key Relationship
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class ForeignKeyAttribute : ReferencesAttribute
     {

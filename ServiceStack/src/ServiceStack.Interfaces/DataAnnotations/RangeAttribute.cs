@@ -2,6 +2,9 @@
 
 namespace ServiceStack.DataAnnotations
 {
+    /// <summary>
+    /// Document the allowable min and max range for this property
+    /// </summary>
     public class RangeAttribute : AttributeBase
     {
         public object Minimum { get; private set; }

@@ -20,11 +20,14 @@ namespace ServiceStack.DataAnnotations
         }
     }
     
+    /// <summary>
+    /// Ignore calculated C# Property from being persisted in RDBMS Table
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class ComputedAttribute : AttributeBase {}
     
     /// <summary>
-    /// Whether to persist field
+    /// Whether to persist calculated column
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class PersistedAttribute : AttributeBase {}

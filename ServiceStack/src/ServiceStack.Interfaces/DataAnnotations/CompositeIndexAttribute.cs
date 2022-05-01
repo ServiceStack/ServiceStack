@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace ServiceStack.DataAnnotations
 {
+    /// <summary>
+    /// Create an Composite RDBMS Index and optional Unique constraint
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
     public class CompositeIndexAttribute : AttributeBase
     {

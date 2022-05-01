@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.DataAnnotations;
 
 /// <summary>
-/// Populate with a field from a foreign table in Load* APIs
+/// Populate with a field from a foreign table in AutoQuery and Load* APIs
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public class ReferenceFieldAttribute : AttributeBase

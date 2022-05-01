@@ -2,11 +2,17 @@ using System;
 
 namespace ServiceStack;
 
+/// <summary>
+/// Customize the HTML Input control in Auto Form UIs
+/// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public class InputAttribute : InputAttributeBase
 {
 }
 
+/// <summary>
+/// Customize a Form Field and HTML Input for a Type's Property
+/// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
 public class FieldAttribute : InputAttributeBase
 {

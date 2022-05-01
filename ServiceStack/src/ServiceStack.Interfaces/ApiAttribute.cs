@@ -21,6 +21,9 @@ namespace ServiceStack
         public const int Never = 2;
     }
 
+    /// <summary>
+    /// Document a short description for an API Type
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class ApiAttribute : AttributeBase
     {

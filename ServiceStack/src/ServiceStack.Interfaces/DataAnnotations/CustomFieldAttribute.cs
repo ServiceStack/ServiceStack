@@ -2,6 +2,9 @@
 
 namespace ServiceStack.DataAnnotations
 {
+    /// <summary>
+    /// Create RDBMS using Custom SQL Data Type
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class CustomFieldAttribute : AttributeBase
     {

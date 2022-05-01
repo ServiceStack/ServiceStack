@@ -2,6 +2,9 @@ using System;
 
 namespace ServiceStack.DataAnnotations
 {
+    /// <summary>
+    /// Create RDBMS Column definition with specified default value
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class DefaultAttribute : AttributeBase
     {

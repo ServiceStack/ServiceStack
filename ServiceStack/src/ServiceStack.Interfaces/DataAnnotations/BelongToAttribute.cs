@@ -5,8 +5,7 @@ namespace ServiceStack.DataAnnotations
 {
 
     /// <summary>
-    /// BelongToAttribute
-    /// Use to indicate that a join column belongs to another table.
+    /// Populate property from ambiguous column name in the specified joined table type
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class BelongToAttribute : AttributeBase

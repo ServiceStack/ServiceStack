@@ -5,6 +5,9 @@ using System;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// Document the allowable values for an API Property
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class ApiAllowableValuesAttribute : AttributeBase
     {

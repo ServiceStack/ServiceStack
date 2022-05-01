@@ -5,9 +5,7 @@ namespace ServiceStack.DataAnnotations
 {
 
     /// <summary>
-    /// ReturnAttribute
-    /// Use to indicate that a property should be included in the 
-    /// returning/output clause of INSERT sql sentences
+    /// Indicate the property should be included in the returning/output clause of INSERT SQL Statements
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class ReturnOnInsertAttribute : AttributeBase { }

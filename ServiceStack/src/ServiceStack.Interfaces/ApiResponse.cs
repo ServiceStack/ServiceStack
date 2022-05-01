@@ -19,6 +19,9 @@ namespace ServiceStack
         string Description { get; }
     }
 
+    /// <summary>
+    /// Document potential API Responses this API could return
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class ApiResponseAttribute : AttributeBase, IApiResponseDescription
     {

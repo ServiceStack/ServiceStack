@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.DataAnnotations
 {
     /// <summary>
-    /// Decorate any type or property with adhoc info
+    /// Decorate any type or property with custom metadata
     /// </summary>
     public class MetaAttribute : AttributeBase
     {
