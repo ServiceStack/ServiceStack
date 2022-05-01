@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.RavenDb
 {
-    public partial class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepositoryAsync, IQueryUserAuthAsync
+    public partial class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepositoryAsync, IQueryUserAuthAsync, IManageApiKeysAsync
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -335,6 +335,42 @@ namespace ServiceStack.Authentication.RavenDb
                 .Customize(x => x.WaitForNonStaleResults());
 
             return (await SortAndPage(q, orderBy, skip, take).ToListAsync(token)).OfType<IUserAuth>().ToList();
+        }
+
+
+        #endregion
+
+        #region IManageApiKeysAsync
+        public async Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token = default)
+        {
+            using var session = documentStore.OpenAsyncSession();
+            var key = await session.LoadAsync<ApiKey>(apiKey);
+            return key != null;
+        }
+
+        public async Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token = default)
+        {
+            using var session = documentStore.OpenAsyncSession();
+            return await session.LoadAsync<ApiKey>(apiKey);
+        }
+
+        public async Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token = default)
+        {
+            using var session = documentStore.OpenAsyncSession();
+            return await session.Query<ApiKey>()
+                .Where(key =>
+                    key.UserAuthId == userId
+                    && key.CancelledDate == null
+                    && (key.ExpiryDate == null || key.ExpiryDate >= DateTime.UtcNow)
+                ).ToListAsync();
+        }
+
+        public async Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token = default)
+        {
+            using var session = documentStore.OpenAsyncSession();
+            foreach (ApiKey apiKey in apiKeys)
+                await session.StoreAsync(apiKey);
+            await session.SaveChangesAsync();
         }
         #endregion
     }

@@ -11,8 +11,7 @@ namespace ServiceStack.OrmLite.Firebird.Converters
         {
             get
             {
-                //Max field is 32767 but using lower limit to avoid 64kb max row limit
-                return maxColumnDefinition ?? GetColumnDefinition(10000); 
+                return "BLOB SUB_TYPE 1 SEGMENT SIZE 8192"; 
             } 
         }
 
