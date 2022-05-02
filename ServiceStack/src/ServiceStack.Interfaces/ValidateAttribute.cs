@@ -91,24 +91,32 @@ namespace ServiceStack
             return to;
         }
     }
-    //Default ITypeValidator defined in ValidateScripts 
+    
+    /* Default ITypeValidator defined in ValidateScripts */
+    
     public class ValidateIsAuthenticatedAttribute : ValidateRequestAttribute
     {
         public ValidateIsAuthenticatedAttribute() : base("IsAuthenticated") { }
     }
+    
     public class ValidateIsAdminAttribute : ValidateRequestAttribute
     {
         public ValidateIsAdminAttribute() : base("IsAdmin") { }
     }
+    
     public class ValidateHasRoleAttribute : ValidateRequestAttribute
     {
         public ValidateHasRoleAttribute(string role) : base("HasRole(`" + role + "`)") { }
     }
+    
     public class ValidateHasPermissionAttribute : ValidateRequestAttribute
     {
         public ValidateHasPermissionAttribute(string permission) : base("HasPermission(`" + permission + "`)") { }
     }
-
+    
+    /// <summary>
+    /// Validate property against registered Validator expression
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class ValidateAttribute : AttributeBase, IValidateRule, IReflectAttributeConverter
     {
@@ -220,6 +228,9 @@ namespace ServiceStack
     {
         public ValidateNotEmptyAttribute() : base("NotEmpty") { }
     }
+    /// <summary>
+    /// Validate property against Fluent Validation CreditCardValidator
+    /// </summary>
     public class ValidateCreditCardAttribute : ValidateAttribute
     {
         public ValidateCreditCardAttribute() : base("CreditCard") { }

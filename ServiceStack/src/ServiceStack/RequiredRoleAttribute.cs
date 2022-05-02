@@ -12,8 +12,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     /// <summary>
-    /// Indicates that the request dto, which is associated with this attribute,
-    /// can only execute, if the user has specific roles.
+    /// Protect access to this API to only Authenticated Users assigned with all specified Roles
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
     public class RequiredRoleAttribute : AuthenticateAttribute

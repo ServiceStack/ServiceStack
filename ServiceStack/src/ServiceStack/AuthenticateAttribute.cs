@@ -13,8 +13,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     /// <summary>
-    /// Indicates that the request dto, which is associated with this attribute,
-    /// requires authentication.
+    /// Protect access to this API to Authenticated Users only
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class AuthenticateAttribute : RequestFilterAsyncAttribute

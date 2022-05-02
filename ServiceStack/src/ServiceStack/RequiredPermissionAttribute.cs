@@ -12,8 +12,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     /// <summary>
-    /// Indicates that the request dto, which is associated with this attribute,
-    /// can only execute, if the user has specific permissions.
+    /// Protect access to this API to only Authenticated Users assigned with all specified Permissions
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
     public class RequiredPermissionAttribute : AuthenticateAttribute

@@ -8,7 +8,7 @@ using System.Linq;
 namespace ServiceStack
 {
     /// <summary>
-    /// Decorate on Request DTO's to alter the accessibility of a service and its visibility on /metadata pages
+    /// Restrict the accessibility of a service and its visibility in Metadata services
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class RestrictAttribute : AttributeBase

@@ -7,6 +7,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// Protect access to this API to only Authenticated Users with specified Claim
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
     public class RequiredClaimAttribute : AuthenticateAttribute
     {
