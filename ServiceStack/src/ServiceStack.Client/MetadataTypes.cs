@@ -1158,7 +1158,7 @@ namespace ServiceStack
         }
         
         /// <summary>
-        /// Reorder where the DB Column appears in Type (changes API & UI ordering)
+        /// Reorder where the DB Column appears in Type (changes API &amp; UI ordering)
         /// </summary>
         public static MetadataPropertyType ReorderProperty(this MetadataType type, string name, string before = null, string after = null)
         {
@@ -1179,7 +1179,7 @@ namespace ServiceStack
         }
     
         /// <summary>
-        /// Reorder where the DB Column appears in Type (changes API & UI ordering)
+        /// Reorder where the DB Column appears in Type (changes API &amp; UI ordering)
         /// </summary>
         public static MetadataPropertyType ReorderProperty(this MetadataType type, string name, int index)
         {
