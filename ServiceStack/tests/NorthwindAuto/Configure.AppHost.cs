@@ -33,7 +33,10 @@ public class AppHost : AppHostBase, IHostingStartup
     // Configure your AppHost with the necessary configuration and dependencies your App needs
     public override void Configure(Container container)
     {
-        // JsConfig.Init(new Config { TextCase = TextCase.PascalCase });
+        // JsConfig.Init(new ServiceStack.Text.Config {
+        //     IncludeNullValues = true,
+        //     TextCase = TextCase.PascalCase
+        // });
         SetConfig(new HostConfig
         {
             //DebugMode = false,

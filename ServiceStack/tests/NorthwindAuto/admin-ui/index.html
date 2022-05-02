@@ -74,7 +74,7 @@ Object.assign(window, exports) //import
 import { $1, humanify, combinePaths } from "@servicestack/client"
 import { setBodyClass } from "../shared/js/core"
 
-/*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn'})*/
+/*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn,inv:false'})*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth
     setBodyClass({ auth })

@@ -119,6 +119,9 @@ public class UpdateBooking : IUpdateDb<Booking>, IReturn<IdResponse>
 }
 #endif
 
+[Field(nameof(CreatedBy), Type = "textarea", FieldCss="col-span-12 text-center", InputCss = "bg-gray-100")]
+public class UpdateBooking2 : AuditBase {}
+
 [Tag("Bookings"), Description("Delete a Booking")]
 [Route("/booking/{Id}", "DELETE")]
 [ValidateHasRole("Admin")]
