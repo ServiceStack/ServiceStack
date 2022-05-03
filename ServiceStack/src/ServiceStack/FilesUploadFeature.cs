@@ -203,6 +203,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         var existingFile = location.VirtualFiles.GetFile(vfsPath);
         if (existingFile != null)
         {
+            location.ValidateDelete?.Invoke(req, existingFile);
             location.VirtualFiles.DeleteFile(vfsPath);
             return true;
         }
@@ -352,6 +353,7 @@ public class UploadLocation
         string[]? allowExtensions = null, FilesUploadOperation allowOperations = FilesUploadOperation.All, 
         int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
         Action<IRequest,IHttpFile>? validateUpload = null, Action<IRequest,IVirtualFile>? validateDownload = null,
+        Action<IRequest,IVirtualFile>? validateDelete = null,
         Func<IRequest,IVirtualFile,object>? fileResult = null)
     {
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -366,6 +368,7 @@ public class UploadLocation
         this.MaxFileBytes = maxFileBytes;
         this.ValidateUpload = validateUpload;
         this.ValidateDownload = validateDownload;
+        this.ValidateDelete = validateDelete;
         this.FileResult = fileResult;
     }
 
@@ -381,6 +384,7 @@ public class UploadLocation
     public Func<FilesUploadContext,string> ResolvePath { get; set; }
     public Action<IRequest,IHttpFile>? ValidateUpload { get; set; }
     public Action<IRequest,IVirtualFile>? ValidateDownload { get; set; }
+    public Action<IRequest,IVirtualFile>? ValidateDelete { get; set; }
     Func<IRequest,IVirtualFile,object>? FileResult { get; set; }
 }
 
