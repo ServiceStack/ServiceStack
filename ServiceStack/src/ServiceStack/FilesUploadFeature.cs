@@ -159,7 +159,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
             throw new ArgumentException(Errors.ExceededMinFileBytesFmt.LocalizeFmt(req, location.MinFileBytes), param);
         if (location.MaxFileBytes != null && file.ContentLength > location.MaxFileBytes)
             throw new ArgumentException(Errors.ExceededMaxFileBytesFmt.LocalizeFmt(req, location.MaxFileBytes), param);
-        location.Validate?.Invoke(req, file);
+        location.ValidateUpload?.Invoke(req, file);
     }
 
     public async Task<IVirtualFile?> GetFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
@@ -169,6 +169,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
             throw HttpError.NotFound(Errors.NoReadAccess.Localize(req));
 
         var existingFile = location.VirtualFiles.GetFile(vfsPath);
+        location.ValidateDownload?.Invoke(req, existingFile);
         return existingFile;
     }
 
@@ -350,7 +351,7 @@ public class UploadLocation
         string readAccessRole = RoleNames.AllowAnyUser, string writeAccessRole = RoleNames.AllowAnyUser, 
         string[]? allowExtensions = null, FilesUploadOperation allowOperations = FilesUploadOperation.All, 
         int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
-        Action<IRequest,IHttpFile>? validate = null,
+        Action<IRequest,IHttpFile>? validateUpload = null, Action<IRequest,IVirtualFile>? validateDownload = null,
         Func<IRequest,IVirtualFile,object>? fileResult = null)
     {
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -363,7 +364,8 @@ public class UploadLocation
         this.MaxFileCount = maxFileCount;
         this.MinFileBytes = minFileBytes;
         this.MaxFileBytes = maxFileBytes;
-        this.Validate = validate;
+        this.ValidateUpload = validateUpload;
+        this.ValidateDownload = validateDownload;
         this.FileResult = fileResult;
     }
 
@@ -377,7 +379,8 @@ public class UploadLocation
     public long? MinFileBytes { get; set; }
     public long? MaxFileBytes { get; set; }
     public Func<FilesUploadContext,string> ResolvePath { get; set; }
-    public Action<IRequest,IHttpFile>? Validate { get; set; }
+    public Action<IRequest,IHttpFile>? ValidateUpload { get; set; }
+    public Action<IRequest,IVirtualFile>? ValidateDownload { get; set; }
     Func<IRequest,IVirtualFile,object>? FileResult { get; set; }
 }
 
