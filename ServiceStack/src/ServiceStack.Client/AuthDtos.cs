@@ -688,6 +688,9 @@ public class UploadedFile
     public long ContentLength { get; set; }
 }
 
+/// <summary>
+/// Upload a file to the specified managed location
+/// </summary>
 [DataContract]
 public partial class StoreFileUpload : IReturn<StoreFileUploadResponse>, IHasBearerToken, IPost
 {
@@ -706,6 +709,10 @@ public partial class StoreFileUploadResponse
     [DataMember(Order = 2)]
     public ResponseStatus ResponseStatus { get; set; }
 }
+
+/// <summary>
+/// Download file from the specified managed location
+/// </summary>
 [DataContract]
 public partial class GetFileUpload : IReturn<byte[]>, IHasBearerToken, IGet
 {
@@ -718,6 +725,10 @@ public partial class GetFileUpload : IReturn<byte[]>, IHasBearerToken, IGet
     [DataMember(Order = 4)]
     public bool? Attachment { get; set; }
 }
+
+/// <summary>
+/// Overwrite file at the specified managed location
+/// </summary>
 [DataContract]
 public partial class ReplaceFileUpload : IReturn<ReplaceFileUploadResponse>, IHasBearerToken, IPut
 {
@@ -734,6 +745,10 @@ public partial class ReplaceFileUploadResponse
     [DataMember(Order = 1)]
     public ResponseStatus ResponseStatus { get; set; }
 }
+
+/// <summary>
+/// Delete file at the specified managed location
+/// </summary>
 [DataContract]
 public partial class DeleteFileUpload : IReturn<DeleteFileUploadResponse>, IHasBearerToken, IDelete
 {

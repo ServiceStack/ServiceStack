@@ -323,15 +323,45 @@ public readonly struct ResolvedPath
 
 public readonly struct FilesUploadContext
 {
+    /// <summary>
+    /// The current HTTP Request
+    /// </summary>
     public IRequest Request { get; }
+    /// <summary>
+    /// The Request DTO
+    /// </summary>
     public object Dto => Request.Dto;
-    public string FileName { get; }
-    public string FileExtension => FileName.LastRightPart('.');
-    public string DateSegment => DateTime.UtcNow.ToString("yyyy/MM/dd");
+    /// <summary>
+    /// The Request DTO explicitly casted to a strong Type  
+    /// </summary>
     public T GetDto<T>() => (T)Request.Dto;
+    /// <summary>
+    /// The Uploaded file name
+    /// </summary>
+    public string FileName { get; }
+    /// <summary>
+    /// The Uploaded file extension
+    /// </summary>
+    public string FileExtension => FileName.LastRightPart('.');
+    /// <summary>
+    /// Date String Formatted as 'yyyy/MM/dd'
+    /// </summary>
+    public string DateSegment => DateTime.UtcNow.ToString("yyyy/MM/dd");
+    /// <summary>
+    /// The FilesUploadFeature Plugin 
+    /// </summary>
     public FilesUploadFeature Feature { get; }
+    /// <summary>
+    /// The UploadLocation used for this upload
+    /// </summary>
     public UploadLocation Location { get; }
+    /// <summary>
+    /// The User Session associated with this Request
+    /// </summary>
     public IAuthSession Session => Request.GetSession();
+    /// <summary>
+    /// The Authenticated User Id
+    /// </summary>
     public string UserAuthId => Session.UserAuthId;
 
     public FilesUploadContext(FilesUploadFeature feature, UploadLocation location, IRequest request, string fileName)
