@@ -135,7 +135,9 @@ public static class JsonApiClientUtils
     {
         foreach (System.Collections.DictionaryEntry entry in map)
         {
-            content.Add(new StringContent($"{entry.Value}"), $"\"{entry.Key}\"");
+            var strVal = entry.Value.ToJsv();
+            if (strVal == null) continue;
+            content.Add(new StringContent(strVal), $"\"{entry.Key}\"");
         }
         return content;
     }
@@ -144,7 +146,9 @@ public static class JsonApiClientUtils
     {
         foreach (var entry in map)
         {
-            content.Add(new StringContent($"{entry.Value}"), $"\"{entry.Key}\"");
+            var strVal = entry.Value.ToJsv();
+            if (strVal == null) continue;
+            content.Add(new StringContent(strVal), $"\"{entry.Key}\"");
         }
         return content;
     }
