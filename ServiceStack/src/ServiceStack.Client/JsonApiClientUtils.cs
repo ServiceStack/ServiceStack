@@ -130,6 +130,27 @@ public static class JsonApiClientUtils
         content.Add(new StringContent(value.ToJsv(), encoding:null, mediaType:MimeTypes.Jsv), $"\"{key}\"");
         return content;
     }
+    
+    public static MultipartFormDataContent AddParams(this MultipartFormDataContent content, System.Collections.IDictionary map)
+    {
+        foreach (System.Collections.DictionaryEntry entry in map)
+        {
+            content.Add(new StringContent($"{entry.Value}"), $"\"{entry.Key}\"");
+        }
+        return content;
+    }
+    
+    public static MultipartFormDataContent AddParams(this MultipartFormDataContent content, Dictionary<string, object> map)
+    {
+        foreach (var entry in map)
+        {
+            content.Add(new StringContent($"{entry.Value}"), $"\"{entry.Key}\"");
+        }
+        return content;
+    }
+
+    public static MultipartFormDataContent AddParams<T>(this MultipartFormDataContent content, T dto) => 
+        content.AddParams(dto.ToObjectDictionary());
 
     public static MultipartFormDataContent AddJsvParam<T>(this MultipartFormDataContent content, string key, T value)
     {
