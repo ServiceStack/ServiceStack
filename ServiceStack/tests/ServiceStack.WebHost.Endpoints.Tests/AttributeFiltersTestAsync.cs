@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool ContextualResponseFilterExecuted { get; set; }
         public bool InheritedResponseFilterExecuted { get; set; }
 
-        public bool RequestFilterDependenyIsResolved { get; set; }
+        public bool RequestFilterDependencyIsResolved { get; set; }
         public bool ResponseFilterDependencyIsResolved { get; set; }
 
     }
@@ -201,7 +201,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RequestFilterExecuted = request.RequestFilterExecuted,
                 InheritedRequestFilterExecuted = request.InheritedRequestFilterExecuted,
                 ContextualRequestFilterExecuted = request.ContextualRequestFilterExecuted,
-                RequestFilterDependenyIsResolved = request.RequestFilterDependenyIsResolved,
+                RequestFilterDependencyIsResolved = request.RequestFilterDependenyIsResolved,
                 ResponseFilterDependencyIsResolved = false
             };
         }
@@ -289,7 +289,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.InheritedResponseFilterExecuted);
             Assert.IsFalse(response.ContextualRequestFilterExecuted);
             Assert.IsFalse(response.ContextualResponseFilterExecuted);
-            Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+            Assert.IsTrue(response.RequestFilterDependencyIsResolved);
             Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 
@@ -325,7 +325,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsFalse(response.ContextualRequestFilterExecuted);
             Assert.IsFalse(response.ContextualResponseFilterExecuted);
-            Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+            Assert.IsTrue(response.RequestFilterDependencyIsResolved);
             Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 
@@ -337,7 +337,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsTrue(response.ContextualRequestFilterExecuted);
             Assert.IsTrue(response.ContextualResponseFilterExecuted);
-            Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+            Assert.IsTrue(response.RequestFilterDependencyIsResolved);
             Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 
@@ -349,7 +349,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsTrue(response.ContextualRequestFilterExecuted);
             Assert.IsTrue(response.ContextualResponseFilterExecuted);
-            Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+            Assert.IsTrue(response.RequestFilterDependencyIsResolved);
             Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 

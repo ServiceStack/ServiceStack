@@ -183,6 +183,18 @@ public static class ErrorUtils
 
 public static class ApiResultUtils
 {
+    public static void ThrowIfError<TResponse>(this ApiResult<TResponse> api)
+    {
+        if (!api.Failed) return;
+        throw new WebServiceException(api.ErrorMessage) {
+            StatusCode = 500,
+            StatusDescription = api.ErrorMessage,
+            ResponseDto = new ErrorResponse {
+                ResponseStatus = api.Error,
+            }
+        };
+    }
+
     public static ApiResult<TResponse> ToApiResult<TResponse>(this Exception ex) => ApiResult.CreateError<TResponse>(ex);
     public static ApiResult<EmptyResponse> ToApiResult(this Exception ex) => ApiResult.CreateError(ex);
 
