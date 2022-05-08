@@ -13,7 +13,7 @@ App.components({
 
             done,
             submit() {
-                this.apiState.apiForm(Forms.formData(this.$refs.form, this.apiState.op))
+                this.apiState.apiForm(new FormData(this.$refs.form))
                     .then(r => {
                         if (r.api.succeeded) {
                             save()
@@ -38,7 +38,7 @@ App.components({
 
             done,
             submit() {
-                this.apiState.apiForm(Forms.formData(this.$refs.form, this.apiState.op))
+                this.apiState.apiForm(new FormData(this.$refs.form))
                     .then(r => {
                         if (r.api.succeeded) {
                             save()

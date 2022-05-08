@@ -53,6 +53,8 @@ public class AppHost : AppHostBase, IHostingStartup
 
         ConfigurePlugin<UiFeature>(feature => {
             Console.WriteLine(@"ConfigurePlugin<UiFeature>...");
+            feature.HtmlModules.Add(new("/modules/forms", "/forms"));
+            
             feature.Module.Configure((appHost, module) =>
             {
                 module.VirtualFiles = appHost.VirtualFiles;

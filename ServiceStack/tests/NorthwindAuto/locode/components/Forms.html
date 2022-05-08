@@ -31,7 +31,7 @@ App.components({
                 done()
             },
             submit() {
-                this.apiCreate.apiForm(Forms.formData(this.$refs.form, this.apiCreate.op))
+                this.apiCreate.apiForm(new FormData(this.$refs.form))
                     .then(r => {
                         if (r.api.succeeded) {
                             save()
@@ -126,7 +126,7 @@ App.components({
                 let pk = this.pk, useUpdateApi = this.useApiUpdate
                 if (!pk || !useUpdateApi || !routes.edit) return
 
-                let formData = Forms.formData(this.$refs.form, this.useApiUpdate.op)
+                let formData = new FormData(this.$refs.form)
                 let apiPatch = this.apiPatch
                 let reset = []
                 if (apiPatch) {

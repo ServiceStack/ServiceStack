@@ -1,0 +1,177 @@
+<script>
+import { JsonServiceClient } from "../../lib/client";
+
+function createFormData(form) {
+    let formData = new FormData(form)
+    Array.from(form.elements).forEach(e => {
+        // console.log(e.type, e.value)
+        if (e.type === 'file') {
+            let file = formData.get(e.name)
+            if (file.size === 0) {
+                formData.delete(e.name)
+            }
+        }
+    })
+    return formData
+}
+
+App.components({
+    FormDataTestForm() {
+        return {
+            $template: '#form-data-test-template',
+            response: '',
+            removeLastAttachment() {
+                let attachments = $1('#Attachments')
+                if (attachments.files.length === 0) return
+                let dt = new DataTransfer()
+                Array.from(attachments.files).slice(0, -1).forEach(file => dt.items.add(file))
+                attachments.files = dt.files 
+            },
+            submit() {
+                let client = new JsonServiceClient(BASE_URL)
+                let formData = createFormData(this.$refs.form)
+                console.log(this.$refs.form)
+                for (let [key, value] of formData) {
+                    console.log(key, value, typeof value == 'object' && typeof value.size == "number" ? value.size : -1)
+                }
+                
+                // client.apiForm(new FormDataTest(), formData)
+                //     .then(r => {
+                //         console.log(r)
+                //         this.response = JSON.stringify(r.response, undefined, 4)
+                //     })
+            }
+        }
+    }
+})
+</script>
+<template id="form-data-test-template">
+<form ref="form" @submit.prevent="submit" autocomplete="off" class="p-6">
+    <input type="hidden" name="Hidden" value="true">
+    <h1 class="text-2xl mb-8 text-center">Form Data Test</h1>
+    <fieldset class="grid gap-4 grid-cols-3 grid-rows-6">
+        <div>
+            <label for="String">String</label>
+            <input type="text" id="String" name="String" value="Foo">
+        </div>
+        <div>
+            <label for="Int">Int</label>
+            <input type="number" id="Int" name="Int" value="1">
+        </div>
+        <div>
+            <label for="Range">Range</label>
+            <input type="range" id="Range" name="Range" min="0" max="1" step="0.1" value="0.5">
+        </div>
+        <div>
+            <label for="DateTime">DateTime</label>
+            <input type="date" id="DateTime" name="DateTime" value="2022-01-01">
+        </div>
+        <div>
+            <label for="DateOnly">DateOnly</label>
+            <input type="date" id="DateOnly" name="DateOnly" value="2022-01-01">
+        </div>
+        <div>
+            <label for="TimeSpan">TimeSpan</label>
+            <input type="time" id="TimeSpan" name="TimeSpan" value="01:02:03">
+        </div>
+        <div>
+            <label for="TimeOnly">TimeOnly</label>
+            <input type="time" id="TimeOnly" name="TimeOnly" value="01:02:03">
+        </div>
+        <div>
+            <label for="Password">Password</label>
+            <input type="password" id="Password" name="Password" value="Password">
+        </div>
+        <div>
+            <input type="checkbox" id="CheckboxStringRed" name="CheckboxString" value="Red" checked>
+            <label for="CheckboxStringRed">Red</label>
+            <input type="checkbox" id="CheckboxStringGreen" name="CheckboxString" value="Green">
+            <label for="CheckboxStringGreen">Green</label>
+            <input type="checkbox" id="CheckboxStringBlue" name="CheckboxString" value="Blue" checked>
+            <label for="CheckboxStringBlue">Blue</label>
+        </div>
+        <div>
+            <input type="radio" id="RadioStringRed" name="RadioString" value="Red">
+            <label for="RadioStringRed">Red</label>
+            <input type="radio" id="RadioStringGreen" name="RadioString" value="Green" checked>
+            <label for="RadioStringGreen">Green</label>
+            <input type="radio" id="RadioStringBlue" name="RadioString" value="Blue">
+            <label for="RadioStringBlue">Blue</label>
+        </div>
+        <div>
+            <input type="checkbox" id="CheckboxColorsRed" name="CheckboxColors" value="Red" checked>
+            <label for="CheckboxColorsRed">Red</label>
+            <input type="checkbox" id="CheckboxColorsGreen" name="CheckboxColors" value="Green">
+            <label for="CheckboxColorsGreen">Green</label>
+            <input type="checkbox" id="CheckboxColorsBlue" name="CheckboxColors" value="Blue" checked>
+            <label for="CheckboxColorsBlue">Blue</label>
+        </div>
+        <div>
+            <input type="radio" id="RadioColorsRed" name="RadioColors" value="Red">
+            <label for="RadioColorsRed">Red</label>
+            <input type="radio" id="RadioColorsGreen" name="RadioColors" value="Green" checked>
+            <label for="RadioColorsGreen">Green</label>
+            <input type="radio" id="RadioColorsBlue" name="RadioColors" value="Blue">
+            <label for="RadioColorsBlue">Blue</label>
+        </div>
+        <div>
+            <label for="SelectColors">SelectColors</label>
+            <select id="SelectColors" name="SelectColors">
+                <option value="Red">Red</option>
+                <option value="Green" selected>Green</option>
+                <option value="Blue">Blue</option>
+            </select>
+        </div>
+        <div>
+            <label for="MultiSelectColors">MultiSelectColors</label>
+            <select id="MultiSelectColors" name="MultiSelectColors" multiple="multiple">
+                <option value="Red" selected>Red</option>
+                <option value="Green">Green</option>
+                <option value="Blue" selected>Blue</option>
+            </select>
+        </div>
+        <div>
+            <label for="ProfileUrl">ProfileUrl</label>
+            <input type="file" id="ProfileUrl" name="ProfileUrl">
+        </div>
+        <div>
+            <label for="Attachments">Attachments</label>
+            <input type="file" id="Attachments" name="Attachments" multiple="multiple">
+            <button @click="removeLastAttachment"
+                    type="button"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Remove
+            </button>
+        </div>
+    </fieldset>
+    <div class="pt-8 text-center">
+        <input type="submit" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    </div>
+</form>
+<div>
+    <textarea v-if="response" rows="20" class="w-full" v-html="response"></textarea>
+</div>
+</template>
+<!--
+public class FormDataTest
+{
+public string? String { get; set; }
+public int Int { get; set; }
+public DateTime DateTime { get; set; }
+public DateOnly DateOnly { get; set; }
+public TimeSpan TimeSpan { get; set; }
+public TimeOnly TimeOnly { get; set; }
+public string[]? CheckboxString { get; set; }
+public string? RadioString { get; set; }
+public Colors RadioColors { get; set; }
+public Colors CheckboxColors { get; set; }
+public Colors SelectColors { get; set; }
+public Colors MultiSelectColors { get; set; }
+
+[Input(Type = "file"), UploadTo("profiles")]
+public string? ProfileUrl { get; set; }
+
+[Input(Type = "file"), UploadTo("applications")]
+public List<Attachment> Attachments { get; set; }
+}
+-->

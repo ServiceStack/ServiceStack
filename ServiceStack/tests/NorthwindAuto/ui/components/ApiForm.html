@@ -124,7 +124,7 @@ App.component('ApiForm', ({ store, routes }) => {
         apiForm(form) {
             if (!this.hasState) return
             let state = this.state
-            let formData = Forms.formData(form, state.op)
+            let formData = new FormData(form)
             let requestDto = createDto(state.opName,{})
             state.jsonError = null
             state.apiResult = null

@@ -602,21 +602,6 @@ export function createForms(Meta, css, ui) {
             })
             return obj
         },
-        /** @param {HTMLFormElement} form
-         *  @param {MetadataOperationType} op 
-         *  @return {FormData} */
-        formData(form,op) {
-            let formData = new FormData(form)
-            Array.from(form.elements).forEach(e => {
-                if (e.type === 'file') {
-                    let file = formData.get(e.name)
-                    if (file.size === 0) {
-                        formData.delete(e.name)
-                    }
-                }
-            })
-            return formData
-        },
         groupTypes(allTypes) {
             let allTypesMap = {}
             let groups = []
