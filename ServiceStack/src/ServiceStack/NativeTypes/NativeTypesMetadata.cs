@@ -883,6 +883,16 @@ namespace ServiceStack.NativeTypes
                     c.MinLength ??= property.AllowableMin;
                     c.MaxLength ??= property.AllowableMax;
                 });
+                var uploadTo = pi.FirstAttribute<UploadToAttribute>();
+                if (property.Input.Accept == null && uploadTo != null)
+                {
+                    var feature = HostContext.GetPlugin<FilesUploadFeature>();
+                    var location = feature?.Locations.FirstOrDefault(x => x.Name == uploadTo.Location);
+                    if (location is { AllowExtensions.Count: > 0 })
+                    {
+                        property.Input.Accept = string.Join(",", location.AllowExtensions.Map(x => $".{x}"));
+                    }
+                }
                 if (pi.PropertyType.IsEnum && property.Input.AllowableValues == null) 
                 {
                     property.Input.Type ??= Html.Input.Types.Select;
