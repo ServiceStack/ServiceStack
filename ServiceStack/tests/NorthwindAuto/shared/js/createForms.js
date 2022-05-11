@@ -434,6 +434,7 @@ export function createForms(Meta, css, ui) {
     
     /** @param {MetadataPropertyType} prop */
     function supportsProp(prop) {
+        if (prop.input && prop.input.type === 'file') return true
         let propType = Types.typeName2(prop.type, prop.genericArgs)
         if (prop.isValueType || prop.isEnum || inputType(propType))
             return true
@@ -443,7 +444,7 @@ export function createForms(Meta, css, ui) {
             if (map(prop.input, x => x.type === 'file'))
                 return true
         }
-        console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, map(prop.genericArgs, x => inputType(x[0]))) /*debug*/
+        console.log('!supportsProp propType', propType, prop.type, prop.genericArgs, map(prop.genericArgs, x => inputType(x[0])), prop.input) /*debug*/
         return false
     }
     
