@@ -36,10 +36,7 @@ namespace ServiceStack
         where T : CrudEvent
     {
         public Func<object, string> Serializer { get; set; } = JsonSerializer.SerializeToString;
-        /// <summary>
-        /// 
-        /// </summary>
-        public Func<string, string> IpMask { get; set; } = CrudEventsUtils.AnonymizeLastIpSegment;
+        public Func<string, string> IpMask { get; set; } = CrudEventsUtils.Identity;
         public Func<T, CrudContext, T> EventFilter { get; set; }
         
         public T ToEvent(CrudContext context)
@@ -339,6 +336,7 @@ namespace ServiceStack
         /// Returns itself as-is
         /// </summary>
         public static string Identity(string value) => value;
+
         /// <summary>
         /// Returns Single IP with empty last segment 
         /// </summary>
