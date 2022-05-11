@@ -1,3 +1,4 @@
+using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
@@ -39,6 +40,9 @@ public class ConfigureDb : IHostingStartup
             db.DropTable<JobApplicationComment>();
             db.SeedTalent(profilesDir:AppHost.ProfilesDir);
             db.SeedAttachments(appHost, sourceDir:AppHost.TalentBlazorAppDataDir);
+            
+            db.DropAndCreateTable<FileSystemItem>();
+            db.DropAndCreateTable<FileSystemFile>();
         });
 }
 
