@@ -13,6 +13,9 @@ namespace ServiceStack;
 [DataContract]
 public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
 {
+    public Authenticate() {}
+    public Authenticate(string provider) => this.provider = provider;
+
     [Description("AuthProvider, e.g. credentials")]
     [DataMember(Order = 1)] public string provider { get; set; }
     [DataMember(Order = 2)] public string State { get; set; }
