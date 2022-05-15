@@ -48,10 +48,10 @@
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-    <PackageReference Include="MongoDB.Bson" Version="2.13.1" />
-    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />
-    <PackageReference Include="RavenDB.Client" Version="5.2.1" />
+    <PackageReference Include="MongoDB.Bson" Version="2.15.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.15.1" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.15.1" />
+    <PackageReference Include="RavenDB.Client" Version="5.3.102" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />

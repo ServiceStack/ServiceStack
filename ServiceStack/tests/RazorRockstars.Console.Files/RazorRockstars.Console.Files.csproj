@@ -370,9 +370,9 @@
     <PackageReference Include="DnsClient" Version="1.3.1" />
     <PackageReference Include="EntityFramework" Version="6.3.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="MongoDB.Bson" Version="2.13.1" />
-    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />
+    <PackageReference Include="MongoDB.Bson" Version="2.15.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.15.1" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.15.1" />
     <PackageReference Include="MongoDB.Libmongocrypt" Version="1.0.0" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
     <PackageReference Include="NUnit" Version="3.13.2" />
