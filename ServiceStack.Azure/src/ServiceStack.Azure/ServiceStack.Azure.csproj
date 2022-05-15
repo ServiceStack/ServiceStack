@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="WindowsAzure.ServiceBus" Version="6.2.0" />
+    <PackageReference Include="WindowsAzure.ServiceBus" Version="6.2.2" />
     <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.3" />
   </ItemGroup>
 
