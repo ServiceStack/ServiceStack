@@ -60,7 +60,7 @@ namespace Stripe.Tests
             Assert.That(updatedPlan.TrialPeriodDays, Is.EqualTo(14));
         }
 
-        [Test]
+        // [Test] Can no longer delete prices https://github.com/stripe/stripe-python/issues/658
         public void Can_Delete_All_Plans_and_Products()
         {
             var plans = gateway.Get(new GetStripePlans { Limit = 100 });
