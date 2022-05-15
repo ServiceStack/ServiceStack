@@ -258,6 +258,9 @@ namespace ServiceStack.OrmLite.Tests
             db.CreateTable<SelfCustomerAddress>();
             db.CreateTable<MultiSelfCustomer>();
             db.CreateTable<SelfCustomer>();
+
+            db.CreateTable<JobApplication>();
+            db.CreateTable<PhoneScreen>();
         }
 
         [SetUp]
