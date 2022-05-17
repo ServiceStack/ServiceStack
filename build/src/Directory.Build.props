@@ -1,14 +1,14 @@
 <Project>
 
   <PropertyGroup>
-    <Version>6.1.0</Version>
+    <Version>6.1.1</Version>
     <Authors>ServiceStack</Authors>
     <Company>ServiceStack, Inc.</Company>
     <Copyright>&#169; 2008-2022 ServiceStack, Inc</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/ServiceStack/ServiceStack</PackageProjectUrl>
     <PackageLicenseUrl>https://servicestack.net/terms</PackageLicenseUrl>
-    <PackageIconUrl>https://servicestack.net/img/logo-64.png</PackageIconUrl>
+    <PackageIconUrl>https://servicestack.net/img/logo-128.png</PackageIconUrl>
     <PackageReleaseNotes>https://docs.servicestack.net/release-notes-history</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ServiceStack/ServiceStack.git</RepositoryUrl>

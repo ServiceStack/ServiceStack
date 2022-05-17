@@ -47,7 +47,7 @@ jobs:
         run: |
           # Check if more than 73 packages 
           if [[ ${number_of_packages} -gt 73 ]]; then
-            echo "Pushing to MyGet"
+            echo "Pushing to NuGet"
             dotnet nuget push '*.nupkg' -s 'https://api.nuget.org/v3/index.json' -k '${{ secrets.NUGET_APIKEY }}'
           else
             echo 'Less files than expected, skipping push'
