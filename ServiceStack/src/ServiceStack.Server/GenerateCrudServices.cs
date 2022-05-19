@@ -97,6 +97,8 @@ namespace ServiceStack
         
         public Action<GenerateMissingServicesContext> GenerateMissingServicesFilter { get; set; }
 
+        public Action<List<TableSchema>> TableSchemasFilter { get; set; }
+
         public Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
         {
             var dataType = column.DataType;
@@ -914,6 +916,8 @@ namespace ServiceStack
             var results = request.NoCache == true 
                 ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, excludeTables)
                 : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, excludeTables).Tables;
+            
+            genServices.TableSchemasFilter?.Invoke(results);
 
             var appHost = HostContext.AppHost;
             request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? appHost.GetBaseUrl(req);

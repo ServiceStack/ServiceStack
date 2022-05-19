@@ -89,6 +89,7 @@ namespace ServiceStack
             List<string> includeTables = null, List<string> excludeTables = null);
         void Register(IAppHost appHost);
         List<Type> GenerateMissingServices(AutoQueryFeature feature);
+        Action<List<TableSchema>> TableSchemasFilter { get; set; }
     }
 
     public static class CrudUtils
