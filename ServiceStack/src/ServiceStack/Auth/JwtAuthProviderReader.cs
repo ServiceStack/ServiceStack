@@ -963,15 +963,13 @@ namespace ServiceStack.Auth
 
         public virtual bool HasInvalidAudience(JsonObject jwtPayload, out string audience)
         {
-            if (jwtPayload.TryGetValue("aud", out audience))
+            var jwtAudiences = jwtPayload.TryGetValue("aud", out audience)
+                ? audience.FromJson<List<string>>()
+                : null;
+            if (jwtAudiences?.Count > 0 && Audiences.Count > 0)
             {
-                var jwtAudiences = audience.FromJson<List<string>>();
-                if (jwtAudiences?.Count > 0 && Audiences.Count > 0)
-                {
-                    var containsAnyAudience = jwtAudiences.Any(x => Audiences.Contains(x));
-                    if (!containsAnyAudience)
-                        return true;
-                }
+                var containsMatchingAudience = jwtAudiences.Any(x => Audiences.Contains(x));
+                return !containsMatchingAudience;
             }
             return RequiresAudience;
         }
