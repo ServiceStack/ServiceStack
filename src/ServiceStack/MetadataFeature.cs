@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0        
+﻿#if NETCORE        
 using ServiceStack.Host;
 #else
 using System.Web;
@@ -9,10 +9,11 @@ using System.Collections.Generic;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class MetadataFeature : IPlugin, Model.IHasStringId
+    public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     {
         public string Id { get; set; } = Plugins.Metadata;
         public string PluginLinksTitle { get; set; }
@@ -46,6 +47,8 @@ namespace ServiceStack
             } },
         };
 
+        public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui");
+
         public bool EnableNav
         {
             get => ServiceRoutes.ContainsKey(typeof(MetadataNavService));
@@ -66,6 +69,8 @@ namespace ServiceStack
             }
         }
 
+        public Func<string,string> TagFilter { get; set; }
+
         public MetadataFeature()
         {
             PluginLinksTitle = "Plugin Links:";
@@ -75,6 +80,12 @@ namespace ServiceStack
             DebugLinks = new Dictionary<string, string> {
                 {"operations/metadata", "Operations Metadata"},
             };
+        }
+
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.ConfigurePlugin<UiFeature>(feature => 
+                feature.HtmlModules.Add(HtmlModule));
         }
 
         public void Register(IAppHost appHost)
@@ -108,7 +119,7 @@ namespace ServiceStack
             }
 
             var pathAction = pathParts[1].ToLowerInvariant();
-#if !NETSTANDARD2_0
+#if !NETCORE
             if (pathAction == "wsdl")
             {
                 if (pathController == "soap11")
@@ -130,7 +141,7 @@ namespace ServiceStack
 
                 case "jsv":
                     return new JsvMetadataHandler();
-#if !NETSTANDARD2_0
+#if !NETCORE
                 case "soap11":
                     return new Soap11MetadataHandler();
 
@@ -185,43 +196,63 @@ namespace ServiceStack
     public class MetadataAppService : Service
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
-        public AppMetadata Any(MetadataApp request)
+        public AppMetadata Any(MetadataApp request) => NativeTypesMetadata.ToAppMetadata(Request);
+    }
+
+    public static class MetadataFeatureExtensions
+    {
+        public static AppMetadata ToAppMetadata(this INativeTypesMetadata nativeTypesMetadata, IRequest req)
         {
             var feature = HostContext.AssertPlugin<MetadataFeature>();
-            var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata());
+            var typesConfig = nativeTypesMetadata.GetConfig(new TypesMetadata());
             feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
-            var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, NativeTypesMetadata, Request);
+            var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, nativeTypesMetadata, req);
             metadataTypes.Config = null;
-            
+            var uiFeature = HostContext.GetPlugin<UiFeature>();
+
             var appHost = HostContext.AssertAppHost();
-            var response = new AppMetadata {
-                App = appHost.Config.AppInfo ?? new AppInfo(),
+            var config = appHost.Config;
+            var response = new AppMetadata
+            {
+                App = config.AppInfo ?? new AppInfo(),
+                Ui = uiFeature?.Info,
+                Config = new ConfigInfo {
+                    DebugMode = config.DebugMode,
+                },
                 ContentTypeFormats = appHost.ContentTypes.ContentTypeFormats,
-                Plugins = new PluginInfo {
+                HttpHandlers = new Dictionary<string, string>(),
+                Plugins = new PluginInfo
+                {
                     Loaded = appHost.GetMetadataPluginIds(),
                 },
-                CustomPlugins = new Dictionary<string, CustomPlugin>(),
+                CustomPlugins = new Dictionary<string, CustomPluginInfo>(),
                 Api = metadataTypes,
             };
-            
+
             if (response.App.BaseUrl == null)
-                response.App.BaseUrl = Request.GetBaseUrl();
+                response.App.BaseUrl = req.GetBaseUrl();
             if (response.App.ServiceName == null)
                 response.App.ServiceName = appHost.ServiceName;
             if (response.App.JsTextCase == null)
-                response.App.JsTextCase = Text.JsConfig.TextCase.ToString();
+                response.App.JsTextCase = $"{Text.JsConfig.TextCase}";
 
             foreach (var fn in feature.AppMetadataFilters)
             {
                 fn(response);
             }
-            
+
+            if (feature.TagFilter != null)
+            {
+                foreach (var op in response.Api.Operations)
+                {
+                    if (op.Tags != null && feature.TagFilter != null)
+                        op.Tags = op.Tags.Map(feature.TagFilter);
+                }
+            }
+
             return response;
         }
-    }
 
-    public static class MetadataFeatureExtensions
-    {
         public static MetadataFeature AddPluginLink(this MetadataFeature metadata, string href, string title)
         {
             if (metadata != null)

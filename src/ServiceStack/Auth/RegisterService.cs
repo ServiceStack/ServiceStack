@@ -147,11 +147,7 @@ namespace ServiceStack.Auth
             var session = await this.GetSessionAsync().ConfigAwait();
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETSTANDARD2_0
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 var existingUser = await authRepo.GetUserAuthAsync(session, null).ConfigAwait();
                 if (existingUser == null)

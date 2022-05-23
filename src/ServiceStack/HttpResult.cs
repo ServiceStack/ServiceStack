@@ -475,7 +475,7 @@ namespace ServiceStack
 
     public static class HttpResultExtensions
     {
-#if !NETSTANDARD2_0
+#if !NETCORE
         public static System.Net.Cookie ToCookie(this HttpCookie httpCookie)
         {
             var to = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path)

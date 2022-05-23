@@ -11,10 +11,13 @@ using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
-using ServiceStack.Extensions;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
+
+#if !NET6_0_OR_GREATER
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack
 {
@@ -237,7 +240,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    appHost.NotifyStartupException(ex);
+                    appHost.NotifyStartupException(ex, nameof(AfterPluginsLoaded), assembly.FullName);
                 }
             }
 
@@ -1440,7 +1443,9 @@ namespace ServiceStack
                     ? match.ImplicitQuery 
                     : implicitQuery.Combine(match.ImplicitQuery);
 
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
+                var quotedColumn = match.FieldDef.CustomSelect != null
+                    ? match.FieldDef.CustomSelect
+                    : q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
                 var value = entry.Value(dto);
                 if (value == null)
@@ -1461,8 +1466,10 @@ namespace ServiceStack
                     continue;
 
                 var implicitQuery = match.ImplicitQuery;
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
-
+                var quotedColumn = match.FieldDef.CustomSelect != null
+                    ? match.FieldDef.CustomSelect
+                    : q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
+                
                 var strValue = !string.IsNullOrEmpty(entry.Value)
                     ? entry.Value
                     : null;

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !NETCORE_SUPPORT
+#if !NETCORE
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Auth;

@@ -9,6 +9,8 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -69,12 +71,12 @@ namespace ServiceStack
         /// <summary>
         /// Invoked before AuthFeature is registered
         /// </summary>
-        public Action<AuthFeature> OnBeforeInit { get; set; }
+        public List<Action<AuthFeature>> OnBeforeInit { get; set; } = new();
 
         /// <summary>
         /// Invoked after AuthFeature is registered
         /// </summary>
-        public Action<AuthFeature> OnAfterInit { get; set; }
+        public List<Action<AuthFeature>> OnAfterInit { get; set; } = new();
         
         /// <summary>
         /// Login path to redirect to
@@ -141,6 +143,34 @@ namespace ServiceStack
 
         public bool IncludeDefaultLogin { get; set; } = true;
 
+        public ImagesHandler ProfileImages { get; set; } = new("/auth-profiles", Svg.GetStaticContent(Svg.Icons.DefaultProfile)); 
+
+        /// <summary>
+        /// UI Layout for Authentication
+        /// </summary>
+        public List<List<InputInfo>> FormLayout { get; set; } = new()
+        {
+            new(){ Input.For<Authenticate>(x => x.provider, x => { x.Type = Input.Types.Select; x.Label = ""; }) },
+            new(){ Input.For<Authenticate>(x => x.UserName, x => x.Label = "Email") },
+            new(){ Input.For<Authenticate>(x => x.Password, x => x.Type = Input.Types.Password) },
+            new(){ Input.For<Authenticate>(x => x.RememberMe) },
+        };
+
+        public MetaAuthProvider AdminAuthSecretInfo { get; set; } = new() {
+            Name = Keywords.AuthSecret,
+            Type = Keywords.AuthSecret,
+            Label = "Auth Secret",
+            FormLayout = new()
+            {
+                new InputInfo(Keywords.AuthSecret, Input.Types.Password)
+                {
+                    Label = "Auth Secret",
+                    Placeholder = "Admin Auth Secret",
+                    Required = true,
+                }
+            }
+        };
+
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
         /// </summary>
@@ -160,6 +190,7 @@ namespace ServiceStack
         }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
+        public Func<RegisterFilterContext, object> RegisterResponseDecorator { get; set; }
 
         public bool IncludeAssignRoleServices
         {
@@ -222,7 +253,7 @@ namespace ServiceStack
 
         public AuthFeature(Action<AuthFeature> configure) : this(() => new AuthUserSession(), TypeConstants<IAuthProvider>.EmptyArray)
         {
-            OnBeforeInit = configure;
+            OnBeforeInit.Add(configure);
         }
         
         public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), new []{ authProvider }) {}
@@ -244,6 +275,11 @@ namespace ServiceStack
 
             this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
+
+            FormLayout[0][0].AllowableValues = new List<string>(
+                authProviders.Where(x => x is not IAuthWithRequest).Select(x => x.Provider)) {
+                    "logout"
+                }.ToArray();
         }
 
         /// <summary>
@@ -275,7 +311,7 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            OnBeforeInit?.Invoke(this);
+            OnBeforeInit.ForEach(x => x(this));
 
             hasRegistered = true;
             AuthenticateService.Init(SessionFactory, AuthProviders);
@@ -294,6 +330,16 @@ namespace ServiceStack
             AuthSecretSession = appHost.Config.AuthSecretSession;
 
             appHost.RegisterServices(ServiceRoutes);
+            appHost.ConfigureOperation<Authenticate>(op => op.FormLayout = FormLayout);
+            appHost.ConfigureOperation<AssignRoles>(op => op.AddRole(RoleNames.Admin));
+            appHost.ConfigureOperation<UnAssignRoles>(op => op.AddRole(RoleNames.Admin));
+
+            if (ProfileImages != null)
+            {
+                appHost.RawHttpHandlers.Add(req => req.PathInfo.Contains(ProfileImages.Path)
+                    ? ProfileImages
+                    : null);
+            }
 
             var sessionFeature = RegisterPlugins.OfType<SessionFeature>().FirstOrDefault();
             if (sessionFeature != null)
@@ -353,16 +399,24 @@ namespace ServiceStack
                         if (register != null)
                             routes[nameof(RegisterService)] = new []{ register.AtRestPath };
                     }),
-                    AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
-                        Type = x.Type,
-                        Name = x.Provider,
-                        NavItem = (x as AuthProvider)?.NavItem,
-                        Meta = x.Meta,
-                    })
+                    AuthProviders = AuthenticateService.GetAuthProviders()
+                        .OrderBy(x => (x as AuthProvider)?.Sort ?? 0)
+                        .Map(x => new MetaAuthProvider {
+                            Type = x.Type,
+                            Name = x.Provider,
+                            Label = (x as AuthProvider)?.Label,
+                            Icon = (x as AuthProvider)?.Icon,
+                            NavItem = (x as AuthProvider)?.NavItem,
+                            FormLayout = (x as AuthProvider)?.FormLayout,
+                            Meta = x.Meta,
+                        }),
+                    RoleLinks = new() {},
                 };
+                if (meta.Plugins.Auth.HasAuthSecret == true && AdminAuthSecretInfo != null)
+                    meta.Plugins.Auth.AuthProviders.Add(AdminAuthSecretInfo);
             });
 
-            OnAfterInit?.Invoke(this);
+            OnAfterInit.ForEach(x => x(this));
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
@@ -525,6 +579,15 @@ namespace ServiceStack
                 var iAuthProvider = feature.AuthProviders.First(); 
                 res.AddHeader(HttpHeaders.WwwAuthenticate, $"{iAuthProvider.Provider} realm=\"{iAuthProvider.AuthRealm}\"");
             }
+            
+            var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(req.GetJsonpCallback());
+            if (doJsonp)
+            {
+                var errorMessage = res.StatusDescription ?? ErrorMessages.NotAuthenticated;
+                return res.WriteErrorToResponse(req, MimeTypes.Json, null, 
+                    errorMessage, HttpError.Unauthorized(errorMessage), res.StatusCode);
+            }
+
             return res.EndHttpHandlerRequestAsync();
         }
 
@@ -546,6 +609,14 @@ namespace ServiceStack
                 return TypeConstants.EmptyTask;
             }
 
+            var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(req.GetJsonpCallback());
+            if (doJsonp)
+            {
+                var errorMessage = res.StatusDescription ?? ErrorMessages.AccessDenied;
+                return res.WriteErrorToResponse(req, MimeTypes.Json, null, 
+                    errorMessage, HttpError.Forbidden(errorMessage), res.StatusCode);
+            }
+
             res.ContentType = "text/plain";
             return res.EndHttpHandlerRequestAsync(skipClose: true, afterHeaders: r => {
                 var sb = CreateForbiddenResponseTextBody(req);
@@ -554,5 +625,4 @@ namespace ServiceStack
             });
         }
     }
-    
 }

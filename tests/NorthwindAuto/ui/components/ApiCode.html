@@ -1,0 +1,435 @@
+<script minify>
+let swiftPkg = `dependencies: [
+    .package(name: "ServiceStack", 
+        url: "https://github.com/ServiceStack/ServiceStack.Swift.git", 
+        Version(5,0,0)..&lt;Version(6,0,0)),
+]`
+;document.body.classList.add('show-lang-help')
+App.component('ApiCode', ({ store, routes }) => {
+    let langSrc = language => $1(`#${language}-help`).innerHTML.trim()
+        .replace('{BASE_URL}',BASE_URL)
+        .replace(/Hello/g,store.opName)
+        .replace(/&gt;/g,'>').replace(/&lt;/g,'<') 
+    
+    let highlight = language => hljs.highlight(langSrc(language), { language }).value
+    
+    return {
+        $template: '#api-code-template',
+        store, routes,
+        langSrc,
+        get csharpSrc() { return highlight('csharp') },
+        get typescriptSrc() { return highlight('typescript') },
+        get dartSrc() { return highlight('dart') },
+        get javaSrc() { return highlight('java') },
+        get kotlinSrc() { return highlight('kotlin') },
+        get pythonSrc() { return highlight('python') },
+        get swiftSrc() { return highlight('swift') },
+        get vbnetSrc() { return highlight('vbnet') },
+        get fsharpSrc() { return highlight('fsharp') },
+        swiftPkg,
+    }
+})
+App.components({ InstallTool: '#install-tool-template' })
+</script>
+<style minify>
+:root {
+    --lang-help-width: calc(var(--body-width) / 2);
+}
+.body-lang .copy-icon .icon {
+    margin-top: 2.5rem    
+}
+.show-lang-help .body-lang .copy-icon .icon {
+    margin-top: 0
+}
+.lang-help {
+    width: var(--lang-help-width);
+    display: none;
+}
+.show-lang-help #api-code .body-lang .icon-right .icon {
+    right: calc(.5em + var(--lang-help-width));
+}
+.show-lang-help .lang-help {
+    display: block;
+}
+.show-lang-help .icon-lang-help {
+    display: none;
+} 
+
+@media screen and (max-width:1024px) {
+    .show-lang-help .body-lang {
+        display: none;
+    }
+}
+</style>
+<!--minify-->
+<template id="api-code-template">
+<nav class="w-body md:w-body fixed flex space-x-4 pl-2 py-2 border-b bg-white overflow-x-auto" aria-label="Tabs">
+    <a v-for="(name,lang) in langs" v-href="{lang}"
+       :class="[lang == store.useLang ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
+        {{name}}
+    </a>
+</nav>
+<div id="api-code">
+    <div class="w-body md:w-body fixed top-sub-nav h-top-nav flex">
+        <div class="flex-1 body-lang icon-outer p-2 overflow-x-auto">
+            <div v-if="store.activeLangSrc" class="copy-icon icon-right" v-scope="CopyIcon({ text:() => store.activeLangSrc })" title="Copy code"></div>
+            <div class="icon-right icon-lang-help" @click="document.body.classList.add('show-lang-help')" title="How to call this API">
+                <div class="icon fixed cursor-pointer p-1 rounded-md border block border-gray-200 bg-white text-gray-500 hover:bg-gray-50">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M11 18h2v-2h-2v2m1-16A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8m0-14a4 4 0 0 0-4 4h2a2 2 0 0 1 2-2a2 2 0 0 1 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z" fill="currentColor"/>
+                    </svg>
+                </div>
+            </div>
+            <pre v-if="store.activeLangSrc" class=""><code :lang="routes.lang" v-highlightjs="store.activeLangSrc"></code></pre>
+            <div v-else v-scope="Loading()"></div>
+        </div>
+        <div class="flex-1 lang-help w-full lg:w-1/2 overflow-auto shadow-lg md:pb-scroll">
+            <div class="">
+                <div v-scope="CloseButton({ onclick:() => document.body.classList.remove('show-lang-help') })" title="Hide"></div>
+                <div v-if="store.useLang=='csharp'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from C#</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>ServiceStack.Client</b> package in your projects<em>.csproj</em>
+                    </p>
+
+                    <div v-scope='CopyLine({ text: () => `<PackageReference Include="ServiceStack.Client" Version="5.*" />` })'></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the <em>JsonServiceClient</em> or <em>JsonApiClient</em><span class="text-gray-400">(net6+)</span>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-csharp" v-html="csharpSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='typescript'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from TypeScript</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>@servicestack/client</b> package in your projects<em>package.json</em>
+                    </p>
+
+                    <div v-scope='CopyLine({ text: () => `"@servicestack/client": "^1.1.17"` })'></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-typescript" v-html="typescriptSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='dart'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Dart</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
+                    </p>
+
+                    <div v-scope='CopyLine({ text: () => `servicestack: ^2.0.0` })'></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-dart" v-html="dartSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='java'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Java</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
+                    </p>
+
+                    <div v-scope="CopyLine({ text: () => `implementation 'net.servicestack:client:1.0.49'` })"></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-java" v-html="javaSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='kotlin'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Kotlin</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
+                    </p>
+
+                    <div v-scope="CopyLine({ text: () => `implementation 'net.servicestack:client:1.0.49'` })"></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-kotlin" v-html="kotlinSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='python'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Python</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>requirements.txt</em>
+                    </p>
+
+                    <div v-scope='CopyLine({ text: () => `servicestack>=0.1.1` })'></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-python" v-html="pythonSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='swift'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Swift</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>ServiceStack</b> package in your projects <em>Package.swift</em>
+                    </p>
+
+                    <div class="p-4 bg-gray-50 border-y overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => swiftPkg, cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre v-html="swiftPkg"></pre>
+                    </div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-python" v-html="swiftSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='vbnet'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from VB.NET</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>ServiceStack.Client</b> package in your projects<em>.csproj</em>
+                    </p>
+
+                    <div v-scope='CopyLine({ text: () => `<PackageReference Include="ServiceStack.Client" Version="5.*" />` })'></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the <em>JsonServiceClient</em> or <em>JsonApiClient</em><span class="text-gray-400">(net6+)</span>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-vbnet" v-html="vbnetSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div v-else-if="store.useLang=='fsharp'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from F#</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Include <b>ServiceStack.Client</b> package in your projects<em>.csproj</em>
+                    </p>
+
+                    <div v-scope='CopyLine({ text: () => `<PackageReference Include="ServiceStack.Client" Version="5.*" />` })'></div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">3.</b> Use the API DTOs with the <em>JsonServiceClient</em> or <em>JsonApiClient</em><span class="text-gray-400">(net6+)</span>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-fsharp" v-html="fsharpSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
+                <div class="md:py-8"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+<template id="install-tool-template">
+    <h2 class="text-lg p-4">
+        To easily update DTOs for all APIs install the 
+        <em>x</em> <a class="text-blue-600 underline" href="https://docs.servicestack.net/dotnet-tool">dotnet tool</a>
+    </h2>
+    
+    <div v-scope='CopyLine({ text: () => `$ dotnet tool install --global x` })'></div>
+    
+    <h2 class="text-lg p-4">To generate all DTOs for <b>{{store.baseUrl}}</b> run:</h2>
+
+    <div v-scope='CopyLine({ text: () => `$ x ${store.useLang} ${store.baseUrl}` })'></div>
+
+    <h2 class="text-lg p-4">Once generated, the DTOs can be updated with:</h2>
+
+    <div v-scope='CopyLine({ text: () => `$ x ${store.useLang}` })'></div>
+</template>
+<!--/minify-->
+<!--raw-->
+<template id="csharp-help">
+using ServiceStack;
+
+var client = new JsonServiceClient("{BASE_URL}");
+
+var response = await client.SendAsync(new Hello {
+    //...
+});
+
+// Quickly inpsect response
+Inspect.printDump(response);
+</template>
+<template id="typescript-help">
+import { JsonServiceClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos'
+
+let client = new JsonServiceClient('{BASE_URL}')
+
+let response = await client.send(new Hello({
+    //...
+}))
+
+Inspect.printDump(response)
+</template>
+<template id="dart-help">
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:servicestack/web_client.dart'
+  if (dart.library.io) 'package:servicestack/client.dart';
+import 'package:servicestack/inspect.dart';
+
+var client = ClientFactory.create('{BASE_URL}');
+
+var response = await client.send(Hello()
+    //...
+);
+
+Inspect.printDump(response);
+</template>
+<template id="java-help">
+import net.servicestack.client.*;
+import java.util.Collections;
+
+JsonServiceClient client = new JsonServiceClient(
+    "{BASE_URL}");
+
+HelloResponse response = client.send(new Hello()
+    //...
+);
+
+Inspect.printDump(response);
+</template>
+<template id="kotlin-help">
+package myapp
+import net.servicestack.client.*
+
+val client = JsonServiceClient("{BASE_URL}")
+
+val response = client.send(Hello().apply {
+    //...
+});
+
+Inspect.printDump(response)
+</template>
+<template id="python-help">
+from servicestack import JsonServiceClient
+from my_app.dtos import *
+
+client = JsonServiceClient('{BASE_URL}')
+
+response = client.send(Hello(
+    #...
+))
+
+printdump(response)    
+</template>
+<template id="swift-help">
+import Foundation
+import ServiceStack
+
+let client = JsonServiceClient(baseUrl: 
+    "{BASE_URL}")
+
+let request = Hello()
+//...
+let response = try client.send(request)
+
+Inspect.printDump(response)    
+</template>
+<template id="vbnet-help">
+Imports ServiceStack
+
+Dim client = New JsonServiceClient("{BASE_URL}")
+
+Dim response = Await client.SendAsync(New Hello() With {
+    '...
+})
+
+' Quickly inpsect response
+Inspect.printDump(response)
+</template>
+<template id="fsharp-help">
+open ServiceStack
+
+let client = new JsonServiceClient("{BASE_URL}")
+
+let response = client.Send(new Hello(
+    //...
+))
+
+// Quickly inpsect response
+Inspect.printDump(response)
+</template>
+<!--/raw-->

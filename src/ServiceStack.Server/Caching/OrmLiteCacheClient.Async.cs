@@ -125,13 +125,12 @@ namespace ServiceStack.Caching
 
         private static async Task<bool> UpdateIfExistsAsync<T>(IDbConnection db, string key, T value, CancellationToken token=default)
         {
-            var exists = await db.UpdateOnlyAsync(new TCacheEntry
+            var exists = await db.UpdateOnlyAsync(() => new TCacheEntry
                 {
                     Id = key,
                     Data = db.Serialize(value),
                     ModifiedDate = DateTime.UtcNow,
                 },
-                onlyFields: q => new { q.Data, q.ModifiedDate },
                 @where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
             return exists;
@@ -139,14 +138,13 @@ namespace ServiceStack.Caching
 
         private static async Task<bool> UpdateIfExistsAsync<T>(IDbConnection db, string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
-            var exists = await db.UpdateOnlyAsync(new TCacheEntry
+            var exists = await db.UpdateOnlyAsync(() => new TCacheEntry
                 {
                     Id = key,
                     Data = db.Serialize(value),
                     ExpiryDate = expiresAt,
                     ModifiedDate = DateTime.UtcNow,
                 },
-                onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
                 @where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
             return exists;
@@ -179,13 +177,12 @@ namespace ServiceStack.Caching
         {
             return await ExecAsync(async db =>
             {
-                var exists = await db.UpdateOnlyAsync(new TCacheEntry
+                var exists = await db.UpdateOnlyAsync(() => new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    onlyFields: q => new { q.Data, q.ModifiedDate },
                     where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
                 if (!exists)
@@ -239,14 +236,13 @@ namespace ServiceStack.Caching
         {
             return await ExecAsync(async db =>
             {
-                var exists = await db.UpdateOnlyAsync(new TCacheEntry
+                var exists = await db.UpdateOnlyAsync(() => new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
                         ExpiryDate = expiresAt,
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
                     where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
                 if (!exists)
@@ -301,14 +297,13 @@ namespace ServiceStack.Caching
         {
             return await ExecAsync(async db =>
             {
-                var exists = await db.UpdateOnlyAsync(new TCacheEntry
+                var exists = await db.UpdateOnlyAsync(() => new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
                         ExpiryDate = DateTime.UtcNow.Add(expiresIn),
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
                     where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
                 if (!exists)
@@ -385,7 +380,6 @@ namespace ServiceStack.Caching
             }, token).ConfigAwait();
         }
 
-#if NET472 || NETSTANDARD2_0
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
         {
             var results = await ExecAsync(async db =>
@@ -410,7 +404,6 @@ namespace ServiceStack.Caching
         }
 
         public ValueTask DisposeAsync() => default;
-#endif
 
         public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {

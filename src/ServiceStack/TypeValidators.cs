@@ -29,7 +29,7 @@ namespace ServiceStack
     public class IsAuthenticatedValidator : TypeValidator, IAuthTypeValidator
     {
         public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
-        public static IsAuthenticatedValidator Instance { get; } = new IsAuthenticatedValidator();
+        public static IsAuthenticatedValidator Instance { get; } = new();
         public string Provider { get; }
 
         public IsAuthenticatedValidator()

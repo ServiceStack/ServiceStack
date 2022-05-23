@@ -1,4 +1,4 @@
-#if !NETSTANDARD2_0
+#if !NETCORE
 using System.Configuration;
 #endif
 
@@ -377,7 +377,7 @@ namespace ServiceStack.Auth
                     if (alreadyAuthenticated)
                         return this.Redirect(referrerUrl.SetParam("s", "0"));
 
-                    if (!(response is IHttpResult) && !string.IsNullOrEmpty(referrerUrl))
+                    if (response is not IHttpResult && !string.IsNullOrEmpty(referrerUrl))
                     {
                         return new HttpResult(response) {
                             Location = referrerUrl
@@ -417,7 +417,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Public API entry point to authenticate via code
         /// </summary>
-        /// <param name="request"></param>
         /// <returns>null; if already authenticated otherwise a populated instance of AuthResponse</returns>
         public async Task<AuthenticateResponse> AuthenticateAsync(Authenticate request, CancellationToken token=default)
         {

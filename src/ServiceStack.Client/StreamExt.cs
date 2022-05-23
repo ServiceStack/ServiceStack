@@ -1,12 +1,10 @@
+#nullable enable
 // Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.IO;
 using System.Text;
-using ServiceStack.Caching;
-using ServiceStack.Text;
-using System.Security.Cryptography;
 
 namespace ServiceStack
 {
@@ -18,45 +16,17 @@ namespace ServiceStack
         /// <param name="text">The text.</param>
         /// <param name="compressionType">Type of the compression.</param>
         /// <returns></returns>
-        public static byte[] Compress(this string text, string compressionType)
-        {
-            if (compressionType == CompressionTypes.Deflate)
-                return Deflate(text);
+        public static byte[] Compress(this string text, string compressionType, Encoding? encoding=null) =>
+            StreamCompressors.GetRequired(compressionType).Compress(text, encoding);
 
-            if (compressionType == CompressionTypes.GZip)
-                return GZip(text);
-
-            throw new NotSupportedException(compressionType);
-        }
-
-        public static Stream CompressStream(this Stream stream, string compressionType)
-        {
-            if (compressionType == CompressionTypes.Deflate)
-                return DeflateProvider.DeflateStream(stream);
-
-            if (compressionType == CompressionTypes.GZip)
-                return GZipProvider.GZipStream(stream);
-
-            throw new NotSupportedException(compressionType);
-        }
+        public static Stream CompressStream(this Stream stream, string compressionType) =>
+            StreamCompressors.GetRequired(compressionType).Compress(stream);
 
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>
-        public static byte[] CompressBytes(this byte[] bytes, string compressionType)
-        {
-            if (compressionType == CompressionTypes.Deflate)
-                return DeflateProvider.Deflate(bytes);
-
-            if (compressionType == CompressionTypes.GZip)
-                return GZipProvider.GZip(bytes);
-
-            throw new NotSupportedException(compressionType);
-        }
-
-        public static IDeflateProvider DeflateProvider = new Support.NetDeflateProvider();
-
-        public static IGZipProvider GZipProvider = new Support.NetGZipProvider();
+        public static byte[] CompressBytes(this byte[] bytes, string compressionType) =>
+            StreamCompressors.GetRequired(compressionType).Compress(bytes);
 
         /// <summary>
         /// Decompresses the specified gz buffer using the default compression method: Inflate
@@ -64,16 +34,8 @@ namespace ServiceStack
         /// <param name="gzBuffer">The gz buffer.</param>
         /// <param name="compressionType">Type of the compression.</param>
         /// <returns></returns>
-        public static string Decompress(this byte[] gzBuffer, string compressionType)
-        {
-            if (compressionType == CompressionTypes.Deflate)
-                return Inflate(gzBuffer);
-
-            if (compressionType == CompressionTypes.GZip)
-                return GUnzip(gzBuffer);
-
-            throw new NotSupportedException(compressionType);
-        }
+        public static string Decompress(this byte[] gzBuffer, string compressionType) =>
+            StreamCompressors.GetRequired(compressionType).Decompress(gzBuffer);
 
         /// <summary>
         /// Decompresses the specified gz buffer using inflate or gzip method
@@ -81,53 +43,24 @@ namespace ServiceStack
         /// <param name="gzStream">Compressed stream</param>
         /// <param name="compressionType">Type of the compression. Can be "gzip" or "deflate"</param>
         /// <returns>Decompressed stream</returns>
-        public static Stream Decompress(this Stream gzStream, string compressionType)
-        {
-            if (String.IsNullOrEmpty(compressionType))
-                return gzStream;
-
-            if (compressionType == CompressionTypes.Deflate)
-                return DeflateProvider.InflateStream(gzStream);
-
-            if (compressionType == CompressionTypes.GZip)
-                return GZipProvider.GUnzipStream(gzStream);
-
-            throw new NotSupportedException(compressionType);
-        }
+        public static Stream Decompress(this Stream gzStream, string compressionType) =>
+            !string.IsNullOrEmpty(compressionType) 
+                ? StreamCompressors.GetRequired(compressionType).Decompress(gzStream) 
+                : gzStream;
 
         /// <summary>
         /// Decompresses the specified gz buffer using the default compression method: Inflate
         /// </summary>
-        public static byte[] DecompressBytes(this byte[] gzBuffer, string compressionType)
-        {
-            if (compressionType == CompressionTypes.Deflate)
-                return DeflateProvider.InflateBytes(gzBuffer);
+        public static byte[] DecompressBytes(this byte[] gzBuffer, string compressionType) =>
+            StreamCompressors.GetRequired(compressionType).DecompressBytes(gzBuffer);
 
-            if (compressionType == CompressionTypes.GZip)
-                return GZipProvider.GUnzipBytes(gzBuffer);
+        public static byte[] Deflate(this string text) => DeflateCompressor.Instance.Compress(text);
 
-            throw new NotSupportedException(compressionType);
-        }
+        public static string Inflate(this byte[] gzBuffer) => DeflateCompressor.Instance.Decompress(gzBuffer);
 
-        public static byte[] Deflate(this string text)
-        {
-            return DeflateProvider.Deflate(text);
-        }
+        public static byte[] GZip(this string text) => GZipCompressor.Instance.Compress(text);
 
-        public static string Inflate(this byte[] gzBuffer)
-        {
-            return DeflateProvider.Inflate(gzBuffer);
-        }
-
-        public static byte[] GZip(this string text)
-        {
-            return GZipProvider.GZip(text);
-        }
-
-        public static string GUnzip(this byte[] gzBuffer)
-        {
-            return GZipProvider.GUnzip(gzBuffer);
-        }
+        public static string GUnzip(this byte[] gzBuffer) => GZipCompressor.Instance.Decompress(gzBuffer);
 
         public static string ToUtf8String(this Stream stream)
         {

@@ -1,28 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
 <!-- TODO GET AutoQuery CRUD to work after existing tests have been resolved -->
         <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>
     </PropertyGroup>
 
 
     <ItemGroup>
-        <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
-        <PackageReference Include="NUnit" Version="3.12.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.38.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.39.1" />
-        <PackageReference Include="Grpc.Core" Version="2.39.1" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.40.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.41.1" />
+        <PackageReference Include="Grpc.Core" Version="2.41.1" />
         <PackageReference Include="Google.Protobuf" Version="3.12.2" />
+        <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
         
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />

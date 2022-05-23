@@ -154,7 +154,6 @@ namespace ServiceStack.Host
                     await taskResponse.ConfigAwait();
                     response = taskResponse.GetResult();
                 }
-#if NET472 || NETSTANDARD2_0
                 else if (response is ValueTask<object> valueTaskResponse)
                 {
                     response = await valueTaskResponse;
@@ -164,14 +163,13 @@ namespace ServiceStack.Host
                     await valueTaskVoid;
                     response = null;
                 }
-#endif
                 
                 LogRequest(req, requestDto, response);
 
                 if (response is IHttpError error)
                 {
                     var ex = (Exception) error;
-                    var result = await HandleExceptionAsync(req, requestDto, ex, instance).ConfigAwait();
+                    var result = await ManagedHandleExceptionAsync(req, requestDto, ex, instance).ConfigAwait();
 
                     if (result == null)
                         throw ex;
@@ -203,7 +201,7 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 //Sync Exception Handling
-                var result = await HandleExceptionAsync(req, requestDto, ex, instance).ConfigAwait();
+                var result = await ManagedHandleExceptionAsync(req, requestDto, ex, instance).ConfigAwait();
 
                 if (result == null)
                     throw;
@@ -243,12 +241,29 @@ namespace ServiceStack.Host
         public virtual Task<object> HandleExceptionAsync(IRequest req, TRequest requestDto, Exception ex) => 
             TypeConstants.EmptyTask;
 
+        protected async Task<object> ManagedHandleExceptionAsync(IRequest req, TRequest requestDto, Exception ex, object service)
+        {
+            try
+            {
+                return await HandleExceptionAsync(req, requestDto, ex, service).ConfigAwait();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Invalid State: ServiceRunner HandleExceptionAsync() should handle the Exception and return an Error Response, not throw Exceptions", e);
+                var errorResponse = (service is IServiceErrorFilter filter ? await filter.OnExceptionAsync(requestDto, ex).ConfigAwait() : null)
+                                    ?? await HostContext.RaiseServiceException(req, requestDto, ex).ConfigAwait()
+                                    ?? DtoUtils.CreateErrorResponse(requestDto, ex);
+                AfterEachRequest(req, requestDto, errorResponse ?? ex, service);
+                return errorResponse;
+            }
+        }
+
         public virtual async Task<object> HandleExceptionAsync(IRequest req, TRequest requestDto, Exception ex, object service)
         {
             var errorResponse = (service is IServiceErrorFilter filter ? await filter.OnExceptionAsync(requestDto, ex).ConfigAwait() : null)
-                ?? await HandleExceptionAsync(req, requestDto, ex).ConfigAwait()
-                ?? await HostContext.RaiseServiceException(req, requestDto, ex).ConfigAwait()
-                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
+                                ?? await HandleExceptionAsync(req, requestDto, ex).ConfigAwait()
+                                ?? await HostContext.RaiseServiceException(req, requestDto, ex).ConfigAwait()
+                                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
             AfterEachRequest(req, requestDto, errorResponse ?? ex, service);
             

@@ -9,7 +9,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
-#if NETCORE_SUPPORT
+#if NETCORE
     using Microsoft.Extensions.Configuration;
 
     public class NetCoreAppSettingsMemoryCollectionTest : AppSettingsTest

@@ -1,0 +1,35 @@
+﻿@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@if (!string.IsNullOrEmpty(prerenderedHtml))
+{
+    @((MarkupString)prerenderedHtml)
+}
+else
+{
+    <div class=@CssUtils.ClassNames("spinner-border float-start mt-2 me-2", @class) role="status">
+        <span class="sr-only"></span>
+    </div>
+    <h1 style="font-size:36px">@Message</h1>
+}
+
+@code {
+    [Parameter]
+    public string Message { get; set; } = "Loading...";
+
+    [Parameter]
+    public string @class { get; set; } = "";
+
+    public string prerenderedHtml { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var html = await JsRuntime.InvokeAsync<string>("prerenderedPage") ?? "";
+        var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
+        var prerenderedContentIsForPath = html.IndexOf($"data-prerender=\"{currentPath}\"") >= 0;
+        if (prerenderedContentIsForPath)
+        {
+            prerenderedHtml = html;
+        }
+    }
+}

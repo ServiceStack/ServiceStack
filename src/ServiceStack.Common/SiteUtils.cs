@@ -119,48 +119,5 @@ namespace ServiceStack
             }
             return string.Empty;
         }
-
-        public static async Task<AppMetadata> GetAppMetadataAsync(this string baseUrl)
-        {
-            string appResponseJson = null;
-            try
-            {
-                appResponseJson = await baseUrl.CombineWith("/metadata/app.json")
-                    .GetJsonFromUrlAsync();
-            
-                if (!appResponseJson.Trim().StartsWith("{"))
-                    throw new Exception("Not a remote ServiceStack Instance");
-            }
-            catch (Exception appEx)
-            {
-                string ssMetadata;
-                try
-                {
-                    ssMetadata = await baseUrl.CombineWith("/metadata")
-                        .GetStringFromUrlAsync(requestFilter:req => req.UserAgent = "ServiceStack");
-                }
-                catch (Exception ssEx)
-                {
-                    throw new Exception("Not a remote ServiceStack Instance", ssEx);
-                }
-
-                if (ssMetadata.IndexOf("https://servicestack.net", StringComparison.Ordinal) == -1)
-                    throw new Exception("Not a remote ServiceStack Instance");
-
-                throw new Exception("ServiceStack Instance v5.10 or higher required", appEx);
-            }
-
-            AppMetadata appMetadata;
-            try
-            {
-                appMetadata = appResponseJson.FromJson<AppMetadata>();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Could not read AppMetadata, try upgrading this App or remote ServiceStack Instance", e);
-            }
-
-            return appMetadata;
-        }
     }
 }

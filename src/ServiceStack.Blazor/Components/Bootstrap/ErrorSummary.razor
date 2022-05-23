@@ -1,0 +1,9 @@
+﻿@inherits ErrorSummaryBase
+
+@if (UseStatus.ShowSummary(UseExcept))
+{
+    <div class=@ClassNames("mt-2 mb-3 alert alert-danger", CssClass()) role="alert">
+        <span class="oi oi-warning me-2"></span>
+        @UseStatus.SummaryMessage(UseExcept)
+    </div>
+}

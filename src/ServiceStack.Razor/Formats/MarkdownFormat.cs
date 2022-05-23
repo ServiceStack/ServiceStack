@@ -36,22 +36,18 @@ namespace ServiceStack.Formats
         public static string[] PageExts = new[] { MarkdownExt, TemplateExt };
 
         private static MarkdownFormat instance;
-        public static MarkdownFormat Instance => instance ?? (instance = new MarkdownFormat());
+        public static MarkdownFormat Instance => instance ??= new MarkdownFormat();
 
         // ~/View - Dynamic Pages
-        public Dictionary<string, MarkdownPage> ViewPages = new Dictionary<string, MarkdownPage>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, MarkdownPage> ViewPages = new(StringComparer.CurrentCultureIgnoreCase);
 
         // ~/View/Shared - Dynamic Shared Pages
-        public Dictionary<string, MarkdownPage> ViewSharedPages = new Dictionary<string, MarkdownPage>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, MarkdownPage> ViewSharedPages = new(StringComparer.CurrentCultureIgnoreCase);
 
         //Content Pages outside of ~/View
-        public Dictionary<string, MarkdownPage> ContentPages = new Dictionary<string, MarkdownPage>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, MarkdownPage> ContentPages = new(StringComparer.CurrentCultureIgnoreCase);
 
-        public Dictionary<string, MarkdownTemplate> MasterPageTemplates = new Dictionary<string, MarkdownTemplate>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, MarkdownTemplate> MasterPageTemplates = new(StringComparer.CurrentCultureIgnoreCase);
 
         public Type MarkdownBaseType { get; set; }
         public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
@@ -68,7 +64,7 @@ namespace ServiceStack.Formats
 
         public bool CheckLastModifiedForChanges { get; set; }
 
-        readonly TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
+        readonly TemplateProvider templateProvider = new(DefaultTemplateName);
 
         public MarkdownFormat()
         {
@@ -80,8 +76,8 @@ namespace ServiceStack.Formats
             this.ReplaceTokens = new Dictionary<string, string>();
         }
 
-        internal static readonly char[] DirSeps = new[] { '\\', '/' };
-        static HashSet<string> catchAllPathsNotFound = new HashSet<string>();
+        internal static readonly char[] DirSeps = { '\\', '/' };
+        static HashSet<string> catchAllPathsNotFound = new();
 
         public void Register(IAppHost appHost)
         {

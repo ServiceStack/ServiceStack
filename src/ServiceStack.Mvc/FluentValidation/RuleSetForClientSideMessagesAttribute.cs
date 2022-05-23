@@ -1,4 +1,4 @@
-#if !NETSTANDARD
+#if !NETCORE
 namespace ServiceStack.FluentValidation.Mvc {
 	using System.Web;
 	using System.Web.Mvc;

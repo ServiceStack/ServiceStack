@@ -57,6 +57,7 @@ namespace ServiceStack
             Patch  => HttpMethods.Patch,
             Delete => HttpMethods.Delete,
             Save   => HttpMethods.Post,
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
         };
 
         public static string ToHttpMethod(Type requestType)

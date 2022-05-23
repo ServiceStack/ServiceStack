@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
         <Title>ServiceStack.Desktop</Title>
         <PackageDescription>
             Desktop Assets, Vue and React Framework libraries, Bootstrap, Material Design SVGs, Font Awesome and Win32 APIs for ServiceStack CEF .NET Core Desktop Apps
@@ -20,7 +20,7 @@
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
 
-        <PackageReference Include="System.Drawing.Common" Version="4.7.2" />
+        <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
         <PackageReference Include="PInvoke.User32" Version="0.7.104" />
         <PackageReference Include="PInvoke.Kernel32" Version="0.7.104" />
         <PackageReference Include="PInvoke.Gdi32" Version="0.7.104" />

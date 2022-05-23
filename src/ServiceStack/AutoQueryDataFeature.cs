@@ -10,11 +10,14 @@ using System.Runtime.Serialization;
 using System.Threading;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Extensions;
 using ServiceStack.Host;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Text;
+
+#if !NET6_0_OR_GREATER
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack
 {
@@ -108,10 +111,9 @@ namespace ServiceStack
             new CaseInsensitiveEqualCondition(),
         };
 
-        public Dictionary<string, QueryCondition> ConditionsAliases =
-            new Dictionary<string, QueryCondition>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, QueryCondition> ConditionsAliases = new(StringComparer.OrdinalIgnoreCase);
 
-        public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string>
+        public Dictionary<string, string> ImplicitConventions = new()
         {
             {"%Above%",         ConditionAlias.Greater},
             {"Begin%",          ConditionAlias.Greater},
@@ -159,8 +161,8 @@ namespace ServiceStack
             {"%EndsWith",       ConditionAlias.EndsWith },
         };
 
-        public Dictionary<string, QueryDataField> StartsWithConventions = new Dictionary<string, QueryDataField>();
-        public Dictionary<string, QueryDataField> EndsWithConventions = new Dictionary<string, QueryDataField>();
+        public Dictionary<string, QueryDataField> StartsWithConventions = new();
+        public Dictionary<string, QueryDataField> EndsWithConventions = new();
 
         public AutoQueryDataFeature()
         {
@@ -974,6 +976,12 @@ namespace ServiceStack
         }
     }
 
+    public static class MemoryDataSource
+    {
+        public static MemoryDataSource<T> Create<T>(ICollection<T> data, IQueryData dto, IRequest req = null) =>
+            new(data, dto, req);
+    }
+
     public class MemoryDataSource<T> : QueryDataSource<T>
     {
         public IEnumerable<T> Data { get; }
@@ -996,6 +1004,9 @@ namespace ServiceStack
         {
             return Data;
         }
+
+        public static MemoryDataSource<TItem> Create<TItem>(IEnumerable<TItem> data, IQueryData dto, IRequest req = null) =>
+            new(data, dto, req);
     }
 
     public abstract class QueryDataSource<T> : IQueryDataSource<T>

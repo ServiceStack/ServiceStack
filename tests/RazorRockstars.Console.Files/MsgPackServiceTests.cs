@@ -10,8 +10,6 @@ using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files
 {
-    using ServiceStack.Wire;
-
     public class MsgPackEmail
     {
         public string ToAddress { get; set; }
@@ -151,77 +149,6 @@ namespace RazorRockstars.Console.Files
                 ms.Position = 0;
 
                 var response = serializer.Unpack(ms);
-
-                Assert.That(response.Equals(request));
-            }
-        }
-    }
-
-    [TestFixture]
-    public class WireServiceTests
-    {
-        protected const string ListeningOn = "http://localhost:3337/";
-
-        AppHost appHost;
-
-        [OneTimeSetUp]
-        public void OnTestFixtureSetUp()
-        {
-            LogManager.LogFactory = new ConsoleLogFactory();
-
-            appHost = new AppHost { EnableRazor = false };
-            appHost.Plugins.Add(new WireFormat());
-            appHost.Init();
-            appHost.Start(ListeningOn);
-        }
-
-        [OneTimeTearDown]
-        public void OnTestFixtureTearDown()
-        {
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            appHost?.Dispose();
-        }
-
-        MsgPackEmail request = new MsgPackEmail
-        {
-            ToAddress = "to@email.com",
-            FromAddress = "from@email.com",
-            Subject = "Subject",
-            Body = "Body",
-            AttachmentData = Encoding.UTF8.GetBytes("AttachmentData"),
-        };
-
-        [Test]
-        public void Can_Send_Wire_request()
-        {
-            var client = new WireServiceClient(ListeningOn);
-
-            try
-            {
-                var response = client.Send<MsgPackEmail>(request);
-
-                Assert.That(response.Equals(request));
-            }
-            catch (WebServiceException webEx)
-            {
-                Assert.Fail(webEx.Message);
-            }
-        }
-
-        [Test]
-        public void Can_serialize_email_dto()
-        {
-            using (var ms = new MemoryStream())
-            {
-                WireFormat.Serialize(request, ms);
-
-                ms.Position = 0;
-
-                var response = WireFormat.Deserialize(request.GetType(), ms);
 
                 Assert.That(response.Equals(request));
             }

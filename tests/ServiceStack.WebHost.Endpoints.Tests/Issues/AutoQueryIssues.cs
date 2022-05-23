@@ -4,6 +4,7 @@ using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Issues
@@ -56,10 +57,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(typeof(ClientMemoryLeak).Name, typeof(AutoQueryJoinReferenceId).Assembly) {}
+                : base(nameof(ClientMemoryLeak), typeof(AutoQueryJoinReferenceId).Assembly) {}
 
             public override void Configure(Container container)
             {
+                ScriptContext.ScriptMethods.AddRange(new ScriptMethods[] {
+                    new DbScriptsAsync(),
+                    new MyValidators(), 
+                });
+
                 SetConfig(new HostConfig{ UseCamelCase = true});
                 var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
                 //var dbFactory = new OrmLiteConnectionFactory(Tests.Config.SqlServerConnString, SqlServerDialect.Provider);

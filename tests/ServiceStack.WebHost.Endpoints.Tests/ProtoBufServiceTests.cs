@@ -171,13 +171,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .PostBytesToUrl(accept: "{0}, */*".Fmt(MimeTypes.ProtoBuf),
                     contentType: MimeTypes.ProtoBuf,
                     requestBody: CreateProtoBufEmail().ToProtoBuf(),
-                    responseFilter: res => Assert.That(res.ContentType, Is.EqualTo(MimeTypes.ProtoBuf)));
+                    responseFilter: res => Assert.That(res.MatchesContentType(MimeTypes.ProtoBuf)));
 
             Assert.That(bytes.Length, Is.GreaterThan(0));
 
             bytes = ListeningOn.CombineWith("protobufemail")
                 .GetBytesFromUrl(accept: "{0}, */*".Fmt(MimeTypes.ProtoBuf),
-                    responseFilter: res => Assert.That(res.ContentType, Is.EqualTo(MimeTypes.ProtoBuf)));
+                    responseFilter: res => Assert.That(res.MatchesContentType(MimeTypes.ProtoBuf)));
         }
     }
 }

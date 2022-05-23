@@ -34,7 +34,7 @@ namespace ServiceStack
         private long cachesRemoved;
         public long CachesRemoved => cachesRemoved;
 
-        private ConcurrentDictionary<string, HttpCacheEntry> cache = new ConcurrentDictionary<string, HttpCacheEntry>();
+        private ConcurrentDictionary<string, HttpCacheEntry> cache = new();
 
         private readonly Action<HttpWebRequest> existingRequestFilter;
         private readonly ResultsFilterDelegate existingResultsFilter;

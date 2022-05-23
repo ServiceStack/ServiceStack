@@ -9,7 +9,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.CSharp
 {
-    public class CSharpGenerator
+    public class CSharpGenerator : ILangGenerator
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
@@ -77,7 +77,17 @@ namespace ServiceStack.NativeTypes.CSharp
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
-        public string GetCode(MetadataTypes metadata, IRequest request)
+        /// <summary>
+        /// Include Additional QueryString Params in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
+        /// <summary>
+        /// Emit code without Header Options
+        /// </summary>
+        public bool WithoutOptions { get; set; }
+
+        public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
@@ -104,36 +114,40 @@ namespace ServiceStack.NativeTypes.CSharp
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
-            sb.AppendLine("/* Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T"," ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
-                
-            sb.AppendLine();
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace)); // ExcludeNamespace=true excludes namespace
-            sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
-            sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
-            sb.AppendLine("{0}MakeInternal: {1}".Fmt(defaultValue("MakeInternal"), Config.MakeInternal));
-            sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
-            sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
-            sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
-            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
-
-            sb.AppendLine("*/");
-            sb.AppendLine();
+            var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+            if (includeOptions)
+            {
+                sb.AppendLine("/* Options:");
+                sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T"," ")));
+                sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
+                sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
+                sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+                if (Config.UsePath != null)
+                    sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+                    
+                sb.AppendLine();
+                sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace)); // ExcludeNamespace=true excludes namespace
+                sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
+                sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
+                sb.AppendLine("{0}MakeInternal: {1}".Fmt(defaultValue("MakeInternal"), Config.MakeInternal));
+                sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
+                sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
+                sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+                sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
+                sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+                sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
+                sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+                sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+                sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+                sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
+                sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
+                AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+                sb.AppendLine("*/");
+                sb.AppendLine();
+            }
 
             namespaces.Where(x => !string.IsNullOrEmpty(x))
                 .Each(x => sb.AppendLine($"using {x};"));
@@ -260,11 +274,13 @@ namespace ServiceStack.NativeTypes.CSharp
                 if (ns != lastNS)
                 {
                     if (lastNS != null)
+                    {
                         sb.AppendLine("}");
+                        sb.AppendLine();
+                    }
 
                     lastNS = ns;
 
-                    sb.AppendLine();
                     sb.AppendLine($"namespace {ns.SafeToken()}");
                     sb.AppendLine("{");
                 }
@@ -272,7 +288,6 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb = sb.Indent();
             }
 
-            sb.AppendLine();
             AppendComments(sb, type.Description);
             if (options?.Routes != null)
             {
@@ -386,6 +401,7 @@ namespace ServiceStack.NativeTypes.CSharp
             {
                 sb = sb.UnIndent();
             }
+            sb.AppendLine();
 
             return lastNS;
         }

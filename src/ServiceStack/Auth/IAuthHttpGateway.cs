@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,7 +116,7 @@ namespace ServiceStack.Auth
             string url, string data = null)
         {
             var uri = new Uri(url);
-            var webReq = (HttpWebRequest)WebRequest.Create(uri);
+            var webReq = WebRequest.CreateHttp(uri);
             webReq.Accept = MimeTypes.Json;
 
             if (accessToken != null)
@@ -133,7 +135,7 @@ namespace ServiceStack.Auth
             string url, string data = null, CancellationToken token=default)
         {
             var uri = new Uri(url);
-            var webReq = (HttpWebRequest)WebRequest.Create(uri);
+            var webReq = WebRequest.CreateHttp(uri);
             webReq.Accept = MimeTypes.Json;
 
             if (accessToken != null)
@@ -176,7 +178,7 @@ namespace ServiceStack.Auth
             try
             {
                 var url = FacebookVerifyTokenUrl.Fmt(accessToken);
-                var json = await url.GetJsonFromUrlAsync().ConfigAwait();
+                var json = await url.GetJsonFromUrlAsync(token: token).ConfigAwait();
 
                 var obj = JsonObject.Parse(json);
                 var tokenAppId = obj.Get("id");
@@ -213,7 +215,7 @@ namespace ServiceStack.Auth
                 url = url.AddQueryParam("fields", string.Join(",", fields));
             }
 
-            var json = await url.GetJsonFromUrlAsync().ConfigAwait();
+            var json = await url.GetJsonFromUrlAsync(token: token).ConfigAwait();
             return json;
         }
 
@@ -223,10 +225,10 @@ namespace ServiceStack.Auth
                 throw new ArgumentNullException(nameof(accessToken));
 
             var json = url.GetJsonFromUrl(
-                requestFilter: httpReq => {
-                    PclExport.Instance.AddHeader(httpReq, HttpHeaders.Authorization, "token " + accessToken);
-                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
-                });
+                requestFilter: req => req.With(c => {
+                    c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                    c.Authorization = new("token", accessToken);
+                }));
 
             return json;
         }
@@ -237,10 +239,10 @@ namespace ServiceStack.Auth
                 throw new ArgumentNullException(nameof(accessToken));
 
             var json = await url.GetJsonFromUrlAsync(
-                requestFilter: httpReq => {
-                    PclExport.Instance.AddHeader(httpReq, HttpHeaders.Authorization, "token " + accessToken);
-                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
-                }).ConfigAwait();
+                requestFilter: req => req.With(c => {
+                    c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                    c.Authorization = new("token", accessToken);
+                }));
 
             return json;
         }
@@ -270,7 +272,7 @@ namespace ServiceStack.Auth
         {
             var json = await GoogleAuthProvider.DefaultUserProfileUrl
                 .AddQueryParam("access_token", accessToken)
-                .GetJsonFromUrlAsync().ConfigAwait();
+                .GetJsonFromUrlAsync(token: token).ConfigAwait();
 
             return json;
         }
@@ -285,7 +287,7 @@ namespace ServiceStack.Auth
         public async Task<string> DownloadMicrosoftUserInfoAsync(string accessToken, CancellationToken token=default)
         {
             var json = await MicrosoftGraphAuthProvider.DefaultUserProfileUrl
-                .GetJsonFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken)).ConfigAwait();
+                .GetJsonFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken), token: token).ConfigAwait();
             return json;
         }
 
@@ -293,22 +295,10 @@ namespace ServiceStack.Auth
         {
             try
             {
-                using var origStream = MicrosoftGraphAuthProvider.PhotoUrl
+                using var imageStream = MicrosoftGraphAuthProvider.PhotoUrl(savePhotoSize)
                     .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
-                using var origImage = System.Drawing.Image.FromStream(origStream);
-                var parts = savePhotoSize?.Split('x');
-                var width = origImage.Width;
-                var height = origImage.Height;
-
-                if (parts != null && parts.Length > 0)
-                    int.TryParse(parts[0], out width);
-
-                if (parts != null && parts.Length > 1)
-                    int.TryParse(parts[1], out height);
-
-                using var resizedImage = origImage.ResizeToPng(width, height);
-                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
-                return "data:image/png;base64," + base64;
+                var base64 = Convert.ToBase64String(imageStream.ReadFully());
+                return "data:image/jpg;base64," + base64;
             }
             catch (Exception ex)
             {
@@ -321,22 +311,10 @@ namespace ServiceStack.Auth
         {
             try
             {
-                using var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
-                    .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken)).ConfigAwait();
-                using var origImage = System.Drawing.Image.FromStream(origStream);
-                var parts = savePhotoSize?.Split('x');
-                var width = origImage.Width;
-                var height = origImage.Height;
-
-                if (parts != null && parts.Length > 0)
-                    int.TryParse(parts[0], out width);
-
-                if (parts != null && parts.Length > 1)
-                    int.TryParse(parts[1], out height);
-
-                using var resizedImage = origImage.ResizeToPng(width, height);
-                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
-                return "data:image/png;base64," + base64;
+                using var imageStream = await MicrosoftGraphAuthProvider.PhotoUrl(savePhotoSize)
+                    .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken), token: token);
+                var base64 = Convert.ToBase64String(await imageStream.ReadFullyAsync(token));
+                return "data:image/jpg;base64," + base64;
             }
             catch (Exception ex)
             {

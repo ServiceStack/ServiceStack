@@ -1,4 +1,4 @@
-#if NETSTANDARD2_0        
+#if NETCORE        
 using ServiceStack.Host;
 #else
 using System.Web;
@@ -6,6 +6,7 @@ using System.Web;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
@@ -63,8 +64,8 @@ namespace ServiceStack
                 }
             }
 
-            appHost.GetPlugin<MetadataFeature>()
-                .AddDebugLink(RoutePath, "SVG Images");
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddDebugLink(RoutePath, "SVG Images"));
         }
 
         static void AppendEntry(StringBuilder sb, string name, string dataUri)
@@ -198,29 +199,26 @@ namespace ServiceStack
 
     public static class Svg
     {
-        private static ILog log = LogManager.GetLogger(typeof(Svg));
-        
         public static string LightColor { get; set; } = "#dddddd";
         public static string[] FillColors { get; set; } = { "#ffffff", "#556080" };
 
         public static Dictionary<string, List<string>> CssFiles { get; set; } = new Dictionary<string, List<string>> {
-            ["svg-auth"]  = new List<string> { "servicestack", "apple", "twitter", "github", "google", "facebook", "microsoft", "linkedin", },
-            ["svg-icons"] = new List<string> { "male", "female", "male-business", "female-business", "male-color", "female-color", "users", },
+            ["svg-auth"]  = new() { "servicestack", "apple", "twitter", "github", "google", "facebook", "microsoft", "linkedin", },
+            ["svg-icons"] = new() { "male", "female", "male-business", "female-business", "male-color", "female-color", "users", },
         };
 
-        public static Dictionary<string, string> CssFillColor { get; set; } = new Dictionary<string, string> {
-        };
+        public static Dictionary<string, string> CssFillColor { get; set; } = new();
         
-        public static Dictionary<string, string> AppendToCssFiles { get; set; } = new Dictionary<string, string> {};
+        public static Dictionary<string, string> AppendToCssFiles { get; set; } = new();
 
-        public static Dictionary<string,string> AdjacentCssRules { get; set; } = new Dictionary<string, string> {
+        public static Dictionary<string,string> AdjacentCssRules { get; set; } = new() {
             //[".btn-md .fa-"] = "css", // Generates: .btn-md .fa-svg1, .btn-md .fa-svg2 { css } 
         };
 
         const string LogoPrefix = "<svg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'> <style> .path{} </style> ";
         const string IconPrefix = "<svg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'> <style> .path{} </style> ";
 
-        public static Dictionary<string,string> Images { get; set; } = new Dictionary<string, string> {
+        public static Dictionary<string,string> Images { get; set; } = new() {
             [Logos.ServiceStack]   = LogoPrefix + "<g id='servicestack-svg'><path fill='#ffffff' class='path' stroke='null' d='m16.564516,43.33871c16.307057,2.035887 54.629638,20.41875 60.67742,46.306452l-78.241936,0c19.859879,-1.616734 36.825605,-27.344758 17.564516,-46.306452zm6.387097,-30.33871c6.446976,7.105645 9.520766,16.74617 9.26129,26.666129c16.546573,6.726411 41.376412,24.690121 46.625807,49.979033l19.161291,0c-8.123589,-43.132863 -54.529839,-73.551412 -75.048388,-76.645162z' /></g></svg>",
             [Logos.Apple]          = LogoPrefix + "<g id='apple-svg'><path fill='#ffffff' class='path' stroke='null' d='M46.122,25.028C50.231,25.028 55.381,22.165 58.449,18.348C61.226,14.888 63.252,10.057 63.252,5.225C63.252,4.569 63.194,3.913 63.078,3.376C58.506,3.555 53.009,6.537 49.71,10.534C47.106,13.576 44.733,18.348 44.733,23.239C44.733,23.955 44.849,24.671 44.907,24.909C45.196,24.969 45.659,25.028 46.122,25.028ZM31.655,97.203C37.268,97.203 39.756,93.326 46.759,93.326C53.877,93.326 55.439,97.084 61.689,97.084C67.824,97.084 71.932,91.238 75.81,85.512C80.15,78.951 81.944,72.509 82.06,72.21C81.655,72.091 69.907,67.14 69.907,53.242C69.907,41.193 79.166,35.765 79.687,35.348C73.553,26.281 64.236,26.043 61.689,26.043C54.803,26.043 49.189,30.337 45.659,30.337C41.84,30.337 36.805,26.281 30.844,26.281C19.502,26.281 7.986,35.944 7.986,54.197C7.986,65.53 12.268,77.519 17.534,85.273C22.048,91.835 25.983,97.203 31.655,97.203Z' /></g></svg>",
             [Logos.Twitter]        = LogoPrefix + "<g id='twitter-svg'><path fill='#ffffff' class='path' stroke='null' d='m32.167025,90.818083c37.320006,0 57.741133,-30.948298 57.741133,-57.741133c0,-0.870668 0,-1.741336 -0.039576,-2.612005c3.957583,-2.84946 7.40068,-6.45086 10.131412,-10.52717c-3.640976,1.622609 -7.558983,2.691156 -11.674869,3.205642c4.195038,-2.493277 7.40068,-6.490436 8.944137,-11.239535c-3.918007,2.334974 -8.271348,3.997159 -12.90172,4.907403c-3.720128,-3.957583 -8.983713,-6.411284 -14.80136,-6.411284c-11.199959,0 -20.3024,9.10244 -20.3024,20.3024c0,1.583033 0.197879,3.12649 0.514486,4.630372c-16.859303,-0.831092 -31.818966,-8.944137 -41.83165,-21.212644c-1.741336,3.007763 -2.730732,6.490436 -2.730732,10.210564c0,7.044497 3.6014,13.257902 9.023289,16.898879c-3.32437,-0.118727 -6.45086,-1.028972 -9.181592,-2.532853c0,0.079152 0,0.158303 0,0.277031c0,9.814805 7.004922,18.046578 16.265665,19.906642c-1.701761,0.47491 -3.482673,0.712365 -5.342737,0.712365c-1.306002,0 -2.572429,-0.118727 -3.79928,-0.356182c2.572429,8.073469 10.091836,13.930692 18.956822,14.088995c-6.965346,5.461464 -15.711604,8.706682 -25.209803,8.706682c-1.622609,0 -3.245218,-0.079152 -4.828251,-0.277031c8.944137,5.698919 19.629611,9.062865 31.067025,9.062865' /></g></svg>",
@@ -239,10 +237,12 @@ namespace ServiceStack
             [Icons.Users]          = IconPrefix + "<g id='users-svg'><path fill='#556080' class='path' stroke='null' d='m68.234601,75.454014l-15.811134,-7.90474c-1.491242,-0.746448 -2.418096,-2.245966 -2.418096,-3.914303l0,-5.59588c0.379017,-0.463427 0.777895,-0.991403 1.190014,-1.573997c2.050664,-2.896418 3.694175,-6.120546 4.889154,-9.597903c2.335341,-1.070847 3.851409,-3.379707 3.851409,-5.986483l0,-6.620385c0,-1.593858 -0.595835,-3.138062 -1.655096,-4.344628l0,-8.803457c0.092685,-0.910303 0.456807,-6.329088 -3.462461,-10.799503c-3.399568,-3.877891 -8.916003,-5.844145 -16.398694,-5.844145s-12.999126,1.966254 -16.398694,5.84249c-3.919268,4.470415 -3.555147,9.890855 -3.462461,10.799503l0,8.803457c-1.059262,1.206565 -1.655096,2.75077 -1.655096,4.344628l0,6.620385c0,2.014252 0.915268,3.892786 2.477679,5.145694c1.516068,6.003034 4.688888,10.526412 5.797802,11.977932l0,5.476713c0,1.602133 -0.873891,3.071859 -2.279068,3.839823l-14.765114,8.053698c-4.801434,2.621672 -7.782263,7.643234 -7.782263,13.111672l0,7.014298l76.134428,0l0,-6.691554c0,-5.691876 -3.162889,-10.807778 -8.25231,-13.353317l-0.000001,0z'/><path fill='#556080' class='path' stroke='null' d='m92.155708,77.335859l-16.092501,-6.967955c-0.380672,-0.190336 -0.802722,-0.655418 -1.165188,-1.276079l10.799503,-0.008275c0,0 0.623971,0.061239 1.592203,0.061239c1.775918,0 4.366144,-0.201922 6.620385,-1.170153c1.352214,-0.582594 2.358512,-1.732886 2.762356,-3.156269c0.407154,-1.436624 0.148959,-2.957657 -0.705071,-4.175808c-3.086754,-4.392625 -10.291388,-15.870718 -10.516482,-27.512665c-0.004965,-0.200267 -0.657073,-19.998528 -20.208725,-20.159072c-1.964599,0.016551 -3.821617,0.258195 -5.580985,0.683555c1.310836,3.465772 1.190014,6.567422 1.100639,7.57372l0,7.833571c1.072502,1.525999 1.655096,3.338329 1.655096,5.198657l0,6.620385c0,3.156269 -1.661717,6.077513 -4.314836,7.716059c-1.238012,3.346605 -2.876557,6.473081 -4.880879,9.303296c-0.248264,0.352536 -0.493219,0.68521 -0.733208,0.999678l0,4.733575c0,0.731553 0.390603,1.365454 1.044366,1.691508l15.811134,7.90474c5.93683,2.969243 9.624385,8.935865 9.624385,15.574456l0,6.694864l20.690358,0l0,-6.118891c0,-5.117558 -2.843455,-9.715415 -7.502551,-12.044135z'/></g></svg>",
         };
         
-        public static Dictionary<string,string> DataUris { get; set; } = new Dictionary<string, string> {};
+        public static Dictionary<string,string> DataUris { get; set; } = new();
         
         public static string GetImage(string name) => Images.TryGetValue(name, out var svg) ? svg : null;
         public static string GetImage(string name, string fillColor) => Fill(GetImage(name), fillColor);
+
+        public static StaticContent GetStaticContent(string name) => new(GetImage(name).ToUtf8Bytes(), MimeTypes.ImageSvg);
 
         public static string GetDataUri(string name)
         {
@@ -256,6 +256,18 @@ namespace ServiceStack
             return dataUri;
         }
         public static string GetDataUri(string name, string fillColor) => Fill(GetDataUri(name), fillColor);
+
+        public static string Create(string body, string fill="none", string viewBox="0 0 24 24", string stroke="currentColor") =>
+            $"<svg xmlns='http://www.w3.org/2000/svg' fill='{fill}' viewBox='{viewBox}' stroke='{stroke}' aria-hidden='true'>{body}</svg>";
+
+        public static ImageInfo ImageSvg(string svg) => new() { Svg = svg };
+        public static ImageInfo ImageUri(string uri) => new() { Uri = uri };
+        
+        public static class Body
+        {
+            public static string Home  = "<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' />";
+            public static string Users = "<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' />";
+        }
 
         public static class Logos
         {
@@ -295,7 +307,6 @@ namespace ServiceStack
                         color[0] == '#' ? "%23" + color.Substring(1) : color, 
                         fillColor[0] == '#' ? "%23" + fillColor.Substring(1) : fillColor);
                 }
-                
             }
             return svg;
         }
@@ -329,8 +340,12 @@ namespace ServiceStack
 
         public static string InBackgroundImageCss(string svg) => "background-image: url(\"" + ToDataUri(svg) + "\");";
 
+        internal static long ImagesAdded = 0;
+
         public static void AddImage(string svg, string name, string cssFile=null)
         {
+            Interlocked.Increment(ref ImagesAdded);
+            
             svg = svg.Trim();
             if (svg.IndexOf("http://www.w3.org/2000/svg", StringComparison.OrdinalIgnoreCase) < 0)
             {
@@ -363,6 +378,7 @@ namespace ServiceStack
                 }
             }.Init();
 
+            var log = LogManager.GetLogger(typeof(Svg));
             foreach (var svgGroupDir in svgDir.GetDirectories())
             {
                 foreach (var file in svgGroupDir.GetFiles())

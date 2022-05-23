@@ -319,6 +319,9 @@ namespace ServiceStack.Script
         public object eval(ScriptScopeContext scope, string js) => JS.eval(js, scope);
         public object parseJson(string json) => JSON.parse(json);
 
+        public string base64(byte[] bytes) => Convert.ToBase64String(bytes);
+        public byte[] fromBase64(string base64) => Convert.FromBase64String(base64);
+
         public List<List<string>> parseCsv(string csv)
         {
             var trimmedBody = StringBuilderCache.Allocate();

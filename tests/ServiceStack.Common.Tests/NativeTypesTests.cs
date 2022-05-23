@@ -1,4 +1,4 @@
-﻿#if !NETCORE_SUPPORT
+﻿#if !NETCORE
 using System;
 using System.Linq;
 using System.Reflection;
@@ -343,7 +343,8 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_write_ValidateRequestAttribute()
         {
-            var gen = appHost.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
+            var nativeTypes = appHost.AssertPlugin<NativeTypesFeature>();
+            var gen = nativeTypes.DefaultGenerator;
             var attr = new ValidateRequestAttribute("HasRole('Accounts')") {
                 ErrorCode = "ExCode",
                 Message = "'Id' Is Required",
@@ -370,7 +371,7 @@ namespace ServiceStack.Common.Tests
                         }
                     }
                 }
-            }, new BasicRequest());
+            }, new BasicRequest(), appHost.TryResolve<INativeTypesMetadata>());
             
             src.Print();
             

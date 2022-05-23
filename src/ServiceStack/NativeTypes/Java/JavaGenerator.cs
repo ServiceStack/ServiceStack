@@ -10,7 +10,7 @@ using ServiceStack.NativeTypes.Kotlin;
 
 namespace ServiceStack.NativeTypes.Java
 {
-    public class JavaGenerator
+    public class JavaGenerator : ILangGenerator
     {
         readonly MetadataTypesConfig Config;
         List<string> conflictTypeNames = new();
@@ -78,8 +78,10 @@ namespace ServiceStack.NativeTypes.Java
             {"IntPtr", "Long"},
             {"Guid", "UUID"},
             {"DateTime", "Date"},
+            {"DateOnly", "Date"},
             {"DateTimeOffset", "Date"},
             {"TimeSpan", "TimeSpan"},
+            {"TimeOnly", "TimeSpan"},
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
@@ -109,6 +111,16 @@ namespace ServiceStack.NativeTypes.Java
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
+        /// <summary>
+        /// Additional Options in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
+        /// <summary>
+        /// Emit code without Header Options
+        /// </summary>
+        public bool WithoutOptions { get; set; }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -136,34 +148,39 @@ namespace ServiceStack.NativeTypes.Java
 
             var defaultNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
 
-            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
-            sb.AppendLine("/* Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+            var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+            if (includeOptions)
+            {
+                sb.AppendLine("/* Options:");
+                sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+                sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
+                sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
+                sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+                if (Config.UsePath != null)
+                    sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
 
-            sb.AppendLine();
-            sb.AppendLine("{0}Package: {1}".Fmt(DefaultValue("Package"), Config.Package));
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), defaultNamespace));
-            sb.AppendLine("{0}AddPropertyAccessors: {1}".Fmt(DefaultValue("AddPropertyAccessors"), Config.AddPropertyAccessors));
-            sb.AppendLine("{0}SettersReturnThis: {1}".Fmt(DefaultValue("SettersReturnThis"), Config.SettersReturnThis));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(DefaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(DefaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(DefaultValue("DefaultImports"), defaultImports.Join(",")));
+                sb.AppendLine();
+                sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
+                sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), defaultNamespace));
+                sb.AppendLine("{0}AddPropertyAccessors: {1}".Fmt(defaultValue("AddPropertyAccessors"), Config.AddPropertyAccessors));
+                sb.AppendLine("{0}SettersReturnThis: {1}".Fmt(defaultValue("SettersReturnThis"), Config.SettersReturnThis));
+                sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+                sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+                sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+                sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+                sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+                AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
-            sb.AppendLine("*/");
-            sb.AppendLine();
+                sb.AppendLine("*/");
+                sb.AppendLine();
+            }
 
             foreach (var typeName in Config.TreatTypesAsStrings.Safe())
             {

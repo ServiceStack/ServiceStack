@@ -1,0 +1,12 @@
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "scripts": {
+    "ui:dev": "npx tailwindcss -c tailwind.config.js -i index.css -o shared/css/ui.css --watch",
+    "ui:build": "npx tailwindcss -c tailwind.config.js -i index.css -o shared/css/ui.css --minify"
+  },
+  "dependencies": {
+    "@servicestack/client": "^1.1.17",
+    "@tailwindcss/forms": "^0.4.0"
+  }
+}

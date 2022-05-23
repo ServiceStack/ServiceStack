@@ -49,6 +49,7 @@ namespace ServiceStack
         public string RefreshToken { get; set; }
 
         public string RefreshTokenUri { get; set; }
+        public bool EnableAutoRefreshToken { get; set; }
         
         public static int BufferSize = 8192;
 
@@ -62,6 +63,10 @@ namespace ServiceStack
 
         public CookieContainer CookieContainer { get; set; }
 
+#if NET6_0_OR_GREATER
+        public System.Net.Http.HttpClient HttpClient { get; set; }
+#endif
+        
         /// <summary>
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
@@ -289,7 +294,7 @@ namespace ServiceStack
 
                     var totalRead = 0;
                     int read;
-                    var ms = MemoryStreamFactory.GetStream();
+                    var ms = new MemoryStream(); // can get returned, do not dispose
 
                     while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigAwait()) != 0)
                     {
@@ -379,7 +384,7 @@ namespace ServiceStack
                 {
                     try
                     {
-                        if (hasRefreshToken)
+                        if (EnableAutoRefreshToken && hasRefreshToken)
                         {
                             var refreshRequest = new GetAccessToken {
                                 RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
@@ -392,11 +397,14 @@ namespace ServiceStack
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
-                                tokenResponse = (await uri.PostJsonToUrlAsync(refreshRequest, requestFilter: req => {
-                                    if (hasRefreshTokenCookie) {
-                                        req.CookieContainer = CookieContainer;
-                                    }
-                                }, token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
+                                var httpReq = WebRequest.CreateHttp(uri);
+                                tokenResponse = (await ServiceClientBase.SendStringToUrlAsync(httpReq, method:HttpMethods.Post, 
+                                    requestFilter: req => {
+                                        if (hasRefreshTokenCookie) {
+                                            req.CookieContainer = CookieContainer;
+                                        }
+                                    }, requestBody:refreshRequest.ToJson(), accept:MimeTypes.Json, contentType:MimeTypes.Json, token: token)
+                                    .ConfigAwait()).FromJson<GetAccessTokenResponse>();
                             }
                             catch (WebException refreshEx)
                             {

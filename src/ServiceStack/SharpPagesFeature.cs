@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 using System.Web;
 #endif
 using System;
@@ -25,30 +25,13 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    [Obsolete("Use SharpPagesFeature")]
-    public class TemplatePagesFeature : SharpPagesFeature
+    /// <summary>
+    /// A custom placeholder SharpPagesFeature plugin optimized to support for SPA and SSG features 
+    /// </summary>
+    public class SpaFeature : SharpPagesFeature 
     {
-        [Obsolete("Use ScriptMethods")]
-        public List<ScriptMethods> TemplateFilters => ScriptMethods;
-
-        [Obsolete("Use ScriptBlocks")]
-        public List<ScriptBlock> TemplateBlocks => ScriptBlocks;
-
-        [Obsolete("Use DefaultMethods")]
-        public DefaultScripts DefaultFilters => DefaultMethods;
-        [Obsolete("Use ProtectedMethods")]
-        public ProtectedScripts ProtectedFilters => ProtectedMethods;
-        [Obsolete("Use HtmlMethods")]
-        public HtmlScripts HtmlFilters => HtmlMethods;
-
-        public override void Register(IAppHost appHost)
-        {
-            base.Register(appHost);
-            appHost.Register((Templates.ITemplatePages)Pages);
-            appHost.Register(this);
-        }
     }
-    
+
     public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHasStringId
     {
         public string Id { get; set; } = ServiceStack.Plugins.SharpPages;
@@ -75,8 +58,7 @@ namespace ServiceStack
         /// </summary>
         public string MetadataDebugAdminRole { get; set; }
 
-        public List<string> IgnorePaths { get; set; } = new List<string>
-        {
+        public List<string> IgnorePaths { get; set; } = new() {
             "/Views/",
             "/swagger-ui" // Swagger's handler needs to process index.html 
         };
@@ -153,7 +135,8 @@ namespace ServiceStack
             if (enableMetadataDebug)
             {
                 appHost.RegisterService(typeof(MetadataDebugService), MetadataDebugService.Route);
-                appHost.GetPlugin<MetadataFeature>().AddDebugLink(MetadataDebugService.Route, "Debug Inspector");
+                appHost.ConfigurePlugin<MetadataFeature>(
+                    feature => feature.AddDebugLink(MetadataDebugService.Route, "Debug Inspector"));
             }
 
             if (!string.IsNullOrEmpty(ScriptAdminRole))

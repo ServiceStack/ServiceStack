@@ -261,7 +261,7 @@ includeFile = {{ 'file.txt' |> includeFile }}
             Assert.That(byteContents.Span.SequenceEqual(bytes));
         }
 
-        #if NET45
+        #if NETFX
         [Test]
         public void Does_use_dollar_as_currency_symbol_when_InvariantCulture()
         {

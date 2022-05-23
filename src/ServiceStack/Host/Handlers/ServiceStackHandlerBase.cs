@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Serialization;
+using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -28,7 +29,7 @@ namespace ServiceStack.Host.Handlers
 
     public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
     {
-        internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
+        internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new();
         internal static readonly byte[][] NetworkInterfaceIpv6Addresses = TypeConstants.EmptyByteArrayArray;
         internal readonly ServiceStackHost appHost = HostContext.AppHost;
 
@@ -126,9 +127,9 @@ namespace ServiceStack.Host.Handlers
                 return;
             }
 
-            if (doJsonp && !(response is CompressedResult))
+            if (doJsonp && response is not CompressedResult)
             {
-                await httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes()).ConfigAwait();
+                await httpRes.WriteToResponse(httpReq, response, DataCache.CreateJsonpPrefix(callback), DataCache.JsonpSuffix).ConfigAwait();
                 return;
             }
 
@@ -189,7 +190,7 @@ namespace ServiceStack.Host.Handlers
             {
                 return stream.Length; //can throw NotSupportedException
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return -1;
             }
@@ -205,7 +206,7 @@ namespace ServiceStack.Host.Handlers
                     var hasContentBody = httpReq.ContentLength > 0
                         || (HttpUtils.HasRequestBody(httpReq.Verb) && 
                                 (httpReq.GetContentEncoding() != null
-#if NETSTANDARD2_0
+#if NETCORE
                                 || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
 #endif
                                 ));

@@ -13,7 +13,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Host
 {
     public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
-#if NETSTANDARD2_0
+#if NETCORE
     , IHasServiceScope
 #endif    
     {
@@ -22,7 +22,7 @@ namespace ServiceStack.Host
         public object OriginalRequest { get; private set; }
         public IResponse Response { get; set; }
         
-#if NETSTANDARD2_0
+#if NETCORE
         public Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
 #endif
         
@@ -74,7 +74,7 @@ namespace ServiceStack.Host
 
         public T TryResolve<T>()
         {
-#if NETSTANDARD2_0
+#if NETCORE
             if (ServiceScope != null)
             {
                 var instance = ServiceScope.ServiceProvider.GetService(typeof(T));

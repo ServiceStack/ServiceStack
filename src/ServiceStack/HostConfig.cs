@@ -95,7 +95,7 @@ namespace ServiceStack
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                     "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map",
                     "xls", "xla", "xlsx", "xltx", "doc", "dot", "docx", "dotx", "ppt", "pps", "ppa", "pptx", "potx", 
-                    "wasm", "proto", "cer", "crt"
+                    "wasm", "proto", "cer", "crt", "webmanifest",
                 },
                 CompressFilesWithExtensions = new HashSet<string>(),
                 AllowFilePaths = new List<string>
@@ -148,7 +148,7 @@ namespace ServiceStack
                     "jspm_packages/",
                     "bower_components/",
                     "wwwroot_build/",
-#if !NETSTANDARD2_0 
+#if !NETCORE 
                     "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
 #endif
                 },
@@ -156,10 +156,11 @@ namespace ServiceStack
                 {
                     { "/metadata/", "/metadata" },
                 },
-                IgnoreWarningsOnPropertyNames = new List<string> {
+                IgnoreWarningsOnPropertyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
-                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
-                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, "session_state", "s", "f"
+                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version,
+                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, 
+                    Keywords.SessionState, Keywords.OAuthSuccess, Keywords.OAuthFailed, Keywords.WithoutOptions,
                 },
                 IgnoreWarningsOnAutoQueryApis = true,
                 XmlWriterSettings = new XmlWriterSettings
@@ -182,7 +183,7 @@ namespace ServiceStack
                     Permissions = new List<string>(),
                     UserAuthId = "0",
                 },
-#if !NETSTANDARD2_0
+#if !NETCORE
                 UseCamelCase = false,
                 ReturnsInnerException = true,
 #else
@@ -310,7 +311,7 @@ namespace ServiceStack
 
         public bool IgnoreWarningsOnAllProperties { get; set; }
         public bool IgnoreWarningsOnAutoQueryApis { get; set; }
-        public List<string> IgnoreWarningsOnPropertyNames { get; private set; }
+        public HashSet<string> IgnoreWarningsOnPropertyNames { get; private set; }
 
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 

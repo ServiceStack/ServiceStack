@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             "File size {0}".Print(uploadedFile.Length);
 
             byte[] actualContents = "{0}/TestExistingDir/upload.html".Fmt(BaseUri).GetBytesFromUrl(
-                responseFilter: httpRes => "Content-Length header {0}".Print(httpRes.Headers["Content-Length"]));
+                responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
 
             "response size {0}".Fmt(actualContents.Length);
 
@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             "File size {0}".Print(uploadedFile.Length);
 
             byte[] actualContents = "{0}/partialfiles/TestExistingDir/upload.html".Fmt(BaseUri).GetBytesFromUrl(
-                responseFilter: httpRes => "Content-Length header {0}".Print(httpRes.Headers["Content-Length"]));
+                responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
 
             "response size {0}".Fmt(actualContents.Length);
 
@@ -116,11 +116,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_StaticFile_GET_206_Partial_response_for_file_with_range_header()
         {
             var actualContents = "{0}/TestExistingDir/upload.html".Fmt(BaseUri).GetStringFromUrl(
-                requestFilter: httpReq => httpReq.AddRange(5, 11),
+                requestFilter: httpReq => httpReq.With(c => c.SetRange(5, 11)),
                 responseFilter: httpRes =>
                 {
-                    "Content-Length header {0}".Print(httpRes.Headers["Content-Length"]);
-                    Assert.That(httpRes.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadedFile.Name)));
+                    $"Content-Length header {httpRes.GetContentLength()}".Print();
+                    Assert.That(httpRes.MatchesContentType(MimeTypes.GetMimeType(uploadedFile.Name)));
                 });
 
             "Response length {0}".Print(actualContents.Length);
@@ -131,11 +131,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_GET_206_Partial_response_for_file_with_range_header()
         {
             var actualContents = "{0}/partialfiles/TestExistingDir/upload.html".Fmt(BaseUri).GetStringFromUrl(
-                requestFilter: httpReq => httpReq.AddRange(5, 11),
+                requestFilter: httpReq => httpReq.With(c => c.SetRange(5, 11)),
                 responseFilter: httpRes =>
                 {
-                    "Content-Length header {0}".Print(httpRes.Headers["Content-Length"]);
-                    Assert.That(httpRes.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadedFile.Name)));
+                    $"Content-Length header {httpRes.GetContentLength()}".Print();
+                    Assert.That(httpRes.MatchesContentType(MimeTypes.GetMimeType(uploadedFile.Name)));
                 });
 
             "Response length {0}".Print(actualContents.Length);
@@ -146,8 +146,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_GET_206_Partial_response_for_memory_with_range_header()
         {
             var actualContents = "{0}/partialfiles/memory?mimeType=audio/mpeg".Fmt(BaseUri).GetStringFromUrl(
-                requestFilter: httpReq => httpReq.AddRange(5, 9),
-                responseFilter: httpRes => "Content-Length header {0}".Print(httpRes.Headers["Content-Length"]));
+                requestFilter: httpReq => httpReq.With(c => c.SetRange(5, 9)),
+                responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
 
             "Response Length {0}".Print(actualContents.Length);
             Assert.That(actualContents, Is.EqualTo("67890"));
@@ -157,8 +157,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_GET_206_Partial_response_for_text_with_range_header()
         {
             var actualContents = "{0}/partialfiles/text".Fmt(BaseUri).GetStringFromUrl(
-                requestFilter: httpReq => httpReq.AddRange(5, 9),
-                responseFilter: httpRes => "Content-Length header {0}".Print(httpRes.Headers["Content-Length"]));
+                requestFilter: httpReq => httpReq.With(c => c.SetRange(5, 9)),
+                responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
 
             "Response Length {0}".Print(actualContents.Length);
             Assert.That(actualContents, Is.EqualTo("67890"));
@@ -316,8 +316,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(ms, "audio/mpeg");
 
-            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
-            Assert.That(reponseWasAutoHandled, Is.True);
+            bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(responseWasAutoHandled, Is.True);
 
             string writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo("456"));

@@ -1,3 +1,4 @@
+#nullable enable
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
@@ -47,7 +48,7 @@ namespace ServiceStack.Auth
         public virtual async Task<SignInResult> TryAuthenticateAsync(IServiceBase authService, 
             string userName, string password, bool? rememberMe=false, CancellationToken token = default)
         {
-            var signInManager = authService.TryResolve<SignInManager<TUser>>();
+            var signInManager = authService.Resolve<SignInManager<TUser>>();
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true

@@ -121,7 +121,6 @@ namespace ServiceStack.Caching
             await (cache as IRemoveByPatternAsync).RemoveByRegexAsync(EnsurePrefix(regex), token).ConfigAwait();
         }
 
-#if NET472 || NETSTANDARD2_0
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
         {
             await foreach (var key in cache.GetKeysByPatternAsync(EnsurePrefix(pattern), token))
@@ -131,7 +130,6 @@ namespace ServiceStack.Caching
         }
 
         public ValueTask DisposeAsync() => cache.DisposeAsync();
-#endif
 
         public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {

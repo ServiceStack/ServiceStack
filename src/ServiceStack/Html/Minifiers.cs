@@ -1,7 +1,17 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace ServiceStack.Html
 {
+    [Flags]
+    public enum Minify
+    {
+        JavaScript   = 1 << 0,
+        Css          = 1 << 1,
+        Html         = 1 << 2,
+        HtmlAdvanced = 1 << 3,
+    }
+    
     public static class Minifiers
     {
         public static ICompressor JavaScript = new JSMinifierFactory();

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MyApp</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/typography.css" rel="stylesheet" />
+    <link href="css/markdown.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="css/main-layout.css" rel="stylesheet" />
+    <link href="MyApp.Client.styles.css" rel="stylesheet" />
+    <script src="_content/Blazor.Extensions.Logging/blazor.extensions.logging.js" defer></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- loading: render temp static app chrome to improve perceived performance -->
+        <div id="app-loading" class="main-layout page">
+            <div class="sidebar">
+                <div class="top-row navbar navbar-dark">
+                    <a class="navbar-brand ps-4" href="/">MyApp</a>
+                    <button class="navbar-toggler"><span class="navbar-toggler-icon"></span></button>
+                </div>
+                <div class="collapse">
+                    <ul class="nav flex-column"></ul>
+                </div>
+            </div>
+            <div class="main">
+                <div class="main-top-row px-4">
+                    <ul class="nav nav-pills"></ul>
+                    <a href="signin?return=docs/deploy" class="btn btn-outline-primary">Login</a>
+                </div>
+                <div class="content px-4">
+
+<div class="prose lg:prose-xl min-vh-100 m-3" data-prerender="/docs/deploy">
+    <div class="markdown-body">
+        <h1 id="servicestack-github-action-deployments">ServiceStack GitHub Action Deployments</h1>
+<p>The <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/.github/workflows/release.yml">release.yml</a>
+in this template enables GitHub Actions CI deployment to a dedicated server with SSH access.</p>
+<h2 id="overview">Overview</h2>
+<p><code>release.yml</code> is designed to work with a ServiceStack app deploying directly to a single server via SSH. A docker image is built and stored on GitHub's <code>ghcr.io</code> docker registry when a GitHub Release is created.</p>
+<p>GitHub Actions specified in <code>release.yml</code> then copy files remotely via scp and use <code>docker-compose</code> to run the app remotely via SSH.</p>
+<h2 id="whats-the-process-of-release.yml">What's the process of <code>release.yml</code>?</h2>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/mix/release-ghr-vanilla-diagram.png" alt="" /></p>
+<h2 id="deployment-server-setup">Deployment server setup</h2>
+<p>To get this working, a server needs to be setup with the following:</p>
+<ul>
+<li>SSH access</li>
+<li>docker</li>
+<li>docker-compose</li>
+<li>ports 443 and 80 for web access of your hosted application</li>
+</ul>
+<p>This can be your own server or any cloud hosted server like Digital Ocean, AWS, Azure etc.</p>
+<p>When setting up your server, you'll want to use a dedicated SSH key for access to be used by GitHub Actions. GitHub Actions will need the <em>private</em> SSH key within a GitHub Secret to authenticate. This can be done via ssh-keygen and copying the public key to the authorized clients on the server.</p>
+<p>To let your server handle multiple ServiceStack applications and automate the generation and management of TLS certificates, an additional docker-compose file is provided in this template, <code>nginx-proxy-compose.yml</code>. This docker-compose file is ready to run and can be copied to the deployment server.</p>
+<p>For example, once copied to remote <code>~/nginx-proxy-compose.yml</code>, the following command can be run on the remote server.</p>
+<pre><code>docker-compose -f ~/nginx-proxy-compose.yml up -d
+</code></pre>
+<p>This will run an nginx reverse proxy along with a companion container that will watch for additional containers in the same docker network and attempt to initialize them with valid TLS certificates.</p>
+<h2 id="github-repository-setup">GitHub Repository setup</h2>
+<p>This template pushes the API server dockerized application to GitHub Container Repository. To do this, you will first need to <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">create a Personal Access Token</a> specifically for use by <code>release.yml</code> GitHub Actions.</p>
+<p>This token will need to have access to <code>write:packages</code> to the GitHub Package Registry, which includes the GitHub Container Registry.</p>
+<p>The first time the <code>release.yml</code> process successfully runs and creates your GitHub Container Repository for your project, you then have the option to <a href="https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-ghcrio">upgrade the workflow to use GITHUB_TOKEN</a> replacing the <code>CR_PAT</code>.</p>
+<h3 id="github-actions-secrets">GitHub Actions secrets</h3>
+<p>The <code>release.yml</code> assumes 5 secrets have been set:</p>
+<table>
+<thead>
+<tr>
+<th>Required Secrets</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CR_PAT</code></td>
+<td>GitHub Personal Token with read/write access to packages</td>
+</tr>
+<tr>
+<td><code>DEPLOY_API</code></td>
+<td>Hostname used to SSH deploy .NET App to, this can either be an IP address or subdomain with A record pointing to the server</td>
+</tr>
+<tr>
+<td><code>DEPLOY_USERNAME</code></td>
+<td>Username to log in with via SSH e.g, <strong>ubuntu</strong>, <strong>ec2-user</strong>, <strong>root</strong></td>
+</tr>
+<tr>
+<td><code>DEPLOY_KEY</code></td>
+<td>SSH private key used to remotely access deploy .NET App</td>
+</tr>
+<tr>
+<td><code>LETSENCRYPT_EMAIL</code></td>
+<td>Email required for Let's Encrypt automated TLS certificates</td>
+</tr>
+</tbody>
+</table>
+<p>To also enable deploying static assets to a CDN:</p>
+<table>
+<thead>
+<tr>
+<th>Optional Secrets</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEPLOY_CDN</code></td>
+<td>Hostname where static <strong>/wwwroot</strong> assets should be deployed to</td>
+</tr>
+</tbody>
+</table>
+<p>These secrets can use the <a href="https://cli.github.com/manual/gh_secret_set">GitHub CLI</a> for ease of creation. Eg, using the GitHub CLI the following can be set.</p>
+<pre><code class="language-bash">gh secret set CR_PAT -b&quot;&lt;CR_PAT&gt;&quot;
+gh secret set DEPLOY_API -b&quot;&lt;DEPLOY_API&gt;&quot;
+gh secret set DEPLOY_USERNAME -b&quot;&lt;DEPLOY_USERNAME&gt;&quot;
+gh secret set DEPLOY_KEY &lt; key.pem # DEPLOY_KEY
+gh secret set LETSENCRYPT_EMAIL -b&quot;&lt;LETSENCRYPT_EMAIL&gt;&quot;
+gh secret set DEPLOY_CDN -b&quot;&lt;DEPLOY_CDN&gt;&quot;
+</code></pre>
+<p>These secrets are used to populate variables within GitHub Actions and other configuration files.</p>
+<h2 id="client-ui-deployment">Client UI Deployment</h2>
+<p>The Blazor Client application is built and deployed to GitHub Pages during the <code>release.yml</code> workflow process by committing
+the result of <code>vite build</code> to <code>gh-pages</code> branch in the repository.</p>
+<h3 id="ci.csproj-after-build-tasks">CI .csproj After Build Tasks</h3>
+<p>The Host Server <code>.csproj</code> includes post build instructions populated by GitHub Actions when publishing <strong>Client</strong> assets to CDN
+by first copying the generated <code>index.html</code> home page into <code>404.html</code> in order to enable full page reloads to use Blazor's App
+client routing:</p>
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+    &lt;ClientDir&gt;$(MSBuildProjectDirectory)/../MyApp.Client&lt;/ClientDir&gt;
+    &lt;WwwRoot&gt;$(ClientDir)/wwwroot&lt;/WwwRoot&gt;
+&lt;/PropertyGroup&gt;
+
+&lt;!-- Populated in release.yml with GitHub Actions secrets --&gt;
+&lt;Target Name=&quot;DeployApi&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(DEPLOY_API) != ''&quot;&gt;
+    &lt;Exec Command=&quot;echo DEPLOY_API=$(DEPLOY_API)&quot; /&gt;
+
+    &lt;!-- Update Production settings with DEPLOY_API Blazor UI should use  --&gt;
+    &lt;WriteLinesToFile File=&quot;$(WwwRoot)/appsettings.Production.json&quot; 
+        Lines=&quot;$([System.IO.File]::ReadAllText($(WwwRoot)/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))&quot; 
+        Overwrite=&quot;true&quot; Encoding=&quot;UTF-8&quot; /&gt;
+
+    &lt;!-- 404.html SPA fallback (supported by GitHub Pages, Cloudflare &amp; Netlify CDNs) --&gt;
+    &lt;Copy SourceFiles=&quot;$(WwwRoot)/index.html&quot; 
+        DestinationFiles=&quot;$(WwwRoot)/wwwroot/404.html&quot; /&gt;
+
+    &lt;!-- define /api proxy routes (supported by Cloudflare or Netlify CDNs)  --&gt;
+    &lt;WriteLinesToFile File=&quot;$(WwwRoot)/_redirects&quot; 
+        Lines=&quot;$([System.IO.File]::ReadAllText($(WwwRoot)/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))&quot; 
+        Overwrite=&quot;true&quot; Encoding=&quot;UTF-8&quot; /&gt;
+&lt;/Target&gt;
+&lt;Target Name=&quot;DeployCdn&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(DEPLOY_CDN) != ''&quot;&gt;
+    &lt;Exec Command=&quot;echo DEPLOY_CDN=$(DEPLOY_CDN)&quot; /&gt;
+
+    &lt;!-- Define custom domain name that CDN should use --&gt;
+    &lt;Exec Condition=&quot;$(DEPLOY_CDN) != ''&quot; Command=&quot;echo $(DEPLOY_CDN) &amp;gt; $(WwwRoot)/CNAME&quot; /&gt;
+&lt;/Target&gt;
+</code></pre>
+<p>Whilst the <code>_redirects</code> file is a convention supported by many <a href="https://jamstack.wtf/#deployment">popular Jamstack CDNs</a>
+that sets up a new rule that proxies <code>/api*</code> requests to where the production .NET App is deployed to in order
+for API requests to not need CORS:</p>
+<pre><code>/api/*  {DEPLOY_API}/api/:splat  200
+</code></pre>
+<p>By default this template doesn't use the <code>/api</code> proxy route &amp; makes CORS API requests so it can be freely hosted
+on GitHub pages CDN.</p>
+<h2 id="pushing-updates-and-rollbacks">Pushing updates and rollbacks</h2>
+<p>By default, deployments of both the <strong>Client</strong> and <strong>Server</strong> occur on commit to your main branch. A new Docker image for your
+ServiceStack API is produced, pushed to GHCR.io and hosted on your Linux server with Docker Compose.
+Your Blazor WASM UI is built and pushed to the repository GitHub Pages.</p>
+<p>The template also will run the release process on the creation of a GitHub Release making it easier to switch to manual production releases.</p>
+<p>Additionally, the <code>release.yml</code> workflow can be run manually specifying a version. This enables production rollbacks based on previously tagged releases.
+A release must have already been created for the rollback build to work, it doesn't create a new Docker build based on previous code state, only redeploys as existing Docker image.</p>
+<h2 id="no-cors-hosting-options">No CORS Hosting Options</h2>
+<p>The <code>CorsFeature</code> needs to be enabled when adopting our recommended deployment configuration of having static
+<code>/wwwroot</code> assets hosted from a CDN in order to make cross-domain requests to your .NET APIs.</p>
+<h3 id="using-a-cdn-proxy">Using a CDN Proxy</h3>
+<p>Should you want to, our recommended approach to avoid your App making CORS requests is to define an <code>/api</code> proxy route
+on your CDN to your <code>$DEPLOY_API</code> server.</p>
+<p>To better support this use-case, this template includes populating the <code>_redirects</code> file used by popular CDNs like
+<a href="https://developers.cloudflare.com/pages/platform/redirects">Cloudflare proxy redirects</a> and
+<a href="https://docs.netlify.com/routing/redirects/rewrites-proxies/#proxy-to-another-service">Netlify proxies</a> to define
+redirect and proxy rules. For AWS CloudFront you would need to define a
+<a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html">Behavior for a custom origin</a>.</p>
+<h3 id="no-cdn">No CDN</h3>
+<p>Of course the easiest solution is to not need CORS in the first place by not deploying to a CDN and serving both <strong>Server</strong>
+and Blazor Client <strong>UI</strong> from your .NET App. This would be the preferred approach when deploying within an Intranet where
+network speeds are much faster in order for initial load times to be heavily reduced.</p>
+<p>However when deploying to a public site on the Internet we'd highly recommend deploying Blazor WASM's static assets to a CDN
+so load times can be reduced as much as possible.</p>
+
+    </div>
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+const SIDEBAR = `
+    Home,home,/$
+    Counter,plus,/counter
+    Todos,clipboard,/todomvc
+    Bookings CRUD,calendar,/bookings-crud
+    Call Hello,transfer,/hello$
+    Call HelloSecure,shield,/hello-secure
+    Fetch data,list-rich,/fetchdata
+    Admin,lock-locked,/admin
+    Login,account-login,/signin
+`
+const TOP = `
+    0.40 /mo,dollar,/docs/hosting
+    Prerendering,loop-circular,/docs/prerender
+    Deployments,cloud-upload,/docs/deploy
+`
+
+const path = location.pathname
+const NAV = ({ label, cls, icon, route, exact }) => `<li class="nav-item${cls}">
+    <a href="${route}" class="nav-link${(exact ? path==route : path.startsWith(route)) ? ' active' : ''}">
+        <span class="oi oi-${icon}" aria-hidden="true"></span> ${label}
+    </a></li>`
+const renderNav = (csv,f) => csv.trim().split(/\r?\n/g).map(s => NAV(f.apply(null,s.split(',')))).join('')
+const $1 = s => document.querySelector(s)
+
+$1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, route) => ({
+    label, cls: ` px-3${route == SIDEBAR[0].route ? ' pt-3' : ''}`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+
+$1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) => ({
+    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+    
+$1('#app-loading .navbar-toggler').onclick = function () {
+    this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
+
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r => r.text())
+    .then(html => {
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</script>
+<style>
+/* show subtle visual cue for prerendered pages */
+#app-loading .content {
+    box-shadow: inset 0 4px 4px 0 rgb(0 0 0 / 0.05);
+}
+</style>
+ 
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+<script type="text/javascript" src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll()</script>
+
+<script>
+/* DOM functions used in Blazor Components */
+
+/* Loading */
+window.prerenderedPage = function () {
+    const el = document.querySelector('#app-loading .content')
+    return el && el.innerHTML || ''
+}
+/* ShellCommand */
+window.copy = function(target) {
+    let $el = document.createElement("input")
+    let $lbl = target.parentElement.querySelector('label')
+
+    $el.setAttribute("value", $lbl.innerText)
+    document.body.appendChild($el)
+    $el.select()
+    document.execCommand("copy")
+    document.body.removeChild($el);
+
+    if (typeof window.getSelection == "function") {
+        const range = document.createRange()
+        range.selectNodeContents($lbl)
+        window.getSelection()?.removeAllRanges()
+        window.getSelection()?.addRange(range)
+    }
+}
+</script>
+</body>
+</html>

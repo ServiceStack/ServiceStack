@@ -176,11 +176,11 @@
     <PackageReference Include="Glimpse.AspNet" Version="1.9.2" />
     <PackageReference Include="Lambda2Js.Signed" Version="3.1.3" />
     <PackageReference Include="log4net" Version="2.0.10" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Npgsql" Version="4.1.9" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="RavenDB.Client" Version="5.2.1" />
     <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Interfaces" Version="$(Version)" />

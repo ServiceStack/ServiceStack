@@ -144,6 +144,9 @@ namespace ServiceStack
         public static HashSet<T> ToSet<T>(this IEnumerable<T> items) => new(items);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HashSet<T> ToSet<T>(this IEnumerable<T> items, IEqualityComparer<T> comparer) => new(items,comparer);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Each<T>(this IEnumerable<T> values, Action<T> action)
         {
             if (values == null) return;

@@ -31,13 +31,13 @@ namespace ServiceStack.Html
      * Class that compresses given HTML source by removing comments, extra spaces and 
      * line breaks while preserving content within &lt;pre>, &lt;textarea>, &lt;script> 
      * and &lt;style> tags. 
-     * <p>Blocks that should be additionally preserved could be marked with:
-     * <br><code>&lt;!-- {{{ -->
-     * <br>&nbsp;&nbsp;&nbsp;&nbsp;...
-     * <br>&lt;!-- }}} --></code> 
-     * <br>or any number of user defined patterns. 
-     * <p>Content inside &lt;script> or &lt;style> tags could be optionally compressed using 
-     * <a href="http://developer.yahoo.com/yui/compressor/">Yahoo YUI ICompressor</a> or <a href="http://code.google.com/closure/compiler/">Google Closure Compiler</a>
+     * <p>Blocks that should be additionally preserved could be marked with:</p>
+     * <code>&lt;!-- {{{ -->
+     * &lt;!-- }}} --></code> 
+     * or any number of user defined patterns. 
+     * <p>Content inside &lt;script> or &lt;style> tags could be optionally compressed using</p> 
+     * <a href="http://developer.yahoo.com/yui/compressor/">Yahoo YUI ICompressor</a>
+     * or <a href="http://code.google.com/closure/compiler/">Google Closure Compiler</a>
      * libraries.
      * 
      * @author <a href="mailto:serg472@gmail.com">Sergiy Kovalchuk</a>
@@ -136,7 +136,7 @@ namespace ServiceStack.Html
          * 
          * <p><b>Note:</b> It is fairly safe to turn this option on unless you 
          * rely on spaces for page formatting. Even if you do, you can always preserve 
-         * required spaces with <code>&amp;nbsp;</code>. This option has no performance impact.    
+         * required spaces with <code>&amp;nbsp;</code>. This option has no performance impact.</p>    
          * 
          * @param removeIntertagSpaces set <code>true</code> to remove all inter-tag whitespace characters
          */
@@ -151,7 +151,7 @@ namespace ServiceStack.Html
          * a page validation is not very important or to squeeze the most out of the compression.
          * This option has no performance impact. 
          * 
-         * @param removeQuotes set <code>true</code> to remove unnecessary quotes from tag attributes
+         * @param removeQuotes set <code>true</code> to remove unnecessary quotes from tag attributes</p>
          */
         public bool RemoveQuotes = false;
 
@@ -200,7 +200,7 @@ namespace ServiceStack.Html
          * <li>language="javascript"</li>
          * </ul>
          * 
-         * <p>Default is <code>false</code>.
+         * <p>Default is <code>false</code>.</p>
          * 
          * @param removeScriptAttributes set <code>true</code> to remove unnecessary attributes from <code>&lt;script></code> tags 
          */
@@ -222,7 +222,7 @@ namespace ServiceStack.Html
          * 
          * <p>Default is <code>false</code>.
          * 
-         * @param removeLinkAttributes set <code>true</code> to remove unnecessary attributes from <code>&lt;link></code> tags
+         * @param removeLinkAttributes set <code>true</code> to remove unnecessary attributes from <code>&lt;link></code> tags</p>
          */
         public bool RemoveLinkAttributes = false;
 
@@ -249,9 +249,9 @@ namespace ServiceStack.Html
          * <li>readonly</li>
          * </ul>
          * 
-         * <p>For example, <code>&ltinput readonly="readonly"></code> would become <code>&ltinput readonly></code>
+         * <p>For example, <code>&lt;input readonly="readonly"></code> would become <code>&lt;input readonly></code></p>
          * 
-         * <p>Default is <code>false</code>.
+         * <p>Default is <code>false</code>.</p>
          * 
          * @param simpleBooleanAttributes set <code>true</code> to simplify bool attributes
          */
@@ -260,9 +260,9 @@ namespace ServiceStack.Html
         /**
          * If set to <code>true</code>, <code>javascript:</code> pseudo-protocol will be removed from inline event handlers.
          * 
-         * <p>For example, <code>&lta onclick="javascript:alert()"></code> would become <code>&lta onclick="alert()"></code>
+         * <p>For example, <code>&lt;a onclick="javascript:alert()"></code> would become <code>&lt;a onclick="alert()"></code></p>
          * 
-         * <p>Default is <code>false</code>.
+         * <p>Default is <code>false</code>.</p>
          * 
          * @param removeJavaScriptProtocol set <code>true</code> to remove <code>javascript:</code> pseudo-protocol from inline event handlers.
          */
@@ -272,14 +272,14 @@ namespace ServiceStack.Html
          * If set to <code>true</code>, <code>HTTP</code> protocol will be removed from <code>href</code>, <code>src</code>, <code>cite</code>, and <code>action</code> tag attributes.
          * URL without a protocol would make a browser use document's current protocol instead. 
          * 
-         * <p>Tags marked with <code>rel="external"</code> will be skipped.
+         * <p>Tags marked with <code>rel="external"</code> will be skipped.</p>
          * 
-         * <p>For example: 
-         * <p><code>&lta href="http://example.com"> &ltscript src="http://google.com/js.js" rel="external"></code> 
-         * <p>would become: 
-         * <p><code>&lta href="//example.com"> &ltscript src="http://google.com/js.js" rel="external"></code>
+         * <p>For example: </p>
+         * <p><code>&lt;a href="http://example.com"> &lt;script src="http://google.com/js.js" rel="external"></code></p> 
+         * <p>would become: </p>
+         * <p><code>&lt;a href="//example.com"> &lt;script src="http://google.com/js.js" rel="external"></code></p>
          * 
-         * <p>Default is <code>false</code>.
+         * <p>Default is <code>false</code>.</p>
          * 
          * @param removeHttpProtocol set <code>true</code> to remove <code>HTTP</code> protocol from tag attributes
          */
@@ -289,14 +289,14 @@ namespace ServiceStack.Html
          * If set to <code>true</code>, <code>HTTPS</code> protocol will be removed from <code>href</code>, <code>src</code>, <code>cite</code>, and <code>action</code> tag attributes.
          * URL without a protocol would make a browser use document's current protocol instead.
          * 
-         * <p>Tags marked with <code>rel="external"</code> will be skipped.
+         * <p>Tags marked with <code>rel="external"</code> will be skipped.</p>
          * 
-         * <p>For example: 
-         * <p><code>&lta href="https://example.com"> &ltscript src="https://google.com/js.js" rel="external"></code> 
-         * <p>would become: 
-         * <p><code>&lta href="//example.com"> &ltscript src="https://google.com/js.js" rel="external"></code>
+         * <p>For example: </p>
+         * <p><code>&lt;a href="https://example.com"> &lt;script src="https://google.com/js.js" rel="external"></code></p> 
+         * <p>would become: </p>
+         * <p><code>&lt;a href="//example.com"> &lt;script src="https://google.com/js.js" rel="external"></code></p>
          * 
-         * <p>Default is <code>false</code>.
+         * <p>Default is <code>false</code>.</p>
          * 
          * @param removeHttpsProtocol set <code>true</code> to remove <code>HTTP</code> protocol from tag attributes
          */
@@ -310,7 +310,7 @@ namespace ServiceStack.Html
          * <p>Besides custom defined lists, you can pass one of 3 predefined lists of tags: 
          * {@link #BLOCK_TAGS_MIN BLOCK_TAGS_MIN},
          * {@link #BLOCK_TAGS_MAX BLOCK_TAGS_MAX},
-         * {@link #ALL_TAGS ALL_TAGS}.
+         * {@link #ALL_TAGS ALL_TAGS}.</p>
          * 
          * @param tagList a comma separated list of tags around which spaces will be removed
          */
@@ -322,12 +322,12 @@ namespace ServiceStack.Html
          * 
          * <p>Custom preservation rules have higher priority than default rules.
          * Priority between custom rules are defined by their position in a list 
-         * (beginning of a list has higher priority).
+         * (beginning of a list has higher priority).</p>
          * 
          * <p>Besides custom patterns, you can use 3 predefined patterns: 
          * {@link #PHP_TAG_PATTERN PHP_TAG_PATTERN},
          * {@link #SERVER_SCRIPT_TAG_PATTERN SERVER_SCRIPT_TAG_PATTERN},
-         * {@link #SERVER_SIDE_INCLUDE_PATTERN SERVER_SIDE_INCLUDE_PATTERN}.
+         * {@link #SERVER_SIDE_INCLUDE_PATTERN SERVER_SIDE_INCLUDE_PATTERN}.</p>
          * 
          * @param preservePatterns List of <code>Regex</code> objects that will be 
          * used to skip matched blocks during compression  
@@ -338,9 +338,9 @@ namespace ServiceStack.Html
         /**
          * If set to <code>true</code>, HTML compression statistics will be generated. 
          * 
-         * <p><strong>Important:</strong> Enabling statistics makes HTML compressor not thread safe. 
+         * <p><strong>Important:</strong> Enabling statistics makes HTML compressor not thread safe. </p>
          * 
-         * <p>Default is <code>false</code>.
+         * <p>Default is <code>false</code>.</p>
          * 
          * @param generateStatistics set <code>true</code> to generate HTML compression statistics 
          */
@@ -1887,7 +1887,7 @@ namespace ServiceStack.Html
          * 
          * <p>Please note that compression performance varies very significantly depending on whether it was 
          * a cold run or not (specifics of Java VM), so for accurate real world results it is recommended 
-         * to take measurements accordingly.   
+         * to take measurements accordingly.</p>
          * 
          * @return the compression time, in milliseconds 
          *      

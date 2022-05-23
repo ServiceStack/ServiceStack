@@ -1,0 +1,158 @@
+@page "/todomvc"
+@inherits AppComponentBase
+
+<form @onsubmit="addTodo" class="max-w-xl">
+<CascadingValue Value=@errorStatus>
+
+    <div class="flex my-8 justify-center">
+        <span class="ml-1 sm:ml-4 text-xl sm:text-3xl text-gray-700">Todos Application</span>
+    </div>
+
+    <ErrorSummary Except=@VisibleFields />
+
+    <TextInput placeholder="What needs to be done?" @bind-Value="request.Text" Label="" />
+
+    <div class="mt-4 bg-white shadow-sm overflow-hidden rounded-md">
+        <ul role="list" class="divide-y divide-gray-200">
+        @foreach (var todo in filteredTodos())
+        {
+            <li @key="todo.Id" class="px-6 py-4">
+                <div class="relative flex items-start" @onclick="_ => toggleTodo(todo.Id)">
+                    <div class="flex items-center h-6">
+                        @if (todo.IsFinished)
+                        {
+                            <span class="material-icons text-green-600 h-5 w-5">check_circle</span>
+                        }
+                        else
+                        {
+                            <span class="material-icons h-5 w-5">radio_button_unchecked</span>
+                        }
+                    </div>
+                    <div class="ml-3 flex-grow">
+                        <label class=@(todo.IsFinished ? "line-through" : "")>@todo.Text</label>
+                    </div>
+                    <div>
+                        @if (todo.IsFinished)
+                        {
+                            <span class="material-icons h-5 w-5" @onclick="_ => removeTodo(todo.Id)">delete_outline</span>
+                        }
+                    </div>
+                </div>
+            </li>
+        }
+        </ul>
+    </div>
+
+    <div class="mt-4 flex justify-between">
+        <div class="text-gray-400 leading-8 mr-4">
+            @unfinishedTodos().Count() <span class="hidden sm:inline">item(s)</span> left
+        </div>
+
+        <div class="inline-flex shadow-sm rounded-md">
+            <a href="#" @onclick:preventDefault class=@TabClass("rounded-l-lg border", filter == Filter.All) @onclick=@(() => filter = Filter.All)>
+                All
+            </a>
+            <a href="#" @onclick:preventDefault class=@TabClass("border-t border-b", filter == Filter.Unfinished) @onclick=@(() => filter = Filter.Unfinished)>
+                Active
+            </a>
+            <a href="#" @onclick:preventDefault class=@TabClass("rounded-r-md border", filter == Filter.Finished) @onclick=@(() => filter = Filter.Finished)>
+                Completed
+            </a>
+        </div>
+
+        <div class="leading-8 ml-4">
+            <a href="#" class=@(finishedTodos().Count() == 0 ? "invisible" : "") @onclick="_ => removeFinishedTodos()" @onclick:preventDefault>
+                clear <span class="hidden sm:inline">completed</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="mt-5 text-center text-gray-400 flex justify-center -ml-6">
+        <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.ServiceInterface/TodosServices.cs" IconClass="oi oi-code" />
+        <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.ServiceModel/Todos.cs" IconClass="oi oi-loop" />
+        <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/TodoMvc.razor" IconSrc="/img/blazor.svg" />
+    </div>
+
+</CascadingValue>
+</form>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+@code {
+    enum Filter
+    {
+        All,
+        Finished,
+        Unfinished
+    }
+    static string[] VisibleFields = new[] { nameof(CreateTodo.Text) };
+
+    string TabClass(string @class, bool isActive) =>
+        ClassNames("border-gray-200 text-sm font-medium px-4 py-2 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700",
+            (isActive ? "text-blue-700 dark:bg-blue-600" : "text-gray-900 hover:text-blue-700 dark:bg-gray-700"), @class);
+
+    List<Todo> todos = new();
+    Filter filter = Filter.All;
+
+    CreateTodo request = new();
+    ResponseStatus? errorStatus;
+
+    IEnumerable<Todo> filteredTodos() => filter switch
+    {
+        Filter.Finished => finishedTodos(),
+        Filter.Unfinished => unfinishedTodos(),
+        _ => todos
+    };
+    IEnumerable<Todo> finishedTodos() => todos.Where(x => x.IsFinished);
+    IEnumerable<Todo> unfinishedTodos() => todos.Where(x => !x.IsFinished);
+
+    protected override async Task OnInitializedAsync() => await refreshTodos();
+
+    // For best UX: apply changes locally then revalidate with real server state
+    async Task refreshTodos()
+    {
+        var api = await ApiAsync(new QueryTodos());
+        if (api.Succeeded)
+            todos = api.Response!.Results;
+        else
+            errorStatus = api.Error;
+    }
+
+    async Task addTodo()
+    {
+        errorStatus = null;
+        todos.Add(new Todo { Text = request.Text });
+        var api = await ApiAsync(request);
+        if (api.Succeeded)
+            request.Text = "";
+        else
+            errorStatus = api.Error;
+        await refreshTodos();
+    }
+
+    async Task removeTodo(long id)
+    {
+        todos.RemoveAll(x => x.Id == id);
+        var api = await ApiAsync(new DeleteTodo { Id = id });
+        errorStatus = api.Error;
+        await refreshTodos();
+    }
+
+    async Task removeFinishedTodos()
+    {
+        var ids = todos.Where(x => x.IsFinished).Select(x => x.Id).ToList();
+        if (ids.Count == 0) return;
+        todos.RemoveAll(x => ids.Contains(x.Id));
+        var api = await ApiAsync(new DeleteTodos { Ids = ids });
+        errorStatus = api.Error;
+        await refreshTodos();
+    }
+
+    async Task toggleTodo(long id)
+    {
+        var todo = todos.Find(x => x.Id == id)!;
+        todo.IsFinished = !todo.IsFinished;
+        var api = await ApiAsync(new UpdateTodo { Id = todo.Id, Text = todo.Text, IsFinished = todo.IsFinished });
+        errorStatus = api.Error;
+        await refreshTodos();
+    }
+}

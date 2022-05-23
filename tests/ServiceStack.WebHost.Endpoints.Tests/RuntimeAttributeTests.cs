@@ -5,7 +5,6 @@
 using System;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
@@ -64,9 +63,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 typeof(Register)
                     .AddAttributes(new RouteAttribute("/custom-register"))
                     .AddAttributes(new RestrictAttribute(RequestAttributes.Json));
-
-                typeof(SwaggerResource)
-                    .AddAttributes(new ExcludeAttribute(Feature.Soap));
             }
 
             public override void Configure(Container container)

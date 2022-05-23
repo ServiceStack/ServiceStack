@@ -14,7 +14,7 @@ namespace ServiceStack.Auth
 {
     public abstract class AuthProvider : IAuthProvider, IAuthPlugin
     {
-        protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
+        protected ILog Log;
 
         public virtual string Type => GetType().Name;
         public virtual Dictionary<string, string> Meta => null;
@@ -46,12 +46,19 @@ namespace ServiceStack.Auth
         public static string UrlFilter(AuthContext provider, string url) => url;
 
         public NavItem NavItem { get; set; }
+        
+        public int Sort { get; set; }
+        public string Label { get; set; }
+        public ImageInfo Icon { get; set; }
+
+        public List<InputInfo> FormLayout { get; set; }
 
         public HashSet<string> ExcludeAuthInfoItems { get; set; } = new(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
 
         protected AuthProvider()
         {
             PersistSession = !(GetType().HasInterface(typeof(IAuthWithRequest)) || GetType().HasInterface(typeof(IAuthWithRequestSync)));
+            Log = LogManager.GetLogger(GetType());
         }
 
         protected AuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
@@ -99,9 +106,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Remove the Users Session
         /// </summary>
-        /// <param name="service"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public virtual async Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token=default)
         {
             var feature = HostContext.GetPlugin<AuthFeature>();
@@ -179,11 +183,7 @@ namespace ServiceStack.Auth
             }
 
             var authRepo = GetAuthRepositoryAsync(authService.Request);
-#if NET472 || NETSTANDARD2_0
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 if (CustomValidationFilter != null)
                 {

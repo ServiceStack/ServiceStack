@@ -1,0 +1,38 @@
+@page "/hello-secure"
+@attribute [Authorize()]
+@inherits AppAuthComponentBase
+
+<h1 class="fs-2">
+    Call HelloSecure 
+</h1>
+
+<form @onsubmit="submit" class="max-w-xl d-flex align-items-center">
+<CascadingValue Value=@api.Error>
+    <div class="form-floating">
+        <TextInput placeholder="What's your name?" @bind-Value="request.Name" spellcheck="false" class="w-screen-xs" />
+    </div>
+    <button class="ms-2 btn btn-primary align-self-start" @onclick="submit"><span class="oi oi-play-circle p-2" style="font-size:28px"></span></button>
+</CascadingValue>
+</form>
+
+@if (api.Succeeded) {
+    <div class="mt-4 text-muted">@User!.GetDisplayName() says:</div>
+    <h3 class="text-success">@api.Response!.Result</h3>
+}
+
+<div class="mt-4">
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/CallHelloSecure.razor" IconSrc="/img/blazor.svg" />
+</div>
+
+@code {
+    HelloSecure request = new()
+    {
+        Name = "Blazor WASM"
+    };
+
+    ApiResult<HelloResponse> api = new();
+
+    protected override async Task OnInitializedAsync() => await submit();
+
+    async Task submit() => api = await ApiAsync(request);
+}

@@ -1,0 +1,101 @@
+@page "/signup"
+@inherits AppAuthComponentBase
+@inject ServiceStackStateProvider authProvider
+@inject NavigationManager NavigationManager
+
+@if (IsAuthenticated)
+{
+    NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+    return;
+}
+
+<h1 class="fs-2 mb-3">Sign Up</h1>
+
+<form @onsubmit="submit" class=@ClassNames("max-w-xl")>
+<CascadingValue Value=@api.Error>
+    <ErrorSummary Except=@VisibleFields />
+
+    <div class="mb-3 form-floating">
+        <TextInput @bind-Value="request.DisplayName" spellcheck="false" Help="Your first and last name" required />
+    </div>
+
+    <div class="mb-3 form-floating">
+        <TextInput type="email" @bind-Value="request.Email" spellcheck="false" required />
+    </div>
+
+    <div class="mb-3 form-floating">
+        <TextInput type="password" @bind-Value="request.Password" Help="Password, 6 characters or more" required />
+    </div>
+
+    <div class="mb-3 form-floating">
+        <TextInput type="password" @bind-Value="request.ConfirmPassword" />
+    </div>
+
+    <div class="form-check mb-4">
+      <input type="checkbox" class="form-check-input" id="autoLogin" @bind="request.AutoLogin">
+      <label class="form-check-label" for="autoLogin">
+        Auto Login
+      </label>
+    </div>
+
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </div>
+</CascadingValue>
+</form>
+
+<div class="mt-5 flex">
+    <span class="me-2">Quick Links:</span>
+    <button class="ms-2 btn btn-outline-secondary" @onclick='_ => SetUser()'>new@user.com</button>
+</div>
+
+<div class="mt-4">
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/SignUp.razor" IconSrc="/img/blazor.svg" />
+</div>
+
+@code {
+    string[] VisibleFields => new[]{ 
+        nameof(request.DisplayName), nameof(request.Email), nameof(request.Password), nameof(request.ConfirmPassword) };
+
+    Register request = new() { AutoLogin = true };
+
+    ApiResult<RegisterResponse> api = new();
+
+    void SetUser()
+    {
+        request.DisplayName = "New User";
+        request.Email = "new@user.com";
+        request.Password = request.ConfirmPassword = "p@55wOrd";
+        request.AutoLogin = true;
+    }
+
+    async Task submit()
+    {
+        api.ClearErrors();
+
+        if (request.Email.IsNullOrEmpty())
+            api.AddFieldError(nameof(Register.Email), "Email is required");
+
+        if (request.Password.IsNullOrEmpty())
+            api.AddFieldError(nameof(Register.Password), "Password is required");
+        else if (request.ConfirmPassword != request.Password)
+            api.AddFieldError(nameof(Register.ConfirmPassword), "Passwords do not match");
+
+        if (api.Failed) return;
+
+        api = await ApiAsync(request);
+
+        if (api.Succeeded)
+        {
+            if (request.AutoLogin == true)
+            {
+                await authProvider.SignInAsync(api.Response!);
+                NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/signin?return=" + NavigationManager.GetReturnUrl(), true);
+            }
+        }
+    }
+} 

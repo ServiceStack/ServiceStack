@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -385,7 +386,7 @@ namespace ServiceStack.Auth
             await repo.SaveUserAuthAsync(userAuth, token);
         }
 
-        public static void PopulateFromMap(this IAuthSession session, Dictionary<string, string> map)
+        public static void PopulateFromMap(this IAuthSession session, IDictionary<string, string> map)
         {
             var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern
             session.IsAuthenticated = true;

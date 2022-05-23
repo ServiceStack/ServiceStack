@@ -6,6 +6,7 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.Host;
 using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -64,14 +65,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Any(PatchRockstarAuditTenantMq request)
         {
             var mqRequest = request.ConvertTo<PatchRockstarAuditTenant>();
-            mqRequest.SessionId = GetSession().Id;
+            mqRequest.BearerToken = Request.GetJwtToken();
             PublishMessage(mqRequest);
         }
         
         public void Any(RealDeleteAuditTenantMq request)
         {
             var mqRequest = request.ConvertTo<RealDeleteAuditTenant>();
-            mqRequest.SessionId = GetSession().Id;
+            mqRequest.BearerToken = Request.GetJwtToken();
             PublishMessage(mqRequest);
         }
     }
@@ -945,6 +946,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Password = "p@55wOrd",
                 RememberMe = true,
             });
+            
+            Assert.That(authClient.GetTokenCookie(), Is.Not.Null);
 
             var createRequest = new CreateRockstarAuditTenantMq {
                 FirstName = nameof(CreateRockstarAuditTenantMq),

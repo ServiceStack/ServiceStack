@@ -149,10 +149,6 @@
     <Compile Include="ReqStarsService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj">
-      <Project>{01D3F057-7984-498F-8B0A-EB375701E204}</Project>
-      <Name>ServiceStack.Api.Swagger</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
       <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
       <Name>ServiceStack.Client</Name>

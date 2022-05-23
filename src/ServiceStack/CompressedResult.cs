@@ -12,8 +12,6 @@ namespace ServiceStack
     public class CompressedResult
         : IStreamWriterAsync, IHttpResult
     {
-        public const int Adler32ChecksumLength = 4;
-
         public const string DefaultContentType = MimeTypes.Xml;
 
         public byte[] Contents { get; }
@@ -75,7 +73,7 @@ namespace ServiceStack
         public CompressedResult(byte[] contents, string compressionType, string contentMimeType)
         {
             if (!CompressionTypes.IsValid(compressionType))
-                throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
+                throw new ArgumentException("Must be " + string.Join(", ", CompressionTypes.AllCompressionTypes), compressionType);
 
             this.StatusCode = HttpStatusCode.OK;
             this.ContentType = contentMimeType;
@@ -87,13 +85,12 @@ namespace ServiceStack
             this.Cookies = new List<Cookie>();
         }
 
-        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new())
         {
             var response = RequestContext?.Response;
             response?.SetContentLength(this.Contents.Length + PaddingLength);
 
             await responseStream.WriteAsync(this.Contents, token).ConfigAwait();
-            //stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
 
             await responseStream.FlushAsync(token).ConfigAwait();
         }

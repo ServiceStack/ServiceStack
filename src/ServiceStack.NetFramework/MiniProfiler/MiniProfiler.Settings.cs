@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -185,7 +185,7 @@ namespace ServiceStack.MiniProfiler
             public static bool ExcludeStackTraceSnippetFromSqlTimings { get; set; }
 
             /// <summary>
-            /// When <see cref="MiniProfiler.Start"/> is called, if the current request url contains any items in this property,
+            /// When MiniProfiler.Start is called, if the current request url contains any items in this property,
             /// no profiler will be instantiated and no results will be displayed.
 			/// Default value is { "/ssr-", "/content/", "/scripts/", "/favicon.ico" }.
             /// </summary>

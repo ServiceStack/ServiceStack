@@ -1,4 +1,4 @@
-#if NET45
+#if NETFX
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +26,7 @@ namespace ServiceStack
         public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters) {}
 
         /// <summary>
-        /// Adds the singleton of the <see cref="ClientIdentityMessageInspector"/> class to the client endpoint's message inspectors.
+        /// Adds the singleton of the <see cref="CookieManagerMessageInspector"/> class to the client endpoint's message inspectors.
         /// </summary>
         /// <param name="endpoint">The endpoint that is to be customized.</param>
         /// <param name="clientRuntime">The client runtime to be customized.</param>
@@ -58,7 +58,7 @@ namespace ServiceStack
         public string Uri { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClientIdentityMessageInspector"/> class.
+        /// Initializes a new instance of the <see cref="CookieManagerMessageInspector"/> class.
         /// </summary>
         public CookieManagerMessageInspector()
         {
@@ -73,10 +73,10 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Gets the singleton <see cref="ClientIdentityMessageInspector" /> instance.
+        /// Gets the singleton <see cref="CookieManagerMessageInspector" /> instance.
         /// </summary>
         public static CookieManagerMessageInspector Instance => 
-            instance ?? (instance = new CookieManagerMessageInspector());
+            instance ??= new CookieManagerMessageInspector();
 
         /// <summary>
         /// Inspects a message after a reply message is received but prior to passing it back to the client application.

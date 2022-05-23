@@ -13,6 +13,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Extensions;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
+using ServiceStack.Script;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using TestsConfig = ServiceStack.WebHost.Endpoints.Tests.Config;
@@ -34,6 +35,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         public override void Configure(Container container)
         {
+            ScriptContext.ScriptMethods.AddRange(new ScriptMethods[] {
+                new DbScriptsAsync(),
+                new MyValidators(), 
+            });
+
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
             container.Register<IDbConnectionFactory>(dbFactory);
 
@@ -241,6 +247,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [Route("/query/namedrockstars")]
     public class QueryNamedRockstars : QueryDb<NamedRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    [NamedConnection("SqlServer")]
+    [Route("/query/namedconnectionrockstars")]
+    public class QueryNamedConnectionRockstars : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
@@ -871,7 +884,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         //        [NUnit.Framework.Ignore("Debug Run"), Test]
         public void RunFor10Mins()
         {
-#if NET45
+#if NETFX
             Process.Start(Config.ListeningOn);
 #endif
             Thread.Sleep(TimeSpan.FromMinutes(10));
@@ -888,9 +901,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_execute_basic_query_NamedRockstar()
+        public void Can_execute_basic_QueryNamedRockstars()
         {
             var response = client.Get(new QueryNamedRockstars { Include = "Total" });
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("SQL Server"));
+        }
+
+        [Test]
+        public void Can_execute_basic_QueryNamedConnectionRockstars()
+        {
+            var response = client.Get(new QueryNamedConnectionRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(1));
@@ -1139,6 +1163,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(customRes.Results.Count, Is.EqualTo(TotalAlbums));
             ages = customRes.Results.Select(x => x.Age);
             Assert.That(ages.Contains(27 * 2));
+
+            response = client.Get(new QueryJoinedRockstarAlbumsCustomSelect { Age = 54, Include = "Total" });
+            Assert.That(response.Total, Is.EqualTo(6));
+            Assert.That(response.Results.Count, Is.EqualTo(6));
+            ages = response.Results.Select(x => x.Age);
+            Assert.That(ages.All(x => x == 54));
+            var lastNames = response.Results.Select(x => x.LastName);
+            Assert.That(lastNames, Is.EquivalentTo(new[] {
+                "Hendrix", "Cobain", "Cobain", "Cobain", "Cobain", "Cobain",
+            }));
         }
         
         [Test]

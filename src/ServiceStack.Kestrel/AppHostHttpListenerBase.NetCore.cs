@@ -1,5 +1,5 @@
 //Created for compatibility to run tests on .NET Core
-#if NETSTANDARD2_0
+#if NETCORE
 using System.Reflection;
 
 namespace ServiceStack

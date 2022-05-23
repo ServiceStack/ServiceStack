@@ -225,7 +225,8 @@ namespace ServiceStack.Api.OpenApi
             return GetListElementType(type) != null;
         }
 
-        private Dictionary<string, object> GetOpenApiListItems(Type listItemType, string route, string verb, ApiAllowableValuesAttribute allowableValueAttrs = null)
+        private Dictionary<string, object> GetOpenApiListItems(Type listItemType, string route, string verb, 
+            string[] enumValues = null)
         {
             var items = new Dictionary<string, object>();
 
@@ -237,8 +238,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     items.Add("x-nullable", false);
                 }
-                var enumValues = GetEnumValues(allowableValueAttrs);
-                if (enumValues?.Count > 0)
+                if (enumValues?.Length > 0)
                 {
                     items.Add("enum", enumValues);
                 }
@@ -412,12 +412,12 @@ namespace ServiceStack.Api.OpenApi
                     var underlyingType = Enum.GetUnderlyingType(enumType);
                     schemaProp.Type = GetSwaggerTypeName(underlyingType);
                     schemaProp.Format = GetSwaggerTypeFormat(underlyingType, route, verb);
-                    schemaProp.Enum = GetNumericValues(enumType, underlyingType).ToList();
+                    schemaProp.Enum = GetNumericValues(enumType, underlyingType).ToArray();
                 }
                 else
                 {
                     schemaProp.Type = OpenApiType.String;
-                    schemaProp.Enum = Enum.GetNames(enumType).ToList();
+                    schemaProp.Enum = Enum.GetNames(enumType).ToArray();
                 }
             }
             else if (IsSwaggerScalarType(propertyType))
@@ -843,9 +843,9 @@ namespace ServiceStack.Api.OpenApi
             return operationId;
         }
 
-        private static List<string> GetEnumValues(ApiAllowableValuesAttribute attr)
+        private static string[] GetEnumValues(ApiAllowableValuesAttribute attr)
         {
-            return attr?.Values?.ToList();
+            return attr?.Values?.ToArray();
         }
 
         private List<OpenApiParameter> ParseParameters(IDictionary<string, OpenApiSchema> schemas, Type operationType, string route, string verb)
@@ -878,8 +878,7 @@ namespace ServiceStack.Api.OpenApi
 
                 paramAttrs[propertyName] = apiMembers;
                 propertyTypes[propertyName] = property.PropertyType;
-                var allowableValuesAttrs = property.AllAttributes<ApiAllowableValuesAttribute>();
-                allowableParams.AddRange(allowableValuesAttrs);
+                var allowableValuesAttr = property.FirstAttribute<ApiAllowableValuesAttribute>(); 
 
                 if (hasDataContract && attr == null)
                     continue;
@@ -893,7 +892,9 @@ namespace ServiceStack.Api.OpenApi
                 var parameter = GetParameter(schemas, property.PropertyType,
                     route, verb,
                     propertyName, paramType,
-                    allowableValuesAttrs.FirstOrDefault());
+                    enumValues: allowableValuesAttr != null
+                        ? GetEnumValues(allowableValuesAttr)
+                        : Html.Input.GetEnumValues(property.PropertyType));
 
                 defaultOperationParameters.Add(parameter);
             }
@@ -912,10 +913,13 @@ namespace ServiceStack.Api.OpenApi
                             && !string.Equals(member.ParameterType, "model")
                             && methodOperationParameters.All(x => x.Name != (member.Name ?? key)))
                         {
+                            var allowableValuesAttr = allowableParams.FirstOrDefault(attr => attr.Name == (member.Name ?? key)); 
                             var p = GetParameter(schemas, propertyTypes[key], route, verb,
                                     member.Name ?? key,
                                     member.GetParamType(operationType, member.Verb ?? verb),
-                                    allowableParams.FirstOrDefault(attr => attr.Name == (member.Name ?? key)),
+                                    enumValues: allowableValuesAttr != null
+                                        ? GetEnumValues(allowableValuesAttr)
+                                        : Html.Input.GetEnumValues(propertyTypes[key]),
                                     true
                                 );
                             p.Type = member.DataType ?? p.Type;
@@ -953,7 +957,9 @@ namespace ServiceStack.Api.OpenApi
             return methodOperationParameters;
         }
 
-        private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null, bool isApiMember = false)
+        private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb, string paramName, string paramIn, 
+            string[] enumValues = null, 
+            bool isApiMember = false)
         {
             //Compatibility: replace old Swagger ParamType to new Open API 
             if (paramIn == "form") paramIn = "formData";
@@ -966,7 +972,7 @@ namespace ServiceStack.Api.OpenApi
                     Name = paramName,
                     Type = GetSwaggerTypeName(schemaType),
                     Format = GetSwaggerTypeFormat(schemaType, route, verb),
-                    Enum = GetEnumValues(allowableValueAttrs),
+                    Enum = enumValues,
                     Nullable = IsRequiredType(schemaType) ? false : (bool?)null,
                     Required = paramIn == "path" ? true : (bool?)null
                 };
@@ -995,7 +1001,7 @@ namespace ServiceStack.Api.OpenApi
 
             if (IsListType(schemaType))
             {
-                return GetListParameter(schemas, schemaType, route, verb, paramName, paramIn, allowableValueAttrs);
+                return GetListParameter(schemas, schemaType, route, verb, paramName, paramIn, enumValues:enumValues);
             }
 
             OpenApiSchema openApiSchema;
@@ -1030,7 +1036,8 @@ namespace ServiceStack.Api.OpenApi
             return tags.Length > 0 ? tags[0] : null;
         }
 
-        private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> schemas, Type listType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null)
+        private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> schemas, Type listType, string route, string verb, string paramName, string paramIn, 
+            string[] enumValues = null)
         {
             if (!IsListType(listType))
                 return null;
@@ -1047,7 +1054,7 @@ namespace ServiceStack.Api.OpenApi
 
             var listItemType = GetListElementType(listType);
             ParseDefinitions(schemas, listItemType, route, verb);
-            parameter.Items = GetOpenApiListItems(listItemType, route, verb, allowableValueAttrs);
+            parameter.Items = GetOpenApiListItems(listItemType, route, verb, enumValues: enumValues);
 
             return parameter;
         }
@@ -1059,7 +1066,7 @@ namespace ServiceStack.Api.OpenApi
                 Type = OpenApiType.String,
                 Name = "Accept",
                 Description = "Accept Header",
-                Enum = new List<string> { "application/json" },
+                Enum = new [] { "application/json" },
                 In = "header",
                 Required = true,
             };

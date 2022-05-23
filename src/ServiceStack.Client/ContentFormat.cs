@@ -56,7 +56,8 @@ namespace ServiceStack
             return RequestAttributes.FormatOther;
         }
         
-        public static readonly Dictionary<string, string> ContentTypeAliases = new Dictionary<string, string> {
+        public static readonly Dictionary<string, string> ContentTypeAliases = new()
+        {
             { MimeTypes.JsonText, MimeTypes.Json },
             { MimeTypes.XmlText, MimeTypes.Xml },
             { MimeTypes.JsvText, MimeTypes.Jsv },

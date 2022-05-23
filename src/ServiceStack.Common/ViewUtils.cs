@@ -381,8 +381,8 @@ namespace ServiceStack
             return true;
         }
 
-        public static List<NavItem> NavItems { get; } = new List<NavItem>();
-        public static Dictionary<string, List<NavItem>> NavItemsMap { get; } = new Dictionary<string, List<NavItem>>();
+        public static List<NavItem> NavItems { get; } = new();
+        public static Dictionary<string, List<NavItem>> NavItemsMap { get; } = new();
 
         public static List<NavItem> GetNavItems(string key) => NavItemsMap.TryGetValue(key, out var navItems)
             ? navItems
@@ -407,13 +407,11 @@ namespace ServiceStack
                 if (file == null)
                     continue;
 
-                using (var reader = file.OpenText())
+                string line;
+                using var reader = file.OpenText();
+                while ((line = reader.ReadLine()) != null)
                 {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        sb.AppendLine(line);
-                    }
+                    sb.AppendLine(line);
                 }
             }
             
@@ -440,13 +438,11 @@ namespace ServiceStack
                 if (file == null)
                     continue;
 
-                using (var reader = file.OpenText())
+                string line;
+                using var reader = file.OpenText();
+                while ((line = reader.ReadLine()) != null)
                 {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        sb.AppendLine(line);
-                    }
+                    sb.AppendLine(line);
                 }
             }
             
@@ -722,7 +718,7 @@ namespace ServiceStack
         public static bool FormCheckValue(IRequest req, string name)
         {
             var value = FormValue(req, name);
-            return value == "true" || value == "True" || value == "t" || value == "on" || value == "1";
+            return value is "true" or "True" or "t" or "on" or "1";
         }
 
         public static string GetParam(IRequest req, string name) //sync with IRequest.GetParam()
@@ -757,7 +753,7 @@ namespace ServiceStack
             var strings = arg is IEnumerable<string> ls
                 ? ls
                 : arg is string s
-                    ? (IEnumerable<string>)new [] { s }
+                    ? new [] { s }
                     : arg is IEnumerable<object> e
                         ? e.Map(x => x.AsString())
                         : throw new NotSupportedException($"{filterName} expected a collection of strings but was '{arg.GetType().Name}'");

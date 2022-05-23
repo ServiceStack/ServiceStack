@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using ServiceStack.Extensions;
 using ServiceStack.Text;
+
+#if !NET6_0
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack
 {
@@ -11,7 +14,7 @@ namespace ServiceStack
 
         public ReadOnlyMemory<char> Original { get; set; }
 
-        public List<ReadOnlyMemory<char>> Args { get; internal set; } = new List<ReadOnlyMemory<char>>();
+        public List<ReadOnlyMemory<char>> Args { get; internal set; } = new();
 
         public ReadOnlyMemory<char> Suffix { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if NETSTANDARD2_0
+#if NETCORE
 using System;
 using System.Collections.Specialized;
 using System.IO;
@@ -75,7 +75,7 @@ namespace ServiceStack
             }
             else
             {
-#if NETSTANDARD2_0
+#if NETCORE
                 if (lastModified == DateTime.MinValue)
                     webReq.Headers.Remove(HttpHeaders.IfModifiedSince);
                 else
@@ -136,7 +136,6 @@ namespace ServiceStack
         }
     }
 
-#if !NETSTANDARD1_1
     public class AsyncTimer : ITimer
     {
         public System.Threading.Timer Timer;
@@ -162,6 +161,5 @@ namespace ServiceStack
             this.Timer = null;
         }
     }
-#endif    
 }
 #endif

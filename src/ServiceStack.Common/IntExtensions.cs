@@ -7,10 +7,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if NETSTANDARD2_0
-using System.Threading.Tasks;
-#endif
-
 namespace ServiceStack
 {
     public static class IntExtensions
@@ -84,7 +80,7 @@ namespace ServiceStack
             var asyncResults = new List<IAsyncResult>(times);
             for (var i = 0; i < times; i++)
             {
-#if NETSTANDARD2_0
+#if NETCORE
                 asyncResults.Add(Task.Run(() => actionFn(i)));
 #else                
                 asyncResults.Add(actionFn.BeginInvoke(i, null, null));
@@ -98,7 +94,7 @@ namespace ServiceStack
             var asyncResults = new List<IAsyncResult>(times);
             for (var i = 0; i < times; i++)
             {
-#if NETSTANDARD2_0
+#if NETCORE
                 asyncResults.Add(Task.Run(actionFn));
 #else                
                 asyncResults.Add(actionFn.BeginInvoke(null, null));

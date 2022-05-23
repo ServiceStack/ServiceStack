@@ -1,3 +1,4 @@
+#if NETFX
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -187,6 +188,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 	}
-
-
 }
+#endif

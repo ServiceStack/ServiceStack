@@ -30,7 +30,11 @@ namespace ServiceStack.Host
 
         public Dictionary<string, StreamSerializerDelegateAsync> ContentTypeSerializersAsync = new();
 
-        public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync = new();
+        public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync = new()
+        {
+            { MimeTypes.Json, JsonSerializer.DeserializeFromStreamAsync },
+            { MimeTypes.Jsv, TypeSerializer.DeserializeFromStreamAsync },
+        };
 
         public readonly Dictionary<string, StringSerializerDelegate> ContentTypeStringSerializers = new() {
             { MimeTypes.Json, (r, o) => JsonDataContractSerializer.Instance.SerializeToString(o) },
@@ -167,7 +171,7 @@ namespace ServiceStack.Host
                     break;
                 case ErrorResponse errorDto:  //ignore writing ErrorResponse bodies for unknown content types
                     break;
-#if !NETSTANDARD2_0
+#if !NETCORE
                 case System.Drawing.Image img:
                     img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                     break;

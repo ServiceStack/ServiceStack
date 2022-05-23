@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			try
 			{
-				var webRequest = (HttpWebRequest)WebRequest.Create(url);
+				var webRequest = WebRequest.CreateHttp(url);
 
 				var webResponse = webRequest.GetResponse();
 
@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_resolve_CustomHeader()
 		{
-			var webRequest = (HttpWebRequest)WebRequest.Create(
+			var webRequest = WebRequest.CreateHttp(
 				Config.ListeningOn + "json/reply/Headers?Name=X-CustomHeader");
 			webRequest.Headers["X-CustomHeader"] = "CustomValue";
 
@@ -114,7 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			try
 			{
-				var webRequest = (HttpWebRequest)WebRequest.Create(
+				var webRequest = WebRequest.CreateHttp(
 					Config.ListeningOn + "json/reply/RequestFilter?StatusCode=401");
 
 				webRequest.GetResponse();
@@ -133,7 +133,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			try
 			{
-				var webRequest = (HttpWebRequest)WebRequest.Create(Config.ListeningOn 
+				var webRequest = WebRequest.CreateHttp(Config.ListeningOn 
 					+ "json/reply/RequestFilter?StatusCode=401"
 					+ "&HeaderName=" + HttpHeaders.WwwAuthenticate
 					+ "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());

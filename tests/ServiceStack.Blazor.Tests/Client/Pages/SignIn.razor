@@ -1,0 +1,74 @@
+@page "/signin"
+@inherits AppAuthComponentBase
+@inject ServiceStackStateProvider provider
+@inject NavigationManager NavigationManager
+
+@if (IsAuthenticated)
+{
+    NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+    return;
+}
+
+<h1 class="fs-2 mb-3">Sign In</h1>
+
+<form @onsubmit="submit" class="max-w-xl">
+<CascadingValue Value=@api.Error>
+    <ErrorSummary Except=@VisibleFields />
+
+    <div class="mb-3 form-floating">
+        <TextInput @bind-Value="request.UserName" spellcheck="false" Help="Email address" />
+    </div>
+    <div class="mb-3 form-floating">
+        <TextInput type="password" @bind-Value="request.Password" spellcheck="false" />
+    </div>
+
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Login</button>
+        <NavLink href="/signup" class="btn btn-outline-primary">Register New User</NavLink>
+    </div>
+</CascadingValue>
+</form>
+
+<div class="mt-5 flex">
+    <span class="me-2">Quick Links:</span>
+    <button class="btn btn-outline-secondary mb-1" @onclick='_ => SetUser("admin@email.com", "p@55wOrd")'>admin@email.com</button>
+    <button class="btn btn-outline-secondary mb-1" @onclick='_ => SetUser("manager@email.com", "p@55wOrd")'>manager@email.com</button>
+    <button class="btn btn-outline-secondary mb-1" @onclick='_ => SetUser("employee@email.com", "p@55wOrd")'>employee@email.com</button>
+    <button class="btn btn-outline-secondary mb-1" @onclick='_ => SetUser("new@user.com", "p@55wOrd")'>new@user.com</button>
+</div>
+
+<div class="mt-4">
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/SignIn.razor" IconSrc="/img/blazor.svg" />
+</div>
+
+@code {
+    string[] VisibleFields => new[]{ nameof(Authenticate.UserName), nameof(Authenticate.Password) };
+
+    ApiResult<AuthenticateResponse> api = new();
+
+    Authenticate request = new();
+
+    void SetUser(string email, string password)
+    {
+        request.UserName = email;
+        request.Password = password;
+    }
+
+    async Task submit()
+    {
+        api.ClearErrors();
+
+        if (request.UserName.IsNullOrEmpty())
+            api.AddFieldError(nameof(request.UserName), "Email is required");
+
+        if (request.Password.IsNullOrEmpty())
+            api.AddFieldError(nameof(request.Password), "Password is required");
+
+        if (api.Failed) return;
+
+        api = await provider.LoginAsync(request.UserName, request.Password);
+
+        if (api.Succeeded)
+            NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+    }
+} 

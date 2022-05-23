@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-#if !NETSTANDARD
+#if !NETCORE
     using System.Web.Mvc;
 #else
     using Microsoft.AspNetCore.Mvc;
@@ -54,7 +54,7 @@ namespace ServiceStack.Mvc
         {
             var attrs = new List<T>();
 
-#if !NETSTANDARD
+#if !NETCORE
             var attr = filterContext.ActionDescriptor
                 .GetCustomAttributes(typeof(T), true)
                 .FirstOrDefault() as T;

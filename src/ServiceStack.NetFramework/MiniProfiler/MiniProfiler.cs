@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -110,11 +110,11 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// A string identifying the user/client that is profiling this request.  Set <see cref="MiniProfiler.Settings.UserProvider"/>
+        /// A string identifying the user/client that is profiling this request.  Set MiniProfiler.Settings.UserProvider
         /// with an <see cref="IUserProvider"/>-implementing class to provide a custom value.
         /// </summary>
         /// <remarks>
-        /// If this is not set manually at some point, the <see cref="MiniProfiler.Settings.UserProvider"/> implementation will be used;
+        /// If this is not set manually at some point, the MiniProfiler.Settings.UserProvider implementation will be used;
         /// by default, this will be the current request's ip address.
         /// </remarks>
         [DataMember(Order = 7, Name = "User")]
@@ -355,7 +355,7 @@ namespace ServiceStack.MiniProfiler
         /// do not wish to include the MvcMiniProfiler namespace for the <see cref="MiniProfilerExtensions.Step"/> extension method.
         /// </summary>
         /// <param name="name">A descriptive name for the code that is encapsulated by the resulting IDisposable's lifetime.</param>
-        /// <param name="level">This step's visibility level; allows filtering when <see cref="MiniProfiler.Start"/> is called.</param>
+        /// <param name="level">This step's visibility level; allows filtering when MiniProfiler.Start is called.</param>
         public static IDisposable StepStatic(string name, ProfileLevel level = ProfileLevel.Info)
         {
             return MiniProfilerExtensions.Step(Current, name, level);
@@ -377,7 +377,7 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// Gets the currently running MiniProfiler for the current HttpContext; null if no MiniProfiler was <see cref="Start"/>ed.
+        /// Gets the currently running MiniProfiler for the current HttpContext; null if no MiniProfiler was Started.
         /// </summary>
         public static MiniProfiler Current
         {
@@ -492,7 +492,7 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         /// <param name="profiler">The current profiling session or null.</param>
         /// <param name="name">A descriptive name for the code that is encapsulated by the resulting IDisposable's lifetime.</param>
-        /// <param name="level">This step's visibility level; allows filtering when <see cref="MiniProfiler.Start"/> is called.</param>
+        /// <param name="level">This step's visibility level; allows filtering when MiniProfiler.Start is called.</param>
         public static IDisposable Step(this IProfiler profiler, string name, ProfileLevel level)
         {
             var miniProfiler = profiler.GetMiniProfiler();

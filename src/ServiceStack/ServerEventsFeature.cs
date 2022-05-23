@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0        
+﻿#if NETCORE        
 using ServiceStack.Host;
 #else
 using System.Web;
@@ -1047,6 +1047,8 @@ namespace ServiceStack
         public Func<IEventSubscription, Task> OnSubscribeAsync { get; set; }
         public Func<IEventSubscription,Task> OnUnsubscribeAsync { get; set; }
         public Func<IEventSubscription,Task> OnUpdateAsync { get; set; }
+        
+        public Func<IEventSubscription,Task> OnRemoveSubscriptionAsync { get; set; }
 
         public Func<IEventSubscription, Task> NotifyJoinAsync { get; set; }
         public Func<IEventSubscription, Task> NotifyLeaveAsync { get; set; }
@@ -1324,6 +1326,9 @@ namespace ServiceStack
 
                     if (NotifyChannelOfSubscriptions && sub.Channels != null && NotifyLeaveAsync != null)
                         await NotifyLeaveAsync(sub).ConfigAwait();
+                    
+                    if (OnRemoveSubscriptionAsync != null)
+                        await OnRemoveSubscriptionAsync(sub).ConfigAwait();
 
                     this.feature?.IncrementCounter("MemDoUnSubs");
                 }

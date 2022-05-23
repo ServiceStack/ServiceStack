@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace ServiceStack.MiniProfiler.Storage
         }
 
         /// <summary>
-        /// Stores <param name="profiler"/> to dbo.MiniProfilers under its <see cref="Profiler.Id"/>; 
+        /// Stores <param name="profiler"/> to dbo.MiniProfilers under its Profiler.Id; 
         /// stores all child Timings and SqlTimings to their respective tables.
         /// </summary>
         public override void Save(MiniProfiler profiler)
@@ -143,9 +143,9 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
 
 
         /// <summary>
-        /// Returns a list of <see cref="Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
+        /// Returns a list of Profiler.Ids that haven't been seen by <paramref name="user"/>.
         /// </summary>
-        /// <param name="user">User identified by the current <see cref="MiniProfiler.Settings.UserProvider"/>.</param>
+        /// <param name="user">User identified by the current MiniProfiler.Settings.UserProvider.</param>
         public override List<Guid> GetUnviewedIds(string user)
         {
             const string sql =

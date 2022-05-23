@@ -22,7 +22,12 @@ namespace ServiceStack.Auth
 
         public const string DefaultUserProfileUrl = "https://graph.microsoft.com/v1.0/me";
         
-        public static string PhotoUrl { get; set; } = "https://graph.microsoft.com/beta/me/photo/$value";
+        // Valid Sizes: 48x48, 64x64, 96x96, 120x120, 240x240, 360x360, 432x432, 504x504, and 648x648
+        public static Func<string,string> DefaultPhotoUrl = size => size != null
+            ? $"https://graph.microsoft.com/v1.0/me/photos/{size}/$value"
+            : $"https://graph.microsoft.com/v1.0/me/photo/$value";
+        
+        public static Func<string,string> PhotoUrl { get; set; } = DefaultPhotoUrl;
 
         public bool SavePhoto { get; set; }
         
@@ -73,6 +78,7 @@ namespace ServiceStack.Auth
                 };
             }
 
+            Icon = Svg.ImageSvg("<svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 20 20'><path d='M11.55 21H3v-8.55h8.55V21zM21 21h-8.55v-8.55H21V21zm-9.45-9.45H3V3h8.55v8.55zm9.45 0h-8.55V3H21v8.55z' fill='currentColor'/></svg>");
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
                 Label = "Sign In with Microsoft",
@@ -86,7 +92,7 @@ namespace ServiceStack.Auth
         {
             var accessTokenParams = $"code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
             var contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl)
-                .PostToUrlAsync(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded, token: token).ConfigAwait();
+                .SendStringToUrlAsync(method:HttpMethods.Post, requestBody:accessTokenParams, contentType: MimeTypes.FormUrlEncoded, token: token).ConfigAwait();
             return contents;
         }
 
@@ -107,7 +113,8 @@ namespace ServiceStack.Auth
             {
                 try
                 {
-                    obj[AuthMetadataProvider.ProfileUrlKey] = await AuthHttpGateway.CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
+                    var profileUrl = await AuthHttpGateway.CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
+                    obj[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
                 }
                 catch (Exception ex)
                 {

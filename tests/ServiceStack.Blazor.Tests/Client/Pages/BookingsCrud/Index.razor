@@ -1,0 +1,120 @@
+@page "/bookings-crud"
+@attribute [Authorize(Roles="Employee")]
+@inherits AppAuthComponentBase
+
+<h1 class="fs-2">Bookings CRUD</h1>
+
+@if (newBooking)
+{
+    <Create done="onDone" class="max-w-screen-sm" />
+}
+else if (editBookingId != null)
+{
+    <Edit Id="editBookingId" done="onDone" class="max-w-screen-sm" />
+}
+else
+{
+    <button class="btn btn-outline-primary" @onclick=@(_ => reset(newBooking:true))>
+        <span class="oi oi-plus" aria-hidden="true"></span>
+        New Booking
+    </button>
+}
+
+@if (api.Succeeded && api.Response!.Results?.Count > 0)
+{
+    <div class="shadow-sm mt-4">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr class="noselect">
+                <th>
+                    <span class="oi oi-plus cursor-pointer" aria-hidden="true" title="New Booking" @onclick="_ => reset(newBooking:true)"></span>
+                </th>
+                <th>Id</th>
+                <th class="d-none d-sm-table-cell">Name</th>
+                <th><span class="d-none d-sm-inline">Room </span>Type</th>
+                <th><span class="d-none d-sm-inline">Room </span>No</th>
+                <th>Cost</th>
+                <th class="d-none d-sm-table-cell">Start Date</th>
+                <th class="d-none d-sm-table-cell">Created By</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var booking in api.Response.Results)
+        {
+            <tr @key=@booking.Id>
+                <td>
+                    <span class="oi oi-pencil cursor-pointer" aria-hidden="true" title="Edit Booking" @onclick="_ => reset(editBookingId:booking.Id)"></span>
+                </td>
+                <td>@booking.Id</td>
+                <td class="d-none d-sm-table-cell">@booking.Name</td>
+                <td>@booking.RoomType</td>
+                <td>@booking.RoomNumber</td>
+                <td>@($"{booking.Cost:C}")</td>
+                <td class="d-none d-sm-table-cell">@TextUtils.FormatDate(booking.BookingStartDate)</td>
+                <td class="d-none d-sm-table-cell">@booking.CreatedBy</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}
+else if (!api.Completed)
+{
+    <p class="mt-5 fs-3 text-muted">Retrieving Bookings ...</p>
+}
+
+<div class="mt-5 flex justify-center">
+
+    <a href="#" @onclick="_ => expandAbout = !expandAbout" @onclick:preventDefault class="me-3 text-gray-400 hover:text-gray-400 text-decoration-none">
+        <span class=@CssUtils.ClassNames("oi inline-flex align-text-top", expandAbout ? "oi-chevron-bottom" : "oi-chevron-right")
+              style="font-size:12px"></span>
+        About</a>
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.ServiceModel/Bookings.cs" IconClass="oi oi-code" />
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/BookingsCrud/Index.razor" IconSrc="/img/blazor.svg" />
+</div>
+@if (expandAbout)
+{
+    <div class="mt-3">
+        <h2>Creating a multi-user .NET Core Booking system in minutes</h2>
+
+        <blockquote class="blockquote text-muted">
+            The Bookings service implementation is built using 
+            <a href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</a>
+            which enables rapid development of typed CRUD Services using only declarative POCO DTOs, allowing for
+            developing entire 
+            <a href="https://docs.servicestack.net/autoquery-crud#advanced-crud-example">audited</a>
+            and <a href="https://docs.servicestack.net/autoquery-audit-log">verifiably logged</a>
+            data-driven systems in a fraction of time
+            <a href="https://docs.servicestack.net/autoquery-crud-bookings">more...</a>
+        </blockquote>
+
+        <iframe class="youtube" src="https://www.youtube.com/embed/nhc4MZufkcM" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+}
+
+
+@code {
+    bool newBooking { get; set; }
+
+    int? editBookingId { get; set; }
+
+    bool expandAbout { get; set; }
+
+    ApiResult<QueryResponse<Booking>> api = new();
+
+    async Task refresh() => api = await ApiAsync(new QueryBookings());
+
+    protected override async Task OnInitializedAsync() => await refresh();
+
+    void reset(bool newBooking = false, int? editBookingId = null)
+    {
+        this.newBooking = newBooking;
+        this.editBookingId = editBookingId;
+    }
+
+    async Task onDone(IdResponse result)
+    {
+        reset();
+        await refresh();
+    }
+}

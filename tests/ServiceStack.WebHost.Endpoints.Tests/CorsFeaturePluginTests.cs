@@ -54,9 +54,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             "{0}/corsplugin".Fmt(Config.ServiceStackBaseUri).OptionsFromUrl(responseFilter: r =>
                 {
-                    Assert.That(r.Headers[HttpHeaders.AllowOrigin], Is.EqualTo(CorsFeature.DefaultOrigin));
-                    Assert.That(r.Headers[HttpHeaders.AllowMethods], Is.EqualTo(CorsFeature.DefaultMethods));
-                    Assert.That(r.Headers[HttpHeaders.AllowHeaders], Is.EqualTo(CorsFeature.DefaultHeaders));
+                    Assert.That(r.GetHeader(HttpHeaders.AllowOrigin), Is.EqualTo(CorsFeature.DefaultOrigin));
+                    Assert.That(r.GetHeader(HttpHeaders.AllowMethods), Is.EqualTo(CorsFeature.DefaultMethods));
+                    Assert.That(r.GetHeader(HttpHeaders.AllowHeaders), Is.EqualTo(CorsFeature.DefaultHeaders));
                 });
         }
 
@@ -65,9 +65,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             "{0}/notfound".Fmt(Config.ServiceStackBaseUri).OptionsFromUrl(responseFilter: r =>
             {
-                Assert.That(r.Headers[HttpHeaders.AllowOrigin], Is.EqualTo(CorsFeature.DefaultOrigin));
-                Assert.That(r.Headers[HttpHeaders.AllowMethods], Is.EqualTo(CorsFeature.DefaultMethods));
-                Assert.That(r.Headers[HttpHeaders.AllowHeaders], Is.EqualTo(CorsFeature.DefaultHeaders));
+                Assert.That(r.GetHeader(HttpHeaders.AllowOrigin), Is.EqualTo(CorsFeature.DefaultOrigin));
+                Assert.That(r.GetHeader(HttpHeaders.AllowMethods), Is.EqualTo(CorsFeature.DefaultMethods));
+                Assert.That(r.GetHeader(HttpHeaders.AllowHeaders), Is.EqualTo(CorsFeature.DefaultHeaders));
             });
         }
     }

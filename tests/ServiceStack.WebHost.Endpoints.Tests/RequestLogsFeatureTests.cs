@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.ListeningOn.CombineWith("requestlogs-test")
                 .AddQueryParam("name", "foo3")
-                .OptionsFromUrl(requestFilter: req => req.Referer = Config.ListeningOn);
+                .OptionsFromUrl(requestFilter: req => req.With(c => c.Referer = Config.ListeningOn));
 
             var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
             var requestLogs = json.FromJson<RequestLogsResponse>();

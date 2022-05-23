@@ -97,12 +97,6 @@ namespace ServiceStack.Script
         }
 
         public override string ToString() => Signature;
-
-        public ScriptMethodType ToScriptMethodType() => new ScriptMethodType {
-            Name = Name,
-            ParamNames = ParamNames,
-            ParamTypes = ParamTypes,
-            ReturnType = ReturnType,
-        };
     }
+
 }

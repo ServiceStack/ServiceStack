@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -324,7 +324,7 @@ namespace ServiceStack.MiniProfiler
         /// Add the parameter 'timing' to this Timing's Children collection.
         /// </summary>
         /// <remarks>
-        /// Used outside this assembly for custom deserialization when creating an <see cref="IStorage"/> implementation.
+        /// Used outside this assembly for custom deserialization when creating an IStorage implementation.
         /// </remarks>
         public void AddChild(Timing timing)
         {
@@ -340,7 +340,7 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         /// <param name="sqlTiming">A sql statement profiling that was executed in this Timing step.</param>
         /// <remarks>
-        /// Used outside this assembly for custom deserialization when creating an <see cref="IStorage"/> implementation.
+        /// Used outside this assembly for custom deserialization when creating an IStorage implementation.
         /// </remarks>
         public void AddSqlTiming(SqlTiming sqlTiming)
         {

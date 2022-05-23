@@ -462,6 +462,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="cacheClient">Cache client</param>
         /// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
+        /// <param name="token"></param>
         public static Task RemoveByPatternAsync(this ICacheClientAsync cacheClient, string pattern, CancellationToken token=default)
         {
             if (!(cacheClient is IRemoveByPatternAsync canRemoveByPattern))
@@ -515,7 +516,6 @@ namespace ServiceStack
             return cache.GetKeysByPattern(prefix + "*");
         }
         
-#if NET472 || NETSTANDARD2_0
         public static IAsyncEnumerable<string> GetKeysByPatternAsync(this ICacheClientAsync cache, string pattern)
         {
             return cache.GetKeysByPatternAsync(pattern);
@@ -536,7 +536,6 @@ namespace ServiceStack
                 yield return key;
             }
         }
-#endif
 
         public static T GetOrCreate<T>(this ICacheClient cache,
             string key, Func<T> createFn)

@@ -145,7 +145,7 @@ namespace ServiceStack
             {
                 appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) =>
                 {
-#if NETSTANDARD2_0
+#if NETCORE
                     // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
                     if (httpReq.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
                         return;                    
@@ -154,8 +154,8 @@ namespace ServiceStack
                 });
             }
 
-            appHost.GetPlugin<MetadataFeature>()
-                .AddDebugLink(AtRestPath, "Request Logs");
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddDebugLink(AtRestPath, "Request Logs"));
             
             appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(RequestLogEntry));
             

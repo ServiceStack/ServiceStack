@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddQueryParam("id", 1)
                 .GetStringFromUrl(accept: MimeTypes.Json,
                     responseFilter: res =>
-                        Assert.That(res.ContentType.MatchesContentType(MimeTypes.Json)));
+                        Assert.That(res.MatchesContentType(MimeTypes.Json)));
 
             var dto = json.FromJson<TestContentType>();
             Assert.That(dto.Id, Is.EqualTo(1));
@@ -62,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddQueryParam("id", 1)
                 .GetStringFromUrl(accept: MimeTypes.Json.ToUpper(),
                     responseFilter: res =>
-                        Assert.That(res.ContentType.MatchesContentType(MimeTypes.Json)));
+                        Assert.That(res.MatchesContentType(MimeTypes.Json)));
 
             var dto = json.FromJson<TestContentType>();
             Assert.That(dto.Id, Is.EqualTo(1));
@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var json = ListeningOn.AppendPath("testcontenttype.json")
                 .AddQueryParam("id", 1)
                 .GetStringFromUrl(responseFilter: res =>
-                        Assert.That(res.ContentType.MatchesContentType(MimeTypes.Json)));
+                        Assert.That(res.MatchesContentType(MimeTypes.Json)));
 
             var dto = json.FromJson<TestContentType>();
             Assert.That(dto.Id, Is.EqualTo(1));
@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddQueryParam("id", 1)
                 .AddQueryParam("format", "json")
                 .GetStringFromUrl(responseFilter: res =>
-                        Assert.That(res.ContentType.MatchesContentType(MimeTypes.Json)));
+                        Assert.That(res.MatchesContentType(MimeTypes.Json)));
 
             var dto = json.FromJson<TestContentType>();
             Assert.That(dto.Id, Is.EqualTo(1));
@@ -121,7 +121,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var json = ListeningOn.AppendPath("testcontenttype")
                 .AddQueryParam("format", "x-custom+json")
                 .GetStringFromUrl(responseFilter: res =>
-                    Assert.That(res.ContentType.MatchesContentType("application/x-custom+json")));
+                    Assert.That(res.MatchesContentType("application/x-custom+json")));
 
             Assert.That(json, Is.EqualTo("{\"custom\":\"json\"}"));
         }

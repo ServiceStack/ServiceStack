@@ -23,7 +23,6 @@ namespace ServiceStack.Host
 
     public class ServiceController : IServiceController
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceController));
         private const string ResponseDtoSuffix = "Response";
         private readonly ServiceStackHost appHost;
 
@@ -99,7 +98,7 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 var msg = $"Failed loading types, last assembly '{assemblyName}', type: '{typeName}'";
-                Log.Error(msg, ex);
+                LogManager.GetLogger(GetType()).Error(msg, ex);
                 throw new Exception(msg, ex);
             }
         }
@@ -123,8 +122,8 @@ namespace ServiceStack.Host
             }
             catch (Exception ex)
             {
-                appHost.NotifyStartupException(ex);
-                Log.Error(ex.Message, ex);
+                appHost.NotifyStartupException(ex, serviceType.Name, nameof(RegisterService));
+                LogManager.GetLogger(GetType()).Error(ex.Message, ex);
             }
         }
 
@@ -146,6 +145,8 @@ namespace ServiceStack.Host
                 if (registeredServices.Contains(serviceType))
                     return;
                 registeredServices.Add(serviceType);
+
+                var log = LogManager.GetLogger(GetType());
                 
                 foreach (var mi in serviceType.GetActions())
                 {
@@ -160,7 +161,7 @@ namespace ServiceStack.Host
                           returnMarker.GetGenericArguments()[0]
                         : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                           mi.ReturnType
-#if NETSTANDARD2_0
+#if NETCORE
                         : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name);
 #else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
@@ -191,8 +192,8 @@ namespace ServiceStack.Host
                         };
                     }
 
-                    if (Log.IsDebugEnabled)
-                        Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
+                    if (log.IsDebugEnabled)
+                        log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
                             responseType != null ? "Reply" : "OneWay", serviceType.GetOperationName(), requestType.GetOperationName());
                 }
             }
@@ -488,9 +489,7 @@ namespace ServiceStack.Host
                         appHost.Release(service);
                         return taskResponse.GetResult();
                     }
-#if NET472 || NETSTANDARD2_0
                     await using (service as IAsyncDisposable) {}
-#endif
                     appHost.Release(service);
                     return result;
                 }
@@ -577,7 +576,7 @@ namespace ServiceStack.Host
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
             RequestContext.Instance.StartRequestContext();
-#if NETSTANDARD2_0
+#if NETCORE
             using var scope = req.StartScope();
 #endif
             
@@ -608,7 +607,7 @@ namespace ServiceStack.Host
         public async Task<object> ExecuteMessageAsync(IMessage dto, IRequest req, CancellationToken token=default)
         {
             RequestContext.Instance.StartRequestContext();
-#if NETSTANDARD2_0
+#if NETCORE
             using var scope = req.StartScope();
 #endif
             

@@ -12,6 +12,7 @@ using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -151,6 +152,7 @@ namespace ServiceStack
         /// <param name="request">The serialization context.</param>
         /// <param name="bodyPrefix">Add prefix to response body if any</param>
         /// <param name="bodySuffix">Add suffix to response body if any</param>
+        /// <param name="token"></param>
         /// <returns></returns>
         public static async Task<bool> WriteToResponse(this IResponse response, object result, StreamSerializerDelegateAsync defaultAction, IRequest request, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token = default(CancellationToken))
         {
@@ -290,7 +292,7 @@ namespace ServiceStack
                             return true;
                         }
 
-#if NET45 || NET472
+#if NETFX || NET472
                         //JsConfigScope uses ThreadStatic in .NET v4.5 so avoid async thread hops by writing sync to MemoryStream
                         if (resultScope != null || jsconfig != null)
                             response.UseBufferedStream = true;
@@ -489,6 +491,7 @@ namespace ServiceStack
             if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, httpRes.Dto, ex))
                 return;
 
+            var hostConfig = HostContext.Config;
             if (!httpRes.HasStarted)
             {
                 if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
@@ -496,13 +499,13 @@ namespace ServiceStack
                 {
                     httpRes.ContentType = contentType;
                 }
-                if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
+                if (hostConfig.AppendUtf8CharsetOnContentTypes.Contains(contentType))
                 {
                     httpRes.ContentType += ContentFormat.Utf8Suffix;
                 }
 
                 var hold = httpRes.StatusDescription;
-                var hasDefaultStatusDescription = hold == null || hold == "OK";
+                var hasDefaultStatusDescription = hold is null or "OK";
 
                 httpRes.StatusCode = statusCode;
 
@@ -513,9 +516,26 @@ namespace ServiceStack
                 httpRes.ApplyGlobalResponseHeaders();
             }
 
+            var callback = httpReq.GetJsonpCallback();
+            var doJsonp = hostConfig.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
+            if (doJsonp)
+            {
+                httpRes.StatusCode = 200;
+                await httpRes.OutputStream.WriteAsync(DataCache.CreateJsonpPrefix(callback));
+            }
+
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType ?? httpRes.ContentType);
             if (serializer != null)
-                await serializer(httpReq, httpRes.Dto, httpRes.OutputStream);
+            {
+                var jsconfig = hostConfig.AllowJsConfig ? httpReq?.QueryString[Keywords.JsConfig] : null;
+                using (jsconfig != null ? JsConfig.CreateScope(jsconfig) : null)
+                {
+                    await serializer(httpReq, httpRes.Dto, httpRes.OutputStream);                    
+                }
+            }
+            
+            if (doJsonp)
+                await httpRes.OutputStream.WriteAsync(DataCache.JsonpSuffix);
 
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
@@ -552,7 +572,7 @@ namespace ServiceStack
             return false;
         }
 
-#if !NETSTANDARD2_0
+#if !NETCORE
         public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
         {
             if (HostContext.Config == null) return;

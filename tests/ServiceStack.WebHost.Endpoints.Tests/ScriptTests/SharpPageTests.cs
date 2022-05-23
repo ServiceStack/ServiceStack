@@ -212,7 +212,7 @@ title: We encode < & >
             Assert.That(html, Is.EqualTo(htmlOrig));
         }
 
-#if NET45
+#if NETFX
         [Test]
         public void Request_for_dir_index_page_without_trailing_slash_auto_redirects()
         {
@@ -237,9 +237,9 @@ title: We encode < & >
                 
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
-                Assert.That(((HttpWebResponse)ex.Response).StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Forbidden));
             }
             
             try
@@ -249,9 +249,9 @@ title: We encode < & >
                 
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
-                Assert.That(((HttpWebResponse)ex.Response).StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Forbidden));
             }
         }
 

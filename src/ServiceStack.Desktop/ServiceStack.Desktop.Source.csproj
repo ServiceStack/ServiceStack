@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
         <AssemblyName>ServiceStack.Desktop</AssemblyName>
         <RootNamespace>ServiceStack.Desktop</RootNamespace>
         <DefineConstants>$(DefineConstants);SOURCE</DefineConstants>
@@ -19,7 +19,7 @@
         <ProjectReference Include="..\ServiceStack\ServiceStack.Source.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
 
-        <PackageReference Include="System.Drawing.Common" Version="4.7.2" />
+        <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
         <PackageReference Include="PInvoke.User32" Version="0.7.104" />
         <PackageReference Include="PInvoke.Kernel32" Version="0.7.104" />
         <PackageReference Include="PInvoke.Gdi32" Version="0.7.104" />

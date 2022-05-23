@@ -28,7 +28,7 @@ namespace ServiceStack
 
             if (debugMode)
             {
-#if !NETSTANDARD2_0
+#if !NETCORE
                 if (ex is System.Web.HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
                 {
                     responseStatus.Errors ??= new List<ResponseError>();

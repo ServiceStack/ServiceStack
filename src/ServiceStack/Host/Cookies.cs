@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+﻿#if NETCORE
 using Microsoft.AspNetCore.Http;
 #else
 using System.Web;
@@ -66,7 +66,7 @@ namespace ServiceStack.Host
     {
         private static readonly DateTime Session = DateTime.MinValue;
 
-#if !NETSTANDARD2_0
+#if !NETCORE
 
 #if !NET472
         private static SetMemberDelegate sameSiteFn;
@@ -131,7 +131,7 @@ namespace ServiceStack.Host
         }
 #endif
 
-#if NETSTANDARD2_0
+#if NETCORE
         public static CookieOptions ToCookieOptions(this Cookie cookie)
         {
             var config = HostContext.Config;

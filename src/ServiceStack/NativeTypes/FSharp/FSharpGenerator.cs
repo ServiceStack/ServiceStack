@@ -8,7 +8,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.FSharp
 {
-    public class FSharpGenerator
+    public class FSharpGenerator : ILangGenerator
     {
         readonly MetadataTypesConfig Config;
         private readonly NativeTypesFeature feature;
@@ -49,6 +49,16 @@ namespace ServiceStack.NativeTypes.FSharp
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
         /// <summary>
+        /// Additional Options in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
+        /// <summary>
+        /// Emit code without Header Options
+        /// </summary>
+        public bool WithoutOptions { get; set; }
+
+        /// <summary>
         /// Can only export "Empty" Marker Interfaces
         /// </summary>
         public static HashSet<string> ExportMarkerInterfaces { get; } = new[] {
@@ -61,7 +71,7 @@ namespace ServiceStack.NativeTypes.FSharp
             nameof(IStream),
         }.ToSet();
 
-        public string GetCode(MetadataTypes metadata, IRequest request)
+        public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
@@ -78,38 +88,44 @@ namespace ServiceStack.NativeTypes.FSharp
             var globalNamespace = Config.GlobalNamespace
                 ?? typeNamespaces.Where(x => x.EndsWith("ServiceModel"))
                     .OrderBy(x => x).FirstOrDefault()
-                ?? typeNamespaces.OrderBy(x => x).First();
+                ?? typeNamespaces.OrderBy(x => x).FirstOrDefault() ?? "ServiceModel";
 
-            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = new StringBuilder();
             var sb = new StringBuilderWrapper(sbInner);
-            sb.AppendLine("(* Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+            var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+            if (includeOptions)
+            {
+                sb.AppendLine("(* Options:");
+                sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+                sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
+                sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
+                sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+                if (Config.UsePath != null)
+                    sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
 
-            sb.AppendLine();
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), Config.GlobalNamespace)); // ExcludeNamespace=true excludes namespace
-            sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(DefaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
-            sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(DefaultValue("AddReturnMarker"), Config.AddReturnMarker));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(DefaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
-            sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(DefaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
-            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(DefaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(DefaultValue("ExportValueTypes"), Config.ExportValueTypes));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(DefaultValue("InitializeCollections"), Config.InitializeCollections));
-            //sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
-            sb.AppendLine("{0}AddNamespaces: {1}".Fmt(DefaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
-            sb.AppendLine("*)");
-            sb.AppendLine();
+                sb.AppendLine();
+                sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace)); // ExcludeNamespace=true excludes namespace
+                sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
+                sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
+                sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+                sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
+                sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+                sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
+                sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+                sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+                sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
+                sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+                //sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
+                sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
+                AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+
+                sb.AppendLine("*)");
+                sb.AppendLine();
+            }
 
             string lastNS = null;
 

@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Model;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class PostmanFeature : IPlugin, Model.IHasStringId
+    /// <summary>
+    /// Postman 2 Feature
+    /// </summary>
+    public class PostmanFeature : IPlugin, IHasStringId
     {
         public string Id { get; set; } = Plugins.Postman;
         public string AtRestPath { get; set; }
@@ -16,8 +20,7 @@ namespace ServiceStack
         public string Headers { get; set; }
         public List<string> DefaultLabelFmt { get; set; }
 
-        public Dictionary<string, string> FriendlyTypeNames = new Dictionary<string, string>
-        {
+        public readonly Dictionary<string, string> FriendlyTypeNames = new() {
             {"Int32", "int"},
             {"Int64", "long"},
             {"Boolean", "bool"},
@@ -25,7 +28,6 @@ namespace ServiceStack
             {"Double", "double"},
             {"Single", "float"},
         };
-
 
         /// <summary>
         /// Only generate specified Verb entries for "ANY" routes
@@ -44,8 +46,8 @@ namespace ServiceStack
         {
             appHost.RegisterService<PostmanService>(AtRestPath);
 
-            appHost.GetPlugin<MetadataFeature>()
-                   .AddPluginLink(AtRestPath.TrimStart('/'), "Postman Metadata");
+            appHost.ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddPluginLink(AtRestPath.TrimStart('/'), "Postman Metadata"));
 
             if (EnableSessionExport == null)
                 EnableSessionExport = appHost.Config.DebugMode;
@@ -62,34 +64,59 @@ namespace ServiceStack
         public string ssopt { get; set; }
     }
 
+    public class PostmanCollectionInfo
+    {
+        public string name { get; set; }
+        public string version { get; set; }
+        public string schema { get; set; }
+    }
+
     public class PostmanCollection
     {
-        public string id { get; set; }
-        public string name { get; set; }
-        public long timestamp { get; set; }
-        public List<PostmanRequest> requests { get; set; }
+        public PostmanCollectionInfo info { get; set; } = new PostmanCollectionInfo();
+        public List<PostmanRequest> item { get; set; }
+    }
+
+    public class PostmanRequestBody
+    {
+        public string mode { get; set; } = "formdata";
+        public List<PostmanData> formdata { get; set; }
+    }
+
+    public class PostmanRequestUrl
+    {
+        public string raw { get; set; }
+        public string protocol { get; set; }
+        public string host { get; set; }
+        public string[] path { get; set; }
+        public string port { get; set; }
+        public List<PostmanRequestKeyValue> query { get; set; }
+        public List<PostmanRequestKeyValue> variable { get; set; }
+    }
+
+    public class PostmanRequestDetails
+    {
+        public PostmanRequestUrl url { get; set; }
+        public string method { get; set; }
+        public string header { get; set; }
+
+        public PostmanRequestBody body { get; set; }
+    }
+
+    public class PostmanRequestKeyValue
+    {
+        public string value { get; set; }
+        public string key { get; set; }
     }
 
     public class PostmanRequest
     {
         public PostmanRequest()
         {
-            responses = new List<string>();
+            request = new PostmanRequestDetails();
         }
-        
-        public string collectionId { get; set; }
-        public string id { get; set; }
         public string name { get; set; }
-        public string description { get; set; }
-        public string url { get; set; }
-        public Dictionary<string, string> pathVariables { get; set; }
-        public string method { get; set; }
-        public string headers { get; set; }
-        public string dataMode { get; set; }
-        public long time { get; set; }
-        public int version { get; set; }
-        public List<PostmanData> data { get; set; }
-        public List<string> responses { get; set; }
+        public PostmanRequestDetails request { get; set; }
     }
 
     public class PostmanData
@@ -125,10 +152,13 @@ namespace ServiceStack
             var id = SessionExtensions.CreateRandomSessionId();
             var ret = new PostmanCollection
             {
-                id = id,
-                name = HostContext.AppHost.ServiceName,
-                timestamp = DateTime.UtcNow.ToUnixTimeMs(),
-                requests = GetRequests(request, id, HostContext.Metadata.OperationsMap.Values),
+                info = new PostmanCollectionInfo()
+                {
+                    version = "1",
+                    name = HostContext.AppHost.ServiceName,
+                    schema = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+                },
+                item = GetRequests(request, id, HostContext.Metadata.OperationsMap.Values),
             };
 
             return ret;
@@ -148,9 +178,7 @@ namespace ServiceStack
                     || request.ssid != null)
                 {
                     if (feature.EnableSessionExport != true)
-                    {
                         throw new ArgumentException("PostmanFeature.EnableSessionExport is not enabled");
-                    }
                 }
 
                 if (request.ssopt != null)
@@ -170,15 +198,16 @@ namespace ServiceStack
 
             foreach (var op in operations)
             {
+                Uri url = null;
+
                 if (!HostContext.Metadata.IsVisible(base.Request, op))
                     continue;
 
-                var allVerbs = op.Actions.Concat(
-                    op.Routes.SelectMany(x => x.Verbs))
-                        .SelectMany(x => x == ActionContext.AnyAction
+                var allVerbs = new HashSet<string>(op.Actions.Concat(
+                        op.Routes.SelectMany(x => x.Verbs))
+                    .SelectMany(x => x == ActionContext.AnyAction
                         ? feature.DefaultVerbsForAny
-                        : new List<string> { x })
-                    .ToSet();
+                        : new List<string> { x }));
 
                 var propertyTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 op.RequestType.GetSerializableFields()
@@ -207,25 +236,34 @@ namespace ServiceStack
                             })
                             .ApplyPropertyTypes(propertyTypes);
 
+                        url = new Uri(Request.GetBaseUrl().CombineWith(restRoute.Path.ToPostmanPathVariables()));
                         ret.Add(new PostmanRequest
                         {
-                            collectionId = parentId,
-                            id = SessionExtensions.CreateRandomSessionId(),
-                            method = verb,
-                            url = Request.GetBaseUrl().CombineWith(restRoute.Path.ToPostmanPathVariables()),
+                            request = new PostmanRequestDetails {
+                                url = new PostmanRequestUrl {
+                                    raw = url.OriginalString,
+                                    host = url.Host,
+                                    port = url.Port.ToString(),
+                                    protocol = url.Scheme,
+                                    path = url.LocalPath.SplitPaths(),
+                                    query = !HttpUtils.HasRequestBody(verb) 
+                                        ? routeData.Select(x => x.key)
+                                            .ApplyPropertyTypes(propertyTypes)
+                                            .Map(x => new PostmanRequestKeyValue { key = x.Key, value = x.Value }) 
+                                        : null,
+                                    variable = restRoute.Variables.Any() 
+                                        ? restRoute.Variables.Map(x => new PostmanRequestKeyValue { key = x }) 
+                                        : null
+                                },
+                                method = verb,
+                                body = new PostmanRequestBody {
+                                    formdata = HttpUtils.HasRequestBody(verb)
+                                    ? routeData
+                                    : null,
+                                },
+                                header = headers,
+                            },
                             name = GetName(feature, request, op.RequestType, restRoute.Path),
-                            description = op.RequestType.GetDescription(),
-                            pathVariables = !HttpUtils.HasRequestBody(verb)
-                                ? restRoute.Variables.Concat(routeData.Select(x => x.key))
-                                    .ApplyPropertyTypes(propertyTypes)
-                                : null,
-                            data = HttpUtils.HasRequestBody(verb)
-                                ? routeData
-                                : null,
-                            dataMode = "params",
-                            headers = headers,
-                            version = 2,
-                            time = DateTime.UtcNow.ToUnixTimeMs(),
                         });
                     }
                 }
@@ -241,26 +279,38 @@ namespace ServiceStack
                         type = "text",
                     });
 
+                url = new Uri(Request.GetBaseUrl().CombineWith(virtualPath));
+
                 ret.AddRange(allVerbs.Select(verb =>
                     new PostmanRequest
                     {
-                        collectionId = parentId,
-                        id = SessionExtensions.CreateRandomSessionId(),
-                        method = verb,
-                        url = Request.GetBaseUrl().CombineWith(virtualPath),
-                        pathVariables = !HttpUtils.HasRequestBody(verb)
-                            ? requestParams.Select(x => x.key)
-                                .ApplyPropertyTypes(propertyTypes)
-                            : null,
+                        request = new PostmanRequestDetails {
+                            url = new PostmanRequestUrl {
+                                raw = url.OriginalString,
+                                host = url.Host,
+                                port = url.Port.ToString(),
+                                protocol = url.Scheme,
+                                path = url.LocalPath.SplitPaths(),
+                                query = !HttpUtils.HasRequestBody(verb) 
+                                    ? requestParams.Select(x => x.key)
+                                        .Where(x => !x.StartsWith(":"))
+                                        .ApplyPropertyTypes(propertyTypes)
+                                        .Map(x => new PostmanRequestKeyValue { key = x.Key, value = x.Value }) 
+                                    : null,
+                                variable = url.Segments.Any(x => x.StartsWith(":")) 
+                                    ? url.Segments.Where(x => x.StartsWith(":"))
+                                        .Map(x => new PostmanRequestKeyValue { key = x.Replace(":", ""), value = "" }) 
+                                    : null
+                            },
+                            method = verb,
+                            body = new PostmanRequestBody {
+                                formdata = HttpUtils.HasRequestBody(verb)
+                                ? requestParams
+                                : null,
+                            },
+                            header = headers,
+                        },
                         name = GetName(feature, request, op.RequestType, virtualPath),
-                        description = op.RequestType.GetDescription(),
-                        data = HttpUtils.HasRequestBody(verb)
-                            ? requestParams
-                            : null,
-                        dataMode = "params",
-                        headers = headers,
-                        version = 2,
-                        time = DateTime.UtcNow.ToUnixTimeMs(),
                     }));
             }
 
@@ -295,6 +345,10 @@ namespace ServiceStack
 
     public static class PostmanExtensions
     {
+        private static readonly char[] PathDelim = {'/'};
+        internal static string[] SplitPaths(this string text) => 
+            text.Split(PathDelim, StringSplitOptions.RemoveEmptyEntries);
+
         public static string ToPostmanPathVariables(this string path)
         {
             return path.Replace("{", ":").Replace("}", "").TrimEnd('*');
@@ -335,7 +389,7 @@ namespace ServiceStack
             data.Each(x => x.value = typeMap.TryGetValue(x.key, out typeName) ? typeName : x.value ?? defaultValue);
             return data;
         }
-
+        
         public static Dictionary<string, string> ApplyPropertyTypes(this IEnumerable<string> names,
             Dictionary<string, string> typeMap,
             string defaultValue = "")
@@ -344,6 +398,6 @@ namespace ServiceStack
             string typeName;
             names.Each(x => to[x] = typeMap.TryGetValue(x, out typeName) ? typeName : defaultValue);
             return to;
-        }
+        }        
     }
 }

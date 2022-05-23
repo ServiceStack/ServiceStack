@@ -12,7 +12,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Web;
 
-#if !NETSTANDARD
+#if !NETCORE
     using ServiceStack.Host.AspNet;
     using System.Web.Mvc;
     using System.Web.Routing;
@@ -96,7 +96,7 @@ namespace ServiceStack.Mvc
                 action = "Unauthorized"
             }));
 
-#if !NETSTANDARD
+#if !NETCORE
         public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
 
         protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
@@ -162,7 +162,7 @@ namespace ServiceStack.Mvc
         private IServiceStackProvider serviceStackProvider;
         public virtual IServiceStackProvider ServiceStackProvider => 
             serviceStackProvider ??=  
-#if !NETSTANDARD
+#if !NETCORE
             new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name));
 #else
             new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name));
@@ -247,15 +247,13 @@ namespace ServiceStack.Mvc
         public static object ForwardRequestToServiceStack(this ServiceStackController controller, IRequest request = null) 
             => controller.ServiceStackProvider.Execute(request ?? controller.ServiceStackProvider.Request);
         
-#if NET472 || NETSTANDARD
         public static ValueTask<IRedisClientAsync> GetRedisAsync(this ServiceStackController controller) => 
             controller.ServiceStackProvider.GetRedisAsync();
-#endif
         public static T TryResolve<T>(this ServiceStackController controller) => controller.ServiceStackProvider.TryResolve<T>();
         public static T ResolveService<T>(this ServiceStackController controller) => controller.ServiceStackProvider.ResolveService<T>();
     }
     
-#if !NETSTANDARD
+#if !NETCORE
     public class ServiceStackJsonResult : JsonResult
     {
         public override void ExecuteResult(ControllerContext context)

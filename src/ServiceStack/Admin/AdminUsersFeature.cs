@@ -4,45 +4,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Html;
 using ServiceStack.NativeTypes;
 using ServiceStack.Text;
 
 namespace ServiceStack.Admin
 {
-    public class AdminUsersFeature : IPlugin, Model.IHasStringId, IAfterInitAppHost
+    public class AdminUsersFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, IAfterInitAppHost
     {
         public string Id { get; set; } = Plugins.AdminUsers;
         public string AdminRole { get; set; } = RoleNames.Admin;
-        
-        /// <summary>
-        /// Remove UserAuth Properties from Admin Metadata
-        /// </summary>
-        public List<string> IncludeUserAuthProperties { get; set; } = new List<string> {
-            nameof(UserAuth.Id),
-            nameof(UserAuth.UserName),
-            nameof(UserAuth.Email),
-            nameof(UserAuth.DisplayName),
-            nameof(UserAuth.FirstName),
-            nameof(UserAuth.LastName),
-            nameof(UserAuth.Company),
-            nameof(UserAuth.Address),
-            nameof(UserAuth.City),
-            nameof(UserAuth.State),
-            nameof(UserAuth.PostalCode),
-            nameof(UserAuth.Country),
-            nameof(UserAuth.PhoneNumber),
-            nameof(UserAuth.LockedDate),
-        };
-
-        /// <summary>
-        /// Remove UserAuthDetails Properties from Admin Metadata
-        /// </summary>
-        public List<string> IncludeUserAuthDetailsProperties { get; set; } = new List<string>();
 
         /// <summary>
         /// Return only specified UserAuth Properties in AdminQueryUsers
         /// </summary>
-        public List<string> QueryUserAuthProperties { get; set; } = new List<string> {
+        public List<string> QueryUserAuthProperties { get; set; } = new() {
             nameof(UserAuth.Id),
             nameof(UserAuth.UserName),
             nameof(UserAuth.Email),
@@ -52,14 +28,48 @@ namespace ServiceStack.Admin
             nameof(UserAuth.Company),
             nameof(UserAuth.State),
             nameof(UserAuth.Country),
-            nameof(UserAuth.CreatedDate),
             nameof(UserAuth.ModifiedDate),
         };
-        
+
+        /// <summary>
+        /// Specify different size media rules when a property should be visible, e.g:
+        /// MediaRules.ExtraSmall.Show&lt;UserAuth&gt;(x => new { x.Id, x.Email, x.DisplayName })
+        /// </summary>
+        public List<MediaRule> QueryMediaRules { get; set; } = new() {
+            MediaRules.ExtraSmall.Show<UserAuth>(x => new { x.Id, x.Email, x.DisplayName }),
+            MediaRules.Small.Show<UserAuth>(x => new { x.Company, x.CreatedDate }),
+        };
+
+        /// <summary>
+        /// Which User fields can be updated
+        /// </summary>
+        public List<List<InputInfo>> UserFormLayout { get; set; } = new()
+        {
+            new(){ Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email) },
+            new(){ Input.For<UserAuth>(x => x.UserName) },
+            new() {
+                Input.For<UserAuth>(x => x.FirstName),
+                Input.For<UserAuth>(x => x.LastName),
+            },
+            new(){ Input.For<UserAuth>(x => x.DisplayName) },
+            new(){ Input.For<UserAuth>(x => x.Company) },
+            new(){ Input.For<UserAuth>(x => x.Address) },
+            new(){ Input.For<UserAuth>(x => x.Address2) },
+            new() {
+                Input.For<UserAuth>(x => x.City),
+                Input.For<UserAuth>(x => x.State),
+            },
+            new() {
+                Input.For<UserAuth>(x => x.Country),
+                Input.For<UserAuth>(x => x.PostalCode),
+            },
+            new(){ Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel) },
+        };
+
         /// <summary>
         /// Which UserAuth fields cannot be updated using UserAuthProperties dictionary
         /// </summary>
-        public List<string> RestrictedUserAuthProperties { get; set; } = new List<string> {
+        public List<string> RestrictedUserAuthProperties { get; set; } = new() {
             nameof(UserAuth.Id),
             nameof(UserAuth.Roles),
             nameof(UserAuth.Permissions),
@@ -69,6 +79,8 @@ namespace ServiceStack.Admin
             nameof(UserAuth.Salt),
             nameof(UserAuth.DigestHa1Hash),
         };
+
+        public HtmlModule HtmlModule { get; set; } = new("/modules/admin-ui", "/admin-ui");
 
         /// <summary>
         /// Invoked before user is created or updated.
@@ -110,11 +122,69 @@ namespace ServiceStack.Admin
         /// Whether to execute OnRegistered Events for Users created through Admin UI (default true).
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
+
+        public AdminUsersFeature EachUserFormGroup(Action<List<InputInfo>, int> filter)
+        {
+            for (var i = 0; i < UserFormLayout.Count; i++)
+            {
+                var row = UserFormLayout[i];
+                filter(row, i);
+            }
+            return this;
+        }
+
+        public AdminUsersFeature EachUserFormField(Action<InputInfo> filter)
+        {
+            UserFormLayout.SelectMany(row => row.ToArray()).Each(filter);
+            return this;
+        }
+
+        public List<T> MapUserFormField<T>(Func<InputInfo,T> filter) => 
+            UserFormLayout.SelectMany(row => row.ToArray()).Map(filter);
+
+        public AdminUsersFeature RemoveFromUserForm(Predicate<InputInfo> match)
+        {
+            UserFormLayout.ForEach(row => row.RemoveAll(match));
+            return this;
+        }
+
+        public AdminUsersFeature RemoveFromUserForm(params string[] fieldNames) =>
+            RemoveFromUserForm(input => fieldNames.Contains(input.Name));
         
+        public AdminUsersFeature RemoveFromQueryResults(params string[] fieldNames)
+        {
+            QueryUserAuthProperties.RemoveAll(fieldNames.Contains);
+            return this;
+        }
+        
+        public AdminUsersFeature RemoveFields(params string[] fieldNames)
+        {
+            RemoveFromQueryResults(fieldNames);
+            RemoveFromUserForm(fieldNames);
+            return this;
+        }
+
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.ConfigurePlugin<UiFeature>(feature =>
+            {
+                if (HtmlModule != null)
+                {
+                    feature.HtmlModules.Add(HtmlModule);
+                    feature.Info.AdminLinks.Add(new LinkInfo
+                    {
+                        Id = "users",
+                        Label = "Manage Users",
+                        Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
+                    });
+                }
+            });
+        }
+
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(AdminUsersService));
-            
+           
             appHost.AddToAppMetadata(meta => {
                 var host = (ServiceStackHost) appHost;
                 var authRepo = host.GetAuthRepository();
@@ -123,13 +193,9 @@ namespace ServiceStack.Admin
                 
                 using (authRepo as IDisposable)
                 {
-                    IUserAuth userAuth = new UserAuth();
-                    IUserAuthDetails userAuthDetails = new UserAuthDetails();
-                    if (authRepo is ICustomUserAuth customUserAuth)
-                    {
-                        userAuth = customUserAuth.CreateUserAuth();
-                        userAuthDetails = customUserAuth.CreateUserAuthDetails();
-                    }
+                    var userAuth = authRepo is ICustomUserAuth customUserAuth
+                        ? customUserAuth.CreateUserAuth()
+                        : new UserAuth();
 
                     var nativeTypesMeta = appHost.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata 
                         ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
@@ -139,10 +205,11 @@ namespace ServiceStack.Admin
                         AccessRole = AdminRole,
                         Enabled = new List<string>(),
                         UserAuth = metaGen.ToFlattenedType(userAuth.GetType()),
-                        UserAuthDetails = metaGen.ToFlattenedType(userAuthDetails.GetType()),
                         AllRoles = HostContext.Metadata.GetAllRoles(),
                         AllPermissions = HostContext.Metadata.GetAllPermissions(),
                         QueryUserAuthProperties = QueryUserAuthProperties,
+                        QueryMediaRules = QueryMediaRules, 
+                        UserFormLayout = UserFormLayout, 
                     };
                     if (authRepo is IQueryUserAuth)
                         plugin.Enabled.Add("query");
@@ -151,25 +218,22 @@ namespace ServiceStack.Admin
                     if (authRepo is IManageRoles)
                         plugin.Enabled.Add("manageRoles");
 
-                    if (IncludeUserAuthProperties != null)
+                    if (UserFormLayout != null)
                     {
-                        var map = plugin.UserAuth.Properties.ToDictionary(x => x.Name);
-                        plugin.UserAuth.Properties = new List<MetadataPropertyType>();
-                        foreach (var includeProp in IncludeUserAuthProperties)
-                        {
-                            if (map.TryGetValue(includeProp, out var prop))
-                                plugin.UserAuth.Properties.Add(prop);
-                        }
+                        var formPropNames = MapUserFormField(input => input.Id).ToSet();
+                        plugin.UserAuth.Properties.RemoveAll(x => !formPropNames.Contains(x.Name));
                     }
-                    if (IncludeUserAuthDetailsProperties != null)
+
+                    if (meta.Plugins.Auth == null)
+                        throw new Exception(nameof(AdminUsersFeature) + " requires " + nameof(AuthFeature));
+
+                    if (HtmlModule != null)
                     {
-                        var map = plugin.UserAuthDetails.Properties.ToDictionary(x => x.Name);
-                        plugin.UserAuthDetails.Properties = new List<MetadataPropertyType>();
-                        foreach (var includeProp in IncludeUserAuthDetailsProperties)
+                        meta.Plugins.Auth.RoleLinks[RoleNames.Admin] = new List<LinkInfo>
                         {
-                            if (map.TryGetValue(includeProp, out var prop))
-                                plugin.UserAuthDetails.Properties.Add(prop);
-                        }
+                            new() { Href = "../admin-ui", Label = "Dashboard", Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Home)) },
+                            new() { Href = "../admin-ui/users", Label = "Manage Users", Icon = Svg.ImageSvg(Svg.GetImage(Svg.Icons.Users, "currentColor")) },
+                        };
                     }
                 }
             });
@@ -232,7 +296,8 @@ namespace ServiceStack.Admin
                 throw new ArgumentNullException(nameof(request.Id));
             
             var existingUser = await AuthRepositoryAsync.GetUserAuthAsync(request.Id);
-            return await CreateUserResponse(existingUser);
+            var existingUserDetails = await AuthRepositoryAsync.GetUserAuthDetailsAsync(request.Id);
+            return await CreateUserResponse(existingUser, existingUserDetails);
         }
 
         public async Task<object> Get(AdminQueryUsers request)
@@ -384,7 +449,7 @@ namespace ServiceStack.Admin
             };
         }
 
-        private async Task<object> CreateUserResponse(IUserAuth user)
+        private async Task<object> CreateUserResponse(IUserAuth user, List<IUserAuthDetails> existingUserDetails = null)
         {
             if (user == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
@@ -393,7 +458,8 @@ namespace ServiceStack.Admin
 
             return new AdminUserResponse {
                 Id = user.Id.ToString(),
-                Result = userProps
+                Result = userProps,
+                Details = existingUserDetails?.Map(x => x.ToObjectDictionary()), 
             };
         }
 

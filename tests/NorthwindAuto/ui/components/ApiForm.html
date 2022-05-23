@@ -1,0 +1,447 @@
+<script minify>
+import { resolve, delaySet } from "@servicestack/client"
+
+let OP_STATE = {}
+App.component('ApiForm', ({ store, routes }) => {
+    return {
+        $template: `#api-form-template`,
+        store, routes,
+        tabs: {'FORM':'','JSON':'json'},
+        get state() {
+            let s = this.store
+            let opName = s.op && s.op.request && s.op.request.name
+            if (!opName) {
+                console.log('!state.opName') /*debug*/
+                return null
+            }
+            let ret = OP_STATE[opName] || (OP_STATE[opName] = ({
+                opName,
+                op: s.op,
+                formJson: '',
+                jsonError: '',
+                requestDto: null,
+                get model() {
+                    let model = this.requestDto || {}
+                    this.formLayout.forEach(group => {
+                        group.forEach(input => {
+                            if (typeof model[input.id] == 'undefined') {
+                                model[input.id] = null
+                            }
+                        })
+                    })
+                    return model
+                },
+                apiLoading: false,
+                apiResult: null,
+                get error(){ return this.apiResult && this.apiResult.api.error },
+                get errorSummary() {
+                    let except = this.formLayout.flatMap(group => group.map(input => input.id)).filter(x => x)
+                    return this.apiResult && this.apiResult.api.summaryMessage(except)   
+                },
+                title: s.op.request.description || humanify(s.op.request.name),
+                get apiRequestJson() { return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || '' },
+                formLayout: resolveFormLayout(s.op),
+            }))
+            if (ret.opName !== opName) throw new Error('!!state.opName')
+            return ret
+        },
+        get apiLoading() { return resolve(this.state, x => x && x.apiLoading || false) },
+        get apiResult() { return resolve(this.state, x => x && x.apiResult) },
+        get hasState() { return resolve(this.state, x => x && x.op || false) },
+        formNav(args) {
+            if (args.form === '') {
+                this.updateRequestDto(this.state.formJson)
+            } else if (args.form === 'json') {
+                this.saveForm($1('[data-autoform]'))
+                this.state.jsonError = null
+            }
+        },
+        get showForm() {
+            if (!this.hasState) return false
+            return !this.state.op.requiresAuth || this.store.auth
+        },
+        saveForm(form) {
+            if (!this.hasState) return
+            let state = this.state
+            if (!(form && form.tagName === 'FORM')) throw new Error('!form')
+            state.requestDto = createDto(state.opName, formValues(form))
+            state.formJson = JSON.stringify(state.requestDto, undefined, 4)
+            return state.requestDto
+        },
+        updateRequestDto(json){
+            if (!this.hasState) return
+            let state = this.state
+            state.jsonError = null
+            try {
+                let obj = JSON.parse(json)
+                state.requestDto = createDto(state.opName, obj)
+            } catch (e) {
+                state.jsonError = { type:'input', message: `${e}` }
+            }
+        },
+        onAjaxFormInput(e) {
+            if (!this.hasState) return
+            this.state.formJson = JSON.stringify(formValues(e.target.tagName === 'FORM' ? e.target : e.target.form), undefined, 4)
+        },
+        onJsonFormInput(e) { this.updateRequestDto(e.target.value) },
+        onAjaxFormSubmit(e) {
+            this.saveForm(e.target)
+            this.apiSend()
+        },
+        onJsonFormSubmit(e) {
+            if (!this.hasState) return
+            let state = this.state
+            try {
+                let json = $1('textarea',e.target).value
+                let obj = JSON.parse(json)
+                state.requestDto = createDto(state.opName, obj)
+                this.apiSend()
+            } catch (e) {
+                state.jsonError = { type:'submit', message: `${e}` }
+            }
+        },
+        apiSend() {
+            if (!this.hasState) return
+            let state = this.state
+            if (!state.requestDto) return
+            state.jsonError = null
+            state.apiResult = null
+            let complete = delaySet(x => state.apiLoading = x)
+            apiSend(state.requestDto).then(r => {
+                state.apiResult = r
+                complete()
+            })
+        },
+    }
+})
+
+let useType = type => (acc,x) => { acc[x]=type; return acc }
+let InputTypes = {
+    bool: 'checkbox',
+    ...'DateTime,DateTimeOffset,DateOnly'.split(',').reduce(useType('date'), {}),
+    ...'TimeSpan,TimeOnly'.split(',').reduce(useType('time'), {}),
+    ...'byte,short,int,long,ushort,uint,ulong,float,double,decimal'.split(',').reduce(useType('number'), {}),
+    ...'string,Guid,Uri'.split(',').reduce(useType('text'), {}),
+}
+
+function resolveFormLayout(op) {
+    let allProps = typeProperties(op.request).filter(supportsProp)
+    if (op.formLayout) {
+        let allPropsMap = allProps.reduce((acc,x) => { acc[x.name] = x; return acc }, {})
+        let ret = op.formLayout.map(group => group.map(input => ({ ...inputProp(allPropsMap[input.id]), ...input }) ))
+        return ret
+    }
+    let formLayout = []
+    let inputProps = allProps.map(inputProp)
+    let fullWidthTypes = ['textarea','divider']
+    let fullWidth = input => input && (fullWidthTypes.indexOf(input.type) >= 0 || input['data-type'] === 'List`1')
+    let pagingStart = inputProps.findIndex(x => x.id.toLowerCase() === 'skip')
+    if (pagingStart >= 0) inputProps.splice(pagingStart, 0, { id:`__divider${pagingStart}`, type:'divider' })
+    while (inputProps.length > 0) {
+        let left = inputProps.shift();
+        let right = inputProps.length > 0 ? inputProps.shift() : null;
+        if (fullWidth(left) || fullWidth(right)) {
+            formLayout.push([left])
+            if (right) formLayout.push([right])
+        } else {
+            formLayout.push(right ? [left,right] : [left])
+        }
+    }
+    return formLayout
+}
+
+function formValues(form) {
+    let obj = {}
+    Array.from(form.elements).forEach(el => {
+        if (!el.id || el.value == null || el.value === '') return
+        let dataType = el.getAttribute('data-type')
+        let dataArgs = (el.getAttribute('data-args') || '').split(','), dataArg = dataArgs[0]
+        let value = el.type === 'checkbox'
+            ? el.checked
+            : el.value
+        if (isNumberType(dataType) || (dataType === 'Nullable`1' && isNumberType(dataArg))) {
+            value = Number(value)
+        } else if (dataType === 'List`1') {
+            value = value.split(',').map(x => isNumberType(dataArg)
+                ? Number(x)
+                : x)
+        }
+        obj[el.id] = value
+    })
+    return obj
+}
+
+function createDto(name, obj) {
+    let dtoCtor = window[name]
+    if (!dtoCtor) {
+        console.log(`Couldn't find Request DTO for ${name}`) /*debug*/
+        let AnonResponse = /** @class */ (function () { return function (init) { Object.assign(this, init) } }())
+        dtoCtor = /** @class */ (function () {
+            function AnonRequest(init) { Object.assign(this, init) }
+            AnonRequest.prototype.createResponse = function () { return new AnonResponse() }
+            AnonRequest.prototype.getTypeName = function () { return name }
+            AnonRequest.prototype.getMethod = function () { return 'POST' }
+            return AnonRequest
+        }())
+    }
+    return new dtoCtor(obj)
+}
+
+function parseCookie(str) {
+    return str.split(';').map(v => v.split('=')) .reduce((acc, v) => {
+            let key = v[0] && v[0].trim() && decodeURIComponent(v[0].trim())
+            if (key) acc[key] = decodeURIComponent((v[1]||'').trim())
+            return acc
+        }, {});
+}
+
+function apiSend(requestDto) {
+    if (!requestDto) throw new Error('!requestDto')
+    let opName = requestDto.getTypeName()
+    let httpReq = null, httpRes = null, headers = null
+    let cookies = parseCookie(document.cookie)
+    let newClient = createClient(c => {
+        c.requestFilter = req => httpReq = req
+        c.responseFilter = res => {
+            httpRes = res
+            headers = Object.fromEntries(res.headers)
+        }
+    })
+    let returnsVoid = typeof requestDto.createResponse == 'function' && !requestDto.createResponse()
+    let task = returnsVoid
+        ? newClient.apiVoid(requestDto, { jsconfig: 'eccn' })
+        : newClient.api(requestDto, { jsconfig: 'eccn' })
+    return task.then(api => ({ 
+        api,
+        json: JSON.stringify(api.response || api.error, undefined, 4),
+        text: JSON.stringify(api.response || api.error),
+        opName,
+        requestDto, 
+        httpReq, 
+        httpRes,
+        headers,
+        cookies,
+    }))
+}
+
+function groupTypes(allTypes) {
+    let allTypesMap = {}
+    let groups = []
+    allTypes.forEach(type => {
+        if (allTypesMap[type.name]) return
+        let group = []
+        let addTypeDef = typeDef => {
+            if (!typeDef || allTypesMap[typeDef.name]) return
+            allTypesMap[typeDef.name] = typeDef
+            group.push({ type: typeDef, typeName: typeName(typeDef) })
+        }
+        let addTypeRef = typeRef => {
+            if (!typeRef || allTypesMap[typeRef.name]) return
+            let typeDef = TypesMap[typeRef.name]
+            allTypesMap[typeDef.name] = typeDef
+            group.push({ type: typeDef, typeName: typeName(typeRef) })
+            return typeDef
+        }
+        addTypeDef(type)
+        if (type.inherits) {
+            let subType = addTypeRef(type.inherits)
+            while (subType) {
+                subType = subType.inherits ? addTypeRef(subType.inherits) : null
+            }
+        }
+        groups.push(group)
+    })
+    return groups
+}
+
+function inputProp(prop) {
+    let id = toCamelCase(prop.name), idLower = id.toLowerCase()
+    let propType = unwrap(typeName2(prop.type, prop.genericArgs))
+    let input = { id, type:inputType(propType), 'data-type': prop.type }
+    if (prop.genericArgs) input['data-args'] = prop.genericArgs.join(',')
+    let type = TypesMap[propType]
+    if (type && type.isEnum) {
+        input.type = 'select'
+        if (type.enumValues) {
+            input.allowableEntries = []
+            for (let i=0; i<type.enumNames; i++) {
+                input.allowableEntries.push({ key:type.enumValues[i], value:type.enumNames[i] })
+            }
+        } else {
+            input.allowableValues = type.enumNames
+        }
+    } else if (idLower.indexOf('password') >= 0) {
+        input.type = 'password'
+    } else if (idLower === 'email') {
+        input.type = 'email'
+    } else if (idLower.endsWith('url')) {
+        input.type = 'url'
+    }
+    if (prop.input)
+        Object.assign(input, prop.input)
+    return input
+}
+function inputType(typeName) {
+    if (!typeName) return null
+    typeName = unwrap(typeAlias(typeName))
+    return InputTypes[typeName]
+}
+function supportsProp(prop) {
+    let propType = typeName2(prop.type, prop.genericArgs)
+    if (prop.isValueType || prop.isEnum || inputType(propType))
+        return true
+    if (prop.type === 'List`1' && inputType(prop.genericArgs[0]))
+        return true
+    console.log('!supportsProp', 'propType', propType, prop.type, prop.genericArgs, inputType(prop.genericArgs[0])) /*debug*/
+    return false
+}
+
+</script>
+<!--minify-->
+<template id="api-form-template">
+<div v-if="!showForm" class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto">
+    <div class="md:p-4">
+        <div v-scope="Alert({ message: () => store.invalidAccess() })"></div>
+        <div v-scope="store.SignIn()"></div>
+    </div>
+</div>
+<div v-else-if="hasState">
+    <nav class="w-body md:w-body fixed flex space-x-4 pl-2 py-2 border-b bg-white" aria-label="Tabs">
+        <a v-for="(tab,name) in tabs" v-href="{ form:tab, $on:formNav }"
+           :class="[routes.form==tab ? 'bg-gray-100 text-gray-700' : 'uppercase text-gray-500 hover:text-gray-700', 'cursor-pointer px-3 py-1 font-medium text-sm rounded-md']">
+            {{name}}
+        </a>
+    </nav>
+    <div class="w-body md:w-body fixed top-sub-nav h-sub-nav overflow-auto md:pb-scroll">
+        <div v-if="store.invalidAccess()" v-scope="Alert({ message: () => store.invalidAccess() })" class="pt-4 px-4"></div>
+ 
+            <div v-if="routes.form==''" class="sm:p-4 max-w-screen-md"
+                 v-scope="AutoForm({ 
+                    state: () => state,  
+                    onsubmit: e => onAjaxFormSubmit(e),
+                })"></div>
+            <div v-if="routes.form=='json'">
+
+            <form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="sm:p-4">
+                <div class="sm:shadow overflow-hidden sm:rounded-md bg-white">
+                    <div class="relative px-4 py-5 bg-white sm:p-6">
+                        <fieldset>
+                            <legend class="text-lg text-gray-900 text-center mb-4">{{ state.title }}</legend>
+                            <div class="flex flex-col">
+                                <textarea class="flex-1" :rows="Math.max(state.apiRequestJson.split('\n').length,10)" v-model="state.formJson" @input="onJsonFormInput"></textarea>
+                                <div v-if="state.formJson" class="mt-1">
+                                    <div v-if="state.jsonError" class="1 flex items-end">
+                                        <svg class="text-red-600 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <g fill="none">
+                                                <path d="M20 20L4 4m16 0L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                            </g>
+                                        </svg>
+                                        <p class="ml-1 text-md text-red-500">{{(state.jsonError || {}).type=='submit' ? state.jsonError.message : 'invalid'}}</p>
+                                    </div>
+                                    <div v-else-if="state.apiRequestJson">
+                                        <svg class="text-green-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <g fill="none"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+                        <div class="flex justify-end">
+                            <button type="submit" :disabled="state.jsonError"
+                                    :class="[state.jsonError ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500', 
+                                    'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white']">
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div v-if="apiLoading" v-scope="Loading()"></div>
+        <div v-else-if="apiResult" class="mb-8 pb-8" v-scope="ApiResponse({ store, routes, apiResult:() => apiResult })"></div>
+    </div>
+</div>
+</template>
+<!--/minify-->
+
+<script minify>
+App.component('ApiResponse', ({ store, routes, apiResult }) => {
+    return {
+        $template: '#api-response-template',
+        store, routes,
+        get apiResult() { return resolve(apiResult) },
+        get apiResultJson() { return resolve(this.apiResult, x => x && x.json) },
+        get apiResultResponse() { return resolve(this.apiResult, x => x && x.api && (x.api.response || x.api.error)) },
+        get apiResultHeaders() { return resolve(this.apiResult, x => x && x.headers || []) },
+        get apiResultCookies() { return resolve(this.apiResult, x => x && x.cookies || []) },
+        toKvps(obj) {
+            return Object.keys(obj).map(k => ({ Key:k, Value:obj[k]}))
+        },
+        get tabs() {
+            let tabs = { Body:'' }
+            tabs[this.headersLabel] = 'headers'
+            tabs[this.cookiesLabel] = 'cookies'
+            return tabs
+        },
+        get headersLabel() {
+            let count = this.apiResult && Object.keys(this.apiResult.headers).length || 0
+            return `Headers (${count})`
+        },
+        get cookiesLabel() {
+            let count = this.apiResult && Object.keys(this.apiResult.cookies).length || 0
+            return `Cookies (${count})`
+        },
+        fieldAttrs(id) {
+            let useId = id.replace(/\s+/g,'').toLowerCase()
+            return useId === 'stacktrace'
+                ? { 'class': 'whitespace-pre overflow-x-auto' }
+                : {}
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="api-response-template">
+<div class="mt-2 border-t">
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-4 pl-2" aria-label="Tabs">
+            <a v-for="(tab,name) in tabs" v-href="{ response:tab }" 
+               :class="[routes.response == tab ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-1 px-1 border-b-2 font-medium text-sm']">
+                {{name}}
+            </a>
+        </nav>
+    </div>
+
+    <div v-if="routes.response == ''" class="p-2">
+        <span class="relative z-0 inline-flex shadow-sm rounded-md">
+          <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" v-href="{ body:tab }"
+              :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], routes.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+            {{name}}
+          </a>
+        </span>
+
+        <div v-if="routes.body == ''" class="pt-2 icon-outer">
+            <div v-if="apiResultJson" class="icon-right" v-scope="CopyIcon({ text:() => apiResultJson })"></div>
+            <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="apiResultJson"></code></pre>
+        </div>
+        <div v-else-if="routes.body == 'raw'" class="flex pt-2">
+            <textarea class="flex-1" rows="10" v-html="apiResult.text"></textarea>
+        </div>
+        <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+            <div class="" v-scope="PreviewObject({ val:() => apiResultResponse, fieldAttrs })"></div>
+        </div>
+    </div>
+    <div v-else-if="routes.response == 'cookies'" class="md:p-4">
+        <div v-if="Object.keys(apiResultCookies).length" class="mb-4" 
+             v-scope="ArrayPreview({ val:() => toKvps(apiResultCookies) })"></div>
+        <div v-scope="Alert({ message: () => 'HttpOnly Cookies are not shown' })"></div>
+    </div>
+    <div v-else-if="routes.response == 'headers'" class="md:p-4">
+        <div v-if="Object.keys(apiResultHeaders).length" v-scope="ArrayPreview({ val:() => toKvps(apiResultHeaders) })"></div>
+    </div>
+</div>
+</template>
+<!--/minify-->

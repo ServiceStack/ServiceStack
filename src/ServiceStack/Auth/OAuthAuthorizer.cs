@@ -177,9 +177,8 @@ namespace ServiceStack.Auth
 
             try
             {
-                var strResponse = provider.RequestTokenUrl.PostStringToUrl("", requestFilter: req => {
-                    req.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
-                });
+                var strResponse = provider.RequestTokenUrl.PostStringToUrl("", 
+                    requestFilter: req => req.AddHeader(HttpHeaders.Authorization, HeadersToOAuth(headers)));
                 var result = PclExportClient.Instance.ParseQueryString(strResponse);
 
                 if (result["oauth_callback_confirmed"] != null)
@@ -204,7 +203,7 @@ namespace ServiceStack.Auth
         // TODO: this should return the stream error for invalid passwords instead of just true/false.
         public bool AcquireAccessToken(string requestTokenSecret, string authorizationToken, string authorizationVerifier)
         {
-            var headers = new Dictionary<string, string>() {
+            var headers = new Dictionary<string, string> {
                 { "oauth_consumer_key", provider.ConsumerKey },
                 { "oauth_nonce", MakeNonce () },
                 { "oauth_signature_method", "HMAC-SHA1" },
@@ -240,9 +239,7 @@ namespace ServiceStack.Auth
             {
                 var strResponse = provider.AccessTokenUrl.PostStringToUrl(content, 
                     contentType: MimeTypes.FormUrlEncoded,
-                    requestFilter: req => {
-                        req.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
-                    });
+                    requestFilter: req => req.AddHeader(HttpHeaders.Authorization, HeadersToOAuth(headers)));
 
                 var result = PclExportClient.Instance.ParseQueryString(strResponse);
                 if (result["oauth_token"] != null)

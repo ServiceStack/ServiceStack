@@ -1,4 +1,4 @@
-﻿#if !NETCORE_SUPPORT
+﻿#if !NETCORE
 using System.Reflection;
 using System.Threading.Tasks;
 using Funq;

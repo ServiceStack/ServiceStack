@@ -18,7 +18,7 @@ namespace ServiceStack.Html
 		}
 
 		public object Container { get; set; }
-#if !NETSTANDARD2_0
+#if !NETCORE
 		public PropertyDescriptor PropertyDescriptor { get; set; }
 #endif
 		public object Value

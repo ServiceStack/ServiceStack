@@ -11,10 +11,8 @@ namespace ServiceStack
     {
         public static void SaveTo(this IHttpFile httpFile, string filePath)
         {
-            using (var sw = new StreamWriter(File.Create(filePath)))
-            {
-                httpFile.InputStream.WriteTo(sw.BaseStream);
-            }
+            using var sw = new StreamWriter(File.Create(filePath));
+            httpFile.InputStream.WriteTo(sw.BaseStream);
         }
 
         public static void SaveTo(this IHttpFile httpFile, IVirtualFiles vfs, string filePath)
@@ -25,6 +23,25 @@ namespace ServiceStack
         public static void WriteTo(this IHttpFile httpFile, Stream stream)
         {
             httpFile.InputStream.WriteTo(stream);
+        }
+
+        public static async Task SaveToAsync(this IHttpFile httpFile, string filePath)
+        {
+#if NET6_0_OR_GREATER
+            await
+#endif
+            using var sw = new StreamWriter(File.Create(filePath));
+            await httpFile.InputStream.WriteToAsync(sw.BaseStream).ConfigAwait();
+        }
+
+        public static async Task SaveToAsync(this IHttpFile httpFile, IVirtualFiles vfs, string filePath, CancellationToken token=default)
+        {
+            await vfs.WriteFileAsync(filePath, httpFile.InputStream, token).ConfigAwait();
+        }
+
+        public static async Task WriteToAsync(this IHttpFile httpFile, Stream stream)
+        {
+            await httpFile.InputStream.WriteToAsync(stream).ConfigAwait();
         }
 
         public static string MapServerPath(this string relativePath)

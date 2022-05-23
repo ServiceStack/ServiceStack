@@ -6,7 +6,7 @@ namespace ServiceStack.Host
     {
         private string acceptEncoding;
 
-#if !NETSTANDARD2_0
+#if !NETCORE
         private readonly System.Web.HttpContextBase httpContext;
 
         public RequestPreferences(System.Web.HttpContextBase httpContext)
@@ -60,8 +60,8 @@ namespace ServiceStack.Host
             this.acceptEncoding = this.acceptEncoding.ToLower();
         }
 
-        public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
-
+        public bool AcceptsBrotli => AcceptEncoding != null && AcceptEncoding.Contains("br");
         public bool AcceptsDeflate => AcceptEncoding != null && AcceptEncoding.Contains("deflate");
+        public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
     }
 }

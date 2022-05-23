@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Logging.Log4Net</PackageId>
     <AssemblyName>ServiceStack.Logging.Log4Net</AssemblyName>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack.Logging.Log4Net</Title>
     <PackageDescription>
       Provides log4net logging integration for other ServiceStack projects
@@ -14,12 +14,15 @@
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="log4net" Version="2.0.12" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
   </ItemGroup>
 </Project>

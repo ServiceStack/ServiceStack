@@ -1,7 +1,9 @@
+using System;
 using System.IO;
 
 namespace ServiceStack.Caching
 {
+    [Obsolete("Use GZipCompressor and IStreamCompressor")]
     public interface IGZipProvider
     {
         byte[] GZip(string text);

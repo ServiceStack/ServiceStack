@@ -259,7 +259,7 @@ namespace ServiceStack.Support.Markdown
 				throw initException;
 			}
 
-#if NETSTANDARD2_0
+#if NETCORE
             textWriter.Write(pageContext.MarkdownPage.Contents);
             return;
 #else

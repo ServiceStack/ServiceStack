@@ -37,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
+                    Assert.That(httpRes.MatchesContentType(MimeTypes.Html));
                 });
 
             Assert.That(response, Does.StartWith("<!doctype html>"));
@@ -48,10 +48,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo")
                 .GetStringFromUrl(
-                    requestFilter: req => req.Accept = MimeTypes.Json,
+                    requestFilter: req => req.With(c => c.Accept = MimeTypes.Json),
                     responseFilter: httpRes =>
                     {
-                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                        Assert.That(httpRes.MatchesContentType(MimeTypes.Json));
                     });
 
             Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
@@ -62,10 +62,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo/")
                 .GetStringFromUrl(
-                    requestFilter: req => req.Accept = MimeTypes.Json,
+                    requestFilter: req => req.With(c => c.Accept = MimeTypes.Json),
                     responseFilter: httpRes =>
                     {
-                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                        Assert.That(httpRes.MatchesContentType(MimeTypes.Json));
                     });
 
             Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
@@ -77,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.json")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                    Assert.That(httpRes.MatchesContentType(MimeTypes.Json));
                 });
 
             Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     contentType:MimeTypes.PlainText,
                     responseFilter: httpRes => 
                     {
-                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                        Assert.That(httpRes.MatchesContentType(MimeTypes.Json));
                     });
 
             Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
@@ -103,7 +103,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.xml")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Xml));
+                    Assert.That(httpRes.MatchesContentType(MimeTypes.Xml));
                 });
 
             Assert.That(response, Is.EqualTo("<?xml version=\"1.0\" encoding=\"utf-8\"?><CustomRoute xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.servicestack.net/types\"><Data>foo</Data></CustomRoute>"));
@@ -115,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.html")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
+                    Assert.That(httpRes.MatchesContentType(MimeTypes.Html));
                 });
 
             Assert.That(response, Does.StartWith("<!doctype html>"));
@@ -127,7 +127,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.csv")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Csv));
+                    Assert.That(httpRes.MatchesContentType(MimeTypes.Csv));
                 });
 
             Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
@@ -152,7 +152,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var msg = "Field with comma, to demonstrate. ";
             var response = Config.AbsoluteBaseUri.CombineWith("/custom")
                 .PostToUrl(new CustomRoute { Data = msg }, 
-                    requestFilter:req => req.Accept = MimeTypes.Json);
+                    requestFilter:req => req.With(c => c.Accept = MimeTypes.Json));
 
             response.Print();
 
@@ -161,7 +161,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = Config.AbsoluteBaseUri.CombineWith("/custom")
                 .PostToUrl(new CustomRoute { Data = msg }.ToStringDictionary(), 
-                    requestFilter:req => req.Accept = MimeTypes.Json);
+                    requestFilter:req => req.With(c => c.Accept = MimeTypes.Json));
 
             response.Print();
 
@@ -312,7 +312,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class RouteAppHost : AppHostHttpListenerBase
     {
-        public RouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).Assembly) { }
+        public RouteAppHost() : base(nameof(BufferedRequestTests), typeof(CustomRouteService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -425,12 +425,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .GetStringFromUrl();
                 Assert.Fail("Existing route should be modified");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
             }
 
-            var response = Config.AbsoluteBaseUri.CombineWith("/api/modified/foo.csv")
+            var response = Config.AbsoluteBaseUri.CombineWith("/prefix/modified/foo.csv")
                 .GetStringFromUrl();
 
             Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
@@ -439,7 +439,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ModifiedRouteAppHost : AppHostHttpListenerBase
     {
-        public ModifiedRouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).Assembly) { }
+        public ModifiedRouteAppHost() : base(nameof(BufferedRequestTests), typeof(CustomRouteService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -450,7 +450,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var routes = base.GetRouteAttributes(requestType);
             if (requestType != typeof(ModifiedRoute)) return routes;
 
-            routes.Each(x => x.Path = "/api" + x.Path);
+            routes.Each(x => x.Path = "/prefix" + x.Path);
             return routes;
         }
     }
@@ -477,7 +477,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         class InvalidRoutesAppHost : AppSelfHostBase
         {
-            public InvalidRoutesAppHost() : base(typeof(InvalidRoutesAppHost).Name, typeof(InvalidRoutesAppHost).Assembly) { }
+            public InvalidRoutesAppHost() : base(nameof(InvalidRoutesAppHost), typeof(InvalidRoutesAppHost).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -497,7 +497,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     var json = Config.AbsoluteBaseUri.CombineWith("/unknownroute").GetJsonFromUrl();
                     Assert.Fail("Should throw");
                 }
-                catch (WebException ex)
+                catch (Exception ex)
                 {
                     Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.MethodNotAllowed));
                 }

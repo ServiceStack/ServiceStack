@@ -1,7 +1,7 @@
 ﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !NETSTANDARD2_0
+#if !NETCORE
 using System.Web;
 #endif
 
@@ -39,7 +39,7 @@ namespace ServiceStack
     public abstract partial class ServiceStackHost
         : IAppHost, IFunqlet, IHasContainer, IDisposable
     {
-        private readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
+        protected ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
         public bool IsDebugLogEnabled => Log.IsDebugEnabled;
 
         /// <summary>
@@ -81,6 +81,11 @@ namespace ServiceStack
         /// These can be provided in the constructor call.
         /// </summary>
         public List<Assembly> ServiceAssemblies { get; private set; }
+
+        /// <summary>
+        /// Whether AppHost has been already initialized
+        /// </summary>
+        public static bool HasInit => Instance != null;
 
         /// <summary>
         /// Whether AppHost configuration is done.
@@ -135,8 +140,12 @@ namespace ServiceStack
             UncaughtExceptionHandlersAsync = new List<HandleUncaughtExceptionAsyncDelegate>();
             GatewayExceptionHandlers = new List<HandleGatewayExceptionDelegate>();
             GatewayExceptionHandlersAsync = new List<HandleGatewayExceptionAsyncDelegate>();
+            OnPreRegisterPlugins = new Dictionary<Type, List<Action<IPlugin>>>();
+            OnPostRegisterPlugins = new Dictionary<Type, List<Action<IPlugin>>>();
+            OnAfterPluginsLoaded = new Dictionary<Type, List<Action<IPlugin>>>();
             BeforeConfigure = new List<Action<ServiceStackHost>>();
             AfterConfigure = new List<Action<ServiceStackHost>>();
+            AfterPluginsLoaded = new List<Action<ServiceStackHost>>();
             AfterInitCallbacks = new List<Action<IAppHost>>();
             OnDisposeCallbacks = new List<Action<IAppHost>>();
             OnEndRequestCallbacks = new List<Action<IRequest>>();
@@ -168,8 +177,8 @@ namespace ServiceStack
                 new NativeTypesFeature(),
                 new HttpCacheFeature(),
                 new RequestInfoFeature(),
-                new SpanFormats(),
                 new SvgFeature(),
+                new UiFeature(),
                 new Validation.ValidationFeature(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
@@ -233,7 +242,7 @@ namespace ServiceStack
         /// </summary>
         public virtual ServiceStackHost Init()
         {
-            if (Instance != null)
+            if (HasInit)
                 throw new InvalidDataException($"ServiceStackHost.Instance has already been set ({Instance.GetType().Name})");
 
             Service.GlobalResolver = Instance = this;
@@ -263,7 +272,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    OnStartupException(ex);
+                    OnStartupException(ex, instance.GetType().Name, nameof(RunPreConfigure));
                 }
             }
 
@@ -294,17 +303,20 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    OnStartupException(ex);
+                    OnStartupException(ex, instance.GetType().Name, nameof(RunConfigure));
                 }
             }
+
+            GlobalBeforeConfigure.Each(RunManagedAction);
             preStartupConfigs.ForEach(RunConfigure);
-            BeforeConfigure.Each(fn => fn(this));
+            BeforeConfigure.Each(RunManagedAction);
 
             Configure(Container);
 
-            AfterConfigure.Each(fn => fn(this));
-
+            ConfigureLogging();
+            AfterConfigure.Each(RunManagedAction);
             postStartupConfigs.ForEach(RunConfigure);
+            GlobalAfterConfigure.Each(RunManagedAction);
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
@@ -348,6 +360,7 @@ namespace ServiceStack
             OnAfterInit();
             
             configInstances.ForEach(RunPostInitPlugin);
+            GlobalAfterPluginsLoaded.Each(RunManagedAction);
 
             PopulateArrayFilters();
 
@@ -362,10 +375,16 @@ namespace ServiceStack
             
             Plugins.ForEach(RunAfterInitAppHost);
             configInstances.ForEach(RunAfterInitAppHost);
+            GlobalAfterAppHostInit.Each(RunManagedAction);
 
             ReadyAt = DateTime.UtcNow;
 
             return this;
+        }
+
+        public virtual void ConfigureLogging()
+        {
+            Log = LogManager.GetLogger(typeof(ServiceStackHost));
         }
 
         protected virtual void RegisterLicenseKey(string licenseKeyText)
@@ -438,26 +457,15 @@ namespace ServiceStack
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
-                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x.Assembly) } ));
+                .Map(x => new ResourceVirtualFiles(x)));
 
             pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
-                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x) } ));
+                .Map(x => new ResourceVirtualFiles(x)));
 
             if (AddVirtualFileSources.Count > 0)
                 pathProviders.AddRange(AddVirtualFileSources);
 
             return pathProviders;
-        }
-
-        private static DateTime GetAssemblyLastModified(Assembly asm)
-        {
-            try
-            {
-                if (asm.Location != null)
-                    return new FileInfo(asm.Location).LastWriteTime;
-            }
-            catch (Exception) { /* ignored */ }
-            return default(DateTime);
         }
 
         /// <summary>
@@ -522,7 +530,7 @@ namespace ServiceStack
         public Dictionary<Type, Func<IRequest, object>> RequestBinders => ServiceController.RequestTypeFactoryMap;
 
         /// <summary>
-        /// Manage registered Content Types & their sync/async serializers supported by this AppHost
+        /// Manage registered Content Types &amp; their sync/async serializers supported by this AppHost
         /// </summary>
         public IContentTypes ContentTypes { get; set; }
 
@@ -607,9 +615,19 @@ namespace ServiceStack
         public List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; set; }
 
         /// <summary>
+        /// Register static callbacks fired just before AppHost.Configure() 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalBeforeConfigure { get; } = new();
+        
+        /// <summary>
         /// Register callbacks fired just before AppHost.Configure() 
         /// </summary>
         public List<Action<ServiceStackHost>> BeforeConfigure { get; set; }
+
+        /// <summary>
+        /// Register static callbacks fired just after AppHost.Configure() 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalAfterConfigure { get; } = new();
 
         /// <summary>
         /// Register callbacks fired just after AppHost.Configure() 
@@ -617,9 +635,24 @@ namespace ServiceStack
         public List<Action<ServiceStackHost>> AfterConfigure { get; set; }
 
         /// <summary>
+        /// Register static callbacks fired just after plugins are loaded 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalAfterPluginsLoaded { get; } = new();
+
+        /// <summary>
+        /// Register callbacks fired just after plugins are loaded 
+        /// </summary>
+        public List<Action<ServiceStackHost>> AfterPluginsLoaded { get; set; }
+
+        /// <summary>
         /// Register callbacks that's fired after the AppHost is initialized
         /// </summary>
         public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
+
+        /// <summary>
+        /// Register static callbacks fired after the AppHost is initialized 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalAfterAppHostInit { get; } = new();
 
         /// <summary>
         /// Register callbacks that's fired when AppHost is disposed
@@ -644,7 +677,7 @@ namespace ServiceStack
         internal HttpHandlerResolverDelegate[] CatchAllHandlersArray;
 
         /// <summary>
-        /// Register fallback Request Handlers e.g. Used by #Script & Razor Page Based Routing
+        /// Register fallback Request Handlers e.g. Used by #Script &amp; Razor Page Based Routing
         /// </summary>
         public List<HttpHandlerResolverDelegate> FallbackHandlers { get; set; }
         internal HttpHandlerResolverDelegate[] FallbackHandlersArray;
@@ -985,15 +1018,14 @@ namespace ServiceStack
                     {
                         await handler.ProcessRequestAsync(req, res, req.OperationName);                        
                     }
-                    else
-                    {
-                        await res.EndRequestAsync().ConfigAwait();
-                    }
                 }
             }
-            catch
+            finally
             {
-                await res.EndRequestAsync().ConfigAwait();
+                if (!res.IsClosed)
+                {
+                    await res.EndRequestAsync().ConfigAwait();
+                }
             }
         }
 
@@ -1004,9 +1036,29 @@ namespace ServiceStack
         public virtual void OnStartupException(Exception ex)
         {
             if (Config.StrictMode == true || Config.DebugMode)
+            {
+                if (Config.DebugMode)
+                {
+                    if (Log is NullDebugLogger)
+                    {
+                        Console.WriteLine(nameof(OnStartupException));
+                        Console.WriteLine(ex);
+                    }
+                    else
+                    {
+                        Log.Error(nameof(OnStartupException), ex);
+                    }
+                }
                 throw ex;
+            }
 
             this.StartUpErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
+        }
+
+        public virtual void OnStartupException(Exception ex,  string target, string method)
+        {
+            Log.Error($"{method} {target}:\n{ex}");
+            OnStartupException(ex);
         }
 
         private HostConfig config;
@@ -1110,6 +1162,9 @@ namespace ServiceStack
             if ((Feature.RequestInfo & config.EnableFeatures) != Feature.RequestInfo)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
 
+            if ((Feature.Validation & config.EnableFeatures) != Feature.Validation)
+                Plugins.RemoveAll(x => x is Validation.ValidationFeature);
+
             if ((Feature.Razor & config.EnableFeatures) != Feature.Razor)
                 Plugins.RemoveAll(x => x is IRazorPlugin);    //external
 
@@ -1148,9 +1203,10 @@ namespace ServiceStack
             if (!Container.Exists<ISharpPages>())
                 DefaultScriptContext.Init();
 
-            AfterPluginsLoaded(specifiedContentType);
+            RunAfterPluginsLoaded(specifiedContentType);
 
-            GetPlugin<MetadataFeature>()?.AddDebugLink("Templates/license.html", "License Info");
+            ConfigurePlugin<MetadataFeature>(
+                feature => feature.AddDebugLink("Templates/license.html", "License Info"));
 
             if (!TestMode && Container.Exists<IAuthSession>())
                 throw new Exception(ErrorMessages.ShouldNotRegisterAuthSession);
@@ -1160,7 +1216,7 @@ namespace ServiceStack
 
             if (!Container.Exists<ICacheClient>())
             {
-#if NETSTANDARD2_0
+#if NETCORE
                 if (Env.StrictMode && !Container.Exists<ICacheClientAsync>() && Container.Exists<ValueTask<ICacheClientAsync>>())
                 {
                     throw new Exception("Invalid attempt to register `ValueTask<ICacheClientAsync>`. Register ICacheClient or ICacheClientAsync instead to use async Cache Client");
@@ -1228,7 +1284,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnStartupException(ex);
+                OnStartupException(ex, instance.GetType().Name, nameof(RunPreInitPlugin));
             }
         }
 
@@ -1237,11 +1293,17 @@ namespace ServiceStack
             try
             {
                 if (instance is IPostInitPlugin postPlugin)
+                {
                     postPlugin.AfterPluginsLoaded(this);
+                
+                    if (instance is IPlugin plugin && 
+                        OnAfterPluginsLoaded.TryGetValue(instance.GetType(), out var afterLoadedCallbacks))
+                        afterLoadedCallbacks.Each(fn => fn(plugin));
+                }
             }
             catch (Exception ex)
             {
-                OnStartupException(ex);
+                OnStartupException(ex, instance.GetType().Name, nameof(RunPostInitPlugin));
             }
         }
 
@@ -1254,11 +1316,23 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnStartupException(ex);
+                OnStartupException(ex, instance.GetType().Name, nameof(RunAfterInitAppHost));
             }
         }
 
-        private void AfterPluginsLoaded(string specifiedContentType)
+        private void RunManagedAction(Action<ServiceStackHost> fn)
+        {
+            try
+            {
+                fn(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex, fn.ToString(), nameof(RunManagedAction));
+            }
+        }
+
+        private void RunAfterPluginsLoaded(string specifiedContentType)
         {
             if (!string.IsNullOrEmpty(specifiedContentType))
                 config.DefaultContentType = specifiedContentType;
@@ -1272,6 +1346,18 @@ namespace ServiceStack
 
             var plugins = Plugins.WithPriority().PriorityOrdered();
             plugins.ForEach(RunPostInitPlugin);
+            
+            foreach (var action in AfterPluginsLoaded)
+            {
+                try
+                {
+                    action(this);
+                }
+                catch (Exception ex)
+                {
+                    OnStartupException(ex, action.ToString(), nameof(RunAfterPluginsLoaded));
+                }
+            }
 
             ServiceController.AfterInit();
         }
@@ -1418,7 +1504,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Override to use a localized string for internal routes & text used by ServiceStack 
+        /// Override to use a localized string for internal routes &amp; text used by ServiceStack 
         /// </summary>
         public virtual string ResolveLocalizedString(string text, IRequest request=null)
         {
@@ -1426,7 +1512,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Override to use a localized string for internal routes & text used by ServiceStack 
+        /// Override to use a localized string for internal routes &amp; text used by ServiceStack 
         /// </summary>
         public virtual string ResolveLocalizedStringFormat(string text, object[] args, IRequest request=null)
         {
@@ -1485,6 +1571,42 @@ namespace ServiceStack
             return VirtualFileSources.CombineVirtualPath(RootDirectory.RealPath, virtualPath);
         }
 
+        public Dictionary<Type, List<Action<IPlugin>>> OnPreRegisterPlugins { get; set; }
+        
+        /// <summary>
+        /// Register a callback to configure a plugin just before it's registered 
+        /// </summary>
+        public void ConfigurePlugin<T>(Action<T> configure) where T : class, IPlugin
+        {
+            if (!OnPreRegisterPlugins.TryGetValue(typeof(T), out var actions))
+                actions = OnPreRegisterPlugins[typeof(T)] = new();
+            actions.Add(plugin => configure((T)plugin));
+        }
+
+        public Dictionary<Type, List<Action<IPlugin>>> OnPostRegisterPlugins { get; set; } 
+        
+        /// <summary>
+        /// Register a callback to configure a plugin just after it's registered 
+        /// </summary>
+        public void PostConfigurePlugin<T>(Action<T> configure) where T : class, IPlugin
+        {
+            if (!OnPostRegisterPlugins.TryGetValue(typeof(T), out var actions))
+                actions = OnPostRegisterPlugins[typeof(T)] = new();
+            actions.Add(plugin => configure((T)plugin));
+        }
+
+        public Dictionary<Type, List<Action<IPlugin>>> OnAfterPluginsLoaded { get; set; } 
+        
+        /// <summary>
+        /// Register a callback to configure a plugin after AfterPluginsLoaded is run 
+        /// </summary>
+        public void AfterPluginLoaded<T>(Action<T> configure) where T : class, IPlugin
+        {
+            if (!OnAfterPluginsLoaded.TryGetValue(typeof(T), out var actions))
+                actions = OnAfterPluginsLoaded[typeof(T)] = new();
+            actions.Add(plugin => configure((T)plugin));
+        }
+
         private bool delayedLoadPlugin;
         /// <summary>
         /// Manually register Plugin to load
@@ -1512,12 +1634,19 @@ namespace ServiceStack
             {
                 try
                 {
+                    if (OnPreRegisterPlugins.TryGetValue(plugin.GetType(), out var preRegisterCallbacks))
+                        preRegisterCallbacks.Each(fn => fn(plugin));
+                    
                     plugin.Register(this);
+                    
+                    if (OnPostRegisterPlugins.TryGetValue(plugin.GetType(), out var postRegisterCallbacks))
+                        postRegisterCallbacks.Each(fn => fn(plugin));
+                    
                     PluginsLoaded.Add(plugin.GetType().Name);
                 }
                 catch (Exception ex)
                 {
-                    OnStartupException(ex);
+                    OnStartupException(ex, plugin.GetType().Name, nameof(LoadPluginsInternal));
                 }
             }
         }
@@ -1801,7 +1930,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC & reset singleton states
+        /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC &amp; reset singleton states
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
@@ -1820,6 +1949,7 @@ namespace ServiceStack
                     Container = null;
                 }
 
+                HostContext.Reset();
                 AuthenticateService.Reset();
                 JS.UnConfigure();
                 JsConfig.Reset(); //Clears Runtime Attributes

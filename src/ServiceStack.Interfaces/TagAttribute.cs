@@ -23,4 +23,9 @@ namespace ServiceStack
             ApplyTo = applyTo;
         }
     }
+
+    public static class TagNames
+    {
+        public const string Auth = "auth";
+    }
 }

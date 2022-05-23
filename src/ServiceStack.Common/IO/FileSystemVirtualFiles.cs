@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.IO
@@ -8,7 +11,7 @@ namespace ServiceStack.IO
     public class FileSystemVirtualFiles
         : AbstractVirtualPathProviderBase, IVirtualFiles
     {
-        protected DirectoryInfo RootDirInfo;
+        public DirectoryInfo RootDirInfo { get; protected set; }
         protected FileSystemVirtualDirectory RootDir;
 
         public override IVirtualDirectory RootDirectory => RootDir;
@@ -65,10 +68,33 @@ namespace ServiceStack.IO
         {
             var realFilePath = RootDir.RealPath.CombineWith(filePath);
             EnsureDirectory(Path.GetDirectoryName(realFilePath));
-            using (var fs = File.Open(realFilePath, FileMode.Create, FileAccess.Write))
-            {
-                stream.WriteTo(fs);
-            }
+            using var fs = File.Open(realFilePath, FileMode.Create, FileAccess.Write);
+            stream.WriteTo(fs);
+        }
+
+        public override async Task WriteFileAsync(string filePath, object contents, CancellationToken token=default)
+        {
+            if (contents == null)
+                return;
+
+            var realFilePath = RootDir.RealPath.CombineWith(filePath);
+            EnsureDirectory(Path.GetDirectoryName(realFilePath));
+            using var fs = File.Open(realFilePath, FileMode.Create, FileAccess.Write);
+
+            if (contents is IVirtualFile vfile)
+                await WriteFileAsync(filePath, vfile.GetContents(), token).ConfigAwait();
+            else if (contents is string textContents)
+                await fs.WriteAsync(textContents, token).ConfigAwait();
+            else if (contents is ReadOnlyMemory<char> romChars)
+                await fs.WriteAsync(romChars.Span, token).ConfigAwait();
+            else if (contents is byte[] binaryContents)
+                await fs.WriteAsync(binaryContents, token: token).ConfigAwait();
+            else if (contents is ReadOnlyMemory<byte> romBytes)
+                await fs.WriteAsync(romBytes, token).ConfigAwait();
+            else if (contents is Stream stream)
+                await stream.CopyToAsync(fs).ConfigAwait();
+            else
+                throw CreateContentNotSupportedException(contents);
         }
 
         public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
@@ -113,7 +139,7 @@ namespace ServiceStack.IO
         public void DeleteFolder(string dirPath)
         {
             var realPath = RootDir.RealPath.CombineWith(dirPath);
-#if NETSTANDARD2_0
+#if NETCORE
             // Doesn't properly recursively delete nested dirs/files on .NET Core (win at least)
             if (Directory.Exists(realPath))
                 DeleteDirectoryRecursive(realPath);
@@ -168,6 +194,15 @@ namespace ServiceStack.IO
             {
                 throw e.InnerException ?? e;
             }
+        }
+
+        public static void RecreateDirectory(string dirPath, int timeoutMs = 1000)
+        {
+            if (Directory.Exists(dirPath))
+            {
+                DeleteDirectoryRecursive(dirPath);
+            }
+            AssertDirectory(dirPath, timeoutMs);
         }
         
     }

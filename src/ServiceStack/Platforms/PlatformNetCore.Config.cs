@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+﻿#if NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -10,13 +10,12 @@ namespace ServiceStack.Platforms
 {
     public partial class PlatformNetCore : Platform
     {
-        private static ILog log = LogManager.GetLogger(typeof(PlatformNetCore));
-        
         public static ServiceStackHost HostInstance { get; set; }
 
         public const string ConfigNullValue = "{null}";
         
-        public static readonly List<string> AppConfigPaths = new List<string> {
+        public static readonly List<string> AppConfigPaths = new()
+        {
             "~/web.config",
             "~/app.config",
             "~/Web.config",
@@ -42,9 +41,10 @@ namespace ServiceStack.Platforms
             }
             catch (Exception ex)
             {
-                log.Warn("GetAppConfigPath() GetAssembly().Location: ", ex);
+                LogManager.GetLogger(typeof(PlatformNetCore)).Warn("GetAppConfigPath() GetAssembly().Location: ", ex);
             }
 
+            var log = LogManager.GetLogger(typeof(PlatformNetCore));
             foreach (var configPath in appConfigPaths)
             {
                 try

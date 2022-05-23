@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-#if !NETSTANDARD2_0
+#if !NETCORE
 using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
@@ -13,13 +13,13 @@ namespace ServiceStack
 {
     /// <summary>
     /// Abstraction to provide a context per request.
-    /// in aspnet.web its equivalent to <see cref="System.Web.HttpContext"></see>.Current.Items falls back to CallContext
+    /// in aspnet.web its equivalent to System.Web.HttpContext.Current.Items falls back to CallContext
     /// </summary>
     public class RequestContext
     {
         public static readonly RequestContext Instance = new RequestContext();
 
-#if !NETSTANDARD2_0
+#if !NETCORE
         /// <summary>
         /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
         /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
@@ -59,7 +59,7 @@ namespace ServiceStack
 
         private IDictionary GetItems()
         {
-#if !NETSTANDARD2_0
+#if !NETCORE
             try
             {
                 if (UseThreadStatic)
@@ -86,7 +86,7 @@ namespace ServiceStack
 
         private IDictionary CreateItems(IDictionary items = null)
         {
-#if !NETSTANDARD2_0
+#if !NETCORE
             try
             {
                 if (UseThreadStatic)
@@ -119,7 +119,7 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-#if !NETSTANDARD2_0
+#if !NETCORE
             if (UseThreadStatic)
                 Items = null;
             else

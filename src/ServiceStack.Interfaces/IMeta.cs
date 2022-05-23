@@ -21,6 +21,11 @@ namespace ServiceStack
         string BearerToken { get; set; }
     }
 
+    public interface IHasRefreshToken
+    {
+        string RefreshToken { get; set; }
+    }
+
     public interface IHasVersion
     {
         int Version { get; set; }

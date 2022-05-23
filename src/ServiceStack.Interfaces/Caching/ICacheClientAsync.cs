@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 namespace ServiceStack.Caching
 {
     public interface ICacheClientAsync
-#if NET472 || NETSTANDARD2_0        
         : IAsyncDisposable
-#endif
-        
     {
         /// <summary>
         /// Removes the specified item from the cache.
@@ -114,9 +111,7 @@ namespace ServiceStack.Caching
         
         Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default);
 
-#if NET472 || NETSTANDARD2_0
         IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token=default);
-#endif
         
         Task RemoveExpiredEntriesAsync(CancellationToken token=default);
     }

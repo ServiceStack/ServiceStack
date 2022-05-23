@@ -125,8 +125,8 @@ namespace ServiceStack.Api.OpenApi
             {
                 var swaggerUrl = "swagger-ui/";
 
-                appHost.GetPlugin<MetadataFeature>()
-                    .AddPluginLink(swaggerUrl, "Swagger UI");
+                appHost.ConfigurePlugin<MetadataFeature>(
+                    feature => feature.AddPluginLink(swaggerUrl, "Swagger UI"));
 
                 appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
                 {

@@ -8,7 +8,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.Python
 {
-    public class PythonGenerator
+    public class PythonGenerator : ILangGenerator
     {
         public readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
@@ -56,8 +56,10 @@ namespace ServiceStack.NativeTypes.Python
             {"String", "str"},
             {"Boolean", "bool"},
             {"DateTime", "datetime.datetime"},
+            {"DateOnly", "datetime.datetime"},
             {"DateTimeOffset", "datetime.datetime"},
             {"TimeSpan", "datetime.timedelta"},
+            {"TimeOnly", "datetime.timedelta"},
             {"Guid", "str"},
             {"Char", "str"},
             {"Byte", "int"},
@@ -125,8 +127,10 @@ namespace ServiceStack.NativeTypes.Python
         public static readonly Dictionary<string, string> DefaultValues = new() {
             {"Boolean", "False"},
             {"DateTime", "datetime.datetime(1, 1, 1)"},
+            {"DateOnly", "datetime.datetime(1, 1, 1)"},
             {"DateTimeOffset", "datetime.datetime(1, 1, 1)"},
             {"TimeSpan", "datetime.timedelta()"},
+            {"TimeOnly", "datetime.timedelta()"},
             {"Byte", "0"},
             {"Int16", "0"},
             {"Int32", "0"},
@@ -232,6 +236,16 @@ namespace ServiceStack.NativeTypes.Python
         public static AddCodeDelegate InsertCodeFilter { get; set; }
 
         /// <summary>
+        /// Additional Options in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
+        /// <summary>
+        /// Emit code without Header Options
+        /// </summary>
+        public bool WithoutOptions { get; set; }
+
+        /// <summary>
         /// Add Code to bottom of generated code
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
@@ -265,28 +279,36 @@ namespace ServiceStack.NativeTypes.Python
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
-            sb.AppendLine("\"\"\" Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("#")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("#UsePath: {0}".Fmt(Config.UsePath));
+            var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+            if (includeOptions)
+            {
+                sb.AppendLine("\"\"\" Options:");
+                sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+                sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
+                sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("#")));
+                sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+                if (Config.UsePath != null)
+                    sb.AppendLine("#UsePath: {0}".Fmt(Config.UsePath));
 
-            sb.AppendLine();
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
+                sb.AppendLine();
+                sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
 
-            // All properties are optional
-            // sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            sb.AppendLine("{0}DataClass: {1}".Fmt(defaultValue(nameof(DataClass)), Config.DataClass));
-            sb.AppendLine("{0}DataClassJson: {1}".Fmt(defaultValue(nameof(DataClassJson)), Config.DataClassJson));
+                // All properties are optional
+                // sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
+                sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+                sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+                sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+                sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+                sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+                sb.AppendLine("{0}DataClass: {1}".Fmt(defaultValue(nameof(DataClass)), Config.DataClass));
+                sb.AppendLine("{0}DataClassJson: {1}".Fmt(defaultValue(nameof(DataClassJson)), Config.DataClassJson));
+                AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+
+                sb.AppendLine("\"\"\"");
+                sb.AppendLine();
+            }
 
             Config.DataClass = string.IsNullOrEmpty(Config.DataClass)
                 ? DataClass
@@ -294,9 +316,6 @@ namespace ServiceStack.NativeTypes.Python
             Config.DataClassJson = string.IsNullOrEmpty(Config.DataClassJson)
                 ? DataClassJson
                 : $"@dataclass_json({Config.DataClassJson})";
-
-            sb.AppendLine("\"\"\"");
-            sb.AppendLine();
 
             string lastNS = null;
 
@@ -507,10 +526,14 @@ namespace ServiceStack.NativeTypes.Python
                     }
                 }
 
-                string responseTypeExpression = null;
-
                 var interfaces = new List<string>();
-                var implStr = options.ImplementsFn?.Invoke();
+                var implStr = options?.ImplementsFn?.Invoke();
+
+                string responseTypeExpression = null;
+                string responseMethod = options?.Op?.Method != null
+                    ? $"def method(): return '{options?.Op?.Method}'"
+                    : null;
+
                 if (string.IsNullOrEmpty(implStr) && type.Type is {IsAbstract: true})
                 {
                     // need to emit type hint when a generic base class contains a generic response type
@@ -638,6 +661,11 @@ namespace ServiceStack.NativeTypes.Python
                 {
                     sb.AppendLine("@staticmethod"); // needs to change if responseTypeExpression is no longer a static method 
                     sb.AppendLine(responseTypeExpression);
+                    if (responseMethod != null)
+                    {
+                        sb.AppendLine("@staticmethod"); // needs to change if responseMethod is no longer a static method 
+                        sb.AppendLine(responseMethod);
+                    }
                 }
                 else if (type.Properties.IsEmpty() && !addVersionInfo && type.Name != "IReturn`1" && type.Name != "IReturnVoid")
                 {

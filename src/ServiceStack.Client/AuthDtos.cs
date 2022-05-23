@@ -9,9 +9,11 @@ using ServiceStack.Model;
 
 namespace ServiceStack
 {
+    [Tag(TagNames.Auth), Api("Sign In")]
     [DataContract]
     public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
     {
+        [ApiMember(Description = "AuthProvider, e.g. credentials")]
         [DataMember(Order = 1)] public string provider { get; set; }
         [DataMember(Order = 2)] public string State { get; set; }
         [DataMember(Order = 3)] public string oauth_token { get; set; }
@@ -31,11 +33,6 @@ namespace ServiceStack
         [DataMember(Order = 14)] public string nc { get; set; }
         [DataMember(Order = 15)] public string cnonce { get; set; }
 
-        /// <summary>
-        /// Whether to convert successful Authenticated User Sessions to JWT Token in ss-tok Cookie 
-        /// </summary>
-        [DataMember(Order = 16)] public bool? UseTokenCookie { get; set; }
-
         [DataMember(Order = 17)] public string AccessToken { get; set; }
         [DataMember(Order = 18)] public string AccessTokenSecret { get; set; }
         [DataMember(Order = 19)] public string scope { get; set; }
@@ -44,13 +41,8 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AuthenticateResponse : IMeta, IHasSessionId, IHasBearerToken
+    public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
     {
-        public AuthenticateResponse()
-        {
-            this.ResponseStatus = new ResponseStatus();
-        }
-
         [DataMember(Order = 1)] public string UserId { get; set; }
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
@@ -66,6 +58,7 @@ namespace ServiceStack
         [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Tag(TagNames.Auth), Api("Sign Up")]
     [DataContract]
     public class Register : IPost, IReturn<RegisterResponse>, IMeta
     {
@@ -84,24 +77,22 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegisterResponse : IHasResponseStatus, IMeta
+    public class RegisterResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
     {
-        public RegisterResponse()
-        {
-            this.ResponseStatus = new ResponseStatus();
-        }
-
         [DataMember(Order = 1)] public string UserId { get; set; }
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
         [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
         [DataMember(Order = 5)] public string BearerToken { get; set; }
         [DataMember(Order = 6)] public string RefreshToken { get; set; }
+        [DataMember(Order = 7)] public List<string> Roles { get; set; } 
+        [DataMember(Order = 8)] public List<string> Permissions { get; set; } 
 
-        [DataMember(Order = 7)] public ResponseStatus ResponseStatus { get; set; }
-        [DataMember(Order = 8)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 9)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Tag(TagNames.Auth)]
     [DataContract]
     public class AssignRoles : IPost, IReturn<AssignRolesResponse>, IMeta
     {
@@ -143,6 +134,7 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Tag(TagNames.Auth)]
     [DataContract]
     public class UnAssignRoles : IPost, IReturn<UnAssignRolesResponse>, IMeta
     {
@@ -276,7 +268,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>, IMeta
+    public partial class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>, IMeta
     {
         [DataMember(Order = 1)]
         public bool PreserveSession { get; set; }
@@ -298,14 +290,13 @@ namespace ServiceStack
         [DataMember(Order = 4)]
         public ResponseStatus ResponseStatus { get; set; }
     }
-
+    
     [DataContract]
-    public class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
+    public partial class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
     {
         [DataMember(Order = 1)]
         public string RefreshToken { get; set; }
-        [DataMember(Order = 2)] public bool? UseTokenCookie { get; set; }
-        [DataMember(Order = 3)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -341,7 +332,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public partial class MetadataApp { }
+    public partial class MetadataApp : IReturn<AppMetadata> { }
 
     [DataContract]
     public class GetFile : IReturn<FileContent>, IGet
@@ -657,7 +648,8 @@ namespace ServiceStack
     {
         [DataMember(Order = 1)] public string Id { get; set; }
         [DataMember(Order = 2)] public Dictionary<string,object> Result { get; set; }
-        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 3)] public List<Dictionary<string,object>> Details { get; set; }
+        [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
     }
     
     [DataContract]
@@ -678,6 +670,8 @@ namespace ServiceStack
 
 /* Allow metadata discovery & code-gen in *.Source.csproj builds */    
 #if !SOURCE
+    [ExcludeMetadata] public partial class GetAccessToken {}
+    [ExcludeMetadata] public partial class ConvertSessionToToken {}
     [ExcludeMetadata] public partial class GetNavItems {}
     [ExcludeMetadata] public partial class MetadataApp { }
     [ExcludeMetadata] public partial class GetCrudEvents {}

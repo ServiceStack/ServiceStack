@@ -120,9 +120,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
                 Assert.Fail("304 Throws");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
-                Assert.That(ex.GetStatus().Value, Is.EqualTo(HttpStatusCode.NotModified));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotModified));
             }
         }
     }

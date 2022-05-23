@@ -1,18 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web;
-using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+#if NETFX
+using System.Web;
+#else
+using ServiceStack.Host;
+#endif
 
 namespace ServiceStack
 {
     public class PredefinedRoutesFeature : IPlugin, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.PredefinedRoutes;
-        public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new Dictionary<string, Func<IHttpHandler>>();
+        public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new();
+
+        public string JsonApiRoute { get; set; } = "/api/{Request}";
         
         public void Register(IAppHost appHost)
         {
+            if (appHost.PathBase == null && JsonApiRoute != null)
+            {
+                appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
+                appHost.AddToAppMetadata(metadata => metadata.HttpHandlers["ApiHandlers.Json"] = JsonApiRoute);
+            }
+            
             appHost.CatchAllHandlers.Add(ProcessRequest);
         }
 
@@ -69,13 +80,11 @@ namespace ServiceStack
                         if (feature == Feature.None) feature = Feature.CustomFormat;
 
                         if (isReply)
-                            return new GenericHandler(contentType, RequestAttributes.Reply, feature)
-                            {
+                            return new GenericHandler(contentType, RequestAttributes.Reply, feature) {
                                 RequestName = requestName,
                             };
                         if (isOneWay)
-                            return new GenericHandler(contentType, RequestAttributes.OneWay, feature)
-                            {
+                            return new GenericHandler(contentType, RequestAttributes.OneWay, feature) {
                                 RequestName = requestName,
                             };
                     }

@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD
+﻿#if NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -1199,9 +1199,7 @@ namespace ServiceStack.Mvc
 
         public virtual IRedisClient Redis => ServiceStackProvider.Redis;
         
-#if NET472 || NETSTANDARD2_0
         public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => ServiceStackProvider.GetRedisAsync();
-#endif
 
         public virtual IMessageProducer MessageProducer => ServiceStackProvider.MessageProducer;
 

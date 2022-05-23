@@ -2,10 +2,10 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Razor</PackageId>
     <AssemblyName>ServiceStack.Razor</AssemblyName>
-    <TargetFrameworks>net45</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <Title>ServiceStack.Razor - ServiceStack's HTML story including MVC Razor</Title>
     <PackageDescription>
-      ServiceStack Razor Documentation: http://razor.servicestack.net
+      ServiceStack Razor Documentation: https://razor.netcore.io
 
       - Turns ServiceStack into a Complete Web + REST Services Stack. Replaces need for ASP.NET MVC.
       - Runs In ASP.NET or Self-host, first-class cross-platform support on .NET / .NET Core runtimes.

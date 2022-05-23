@@ -1,3 +1,4 @@
+#if FALSE
 using System;
 using NUnit.Framework;
 
@@ -48,3 +49,4 @@ namespace ServiceStack.Logging.Tests.UnitTests
         }
     }
 }
+#endif

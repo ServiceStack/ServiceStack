@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Funq;
+using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -13,6 +14,13 @@ namespace ServiceStack
     public static class AppHostExtensions
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
+
+        public static void ConfigureOperation<T>(this IAppHost appHost, Action<Operation> configure)
+        {
+            if (!appHost.Metadata.ConfigureOperations.TryGetValue(typeof(T), out var handlers))
+                handlers = appHost.Metadata.ConfigureOperations[typeof(T)] = new();
+            handlers.Add(configure);
+        }
 
         public static void RegisterServices(this IAppHost appHost, Dictionary<Type, string[]> serviceRoutes)
         {
@@ -105,6 +113,18 @@ namespace ServiceStack
             return hasContainer?.Container;
         }
 
+        public static bool NotifyStartupException(this IAppHost appHost, Exception ex, string target, string method)
+        {
+            var ssHost = HostContext.AppHost;
+            if (ssHost == null) return false;
+
+            if (!ssHost.HasStarted)
+            {
+                ssHost.OnStartupException(ex, target, method);
+            }
+            return !ssHost.HasStarted;
+        }
+
         public static bool NotifyStartupException(this IAppHost appHost, Exception ex)
         {
             var ssHost = HostContext.AppHost;
@@ -127,11 +147,18 @@ namespace ServiceStack
 
         public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
         {
-#if !NETSTANDARD2_0
+#if !NETCORE
             var listener = (ServiceStack.Host.HttpListener.HttpListenerBase)appHost;
             listener.Start(urlBases);
 #endif
             return appHost;
+        }
+
+        public static List<IPlugin> AddIfDebug<T>(this List<IPlugin> plugins, T plugin) where T : class, IPlugin
+        {
+            if (HostContext.DebugMode)
+                plugins.Add(plugin);
+            return plugins;
         }
 
         public static List<IPlugin> AddIfNotExists<T>(this List<IPlugin> plugins, T plugin) where T : class, IPlugin =>

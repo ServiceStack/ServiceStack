@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MyApp</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/typography.css" rel="stylesheet" />
+    <link href="css/markdown.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="css/main-layout.css" rel="stylesheet" />
+    <link href="MyApp.Client.styles.css" rel="stylesheet" />
+    <script src="_content/Blazor.Extensions.Logging/blazor.extensions.logging.js" defer></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- loading: render temp static app chrome to improve perceived performance -->
+        <div id="app-loading" class="main-layout page">
+            <div class="sidebar">
+                <div class="top-row navbar navbar-dark">
+                    <a class="navbar-brand ps-4" href="/">MyApp</a>
+                    <button class="navbar-toggler"><span class="navbar-toggler-icon"></span></button>
+                </div>
+                <div class="collapse">
+                    <ul class="nav flex-column"></ul>
+                </div>
+            </div>
+            <div class="main">
+                <div class="main-top-row px-4">
+                    <ul class="nav nav-pills"></ul>
+                    <a href="signin?return=docs/deploy" class="btn btn-outline-primary">Login</a>
+                </div>
+                <div class="content px-4">
+                    <!--PAGE-->
+                    <div class="spinner-border float-start mt-2 me-2" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                    <h1 style="font-size:36px">
+                        Loading...
+                    </h1>
+                    <!--/PAGE-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+const SIDEBAR = `
+    Home,home,/$
+    Counter,plus,/counter
+    Todos,clipboard,/todomvc
+    Bookings CRUD,calendar,/bookings-crud
+    Call Hello,transfer,/hello$
+    Call HelloSecure,shield,/hello-secure
+    Fetch data,list-rich,/fetchdata
+    Admin,lock-locked,/admin
+    Login,account-login,/signin
+`
+const TOP = `
+    0.40 /mo,dollar,/docs/hosting
+    Prerendering,loop-circular,/docs/prerender
+    Deployments,cloud-upload,/docs/deploy
+`
+
+const path = location.pathname
+const NAV = ({ label, cls, icon, route, exact }) => `<li class="nav-item${cls}">
+    <a href="${route}" class="nav-link${(exact ? path==route : path.startsWith(route)) ? ' active' : ''}">
+        <span class="oi oi-${icon}" aria-hidden="true"></span> ${label}
+    </a></li>`
+const renderNav = (csv,f) => csv.trim().split(/\r?\n/g).map(s => NAV(f.apply(null,s.split(',')))).join('')
+const $1 = s => document.querySelector(s)
+
+$1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, route) => ({
+    label, cls: ` px-3${route == SIDEBAR[0].route ? ' pt-3' : ''}`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+
+$1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) => ({
+    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+    
+$1('#app-loading .navbar-toggler').onclick = function () {
+    this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
+
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r => r.text())
+    .then(html => {
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</script>
+<style>
+/* show subtle visual cue for prerendered pages */
+#app-loading .content {
+    box-shadow: inset 0 4px 4px 0 rgb(0 0 0 / 0.05);
+}
+</style>
+ 
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+<script type="text/javascript" src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll()</script>
+
+<script>
+/* DOM functions used in Blazor Components */
+
+/* Loading */
+window.prerenderedPage = function () {
+    const el = document.querySelector('#app-loading .content')
+    return el && el.innerHTML || ''
+}
+/* ShellCommand */
+window.copy = function(target) {
+    let $el = document.createElement("input")
+    let $lbl = target.parentElement.querySelector('label')
+
+    $el.setAttribute("value", $lbl.innerText)
+    document.body.appendChild($el)
+    $el.select()
+    document.execCommand("copy")
+    document.body.removeChild($el);
+
+    if (typeof window.getSelection == "function") {
+        const range = document.createRange()
+        range.selectNodeContents($lbl)
+        window.getSelection()?.removeAllRanges()
+        window.getSelection()?.addRange(range)
+    }
+}
+</script>
+</body>
+</html>

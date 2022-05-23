@@ -172,21 +172,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class ServerEventsAppHost : AppSelfHostBase
     {
         public ServerEventsAppHost()
-            : base(typeof(ServerEventsAppHost).Name, typeof(ServerEventsAppHost).Assembly) { }
+            : base(typeof(ServerEventsAppHost).Name, typeof(ServerEventsAppHost).Assembly) 
+        {
+            NotifyChannelOfSubscriptions = true;
+        }
 
         public bool UseAsync { get; set; }
         public bool UseRedisServerEvents { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
+
+        public bool NotifyChannelOfSubscriptions { get; set; }
+
+        public int IdleTimeoutMs { get; set; }
+
         public Action<IEventSubscription, Web.IResponse, string> OnPublish { get; set; }
 
         public override void Configure(Container container)
         {
-            Plugins.Add(new ServerEventsFeature
+            var ssePlugin = new ServerEventsFeature
             {
                 HeartbeatInterval = TimeSpan.FromMilliseconds(200),
                 LimitToAuthenticatedUsers = LimitToAuthenticatedUsers,
-                OnPublish = OnPublish
-            });
+                OnPublish = OnPublish,
+                NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions
+            };
+            if(IdleTimeoutMs > 0)
+                ssePlugin.IdleTimeout = TimeSpan.FromMilliseconds(IdleTimeoutMs);
+            Plugins.Add(ssePlugin);
 
             if (UseRedisServerEvents)
             {
@@ -251,6 +263,92 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new ServerEventsAppHost { UseRedisServerEvents = true }
                 .Init()
                 .Start(Config.AbsoluteBaseUri);
+        }
+    }
+
+    [TestFixture]
+    public class RedisServerEventsStatefulTests
+    {
+        public ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost
+            {
+                UseRedisServerEvents = true,
+                NotifyChannelOfSubscriptions = false,
+                IdleTimeoutMs = 400
+            }
+            .Init()
+            .Start(Config.AbsoluteBaseUri);
+        }
+
+        private ServiceStackHost appHost;
+
+        [OneTimeSetUp]
+        public void TestFixtureSetup()
+        {
+            appHost = CreateAppHost();
+        }
+
+        [OneTimeTearDown]
+        public void TestFixtureTearDown()
+        {
+            if (appHost.Resolve<IServerEvents>() is RedisServerEvents redisEvents)
+                redisEvents.Dispose();
+
+            appHost.Dispose();
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            var serverEvents = appHost.TryResolve<IServerEvents>();
+            serverEvents.Reset();
+        }
+
+        protected static ServerEventsClient CreateServerEventsClient(params string[] channels)
+        {
+            var client = new ServerEventsClient(Config.AbsoluteBaseUri, channels);
+            return client;
+        }
+
+        [Test]
+        public async Task Does_clean_up_sse_id_subscriptions_regardless_of_config()
+        {
+            var manyClients = new List<ServerEventsClient>();
+            for (var i = 0; i < 10; i++)
+            {
+                var client = CreateServerEventsClient();
+                var task = client.Start();
+                manyClients.Add(client);
+            }
+
+            var mainClient = CreateServerEventsClient();
+            mainClient.Start();
+
+            var redisPool = HostContext.Container.Resolve<IRedisClientsManager>();
+            using var redisClient = redisPool.GetClient();
+
+            var initialResult = redisClient.ScanAllKeys("sse:id:*");
+            var initialCount = initialResult.Count();
+
+            Assert.That(initialCount, Is.EqualTo(11));
+
+            foreach (var client in manyClients)
+            {
+                await client.Stop();
+                client.Dispose();
+            }
+
+            // Message to process so that cleanup processes can start
+            mainClient.PostChat("hello from client1");
+
+            // Small wait for Redis async cleanup to happen
+            Thread.Sleep(200);
+
+            var result = redisClient.ScanAllKeys("sse:id:*");
+            var count = result.Count();
+
+            Assert.That(count, Is.EqualTo(1));
         }
     }
 
@@ -1405,32 +1503,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public AuthMemoryServerEventsTests()
         {
             appHost = CreateAppHost();
+
+            var serverEvents = appHost.TryResolve<IServerEvents>();
+            serverEvents.Reset();
         }
 
         [OneTimeTearDown]
         public void TestFixtureTearDown() => appHost.Dispose();
 
-        [SetUp]
-        public void SetUp()
-        {
-            var serverEvents = appHost.TryResolve<IServerEvents>();
-            serverEvents.Reset();
-        }
-
         [Test]
         public void UnAuthenticated_User_throws_UnAuthorized()
         {
-            using (var client = CreateServerEventsClient())
+            using var client = CreateServerEventsClient();
+            try
             {
-                try
-                {
-                    client.Start();
-                    Assert.Fail("Should Throw");
-                }
-                catch (WebException ex)
-                {
-                    Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Unauthorized));
-                }
+                client.Start();
+                Assert.Fail("Should Throw");
+            }
+            catch (Exception ex)
+            {
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Unauthorized));
             }
         }
 
@@ -1440,7 +1532,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using var client = CreateServerEventsClient();
             await client.AuthenticateAsync(new Authenticate
             {
-                provider = CustomCredentialsAuthProvider.Name,
+                provider = CredentialsAuthProvider.Name,
                 UserName = "user",
                 Password = "pass",
             });

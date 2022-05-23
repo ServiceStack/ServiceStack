@@ -65,9 +65,13 @@ namespace ServiceStack
         public static void RunSync(Func<Task> task) => SyncTaskFactory.StartNew(task).Unwrap().GetAwaiter().GetResult();
         public static TResult RunSync<TResult>(Func<Task<TResult>> task) => SyncTaskFactory.StartNew(task).Unwrap().GetAwaiter().GetResult();
         
-#if NET472 || NETSTANDARD2_0        
         public static ValueTask AsValueTask(this Task task) => new ValueTask(task);
         public static ValueTask<T> AsValueTask<T>(this Task<T> task) => new ValueTask<T>(task);
+        
+#if NET6_0_OR_GREATER
+        public static void Wait(this ValueTask task) => task.AsTask().Wait();
+#else
+        public static Task AsTask(this Task task) => task; //compat src with .NET6+
 #endif
     }
 }

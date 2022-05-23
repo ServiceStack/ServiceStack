@@ -15,7 +15,7 @@ namespace ServiceStack.Configuration
         {
             public string Get(string key)
             {
-#if !NETSTANDARD2_0
+#if !NETCORE
                 return ConfigurationManager.AppSettings[key];
 #else
                 var appSettings = ConfigUtils.GetAppSettingsMap();
@@ -27,7 +27,7 @@ namespace ServiceStack.Configuration
 
             public List<string> GetAllKeys()
             {
-#if !NETSTANDARD2_0
+#if !NETCORE
                 return new List<string>(ConfigurationManager.AppSettings.AllKeys);
 #else
                 var appSettings = ConfigUtils.GetAppSettingsMap();

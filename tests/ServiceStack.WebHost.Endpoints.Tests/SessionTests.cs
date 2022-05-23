@@ -226,6 +226,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Tag, Is.EqualTo(2));
         }
 
+#if NETFX
         [Test]
         public void Can_override_existing_session_with_QueryString()
         {
@@ -252,6 +253,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Tag, Is.EqualTo(2));
         }
+#endif
 
         [Test]
         public void Can_mock_IntegrationTest_Session_with_Request()

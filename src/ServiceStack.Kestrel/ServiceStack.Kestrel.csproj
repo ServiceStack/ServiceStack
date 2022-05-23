@@ -3,7 +3,7 @@
     <PropertyGroup>
         <PackageId>ServiceStack.Kestrel</PackageId>
         <AssemblyName>ServiceStack.Kestrel</AssemblyName>
-        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
         <Title>ServiceStack Self Host for .NET Core's Kestrel HTTP Server</Title>
         <PackageDescription>
             Provides AppSelfHostBase implementation for .NET Core's Kestrel Self Host HTTP Server
@@ -12,6 +12,12 @@
         </PackageDescription>
         <PackageTags>ServiceStack;SelfHost;Host;Kestrel;HTTP;Server</PackageTags>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
@@ -19,14 +25,22 @@
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.2" />
+        <PackageReference Include="System.Memory" Version="4.5.4" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
-        <PackageReference Include="System.Memory" Version="4.5.4" />
+		<PackageReference Include="Microsoft.Extensions.Primitives" Version="2.2.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
 </Project>

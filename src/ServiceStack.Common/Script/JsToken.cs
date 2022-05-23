@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using ServiceStack.Extensions;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
+
+#if !NET6_0
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack.Script
 {
@@ -308,9 +311,6 @@ namespace ServiceStack.Script
         /// <summary>
         /// Evaluate then set asyncResult if Result was async, otherwise set result.
         /// </summary>
-        /// <param name="scope"></param>
-        /// <param name="result"></param>
-        /// <param name="asyncResult"></param>
         /// <returns>true if result was synchronous otherwise false</returns>
         public static bool Evaluate(this JsToken token, ScriptScopeContext scope, out object result, out Task<object> asyncResult)
         {

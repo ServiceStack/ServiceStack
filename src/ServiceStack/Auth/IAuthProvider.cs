@@ -17,9 +17,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Remove the Users Session
         /// </summary>
-        /// <param name="service"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
         Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token = default);
 
         /// <summary>
@@ -86,6 +83,10 @@ namespace ServiceStack.Auth
         /// </summary>
         public AuthenticateService AuthService { get; internal set; }
         /// <summary>
+        /// The current HTTP Request 
+        /// </summary>
+        public IRequest Request => AuthService.Request; 
+        /// <summary>
         /// Selected Auth Provider for Request
         /// </summary>
         public IAuthProvider AuthProvider { get; internal set; }
@@ -117,6 +118,31 @@ namespace ServiceStack.Auth
         /// Original User Source (if exists) 
         /// </summary>
         public object UserSource { get; set; }
+    }
+
+    public class RegisterFilterContext
+    {
+        public RegisterServiceBase RegisterService { get; internal set; }
+        /// <summary>
+        /// The current HTTP Request 
+        /// </summary>
+        public IRequest Request => RegisterService.Request; 
+        /// <summary>
+        /// Authenticated Users Session
+        /// </summary>
+        public IAuthSession Session { get; internal set; }
+        /// <summary>
+        /// Register Request DTO
+        /// </summary>
+        public Register Register { get; internal set; }
+        /// <summary>
+        /// RegisterResponse DTO
+        /// </summary>
+        public RegisterResponse RegisterResponse { get; internal set; }
+        /// <summary>
+        /// Optimal Session Referrer URL to use redirects
+        /// </summary>
+        public string ReferrerUrl { get; internal set; }
     }
 
     public class AuthResultContext

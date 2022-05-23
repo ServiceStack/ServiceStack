@@ -4,7 +4,7 @@
   <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
 
   <PropertyGroup>
-    <MajorVersion Condition="$(MajorVersion) == ''">5</MajorVersion>
+    <MajorVersion Condition="$(MajorVersion) == ''">6</MajorVersion>
     <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
     <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
   </PropertyGroup>
@@ -47,6 +47,7 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Blazor/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Interfaces/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.Log4Net/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.NLog/obj" />
@@ -84,12 +85,6 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.Api.Swagger -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
     <!-- ServiceStack.Client -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj"
              Targets="Build;Pack"
@@ -102,6 +97,11 @@
 
     <!-- ServiceStack.HttpClient -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Blazor -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Blazor/ServiceStack.Blazor.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
@@ -140,11 +140,6 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.Razor.BuildTask -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Razor.BuildTask/ServiceStack.Razor.BuildTask.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
     <!-- ServiceStack.Server -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.Server.csproj"
              Targets="Build;Pack"
@@ -155,25 +150,9 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- AuthProviders -->
-    <!-- ServiceStack.Authentication.OAuth2 -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Authentication.OAuth2/ServiceStack.Authentication.OAuth2.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Authentication.OpenId -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Authentication.OpenId/ServiceStack.Authentication.OpenId.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
     <!-- AuthRepos -->
     <!-- ServiceStack.Authentication.MongoDb -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Authentication.MongoDb/ServiceStack.Authentication.MongoDb.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Authentication.NHibernate -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Authentication.NHibernate/ServiceStack.Authentication.NHibernate.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
@@ -199,19 +178,9 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.Wire -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Wire/ServiceStack.Wire.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
     <!-- Logging -->
     <!-- ServiceStack.Logging.Elmah -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Elmah/ServiceStack.Logging.Elmah.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Logging.EntLib5 -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.EntLib5/ServiceStack.Logging.EntLib5.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 

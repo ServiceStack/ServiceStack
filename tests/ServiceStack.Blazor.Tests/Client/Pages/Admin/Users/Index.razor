@@ -1,0 +1,213 @@
+﻿@page "/admin/users"
+@inherits AdminPage
+@inject ILogger<Index> logger
+@using ServiceStack.Html
+
+<AdminPage Title="Manage Users" IconClass="svg svg-admin-users svg-2.5x align-bottom">
+    <section id="adminusers" @onkeydown="OnKeyPress">
+        <main>
+            <div class="main-container p-2">
+                <div class="my-2 d-flex flex-wrap align-items-center">
+                    <form class="d-flex mb-2" @onsubmit=search @onsubmit:preventDefault>
+                    @if (!string.IsNullOrEmpty(request.Query))
+                    {
+                        <i class="text-close" style="position:absolute;margin:0 0 3px 265px" title="clear" @onclick="clearQuery"></i>
+                    }
+                        <input @bind-value="request.Query" id="txtQuery" placeholder="Search Users" class="form-control" style="width:290px" />
+
+                        <button @onclick="search" class="ms-1 btn btn-outline-primary">Go</button>
+                    </form>
+                    <div class="mb-2 d-flex flex-wrap align-items-center">
+                        <span class="main-query ms-2 d-flex">
+                            <button class="btn oi oi-chevron-left"  disabled=@(request.Skip == 0) title="&lt; previous" @onclick="_ => viewNext(-pageSize)"></button>
+                            <button class="btn oi oi-chevron-right" disabled=@(results.Count < pageSize) title="next &gt;" @onclick="_ => viewNext(pageSize)"></button>
+                        </span>
+                    @if (results.Count > 0)
+                    {
+                        <span class="ms-1 text-muted">
+                            Showing results: @(request.Skip+1)-@(request.Skip+results.Count)
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">No results</span>
+                    }
+                        <button class="ms-3 btn btn-outline-primary" @onclick="_ => reset(newUser:true)" @onclick:preventDefault>
+                            New User 
+                        </button>
+                    </div>
+                </div>
+
+            @if (newUser)
+            {
+                <Create done="onDone" class="mb-4 max-w-screen-md" />
+            }
+            else if (!string.IsNullOrEmpty(editUserId))
+            {
+                <Edit Id=@editUserId done="onDone" class="mb-4 max-w-screen-md" />
+            }
+                    
+            @if (results.Count > 0)
+            {
+                <div class="shadow-sm p1 mt-4">
+                <table class="table table-striped">
+                    <thead><tr class="noselect">
+                        <th>
+                            <span class="oi oi-plus cursor-pointer" title="New User" @onclick="_ => reset(newUser:true)"/>
+                        </th>
+                    @foreach (var f in fieldNames)
+                    {
+                        <th @key=f @onclick="_ => setOrderBy(f)" 
+                            class=@ClassNames("th-link", $"show-{minVisibleSize(f)}-tcell")>
+                            <div class="text-nowrap">
+                                @TextUtils.Humanize(f)
+                            @if (request.OrderBy == f)
+                            {
+                                <span class="oi oi-chevron-top align-top ms-1 mt-1" style="font-size:12px"></span>
+                            }
+                            else if (request.OrderBy == '-' + f)
+                            {
+                                <span class="oi oi-chevron-bottom align-top ms-1 mt-1" style="font-size:12px"></span>
+                            }
+                            </div>
+                        </th>
+                    }
+                    </tr></thead>
+                    <tbody>
+                    @for (var i=0; i<results.Count; i++)
+                    {
+                        var r = results[i];
+                        var id = getField(r, "Id").ToString();
+
+                        <tr @key=@id>
+                            <td>
+                                <span>
+                                    <span class="oi oi-pencil cursor-pointer" title="Update User" @onclick="_ => reset(editUserId:id)" />
+                                </span>
+                            </td>
+                                        
+                        @for (var j=0; j<fieldNames.Count; j++)
+                        {
+                            var f = fieldNames[j];
+                            <td @key=j title=@renderValue(getField(r,f))
+                                class=@($"show-{minVisibleSize(f)}-tcell")>
+                                <FormatValue value=@getField(r,f) />
+                            </td>
+                        }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                </div>
+
+                <ErrorSummary Status=@searchApi.Error />
+            }
+            </div>
+        </main>
+        
+    </section>
+
+</AdminPage>
+
+
+@code {
+    [CascadingParameter] protected AppMetadata? appMetadata { get; set; }
+
+    static int pageSize = 50;
+    bool newUser;
+    string? editUserId;
+
+    AdminQueryUsers request = new()
+    {
+        Query = "",
+        Skip = 0,
+        Take = pageSize,
+    };
+
+    List<string> HideInSmallResolutions = new()
+    {
+        "UserName",
+        "Company",
+        "State",
+        "Country",
+        "ModifiedDate",
+    };
+
+    string minVisibleSize(string propName) => AdminUsers != null 
+        ? MediaRules.MinVisibleSize(AdminUsers.QueryMediaRules, propName) 
+        : MediaSizes.All.Last();
+
+    ApiResult<AdminUsersResponse> searchApi = new();
+    List<Dictionary<string, object>> results => searchApi.Response?.Results ?? TypeConstants<Dictionary<string,object>>.EmptyList;
+
+    List<string> fieldNames => AdminUsers?.QueryUserAuthProperties ?? new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await search();
+    }
+
+    Dictionary<string,object> santize(Dictionary<string,object> from) =>
+        new Dictionary<string, object>(from, StringComparer.OrdinalIgnoreCase);
+
+    void reset(bool newUser = false, string? editUserId = null)
+    {
+        this.newUser = newUser;
+        this.editUserId = editUserId;
+    }
+
+    Task search() => search(null);
+    async Task search(int? skip=null)
+    {
+        reset();
+        request.Skip = skip ?? 0;
+        searchApi = await ApiAsync(request);
+        if (searchApi.Response != null)
+            searchApi.Response.Results = searchApi.Response.Results.Select(santize).ToList();
+    }
+
+    async Task onDone(Dictionary<string,object>? model) {
+
+        await this.search();
+    }
+
+    async Task viewNext(int pageSize)
+    {
+        await search(request.Skip + pageSize);
+    }
+
+    async Task clearQuery()
+    {
+        request.Query = "";
+        await search();
+    }
+
+    async Task setOrderBy(string field)
+    {
+        if (request.OrderBy == field)
+            request.OrderBy = '-' + field;
+        else if (request.OrderBy == '-' + field)
+            request.OrderBy = "";
+        else
+            request.OrderBy = field;
+        await search();
+    }
+
+    string renderValue(object o) => o?.ToString() ?? "";
+
+    object getField(Dictionary<string, object> o, string name)
+    {
+        return o.TryGetValue(name, out var value)
+            ? value
+            : "";
+    }
+
+    Task OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            reset();
+        return Task.CompletedTask;
+    }
+
+}

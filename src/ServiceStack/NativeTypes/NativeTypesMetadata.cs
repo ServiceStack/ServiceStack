@@ -142,6 +142,7 @@ namespace ServiceStack.NativeTypes
                 var opType = new MetadataOperationType
                 {
                     Actions = operation.Actions,
+                    Method = operation.Method,
                     Request = ToType(operation.RequestType),
                     Response = ToType(operation.ResponseType),
                     DataModel = ToTypeName(operation.DataModelType),
@@ -152,6 +153,7 @@ namespace ServiceStack.NativeTypes
                     RequiredPermissions = operation.RequiredPermissions,
                     RequiresAnyPermission = operation.RequiresAnyPermission,
                     Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
+                    FormLayout = operation.FormLayout,
                 };
                 opType.Request.RequestType = opType;
                 metadata.Operations.Add(opType);
@@ -460,6 +462,7 @@ namespace ServiceStack.NativeTypes
             }
 
             metaType.Description = type.GetDescription();
+            metaType.Notes = type.FirstAttribute<NotesAttribute>()?.Notes;
 
             var dcAttr = type.GetDataContract();
             if (dcAttr != null)
@@ -648,8 +651,7 @@ namespace ServiceStack.NativeTypes
             return to.Count == 0 ? null : to;
         }
         
-        public static Dictionary<Type, Func<Attribute, MetadataAttribute>> AttributeConverters { get; } = 
-            new Dictionary<Type, Func<Attribute, MetadataAttribute>>();
+        public static Dictionary<Type, Func<Attribute, MetadataAttribute>> AttributeConverters { get; } = new();
 
         public MetadataAttribute ToAttribute(Attribute attr)
         {
@@ -805,6 +807,37 @@ namespace ServiceStack.NativeTypes
                 property.AllowableValues = apiAllowableValues.Values;
                 property.AllowableMin = apiAllowableValues.Min;
                 property.AllowableMax = apiAllowableValues.Max;
+            }
+
+            var inputProp = pi.FirstAttribute<InputAttribute>();
+            if (inputProp != null)
+            {
+                property.Input = new InputInfo {
+                    Type = inputProp.Type,
+                    Value = inputProp.Value,
+                    Placeholder = inputProp.Placeholder,
+                    Help = inputProp.Help,
+                    Label = inputProp.Label,
+                    Size = inputProp.Size,
+                    Pattern = inputProp.Pattern,
+                    ReadOnly = inputProp.ReadOnly.NullIfFalse(),
+                    Disabled = inputProp.Disabled.NullIfFalse(),
+                    Required = inputProp.Required.NullIfFalse() ?? property.IsRequired,
+                    Min = inputProp.Min,
+                    Max = inputProp.Max,
+                    Step = inputProp.Step.NullIfMinValue(), 
+                    MinLength = inputProp.MinLength.NullIfMinValue() ?? property.AllowableMin,
+                    MaxLength = inputProp.MaxLength.NullIfMinValue() ?? property.AllowableMax,
+                    AllowableValues = inputProp.AllowableValues,
+                };
+                if (pi.PropertyType.IsEnum && property.Input.AllowableValues == null) 
+                {
+                    property.Input.Type ??= Html.Input.Types.Select;
+                    if (Html.Input.GetEnumEntries(pi.PropertyType, out var entries))
+                        property.Input.AllowableEntries = entries;
+                    else
+                        property.Input.AllowableValues = entries.Select(x => x.Value).ToArray();
+                }
             }
 
             if (instance != null)
@@ -968,15 +1001,11 @@ namespace ServiceStack.NativeTypes
                     var isReference = referenceAttr != null && propertyType?.IsClass == true;
                     var isIgnored = propertyInfo.HasAttributeCached<IgnoreAttribute>() || isReference;
 
-                    var isFirst = !isIgnored && i++ == 0;
-
                     var isAutoId = propertyInfo.HasAttributeCached<AutoIdAttribute>();
                     
-                    var hasIdField = CheckForIdField(objProperties);
-                    
-                    var isPrimaryKey = (propertyInfo.Name == Keywords.Id || (!hasIdField && isFirst))
-                                       || propertyInfo.HasAttributeNamed(nameof(PrimaryKeyAttribute))
-                                       || isAutoId;
+                    var isPrimaryKey = propertyInfo.Name == Keywords.Id
+                       || propertyInfo.HasAttributeNamed(nameof(PrimaryKeyAttribute))
+                       || isAutoId;
 
                     if (isPrimaryKey)
                     {
@@ -1032,6 +1061,9 @@ namespace ServiceStack.NativeTypes
 
             void Add(string name)
             {
+                if (to.Contains(name))
+                    return;
+                
                 to.Add(name);
                 var metaTypes = metadataTypes.Types.Where(x => x.Name == name).ToList();
                 if (metaTypes.Count == 1)
@@ -1304,13 +1336,16 @@ namespace ServiceStack.NativeTypes
                     .ToList();
                 var reverseTypeReferencesToInclude = metadata.Operations
                     .Where(x => x.ReferencesAny(reverseTypesToExpand))
-                    .Select(x => x.Request.Name);
+                    .Map(x => x.Request.Name);
 
                 // GetReferencedTypes for both request + response objects
                 var referenceTypes = includedMetadataTypes
                     .Union(returnTypesForInclude)
                     .Where(x => x != null)
-                    .SelectMany(x => x.GetReferencedTypeNames(metadata));
+                    .SelectMany(x => x.GetReferencedTypeNames(metadata))
+                    .ToList();
+
+                var returnTypesForIncludeNames = returnTypesForInclude.Map(x => x.Name);
 
                 var ret = referenceTypes
                     .Union(explicitTypes)
@@ -1319,7 +1354,7 @@ namespace ServiceStack.NativeTypes
                     .Union(includedTypeNames)
                     .Union(crudTypeNamesForInclude)
                     .Union(reverseTypeReferencesToInclude)
-                    .Union(returnTypesForInclude.Select(x => x.Name))
+                    .Union(returnTypesForIncludeNames)
                     .Distinct()
                     .ToList();
                 return ret;
@@ -1331,6 +1366,9 @@ namespace ServiceStack.NativeTypes
 
         public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config, List<string> overrideIncludeType = null)
         {
+            if (config.ForceInclude(type))
+                return false;
+            
             // If is a systemType and export types doesn't include this 
             if (type.IgnoreSystemType() && config.ExportTypes.All(x => x.Name != type.Name && !type.Name.StartsWith(x.Name + "`")))
                 return true;

@@ -3,7 +3,7 @@
     <PackageId>ServiceStack.ProtoBuf.Core</PackageId>
     <AssemblyName>ServiceStack.ProtoBuf</AssemblyName>
     <RootNamespace>ServiceStack.ProtoBuf</RootNamespace>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack.ProtoBuf .NET Standard 2.0</Title>
     <PackageDescription>
       Add the ProtoBuf binary format and endpoint to a ServiceStack web service host.

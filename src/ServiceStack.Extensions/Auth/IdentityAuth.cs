@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -64,6 +65,17 @@ namespace ServiceStack.Auth
                         new[] { "/" + "register".Localize() };
                     HostContext.Container.RegisterAs<IdentityRegistrationValidator<TUser>,IValidator<Register>>();
                 }
+
+                authFeature.OnAfterInit.Add(feature => {
+                    if (ctx.AccessDeniedPath != null)
+                        feature.HtmlRedirectAccessDenied = ctx.AccessDeniedPath;
+                    if (ctx.LoginPath != null)
+                        feature.HtmlRedirect = ctx.LoginPath;
+                    if (ctx.LogoutPath != null)
+                        feature.HtmlLogoutRedirect = ctx.LogoutPath;
+                    if (ctx.ReturnUrlParameter != null)
+                        feature.HtmlRedirectReturnParam = ctx.ReturnUrlParameter;
+                });
             };
         }
 
@@ -102,6 +114,15 @@ namespace ServiceStack.Auth
         public IdentityApplicationAuthProvider? AuthApplication { get; set; }
         public IdentityCredentialsAuthProvider<TUser>? AuthCredentials { get; set; }
         public IdentityJwtAuthProvider<TUser, TRole>? AuthJwt { get; set; }
+
+        public void DisableApplicationCookie() => AuthApplication = null;
+        public void DisableCredentialsAuth() => AuthCredentials = null;
+        public void DisableJwt() => AuthJwt = null;
+
+        public string? LoginPath { get; set; }
+        public string? LogoutPath { get; set; }
+        public string? AccessDeniedPath { get; set; }
+        public string? ReturnUrlParameter { get; set; }
         
         /// <summary>
         /// Register ServiceStack Identity Register Service

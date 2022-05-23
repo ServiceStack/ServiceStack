@@ -4,7 +4,7 @@ using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Host.Handlers;
-#if !NETCORE_SUPPORT
+#if !NETCORE
 using ServiceStack.Host.HttpListener;
 #endif
 using ServiceStack.Text;
@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container) { }
 
-#if !NETCORE_SUPPORT
+#if !NETCORE
             public override ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
             {
                 var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None)

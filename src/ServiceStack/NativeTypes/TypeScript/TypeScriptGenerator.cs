@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.TypeScript
 {
-    public class TypeScriptGenerator
+    public class TypeScriptGenerator : ILangGenerator
     {
         public readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
@@ -38,8 +38,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"String", "string"},
             {"Boolean", "boolean"},
             {"DateTime", "string"},
+            {"DateOnly", "string"},
             {"DateTimeOffset", "string"},
             {"TimeSpan", "string"},
+            {"TimeOnly", "string"},
             {"Guid", "string"},
             {"Char", "string"},
             {"Byte", "number"},
@@ -70,7 +72,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         };
         
         private static string declaredEmptyString = "''";
-        private static readonly Dictionary<string, string> primitiveDefaultValues = new() {
+        internal static readonly Dictionary<string, string> primitiveDefaultValues = new() {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
             {"Boolean", "false"},
@@ -121,6 +123,16 @@ namespace ServiceStack.NativeTypes.TypeScript
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
+        /// <summary>
+        /// Include Additional QueryString Params in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
+        /// <summary>
+        /// Emit code without Header Options
+        /// </summary>
+        public bool WithoutOptions { get; set; }
+
         public string DictionaryDeclaration { get; set; } = "export class Dictionary<T> { [Key: string]: T; }";
         
         public HashSet<string> AddedDeclarations { get; set; } = new HashSet<string>();
@@ -168,28 +180,33 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
-            sb.AppendLine("/* Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+            var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+            if (includeOptions)
+            {
+                sb.AppendLine("/* Options:");
+                sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+                sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
+                sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
+                sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+                if (Config.UsePath != null)
+                    sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
 
-            sb.AppendLine();
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
+                sb.AppendLine();
+                sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
 
-            sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+                sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
+                sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+                sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+                sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+                sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+                sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+                sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+                AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
-            sb.AppendLine("*/");
-            sb.AppendLine();
+                sb.AppendLine("*/");
+                sb.AppendLine();
+            }
 
             string lastNS = null;
 
@@ -416,7 +433,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                     }
                 }
 
-                string responseTypeExpression = null;
+                string responseTypeExpression = options?.Op != null
+                    ? "public createResponse() {}"
+                    : null;
+                string responseMethod = options?.Op?.Method != null
+                    ? $"public getMethod() {{ return '{options.Op.Method}'; }}"
+                    : null;
 
                 var interfaces = new List<string>();
                 var implStr = options.ImplementsFn?.Invoke();
@@ -520,10 +542,20 @@ namespace ServiceStack.NativeTypes.TypeScript
                     sb.AppendLine($"public constructor(init?: Partial<{typeName}>) {{ {callSuper}(Object as any).assign(this, init); }}");
                 }
 
-                if (Config.ExportAsTypes && responseTypeExpression != null)
+                if (Config.ExportAsTypes)
                 {
-                    sb.AppendLine(responseTypeExpression);
-                    sb.AppendLine("public getTypeName() {{ return '{0}'; }}".Fmt(type.Name));
+                    if (options?.Op != null)
+                    {
+                        sb.AppendLine("public getTypeName() {{ return '{0}'; }}".Fmt(type.Name));
+                    }
+                    if (responseMethod != null)
+                    {
+                        sb.AppendLine(responseMethod);
+                    }
+                    if (responseTypeExpression != null)
+                    {
+                        sb.AppendLine(responseTypeExpression);
+                    }
                 }
 
                 sb = sb.UnIndent();
@@ -588,7 +620,11 @@ namespace ServiceStack.NativeTypes.TypeScript
         public static bool? DefaultIsPropertyOptional(TypeScriptGenerator generator, MetadataType type, MetadataPropertyType prop)
         {
             if (prop.IsRequired == true)
+            {
+                if (prop.Type == "string" || generator.TypeAlias(prop.Type) == "string")
+                    return generator.Config.MakePropertiesOptional;
                 return false;
+            }
             
             if (generator.Config.MakePropertiesOptional)
                 return true;
@@ -752,7 +788,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                             if (args.Length > 0)
                                 args.Append(", ");
 
-                            args.Append(GenericArg(arg));
+                            if (arg.StartsWith("{")) // { [name:T]: T }
+                                args.Append(arg);
+                            else
+                                args.Append(GenericArg(arg));
                         }
 
                         var typeName = TypeAlias(type);

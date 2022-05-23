@@ -1,58 +1,23 @@
+using System;
 using System.IO;
-using System.IO.Compression;
-using System.Text;
 using ServiceStack.Caching;
-using ServiceStack.Text;
 
-namespace ServiceStack.Support
+namespace ServiceStack.Support;
+
+[Obsolete("Use GZipProvider")]
+public class NetGZipProvider : IGZipProvider
 {
-    public class NetGZipProvider : IGZipProvider
-    {
-        public byte[] GZip(string text)
-        {
-            return GZip(Encoding.UTF8.GetBytes(text));
-        }
+    public static NetGZipProvider Instance { get; } = new();
 
-        public byte[] GZip(byte[] buffer)
-        {
-            using (var ms = new MemoryStream())
-            using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(buffer, 0, buffer.Length);
-                zipStream.Close();
+    public byte[] GZip(string text) => GZipCompressor.Instance.Compress(text);
 
-                return ms.ToArray();
-            }
-        }
+    public byte[] GZip(byte[] bytes) => GZipCompressor.Instance.Compress(bytes);
 
-        public string GUnzip(byte[] gzBuffer)
-        {
-            using (var uncompressedStream = MemoryStreamFactory.GetStream())
-            using (var compressedStream = MemoryStreamFactory.GetStream(gzBuffer))
-            using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
-            {
-                zipStream.CopyTo(uncompressedStream);
-                return uncompressedStream.ReadToEnd();
-            }
-        }
+    public Stream GZipStream(Stream outputStream) => GZipCompressor.Instance.Compress(outputStream);
 
-        public byte[] GUnzipBytes(byte[] gzBuffer)
-        {
-            using (var compressedStream = gzBuffer.InMemoryStream())
-            using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
-            {
-                return zipStream.ReadFully();
-            }
-        }
+    public string GUnzip(byte[] gzBuffer) => GZipCompressor.Instance.Decompress(gzBuffer);
 
-        public Stream GZipStream(Stream outputStream)
-        {
-            return new GZipStream(outputStream, CompressionMode.Compress);
-        }
+    public byte[] GUnzipBytes(byte[] gzBuffer) => GZipCompressor.Instance.DecompressBytes(gzBuffer);
 
-        public Stream GUnzipStream(Stream gzStream)
-        {
-            return new GZipStream(gzStream, CompressionMode.Decompress);
-        }
-    }
+    public Stream GUnzipStream(Stream inputStream) => GZipCompressor.Instance.Decompress(inputStream);
 }

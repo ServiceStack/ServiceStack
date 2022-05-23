@@ -32,8 +32,6 @@ namespace ServiceStack
     //TODO: persist AutoCrud
     public class GenerateCrudServices : IGenerateCrudServices
     {
-        private static ILog log = LogManager.GetLogger(typeof(GenerateCrudServices));
-        
         public List<string> IncludeCrudOperations { get; set; } = new() {
             AutoCrudOperation.Query,
             AutoCrudOperation.Create,
@@ -200,19 +198,19 @@ namespace ServiceStack
             }
             foreach (var assembly in feature.LoadFromAssemblies)
             {
-                try
-                {
-                    var asmAqTypes = assembly.GetTypes().Where(x =>
-                        x.HasInterface(typeof(IQueryDb)) || x.HasInterface(typeof(ICrud)));
+                var asmAqTypes = assembly.GetTypes().Where(x =>
+                    x.HasInterface(typeof(IQueryDb)) || x.HasInterface(typeof(ICrud)));
 
-                    foreach (var aqType in asmAqTypes)
+                foreach (var aqType in asmAqTypes)
+                {
+                    try
                     {
                         ServiceMetadata.AddReferencedTypes(dtoTypes, aqType);
                     }
-                }
-                catch (Exception ex)
-                {
-                    appHost.NotifyStartupException(ex);
+                    catch (Exception ex)
+                    {
+                        appHost.NotifyStartupException(ex, aqType.Name, nameof(GenerateMissingServices));
+                    }
                 }
             }
             foreach (var dtoType in dtoTypes)
@@ -779,6 +777,7 @@ namespace ServiceStack
             {
                 var tables = db.GetTableNames(schema);
                 var results = new List<TableSchema>();
+                ILog log = null;
 
                 var dialect = db.GetDialectProvider();
                 foreach (var table in tables)
@@ -802,6 +801,7 @@ namespace ServiceStack
                     {
                         to.ErrorType = e.GetType().Name;
                         to.ErrorMessage = e.Message;
+                        log ??= LogManager.GetLogger(typeof(GenerateCrudServices));
                         log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
 
                         if (db.State != System.Data.ConnectionState.Open)
@@ -824,28 +824,8 @@ namespace ServiceStack
             }
         }
 
-        public static string GenerateSourceCode(IRequest req, CrudCodeGenTypes request, 
-            MetadataTypesConfig typesConfig, MetadataTypes crudMetadataTypes)
-        {
-            var metadata = req.Resolve<INativeTypesMetadata>();
-            var src = request.Lang switch {
-                "csharp" => new CSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                "fsharp" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                "vbnet" => new VbNetGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                "typescript" => new TypeScriptGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "dart" => new DartGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "swift" => new SwiftGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                "swift4" => new Swift4Generator(typesConfig).GetCode(crudMetadataTypes, req),
-                "java" => new JavaGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "kotlin" => new KotlinGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "typescript.d" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                _ => throw new NotSupportedException($"Unknown language '{request.Lang}', Supported languages: " +
-                                                     $"csharp, typescript, dart, swift, java, kotlin, vbnet, fsharp")
-            };
-            return src;
-        }
-
-        public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter)
+        public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter, 
+            List<string> addQueryParamOptions=null)
         {
             var ret = ResolveMetadataTypes(request, req, generateOperationsFilter);
             var crudMetadataTypes = ret.Item1;
@@ -861,7 +841,8 @@ namespace ServiceStack
                 typesConfig.MakePropertiesOptional = true;
             }
 
-            var src = GenerateSourceCode(req, request, typesConfig, crudMetadataTypes);
+            var src = crudMetadataTypes.GenerateSourceCode(typesConfig, request.Lang, req,
+                c => c.AddQueryParamOptions = addQueryParamOptions);
             return src;
         }
 
@@ -1226,6 +1207,7 @@ namespace ServiceStack
                             : ctx.RoutePathBase + "/{" + id + "}";
                             
                         var op = new MetadataOperationType {
+                            Method = verb,
                             Actions = new List<string> { verb },
                             Routes = new List<MetadataRoute> {},
                             Request = new MetadataType {
@@ -1425,7 +1407,14 @@ namespace ServiceStack
                 var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
                 await RequestUtils.AssertAccessRoleOrDebugModeAsync(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
                 
-                var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter);
+                var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter,
+                    new List<string> {
+                        nameof(CrudCodeGenTypes.IncludeCrudOperations),
+                        nameof(CrudCodeGenTypes.Schema),
+                        nameof(CrudCodeGenTypes.NamedConnection),
+                        nameof(CrudCodeGenTypes.IncludeTables),
+                        nameof(CrudCodeGenTypes.ExcludeTables),
+                    });
                 return src;
             }
             catch (Exception e)

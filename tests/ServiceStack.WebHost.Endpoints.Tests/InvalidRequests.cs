@@ -43,10 +43,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Assert.Fail("Should throw");
             }
-            catch (WebException e)
+            catch (Exception ex)
             {
-                var errorBody = e.GetResponseBody();
-                Assert.That(errorBody.ToLower(), Does.Not.Contain("stacktrace"));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
+
+                if (ex is WebException webEx)
+                {
+                    var errorBody = webEx.GetResponseBody();
+                    Assert.That(errorBody.ToLower(), Does.Not.Contain("stacktrace"));
+                }
             }
         }
     }

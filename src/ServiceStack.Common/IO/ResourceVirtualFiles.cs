@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.VirtualPath;
@@ -10,8 +11,8 @@ namespace ServiceStack.IO
         : AbstractVirtualPathProviderBase
     {
         protected ResourceVirtualDirectory RootDir;
-        protected readonly Assembly BackingAssembly;
-        protected readonly string RootNamespace;
+        public Assembly BackingAssembly { get; }
+        public string RootNamespace { get; }
 
         public override IVirtualDirectory RootDirectory => RootDir;
         public override string VirtualPathSeparator => "/";
@@ -26,8 +27,19 @@ namespace ServiceStack.IO
         {
             this.BackingAssembly = backingAssembly ?? throw new ArgumentNullException(nameof(backingAssembly));
             this.RootNamespace = rootNamespace ?? backingAssembly.GetName().Name;
+            this.LastModified = GetAssemblyLastModified(BackingAssembly);
 
             Initialize();
+        }
+        
+        private static DateTime GetAssemblyLastModified(Assembly asm)
+        {
+            try
+            {
+                return new FileInfo(asm.Location).LastWriteTime;
+            }
+            catch (Exception) { /* ignored */ }
+            return DateTime.UtcNow;
         }
         
         //https://docs.microsoft.com/en-us/dotnet/api/system.resources.tools.stronglytypedresourcebuilder.verifyresourcename?redirectedfrom=MSDN&view=netframework-4.8#remarks

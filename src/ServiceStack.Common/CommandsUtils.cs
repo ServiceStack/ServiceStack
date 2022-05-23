@@ -7,7 +7,7 @@ using ServiceStack.Support;
 #if NETFX_CORE
 using Windows.System.Threading;
 #endif
-#if NETSTANDARD2_0
+#if NETCORE
 using System.Threading.Tasks;
 #endif
 
@@ -30,7 +30,7 @@ namespace ServiceStack
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandResultsHandler = new CommandResultsHandler<T>(results, command, waitHandle);
-#if NETSTANDARD2_0
+#if NETCORE
                 Task.Run(() => ExecuteCommandList(commandResultsHandler));
 #elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandResultsHandler)));
@@ -47,7 +47,7 @@ namespace ServiceStack
             // throws an exception if there are no wait handles
             if (waitHandles != null && waitHandles.Length > 0)
             {
-#if !SL5 && !IOS && !XBOX && !NETSTANDARD2_0
+#if !SL5 && !IOS && !XBOX && !NETCORE
                 if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
                     // WaitAll for multiple handles on an STA thread is not supported.
@@ -89,7 +89,7 @@ namespace ServiceStack
         {
             foreach (ICommandExec command in commands)
             {
-#if NETSTANDARD2_0
+#if NETCORE
                 Task.Run(() => ExecuteCommandExec(command));
 #elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandExec(command)));
@@ -112,7 +112,7 @@ namespace ServiceStack
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandExecsHandler = new CommandExecsHandler(command, waitHandle);
-#if NETSTANDARD2_0
+#if NETCORE
                 Task.Run(() => ExecuteCommandList(commandExecsHandler));
 #elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandExecsHandler)));

@@ -113,7 +113,8 @@ namespace ServiceStack.Auth
 
                 string accessTokeUrl = $"{AccessTokenUrl}?client_id={ApplicationId}&client_secret={SecureKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}";
 
-                string contents = await AccessTokenUrlFilter(ctx, accessTokeUrl).GetStringFromUrlAsync("*/*", RequestFilter).ConfigAwait();
+                string contents = await AccessTokenUrlFilter(ctx, accessTokeUrl)
+                    .GetStringFromUrlAsync(requestFilter:req => req.With(c => c.UserAgent = ServiceClientBase.DefaultUserAgent), token:token).ConfigAwait();
 
                 var authInfo = JsonObject.Parse(contents);
 
@@ -133,13 +134,12 @@ namespace ServiceStack.Auth
                 return await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait()
                     ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             } 
-            catch (WebException webException) 
+            catch (Exception ex) 
             {
                 //just in case VK will start throwing exceptions 
-                HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
-                if (statusCode == HttpStatusCode.BadRequest) {
+                var statusCode = ex.GetStatus();
+                if (statusCode == HttpStatusCode.BadRequest)
                     return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
-                }
             }
             return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
@@ -157,10 +157,6 @@ namespace ServiceStack.Auth
                 code = code.Substring(idx);
             }
             return code;
-        }
-
-        protected virtual void RequestFilter(HttpWebRequest request) {
-            request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
         }
 
         protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)

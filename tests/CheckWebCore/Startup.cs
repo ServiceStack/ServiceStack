@@ -121,7 +121,6 @@ namespace CheckWebCore
             app.UseServiceStack(new AppHost
             {
                 // PathBase = "/api",
-                AppSettings = new NetCoreAppSettings(Configuration)
             });
         }
 
@@ -135,6 +134,17 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
+            SetConfig(new HostConfig
+            {
+                AddRedirectParamsToQueryString = true,
+                //DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
+                DebugMode = true,
+//                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
+                UseSecureCookies = true,
+                AdminAuthSecret = "secretz",
+                CompressFilesWithExtensions = { "js", "css" },
+            });
+            
             RegisterService<GetFileService>();
 
             Plugins.Add(new GrpcFeature(App));
@@ -149,22 +159,15 @@ namespace CheckWebCore
 //                RequireAuthSecret = true,
                 AllowScriptingOfAllTypes = true,
             });
+            
+            ConfigurePlugin<UiFeature>(feature => {
+                feature.Info.BrandIcon.Uri = "https://vuejs.org/images/logo.svg";
+            });
 
-            if (Config.DebugMode)
-            {
-                Plugins.Add(new HotReloadFeature());
-            }
+            //not needed for /wwwroot/ui 
+            //Plugins.AddIfDebug(new HotReloadFeature());
 
             Plugins.Add(new RazorFormat()); // enable ServiceStack.Razor
-            
-            SetConfig(new HostConfig
-            {
-                AddRedirectParamsToQueryString = true,
-                DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
-//                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
-                UseSecureCookies = true,
-                AdminAuthSecret = "secretz",
-            });
 
             var cache = container.Resolve<ICacheClient>();
             

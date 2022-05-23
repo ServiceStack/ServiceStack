@@ -240,7 +240,7 @@ namespace ServiceStack
 
         public static string GetResponseDtoName(Type requestType)
         {
-#if NETSTANDARD2_0
+#if NETCORE
             return requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name;
 #else        
             return requestType.FullName + ResponseDtoSuffix;
@@ -271,7 +271,7 @@ namespace ServiceStack
                 return typeof (ErrorResponse);
 
             //If a conventionally-named Response type exists use that regardless if it has ResponseStatus or not
-#if NETSTANDARD2_0
+#if NETCORE
             var responseDtoType = Type.GetType(GetResponseDtoName(requestType));
 #else                        
             var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(requestType));

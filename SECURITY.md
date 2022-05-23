@@ -2,4 +2,4 @@
 
 ## Reporting a Vulnerability
 
-Please report security issues to team@servicestack.net
+Please report security issues to https://servicestack.net/#contact

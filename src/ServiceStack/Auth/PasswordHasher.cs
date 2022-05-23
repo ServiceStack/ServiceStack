@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using ServiceStack.Logging;
 
-#if NETSTANDARD2_0
+#if NETCORE
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 #endif
 
@@ -25,7 +25,7 @@ namespace ServiceStack.Auth
         /// The PBKDF2 strategy PasswordHasher implementation that's used for hashing PBKDF2 passwords.
         /// </summary>
         public static Pbkdf2DeriveKeyDelegate DeriveKey { get; set; }
-#if NETSTANDARD2_0
+#if NETCORE
             = KeyDerivation.Pbkdf2; // .NET Core uses the most optimal implementation available for Windows
 #else
             = new ManagedPbkdf2Provider().DeriveKey; // Slowest managed implementation used by .NET Framework and all non-Windows OS's
@@ -124,11 +124,10 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        /// Returns a hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.
+        /// Returns a hashed representation of the supplied <paramref name="password"/> for the specified user.
         /// </summary>
-        /// <param name="user">The user whose password is to be hashed.</param>
         /// <param name="password">The password to hash.</param>
-        /// <returns>A hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.</returns>
+        /// <returns>A hashed representation of the supplied <paramref name="password"/> for the specified user.</returns>
         public virtual string HashPassword(string password)
         {
             if (password == null)
@@ -244,7 +243,7 @@ namespace ServiceStack.Auth
         }
     }
 
-#if NET45 || NET472
+#if NETFX || NET472
 
     //From: https://github.com/aspnet/DataProtection/
     /// <summary>

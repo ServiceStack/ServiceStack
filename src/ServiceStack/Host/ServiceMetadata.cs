@@ -25,6 +25,7 @@ namespace ServiceStack.Host
             this.OperationsMap = new Dictionary<Type, Operation>();
             this.OperationsResponseMap = new Dictionary<Type, Operation>();
             this.OperationNamesMap = new Dictionary<string, Operation>();
+            this.ForceInclude = new HashSet<Type>();
         }
 
         public Dictionary<Type, Operation> OperationsMap { get; protected set; }
@@ -35,7 +36,11 @@ namespace ServiceStack.Host
         public HashSet<Type> ResponseTypes { get; protected set; }
         private readonly List<RestPath> restPaths;
 
+        public Dictionary<Type, List<Action<Operation>>> ConfigureOperations { get; protected set; } = new();
+
         public IEnumerable<Operation> Operations => OperationsMap.Values;
+        
+        public HashSet<Type> ForceInclude { get; set; }
 
         public void Add(Type serviceType, Type requestType, Type responseType)
         {
@@ -58,6 +63,7 @@ namespace ServiceStack.Host
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
             var actions = serviceType.GetRequestActions(requestType);
+            var actionUpperNames = actions.Select(x => x.NameUpper).Distinct().ToList();
             authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
             var tagAttrs = requestType.AllAttributes<TagAttribute>().ToList();
 
@@ -67,7 +73,10 @@ namespace ServiceStack.Host
                 RequestType = requestType,
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
-                Actions = actions.Select(x => x.NameUpper).Distinct().ToList(),
+                Actions = actionUpperNames,
+                Method = ServiceClientUtils.GetHttpMethod(requestType) 
+                         ?? actionUpperNames.FirstOrDefault(x => x != "ANY")
+                         ?? HttpMethods.Post,
                 Routes = new List<RestPath>(),
                 RequestFilterAttributes = reqFilterAttrs,
                 ResponseFilterAttributes = resFilterAttrs,
@@ -90,8 +99,6 @@ namespace ServiceStack.Host
             //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
             var nonCoreServicesCount = OperationsMap.Values
                 .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
-                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
-                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService"
                 && x.ServiceType.FullName != "ServiceStack.Api.OpenApi.OpenApiService"
                 && x.ServiceType.Name != "__AutoQueryServices"
                 && x.ServiceType.Name != "__AutoQueryDataServices");
@@ -107,6 +114,17 @@ namespace ServiceStack.Host
                     continue;
 
                 operation.Routes.Add(restPath);
+            }
+
+            foreach (var entry in ConfigureOperations)
+            {
+                if (!OperationsMap.TryGetValue(entry.Key, out var op)) 
+                    continue;
+                
+                foreach (var configure in entry.Value)
+                {
+                    configure(op);
+                }
             }
         }
 
@@ -213,7 +231,7 @@ namespace ServiceStack.Host
         public List<string> GetOperationNamesForMetadata(IRequest httpReq)
         {
             return Operations
-                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata))
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) || x.RequestType.ForceInclude())
                 .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
@@ -221,7 +239,7 @@ namespace ServiceStack.Host
         {
             var formatRequestAttr = format.ToRequestAttribute();
             return Operations
-                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) && x.RestrictTo.CanShowTo(formatRequestAttr))
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) && x.RestrictTo.CanShowTo(formatRequestAttr) || x.RequestType.ForceInclude())
                 .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
@@ -263,11 +281,7 @@ namespace ServiceStack.Host
                 return false;
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
-#if NET472 || NETSTANDARD2_0
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 var allRoles = await session.GetRolesAsync(authRepo).ConfigAwait();
                 if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
@@ -289,7 +303,7 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IRequest httpReq, Operation operation)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false } || operation.RequestType.ForceInclude())
                 return true;
 
             if (operation.RequestType.ExcludesFeature(Feature.Metadata))
@@ -305,7 +319,7 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IRequest httpReq, Type requestType)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             var operation = HostContext.Metadata.GetOperation(requestType);
@@ -314,13 +328,17 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IRequest httpReq, Format format, string operationName)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
-            if (operation.RequestType.ExcludesFeature(Feature.Metadata)) return false;
+            if (operation.RequestType.ForceInclude())
+                return true;
+
+            if (operation.RequestType.ExcludesFeature(Feature.Metadata)) 
+                return false;
 
             var canCall = HasImplementation(operation, format);
             if (!canCall) return false;
@@ -341,19 +359,23 @@ namespace ServiceStack.Host
 
         public bool CanAccess(RequestAttributes reqAttrs, Format format, string operationName)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
-            if (operation == null) return false;
+            if (operation == null) 
+                return false;
 
             var canCall = HasImplementation(operation, format);
-            if (!canCall) return false;
+            if (!canCall) 
+                return false;
 
-            if (operation.RestrictTo == null) return true;
+            if (operation.RestrictTo == null || operation.RequestType.ForceInclude()) 
+                return true;
 
             var allow = operation.RestrictTo.HasAccessTo(reqAttrs);
-            if (!allow) return false;
+            if (!allow) 
+                return false;
 
             var allowsFormat = operation.RestrictTo.HasAccessTo((RequestAttributes)(long)format);
             return allowsFormat;
@@ -361,16 +383,19 @@ namespace ServiceStack.Host
 
         public bool CanAccess(Format format, string operationName)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+            if (HostContext.Config is { EnableAccessRestrictions: false })
                 return true;
 
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
-            if (operation == null) return false;
+            if (operation == null) 
+                return false;
 
             var canCall = HasImplementation(operation, format);
-            if (!canCall) return false;
+            if (!canCall) 
+                return false;
 
-            if (operation.RestrictTo == null) return true;
+            if (operation.RestrictTo == null || operation.RequestType.ForceInclude()) 
+                return true;
 
             var allowsFormat = operation.RestrictTo.HasAccessTo((RequestAttributes)(long)format);
             return allowsFormat;
@@ -692,7 +717,7 @@ namespace ServiceStack.Host
             return type;
         }
         
-#if !NETSTANDARD2_0
+#if !NETCORE
         public List<Type> GetAllSoapOperationTypes()
         {
             var operationTypes = GetAllOperationTypes();
@@ -743,8 +768,10 @@ namespace ServiceStack.Host
         public Type ViewModelType => AutoCrudOperation.GetViewModelType(RequestType, ResponseType);
         public RestrictAttribute RestrictTo { get; set; }
         public List<string> Actions { get; set; }
-        public List<RestPath> Routes { get; set; }
+        public bool ReturnsVoid => ResponseType == null;
         public bool IsOneWay => ResponseType == null;
+        public string Method { get; set; }
+        public List<RestPath> Routes { get; set; }
         public List<IRequestFilterBase> RequestFilterAttributes { get; set; }
         public List<IResponseFilterBase> ResponseFilterAttributes { get; set; }
         public bool RequiresAuthentication { get; set; }
@@ -753,6 +780,7 @@ namespace ServiceStack.Host
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         public List<TagAttribute> Tags { get; set; }
+        public List<List<InputInfo>> FormLayout { get; set; }
         
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
         public List<IValidationRule> RequestPropertyValidationRules { get; private set; }
@@ -764,6 +792,7 @@ namespace ServiceStack.Host
             ResponseType = ResponseType,
             RestrictTo = RestrictTo,
             Actions = Actions?.ToList(),
+            Method = Method,
             Routes = Routes?.ToList(),
             RequestFilterAttributes = RequestFilterAttributes,
             RequiresAuthentication = RequiresAuthentication,
@@ -813,6 +842,20 @@ namespace ServiceStack.Host
                 RequestPropertyValidationRules.AddRange(propertyValidators);
             }
         }
+
+        public Operation AddRole(string role)
+        {
+            RequiredRoles.AddIfNotExists(role);
+            RequiresAuthentication = true;
+            return this;
+        }
+
+        public Operation AddPermission(string permission)
+        {
+            RequiredPermissions.AddIfNotExists(permission);
+            RequiresAuthentication = true;
+            return this;
+        }
     }
 
     public class OperationDto
@@ -843,7 +886,7 @@ namespace ServiceStack.Host
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
-                .Where(x => !x.IsOneWay)
+                .Where(x => !x.ReturnsVoid)
                 .Where(x => soapTypes.Contains(x.RequestType))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
@@ -854,7 +897,7 @@ namespace ServiceStack.Host
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
-                .Where(x => x.IsOneWay)
+                .Where(x => x.ReturnsVoid)
                 .Where(x => soapTypes.Contains(x.RequestType))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
@@ -890,7 +933,7 @@ namespace ServiceStack.Host
             var to = new OperationDto
             {
                 Name = operation.Name,
-                ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetOperationName(),
+                ResponseName = operation.ReturnsVoid ? null : operation.ResponseType.GetOperationName(),
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.Map(x => x.Path),
@@ -997,6 +1040,7 @@ namespace ServiceStack.Host
             (flag & feature) != 0;
 
         public static bool? NullIfFalse(this bool value) => value ? true : (bool?)null;
+        public static int? NullIfMinValue(this int value) => value != int.MinValue ? value : (int?)null;
 
         public static Dictionary<string, string[]> ToMetadataServiceRoutes(this Dictionary<Type, string[]> serviceRoutes,
             Action<Dictionary<string,string[]>> filter=null)
@@ -1009,6 +1053,19 @@ namespace ServiceStack.Host
             filter?.Invoke(to);
             return to;
         }
+        
+
+        public static bool ForceInclude(this MetadataTypesConfig config, Type type) =>
+            HostContext.Metadata.ForceInclude.Contains(type);
+
+        public static bool ForceInclude(this MetadataTypesConfig config, MetadataType type) =>
+            HostContext.Metadata.ForceInclude.Any(x =>
+                type.Type != null
+                    ? x == type.Type
+                    : type.Name == x.Name && type.Namespace == x.Namespace);
+
+        internal static bool ForceInclude(this Type type) => HostContext.Metadata.ForceInclude.Contains(type);
+
     }
     
 }

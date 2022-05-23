@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
             }
 
-#if !NETCORE_SUPPORT
+#if !NETCORE
             protected override void OnBeginRequest(HttpListenerContext context)
             {
                 Interlocked.Increment(ref BeginRequestCount);
@@ -120,8 +120,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var xml = Config.ListeningOn.CombineWith("customresult")
                 .GetStringFromUrl(responseFilter: res => {
-                    Assert.That(res.ContentType, Is.EqualTo("application/xml"));
-                    Assert.That(res.Headers["Content-Disposition"], Is.EqualTo("attachement; filename=\"file.xml\""));
+                    Assert.That(res.MatchesContentType(MimeTypes.Xml));
+                    Assert.That(res.GetHeader(HttpHeaders.ContentDisposition), Is.EqualTo("attachement; filename=\"file.xml\""));
                 });
 
             Assert.That(xml, Is.EqualTo("<Foo bar=\"baz\">quz</Foo>"));

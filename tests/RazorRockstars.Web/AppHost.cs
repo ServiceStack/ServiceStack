@@ -5,7 +5,6 @@ using System.Runtime.Serialization;
 using Funq;
 using RazorRockstars.Web.Tests;
 using ServiceStack;
-using ServiceStack.Api.Swagger;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.MsgPack;
@@ -19,17 +18,12 @@ namespace RazorRockstars.Web
     {
         public AppHost() : base("Test Razor", typeof (AppHost).Assembly)
         {
-            typeof(SwaggerResources)
-                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
-            typeof(SwaggerResource)
-                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
         }
 
         public override void Configure(Container container)
         {
             Plugins.Add(new RazorFormat());
             Plugins.Add(new MsgPackFormat());
-            Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
 
             var metadata = (MetadataFeature)Plugins.First(x => x is MetadataFeature);
             metadata.IndexPageFilter = page => {

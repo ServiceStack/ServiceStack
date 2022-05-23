@@ -41,11 +41,7 @@ namespace ServiceStack
             var session = await req.AssertAuthenticatedSessionAsync().ConfigAwait();
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
-#if NET472 || NETSTANDARD2_0
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 if (await session.HasAnyPermissionsAsync(RequiredPermissions, authRepo, req).ConfigAwait())
                     return;

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack;
 using ServiceStack.IO;
@@ -135,16 +136,20 @@ namespace ServiceStack
         }
 
         public virtual string GetSourceZipUrl(string user, string repo) => 
-            GetSourceZipUrl(user, repo, GetJson($"repos/{user}/{repo}/releases"));
+            GetSourceZipReleaseUrl(user, repo, GetJson($"repos/{user}/{repo}/releases"));
+
+        public virtual string GetSourceZipUrl(string user, string repo, string tag) => 
+            $"https://github.com/{user}/{repo}/archive/refs/tags/{tag}.zip";
 
         public virtual async Task<string> GetSourceZipUrlAsync(string user, string repo) => 
-            GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait());
+            GetSourceZipReleaseUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait());
 
-        private static string GetSourceZipUrl(string user, string repo, string json)
+        private static string GetSourceZipReleaseUrl(string user, string repo, string json)
         {
             var response = JSON.parse(json);
 
-            if (response is List<object> releases && releases.Count > 0 &&
+            if (response is List<object> releases && 
+                releases.Count > 0 &&
                 releases[0] is Dictionary<string, object> release &&
                 release.TryGetValue("zipball_url", out var zipUrl))
             {
@@ -182,7 +187,7 @@ namespace ServiceStack
 
             try
             {
-                foreach (var repos in await userRepos.ConfigAwait())
+                foreach (var repos in await orgRepos.ConfigAwait())
                 foreach (var repo in repos)
                     map[repo.Name] = repo;
             }
@@ -250,7 +255,7 @@ namespace ServiceStack
             {
                 results = nextUrl.GetJsonFromUrl(ApplyRequestFilters,
                         responseFilter: res => {
-                            var links = ParseLinkUrls(res.Headers["Link"]);
+                            var links = ParseLinkUrls(res.GetHeader("Link"));
                             links.TryGetValue("next", out nextUrl);
                         })
                     .FromJson<List<T>>();
@@ -272,7 +277,7 @@ namespace ServiceStack
             {
                 results = (await nextUrl.GetJsonFromUrlAsync(ApplyRequestFilters,
                         responseFilter: res => {
-                            var links = ParseLinkUrls(res.Headers["Link"]);
+                            var links = ParseLinkUrls(res.GetHeader("Link"));
                             links.TryGetValue("next", out nextUrl);
                         }).ConfigAwait())
                     .FromJson<List<T>>();
@@ -323,12 +328,10 @@ namespace ServiceStack
 
         public virtual void DownloadFile(string downloadUrl, string fileName)
         {
-            var webClient = new WebClient();
-            webClient.Headers.Add(HttpHeaders.UserAgent, UserAgent);
-            if (!string.IsNullOrEmpty(AccessToken))
-                webClient.Headers.Add(HttpHeaders.Authorization, "token " + AccessToken);
-                
-            webClient.DownloadFile(downloadUrl, fileName);
+            downloadUrl.DownloadFileTo(fileName, headers:new() {
+                new(HttpHeaders.UserAgent, UserAgent),
+                new(HttpHeaders.Authorization, "token " + AccessToken),
+            });
         }
 
         public virtual GithubGist GetGithubGist(string gistId)
@@ -484,7 +487,7 @@ namespace ServiceStack
         }
 
         internal static NotSupportedException CreateContentNotSupportedException(object value) =>
-            new NotSupportedException($"Could not write '{value?.GetType().Name ?? "null"}' value. Only string, byte[], Stream or IVirtualFile content is supported.");
+            new($"Could not write '{value?.GetType().Name ?? "null"}' value. Only string, byte[], Stream or IVirtualFile content is supported.");
 
         public virtual void WriteGistFiles(string gistId, Dictionary<string, object> files, string description=null, bool deleteMissing=false) =>
             WriteGistFiles(gistId, ToTextFiles(files), description, deleteMissing);
@@ -608,6 +611,16 @@ namespace ServiceStack
                 .PatchJsonToUrl(json, requestFilter: ApplyRequestFilters);
         }
 
+#if NET6_0_OR_GREATER
+        public virtual void ApplyRequestFilters(System.Net.Http.HttpRequestMessage req)
+        {
+            req.With(c => {
+                c.UserAgent = UserAgent;
+                if (!string.IsNullOrEmpty(AccessToken))
+                    c.Authorization = new("token", AccessToken);
+            });
+        }
+#else
         public virtual void ApplyRequestFilters(HttpWebRequest req)
         {
             if (!string.IsNullOrEmpty(AccessToken))
@@ -616,7 +629,9 @@ namespace ServiceStack
             }
             req.UserAgent = UserAgent;
         }
+#endif
     }
+
     
     public class GithubRepo
     {

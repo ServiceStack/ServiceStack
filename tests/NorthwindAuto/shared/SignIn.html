@@ -1,0 +1,128 @@
+<script minify>
+import { each } from "./js/core"
+
+App.component('SignIn', ({ plugin, provider, login, api }) => {
+    
+    let model = {}
+    plugin.authProviders.map(x => x.formLayout).filter(x => x)
+        .forEach(formLayout => formLayout.forEach(input => model[input.id] = ''))
+
+    let formProviders = plugin.authProviders.filter(x => x.formLayout)
+    let firstFormProvider = formProviders[0] || {}
+    let lastFormProvider = formProviders[Math.max(formProviders.length - 1,0)] || {}
+    
+    function formLayout(provider) {
+        let authProvider = provider 
+            ? plugin.authProviders.find(x => x.name === provider)
+            : firstFormProvider
+        return authProvider && authProvider.formLayout || []
+    }
+    
+    return {
+        $template: '#signin-template',
+        get provider() { return provider() },
+        firstFormProvider,
+        lastFormProvider,
+        get api() { return api() },
+        get errorSummary() {
+            if (!this.api) return ''
+            let except = this.formLayout.map(input => input.id).filter(x => x)
+            return this.api.summaryMessage(except)
+        },
+        get formLayout() { return formLayout(this.provider) },
+        baseUri: document.baseURI,
+        get authProvider() {
+            return plugin.authProviders.find(x => x.name === this.provider)
+        },
+        get authProviderFormTabs()  {
+            return each(plugin.authProviders.filter(x => x.formLayout && x.formLayout.length > 0),
+                (acc,x) => {
+                    let label = this.getLabel(x) || toPascalCase(x.name)
+                    acc[label] = x.name === firstFormProvider.name ? '' : x.name
+                })
+        },
+        get oauthProviders() {
+            return plugin && plugin.authProviders.filter(x => x.type === 'oauth') || []
+        },
+        getLabel(provider) {
+            return provider.label || (provider.navItem && provider.navItem.label)
+        },
+        model,
+        logoUri(dataUri) {
+            return dataUri.replace(/currentColor/g,'%234B5563')  
+        },
+        onsubmit(e) {
+            let args = pick(this.model, this.formLayout.map(input => input.id))
+            login(args)
+        },
+    }
+})
+</script>
+<!--minify-->
+<template id="signin-template">
+<div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+        </h2>
+        <p v-if="Object.keys(authProviderFormTabs).length > 1" class="mt-4 text-center text-sm text-gray-600">
+            <span class="relative z-0 inline-flex shadow-sm rounded-md">
+              <a v-for="(tab,name) in authProviderFormTabs" v-href="{ provider:tab }"
+                 :class="[tab == '' || tab == firstFormProvider.name ? 'rounded-l-md' : tab == lastFormProvider.name ? 'rounded-r-md -ml-px' : '-ml-px', 
+                         routes.provider == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                {{name}}
+              </a>
+            </span>
+        </p>        
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <form v-if="formLayout.length" @submit.prevent="onsubmit">
+                <div ref="inputs" class="space-y-6">
+                    <div v-for="input in formLayout" :key="input.id" v-scope="Input({ input, model, api })"></div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+
+            <div v-if="oauthProviders.length" class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">
+                          Or continue with
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-3 gap-3">
+                    <div v-for="provider in oauthProviders">
+                        <a :href="`${provider.navItem.href}?continue=${baseUri}`" :title="getLabel(provider)" 
+                           class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span v-if="provider.icon" v-scope="Image(provider.icon, {cls:'h-5 w-5 text-gray-700'})"></span>
+                            <svg v-else class="h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+                                <path d="M16 8a5 5 0 1 0 5 5a5 5 0 0 0-5-5z" fill="currentColor"/>
+                                <path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2zm7.992 22.926A5.002 5.002 0 0 0 19 20h-6a5.002 5.002 0 0 0-4.992 4.926a12 12 0 1 1 15.985 0z" fill="currentColor"/>
+                            </svg>
+                        </a>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>    
+</template>
+
+<script>App.components({ NoAuth:'#noauth-template' })</script>
+<template id="noauth-template">
+    <h1 class="text-2xl my-3">{{message}}</h1>
+</template>
+<!--/minify-->

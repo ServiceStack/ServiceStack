@@ -21,7 +21,7 @@ namespace ServiceStack
                 }
                 return error.FormattedMessagePlaceholderValues.ToStringDictionary();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

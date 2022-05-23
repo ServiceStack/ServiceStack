@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.IO;
@@ -119,6 +120,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             await vfs.LoadAllTruncatedFilesAsync();
 
             Assert.That(!gist.Files.Values.Any(x => x.Truncated && string.IsNullOrEmpty(x.Content)));
+        }
+
+        [Test]
+        public void Can_GetSourceTagZipUrl()
+        {
+            var user = "NetCoreTemplates";
+            var repo = "web";
+            var tag = "v28";
+            
+            var gateway = new GitHubGateway(AccessToken);
+
+            var zipUrlForTag = gateway.GetSourceZipUrl(user, repo, tag);
+            
+            Assert.That(zipUrlForTag, Is.EqualTo("https://github.com/NetCoreTemplates/web/archive/refs/tags/v28.zip"));
+        }
+        
+        [Test]
+        public void Can_GetSourceTagZipUrl_InvalidTag()
+        {
+            var user = "NetCoreTemplates";
+            var repo = "web";
+            var tag = "invalid-tag";
+            
+            var gateway = new GitHubGateway(AccessToken);
+
+            var exception = Assert.Throws<WebException>(() =>
+            {
+                var zipBytes = gateway.GetSourceZipUrl(user, repo, tag).GetBytesFromUrl();
+            });
+            
+            Assert.That(exception, Is.Not.Null);
+            Assert.That(exception.Message, Does.Contain("(404) Not Found"));
         }
     }
 }

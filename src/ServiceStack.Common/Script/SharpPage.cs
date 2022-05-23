@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ServiceStack.Extensions;
 using ServiceStack.IO;
 using ServiceStack.Text;
+#if !NET6_0
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack.Script
 {

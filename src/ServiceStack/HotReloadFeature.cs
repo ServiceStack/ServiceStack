@@ -17,6 +17,7 @@ namespace ServiceStack
         public IVirtualPathProvider VirtualFiles
         {
             set => HotReloadFilesService.UseVirtualFiles = value;
+            get => HotReloadFilesService.UseVirtualFiles;
         }
         public string DefaultPattern
         {

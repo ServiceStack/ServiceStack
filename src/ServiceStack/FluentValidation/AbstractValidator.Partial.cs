@@ -37,7 +37,6 @@ namespace ServiceStack.FluentValidation
     /// <summary>
     /// Base class for entity validator classes.
     /// </summary>
-    /// <typeparam name="T">The type of the object being validated</typeparam>
     public abstract partial class AbstractValidator<T> : IRequiresRequest, IHasTypeValidators, IServiceStackValidator
     {
         /// <summary>

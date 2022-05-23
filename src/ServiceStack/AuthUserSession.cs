@@ -94,12 +94,18 @@ namespace ServiceStack
 
         public virtual bool HasPermission(string permission, IAuthRepository authRepo)
         {
+            if (permission == null)
+                throw new ArgumentNullException(nameof(permission));
+            
             var permissions = GetPermissions(authRepo);
             return permissions.Contains(permission);
         }
 
         public virtual async Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
+            if (permission == null)
+                throw new ArgumentNullException(nameof(permission));
+            
             var permissions = await GetPermissionsAsync(authRepo, token).ConfigAwait();
             return permissions.Contains(permission);
         }
@@ -110,6 +116,8 @@ namespace ServiceStack
         public virtual async Task<bool> HasAllRolesAsync(ICollection<string> requiredRoles,
             IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
         {
+            if (requiredRoles == null)
+                throw new ArgumentNullException(nameof(requiredRoles));
             
             var allRoles = await GetRolesAsync(authRepo, token).ConfigAwait();
             if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
@@ -133,6 +141,9 @@ namespace ServiceStack
         public virtual async Task<bool> HasAnyRolesAsync(ICollection<string> roles, IAuthRepositoryAsync authRepo,
             IRequest req, CancellationToken token = default)
         {
+            if (roles == null)
+                throw new ArgumentNullException(nameof(roles));
+            
             var userRoles = await GetRolesAsync(authRepo, token).ConfigAwait();
             if (userRoles.Contains(RoleNames.Admin) || roles.Any(userRoles.Contains)) 
                 return true;
@@ -154,6 +165,9 @@ namespace ServiceStack
         public virtual async Task<bool> HasAllPermissionsAsync(ICollection<string> requiredPermissions, 
             IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
         {
+            if (requiredPermissions == null)
+                throw new ArgumentNullException(nameof(requiredPermissions));
+            
             var allPerms = await GetPermissionsAsync(authRepo, token).ConfigAwait();
             if (requiredPermissions.All(allPerms.Contains))
                 return true;
@@ -179,6 +193,9 @@ namespace ServiceStack
         public virtual async Task<bool> HasAnyPermissionsAsync(ICollection<string> permissions, IAuthRepositoryAsync authRepo,
             IRequest req, CancellationToken token=default)
         {
+            if (permissions == null)
+                throw new ArgumentNullException(nameof(permissions));
+            
             var allPerms = await GetPermissionsAsync(authRepo, token).ConfigAwait();
             if (permissions.Any(allPerms.Contains)) 
                 return true;
@@ -199,26 +216,32 @@ namespace ServiceStack
 
         public virtual bool HasRole(string role, IAuthRepository authRepo)
         {
+            if (role == null)
+                throw new ArgumentNullException(nameof(role));
+            
             var roles = GetRoles(authRepo);
             return roles.Contains(role);
         }
 
         public virtual async Task<bool> HasRoleAsync(string role, IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
+            if (role == null)
+                throw new ArgumentNullException(nameof(role));
+            
             var roles = await GetRolesAsync(authRepo, token).ConfigAwait();
             return roles.Contains(role);
         }
 
         public virtual ICollection<string> GetRoles(IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRoles managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return managesRoles.GetRoles(this.UserAuthId);
+                    if (authRepo is IManageRoles managesRoles)
+                    {
+                        return managesRoles.GetRoles(this.UserAuthId);
+                    }
                 }
             }
 
@@ -229,14 +252,14 @@ namespace ServiceStack
 
         public virtual async Task<ICollection<string>> GetRolesAsync(IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRolesAsync managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return await managesRoles.GetRolesAsync(this.UserAuthId, token);
+                    if (authRepo is IManageRolesAsync managesRoles)
+                    {
+                        return await managesRoles.GetRolesAsync(this.UserAuthId, token);
+                    }
                 }
             }
 
@@ -247,14 +270,14 @@ namespace ServiceStack
 
         public virtual ICollection<string> GetPermissions(IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRoles managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return managesRoles.GetPermissions(this.UserAuthId);
+                    if (authRepo is IManageRoles managesRoles)
+                    {
+                        return managesRoles.GetPermissions(this.UserAuthId);
+                    }
                 }
             }
 
@@ -265,14 +288,14 @@ namespace ServiceStack
 
         public virtual async Task<ICollection<string>> GetPermissionsAsync(IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRolesAsync managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return await managesRoles.GetPermissionsAsync(this.UserAuthId, token);
+                    if (authRepo is IManageRolesAsync managesRoles)
+                    {
+                        return await managesRoles.GetPermissionsAsync(this.UserAuthId, token);
+                    }
                 }
             }
 
@@ -535,6 +558,5 @@ namespace ServiceStack
             }
             return false;
         }
-
     }
 }

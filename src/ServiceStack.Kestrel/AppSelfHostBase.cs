@@ -9,15 +9,25 @@ using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host.NetCore;
 using ServiceStack.IO;
 using ServiceStack.Web;
+
+#if NETSTANDARD2_0
+using Microsoft.AspNetCore.Hosting;
+using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
+using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
+#else
+using Microsoft.Extensions.Hosting;
+using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
+using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IHostApplicationLifetime;
+#endif
 
 namespace ServiceStack
 {
@@ -62,8 +72,8 @@ namespace ServiceStack
         public IApplicationBuilder App => app;
         public IServiceProvider ApplicationServices => app?.ApplicationServices;
 
-        private IHostingEnvironment env;
-        public IHostingEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IHostingEnvironment>();  
+        private IWebHostEnvironment env;
+        public IWebHostEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IWebHostEnvironment>();
 
         public virtual void Bind(IApplicationBuilder app)
         {
@@ -255,7 +265,7 @@ namespace ServiceStack
         /// <summary>
         /// Override to Configure .NET Core App
         /// </summary>
-        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             Configure(app);
         }
@@ -275,7 +285,7 @@ namespace ServiceStack
                 HostInstance.Configure(services);
             }
 
-            public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
+            public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
             {
                 HostInstance.Configure(app, env);
                 HostInstance.Bind(app);

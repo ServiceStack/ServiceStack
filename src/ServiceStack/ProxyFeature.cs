@@ -103,7 +103,7 @@ namespace ServiceStack
         }
 
         public virtual async Task ProxyRequestAsync(IHttpRequest httpReq, string url) => 
-            await ProxyRequestAsync(httpReq, (HttpWebRequest)WebRequest.Create(url));
+            await ProxyRequestAsync(httpReq, WebRequest.CreateHttp(url));
 
         public async Task ProxyRequestAsync(IHttpRequest httpReq, HttpWebRequest webReq)
         {
@@ -136,7 +136,7 @@ namespace ServiceStack
 
             PclExport.Instance.SetUserAgent(webReq, httpReq.UserAgent);
 
-#if NET45 || NET472
+#if NETFX || NET472
             webReq.Referer = httpReq.UrlReferrer?.ToString();
             webReq.ServicePoint.Expect100Continue = false;
 

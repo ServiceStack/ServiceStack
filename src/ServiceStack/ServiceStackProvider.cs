@@ -31,9 +31,7 @@ namespace ServiceStack
         ICacheClientAsync CacheAsync { get; }
         IDbConnection Db { get; }
         IRedisClient Redis { get; }
-#if NET472 || NETSTANDARD2_0
         ValueTask<IRedisClientAsync> GetRedisAsync();
-#endif
         IMessageProducer MessageProducer { get; }
         IAuthRepository AuthRepository { get; }
         IAuthRepositoryAsync AuthRepositoryAsync { get; }
@@ -215,9 +213,7 @@ namespace ServiceStack
         private IRedisClient redis;
         public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
         
-#if NET472 || NETSTANDARD2_0
         public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => HostContext.AppHost.GetRedisClientAsync(Request);
-#endif
 
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer => messageProducer ??= HostContext.AppHost.GetMessageProducer(Request);
@@ -298,16 +294,11 @@ namespace ServiceStack
             redis?.Dispose();
             messageProducer?.Dispose();
             using (authRepository as IDisposable) {}
-#if !(NET472 || NETSTANDARD2_0)
-            using (authRepositoryAsync as IDisposable) {}
-#endif
         }
         
-#if NET472 || NETSTANDARD2_0
         public async ValueTask DisposeAsync()
         {
             await using (authRepositoryAsync as IAsyncDisposable) {}
         }
-#endif
     }
 }

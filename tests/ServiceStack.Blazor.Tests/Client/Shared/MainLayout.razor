@@ -1,0 +1,70 @@
+@inherits LayoutComponentBase
+@inject ServiceStackStateProvider AuthStateProvider;
+@inject NavigationManager NavigationManager;
+
+<div class="main-layout page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        <div class="main-top-row px-4">
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/docs/hosting">
+                        <span class="oi oi-dollar" aria-hidden="true"></span> 0.40 /mo
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/docs/prerender">
+                        <span class="oi oi-loop-circular" aria-hidden="true"></span> Prerendering
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/docs/deploy">
+                        <span class="oi oi-cloud-upload" aria-hidden="true"></span> Deployments
+                    </NavLink>
+                </li>
+            </ul>
+
+            <AuthorizeView>
+                <Authorized>
+                    <span class="mx-3">@context.User.GetDisplayName()</span>
+                @foreach (var role in context.User.GetRoles())
+                {
+                    <small @key=role title="Admin" class="px-2 py-sm-1 me-1 d-inline-flex rounded"
+                           style="background-color:rgb(219 234 254);color: rgb(30 64 175);">@role</small>
+                }
+                    <span class="ms-2 btn btn-outline-primary" @onclick="logout">Logout</span>
+                </Authorized>
+                <Authorizing>
+                    <NavLink class="btn btn-outline-primary" href=@LoginUrl>Login</NavLink>
+                </Authorizing>
+                <NotAuthorized>
+                    <NavLink class="btn btn-outline-primary" href=@LoginUrl>Login</NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] protected Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+   string LoginUrl { get; set; } = "/signin";
+
+    protected override Task OnParametersSetAsync()
+    {
+        LoginUrl = NavigationManager.GetLoginUrl();
+        return Task.CompletedTask;
+    }
+
+    async Task logout()
+    {
+        await AuthStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo(LoginUrl, true);
+    }
+}

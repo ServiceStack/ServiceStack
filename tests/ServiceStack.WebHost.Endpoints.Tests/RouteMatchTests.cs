@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 
@@ -196,9 +197,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .GetStringFromUrl(accept: MimeTypes.Html);
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
-                Assert.That(ex.ToStatusCode(), Is.EqualTo(404));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
             }
         }
 
@@ -336,7 +337,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_match_on_exact_UserAgent()
         {
             var json = Config.ListeningOn.AppendPath("matchexact/specific-client")
-                .GetJsonFromUrl(req => req.UserAgent = "specific-client");
+                .GetJsonFromUrl(req => req.With(c => c.UserAgent = "specific-client"));
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"exact\":\"specific-client\"}"));
         }
@@ -345,7 +346,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_match_on_any_UserAgent()
         {
             var json = Config.ListeningOn.AppendPath("matchexact/any-client")
-                .GetJsonFromUrl(req => req.UserAgent = "any-client");
+                .GetJsonFromUrl(req => req.With(c => c.UserAgent = "any-client"));
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"any\":\"any-client\"}"));
         }
@@ -355,7 +356,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             const string iPhone6UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25";
             var json = Config.ListeningOn.AppendPath("matchsite/iPhone6")
-                .GetJsonFromUrl(req => req.UserAgent = iPhone6UA);
+                .GetJsonFromUrl(req => req.With(c => c.UserAgent = iPhone6UA));
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"mobile\":\"iphone6\"}"));
         }
@@ -365,7 +366,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             const string SafariUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7";
             var json = Config.ListeningOn.AppendPath("matchsite/Safari")
-                .GetJsonFromUrl(req => req.UserAgent = SafariUA);
+                .GetJsonFromUrl(req => req.With(c => c.UserAgent = SafariUA));
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"desktop\":\"safari\"}"));
         }

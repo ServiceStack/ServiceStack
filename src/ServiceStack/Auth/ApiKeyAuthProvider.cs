@@ -9,6 +9,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ServiceStack.Html;
 
 namespace ServiceStack.Auth
 {
@@ -147,6 +148,15 @@ namespace ServiceStack.Auth
 
         protected virtual void Init(IAppSettings appSettings = null)
         {
+            Label = "API Key";
+            FormLayout = new() {
+                new InputInfo(nameof(IHasBearerToken.BearerToken), Input.Types.Textarea) {
+                    Label = "API Key",
+                    Placeholder = "",
+                    Required = true,
+                },
+            };
+            
             InitSchema = true;
             RequireSecureConnection = true;
             Environments = DefaultEnvironments;
@@ -207,11 +217,7 @@ namespace ServiceStack.Auth
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
-#if NET472 || NETSTANDARD2_0
             await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
             {
                 var apiKey = GetApiKey(authService.Request, request.Password);
                 ValidateApiKey(authService.Request, apiKey);

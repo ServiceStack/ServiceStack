@@ -1,5 +1,7 @@
-﻿using ServiceStack.Auth;
+﻿using System.Collections.Generic;
+using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
+using ServiceStack.Html;
 
 namespace ServiceStack
 {
@@ -10,6 +12,17 @@ namespace ServiceStack
     {
         public string Id { get; set; } = Plugins.Register;
         public string AtRestPath { get; set; }
+
+        /// <summary>
+        /// UI Layout for User Registration
+        /// </summary>
+        public List<List<InputInfo>> FormLayout { get; set; } = new()
+        {
+            new(){ Input.For<Register>(x => x.DisplayName, x => x.Help = "Your first and last name") },
+            new(){ Input.For<Register>(x => x.Email, x => x.Type = Input.Types.Email) },
+            new(){ Input.For<Register>(x => x.Password, x => x.Type = Input.Types.Password) },
+            new(){ Input.For<Register>(x => x.ConfirmPassword, x => x.Type = Input.Types.Password) },
+        };
         
         public ValidateFn ValidateFn 
         {
@@ -31,6 +44,7 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService<RegisterService>(AtRestPath);
+            appHost.ConfigureOperation<Register>(op => op.FormLayout = FormLayout);
 
             if (!appHost.GetContainer().Exists<IValidator<Register>>())
             {

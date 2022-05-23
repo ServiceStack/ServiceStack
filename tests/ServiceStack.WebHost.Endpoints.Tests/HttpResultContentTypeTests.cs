@@ -108,9 +108,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith("plain-dto").AddQueryParam("name", "foo")
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    res.Headers[HttpHeaders.TransferEncoding].Print();
-                    Assert.That(res.Headers[HttpHeaders.TransferEncoding], Is.Null);
-                    Assert.That(res.ContentLength, Is.GreaterThan(0));
+                    Assert.That(res.GetHeader(HttpHeaders.TransferEncoding), Is.Null);
+                    Assert.That(res.GetContentLength(), Is.Not.Null);
                 }).FromJson<PlainDto>();
 
             Assert.That(response.Name, Is.EqualTo("foo"));
@@ -122,9 +121,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith("httpresult-dto").AddQueryParam("name", "foo")
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    res.Headers[HttpHeaders.TransferEncoding].Print();
-                    Assert.That(res.Headers[HttpHeaders.TransferEncoding], Is.Null);
-                    Assert.That(res.ContentLength, Is.GreaterThan(0));
+                    Assert.That(res.GetHeader(HttpHeaders.TransferEncoding), Is.Null);
+                    Assert.That(res.GetContentLength(), Is.Not.Null);
                 }).FromJson<HttpResultDto>();
     
             Assert.That(response.Name, Is.EqualTo("foo"));

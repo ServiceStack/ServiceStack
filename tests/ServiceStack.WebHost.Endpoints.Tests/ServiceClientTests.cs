@@ -105,8 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var cacheKey = "{0} {1}".Fmt(method, uri);
                 Assert.That(cacheKey, Is.EqualTo("GET {0}json/reply/GetCustomer?customerId=5".Fmt(client.BaseUri)));
-                object entry;
-                cache.TryGetValue(cacheKey, out entry);
+                cache.TryGetValue(cacheKey, out var entry);
                 return entry;
             };
             client.ResultsFilterResponse = (webRes, res, method, uri, request) =>

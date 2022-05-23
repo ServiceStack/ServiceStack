@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,9 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using ServiceStack.Configuration;
 using ServiceStack.Host.AspNet;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -18,6 +20,8 @@ namespace ServiceStack.Auth
         public override string Type => "NTLM";
         public static string Name = AuthenticateService.WindowsAuthProvider;
         public static string Realm = "/auth/" + AuthenticateService.WindowsAuthProvider;
+
+        public List<string> IgnoreRoles { get; set; } = new(new[] { RoleNames.Admin });
 
         public AspNetWindowsAuthProvider(IAppHost appHost)
         {
@@ -38,7 +42,8 @@ namespace ServiceStack.Auth
             //Add all pre-defined Roles used to in App to 'AllRoles'
             appHost.AfterInitCallbacks.Add(host =>
             {
-                var allExistingRoles = host.Metadata.GetAllRoles();
+                var allExistingRoles = host.Metadata.GetAllRoles()
+                    .Where(x => !IgnoreRoles.Contains(x));
                 allExistingRoles.Each(x => AllRoles.AddIfNotExists(x));
             });
         }
@@ -64,8 +69,8 @@ namespace ServiceStack.Auth
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
             var user = HttpContext.Current.GetUser();
-            return session != null && session.IsAuthenticated && 
-                   (user == null || LoginMatchesSession(session, user.GetUserName()));
+            return session is { IsAuthenticated: true } 
+                   && (user == null || LoginMatchesSession(session, user.GetUserName()));
         }
 
         public virtual bool IsAuthorized(IPrincipal user)
@@ -155,11 +160,22 @@ namespace ServiceStack.Auth
         {
             foreach (var role in AllRoles.Safe())
             {
+                if (IgnoreRoles.Contains(role))
+                    continue;
                 if (session.Roles.Contains(role))
                     continue;
 
-                if (user.IsInRole(role))
-                    session.Roles.AddIfNotExists(role);
+                try
+                {
+                    if (user.IsInRole(role))
+                        session.Roles.AddIfNotExists(role);
+                }
+                catch (Exception ex)
+                {
+                    var log = LogManager.GetLogger(GetType());
+                    log.ErrorFormat("Failed to resolve role '{0}' for '{1}'. To ignore checking, add to AspNetWindowsAuthProvider.IgnoreRoles:\n{0}", 
+                        role, session.UserAuthName, ex); 
+                }
             }
         }
 

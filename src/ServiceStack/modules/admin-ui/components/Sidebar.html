@@ -1,0 +1,78 @@
+<script>
+App.components({
+    Sidebar: '#sidebar-template',
+    SidebarAuth: '#sidebar-auth-template',
+    SidebarNav({ store, $on }) {
+        return {
+            $template: '#sidebar-nav-template',
+            store,
+            $on: $on || null,
+        }
+    },
+})
+</script>
+<!--minify-->
+<template id="sidebar-nav-template">
+<div class="flex items-center flex-shrink-0 px-4" v-scope="Brand({ icon: ui.brandIcon, serviceName })"></div>
+<nav class="mt-5 flex-1 px-2 bg-white space-y-1" aria-label="Sidebar">
+    <a v-for="({id,label,icon}) in store.adminLinks" v-href="{ admin:id, $on }"
+       :class="[routes.admin === id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900', 
+                               'group flex items-center px-2 py-2 text-base font-medium rounded-md']">
+        <span v-scope="Image(icon,{cls: () => `${routes.admin === id ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'} mr-3 h-6 w-6`})"></span>
+        {{label}}
+    </a>
+</nav>
+</template>
+<template id="sidebar-auth-template">
+<a v-href="{ $page:'' }" class="flex-shrink-0 w-full group block">
+    <div class="flex items-center">
+        <img v-if="store.authProfileUrl" class="h-8 w-8 rounded-full text-gray-700" :src="store.authProfileUrl" alt="">
+        <svg v-else class="h-8 w-8 rounded-full text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 8a5 5 0 1 0 5 5a5 5 0 0 0-5-5z" fill="currentColor"/>
+            <path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2zm7.992 22.926A5.002 5.002 0 0 0 19 20h-6a5.002 5.002 0 0 0-4.992 4.926a12 12 0 1 1 15.985 0z" fill="currentColor"/>
+        </svg>
+        <div class="ml-3">
+            <p class="text-base font-medium text-gray-700 group-hover:text-gray-900">
+                {{ store.displayName }}
+            </p>
+        </div>
+    </div>
+</a>
+</template>
+<template id="sidebar-template">
+<div data-transition-for="sidebar" class="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true">
+    <div data-transition="{ cls:'transition-opacity ease-linear duration-300',  
+        entering:{ from:'opacity-0',   to:'opacity-100'}, 
+        leaving: { from:'opacity-100', to:'opacity-0' } 
+    }" data-transition-for="sidebar" class="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true"></div>
+    <div data-transition="{ cls:'transition ease-in-out duration-300 transform', 
+        entering:{ from:'-translate-x-full', to:'translate-x-0'}, 
+        leaving: { from:'translate-x-0',     to:'-translate-x-full' } 
+    }" data-transition-for="sidebar" class="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+        <div data-transition="{ cls:'ease-in-out duration-300',  
+            entering:{ from:'opacity-0',   to:'opacity-100'}, 
+            leaving: { from:'opacity-100', to:'opacity-0' } 
+        }" data-transition-for="sidebar" class="absolute top-0 right-0 -mr-12 pt-2">
+            <button type="button" @click="transition('sidebar')" 
+                    class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                <span class="sr-only">Close sidebar</span>
+                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto" v-scope="SidebarNav({ store, $on:() => transition('sidebar') })"></div>
+        <div class="flex-shrink-0 flex border-t border-gray-200 p-4" v-scope="SidebarAuth({ store })"></div>
+    </div>
+    <div class="flex-shrink-0 w-14">
+    </div>
+</div>
+<div class="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+    <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
+        <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+            <div class="overflow-y-auto flex-1 flex flex-col overflow-y-auto" v-scope="SidebarNav({ store })"></div>
+        </div>
+        <div class="flex-shrink-0 flex border-t border-gray-200 p-4" v-scope="SidebarAuth({ store })"></div>
+    </div>
+</div>
+</template>
+<!--/minify-->

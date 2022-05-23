@@ -39,12 +39,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-#if NETCORE
-                ServiceStack.Memory.NetCoreMemory.Configure();
-#endif
-      
-                if (!Plugins.Any(x => x is SpanFormats)) //Registered by default
-                    Plugins.Add(new SpanFormats()); 
             }
         }
 

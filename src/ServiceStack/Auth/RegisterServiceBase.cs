@@ -32,11 +32,7 @@ namespace ServiceStack.Auth
                         .MustAsync(async (x,token) =>
                         {
                             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETSTANDARD2_0
                             await using (authRepo as IAsyncDisposable)
-#else
-                            using (authRepo as IDisposable)
-#endif
                             {
                                 return await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                             }
@@ -48,11 +44,7 @@ namespace ServiceStack.Auth
                         .MustAsync(async (x,token) =>
                         {
                             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETSTANDARD2_0
                             await using (authRepo as IAsyncDisposable)
-#else
-                            using (authRepo as IDisposable)
-#endif
                             {
                                 return x.IsNullOrEmpty() || await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                             }
@@ -119,14 +111,15 @@ namespace ServiceStack.Auth
     {
         protected virtual async Task<object> CreateRegisterResponse(IAuthSession session, string userName, string password, bool? autoLogin=null)
         {
+            var authFeature = GetPlugin<AuthFeature>();
             var returnUrl = Request.GetReturnUrl();
             if (!string.IsNullOrEmpty(returnUrl))
-                GetPlugin<AuthFeature>()?.ValidateRedirectLinks(Request, returnUrl);
+                authFeature?.ValidateRedirectLinks(Request, returnUrl);
 
             RegisterResponse response = null;
             if (autoLogin.GetValueOrDefault())
             {
-#if NETSTANDARD2_0 || NET472
+#if NETCORE || NET472
                 await using var authService = base.ResolveService<AuthenticateService>();
 #else
                 using var authService = base.ResolveService<AuthenticateService>();
@@ -150,7 +143,23 @@ namespace ServiceStack.Auth
                         UserId = session.UserAuthId,
                         BearerToken = typedResponse.BearerToken,
                         RefreshToken = typedResponse.RefreshToken,
+                        Roles = typedResponse.Roles,
+                        Permissions = typedResponse.Permissions,
+                        Meta = typedResponse.Meta,
                     };
+
+                    if (authFeature?.RegisterResponseDecorator != null)
+                    {
+                        var ctx = new RegisterFilterContext {
+                            RegisterService = this,
+                            Register = Request.Dto as Register,
+                            RegisterResponse = response,
+                            ReferrerUrl = returnUrl,
+                            Session = session,
+                        };
+                        var result = authFeature.RegisterResponseDecorator(ctx);
+                        return result;
+                    }
                 }
             }
 

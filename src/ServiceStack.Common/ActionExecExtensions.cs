@@ -7,7 +7,7 @@ using ServiceStack.Support;
 #if NETFX_CORE
 using Windows.System.Threading;
 #endif
-#if NETSTANDARD2_0
+#if NETCORE
 using System.Threading.Tasks;
 #endif
 
@@ -35,7 +35,7 @@ namespace ServiceStack
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandExecsHandler = new ActionExecHandler(action, waitHandle);
-#if NETSTANDARD2_0
+#if NETCORE
                 Task.Run(() => commandExecsHandler.Execute());
 #elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => commandExecsHandler.Execute()));
@@ -81,7 +81,7 @@ namespace ServiceStack
             if (waitHandles.Length == 0)
                 return true;
 
-#if NETSTANDARD2_0
+#if NETCORE
             return WaitHandle.WaitAll(waitHandles, timeOutMs);
 #else
             if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)

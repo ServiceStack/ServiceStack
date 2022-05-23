@@ -1531,9 +1531,9 @@ namespace ServiceStack.Script
             return bytes == null || bytes.Length == 0 ? null : _.ComputeHash(bytes).ToHex();
         }
         public string sha1(object target) => target is string s
-            ? HexHash(new SHA1Managed(), s)
+            ? HexHash(SHA1.Create(), s)
             : target is byte[] b
-                ? HexHash(new SHA1Managed(), b)
+                ? HexHash(SHA1.Create(), b)
                 : throw new NotSupportedException(target?.GetType().Name);
         public string sha256(object target) => target is string s
             ? HexHash(SHA256.Create(), s)

@@ -1,5 +1,7 @@
 using System;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -11,26 +13,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return (HttpWebResponse)PclExport.Instance.GetResponse(request);
         }
 
-        public static bool AddRange(this HttpWebRequest request, int from, int? to) 
+        public static void AddRange(this HttpWebRequest request, int from, int? to) 
         {
-            string rangeSpecifier = "bytes";
-            string curRange = request.Headers[HttpRequestHeader.Range];
+            var rangeSpecifier = "bytes";
+            var curRange = request.Headers[HttpRequestHeader.Range];
  
-            if ((curRange == null) || (curRange.Length == 0)) {
+            if (string.IsNullOrEmpty(curRange)) 
+            {
                 curRange = rangeSpecifier + "=";
             }
-            else {
-                if (String.Compare(curRange.Substring(0, curRange.IndexOf('=')), rangeSpecifier, StringComparison.OrdinalIgnoreCase) != 0) {
-                    return false;
-                }
+            else
+            {
+                if (string.Compare(curRange.Substring(0, curRange.IndexOf('=')), rangeSpecifier, StringComparison.OrdinalIgnoreCase) != 0)
+                    throw new NotSupportedException("Invalid Range: " + curRange);
                 curRange = string.Empty;
             }
             curRange += from.ToString();
             if (to != null) {
-                curRange += "-" + to.ToString();
+                curRange += "-" + to;
             }
             request.Headers[HttpRequestHeader.Range] = curRange;
-            return true;
         }
 
         public static void Close(this HttpWebResponse response)

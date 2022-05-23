@@ -1,7 +1,6 @@
 ﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,14 +11,10 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using System.Xml;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
-using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
@@ -32,6 +27,10 @@ using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
+#if NETFX
+using System.Web;
+#endif
+
 
 namespace ServiceStack
 {
@@ -373,7 +372,8 @@ namespace ServiceStack
 
             foreach (var requestFilter in GlobalMessageRequestFiltersAsyncArray)
             {
-                requestFilter(req, res, requestDto).Wait();
+                var task = requestFilter(req, res, requestDto);
+                task.Wait();
                 if (res.IsClosed) return res.IsClosed;
             }
 
@@ -461,7 +461,7 @@ namespace ServiceStack
         /// <summary>
         /// Configuration of ServiceStack's /metadata pages
         /// </summary>
-        public MetadataPagesConfig MetadataPagesConfig => new MetadataPagesConfig(
+        public MetadataPagesConfig MetadataPagesConfig => new(
             Metadata,
             Config.ServiceEndpointsMetadataConfig,
             Config.IgnoreFormatsInMetadata,
@@ -614,7 +614,8 @@ namespace ServiceStack
         {
             if (Config.AdminAuthSecret != null)
             {
-                var authSecret = httpReq.GetParam(Keywords.AuthSecret);
+                var authSecret = httpReq.GetParam(Keywords.AuthSecret)
+                    ?? httpReq.Headers[Keywords.AuthSecret];
                 return authSecret == Config.AdminAuthSecret;
             }
 
@@ -663,7 +664,7 @@ namespace ServiceStack
         }
         
         /// <summary>
-        /// Override to intercept & customize Exception responses 
+        /// Override to intercept &amp; customize Exception responses 
         /// </summary>
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         {
@@ -752,7 +753,7 @@ namespace ServiceStack
             return session;
         }
 
-#if NETSTANDARD2_0
+#if NETCORE
         /// <summary>
         /// Modify Cookie options
         /// </summary>
@@ -815,7 +816,7 @@ namespace ServiceStack
         /// <summary>
         /// Gets IDbConnection Checks if DbInfo is seat in RequestContext.
         /// See multitenancy: https://docs.servicestack.net/multitenancy
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
@@ -858,7 +859,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
@@ -867,10 +868,9 @@ namespace ServiceStack
             return Container.TryResolve<IRedisClientsManager>().GetClient();
         }
 
-#if NET472 || NETSTANDARD2_0
         /// <summary>
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
@@ -886,7 +886,6 @@ namespace ServiceStack
 
             return default;
         }
-#endif
 
         /// <summary>
         /// If they don't have an ICacheClient configured use an In Memory one.
@@ -923,8 +922,6 @@ namespace ServiceStack
         /// <summary>
         /// Only sets cacheAsync if native Async provider, otherwise sets cacheSync
         /// </summary>
-        /// <param name="req"></param>
-        /// <returns></returns>
         public virtual void TryGetNativeCacheClient(IRequest req, out ICacheClient cacheSync, out ICacheClientAsync cacheAsync)
         {
             cacheSync = GetCacheClient(req);
@@ -945,7 +942,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Returns <see cref="IMessageProducer"></see> from the IOC container.
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and PageViewBase, can be helpful when overriding this method</param>
         /// <returns></returns>
@@ -1095,7 +1092,7 @@ namespace ServiceStack
         /// </summary>
         public virtual string GetBearerToken(IRequest req)
         {
-            if (req.Dto is IHasBearerToken dto && dto.BearerToken != null)
+            if (req.Dto is IHasBearerToken { BearerToken: { } } dto)
                 return dto.BearerToken;
             
             var auth = GetAuthorization(req);
@@ -1143,6 +1140,45 @@ namespace ServiceStack
                    req.GetCookieValue(Keywords.TokenCookie);
         }
 
+        /// <summary>
+        /// Override Authorization Refresh Token resolution
+        /// </summary>
+        public virtual string GetRefreshToken(IRequest req)
+        {
+            if (req.Dto is IHasRefreshToken { RefreshToken: { } } dto)
+                return dto.RefreshToken;
+            return null;            
+        }
+
+        /// <summary>
+        /// Override JWT Refresh Token resolution
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public virtual string GetJwtRefreshToken(IRequest req)
+        {
+            var jwtAuthProvider = AuthenticateService.GetJwtAuthProvider();
+            if (jwtAuthProvider != null)
+            {
+                if (jwtAuthProvider.AllowInFormData)
+                {
+                    var jwt = req.FormData[Keywords.RefreshTokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+
+                if (jwtAuthProvider.AllowInQueryString)
+                {
+                    var jwt = req.QueryString[Keywords.RefreshTokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+            }
+
+            return GetRefreshToken(req) ??
+                   req.GetCookieValue(Keywords.RefreshTokenCookie);
+        }
+
         public virtual IHttpResult Redirect(IServiceBase service, string redirect, string message)
         {
             return new HttpResult(HttpStatusCode.Redirect, message)
@@ -1186,6 +1222,27 @@ namespace ServiceStack
         public virtual object OnDeserializeJson(Type intoType, Stream fromStream) =>
             JsonDataContractSerializer.Instance.DeserializeFromStream(intoType, fromStream);
 
+ 
+        public virtual string GetCompressionType(IRequest request)
+        {
+            var isFireFox = request.UserAgent?.IndexOf("firefox", StringComparison.OrdinalIgnoreCase) > 0; 
+            if (!isFireFox)
+            {
+                //CompressionTypes.Brotli;
+                if (request.RequestPreferences.AcceptsBrotli && StreamCompressors.SupportsEncoding("br"))
+                    return "br";
+            }
+            
+            if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))
+                return CompressionTypes.Deflate;
+
+            if (request.RequestPreferences.AcceptsGzip && StreamCompressors.SupportsEncoding(CompressionTypes.GZip))
+                return CompressionTypes.GZip;
+
+            return null;
+        }
+
+        public virtual bool HasUi() => HasPlugin<UiFeature>();
     }
 
 }

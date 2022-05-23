@@ -12,6 +12,10 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 
+#if NET6_0_OR_GREATER
+using System.Net.Http;
+#endif
+
 namespace ServiceStack
 {
     public class ServerEventConnect : ServerEventCommand
@@ -86,8 +90,6 @@ namespace ServiceStack
         byte[] buffer;
         readonly Encoding encoding = Encoding.UTF8;
 
-        HttpWebRequest httpReq;
-        HttpWebResponse response;
         CancellationTokenSource cancel;
         private ITimer heartbeatTimer;
 
@@ -166,24 +168,47 @@ namespace ServiceStack
         public Action OnReconnect;
         public Action<Exception> OnException;
 
+#if NET6_0_OR_GREATER
+        public Action<HttpRequestMessage> EventStreamRequestFilter { get; set; }
+        public Action<HttpRequestMessage> HeartbeatRequestFilter { get; set; }
+        public Action<HttpRequestMessage> UnRegisterRequestFilter { get; set; }
+        /// <summary>
+        /// Apply Request Filter to all ServerEventClient Requests
+        /// </summary>
+        public Action<HttpRequestMessage> AllRequestFilters { get; set; }
+        HttpClient httpClient;
+        public Func<IServiceClient,HttpClientHandler> HttpClientHandlerFactory { get; set; } = client => new()
+        {
+            UseCookies = true,
+            CookieContainer = ((IHasCookieContainer)client).CookieContainer,
+            UseDefaultCredentials = true,
+            AutomaticDecompression =
+                DecompressionMethods.Brotli | DecompressionMethods.Deflate | DecompressionMethods.GZip,
+        };
+#else
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
         public Action<WebRequest> UnRegisterRequestFilter { get; set; }
-
         /// <summary>
         /// Apply Request Filter to all ServerEventClient Requests
         /// </summary>
         public Action<WebRequest> AllRequestFilters { get; set; }
+        HttpWebRequest httpReq;
+        HttpWebResponse response;
+#endif
 
-        readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners =
-            new Dictionary<string, List<Action<ServerEventMessage>>>();
+        readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners = new();
 
         public ServerEventsClient(string baseUri, params string[] channels)
         {
             this.eventStreamPath = baseUri.CombineWith("event-stream");
             this.Channels = channels;
 
+#if NET6_0_OR_GREATER
+            this.ServiceClient = new JsonApiClient(baseUri);
+#else
             this.ServiceClient = new JsonServiceClient(baseUri);
+#endif
 
             this.Resolver = new NewInstanceResolver();
             this.ReceiverTypes = new List<Type>();
@@ -207,10 +232,30 @@ namespace ServiceStack
             {
                 Interlocked.Increment(ref timesStarted);
 
-                httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
+#if NET6_0_OR_GREATER
+                httpClient = new HttpClient(HttpClientHandlerFactory(ServiceClient), disposeHandler:true);
+                httpClient.Timeout = Timeout.InfiniteTimeSpan;
+                
+                var httpReq = new HttpRequestMessage(HttpMethod.Get, EventStreamUri)
+                    .With(c => c.Accept = MimeTypes.Json);
+
+                EventStreamRequestFilter?.Invoke(httpReq);
+                if (AllRequestFilters != null)
+                {
+                    AllRequestFilters(httpReq);
+                    if (ServiceClient is JsonApiClient apiClient)
+                        apiClient.RequestFilter = AllRequestFilters;
+                }
+
+                var httpRes = httpClient.Send(httpReq, HttpCompletionOption.ResponseHeadersRead);
+                httpRes.EnsureSuccessStatusCode();
+                var stream = httpRes.Content.ReadAsStream();
+#else
+                httpReq = WebRequest.CreateHttp(EventStreamUri);
                 //share auth cookies
                 httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
                 httpReq.AllowReadStreamBuffering = false;
+                httpReq.Accept = MimeTypes.Json;
 
                 EventStreamRequestFilter?.Invoke(httpReq);
                 if (AllRequestFilters != null)
@@ -220,8 +265,9 @@ namespace ServiceStack
                         scb.RequestFilter = AllRequestFilters;
                 }
 
-                response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
+                response = (HttpWebResponse)httpReq.GetResponse();
                 var stream = response.ResponseStream();
+#endif
 
                 buffer = new byte[BufferSize];
                 cancel = new CancellationTokenSource();
@@ -249,10 +295,30 @@ namespace ServiceStack
             return this;
         }
 
+        private bool HasClient() =>
+#if NET6_0_OR_GREATER
+            this.httpClient != null;
+#else
+            this.httpReq != null;
+#endif
+        
+        private void UnsetClient()
+        {
+#if NET6_0_OR_GREATER
+            this.httpClient = null;
+#else
+            using (response)
+            {
+                response = null;
+            }
+            this.httpReq = null;
+#endif
+        }
+
         private TaskCompletionSource<ServerEventConnect> connectTcs;
         public Task<ServerEventConnect> Connect()
         {
-            if (httpReq == null)
+            if (!HasClient())
                 Start();
 
             return connectTcs.Task;
@@ -299,10 +365,8 @@ namespace ServiceStack
 
             heartbeatTimer?.Cancel();
 
-#if !NETSTANDARD1_1
             heartbeatTimer = PclExportClient.Instance.CreateTimer(Heartbeat,
                 TimeSpan.FromMilliseconds(ConnectionInfo.HeartbeatIntervalMs), this);
-#endif
         }
 
         protected void Heartbeat(object state)
@@ -330,7 +394,16 @@ namespace ServiceStack
 
             EnsureSynchronizationContext();
 
-            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req => {
+#if NET6_0_OR_GREATER
+            var taskString = httpClient.SendStringToUrlAsync(ConnectionInfo.HeartbeatUrl, method:HttpMethods.Get, requestFilter: req => {
+                HeartbeatRequestFilter?.Invoke(req);
+                AllRequestFilters?.Invoke(req);
+
+                if (log.IsDebugEnabled)
+                    log.Debug("[SSE-CLIENT] Sending Heartbeat...");
+            });
+#else
+            var taskString = ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req => {
                     var hold = httpReq;
                     if (hold != null)
                         req.CookieContainer = hold.CookieContainer;
@@ -340,8 +413,10 @@ namespace ServiceStack
 
                     if (log.IsDebugEnabled)
                         log.Debug("[SSE-CLIENT] Sending Heartbeat...");
-                })
-                .Success(t =>
+                });
+#endif
+            
+            taskString.Success(t =>
                 {
                     if (cancel.IsCancellationRequested)
                     {
@@ -531,15 +606,14 @@ namespace ServiceStack
                 t.ObserveTaskExceptions();
                 if (cancel.IsCancellationRequested || t.IsCanceled)
                 {
-                    httpReq = null;
-
+                    UnsetClient();
                     return;
                 }
 
                 if (t.IsFaulted)
                 {
                     OnExceptionReceived(t.Exception);
-                    httpReq = null;
+                    UnsetClient();
                     return;
                 }
 
@@ -782,6 +856,16 @@ namespace ServiceStack
             {
                 EnsureSynchronizationContext();
                 try {
+#if NET6_0_OR_GREATER
+                    httpClient.SendStringToUrl(ConnectionInfo.UnRegisterUrl, method:HttpMethods.Get, requestFilter: req =>
+                    {
+                        if (log.IsDebugEnabled)
+                            log.Debug("[SSE-CLIENT] Unregistering...");
+                        
+                        UnRegisterRequestFilter?.Invoke(req);
+                        AllRequestFilters?.Invoke(req);
+                    });
+#else                    
                     ConnectionInfo.UnRegisterUrl.GetStringFromUrl(requestFilter: req =>
                     {
                         var hold = httpReq;
@@ -794,16 +878,12 @@ namespace ServiceStack
                         UnRegisterRequestFilter?.Invoke(req);
                         AllRequestFilters?.Invoke(req);
                     });
+#endif
                 } catch (Exception) {}
             }
 
-            using (response)
-            {
-                response = null;
-            }
-
             ConnectionInfo = null;
-            httpReq = null;
+            UnsetClient();
 
             return TypeConstants.EmptyTask;
         }

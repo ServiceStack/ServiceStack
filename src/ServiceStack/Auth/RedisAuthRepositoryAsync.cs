@@ -1,4 +1,3 @@
-#if NET472 || NETSTANDARD2_0
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -415,6 +414,4 @@ namespace ServiceStack.Auth
             return QueryUserAuths(results, query: query, orderBy: orderBy, skip: skip, take: take);
         }
     }
-    
 }
-#endif

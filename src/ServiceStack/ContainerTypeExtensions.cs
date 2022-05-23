@@ -7,7 +7,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     
-#if NETSTANDARD2_0        
+#if NETCORE        
     public interface IHasServiceScope : IServiceProvider
     {
         Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
@@ -56,8 +56,6 @@ namespace ServiceStack
         /// Registers a named instance of type in the IoC container and
         /// adds auto-wiring to the specified type.
         /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="inFunqAsType"></param>
         public static void RegisterAutoWiredType(this Container container, string name, Type serviceType, Type inFunqAsType,
             ReuseScope scope = ReuseScope.None)
         {
@@ -76,7 +74,6 @@ namespace ServiceStack
         /// adds auto-wiring to the specified type.
         /// The reuse scope is set to none (transient).
         /// </summary>
-        /// <param name="serviceTypes"></param>
         public static void RegisterAutoWiredType(this Container container, Type serviceType,
             ReuseScope scope = ReuseScope.None)
         {
@@ -115,7 +112,6 @@ namespace ServiceStack
         /// adds auto-wiring to the specified types.
         /// The reuse scope is set to none (transient).
         /// </summary>
-        /// <param name="serviceTypes"></param>
         public static void RegisterAutoWiredTypes(this Container container, IEnumerable<Type> serviceTypes,
             ReuseScope scope = ReuseScope.None)
         {

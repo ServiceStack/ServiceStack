@@ -48,7 +48,7 @@ namespace ServiceStack.Api.OpenApi.Specification
         [DataMember(Name = "required")]
         public bool? Required { get; set; }
         [DataMember(Name = "enum")]
-        public List<string> Enum { get; set; }
+        public string[] Enum { get; set; }
         [DataMember(Name = "multipleOf")]
         public double? MultipleOf { get; set; }
         [DataMember(Name = "x-nullable")]

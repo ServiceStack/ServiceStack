@@ -1,0 +1,88 @@
+﻿@inject ServiceStackStateProvider AuthStateProvider;
+@inject NavigationManager NavigationManager;
+
+<div class="nav-menu top-row navbar navbar-dark">
+    <a class="navbar-brand ps-4" href="">MyApp</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@CssUtils.ClassNames("nav-menu", collapseNavMenu ? "collapse" : "")" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/counter">
+                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/todomvc">
+                <span class="oi oi-clipboard" aria-hidden="true"></span> Todos
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/bookings-crud">
+                <span class="oi oi-calendar"></span> Bookings CRUD
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/hello" Match="NavLinkMatch.All">
+                <span class="oi oi-transfer" aria-hidden="true"></span> Call Hello
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/hello-secure">
+                <span class="oi oi-shield" aria-hidden="true"></span> Call HelloSecure
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/fetchdata">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/admin">
+                <span class="oi oi-lock-locked" aria-hidden="true"></span> Admin
+            </NavLink>
+        </li>
+        <AuthorizeView>
+            <Authorized>
+            <li class="nav-item px-3">
+                <a href="javascript:void" class="nav-link" @onclick="logout"><span class="oi oi-account-logout" aria-hidden="true"></span>Logout</a>
+            </li>
+            </Authorized>
+            <NotAuthorized>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@LoginUrl">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Login
+                </NavLink>
+            </li>
+            </NotAuthorized>
+        </AuthorizeView>
+    </ul>
+</div>
+
+@code {
+    bool collapseNavMenu = true;
+
+    void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+
+    string? LoginUrl { get; set; }
+
+    protected override Task OnParametersSetAsync()
+    {
+        LoginUrl = NavigationManager.GetLoginUrl();
+        return Task.CompletedTask;
+    }
+
+    async Task logout()
+    {
+        await AuthStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo(LoginUrl ?? "/", true);
+    }
+}

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Api.OpenApi</PackageId>
     <AssemblyName>ServiceStack.Api.OpenApi</AssemblyName>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack support for Open API v2.0 and integrated Swagger UI</Title>
     <PackageDescription>
     Implements v2.0 of the Open API Specification (https://www.openapis.org).
@@ -24,7 +24,7 @@
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
   </ItemGroup>
@@ -33,6 +33,9 @@
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
   </ItemGroup>
 
 </Project>

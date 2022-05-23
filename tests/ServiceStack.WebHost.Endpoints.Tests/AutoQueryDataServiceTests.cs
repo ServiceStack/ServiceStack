@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         static AutoQueryDataServiceTests()
         {
-#if NET45
+#if NETFX
             //https://githubengineering.com/crypto-removal-notice/
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override void Configure(Container container)
         {
-#if NET45
+#if NETFX
             //https://githubengineering.com/crypto-removal-notice/
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -150,7 +150,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.MemorySource(
                 () => "https://api.github.com/repos/ServiceStack/{0}/contributors"
                          .Fmt(ctx.Request.GetParam("repo"))
-                    .GetJsonFromUrl(req => req.SetUserAgent("AutoQuery")).FromJson<List<GithubContributor>>(),
+                    .GetJsonFromUrl(req => req.With(c => c.UserAgent = "AutoQuery")).FromJson<List<GithubContributor>>(),
                 HostContext.LocalCache, TimeSpan.FromMinutes(1)));
         }
     }
@@ -273,7 +273,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Interlocked.Increment(ref GetGithubRepos.ApiCalls);
 
-            return url.GetJsonFromUrl(requestFilter:req => req.SetUserAgent(GetType().Name))
+            return url.GetJsonFromUrl(requestFilter:req => req.With(c => c.UserAgent = GetType().Name))
                 .FromJson<List<GithubRepo>>();
         }
     }

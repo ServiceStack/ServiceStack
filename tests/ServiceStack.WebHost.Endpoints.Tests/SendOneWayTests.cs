@@ -107,7 +107,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static string GetResponse(String url, string json)
         {
-            var webRequest = (HttpWebRequest)WebRequest.Create(url);
+            var webRequest = WebRequest.CreateHttp(url);
             webRequest.Method = "PUT";
             var formDataBytes = Encoding.UTF8.GetBytes(json);
             webRequest.SetContentLength(formDataBytes.Length);

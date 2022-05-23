@@ -63,7 +63,7 @@ namespace ServiceStack
             var requestType = AssertRequestType(requestName);
             var requestDto = ToRequestDto(requestType, properties);
 
-            var url = requestDto.ToUrl(httpMethod);
+            var url = requestDto.ToUrl(httpMethod, "json");
             return url;
         }
         

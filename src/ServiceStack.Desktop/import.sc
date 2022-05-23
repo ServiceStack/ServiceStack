@@ -16,8 +16,8 @@
     
     'react/react.production.min.js':'https://unpkg.com/react/umd/react.production.min.js',
     'react-dom/react-dom.production.min.js':'https://unpkg.com/react-dom/umd/react-dom.production.min.js',
-    'react-router/react-router.min.js':'https://unpkg.com/react-router/umd/react-router.min.js',
-    'react-router-dom/react-router-dom.min.js':'https://unpkg.com/react-router-dom/umd/react-router-dom.min.js',
+    'react-router/react-router.min.js':'https://unpkg.com/react-router/umd/react-router.production.min.js',
+    'react-router-dom/react-router-dom.min.js':'https://unpkg.com/react-router-dom/umd/react-router-dom.production.min.js',
     'mobx/mobx.min.js': 'https://unpkg.com/mobx/dist/mobx.umd.production.min.js',
     'redux/redux.min.js': 'https://unpkg.com/redux/dist/redux.min.js',
     'react-redux/react-redux.min.js': 'https://unpkg.com/react-redux/dist/react-redux.min.js',

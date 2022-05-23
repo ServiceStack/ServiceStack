@@ -225,7 +225,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var xml = url.GetJsonFromUrl(responseFilter: res =>
             {
-                Assert.That(res.ContentType, Does.StartWith(MimeTypes.Xml));
+                Assert.That(res.GetHeader(HttpHeaders.ContentType), Does.StartWith(MimeTypes.Xml));
             });
 
             Assert.That(xml, Does.StartWith("<?xml"));
@@ -238,12 +238,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var xml = await url.GetJsonFromUrlAsync(responseFilter: res =>
             {
-                Assert.That(res.ContentType, Does.StartWith(MimeTypes.Xml));
+                Assert.That(res.GetHeader(HttpHeaders.ContentType), Does.StartWith(MimeTypes.Xml));
             });
 
             Assert.That(xml, Does.StartWith("<?xml"));
         }
 
+#if NETFX        
         [Test]
         public void Does_compress_file_returned_in_HttpResult()
         {
@@ -351,5 +352,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var bytes = zipBytes.DecompressBytes("deflate");
             Assert.That(bytes.FromUtf8Bytes(), Is.EqualTo("<body>foo</body>"));
         }
+#endif
     }
 }

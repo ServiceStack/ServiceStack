@@ -1,0 +1,105 @@
+﻿@inherits AppAuthComponentBase
+@inject ServiceStackStateProvider AuthStateProvider;
+@inject NavigationManager NavigationManager;
+
+@if (HasInit)
+{
+    <div class=@ClassNames("admin-page", @class)>
+        <nav class="admin-navbar" aria-label="breadcrumb">
+          <ol class="breadcrumb fs-3">
+            <li>
+            @if (IconClass != null)
+            {
+                <span class=@CssUtils.ClassNames(IconClass, "fs-6 w-5 h-5 inline-flex text-purple-800 align-text-top me-1")></span>
+            }
+            else
+            {
+                <img src=@IconSrc class="w-5 h-5 inline-flex text-purple-800 me-1">
+            }
+            </li>
+            @if (Title == null)
+            {
+                <li class="breadcrumb-item ms-1 mt-1">Admin</li>
+            }
+            else
+            {
+                <li class="breadcrumb-item ms-1 mt-1"><a href="/admin" class="text-decoration-none">Admin</a></li>
+                <li class="breadcrumb-item ms-1 mt-1 text-dark fw-normal active" aria-current="page">@Title</li>
+            }
+          </ol>
+        </nav>
+
+        <ErrorSummary Status=@appMetadataApi.Error />
+
+    @if (!User.HasRole(AppRoles.Admin))
+    {
+        <h1>Sorry</h1>
+
+        <p class="mt-4 text-danger">
+            <span class="oi oi-shield me-2"></span>
+            This area is only accessible to users with the <b>Admin</b> role
+        </p>    
+
+        <div>
+            <p>
+                Please 
+                <a href="#" @onclick="SignInAsAnotherUser" @onclick:preventDefault>Login</a>
+                as a user with the <b>Admin</b> role.
+            </p>
+        </div>
+    }
+    else
+    {
+        <CascadingValue Value=@AppMetadata>
+            @ChildContent
+        </CascadingValue>
+    }
+
+    </div>
+}
+else
+{
+    <Loading class="admin-page" />    
+}
+
+<link href="/css/admin.css" rel="stylesheet" />
+
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter]
+    public string? @class { get; set; }
+
+    [Parameter]
+    public string? IconClass { get; set; }
+
+    [Parameter]
+    public string? IconSrc { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    ApiResult<AppMetadata> appMetadataApi = new();
+    AppMetadata? AppMetadata => appMetadataApi.Response;
+
+    protected PluginInfo? Plugins => AppMetadata?.Plugins;
+
+    protected AdminUsersInfo? AdminUsers => Plugins?.AdminUsers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        appMetadataApi = await this.ApiAppMetadataAsync();
+        if (appMetadataApi.Succeeded)
+        {
+            if (AdminUsers == null)
+                appMetadataApi.SetError("AdminUsersFeature not registered, see: https://docs.servicestack.net/admin-users");
+        }
+    }
+
+    async Task SignInAsAnotherUser()
+    {
+        await AuthStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo(NavigationManager.GetLoginUrl(), true);
+    }
+
+}

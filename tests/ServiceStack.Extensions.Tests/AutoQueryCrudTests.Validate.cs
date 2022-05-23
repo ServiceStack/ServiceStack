@@ -47,14 +47,11 @@ namespace ServiceStack.Extensions.Tests
                 new MyValidators(), 
             });
 
-            host.Plugins.Add(new ValidationFeature {
-                ConditionErrorCodes = {
-                    [ValidationConditions.IsOdd] = "NotOdd",
-                },
-                ErrorCodeMessages = {
-                    ["NotOdd"] = "{PropertyName} must be odd",
-                    ["RuleMessage"] = "ErrorCodeMessages for RuleMessage",
-                }
+            host.ConfigurePlugin<ValidationFeature>(feature =>
+            {
+                feature.ConditionErrorCodes[ValidationConditions.IsOdd] = "NotOdd";
+                feature.ErrorCodeMessages["NotOdd"] = "{PropertyName} must be odd";
+                feature.ErrorCodeMessages["RuleMessage"] = "ErrorCodeMessages for RuleMessage";
             });
 
             if (UseDbSource)
@@ -70,9 +67,9 @@ namespace ServiceStack.Extensions.Tests
             var validationSource = container.Resolve<IValidationSource>();
             validationSource.InitSchema();
             validationSource.SaveValidationRulesAsync(new List<ValidationRule> {
-                new ValidationRule { Type = nameof(DynamicValidationRules), Validator = "IsAuthenticated" },
-                new ValidationRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.LastName), Validator = "NotNull" },
-                new ValidationRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.Age), Validator = "InclusiveBetween(13,100)" },
+                new() { Type = nameof(DynamicValidationRules), Validator = "IsAuthenticated" },
+                new() { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.LastName), Validator = "NotNull" },
+                new() { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.Age), Validator = "InclusiveBetween(13,100)" },
             });
         }
 

@@ -1,0 +1,18 @@
+<script minify>
+App.component('Brand', ({ serviceName, icon }) => {
+    return {
+        $template: '#brand-template',
+        serviceName,
+        icon,
+    }
+})
+</script>
+<template id="brand-template">
+<div class="flex items-center flex-shrink-0 max-w-sidebar">
+    <a :title="serviceName" v-href="{ $page:'' }"
+       class="text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+        <span v-if="icon" v-scope="Image(icon, { cls:'brand-icon w-8 h-8 mr-1', alt:'logo' })"></span>
+        {{serviceName}}
+    </a>
+</div>
+</template>

@@ -10,6 +10,8 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ServiceStack.Html;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Auth
 {
@@ -23,9 +25,22 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool SetBearerTokenOnAuthenticateResponse { get; set; }
 
-        public JwtAuthProvider() {}
+        // Max Cookie size ss-tok={Base64 JWT} < 4096
+        public static int MaxProfileUrlSize { get; set; } = 2800; 
 
-        public JwtAuthProvider(IAppSettings appSettings) : base(appSettings) { }
+        public JwtAuthProvider() : this(null) {}
+
+        public JwtAuthProvider(IAppSettings appSettings) : base(appSettings)
+        {
+            Label = "JWT";
+            FormLayout = new() {
+                new InputInfo(nameof(IHasBearerToken.BearerToken), Input.Types.Textarea) {
+                    Label = "JWT",
+                    Placeholder = "JWT Bearer Token",
+                    Required = true,
+                },
+            };
+        }
 
         public override void Init(IAppSettings appSettings = null)
         {
@@ -53,11 +68,7 @@ namespace ServiceStack.Auth
                 {
                     IEnumerable<string> roles = null, perms = null;
                     var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
-#if NET472 || NETSTANDARD2_0
                     await using (userRepo as IAsyncDisposable)
-#else
-                    using (userRepo as IDisposable)
-#endif
                     {
                         if (userRepo is IManageRolesAsync manageRoles)
                         {
@@ -88,8 +99,8 @@ namespace ServiceStack.Auth
                         Expires = DateTime.UtcNow.Add(ExpireTokensIn),
                     });
             }
-            if (UseRefreshTokenCookie.GetValueOrDefault(UseTokenCookie) && authContext.Result.Cookies.All(x => x.Name != Keywords.RefreshTokenCookie)
-                && EnableRefreshToken())
+            if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.RefreshTokenCookie)
+                               && EnableRefreshToken())
             {
                 var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
                 authContext.Result.AddCookie(authContext.Request,
@@ -100,7 +111,7 @@ namespace ServiceStack.Auth
                     });
             }
 
-            NotifyJwtCookiesUsed(authContext.Result);
+            JwtUtils.NotifyJwtCookiesUsed(authContext.Result);
         }
 
         public Func<byte[], byte[]> GetHashAlgorithm() => GetHashAlgorithm(null);
@@ -352,7 +363,17 @@ namespace ServiceStack.Auth
 
             var profileUrl = session.GetProfileUrl();
             if (profileUrl != null && profileUrl != Svg.GetDataUri(Svg.Icons.DefaultProfile))
-                jwtPayload["picture"] = profileUrl;
+            {
+                if (profileUrl.Length <= MaxProfileUrlSize)
+                {
+                    jwtPayload["picture"] = profileUrl;
+                }
+                else
+                {
+                    LogManager.GetLogger(typeof(JwtAuthProvider)).Warn($"User '{session.UserAuthId}' ProfileUrl exceeds max JWT Cookie size, using default profile");
+                    jwtPayload["picture"] = HostContext.GetPlugin<AuthFeature>()?.ProfileImages?.RewriteImageUri(profileUrl);
+                }
+            }
 
             var combinedRoles = new List<string>(session.Roles.Safe());
             var combinedPerms = new List<string>(session.Permissions.Safe());
@@ -395,6 +416,50 @@ namespace ServiceStack.Auth
         /// Print Dump contents of JWT to Console
         /// </summary>
         public static void PrintDump(string jwt) => Console.WriteLine(Dump(jwt));
+        
+
+        public override async Task<string> CreateAccessTokenFromRefreshToken(string refreshToken, IRequest req)
+        {
+            if (string.IsNullOrEmpty(refreshToken))
+                throw new ArgumentNullException(nameof(refreshToken));
+
+            JsonObject jwtPayload;
+            try
+            {
+                jwtPayload = GetVerifiedJwtPayload(req, refreshToken.Split('.'));
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+
+            if (jwtPayload == null)
+                throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
+
+            AssertRefreshJwtPayloadIsValid(jwtPayload);
+
+            if (ValidateRefreshToken != null && !ValidateRefreshToken(jwtPayload, req))
+                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(req), nameof(refreshToken));
+
+            var userId = jwtPayload["sub"];
+
+            var result = await req.GetSessionFromSourceAsync(userId, async (authRepo, userAuth) => {
+                if (await IsAccountLockedAsync(authRepo, userAuth))
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(req));
+            }).ConfigAwait();
+
+            if (result == null)
+                throw new NotSupportedException(
+                    "JWT RefreshTokens requires a registered IUserAuthRepository or an AuthProvider implementing IUserSessionSource");
+
+            var accessToken = CreateJwtBearerToken(req,
+                session: result.Session, roles: result.Roles, perms: result.Permissions);
+            return accessToken;
+        }        
     }
 
     [Authenticate]
@@ -457,43 +522,7 @@ namespace ServiceStack.Auth
                 : null; 
 
             var refreshToken = request.RefreshToken ?? refreshTokenCookie;
-            if (string.IsNullOrEmpty(refreshToken))
-                throw new ArgumentNullException(nameof(refreshToken));
-
-            JsonObject jwtPayload;
-            try
-            {
-                jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(Request, refreshToken.Split('.'));
-            }
-            catch (ArgumentException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
-
-            if (jwtPayload == null)
-                throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(Request));
-
-            jwtAuthProvider.AssertRefreshJwtPayloadIsValid(jwtPayload);
-
-            if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
-                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(Request), nameof(refreshToken));
-
-            var userId = jwtPayload["sub"];
-
-            var result = await Request.GetSessionFromSourceAsync(userId, async (authRepo, userAuth) => {
-                if (await jwtAuthProvider.IsAccountLockedAsync(authRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(Request));
-            }).ConfigAwait();
-
-            if (result == null)
-                throw new NotSupportedException("JWT RefreshTokens requires a registered IUserAuthRepository or an AuthProvider implementing IUserSessionSource");
-            
-            var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, 
-                session:result.Session, roles:result.Roles, perms:result.Permissions);
+            var accessToken = await jwtAuthProvider.CreateAccessTokenFromRefreshToken(refreshToken, Request).ConfigAwait();
 
             var response = new GetAccessTokenResponse
             {
@@ -501,7 +530,7 @@ namespace ServiceStack.Auth
             };
 
             // Don't return JWT in Response Body if Refresh Token Cookie was used
-            if (refreshTokenCookie == null && request.UseTokenCookie.GetValueOrDefault(jwtAuthProvider.UseTokenCookie) != true)
+            if (refreshTokenCookie == null && jwtAuthProvider.UseTokenCookie != true)
                 return response;
 
             var httpResult = new HttpResult(new GetAccessTokenResponse())
@@ -513,6 +542,7 @@ namespace ServiceStack.Auth
                     });
             return httpResult;
         }
+
     }
 
     internal static class JwtAuthProviderUtils

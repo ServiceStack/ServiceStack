@@ -95,11 +95,6 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        /// Whether to create a refresh token in ss-reftok Cookie, defaults to: UseTokenCookie
-        /// </summary>
-        public bool UseRefreshTokenCookie { get; set; }
-
-        /// <summary>
         /// Whether to only allow access via Bearer Token from a secure connection (default true)
         /// </summary>
         public bool RequireSecureConnection { get; set; } = true;
@@ -164,6 +159,14 @@ namespace ServiceStack.Auth
             new(nameof(AuthUserSession.UserAuthName), JwtClaimTypes.PreferredUserName),
         };
 
+        public List<string> NameClaimFieldNames { get; set; } = new() {
+            nameof(UserAuth.DisplayName),
+            "Name",
+            "FullName",
+            nameof(JwtClaimTypes.GivenName),
+            nameof(AuthUserSession.FirstName),
+        };
+
         /// <summary>
         /// Customize which claims are included in the JWT Token
         /// </summary>
@@ -204,45 +207,41 @@ namespace ServiceStack.Auth
             tokenParams.IssuerSigningKey ??= new SymmetricSecurityKey(AesUtils.CreateKey());
 
             feature.AuthResponseDecorator = AuthenticateResponseDecorator;
+            feature.RegisterResponseDecorator = RegisterResponseDecorator;
         }
 
-        public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
+        public object AuthenticateResponseDecorator(AuthFilterContext ctx)
         {
-            var req = authCtx.AuthService.Request;
+            var req = ctx.AuthService.Request;
             if (req.IsInProcessRequest())
-                return authCtx.AuthResponse;
+                return ctx.AuthResponse;
 
-            if (authCtx.AuthResponse.BearerToken == null)
-                return authCtx.AuthResponse;
+            if (ctx.AuthResponse.BearerToken == null)
+                return ctx.AuthResponse;
 
-            req.RemoveSession(authCtx.AuthService.GetSessionId());
+            req.RemoveSession(req.GetSessionId());
 
-            var httpResult = new HttpResult(authCtx.AuthResponse);
-            httpResult.AddCookie(req,
-                new Cookie(IdentityAuth.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
-                    HttpOnly = true,
-                    Secure = req.IsSecureConnection,
-                    Expires = DateTime.UtcNow.Add(ExpireTokensIn),
-                });
-            if (authCtx.AuthResponse.RefreshToken != null)
-            {
-                httpResult.AddCookie(req,
-                    new Cookie(IdentityAuth.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
-                        HttpOnly = true,
-                        Secure = req.IsSecureConnection,
-                        Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
-                    });
-            }
+            var httpResult = ctx.AuthResponse.ToTokenCookiesHttpResult(req,
+                IdentityAuth.TokenCookie,
+                DateTime.UtcNow.Add(ExpireTokensIn),
+                IdentityAuth.RefreshTokenCookie,
+                DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                ctx.ReferrerUrl);
+            return httpResult;
+        }
 
-            NotifyJwtCookiesUsed(httpResult);
+        public object RegisterResponseDecorator(RegisterFilterContext ctx)
+        {
+            var req = ctx.Request;
+            if (ctx.RegisterResponse.BearerToken == null)
+                return ctx.RegisterResponse;
 
-            var isHtml = req.ResponseContentType.MatchesContentType(MimeTypes.Html);
-            if (isHtml && authCtx.ReferrerUrl != null)
-            {
-                httpResult.StatusCode = HttpStatusCode.Redirect;
-                httpResult.Location = authCtx.ReferrerUrl;
-            }
-
+            var httpResult = ctx.RegisterResponse.ToTokenCookiesHttpResult(req,
+                IdentityAuth.TokenCookie,
+                DateTime.UtcNow.Add(ExpireTokensIn),
+                IdentityAuth.RefreshTokenCookie,
+                DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                ctx.ReferrerUrl);
             return httpResult;
         }
 
@@ -275,14 +274,6 @@ namespace ServiceStack.Auth
             throw new NotImplementedException("JWT Authenticate() should not be called directly");
         }
 
-        //Notify HttpClients which can't access HttpOnly cookies (i.e. web) that JWT Token Cookies are being used 
-        internal static void NotifyJwtCookiesUsed(IHttpResult httpResult)
-        {
-            var cookies = httpResult.Cookies.Map(cookie => cookie.Name);
-            if (cookies.Count > 0)
-                httpResult.Headers.Add(Keywords.XCookies, string.Join(",", cookies));
-        }
-
         /// <summary>
         /// Populate ServiceStack Session from JWT
         /// </summary>
@@ -305,7 +296,7 @@ namespace ServiceStack.Auth
         
         public virtual IAuthSession CreateSessionFromClaims(IRequest req, List<Claim> claims)
         {
-            var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? ServiceStack.SessionExtensions.CreateRandomSessionId();
+            var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? SessionExtensions.CreateRandomSessionId();
             var session = SessionFeature.CreateNewSession(req, sessionId);
 
             session.AuthProvider = Name;
@@ -321,7 +312,7 @@ namespace ServiceStack.Auth
             return session;
         }
 
-        protected virtual bool EnableRefreshToken() => UseRefreshTokenCookie;
+        protected virtual bool EnableRefreshToken() => true;
 
         public async Task<(TUser, IEnumerable<string>)> GetUserAndRolesAsync(IServiceBase service, string email)
         {
@@ -368,29 +359,33 @@ namespace ServiceStack.Auth
 
         protected string? CreateJwtBearerToken(IRequest req, TUser user, IEnumerable<string>? roles = null)
         {
-            var nameClaimType = TokenValidationParameters.NameClaimType ?? ClaimTypes.Name;
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, user.Id),
-                new(nameClaimType, user.UserName),
+                new(JwtClaimTypes.PreferredUserName, user.UserName),
             };
 
             var jti = ResolveJwtId?.Invoke(req);
             if (jti != null)
                 claims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
 
-            if (roles != null)
-            {
-                var roleClaim = TokenValidationParameters.RoleClaimType ?? ClaimTypes.Role;
-                foreach (var role in roles)
-                {
-                    claims.Add(new Claim(roleClaim, role));
-                }
-            }
-
-            if (MapIdentityUserToClaims.Count > 0)
+            if (NameClaimFieldNames.Count > 0 || MapIdentityUserToClaims.Count > 0)
             {
                 var existingClaimTypes = claims.Select(x => x.Type).ToSet();
+                var nameClaimType = TokenValidationParameters.NameClaimType ?? ClaimTypes.Name;
                 var userProps = new Dictionary<string, object?>(user.ToObjectDictionary(), StringComparer.OrdinalIgnoreCase);
+
+                foreach (var fieldName in NameClaimFieldNames)
+                {
+                    if (!userProps.TryGetValue(fieldName, out var fieldValue)) 
+                        continue;
+                    var valueStr = fieldValue?.ToString();
+                    if (valueStr == null) 
+                        continue;
+                    
+                    claims.Add(new Claim(nameClaimType, valueStr));
+                    existingClaimTypes.Add(nameClaimType);
+                }
+
                 foreach (var (fieldName, claimType) in MapIdentityUserToClaims)
                 {
                     if (existingClaimTypes.Contains(claimType)) 
@@ -402,6 +397,15 @@ namespace ServiceStack.Auth
                         continue;
                     claims.Add(new Claim(claimType, valueStr));
                     existingClaimTypes.Add(claimType);
+                }
+            }
+
+            if (roles != null)
+            {
+                var roleClaim = TokenValidationParameters.RoleClaimType ?? ClaimTypes.Role;
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(roleClaim, role));
                 }
             }
             
@@ -451,9 +455,6 @@ namespace ServiceStack.Auth
             if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.TokenCookie))
             {
                 var (user, roles) = await GetUserAndRolesAsync(authContext.Service, authContext.Session.UserAuthName).ConfigAwait();
-                
-                
-
                 var accessToken = CreateJwtBearerToken(authContext.Request, user, roles);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
 
@@ -465,7 +466,7 @@ namespace ServiceStack.Auth
                     });
             }
             
-            if (UseRefreshTokenCookie && authContext.Result.Cookies.All(x => x.Name != IdentityAuth.RefreshTokenCookie) && EnableRefreshToken())
+            if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.RefreshTokenCookie) && EnableRefreshToken())
             {
                 var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
 
@@ -477,7 +478,7 @@ namespace ServiceStack.Auth
                     });
             }
 
-            NotifyJwtCookiesUsed(authContext.Result);
+            JwtUtils.NotifyJwtCookiesUsed(authContext.Result);
         }
     }
     

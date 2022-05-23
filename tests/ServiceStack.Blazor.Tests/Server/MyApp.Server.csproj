@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp</RootNamespace>
+        <AssemblyName>MyApp</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
+        <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="5.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\..\..\src\ServiceStack.Server\ServiceStack.Server.Source.csproj" />
+        <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
+        <ProjectReference Include="..\Client\MyApp.Client.csproj" />
+        <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ClientDir>$(MSBuildProjectDirectory)/../Client</ClientDir>
+        <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
+        <TestsDir>$(MSBuildProjectDirectory)/../Tests</TestsDir>
+    </PropertyGroup>
+
+    <Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
+        <CallTarget Targets="Prerender" Condition="$(APP_TASKS.Contains('prerender'))" />
+    </Target>
+
+    <Target Name="Prerender">
+        <Message Text="Prerender..." />
+        <Exec Command="dotnet test --filter TestCategory=prerender --logger:&quot;console;verbosity=detailed&quot;" WorkingDirectory="$(TestsDir)" />
+    </Target>
+
+</Project>

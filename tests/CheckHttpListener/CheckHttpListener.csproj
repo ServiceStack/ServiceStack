@@ -120,7 +120,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="ServiceStack" Version="$(Version)" />
 <!--    <PackageReference Include="ServiceStack.Admin" Version="$(Version)" />-->
     <PackageReference Include="ServiceStack.Client" Version="$(Version)" />
@@ -133,7 +133,7 @@
     <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Server" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />

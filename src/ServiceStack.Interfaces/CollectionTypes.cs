@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using ServiceStack.Model;
 
 namespace ServiceStack
 {
@@ -20,7 +21,7 @@ namespace ServiceStack
     * <Ids>
     */
 
-    [CollectionDataContract(ItemName = "String")]
+    [CollectionDataContract(ItemName = nameof(String))]
     public partial class ArrayOfString : List<string>
     {
         public ArrayOfString()
@@ -31,7 +32,7 @@ namespace ServiceStack
         public ArrayOfString(params string[] args) : base(args) { }
     }
 
-    [CollectionDataContract(ItemName = "Id")]
+    [CollectionDataContract(ItemName = nameof(IHasStringId.Id))]
     public partial class ArrayOfStringId : List<string>
     {
         public ArrayOfStringId()
@@ -42,7 +43,7 @@ namespace ServiceStack
         public ArrayOfStringId(params string[] args) : base(args) { }
     }
 
-    [CollectionDataContract(ItemName = "Guid")]
+    [CollectionDataContract(ItemName = nameof(Guid))]
     public partial class ArrayOfGuid : List<Guid>
     {
         public ArrayOfGuid()
@@ -53,7 +54,7 @@ namespace ServiceStack
         public ArrayOfGuid(params Guid[] args) : base(args) { }
     }
 
-    [CollectionDataContract(ItemName = "Id")]
+    [CollectionDataContract(ItemName = nameof(IHasStringId.Id))]
     public partial class ArrayOfGuidId : List<Guid>
     {
         public ArrayOfGuidId()
@@ -75,7 +76,7 @@ namespace ServiceStack
         public ArrayOfLong(params long[] args) : base(args) { }
     }
 
-    [CollectionDataContract(ItemName = "Id")]
+    [CollectionDataContract(ItemName = nameof(IHasStringId.Id))]
     public partial class ArrayOfLongId : List<long>
     {
         public ArrayOfLongId()
@@ -97,7 +98,7 @@ namespace ServiceStack
         public ArrayOfInt(params int[] args) : base(args) { }
     }
 
-    [CollectionDataContract(ItemName = "Id")]
+    [CollectionDataContract(ItemName = nameof(IHasStringId.Id))]
     public partial class ArrayOfIntId : List<int>
     {
         public ArrayOfIntId()

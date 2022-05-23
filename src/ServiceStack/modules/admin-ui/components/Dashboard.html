@@ -1,0 +1,87 @@
+<script>App.components({ Dashboard: '#dashboard-template' })</script>
+<!--minify-->
+<template id="dashboard-template">
+<div class="rounded-lg bg-white overflow-hidden shadow mb-3">
+    <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
+    <div class="bg-white p-6">
+        <div class="sm:flex sm:items-center sm:justify-between">
+            <div class="sm:flex sm:space-x-5">
+                <div class="flex-shrink-0">
+                    <img class="mx-auto max-h-24 max-w-24 rounded-full"
+                         :src="store.authProfileUrl" alt="">
+                </div>
+                <div class="mt-4 sm:mt-0 sm:pt-1 sm:text-left">
+                    <p class="text-sm font-medium text-gray-600">Welcome back,</p>
+                    <p class="text-xl font-bold text-gray-900 sm:text-2xl mb-2">{{ store.displayName }}</p>
+                    <div v-if="store.authRoles.length" class="mb-2 flex">
+                        <span v-for="role in store.authRoles" title="Role"
+                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          {{role}}
+                        </span>
+                    </div>
+                    <div v-if="store.authPermissions.length" class="mb-2 flex">
+                        <span v-for="perm in store.authPermissions" title="Permission"
+                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          {{perm}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-center sm:mt-0">
+                <button type="button" @click="store.logout()" 
+                        class="flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<a href="../ui" title="go to /ui" class="block pt-3">
+    <h3 class="text-lg leading-6 font-medium text-gray-900">
+        API Stats
+    </h3>
+    <dl class="mt-5 grid grid-cols-1 rounded-lg bg-white hover:bg-gray-50 overflow-hidden shadow divide-y divide-gray-200 md:grid-cols-4 md:divide-y-0 md:divide-x">
+        <div class="px-4 py-5 sm:p-6">
+            <dt class="text-base font-normal text-gray-900">
+                Total APIs
+            </dt>
+            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
+                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
+                    {{api.operations.length}}
+                </div>
+            </dd>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            <dt class="text-base font-normal text-gray-900">
+                Protected APIs
+            </dt>
+            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
+                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
+                    {{api.operations.filter(op => op.requiresAuth).length}}
+                </div>
+            </dd>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            <dt class="text-base font-normal text-gray-900">
+                Built-in APIs
+            </dt>
+            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
+                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
+                    {{api.operations.filter(op => op.request.namespace.startsWith('ServiceStack')).length}}
+                </div>
+            </dd>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            <dt class="text-base font-normal text-gray-900">
+                Unique DTOs
+            </dt>
+            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
+                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
+                    {{ Object.keys(allTypes).length }}
+                </div>
+            </dd>
+        </div>
+    </dl>
+</a>
+</template>
+<!--/minify-->

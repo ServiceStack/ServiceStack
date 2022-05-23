@@ -1,5 +1,5 @@
-﻿var jsonviewer = (function(win) {
-    var cssText =
+﻿let jsonviewer = (function(win) {
+    let cssText =
       ".jsonviewer TABLE { border-collapse:collapse; border: solid 1px #ccc; clear: left; }\r\n" +
       ".jsonviewer TH { text-align: left; padding: 4px 8px; text-shadow: #fff 1px 1px -1px; background: #f1f1f1; white-space:nowrap; cursor:pointer; font-weight: bold; }\r\n" +
       ".jsonviewer TH, .jsonviewer TD, .jsonviewer TD DT, .jsonviewer TD DD { }\r\n" +
@@ -25,7 +25,7 @@
 
     document.write('<style type="text/css">' + cssText + '</style>\r\n');
 
-    var doc = document,
+    let doc = document,
         $ = function(id) { return doc.getElementById(id); },
         $$ = function(sel) { return doc.getElementsByTagName(sel); },
         $each = function(fn) { for (var i=0,len=this.length; i<len; i++) fn(i, this[i], this); },
@@ -33,11 +33,11 @@
 
     $.each = function(arr, fn) { $each.call(arr, fn); };
 
-    var splitCase = function (t) { return typeof t != 'string' ? t : titleCase(t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')); },
+    let splitCase = function (t) { return typeof t != 'string' ? t : titleCase(t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')); },
         titleCase = function (s) { return s.replace(/\w\S*/g, function (t) { return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase(); }); },
         uniqueKeys = function (m) { var h = {}; for (var i = 0, len = m.length; i < len; i++) for (var k in m[i]) if (show(k)) h[k] = k; return h; },
         keys = function (o) { var a = []; for (var k in o) if (show(k)) a.push(k); return a; };
-    var tbls = [];
+    let tbls = [];
 
     function val(m) {
         if (m == null) return '';
@@ -50,67 +50,68 @@
     function strFact(showFullDate){
 
         function shortDate(m){
-            return m.substr(0,6) == '/Date(' ? dmft(date(m)) : m;
+            return m.substr(0,6) === '/Date(' ? dmft(date(m)) : m;
         }
 
         function fullDate(m){
-            return m.substr(0,6) == '/Date(' ? dmfthm(date(m)) : m;
+            return m.substr(0,6) === '/Date(' ? dmfthm(date(m)) : m;
         }
         return showFullDate ? fullDate : shortDate;  
     }
-    str = strFact(location.hash.indexOf('show=') != -1 && location.hash.indexOf('fulldates') != -1);
+    str = strFact(location.hash.indexOf('show=') !== -1 && location.hash.indexOf('fulldates') !== -1);
     function date(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); }
     function pad(d) { return d < 10 ? '0'+d : d; }
     function dmft(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); }
     function dmfthm(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
-    function show(k) { return typeof k != 'string' || k.substr(0,2) != '__'; }
+    function show(k) { return typeof k != 'string' || k.substr(0,2) !== '__'; }
     function obj(m) {
-        var sb = '<dl>';
-        for (var k in m) if (show(k)) sb += '<dt class="ib">' + splitCase(k) + '</dt><dd>' + val(m[k]) + '</dd>';
+        let sb = '<dl>';
+        for (let k in m) if (show(k)) sb += '<dt class="ib">' + splitCase(k) + '</dt><dd>' + val(m[k]) + '</dd>';
         sb += '</dl>';
         return sb;
     }
     function arr(m) {
         if (typeof m[0] == 'string' || typeof m[0] == 'number') return m.join(', ');
-        var id=tbls.length, h=uniqueKeys(m);
-        var sb = '<table id="tbl-' + id + '"><caption></caption><thead><tr>';
+        let id=tbls.length, h=uniqueKeys(m);
+        let sb = '<table id="tbl-' + id + '"><caption></caption><thead><tr>';
         tbls.push(m);
-        var i=0;
-        for (var k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + splitCase(k) + '</th>';
+        let i=0;
+        for (let k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + splitCase(k) + '</th>';
         sb += '</tr></thead><tbody>' + makeRows(h,m) + '</tbody></table>';
         return sb;
     }
 
     function makeRows(h,m) {
-        var sb = '';
-        for (var r=0,len=m.length; r<len; r++) {
+        let sb = '';
+        for (let r=0,len=m.length; r<len; r++) {
             sb += '<tr>';
-            var row = m[r];
-            for (var k in h) if (show(k)) sb += '<td>' + val(row[k]) + '</td>';
+            let row = m[r];
+            for (let k in h) if (show(k)) sb += '<td>' + val(row[k]) + '</td>';
             sb += '</tr>';
         }  
         return sb;
     }
 
     doc.onclick = function (e) {
-        e = e || window.event, el = e.target || e.srcElement, cls = el.className;
-        if (el.tagName == 'B') el = el.parentNode;
-        if (el.tagName != 'TH') return;
-        el.className = cls == 'asc' ? 'desc' : (cls == 'desc' ? null : 'asc');
-        $.each($$('TH'), function (i, th) { if (th == el) return; th.className = null; });
+        let el = e.target || e.srcElement, cls = el.className
+        e = e || window.event
+        if (el.tagName === 'B') el = el.parentNode;
+        if (el.tagName !== 'TH') return;
+        el.className = cls === 'asc' ? 'desc' : (cls === 'desc' ? null : 'asc');
+        $.each($$('TH'), function (i, th) { if (th === el) return; th.className = null; });
         clearSel();
-        var ids = el.id.split('-'), tId = ids[1], cId = ids[2];
+        let ids = el.id.split('-'), tId = ids[1], cId = ids[2];
         if (!tbls[tId]) return;
-        var tbl = tbls[tId].slice(0), h = uniqueKeys(tbl), col = keys(h)[cId], tbody = el.parentNode.parentNode.nextSibling;
+        let tbl = tbls[tId].slice(0), h = uniqueKeys(tbl), col = keys(h)[cId], tbody = el.parentNode.parentNode.nextSibling;
         if (!el.className) { setTableBody(tbody, makeRows(h, tbls[tId])); return; }
-        var d = el.className == 'asc' ? 1 : -1;
+        let d = el.className === 'asc' ? 1 : -1;
         tbl.sort(function (a, b) { return cmp(a[col], b[col]) * d; });
         setTableBody(tbody, makeRows(h, tbl));
     };
 
     function setTableBody(tbody, html) {
         if (!isIE) { tbody.innerHTML = html; return; }
-        var temp = tbody.ownerDocument.createElement('div');
+        let temp = tbody.ownerDocument.createElement('div');
         temp.innerHTML = '<table>' + html + '</table>';
         tbody.parentNode.replaceChild(temp.firstChild.firstChild, tbody);
     }
@@ -118,17 +119,17 @@
     function clearSel() {
         if (doc.selection && doc.selection.empty) doc.selection.empty();
         else if(win.getSelection) {
-            var sel=win.getSelection();
+            let sel=win.getSelection();
             if (sel && sel.removeAllRanges) sel.removeAllRanges();
         }
     }
 
     function cmp(v1, v2){
-        var f1, f2, f1=parseFloat(v1), f2=parseFloat(v2);
-        if (!isNaN(f1) && !isNaN(f2)) v1=f1, v2=f2;
-        if (typeof v1 == 'string' && v1.substr(0,6) == '/Date(') v1=date(v1), v2=date(v2);
-        if (v1 == v2) return 0;
-        return v1 > v2 ? 1 : -1;
+        let f1=parseFloat(v1), f2=parseFloat(v2)
+        if (!isNaN(f1) && !isNaN(f2)) { v1=f1; v2=f2 }
+        if (typeof v1 == 'string' && v1.substr(0,6) === '/Date(') { v1=date(v1); v2=date(v2) }
+        if (v1 === v2) return 0
+        return v1 > v2 ? 1 : -1
     }
 
     return val;

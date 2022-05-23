@@ -1,0 +1,23 @@
+﻿@typeparam TValue
+@inherits SelectInputBase<TValue>
+
+<select id=@Id name=@Id class=@ClassNames($"form-control form-control-{Size}", CssClass()) 
+        @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes">
+        @ChildContent
+@foreach (var kvp in KvpValues())
+{
+    <option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
+}
+</select>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+    <label for=@Id>@UseLabel</label>
+}
+@if (HasErrorField)
+{
+    <div class=@ClassNames("invalid-feedback", CssClass())>@ErrorFieldMessage</div>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+    <div id=@($"{Id}-description") class="form-text">@UseHelp</div>
+}

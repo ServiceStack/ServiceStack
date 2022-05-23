@@ -29,11 +29,13 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
+using ServiceStack.Internal;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -43,7 +45,6 @@ namespace ServiceStack.Host.Handlers
 {
     public class StaticFileHandler : HttpAsyncTaskHandler
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
         public static int DefaultBufferSize = 1024 * 1024;
 
         public static Action<IRequest, IResponse, IVirtualFile> ResponseFilter { get; set; }
@@ -79,14 +80,13 @@ namespace ServiceStack.Host.Handlers
         private static DateTime DefaultFileModified { get; set; }
         private static string DefaultFilePath { get; set; }
         private static byte[] DefaultFileContents { get; set; }
-        private static byte[] DefaultFileContentsGzip { get; set; }
-        private static byte[] DefaultFileContentsDeflate { get; set; }
         public IVirtualNode VirtualNode { get; set; }
 
+        private static ConcurrentDictionary<string, byte[]> defaultFileCacheZip = new();
+        
         /// <summary>
         /// Keep default file contents in-memory
         /// </summary>
-        /// <param name="defaultFilePath"></param>
         public static void SetDefaultFile(string defaultFilePath, byte[] defaultFileContents, DateTime defaultFileModified)
         {
             try
@@ -97,7 +97,7 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                log.Error(ex.Message, ex);
+                LogManager.GetLogger(typeof(StaticFileHandler)).Error(ex.Message, ex);
             }
         }
 
@@ -145,7 +145,7 @@ namespace ServiceStack.Host.Handlers
                         if (file == null)
                         {
                             var msg = ErrorMessages.FileNotExistsFmt.LocalizeFmt(request, request.PathInfo.SafeInput());
-                            log.Warn($"{msg} in path: {originalFileName}");
+                            LogManager.GetLogger(GetType()).Warn($"{msg} in path: {originalFileName}");
                             response.StatusCode = 404;
                             response.StatusDescription = msg;
                             return;
@@ -190,27 +190,15 @@ namespace ServiceStack.Host.Handlers
                         if (file.LastModified > DefaultFileModified)
                             SetDefaultFile(DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
 
-                        if (!shouldCompress)
+                        var compressor = shouldCompress ? StreamCompressors.Get(encoding) : null;
+                        if (compressor == null)
                         {
                             await r.OutputStream.WriteAsync(DefaultFileContents).ConfigAwait();
                             await r.OutputStream.FlushAsync().ConfigAwait();
                         }
                         else
                         {
-                            byte[] zipBytes = null;
-                            if (encoding == CompressionTypes.GZip)
-                            {
-                                zipBytes = DefaultFileContentsGzip ??= DefaultFileContents.CompressBytes(encoding);
-                            }
-                            else if (encoding == CompressionTypes.Deflate)
-                            {
-                                zipBytes = DefaultFileContentsDeflate ??= DefaultFileContents.CompressBytes(encoding);
-                            }
-                            else
-                            {
-                                zipBytes = DefaultFileContents.CompressBytes(encoding);
-                            }
-
+                            var zipBytes = defaultFileCacheZip.GetOrAdd(encoding, _ => compressor.Compress(DefaultFileContents));
                             r.AddHeader(HttpHeaders.ContentEncoding, encoding);
                             r.SetContentLength(zipBytes.Length);
                             await r.OutputStream.WriteAsync(zipBytes).ConfigAwait();
@@ -262,11 +250,11 @@ namespace ServiceStack.Host.Handlers
                             outputStream = outputStream.CompressStream(encoding);
                             await fs.CopyToAsync(outputStream).ConfigAwait();
                             await outputStream.FlushAsync().ConfigAwait();
-                            outputStream.Close();
+                            await outputStream.DisposeAsync();
                         }
                     }
                 }
-#if !NETSTANDARD2_0
+#if !NETCORE
                 catch (System.Net.HttpListenerException ex)
                 {
                     if (ex.ErrorCode == 1229)
@@ -287,7 +275,7 @@ namespace ServiceStack.Host.Handlers
                         return;
                     }
                     
-                    log.ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");
+                    LogManager.GetLogger(GetType()).ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");
                     throw new HttpException(403, "Forbidden.");
                 }
             }).ConfigAwait();
@@ -295,8 +283,9 @@ namespace ServiceStack.Host.Handlers
 
         static Dictionary<string, string> CreateFileIndex(string appFilePath)
         {
-            log.Debug("Building case-insensitive fileIndex for Mono at: "
-                      + appFilePath);
+            var log = LogManager.GetLogger(typeof(StaticFileHandler));
+            if (log.IsDebugEnabled)
+                log.Debug("Building case-insensitive fileIndex for Mono at: " + appFilePath);
 
             var caseInsensitiveLookup = new Dictionary<string, string>();
             foreach (var file in GetFiles(appFilePath))

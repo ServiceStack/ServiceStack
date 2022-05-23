@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Caching;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -19,22 +20,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeTearDown]
         public void OneTimeTearDown() => MemoryStreamFactory.UseRecyclableMemoryStream = hold;
 
+        private static void DoesCompress(IStreamCompressor compressor, string text)
+        {
+            var zipBytes = compressor.Compress(text);
+            var unzip = compressor.Decompress(zipBytes);
+            Assert.That(unzip, Is.EqualTo(text));
+        }
+
+#if NET6_0_OR_GREATER
+        [Test]
+        public void Can_zip_and_unzip_bytes_using_BrotliStream()
+        {
+            DoesCompress(StreamCompressors.GetRequired(CompressionTypes.Brotli), "hello zip");
+        }
+#endif
+
         [Test]
         public void Can_zip_and_unzip_bytes_using_DeflateStream()
         {
-            var text = "hello zip";
-            var zipBytes = StreamExt.DeflateProvider.Deflate(text);
-            var unzip = StreamExt.DeflateProvider.Inflate(zipBytes);
-            Assert.That(unzip, Is.EqualTo(text));
+            DoesCompress(StreamCompressors.GetRequired(CompressionTypes.Deflate), "hello zip");
         }
 
         [Test]
         public void Can_zip_and_unzip_bytes_using_Gzip()
         {
-            var text = "hello zip";
-            var zipBytes = StreamExt.GZipProvider.GZip(text);
-            var unzip = StreamExt.GZipProvider.GUnzip(zipBytes);
-            Assert.That(unzip, Is.EqualTo(text));
+            DoesCompress(StreamCompressors.GetRequired(CompressionTypes.GZip), "hello zip");
         }
     }
 

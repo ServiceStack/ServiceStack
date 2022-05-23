@@ -1,4 +1,4 @@
-#if NET472 || NETSTANDARD2_0
+#nullable enable
 /*
 The MIT License (MIT)
 
@@ -514,4 +514,3 @@ namespace ServiceStack.AsyncEx
         }
     }
 }
-#endif

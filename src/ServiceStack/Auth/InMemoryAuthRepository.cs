@@ -88,12 +88,10 @@ namespace ServiceStack.Auth
                 return TypeConstants.EmptyTask;
             }
 
-#if NET472 || NETSTANDARD2_0
-            public async Task<IRedisClientFacadeAsync> GetClientAsync(CancellationToken token = default)
+            public Task<IRedisClientFacadeAsync> GetClientAsync(CancellationToken token = default)
             {
-                return new InMemoryClientFacadeAsync(root);
+                return Task.FromResult((IRedisClientFacadeAsync)new InMemoryClientFacadeAsync(root));
             }
-#endif
         }
 
         internal class InMemoryClientFacade : IRedisClientFacade
@@ -283,7 +281,6 @@ namespace ServiceStack.Auth
             }
         }
 
-#if NET472 || NETSTANDARD2_0
         internal class InMemoryClientFacadeAsync : IRedisClientFacadeAsync
         {
             private readonly IMemoryAuthRepository root;
@@ -477,7 +474,6 @@ namespace ServiceStack.Auth
 
             public ValueTask DisposeAsync() => default;
         }
-#endif
         
     }
     

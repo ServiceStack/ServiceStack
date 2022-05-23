@@ -141,13 +141,12 @@ namespace ServiceStack.Caching
 
         private static bool UpdateIfExists<T>(IDbConnection db, string key, T value)
         {
-            var exists = db.UpdateOnly(new TCacheEntry
+            var exists = db.UpdateOnly(() => new TCacheEntry
                 {
                     Id = key,
                     Data = db.Serialize(value),
                     ModifiedDate = DateTime.UtcNow,
                 },
-                onlyFields: q => new { q.Data, q.ModifiedDate },
                 @where: q => q.Id == key) == 1;
 
             return exists;
@@ -155,14 +154,13 @@ namespace ServiceStack.Caching
 
         private static bool UpdateIfExists<T>(IDbConnection db, string key, T value, DateTime expiresAt)
         {
-            var exists = db.UpdateOnly(new TCacheEntry
+            var exists = db.UpdateOnly(() => new TCacheEntry
                 {
                     Id = key,
                     Data = db.Serialize(value),
                     ExpiryDate = expiresAt,
                     ModifiedDate = DateTime.UtcNow,
                 },
-                onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
                 @where: q => q.Id == key) == 1;
 
             return exists;
@@ -195,13 +193,12 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new TCacheEntry
+                var exists = db.UpdateOnly(() => new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    onlyFields: q => new { q.Data, q.ModifiedDate },
                     where: q => q.Id == key) == 1;
 
                 if (!exists)
@@ -255,14 +252,13 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new TCacheEntry
+                var exists = db.UpdateOnly(() => new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
                         ExpiryDate = expiresAt,
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
                     where: q => q.Id == key) == 1;
 
                 if (!exists)
@@ -317,14 +313,13 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new TCacheEntry
+                var exists = db.UpdateOnly(() => new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
                         ExpiryDate = DateTime.UtcNow.Add(expiresIn),
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
                     where: q => q.Id == key) == 1;
 
                 if (!exists)

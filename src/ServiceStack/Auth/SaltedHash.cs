@@ -45,7 +45,7 @@ namespace ServiceStack.Auth
             Salt = new byte[SalthLength];
 
             var random = RandomNumberGenerator.Create();
-#if !NETSTANDARD2_0
+#if !NETCORE
             random.GetNonZeroBytes(Salt);
 #else
             random.GetBytes(Salt);
@@ -105,6 +105,7 @@ namespace ServiceStack.Auth
         }
 
         public static string ToSha256Hash(this string value) => HexHash(SHA256.Create(), value);
+        public static string ToMd5Hash(this string value) => HexHash(MD5.Create(), value);
 
         public static byte[] ToSha256HashBytes(this byte[] bytes)
         {

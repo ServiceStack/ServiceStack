@@ -1,0 +1,101 @@
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+
+
+.relative { position: relative }
+.absolute { position: absolute }
+button.close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0;
+    margin: 0;
+    background: rgba(0,0,0,0);
+    border: none;
+}
+button.close i {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='rgb(156 163 175)' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'%3E%3C/path%3E%3C/svg%3E");
+}
+button.close:hover i {
+    background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='rgb(107 114 128)' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'%3E%3C/path%3E%3C/svg%3E");
+}
+
+/* useful tailwind presets */
+.cursor-pointer{cursor:pointer}
+.max-w-full{max-width:100%}
+.max-w-min{max-width:min-content}
+.max-w-max{max-width:max-content}
+.max-w-fit{max-width:fit-content}
+.max-w-prose{max-width:65ch}
+.max-w-screen-xs{max-width:20rem}
+.max-w-screen-sm{max-width:640px}
+.max-w-screen-md{max-width:768px}
+.max-w-screen-lg{max-width:1024px}
+.max-w-screen-xl{max-width:1280px}
+.max-w-screen-2xl{max-width:1536px}
+.max-w-xl{max-width:36rem}
+.w-prose{width:65ch}
+.w-screen-xs{width:20rem}
+.w-screen-sm{width:640px}
+.w-screen-md{width:768px}
+.w-screen-lg{width:1024px}
+.w-screen-xl{width:1280px}
+.w-screen-2xl{width:1536px}
+.w-xl{width:36rem}
+.hover\:shadow-2xl:hover {
+    --tw-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+}
+
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+

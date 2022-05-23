@@ -5,13 +5,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using static System.String;
-#if SL5
-using ServiceStack.Text;
-#else
 using System.Collections.Concurrent;
 using ServiceStack.Text;
-
-#endif
 
 namespace ServiceStack
 {
@@ -125,11 +120,10 @@ namespace ServiceStack
                 endIndex = fullname.Length;
 
             char[] op = new char[endIndex - startIndex + genericPrefixIndex];
-            char cur;
 
             for(int i = startIndex; i < endIndex; i++)
             {
-                cur = fullname[i];
+                var cur = fullname[i];
                 op[i - startIndex + genericPrefixIndex] = cur != '+' ? cur : '.';
             }
 
@@ -150,14 +144,14 @@ namespace ServiceStack
                     sb.Clear();
                     sb.Append(type.Name.Remove(genericMarker));
                 }
-                sb.Append("<");
+                sb.Append('<');
                 var typeParameters = type.GetGenericArguments();
                 for (var i = 0; i < typeParameters.Length; ++i)
                 {
                     var paramName = typeParameters[i].Name;
                     sb.Append(i == 0 ? paramName : "," + paramName);
                 }
-                sb.Append(">");
+                sb.Append('>');
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }
@@ -178,7 +172,7 @@ namespace ServiceStack
             foreach (var arg in type.GetGenericArguments())
             {
                 if (sb.Length > 0)
-                    sb.Append(",");
+                    sb.Append(',');
 
                 sb.Append(arg.ExpandTypeName());
             }
@@ -187,7 +181,12 @@ namespace ServiceStack
             return fullName;
         }
 
-        public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null)
+        public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null) =>
+            requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute != null
+                ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationName()}"
+                : null);
+        
+        public static string ToUrl(this object requestDto, string httpMethod, Func<Type, string> fallback)
         {
             httpMethod = httpMethod.ToUpper();
             var urlFilter = requestDto as IUrlFilter;
@@ -196,13 +195,13 @@ namespace ServiceStack
             var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
             if (requestRoutes.Count == 0)
             {
-                if (formatFallbackToPredefinedRoute == null)
+                if (fallback == null)
                     throw new InvalidOperationException($"There are no rest routes mapped for '{requestType}' type. "
                         + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and "
                         + "not with routes registered in the IAppHost!)");
 
-                var predefinedRoute = $"/{formatFallbackToPredefinedRoute}/reply/{requestType.GetOperationName()}";
-                if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS" || httpMethod == "HEAD")
+                var predefinedRoute = fallback(requestType);
+                if (httpMethod is "GET" or "DELETE" or "OPTIONS" or "HEAD")
                 {
                     var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
                     if (queryProperties.Count > 0)

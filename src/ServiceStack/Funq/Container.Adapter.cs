@@ -41,6 +41,7 @@ namespace Funq
         /// Register an autowired dependency as a separate type
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TAs"></typeparam>
         public IRegistration<TAs> RegisterAutoWiredAs<T, TAs>()
             where T : TAs
         {
@@ -53,6 +54,7 @@ namespace Funq
         /// Register an autowired dependency as a separate type
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TAs"></typeparam>
         public IRegistration<TAs> RegisterAutoWiredAs<T, TAs>(string name)
             where T : TAs
         {
@@ -65,6 +67,7 @@ namespace Funq
         /// Alias for RegisterAutoWiredAs
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TAs"></typeparam>
         public IRegistration<TAs> RegisterAs<T, TAs>()
             where T : TAs
         {
@@ -75,6 +78,7 @@ namespace Funq
         /// Alias for RegisterAutoWiredAs
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TAs"></typeparam>
         public IRegistration<TAs> RegisterAs<T, TAs>(string name)
             where T : TAs
         {
@@ -184,10 +188,9 @@ namespace Funq
         }
 
         /// <summary>
-        /// Generates a function which creates and auto-wires <see cref="TService"/>.
+        /// Generates a function which creates and auto-wires TService.
         /// </summary>
         /// <typeparam name="TService"></typeparam>
-        /// <param name="lambdaParam"></param>
         /// <returns></returns>
         public static Func<Container, TService> GenerateAutoWireFn<TService>()
         {
@@ -220,7 +223,6 @@ namespace Funq
         /// The auto-wiring progress is also cached to be faster 
         /// when calling next time with the same type.
         /// </summary>
-        /// <param name="instance"></param>
         public void AutoWire(Container container, object instance)
         {
             var instanceType = instance.GetType();

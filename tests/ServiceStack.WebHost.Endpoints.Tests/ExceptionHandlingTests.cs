@@ -477,14 +477,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var json = PredefinedJsonUrl<ExceptionWithResponseStatus>().GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException webEx)
+            catch (Exception ex)
             {
-                var errorResponse = ((HttpWebResponse) webEx.Response);
-                Assert.That(webEx.IsAny400());
-                Assert.That(!webEx.IsAny500());
-                var body = errorResponse.GetResponseStream().ReadToEnd();
-                Assert.That(body, Is.EqualTo(
-                    "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\",\"errors\":[]}}"));
+                Assert.That(ex.IsAny400());
+
+                if (ex is WebException webEx)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    Assert.That(webEx.IsAny400());
+                    Assert.That(!webEx.IsAny500());
+                    var body = errorResponse.GetResponseStream().ReadToEnd();
+                    Assert.That(body, Is.EqualTo(
+                        "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\",\"errors\":[]}}"));
+                }
             }
         }
 
@@ -496,11 +501,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var json = PredefinedJsonUrl<ExceptionNoResponseStatus>().GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException webEx)
+            catch (Exception ex)
             {
-                var errorResponse = ((HttpWebResponse) webEx.Response);
-                var body = errorResponse.GetResponseStream().ReadToEnd();
-                Assert.That(body, Is.EqualTo("{}"));
+                Assert.That(ex.IsAny400());
+
+                if (ex is WebException webEx)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    var body = errorResponse.GetResponseStream().ReadToEnd();
+                    Assert.That(body, Is.EqualTo("{}"));
+                }
             }
         }
 
@@ -512,13 +522,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var json = PredefinedJsonUrl<ExceptionNoResponseDto>().GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException webEx)
+            catch (Exception ex)
             {
-                var errorResponse = ((HttpWebResponse) webEx.Response);
-                var body = errorResponse.GetResponseStream().ReadToEnd();
-                Assert.That(body,
-                    Does.StartWith(
-                        "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                Assert.That(ex.IsAny400());
+
+                if (ex is WebException webEx)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    var body = errorResponse.GetResponseStream().ReadToEnd();
+                    Assert.That(body,
+                        Does.StartWith(
+                            "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                }
             }
         }
 
@@ -530,13 +545,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var json = PredefinedJsonUrl<ExceptionReturnVoid>().GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException webEx)
+            catch (Exception ex)
             {
-                var errorResponse = ((HttpWebResponse) webEx.Response);
-                var body = errorResponse.GetResponseStream().ReadToEnd();
-                Assert.That(body,
-                    Does.StartWith(
-                        "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.BadRequest));
+
+                if (ex is WebException webEx)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    var body = errorResponse.GetResponseStream().ReadToEnd();
+                    Assert.That(body,
+                        Does.StartWith(
+                            "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                }
             }
 
             try
@@ -566,19 +586,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var json = PredefinedJsonUrl<CustomFieldHttpError>().GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException webEx)
+            catch (Exception ex)
             {
-                var errorResponse = ((HttpWebResponse) webEx.Response);
-                Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
-                Assert.That(webEx.IsAny500());
-                Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.InternalServerError));
 
-                var body = errorResponse.GetResponseStream().ReadToEnd();
-                var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
-                var errorStatus = customResponse.ResponseStatus;
-                Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
-                Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
-                Assert.That(customResponse.Custom, Is.Null);
+                if (ex is WebException webEx)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
+                    Assert.That(webEx.IsAny500());
+                    Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+
+                    var body = errorResponse.GetResponseStream().ReadToEnd();
+                    var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
+                    var errorStatus = customResponse.ResponseStatus;
+                    Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
+                    Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
+                    Assert.That(customResponse.Custom, Is.Null);
+                }
             }
         }
 
@@ -593,12 +618,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException webEx)
+            catch (Exception ex)
             {
-                var errorResponse = ((HttpWebResponse) webEx.Response);
-                Assert.That((int) errorResponse.StatusCode, Is.EqualTo(406));
-                Assert.That(webEx.IsAny400());
-                Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotAcceptable));
+                
+                if (ex is WebException webEx)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    Assert.That((int) errorResponse.StatusCode, Is.EqualTo(406));
+                    Assert.That(webEx.IsAny400());
+                    Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
+                }
             }
         }
 
@@ -610,19 +640,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var json = PredefinedJsonUrl<DirectHttpError>().GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException webEx)
+            catch (Exception ex)
             {
-                var errorResponse = ((HttpWebResponse) webEx.Response);
-                Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
-                Assert.That(webEx.IsAny500());
-                Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.InternalServerError));
 
-                var body = errorResponse.GetResponseStream().ReadToEnd();
-                var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
-                var errorStatus = customResponse.ResponseStatus;
-                Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
-                Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
-                Assert.That(customResponse.Custom, Is.EqualTo("Not Ignored"));
+                if (ex is WebException webEx)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
+                    Assert.That(webEx.IsAny500());
+                    Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+
+                    var body = errorResponse.GetResponseStream().ReadToEnd();
+                    var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
+                    var errorStatus = customResponse.ResponseStatus;
+                    Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
+                    Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
+                    Assert.That(customResponse.Custom, Is.EqualTo("Not Ignored"));
+                }
             }
         }
 
@@ -672,9 +707,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebException ex)
             {
                 Assert.That(ex.IsAny400());
+#if NETFX
                 var json = ex.GetResponseBody();
                 var response = json.FromJson<ErrorResponse>();
                 Assert.That(response.ResponseStatus.Message, Is.EqualTo("ExceptionCaught"));
+#endif                
             }
         }
 
@@ -696,10 +733,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var json = Config.ListeningOn.AppendPath("/alwaysthrowsjsscope").GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException e)
+            catch (Exception e)
             {
+                Assert.That(e.IsAny400());
+#if NETFX
                 var json = e.GetResponseBody();
                 Assert.That(json, Does.Contain("response_status"));
+#endif                
             }
         }
     }

@@ -69,12 +69,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.ListeningOn.AppendPath("custom-method","result").AddQueryParam("id", 1)
                 .SendStringToUrl(method: "HEAD",
-                    requestFilter: req => { req.Method = "HEAD"; }, 
                     responseFilter: res => {
-                        Assert.That(res.Headers["X-Method"], Is.EqualTo("HEAD"));
-                        Assert.That(res.Headers["X-Id"], Is.EqualTo("1"));
-                        Assert.That(res.ContentType, Is.EqualTo("video/mp4"));
-                        Assert.That(res.ContentLength, Is.EqualTo(100));
+                        Assert.That(res.GetHeader("X-Method"), Is.EqualTo("HEAD"));
+                        Assert.That(res.GetHeader("X-Id"), Is.EqualTo("1"));
+                        Assert.That(res.MatchesContentType("video/mp4"));
+                        Assert.That(res.GetContentLength(), Is.EqualTo(100));
                     });
 
             Assert.That(response, Is.Empty);
@@ -85,12 +84,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.ListeningOn.AppendPath("custom-method","headers").AddQueryParam("id", 1)
                 .SendStringToUrl(method: "HEAD",
-                    requestFilter: req => { req.Method = "HEAD"; }, 
                     responseFilter: res => {
-                        Assert.That(res.Headers["X-Method"], Is.EqualTo("HEAD"));
-                        Assert.That(res.Headers["X-Id"], Is.EqualTo("1"));
-                        Assert.That(res.ContentType, Is.EqualTo("video/mp4"));
-                        Assert.That(res.ContentLength, Is.EqualTo(100));
+                        Assert.That(res.GetHeader("X-Method"), Is.EqualTo("HEAD"));
+                        Assert.That(res.GetHeader("X-Id"), Is.EqualTo("1"));
+                        Assert.That(res.MatchesContentType("video/mp4"));
+                        Assert.That(res.GetContentLength(), Is.EqualTo(100));
                     });
 
             Assert.That(response, Is.Empty);

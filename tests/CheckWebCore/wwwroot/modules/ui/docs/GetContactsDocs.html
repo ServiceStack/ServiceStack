@@ -1,0 +1,41 @@
+<script>
+(function (){
+    let links = {
+        GetContact:    'Retrieve a single contact',
+        GetContacts:   'Retrieve all contacts',
+        CreateContact: 'Create a Contact',
+        DeleteContact: 'Delete Contact',
+        UpdateContact: 'Update a Contact',
+    }
+    let apiNames = Object.keys(links)
+    function ContactsDocs({ op, routes }) {
+        return {
+            $template: '#contacts-docs',
+            get op() { return resolve(op) }, 
+            routes,
+            links,
+            get otherLinks() { return apiNames.filter(x => x !== this.op.request.name)
+                .reduce((acc,x) => { acc[x] = links[x]; return acc }, {}) },
+        }
+    }
+    App.components(apiNames.reduce((acc, x) => { acc[x + 'Docs'] = ContactsDocs; return acc }, {}))
+})() 
+</script>
+<template id="contacts-docs">
+<div class="mx-auto max-w-screen-md text-center py-8">
+    <h2 class="text-center text-3xl">{{humanize(op.request.name)}}</h2>
+    <p class="text-gray-500 text-lg my-3">{{links[op.request.name]}}</p>
+    
+    <h4 class="my-3 text-xl font-normal">Other Contact Operations</h4>
+    <div class="flex justify-center text-left">
+        <table>
+            <tr v-for="(info,name) in otherLinks">
+                <th class="text-right font-medium pr-3">
+                    <a v-href="{ op:name }" class="text-blue-800">{{humanize(name)}}</a>
+                </th>
+                <td class="text-gray-500">{{info}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+</template>

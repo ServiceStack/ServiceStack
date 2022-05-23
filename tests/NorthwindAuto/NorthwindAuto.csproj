@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MyApp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+
+    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="admin-ui\assets" />
+    <Folder Include="shared\css" />
+    <Folder Include="ui\assets" />
+  </ItemGroup>
+
+</Project>

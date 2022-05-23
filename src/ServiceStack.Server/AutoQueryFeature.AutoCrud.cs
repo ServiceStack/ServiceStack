@@ -940,11 +940,11 @@ namespace ServiceStack
                             }
                         }
                     }
-
-                    expr = StringBuilderCache.ReturnAndFree(sb);
-                    exprParams = exprParamsList;
-                    return true;
                 }
+
+                expr = StringBuilderCache.ReturnAndFree(sb);
+                exprParams = exprParamsList;
+                return true;
             }
 
             expr = null;

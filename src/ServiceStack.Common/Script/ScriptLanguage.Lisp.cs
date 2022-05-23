@@ -1059,7 +1059,7 @@ namespace ServiceStack.Script
                                 ? fnCompareTo(x, y)
                                 : DynamicInt.Instance.Convert(I.invoke(fndel, x, y));
 
-                public bool Equals(object x, object y) =>
+                public new bool Equals(object x, object y) =>
                     fnclosure != null
                         ? I.invoke(fnclosure, x, y).ConvertTo<bool>()
                         : fnmacro != null
@@ -1077,7 +1077,7 @@ namespace ServiceStack.Script
                 if (!force && cachedContents != null) 
                     return cachedContents.Value;
 
-                var text = url.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp));
+                var text = url.GetStringFromUrl(requestFilter: req => req.With(c => c.UserAgent = "Script" + nameof(Lisp)));
                 WriteCacheFile(scope, vfsCache, cachedPath, text.AsMemory());
                 return text.AsMemory();
             }

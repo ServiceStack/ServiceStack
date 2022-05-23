@@ -35,7 +35,9 @@ namespace ServiceStack.Metadata
             var opTemplate = StringBuilderCache.Allocate();
             opTemplate.Append($"<tr><th data-tags=\"" + 
                 op.Tags.Map(x => x.Name).Join(",") + 
-                "\">" + icons + "{0}</th>");
+                "\">" + icons + 
+                (HostContext.AppHost.HasUi() ? "<a href='ui/{0}'>{0}</a>" : "{0}") +
+                "</th>");
             foreach (var config in MetadataConfig.AvailableFormatConfigs)
             {
                 var uri = baseUrl.CombineWith(config.DefaultMetadataUri);
@@ -132,7 +134,7 @@ namespace ServiceStack.Metadata
                 ForEachItem = RenderRow
             }.ToString();
 
-#if !NETSTANDARD2_0
+#if !NETCORE
             var xsdsPart = new ListTemplate
             {
                 Title = "XSDS:",

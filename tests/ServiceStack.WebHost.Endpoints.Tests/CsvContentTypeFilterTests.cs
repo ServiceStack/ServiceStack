@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_movies_using_csv_reply_endpoint()
         {
-            var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/reply/Movies");
+            var req = WebRequest.CreateHttp(ListeningOn + "csv/reply/Movies");
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_movies_using_csv_Accept_and_RestPath()
         {
-            var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "all-movies");
+            var req = WebRequest.CreateHttp(ListeningOn + "all-movies");
             req.Accept = MimeTypes.Csv;
 
             var res = req.GetResponse();
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_Hello_using_csv_reply_endpoint()
         {
-            var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/reply/Hello?Name=World!");
+            var req = WebRequest.CreateHttp(ListeningOn + "csv/reply/Hello?Name=World!");
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
@@ -133,7 +133,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_Hello_using_csv_Accept_and_RestPath()
         {
-            var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "hello/World!");
+            var req = WebRequest.CreateHttp(ListeningOn + "hello/World!");
             req.Accept = MimeTypes.Csv;
 
             var res = req.GetResponse();
@@ -149,7 +149,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_CSV_movies_using_csv_reply_Path()
         {
-            var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/reply/Movies");
+            var req = WebRequest.CreateHttp(ListeningOn + "csv/reply/Movies");
             req.Accept = "application/xml";
 
             var res = req.GetResponse();
