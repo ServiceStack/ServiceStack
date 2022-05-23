@@ -876,7 +876,7 @@ namespace ServiceStack
         /// <returns></returns>
         public virtual IRedisClient GetRedisClient(IRequest req = null)
         {
-            return Container.TryResolve<IRedisClientsManager>().GetClient();
+            return Container.TryResolve<IRedisClientsManager>()?.GetClient();
         }
 
         /// <summary>
