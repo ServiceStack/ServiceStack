@@ -526,9 +526,10 @@ export function createForms(Meta, css, ui) {
         },
         /** @param {InputInfo[]} formLayout
             @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
+        
         getGridInputs(formLayout, f) {
             if (!formLayout) return []
-            return formLayout.map(input => this.getGridInput(input, f))
+            return formLayout.map(input => this.getGridInput(input, f)).filter(x => !!x)
         },
         /** @param {InputInfo} input
             @param {(args:{id:string,input:InputInfo,rowClass:string}) => void} [f] */
