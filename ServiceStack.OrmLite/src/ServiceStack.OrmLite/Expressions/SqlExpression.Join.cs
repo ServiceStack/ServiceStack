@@ -370,7 +370,7 @@ namespace ServiceStack.OrmLite
                                 if (fieldDef.IsRowVersion)
                                 {
                                     sbSelect.Append(DialectProvider.GetRowVersionSelectColumn(fieldDef,
-                                        DialectProvider.GetTableName(tableAlias ?? tableDef.ModelName, tableDef.Schema)));
+                                        DialectProvider.GetQuotedTableName(tableAlias ?? tableDef.ModelName, tableDef.Schema)));
                                 }
                                 else
                                 {
