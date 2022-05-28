@@ -6,6 +6,9 @@ on:
       - 'ServiceStack.Azure/**'
       - '.github/workflows/build-azure.yml'
 
+permissions:
+  contents: read
+
 jobs:
   build-azure:
     runs-on: ubuntu-20.04

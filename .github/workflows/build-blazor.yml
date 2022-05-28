@@ -6,6 +6,9 @@ on:
       - 'ServiceStack.Blazor/**'
       - '.github/workflows/build-blazor.yml'
 
+permissions:
+  contents: read
+
 jobs:
   build-blazor:
     runs-on: ubuntu-20.04

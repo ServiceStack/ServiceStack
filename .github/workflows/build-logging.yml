@@ -6,6 +6,9 @@ on:
       - 'ServiceStack.Logging/**'
       - '.github/workflows/build-logging.yml'
 
+permissions:
+  contents: read
+
 jobs:
   build-logging:
     runs-on: ubuntu-20.04
