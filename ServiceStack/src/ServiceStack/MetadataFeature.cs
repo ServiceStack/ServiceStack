@@ -28,6 +28,7 @@ namespace ServiceStack
         public Action<OperationControl> DetailPageFilter { get; set; }
         
         public List<Action<AppMetadata>> AppMetadataFilters { get; } = new();
+        public List<Action<AppMetadata>> AfterAppMetadataFilters { get; } = new();
 
         public bool ShowResponseStatusInMetadataPages { get; set; }
         
@@ -271,6 +272,11 @@ namespace ServiceStack
                     if (op.Tags != null && feature.TagFilter != null)
                         op.Tags = op.Tags.Map(feature.TagFilter);
                 }
+            }
+
+            foreach (var fn in feature.AfterAppMetadataFilters)
+            {
+                fn(response);
             }
 
             return response;

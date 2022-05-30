@@ -47,8 +47,12 @@ namespace ServiceStack
 
         public static void AddToAppMetadata(this IAppHost appHost, Action<AppMetadata> fn)
         {
-            var filters = appHost.GetPlugin<MetadataFeature>()?.AppMetadataFilters;
-            filters?.Add(fn);
+            var feature = appHost.GetPlugin<MetadataFeature>();
+            if (feature == null)
+                return;
+            
+            if (fn != null)
+                feature.AppMetadataFilters.Add(fn);
         }
     }
     
