@@ -43,6 +43,9 @@ namespace ServiceStack.Auth
             Init();
         }
 
+        public CredentialsAuthProvider(IAppSettings appSettings, string authProvider)
+            : this(appSettings, "/auth/" + authProvider, authProvider) {}
+
         public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
             : base(appSettings, authRealm, authProvider)
         {
@@ -58,7 +61,7 @@ namespace ServiceStack.Auth
         protected virtual void Init()
         {
             Sort = -1;
-            Label = "Credentials";
+            Label = Provider.ToPascalCase();
             FormLayout = new() {
                 Input.For<Authenticate>(x => x.UserName, c =>
                 {
