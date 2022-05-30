@@ -14,6 +14,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -89,6 +90,7 @@ namespace ServiceStack.Redis
         internal IHandleClientDispose ClientManager { get; set; }
 
         internal long LastConnectedAtTimestamp;
+        public long LastConnectedSecs => (Stopwatch.GetTimestamp() - LastConnectedAtTimestamp) / Stopwatch.Frequency;
 
         public long Id { get; set; }
 
