@@ -8,123 +8,78 @@ namespace ServiceStack.Redis
         /// <summary>
         /// Total number of commands sent
         /// </summary>
-        public static long TotalCommandsSent
-        {
-            get { return Interlocked.Read(ref RedisState.TotalCommandsSent); }
-        }
+        public static long TotalCommandsSent => Interlocked.Read(ref RedisState.TotalCommandsSent);
 
         /// <summary>
         /// Number of times the Redis Client Managers have FailoverTo() either by sentinel or manually
         /// </summary>
-        public static long TotalFailovers
-        {
-            get { return Interlocked.Read(ref RedisState.TotalFailovers); }
-        }
+        public static long TotalFailovers => Interlocked.Read(ref RedisState.TotalFailovers);
 
         /// <summary>
         /// Number of times a Client was deactivated from the pool, either by FailoverTo() or exceptions on client
         /// </summary>
-        public static long TotalDeactivatedClients
-        {
-            get { return Interlocked.Read(ref RedisState.TotalDeactivatedClients); }
-        }
+        public static long TotalDeactivatedClients => Interlocked.Read(ref RedisState.TotalDeactivatedClients);
 
         /// <summary>
         /// Number of times connecting to a Sentinel has failed
         /// </summary>
-        public static long TotalFailedSentinelWorkers
-        {
-            get { return Interlocked.Read(ref RedisState.TotalFailedSentinelWorkers); }
-        }
+        public static long TotalFailedSentinelWorkers => Interlocked.Read(ref RedisState.TotalFailedSentinelWorkers);
 
         /// <summary>
         /// Number of times we've forced Sentinel to failover to another master due to 
         /// consecutive errors beyond sentinel.WaitBeforeForcingMasterFailover
         /// </summary>
-        public static long TotalForcedMasterFailovers
-        {
-            get { return Interlocked.Read(ref RedisState.TotalForcedMasterFailovers); }
-        }
+        public static long TotalForcedMasterFailovers => Interlocked.Read(ref RedisState.TotalForcedMasterFailovers);
 
         /// <summary>
         /// Number of times a connecting to a reported Master wasn't actually a Master
         /// </summary>
-        public static long TotalInvalidMasters
-        {
-            get { return Interlocked.Read(ref RedisState.TotalInvalidMasters); }
-        }
+        public static long TotalInvalidMasters => Interlocked.Read(ref RedisState.TotalInvalidMasters);
 
         /// <summary>
         /// Number of times no Masters could be found in any of the configured hosts
         /// </summary>
-        public static long TotalNoMastersFound
-        {
-            get { return Interlocked.Read(ref RedisState.TotalNoMastersFound); }
-        }
+        public static long TotalNoMastersFound => Interlocked.Read(ref RedisState.TotalNoMastersFound);
 
         /// <summary>
         /// Number of Redis Client instances created with RedisConfig.ClientFactory
         /// </summary>
-        public static long TotalClientsCreated
-        {
-            get { return Interlocked.Read(ref RedisState.TotalClientsCreated); }
-        }
+        public static long TotalClientsCreated => Interlocked.Read(ref RedisState.TotalClientsCreated);
 
         /// <summary>
         /// Number of times a Redis Client was created outside of pool, either due to overflow or reserved slot was overridden
         /// </summary>
-        public static long TotalClientsCreatedOutsidePool
-        {
-            get { return Interlocked.Read(ref RedisState.TotalClientsCreatedOutsidePool); }
-        }
+        public static long TotalClientsCreatedOutsidePool => Interlocked.Read(ref RedisState.TotalClientsCreatedOutsidePool);
 
         /// <summary>
         /// Number of times Redis Sentinel reported a Subjective Down (sdown)
         /// </summary>
-        public static long TotalSubjectiveServersDown
-        {
-            get { return Interlocked.Read(ref RedisState.TotalSubjectiveServersDown); }
-        }
+        public static long TotalSubjectiveServersDown => Interlocked.Read(ref RedisState.TotalSubjectiveServersDown);
 
         /// <summary>
         /// Number of times Redis Sentinel reported an Objective Down (sdown)
         /// </summary>
-        public static long TotalObjectiveServersDown
-        {
-            get { return Interlocked.Read(ref RedisState.TotalObjectiveServersDown); }
-        }
+        public static long TotalObjectiveServersDown => Interlocked.Read(ref RedisState.TotalObjectiveServersDown);
 
         /// <summary>
         /// Number of times a Redis Request was retried due to Socket or Retryable exception
         /// </summary>
-        public static long TotalRetryCount
-        {
-            get { return Interlocked.Read(ref RedisState.TotalRetryCount); }
-        }
+        public static long TotalRetryCount => Interlocked.Read(ref RedisState.TotalRetryCount);
 
         /// <summary>
         /// Number of times a Request succeeded after it was retried
         /// </summary>
-        public static long TotalRetrySuccess
-        {
-            get { return Interlocked.Read(ref RedisState.TotalRetrySuccess); }
-        }
+        public static long TotalRetrySuccess => Interlocked.Read(ref RedisState.TotalRetrySuccess);
 
         /// <summary>
         /// Number of times a Retry Request failed after exceeding RetryTimeout
         /// </summary>
-        public static long TotalRetryTimedout
-        {
-            get { return Interlocked.Read(ref RedisState.TotalRetryTimedout); }
-        }
+        public static long TotalRetryTimedout => Interlocked.Read(ref RedisState.TotalRetryTimedout);
 
         /// <summary>
         /// Total number of deactivated clients that are pending being disposed
         /// </summary>
-        public static long TotalPendingDeactivatedClients
-        {
-            get { return RedisState.DeactivatedClients.Count; }
-        }
+        public static long TotalPendingDeactivatedClients => RedisState.DeactivatedClients.Count;
 
         public static void Reset()
         {

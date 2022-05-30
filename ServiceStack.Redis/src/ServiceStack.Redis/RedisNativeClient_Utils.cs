@@ -470,8 +470,8 @@ namespace ServiceStack.Redis
             }
         }
 
-        // trated as List<T> rather than IList<T> to avoid allocs during foreach
-        readonly List<ArraySegment<byte>> cmdBuffer = new List<ArraySegment<byte>>();
+        // treated as List<T> rather than IList<T> to avoid allocs during foreach
+        readonly List<ArraySegment<byte>> cmdBuffer = new();
 
         byte[] currentBuffer = BufferPool.GetBuffer();
         int currentBufferIndex;
