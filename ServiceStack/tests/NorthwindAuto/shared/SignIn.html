@@ -81,7 +81,7 @@ App.component('SignIn', ({ plugin, provider, login, api }) => {
         <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <form v-if="formLayout.length" @submit.prevent="onsubmit">
                 <div ref="inputs" class="space-y-6">
-                    <div v-for="input in formLayout" :key="input.id" v-scope="Input({ input, model, api })"></div>
+                    <div v-for="input in formLayout" :key="`${input.label}-${input.id}`" v-scope="Input({ input, model, api })"></div>
                 </div>
 
                 <div class="pt-4">
