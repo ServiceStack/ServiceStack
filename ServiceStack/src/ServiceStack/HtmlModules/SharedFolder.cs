@@ -33,6 +33,7 @@ public class SharedFolder : IHtmlModulesHandler
     {
         return ctx.Cache($"{Name}:{SharedDir}/{files}", _ => {
             var sb = StringBuilderCache.Allocate();
+            if (!ctx.DebugMode) sb.AppendLine(); // Force ASI when concatenating scripts with advanced minifiers
             var paths = files.Split(',').Map(file =>
                 SharedDir.CombineWith(file + (file.IndexOf('.') == -1 ? DefaultExt : "")));
 
