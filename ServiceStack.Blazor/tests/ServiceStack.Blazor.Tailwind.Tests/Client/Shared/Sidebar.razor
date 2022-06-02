@@ -85,7 +85,7 @@
     protected override async Task OnInitializedAsync()
     {
         if (NavItems.Count == 0)
-            NavItems = await JS.GetNavItemsAsync("SIDEBAR_CSV");
+            NavItems = await JS.GetNavItemsAsync("SIDEBAR");
     }
 
     protected override Task OnParametersSetAsync()

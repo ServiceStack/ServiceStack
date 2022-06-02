@@ -10,41 +10,21 @@
     <script src="_content/Blazor.Extensions.Logging/blazor.extensions.logging.js" defer></script>
 </head>
 
-<template id="header-csv">
-    $0.40 /mo,        /docs/hosting
-    Prerendering,     /docs/prerender
-    Deployments,      /docs/deploy
-</template>
-<template id="sidebar-csv">
-    Counter,          /counter,       /img/nav/counter.svg
-    Todos,            /todomvc,       /img/nav/todomvc.svg
-    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
-    Call Hello,       /hello$,        /img/nav/hello.svg
-    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
-    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
-</template>
-
 <body>
     <div id="app">
         <!-- loading: render temp static app chrome to improve perceived performance -->
         <div id="app-loading">
 
+            <!-- <Header/> -->
             <header class="border-b border-gray-200 pr-3">
                 <div class="flex flex-wrap items-center">
                     <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
                         <nav class="relative flex flex-grow">
                             <ul class="flex flex-wrap items-center justify-end w-full m-0">
                                 <li class="relative flex flex-wrap just-fu-start m-0">
-                                    <a href="/signin" class="router-link-active router-link-exact-active m-2" aria-current="page">
-                                        <button type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            Sign In
-                                        </button>
-                                    </a>
-                                </li>
-                                <li class="relative flex flex-wrap just-fu-start m-0">
                                     <a href="/signup" class="m-2">
-                                        <button class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            Register
+                                        <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Sign In
                                         </button>
                                     </a>
                                 </li>
@@ -54,7 +34,7 @@
                 </div>
             </header>
 
-            <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+            <!-- <Siderbar/> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
             <div class="mobile relative z-40 md:hidden" role="dialog" aria-modal="true">
                 <div class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
                 <div class="fixed inset-0 flex z-40">
@@ -71,12 +51,12 @@
                             </button>
                         </div>
                         <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-                            <NavLink href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                            <a href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
                                 <img class="h-8 w-auto"
                                      src="/img/blazor.svg"
                                      alt="My App">
                                 <div class="ml-2">My App</div>
-                            </NavLink>
+                            </a>
                             <nav class="mt-5 px-2 space-y-1">
                             </nav>
                         </div>
@@ -93,19 +73,19 @@
                 <!-- Sidebar component, swap this element with another sidebar if you like -->
                 <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
                     <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-                        <NavLink href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                        <a href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
                             <img class="h-8 w-auto"
                                  src="/img/blazor.svg"
                                  alt="My App">
                             <div class="ml-2">My App</div>
-                        </NavLink>
+                        </a>
                         <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
                         </nav>
                     </div>
                 </div>
             </div>
 
-
+            <!-- <MainLayout/> -->
             <div class="md:pl-64 flex flex-col flex-1">
                 <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
                     <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
@@ -138,48 +118,60 @@
         </div>
     </div>
 
-    <script>
-        $1 = s => document.querySelector(s)
-        SIDEBAR_CSV = $1('#sidebar-csv').innerHTML
-        HEADER_CSV = $1('#header-csv').innerHTML
+<script>
+TOP = `
+    $0.40 /mo,        /docs/hosting
+    Prerendering,     /docs/prerender
+    Deployments,      /docs/deploy
+`
+SIDEBAR = `
+    Counter,          /counter,       /img/nav/counter.svg
+    Todos,            /todomvc,       /img/nav/todomvc.svg
+    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
+    Call Hello,       /hello$,        /img/nav/hello.svg
+    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
+    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
+`
 
-        const path = location.pathname
-        const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+const path = location.pathname
+const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+$1 = s => document.querySelector(s)
 
-        // Header
-        $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(HEADER_CSV, (label, route) =>
-            `<li class="relative flex flex-wrap just-fu-start m-0">
-                <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
-        ))
+/* Header */
+$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+    `<li class="relative flex flex-wrap just-fu-start m-0">
+        <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+))
 
-        // Sidebar
-        const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
-            class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
-            <img class="${iconCls}" src="/img/nav/${icon}.svg">
-            ${label}
-        </a>`
+/* Sidebar */
+const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
+    <img class="${iconCls}" src="${icon}">
+    ${label}
+</a>`
 
-        $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR_CSV, (label, route, icon) => NAV({
-            label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
-            iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
-            icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-        }))
-        $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR_CSV, (label, route, icon) => NAV({
-            label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
-            iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
-            icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-        }))
+$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
+    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
 
-        const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
-        fetch(`/prerender${pagePath}`)
-            .then(r => r.text())
-            .then(html => {
-                if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
-                const pageBody = $1('#app-loading .content')
-                if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
-            })
-            .catch(/* no prerendered content found for this path */)
-    </script>
+/* Prerender */
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r => r.text())
+    .then(html => {
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</script>
 
     <div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">
         <div class="flex rounded-md bg-yellow-50 p-4 m-4">

@@ -51,7 +51,7 @@ else
                         @{ var i = 0; }
                         @foreach (var booking in api.Response.Results)
                         {
-                            <tr class=@(++i % 2 == 0 ? "bg-white" : "bg-gray-50") @key=@booking.Id>
+                            <tr class=@(++i % 2 == 0 ? "bg-gray-50" : "bg-white") @key=@booking.Id>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" width="1.2em" height="1.2em" class="w-6 h-6 cursor-pointer" title="Edit Booking"
                                          @onclick="_ => reset(editBookingId:booking.Id)">
@@ -76,7 +76,7 @@ else
 }
 else if (!api.Completed)
 {
-    <p class="mt-5 text-lg text-gray-400">Retrieving Bookings ...</p>
+    <Loading class="mt-2 text-gray-400 text-base font-normal" Message="Retrieving Bookings..." />
 }
 
 <div class="mt-5 flex justify-center">

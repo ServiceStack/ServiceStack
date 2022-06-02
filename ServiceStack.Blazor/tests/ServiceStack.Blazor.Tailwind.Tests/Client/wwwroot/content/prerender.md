@@ -2,6 +2,8 @@
 title: Improving UX with Prerendering
 ---
 
+# Improving UX with Prerendering
+
 > Why does this page load so fast?
 
 ### Blazor WASM trade-offs
@@ -44,7 +46,7 @@ We've little opportunity over improving the startup time of the real C# Blazor A
 but ultimately what matters is [perceived performance](https://marvelapp.com/blog/a-designers-guide-to-perceived-performance/) which
 we do have control over given the screen for a default Blazor WASM project is a glaring white screen flash:
 
-![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/loading-default.png)
+![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/loading-default.png)
 
 The longer users have to wait looking at this black loading screen without signs of progress, the more they'll associate your site
 with taking forever to load.
@@ -59,49 +61,62 @@ As an example here's what YouTube content placeholders mimicking the page layout
 But we can do even better than an inert content placeholder, and load a temporary chrome of our App. But as this needs to be done
 before Blazor has loaded we need to implement this with a sprinkling of HTML + JS.
 
-First thing we need to do is move the scoped styles of our Apps
-[MainLayout](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/MainLayout.razor) and
-[NavMenu](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/NavMenu.razor) into an external
-[main-layout.css](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/css/main-layout.css) so our temp
-App chrome can use it.
+Essentialy we need to the Chrome and navigation of our App from the
+[Header](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/Header.razor),
+[Sidebar](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/Sidebar.razor) and
+[MainLayout](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/MainLayout.razor) 
+and paste it into 
+[/wwwroot/index.html](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html)
+where anything between `<div id="app"></div>` which is displayed whilst our Blazor App is loading, before it's replaced with the real App.
 
-Then in our [/wwwroot/index.html](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html) anything
-between `<div id="app"></div>` is displayed whilst our Blazor App is loading, before it's replaced with the real App.
-
-So Here we just paste in the **MainLayout** markup:
+After which we end up with HTML similar to the structure below:
 
 ```html
 <div id="app">
     <!-- loading: render temp static app chrome to improve perceived performance -->
-    <div id="app-loading" class="main-layout page">
-        <div class="sidebar">
-            <div class="top-row navbar navbar-dark">
-                <a class="navbar-brand ps-4" href="/">MyApp</a>
-                <button class="navbar-toggler">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </div>
-            <div class="collapse">
-                <ul class="nav flex-column"></ul>
-            </div>
+    <div id="app-loading">
+        <!-- <Header/> -->
+        <header class="border-b border-gray-200 pr-3">
+            ...
+            <nav class="relative flex flex-grow">
+                <ul class="flex flex-wrap items-center justify-end w-full m-0">
+                    <li class="relative flex flex-wrap just-fu-start m-0">
+                        <a href="/signup" class="m-2">
+                            <button class="inline-flex items-center px-4 py-2 border">
+                                Sign In
+                            </button>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        <!-- <Siderbar/> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+        <div class="mobile relative z-40 md:hidden" role="dialog" aria-modal="true">
+            ...
+            <nav class="mt-5 px-2 space-y-1">
+            </nav>
         </div>
-        <div class="main">
-            <div class="main-top-row px-4">
-                <ul class="nav nav-pills"></ul>
-                <a href="signin?return=docs/deploy" class="btn btn-outline-primary">
-                    Login
-                </a>
-            </div>
-            <div class="content px-4">
-                <!--PAGE-->
-                <div class="spinner-border float-start mt-2 mr-2" role="status">
-                    <span class="sr-only"></span>
+        <!-- Static sidebar for desktop -->
+        <div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+            ...
+            <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
+            </nav>
+        </div>
+        <!-- <MainLayout/> -->
+        <div class="md:pl-64 flex flex-col flex-1">
+            <main class="flex-1">
+                <div class="py-6">
+                    <div class="content px-4 sm:px-6 md:px-8">
+                        <!--PAGE-->
+                        <div class="mb-4">
+                            <h1 class="text-2xl font-semibold text-gray-900 flex">
+                                <span>Loading...</span>
+                            </h1>
+                        </div>
+                        <!--/PAGE-->
+                    </div>
                 </div>
-                <h1 style="font-size:36px">
-                    Loading...
-                </h1>
-                <!--/PAGE-->
-            </div>
+            </main>
         </div>
     </div>
 </div>
@@ -110,38 +125,46 @@ So Here we just paste in the **MainLayout** markup:
 Less our App's navigation menus which we'll dynamically generate with the splash of JS below:
 
 ```js
-const SIDEBAR = `
-    Home,home,/$
-    Counter,plus,/counter
-    Todos,clipboard,/todomvc
-    Bookings CRUD,calendar,/bookings-crud
-    Call Hello,transfer,/hello$
-    Call HelloSecure,shield,/hello-secure
-    Fetch data,list-rich,/fetchdata
-    Admin,lock-locked,/admin
-    Login,account-login,/signin
+TOP = `
+    $0.40 /mo,        /docs/hosting
+    Prerendering,     /docs/prerender
+    Deployments,      /docs/deploy
 `
-const TOP = `
-    0.40 /mo,dollar,/docs/hosting
-    Prerendering,loop-circular,/docs/prerender
-    Deployments,cloud-upload,/docs/deploy
+SIDEBAR = `
+    Counter,          /counter,       /img/nav/counter.svg
+    Todos,            /todomvc,       /img/nav/todomvc.svg
+    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
+    Call Hello,       /hello$,        /img/nav/hello.svg
+    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
+    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
 `
 
 const path = location.pathname
-const NAV = ({ label, cls, icon, route, exact }) => `<li class="nav-item${cls}">
-    <a href="${route}" class="nav-link${(exact ? path==route : path.startsWith(route)) ? ' active' : ''}">
-        <span class="oi oi-${icon}" aria-hidden="true"></span> ${label}
-    </a></li>`
-const renderNav = (csv,f) => csv.trim().split(/\r?\n/g).map(s => NAV(f.apply(null,s.split(',')))).join('')
-const $1 = s => document.querySelector(s)
+const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+$1 = s => document.querySelector(s)
 
-$1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, route) => ({
-    label, cls: ` px-3${route == SIDEBAR[0].route ? ' pt-3' : ''}`,
+/* Header */
+$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+    `<li class="relative flex flex-wrap just-fu-start m-0">
+        <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+))
+
+/* Sidebar */
+const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
+    <img class="${iconCls}" src="${icon}">
+    ${label}
+</a>`
+
+$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium`,
+    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
     icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
 }))
-
-$1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) => ({
-    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium`,
+    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
 }))
 ```
 
@@ -149,19 +172,13 @@ Which takes care of both rendering the top and sidebar menus as well as highligh
 nav item being loaded, and because we're rendering our real App navigation with real links, users will be able to navigate
 to the page they want before our App has loaded.
 
-So you can distinguish a prerendered page from a Blazor rendered page we've added a **subtle box shadow** to prerendered content
-which you'll see initially before being reverting to a flat border when the Blazor App takes over and replaces the entire page:
-
-```html
-<style>
-#app-loading .content { box-shadow: inset 0 4px 4px 0 rgb(0 0 0 / 0.05) }
-</style>
-```
+To minimize maintenance efforts our Blazor App also makes use of the `TOP` and `SIDEBAR` items to render its Navigation Menus, which it 
+renders with C#.
 
 With just this, every page now benefits from an instant App chrome to give the perception that our App has loaded instantly
 before any C# in our Blazor App is run. E.g. here's what the [Blazor Counter](/counter) page looks like while it's loading:
 
-![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/loading.png)
+![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/loading.png)
 
 If you click refresh the [/counter](/counter) page a few times you'll see the new loading screen prior to the Counter page being available.
 
@@ -201,11 +218,15 @@ which we'll need to access later in our App:
 
 ```html
 <script>
-/* Loading */
-window.prerenderedPage = function () {
-    const el = document.querySelector('#app-loading .content')
-    return el && el.innerHTML || ''
-}
+JS = (function () {
+    return {
+        /* Loading */
+        prerenderedPage() {
+            const el = document.querySelector('#app-loading .content')
+            return el && el.innerHTML || ''
+        },
+    }
+})()
 </script>
 ```
 
@@ -304,7 +325,7 @@ Now when we next commit code, the GitHub CI Action will run the above task to ge
 [/prerender/index.html](https://github.com/NetCoreTemplates/blazor-wasm/blob/gh-pages/prerender/index.html) page
 that now loads our [Home Page](/) instantly!
 
-[![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/home-prerendered.png)](/)
+[![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/home-prerendered.png)](/)
 
 The only issue now is that the default Blazor template behavior will yank our pre-rendered page, once during loading
 and another during Authorization. To stop the unwanted yanking we've updated the

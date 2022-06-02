@@ -45,6 +45,7 @@ public static class AppUtils
 
     public static List<NavItem> ParseNavItemsCsv(string csv)
     {
+        csv = csv.Trim();
         var to = new List<NavItem>();
         var lines = csv.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         foreach (var line in lines)
