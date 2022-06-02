@@ -459,13 +459,8 @@ namespace ServiceStack
             return __activatedLicense?.LicenseKey.GetLicensedFeatures() ?? LicenseFeature.None;
         }
 
-        public static void ApprovedUsage(LicenseFeature licenseFeature, LicenseFeature requestedFeature,
-            int allowedUsage, int actualUsage, string message)
+        public static void ApprovedUsage(int allowedUsage, int actualUsage, string message)
         {
-            var hasFeature = (requestedFeature & licenseFeature) == requestedFeature;
-            if (hasFeature)
-                return;
-
             if (actualUsage > allowedUsage)
                 throw new LicenseException(message.Fmt(allowedUsage)).Trace();
         }
@@ -481,6 +476,8 @@ namespace ServiceStack
             var licensedFeatures = ActivatedLicenseFeatures();
             if ((LicenseFeature.All & licensedFeatures) == LicenseFeature.All) //Standard Usage
                 return;
+            if ((feature & licensedFeatures) == feature) //Has License or quota
+                return;
 
             //Free Quotas
             switch (feature)
@@ -489,10 +486,10 @@ namespace ServiceStack
                     switch (quotaType)
                     {
                         case QuotaType.Types:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.RedisTypes, count, ErrorMessages.ExceededRedisTypes);
+                            ApprovedUsage(FreeQuotas.RedisTypes, count, ErrorMessages.ExceededRedisTypes);
                             return;
                         case QuotaType.RequestsPerHour:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.RedisRequestPerHour, count, ErrorMessages.ExceededRedisRequests);
+                            ApprovedUsage(FreeQuotas.RedisRequestPerHour, count, ErrorMessages.ExceededRedisRequests);
                             return;
                     }
                     break;
@@ -501,7 +498,7 @@ namespace ServiceStack
                     switch (quotaType)
                     {
                         case QuotaType.Tables:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.OrmLiteTables, count, ErrorMessages.ExceededOrmLiteTables);
+                            ApprovedUsage(FreeQuotas.OrmLiteTables, count, ErrorMessages.ExceededOrmLiteTables);
                             return;
                     }
                     break;
@@ -510,7 +507,7 @@ namespace ServiceStack
                     switch (quotaType)
                     {
                         case QuotaType.Tables:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.AwsTables, count, ErrorMessages.ExceededAwsTables);
+                            ApprovedUsage(FreeQuotas.AwsTables, count, ErrorMessages.ExceededAwsTables);
                             return;
                     }
                     break;
@@ -519,7 +516,7 @@ namespace ServiceStack
                     switch (quotaType)
                     {
                         case QuotaType.Operations:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.ServiceStackOperations, count, ErrorMessages.ExceededServiceStackOperations);
+                            ApprovedUsage(FreeQuotas.ServiceStackOperations, count, ErrorMessages.ExceededServiceStackOperations);
                             return;
                     }
                     break;
@@ -528,7 +525,7 @@ namespace ServiceStack
                     switch (quotaType)
                     {
                         case QuotaType.PremiumFeature:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.PremiumFeature, count, ErrorMessages.ExceededAdminUi);
+                            ApprovedUsage(FreeQuotas.PremiumFeature, count, ErrorMessages.ExceededAdminUi);
                             return;
                     }
                     break;
@@ -537,7 +534,7 @@ namespace ServiceStack
                     switch (quotaType)
                     {
                         case QuotaType.PremiumFeature:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.PremiumFeature, count, ErrorMessages.ExceededPremiumFeature);
+                            ApprovedUsage(FreeQuotas.PremiumFeature, count, ErrorMessages.ExceededPremiumFeature);
                             return;
                     }
                     break;

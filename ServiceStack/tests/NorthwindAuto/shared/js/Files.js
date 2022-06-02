@@ -2,6 +2,8 @@ import { lastRightPart, leftPart } from "@servicestack/client"
 import { Files } from "../../lib/types"
 import { toAppUrl } from "./core"
 
+/*minify:*/
+
 /** Wrapper around SVG icons for File Types 
  * @type {Files} */
 export const Files = (function () {
@@ -166,3 +168,5 @@ export const Files = (function () {
         flush,
     }
 })()
+
+/*:minify*/

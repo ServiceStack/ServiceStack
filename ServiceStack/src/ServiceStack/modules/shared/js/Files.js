@@ -1,3 +1,4 @@
+/*minify:*/
 /** Wrapper around SVG icons for File Types 
  * @type {Files} */
 const Files = (function () {
@@ -150,3 +151,4 @@ const Files = (function () {
         flush,
     }
 })()
+/*:minify*/

@@ -6,6 +6,7 @@
     <h1 class="text-2xl font-semibold text-gray-900">Bookings CRUD</h1>
 </div>
 
+<div class="max-w-screen-lg">
 @if (newBooking)
 {
     <Create done="onDone" class="max-w-screen-sm" />
@@ -117,7 +118,7 @@ else if (!api.Completed)
         <iframe class="youtube" src="https://www.youtube.com/embed/nhc4MZufkcM" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 }
-
+</div>
 
 @code {
     bool newBooking { get; set; }

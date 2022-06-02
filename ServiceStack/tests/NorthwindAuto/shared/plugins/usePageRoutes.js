@@ -115,4 +115,5 @@ export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
 
     return store
 }
+
 /*:minify*/

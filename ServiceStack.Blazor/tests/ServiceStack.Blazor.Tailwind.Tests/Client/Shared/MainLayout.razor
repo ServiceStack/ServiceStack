@@ -3,6 +3,60 @@
 @inject NavigationManager NavigationManager;
 
 <div>
+    <header class="border-b border-gray-200 pr-3">
+        <div class="flex flex-wrap items-center">
+            <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
+                <nav class="relative flex flex-grow">
+                    <ul class="flex flex-wrap items-center justify-end w-full m-0">
+                        <li class="relative flex flex-wrap just-fu-start m-0">
+                            <NavLink href="/docs/hosting" class="m-2">
+                                <button type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="/hosting">
+                                    <div class="flex align-middle">
+                                        <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" width="1.2em" height="1.2em" class="text-gray-700 w-5 h-5">
+                                            <path fill="currentColor" d="M7 15h2c0 1.08 1.37 2 3 2s3-.92 3-2c0-1.1-1.04-1.5-3.24-2.03C9.64 12.44 7 11.78 7 9c0-1.79 1.47-3.31 3.5-3.82V3h3v2.18C15.53 5.69 17 7.21 17 9h-2c0-1.08-1.37-2-3-2s-3 .92-3 2c0 1.1 1.04 1.5 3.24 2.03C14.36 11.56 17 12.22 17 15c0 1.79-1.47 3.31-3.5 3.82V21h-3v-2.18C8.47 18.31 7 16.79 7 15Z"></path>
+                                        </svg> 0.40 /mo 
+                                    </div>
+                                </button>
+                            </NavLink>
+                        </li>
+                        <li class="relative flex flex-wrap just-fu-start m-0"><NavLink href="/docs/prerender" class="flex items-center justify-start mw-full p-4 hover:text-green-600">Prerendering</NavLink></li>
+                        <li class="relative flex flex-wrap just-fu-start m-0"><NavLink href="/docs/deploy" class="flex items-center justify-start mw-full p-4 hover:text-green-600">Deployments</NavLink></li>
+
+                        <AuthorizeView>
+                            <Authorized>
+                                <li class="relative flex flex-wrap just-fu-start m-0">
+                                    <button @onclick="logout" type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        Logout
+                                    </button>
+                                </li>
+                            </Authorized>
+                            <Authorizing>
+                                <span>Authorizing...</span>
+                            </Authorizing>
+                            <NotAuthorized>
+                                <li class="relative flex flex-wrap just-fu-start m-0">
+                                    <NavLink href=@LoginUrl class="router-link-active router-link-exact-active m-2" aria-current="page">
+                                        <button type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Sign In
+                                        </button>
+                                    </NavLink>
+                                </li>
+                                <li class="relative flex flex-wrap just-fu-start m-0">
+                                    <NavLink href=@RegisterUrl class="m-2">
+                                        <button class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Register
+                                        </button>
+                                    </NavLink>
+                                </li>
+                            </NotAuthorized>
+                        </AuthorizeView>
+
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
     <Sidebar Collapse=@CollapseSidebar Toggle=@(state => CollapseSidebar = state) />
 
     <div class="md:pl-64 flex flex-col flex-1">
@@ -49,6 +103,7 @@
     bool CollapseSidebar = false;
 
     string LoginUrl { get; set; } = "/signin";
+    string RegisterUrl { get; set; } = "/signup";
 
     protected override Task OnParametersSetAsync()
     {

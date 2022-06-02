@@ -5,17 +5,19 @@
     <h1 class="text-2xl font-semibold text-gray-900">Call Hello</h1>
 </div>
 
-<form @onsubmit="submit" class="max-w-xl d-flex align-items-center">
+<form @onsubmit="submit" class="max-w-xl flex items-center">
 <CascadingValue Value=@api.Error>
-    <div class="form-floating">
-        <TextInput placeholder="What's your name?" @bind-Value="request.Name" spellcheck="false" class="w-screen-xs" />
-    </div>
-    <button class="ms-2 btn btn-primary align-self-start" @onclick="submit"><span class="oi oi-play-circle p-2" style="font-size:28px"></span></button>
+    <TextInput placeholder="What's your name?" Label="" @bind-Value="request.Name" spellcheck="false" />
+    <button @onclick="submit" type="button" class="ml-2 inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 16 16">
+          <path fill="currentColor" d="M6.235 2.192A1.5 1.5 0 0 0 4 3.499v9a1.5 1.5 0 0 0 2.235 1.308l8-4.5a1.5 1.5 0 0 0 0-2.615l-8-4.5Z"/>
+    </svg>
+    </button>
 </CascadingValue>
 </form>
 
 @if (api.Succeeded) {
-    <h3 class="text-success mt-4">@api.Response!.Result</h3>
+    <h3 class="text-2xl text-green-600 mt-4">@api.Response!.Result</h3>
 }
 
 <div class="mt-4">

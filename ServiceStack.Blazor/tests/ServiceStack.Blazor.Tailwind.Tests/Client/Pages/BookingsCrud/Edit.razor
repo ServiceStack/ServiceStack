@@ -1,65 +1,67 @@
 @attribute [Authorize(Roles="Employee")]
 @inherits AppAuthComponentBase
 
-<form @onsubmit="_ => OnSubmit()" class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
+<form @onsubmit="_ => OnSubmit()">
 <CascadingValue Value=@api.Error>
-    <button type="button" class="close" @onclick="close"><i></i></button>
-
-    <h1 class="fs-4 text-secondary text-center">
-        Edit Booking
-    </h1>
-
-    <ErrorSummary Except=@VisibleFields />
-    <ErrorSummary ExplicitStatus=@deleteApi.Error />
-
-    <div class="mb-3 form-floating">
-        <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
-    </div>
-
-    <div class="mb-3 form-floating">
-        <SelectInput @bind-Value="request.RoomType" Options=@(Enum.GetValues<RoomType>().Cast<RoomType?>()) /> 
-    </div>
-
-    <div class="d-flex">
-        <div class="mb-3 flex-fill form-floating mr-1">
-            <TextInput type="number" @bind-Value="request.RoomNumber" min="0" required />
-        </div>
-
-        <div class="mb-3 flex-fill form-floating">
-            <TextInput type="number" @bind-Value="request.Cost" min="0" required />
-        </div>
-    </div>
-
-    <div class="d-flex">
-        <div class="mb-3 flex-fill form-floating mr-1">
-            <DateTimeInput @bind-Value="request.BookingStartDate" required />
-        </div>
-
-        <div class="mb-3 flex-fill form-floating">
-            <DateTimeInput @bind-Value="request.BookingEndDate" />
-        </div>
-    </div>
+<div class=@CssUtils.ClassNames("shadow overflow-hidden sm:rounded-md bg-white", @class)>
     
-    <div class="mb-3 form-floating">
-        <TextAreaInput @bind-Value="request.Notes" placeholder="Notes about this booking" style="height:6rem" />
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+
+        <CloseButton OnClose="close" />
+
+        <fieldset>
+            <legend class="text-base font-medium text-gray-900 text-center mb-4">Edit Booking</legend>
+
+            <ErrorSummary Except=@VisibleFields />
+            <ErrorSummary ExplicitStatus=@deleteApi.Error />
+
+            <div class="grid grid-cols-6 gap-6">
+                <div class="col-span-6 sm:col-span-3">
+                    <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
+                </div>
+
+                <div class="col-span-6 sm:col-span-3">
+                    <SelectInput @bind-Value="request.RoomType" Options=@(Enum.GetValues<RoomType>().Cast<RoomType?>()) /> 
+                </div>
+
+                <div class="col-span-6 sm:col-span-3">
+                    <TextInput type="number" @bind-Value="request.RoomNumber" min="0" required />
+                </div>
+
+                <div class="col-span-6 sm:col-span-3">
+                    <TextInput type="number" @bind-Value="request.Cost" min="0" required />
+                </div>
+
+                <div class="col-span-6 sm:col-span-3">
+                    <DateTimeInput @bind-Value="request.BookingStartDate" required />
+                </div>
+                <div class="col-span-6 sm:col-span-3">
+                    <DateTimeInput @bind-Value="request.BookingEndDate" />
+                </div>
+    
+                <div class="col-span-6">
+                    <TextAreaInput @bind-Value="request.Notes" placeholder="Notes about this booking" style="height:6rem" />
+                </div>
+            </div>
+        </fieldset>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <input type="checkbox" @bind=deleteConfirmed id="deleteConfirmed" />
-            <label for="deleteConfirmed">confirm</label>
-            <span class=@ClassNames("ms-2 btn btn-danger", deleteConfirmed ? "" : "disabled") @onclick="delete">Delete</span>
-        </div>
-
-        <div class="d-flex-fill">
+    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <ConfirmDelete OnDelete="delete">Delete</ConfirmDelete>
+            </div>
             <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/BookingsCrud/Edit.razor" 
                      IconSrc="/img/blazor.svg" class="mt-2" />
-        </div>
-
-        <div>
-            <button type="submit" class="btn btn-primary">Update Booking</button>
+            <div>
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Update Booking
+                </button>
+            </div>
         </div>
     </div>
+
+</div>
 
 </CascadingValue>
 </form>
@@ -78,8 +80,6 @@
         nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate), 
         nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
     };
-
-    bool deleteConfirmed = false;
 
     UpdateBooking request = new();
 
@@ -132,9 +132,6 @@
 
     async Task delete()
     {
-        if (!deleteConfirmed)
-            return;
-
         deleteApi = await ApiAsync(new DeleteBooking { Id = Id ?? 0 });
 
         if (deleteApi.Succeeded)

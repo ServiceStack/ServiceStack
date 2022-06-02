@@ -1,0 +1,16 @@
+﻿<input type="checkbox" @bind=deleteConfirmed id="deleteConfirmed" 
+        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+<label for="deleteConfirmed" class="mx-2 select-none">confirm</label>
+<span class=@CssUtils.ClassNames("select-none inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white", 
+    deleteConfirmed ? "cursor-pointer bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" : "bg-red-400") 
+    @onclick="() => OnDelete.InvokeAsync(null)">@ChildContent</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    bool deleteConfirmed = false;
+}
