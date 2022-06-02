@@ -4,39 +4,9 @@
 
 <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
 <div class=@CssUtils.ClassNames("mobile relative z-40 md:hidden", Collapse ? "hidden" : "") role="dialog" aria-modal="true">
-    <!--
-    Off-canvas menu backdrop, show/hide based on off-canvas menu state.
-
-    Entering: "transition-opacity ease-linear duration-300"
-        From: "opacity-0"
-        To: "opacity-100"
-    Leaving: "transition-opacity ease-linear duration-300"
-        From: "opacity-100"
-        To: "opacity-0"
-    -->
     <div class=@CssUtils.ClassNames("fixed inset-0 bg-gray-600 bg-opacity-75", Collapse ? "opacity-0" : "opacity-100")></div>
     <div class="fixed inset-0 flex z-40">
-        <!--
-            Off-canvas menu, show/hide based on off-canvas menu state.
-
-            Entering: "transition ease-in-out duration-300 transform"
-            From: "-translate-x-full"
-            To: "translate-x-0"
-            Leaving: "transition ease-in-out duration-300 transform"
-            From: "translate-x-0"
-            To: "-translate-x-full"
-        -->
         <div class=@CssUtils.ClassNames("relative flex-1 flex flex-col max-w-xs w-full bg-white", Collapse ? "-translate-x-full" : "translate-x-0")>
-            <!--
-            Close button, show/hide based on off-canvas menu state.
-
-            Entering: "ease-in-out duration-300"
-                From: "opacity-0"
-                To: "opacity-100"
-            Leaving: "ease-in-out duration-300"
-                From: "opacity-100"
-                To: "opacity-0"
-            -->
             <div class=@CssUtils.ClassNames("absolute top-0 right-0 -mr-12 pt-2", Collapse ? "opacity-0" : "opacity-100")>
                 <button type="button"
                         class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -68,21 +38,6 @@
                     }
                 </nav>
             </div>
-            <div class="flex-shrink-0 flex border-t border-gray-200 p-4">
-                <NavLink href="/signin" class="flex-shrink-0 group block">
-                    <div class="flex items-center">
-                        <div>
-                            <img class="inline-block h-10 w-10 rounded-full"
-                                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                                    alt="">
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-base font-medium text-gray-700 group-hover:text-gray-900">Tom Cook</p>
-                            <p class="text-sm font-medium text-gray-500 group-hover:text-gray-700">View profile</p>
-                        </div>
-                    </div>
-                </NavLink>
-            </div>
         </div>
 
         <div class="flex-shrink-0 w-14">
@@ -103,8 +58,6 @@
                 <div class="ml-2">My App</div>
             </NavLink>
             <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
-                <!-- Current: "bg-gray-100 text-gray-900", Default: "text-gray-600 hover:bg-gray-50 hover:text-gray-900" -->
-                    <!-- Current: "text-gray-500", Default: "text-gray-400 group-hover:text-gray-500" -->
                 @foreach (var item in SidebarNavItems!)
                 {
                     <NavLink href=@item.Route Match=@item.Match
@@ -115,21 +68,6 @@
                 }
             </nav>
         </div>
-
-        <div class="flex-shrink-0 flex border-t border-gray-200 p-4">
-            <NavLink href="/signin" class="flex-shrink-0 w-full group block">
-                <div class="flex items-center">
-                    <div>
-                        <img class="inline-block h-9 w-9 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Tom Cook</p>
-                        <p class="text-xs font-medium text-gray-500 group-hover:text-gray-700">View profile</p>
-                    </div>
-                </div>
-            </NavLink>
-        </div>
-
     </div>
 </div>
 

@@ -2,9 +2,9 @@
 @attribute [Authorize()]
 @inherits AppAuthComponentBase
 
-<div class="mb-4">
-    <h1 class="text-2xl font-semibold text-gray-900">Call HelloSecure </h1>
-</div>
+<h1 class="mb-4 text-2xl font-semibold text-gray-900">
+    Call HelloSecure
+</h1>
 
 <form @onsubmit="submit" class="max-w-xl flex items-center">
 <CascadingValue Value=@api.Error>

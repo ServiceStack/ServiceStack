@@ -1,17 +1,24 @@
 ﻿@inject NavigationManager NavigationManager;
+@inject ServiceStackStateProvider AuthStateProvider;
 
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData"
                             DefaultLayout="@typeof(MainLayout)">
             <NotAuthorized>
-                <h1>Sorry</h1>
+                <h1 class="mb-4 text-2xl font-semibold text-gray-900">
+                    Sorry
+                </h1>
                 <p>You're not authorized to reach this page.</p>
-                <p>Please <NavLink href=@NavigationManager.GetLoginUrl()>login</NavLink> as a different user.</p>
+                <p>
+                    Please  
+                    <NavLink class="underline hover:text-green-600" @onclick=@login href="javascript:void">login</NavLink> 
+                    as a different user.
+                </p>
             </NotAuthorized>
             
             <Authorizing>
-                <p class="text-gray-400" style="float:right;margin:1rem 1rem 0 0">Authenticating...</p>
+                <p class="text-gray-400 absolute right-1">Authenticating...</p>
                 <RouteView RouteData="@routeData" />
             </Authorizing>
 
@@ -23,3 +30,14 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+
+    async Task login()
+    {
+        var loginUrl = NavigationManager.GetLoginUrl();
+        await AuthStateProvider.LogoutIfAuthenticatedAsync();
+        NavigationManager.NavigateTo(loginUrl, true);
+    }
+
+}

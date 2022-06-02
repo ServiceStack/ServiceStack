@@ -97,6 +97,12 @@ public class ServiceStackStateProvider : AuthenticationStateProvider
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
     }
+    public async Task LogoutIfAuthenticatedAsync()
+    {
+        var authState = await GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+            await LogoutAsync();
+    }
 
     public async Task<ApiResult<AuthenticateResponse>> LogoutAsync()
     {
