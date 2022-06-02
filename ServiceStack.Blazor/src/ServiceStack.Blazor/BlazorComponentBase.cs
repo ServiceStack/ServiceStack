@@ -10,7 +10,7 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
     [Inject]
     public JsonApiClient? Client { get; set; }
 
-    public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request)  => JsonApiClientUtils.ApiAsync(this, request);
+    public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) => JsonApiClientUtils.ApiAsync(this, request);
     public virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) => JsonApiClientUtils.ApiAsync(this, request);
     public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) => JsonApiClientUtils.SendAsync(this, request);
 

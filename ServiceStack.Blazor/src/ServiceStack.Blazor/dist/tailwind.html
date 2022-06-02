@@ -103,7 +103,7 @@ else
 @inherits ErrorSummaryBase
 @if (UseStatus.ShowSummary(UseExcept))
 {
-<div class=@(ClassNames("rounded-md bg-red-50 p-4", CssClass())) role="alert">
+<div class=@(ClassNames("bg-red-50 border-l-4 border-red-400 p-4", CssClass())) role="alert">
 <div class="flex">
 <div class="flex-shrink-0">
 <!-- Heroicon name: solid/x-circle -->
@@ -112,9 +112,7 @@ else
 </svg>
 </div>
 <div class="ml-3">
-<h3 class="text-sm font-medium text-red-800">
-@UseStatus.SummaryMessage(UseExcept)
-</h3>
+<p class="text-sm text-red-700">@UseStatus.SummaryMessage(UseExcept)</p>
 </div>
 </div>
 </div>
