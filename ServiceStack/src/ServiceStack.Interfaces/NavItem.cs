@@ -32,11 +32,16 @@ namespace ServiceStack
         /// Override class="{Class}"
         /// </summary>
         public string ClassName { get; set; }
-        
+
         /// <summary>
         /// Icon class (if any)
         /// </summary>
-        public string IconClass { get; set; } 
+        public string IconClass { get; set; }
+
+        /// <summary>
+        /// Icon src (if any)
+        /// </summary>
+        public string IconSrc { get; set; }
         
         /// <summary>
         /// Only show if NavOptions.Attributes.Contains(Show) 
