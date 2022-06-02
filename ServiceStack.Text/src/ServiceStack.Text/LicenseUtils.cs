@@ -465,6 +465,19 @@ namespace ServiceStack
                 throw new LicenseException(message.Fmt(allowedUsage)).Trace();
         }
 
+        // Only used for testing license validation
+        public static void ApprovedUsage(LicenseFeature licensedFeatures, LicenseFeature requestedFeature,
+            int allowedUsage, int actualUsage, string message)
+        {
+            if ((LicenseFeature.All & licensedFeatures) == LicenseFeature.All) //Standard Usage
+                return;
+            if ((requestedFeature & licensedFeatures) == requestedFeature) //Has License for quota restriction
+                return;
+            
+            if (actualUsage > allowedUsage)
+                throw new LicenseException(message.Fmt(allowedUsage)).Trace();
+        }
+
         public static bool HasLicensedFeature(LicenseFeature feature)
         {
             var licensedFeatures = ActivatedLicenseFeatures();
