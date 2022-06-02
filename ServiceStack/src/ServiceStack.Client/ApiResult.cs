@@ -49,6 +49,7 @@ public class ApiResult<TResponse> : IHasErrorStatus
     public bool Failed => Error.IsError();
     public bool Succeeded => !Failed && Response != null;
     public bool Completed => Response != null || Error != null;
+    public bool IsLoading { get; set; }
 
     public string? ErrorMessage => Error?.Message;
 
