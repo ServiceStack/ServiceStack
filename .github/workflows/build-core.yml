@@ -6,6 +6,9 @@ on:
       - 'ServiceStack.Core/**'
       - '.github/workflows/build-core.yml'
 
+permissions:
+  contents: read
+
 jobs:
   build-servicestack-core:
     runs-on: ubuntu-20.04

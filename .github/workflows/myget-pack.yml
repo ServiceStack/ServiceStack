@@ -2,6 +2,9 @@
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   myget-push:
     runs-on: ubuntu-20.04
