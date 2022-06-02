@@ -476,7 +476,7 @@ namespace ServiceStack
             var licensedFeatures = ActivatedLicenseFeatures();
             if ((LicenseFeature.All & licensedFeatures) == LicenseFeature.All) //Standard Usage
                 return;
-            if ((feature & licensedFeatures) == feature) //Has License or quota
+            if ((feature & licensedFeatures) == feature) //Has License for quota restriction
                 return;
 
             //Free Quotas
