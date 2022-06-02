@@ -1597,4 +1597,111 @@ public class PropertyExpressionTests
         to.PopulateFromPropertiesWithoutAttribute(from, typeof(IgnoreDataMemberAttribute));
         Assert.That(from.MyProp, Is.EqualTo(to.MyProp));
     }
+
+    [Test]
+    public void Converts_StringDict_to_InterfaceStringDict_when_null()
+    {
+        var classBase = new StringDict
+        {
+            Dict = null
+        };
+
+        var converted = classBase.ConvertTo<InterfaceStringDict>();
+        Assert.That(converted.ToJson(), Is.Not.Empty);
+    }
+    
+    [Test]
+    public void Converts_StringDict_to_InterfaceStringDict()
+    {
+        var classBase = new StringDict
+        {
+            Dict = new Dictionary<string, string>
+            {
+                ["key1"] = "value1",
+                ["key2"] = "value2",
+                ["key3"] = "value3"
+            }
+        };
+
+        var converted = classBase.ConvertTo<InterfaceStringDict>();
+        Assert.That(converted.ToJson(), Is.Not.Null.Or.Empty);
+    }
+
+    [Test]
+    public void Converts_InterfaceStringDict()
+    {
+        var classBase = new InterfaceStringDict
+        {
+            Dict = new Dictionary<string, string>
+            {
+                ["key1"] = "value1",
+                ["key2"] = "value2",
+                ["key3"] = "value3"
+            }
+        };
+
+        var converted = classBase.ConvertTo<InterfaceStringDict2>();
+        Assert.That(converted.ToJson(), Is.Not.Null.Or.Empty);
+    }
+
+    [Test]
+    public void Converts_InterfaceStringDict_when_null()
+    {
+        var classBase = new InterfaceStringDict
+        {
+            Dict = null
+        };
+
+        var converted = classBase.ConvertTo<InterfaceStringDict2>();
+        Assert.That(converted.ToJson(), Is.Not.Null.Or.Empty);
+    }
+
+    [Test]
+    public void Converts_StringDict_when_null()
+    {
+        var classBase = new StringDict
+        {
+            Dict = null
+        };
+
+        var converted = classBase.ConvertTo<StringDict2>();
+        Assert.That(converted.ToJson(), Is.Not.Null.Or.Empty);
+    }
+
+    [Test]
+    public void Converts_StringDict()
+    {
+        var classBase = new StringDict
+        {
+            Dict = new Dictionary<string, string>
+            {
+                ["key1"] = "value1",
+                ["key2"] = "value2",
+                ["key3"] = "value3"
+            }
+        };
+
+        var converted = classBase.ConvertTo<StringDict2>();
+        Assert.That(converted.ToJson(), Is.Not.Null.Or.Empty);
+    }    
+
+    public class StringDict
+    {
+        public Dictionary<string, string> Dict { get; set; }
+    }
+
+    public class StringDict2
+    {
+        public Dictionary<string, string> Dict { get; set; }
+    }
+    
+    public class InterfaceStringDict
+    {
+        public IDictionary<string, string> Dict { get; set; }
+    }
+
+    public class InterfaceStringDict2
+    {
+        public IDictionary<string, string> Dict { get; set; }
+    }    
 }

@@ -778,6 +778,9 @@ namespace ServiceStack
         
         public static object TryConvertCollections(Type fromType, Type toType, object fromValue)
         {
+            if (fromValue == null)
+                return null;
+            
             if (fromValue is IEnumerable values)
             {
                 var toEnumObjs = toType == typeof(IEnumerable<object>);
