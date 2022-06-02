@@ -758,6 +758,14 @@ select{
   right: 0.25rem;
 }
 
+.right-2 {
+  right: 0.5rem;
+}
+
+.right-4 {
+  right: 1rem;
+}
+
 .z-10 {
   z-index: 10;
 }
@@ -980,6 +988,14 @@ select{
 
 .ml-8 {
   margin-left: 2rem;
+}
+
+.-mt-4 {
+  margin-top: -1rem;
+}
+
+.-mt-8 {
+  margin-top: -2rem;
 }
 
 .block {

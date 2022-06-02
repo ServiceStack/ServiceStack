@@ -28,11 +28,11 @@
                     <div class="ml-2">My App</div>
                 </NavLink>
                 <nav class="mt-5 px-2 space-y-1">
-                    @foreach (var item in SidebarNavItems)
+                    @foreach (var item in NavItems)
                     {
-                        <NavLink href=@item.Route Match=@item.Match
-                                 ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md">
-                            <img class="mr-4 flex-shrink-0 h-6 w-6" src=@item.Icon>
+                         <NavLink href=@item.Href Match=@item.LinkMatch()
+                            ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md">
+                            <img class="mr-4 flex-shrink-0 h-6 w-6" src=@item.IconSrc>
                             @item.Label
                         </NavLink>
                     }
@@ -58,11 +58,11 @@
                 <div class="ml-2">My App</div>
             </NavLink>
             <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
-                @foreach (var item in SidebarNavItems!)
+                @foreach (var item in NavItems!)
                 {
-                    <NavLink href=@item.Route Match=@item.Match
+                    <NavLink href=@item.Href Match=@item.LinkMatch()
                         ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        <img class="mr-3 flex-shrink-0 h-6 w-6" src=@item.Icon>
+                        <img class="mr-3 flex-shrink-0 h-6 w-6" src=@item.IconSrc>
                         @item.Label
                     </NavLink>
                 }
@@ -80,15 +80,12 @@
 
     string? LoginUrl { get; set; }
 
-    List<NavItem> SidebarNavItems { get; set; } = new();
+    List<NavItem> NavItems { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        if (SidebarNavItems.Count == 0)
-        {
-            var sidebarCsv = await JS.InvokeAsync<string>("JS.get", "SIDEBAR");
-            SidebarNavItems = NavItem.ParseCsv(sidebarCsv);
-        }
+        if (NavItems.Count == 0)
+            NavItems = await JS.GetNavItemsAsync("SIDEBAR_CSV");
     }
 
     protected override Task OnParametersSetAsync()

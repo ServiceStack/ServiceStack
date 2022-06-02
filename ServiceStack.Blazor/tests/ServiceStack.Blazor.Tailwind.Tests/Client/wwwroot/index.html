@@ -10,13 +10,18 @@
     <script src="_content/Blazor.Extensions.Logging/blazor.extensions.logging.js" defer></script>
 </head>
 
+<template id="header-csv">
+    $0.40 /mo,        /docs/hosting
+    Prerendering,     /docs/prerender
+    Deployments,      /docs/deploy
+</template>
 <template id="sidebar-csv">
-    Counter,          /counter,       counter
-    Todos,            /todomvc,       todomvc
-    Bookings CRUD,    /bookings-crud, bookings-crud
-    Call Hello,       /hello$,        hello
-    Call HelloSecure, /hello-secure,  hello-secure
-    Fetch data,       /fetchdata,     fetchdata
+    Counter,          /counter,       /img/nav/counter.svg
+    Todos,            /todomvc,       /img/nav/todomvc.svg
+    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
+    Call Hello,       /hello$,        /img/nav/hello.svg
+    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
+    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
 </template>
 
 <body>
@@ -29,9 +34,6 @@
                     <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
                         <nav class="relative flex flex-grow">
                             <ul class="flex flex-wrap items-center justify-end w-full m-0">
-                                <li class="relative flex flex-wrap just-fu-start m-0"><a href="/docs/hosting" class="flex items-center justify-start mw-full p-4 hover:text-green-600">$0.40 /mo</a></li>
-                                <li class="relative flex flex-wrap just-fu-start m-0"><a href="/docs/prerender" class="flex items-center justify-start mw-full p-4 hover:text-green-600">Prerendering</a></li>
-                                <li class="relative flex flex-wrap just-fu-start m-0"><a href="/docs/deploy" class="flex items-center justify-start mw-full p-4 hover:text-green-600">Deployments</a></li>
                                 <li class="relative flex flex-wrap just-fu-start m-0">
                                     <a href="/signin" class="router-link-active router-link-exact-active m-2" aria-current="page">
                                         <button type="button" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -138,31 +140,35 @@
 
     <script>
         $1 = s => document.querySelector(s)
-        SIDEBAR = $1('#sidebar-csv').innerHTML
+        SIDEBAR_CSV = $1('#sidebar-csv').innerHTML
+        HEADER_CSV = $1('#header-csv').innerHTML
 
         const path = location.pathname
+        const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+
+        // Header
+        $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(HEADER_CSV, (label, route) =>
+            `<li class="relative flex flex-wrap just-fu-start m-0">
+                <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+        ))
+
+        // Sidebar
         const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
             class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
             <img class="${iconCls}" src="/img/nav/${icon}.svg">
             ${label}
         </a>`
 
-        const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => NAV(f.apply(null, s.split(',').map(x => x.trim()) ))).join('')
-
-        $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => ({
+        $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR_CSV, (label, route, icon) => NAV({
             label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
             iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
             icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
         }))
-        $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => ({
+        $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR_CSV, (label, route, icon) => NAV({
             label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
             iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
             icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
         }))
-
-        $1('#app-loading .navbar-toggler').onclick = function () {
-            this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse')
-        }
 
         const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
         fetch(`/prerender${pagePath}`)
@@ -205,46 +211,44 @@
         </div>
     </div>
 
-<script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
 
-<script type="text/javascript" src="/js/highlight.min.js"></script>
-<script>hljs.highlightAll()</script>
+    <script type="text/javascript" src="/js/highlight.min.js"></script>
+    <script>hljs.highlightAll()</script>
 
-<script>
-/* DOM functions used in Blazor Components */
-JS = (function () {
-    return {
-        get(id) {
-            return window[id]
-        },
+    <script>
+        /* DOM functions used in Blazor Components */
+        JS = (function () {
+            return {
+                get(name) { return window[name] },
 
-        /* Loading */
-        prerenderedPage() {
-            const el = document.querySelector('#app-loading .content')
-            return el && el.innerHTML || ''
-        },
+                /* Loading */
+                prerenderedPage() {
+                    const el = document.querySelector('#app-loading .content')
+                    return el && el.innerHTML || ''
+                },
 
-        /* ShellCommand */
-        copy(target) {
-            let $el = document.createElement("input")
-            let $lbl = target.parentElement.querySelector('label')
+                /* ShellCommand */
+                copy(target) {
+                    let $el = document.createElement("input")
+                    let $lbl = target.parentElement.querySelector('label')
 
-            $el.setAttribute("value", $lbl.innerText)
-            document.body.appendChild($el)
-            $el.select()
-            document.execCommand("copy")
-            document.body.removeChild($el);
+                    $el.setAttribute("value", $lbl.innerText)
+                    document.body.appendChild($el)
+                    $el.select()
+                    document.execCommand("copy")
+                    document.body.removeChild($el);
 
-            if (typeof window.getSelection == "function") {
-                const range = document.createRange()
-                range.selectNodeContents($lbl)
-                window.getSelection()?.removeAllRanges()
-                window.getSelection()?.addRange(range)
+                    if (typeof window.getSelection == "function") {
+                        const range = document.createRange()
+                        range.selectNodeContents($lbl)
+                        window.getSelection()?.removeAllRanges()
+                        window.getSelection()?.addRange(range)
+                    }
+                }
             }
-        }
-    }
-})()
-</script>
+        })()
+    </script>
 
 </body>
 </html>
