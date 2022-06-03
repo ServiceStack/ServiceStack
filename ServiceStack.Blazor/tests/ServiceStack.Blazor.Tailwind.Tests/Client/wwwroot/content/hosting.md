@@ -23,7 +23,7 @@ A consequence of designing your UI decoupled from your back-end server is that i
 cheaper to host as its static files can be hosted by any web server and is a task highly optimized by CDNs
 who are able to provide generous free & low cost hosting options.
 
-##  [/MyApp.Client](https://github.com/NetCoreTemplates/blazor-wasm/tree/main/MyApp.Client)
+##  [/MyApp.Client](https://github.com/NetCoreTemplates/blazor-tailwind/tree/main/MyApp.Client)
 
 This template takes advantage of its decoupled architecture and uses [GitHub Actions to deploy](/docs/deploy) 
 a copy of its static UI generated assets and hosted on:
@@ -33,13 +33,13 @@ a copy of its static UI generated assets and hosted on:
 ### [blazor-wasm.jamstacks.net](https://blazor-wasm.jamstacks.net)
 
 This is an optional deployment step which publishes a copy of your .NET App's `/wwwroot` folder to this templates 
-[gh-pages](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages) branch where it's automatically served from 
+[gh-pages](https://github.com/NetCoreTemplates/blazor-tailwind/tree/gh-pages) branch where it's automatically served from 
 [GitHub Pages CDN](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages) at **no cost**.
 
 It's an optional but recommended optimization as it allows the initial download from your website to be served
 directly from CDN edge caches.
 
-## [/MyApp](https://github.com/NetCoreTemplates/blazor-wasm/tree/main/MyApp)
+## [/MyApp](https://github.com/NetCoreTemplates/blazor-tailwind/tree/main/MyApp)
 
 The .NET 6 `/MyApp` backend server is required for this App's dynamic functions including the Hello API on the home page
 and its [built-in Authentication](https://docs.servicestack.net/auth). 

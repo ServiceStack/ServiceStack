@@ -7,7 +7,7 @@ WARN: During development Browser Cache needs to be disabled to refresh .md chang
 
 # ServiceStack GitHub Action Deployments
 
-The [release.yml](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/.github/workflows/release.yml) 
+The [release.yml](https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/.github/workflows/release.yml) 
 in this template enables GitHub Actions CI deployment to a dedicated server with SSH access.
 
 ## Overview
