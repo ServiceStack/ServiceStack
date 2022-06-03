@@ -135,7 +135,7 @@ solution that doesn't compromise its CDN hostability.</p>
 <p>We've little opportunity over improving the startup time of the real C# Blazor App beyond hosting its static assets on CDN edge caches,
 but ultimately what matters is <a href="https://marvelapp.com/blog/a-designers-guide-to-perceived-performance/">perceived performance</a> which
 we do have control over given the screen for a default Blazor WASM project is a glaring white screen flash:</p>
-<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/loading-default.png" alt="" /></p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/loading-default.png" alt="" /></p>
 <p>The longer users have to wait looking at this black loading screen without signs of progress, the more they'll associate your site
 with taking forever to load.</p>
 <p>One technique many popular sites are using to increase perceived performance is to use content placeholders in place of real-content
@@ -162,7 +162,7 @@ where anything between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> w
                 &lt;ul class=&quot;flex flex-wrap items-center justify-end w-full m-0&quot;&gt;
                     &lt;li class=&quot;relative flex flex-wrap just-fu-start m-0&quot;&gt;
                         &lt;a href=&quot;/signup&quot; class=&quot;m-2&quot;&gt;
-                            &lt;button class=&quot;inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500&quot;&gt;
+                            &lt;button class=&quot;inline-flex items-center px-4 py-2 border&quot;&gt;
                                 Sign In
                             &lt;/button&gt;
                         &lt;/a&gt;
@@ -234,12 +234,12 @@ const NAV = ({ label, route, exact, icon, cls, iconCls }) =&gt; `&lt;a href=&quo
 &lt;/a&gt;`
 
 $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) =&gt; NAV({
-    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium`,
     iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
     icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
 }))
 $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) =&gt; NAV({
-    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium`,
     iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
     icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
 }))
@@ -280,11 +280,15 @@ fetch(`/prerender${pagePath}`)
 <p>We also tag which path the prerendered content is for and provide a JS function to fetch the prerendered content
 which we'll need to access later in our App:</p>
 <pre><code class="language-html">&lt;script&gt;
-/* Loading */
-window.prerenderedPage = function () {
-    const el = document.querySelector('#app-loading .content')
-    return el &amp;&amp; el.innerHTML || ''
-}
+JS = (function () {
+    return {
+        /* Loading */
+        prerenderedPage() {
+            const el = document.querySelector('#app-loading .content')
+            return el &amp;&amp; el.innerHTML || ''
+        },
+    }
+})()
 &lt;/script&gt;
 </code></pre>
 <p>We now have a solution in place to load pre-rendered content from the <code>/prerender</code> folder, but still need some way of generating it.</p>
@@ -365,7 +369,7 @@ when it publishes the App with:</p>
 <p>Now when we next commit code, the GitHub CI Action will run the above task to generate our
 <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/gh-pages/prerender/index.html">/prerender/index.html</a> page
 that now loads our <a href="/">Home Page</a> instantly!</p>
-<p><a href="/"><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/home-prerendered.png" alt="" /></a></p>
+<p><a href="/"><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/home-prerendered.png" alt="" /></a></p>
 <p>The only issue now is that the default Blazor template behavior will yank our pre-rendered page, once during loading
 and another during Authorization. To stop the unwanted yanking we've updated the
 <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/Loading.razor"><Loading/></a> component
@@ -645,39 +649,39 @@ fetch(`/prerender${pagePath}`)
     <script type="text/javascript" src="/js/highlight.min.js"></script>
     <script>hljs.highlightAll()</script>
 
-    <script>
-        /* DOM functions used in Blazor Components */
-        JS = (function () {
-            return {
-                get(name) { return window[name] },
+<script>
+/* DOM functions used in Blazor Components */
+JS = (function () {
+    return {
+        get(name) { return window[name] },
 
-                /* Loading */
-                prerenderedPage() {
-                    const el = document.querySelector('#app-loading .content')
-                    return el && el.innerHTML || ''
-                },
+        /* Loading */
+        prerenderedPage() {
+            const el = document.querySelector('#app-loading .content')
+            return el && el.innerHTML || ''
+        },
 
-                /* ShellCommand */
-                copy(target) {
-                    let $el = document.createElement("input")
-                    let $lbl = target.parentElement.querySelector('label')
+        /* ShellCommand */
+        copy(target) {
+            let $el = document.createElement("input")
+            let $lbl = target.parentElement.querySelector('label')
 
-                    $el.setAttribute("value", $lbl.innerText)
-                    document.body.appendChild($el)
-                    $el.select()
-                    document.execCommand("copy")
-                    document.body.removeChild($el);
+            $el.setAttribute("value", $lbl.innerText)
+            document.body.appendChild($el)
+            $el.select()
+            document.execCommand("copy")
+            document.body.removeChild($el);
 
-                    if (typeof window.getSelection == "function") {
-                        const range = document.createRange()
-                        range.selectNodeContents($lbl)
-                        window.getSelection()?.removeAllRanges()
-                        window.getSelection()?.addRange(range)
-                    }
-                }
+            if (typeof window.getSelection == "function") {
+                const range = document.createRange()
+                range.selectNodeContents($lbl)
+                window.getSelection()?.removeAllRanges()
+                window.getSelection()?.addRange(range)
             }
-        })()
-    </script>
+        }
+    }
+})()
+</script>
 
 </body>
 </html>

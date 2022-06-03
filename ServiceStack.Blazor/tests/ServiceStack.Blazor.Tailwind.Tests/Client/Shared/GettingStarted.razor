@@ -1,6 +1,6 @@
 <section class="py-8 flex">
     <div class="mt-8 mx-auto">
-        <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+        <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl text-center">
             Getting Started
         </h2>
         <div>
@@ -20,7 +20,7 @@
                                             <img src="/img/blazor.svg" class="w-14 h-14" />
                                         </div>
                                     </div>
-                                    <div class="text-xl font-medium text-gray-700">Blazor WASM</div>
+                                    <div class="text-xl font-medium text-gray-700">Blazor Tailwind</div>
                                     <div class="flex justify-center h-8"></div>
                                     <span class="archive-name px-4 pb-2 text-blue-600 dark:text-indigo-400">@projectZip</span>
                                     <div class="count mt-1 text-gray-400 text-sm"></div>
@@ -31,8 +31,15 @@
                 </section>
 
                 <div class="py-6 text-center text-xl">
-                    Open with <a href="https://visualstudio.microsoft.com/vs/">Visual Studio 2022</a>
+                    Open with <a class="underline hover:text-green-600" href="https://visualstudio.microsoft.com/vs/">Visual Studio 2022</a> 
+                    or <a class="underline hover:text-green-600" href="https://www.jetbrains.com/rider/">JetBrains Rider</a>
                 </div>
+                <h4 class="py-6 text-center text-xl">Run Blazor (in <b class="font-semibold">./MyApp</b>)</h4>
+                <ShellCommand>dotnet watch</ShellCommand>
+                <h4 class="py-6 text-center text-xl">
+                    Run Tailwind (in <b class="font-semibold">./MyApp.Client</b>)
+                </h4>
+                <ShellCommand>npm run ui:dev</ShellCommand>
             </div>
         </div>
     </div>

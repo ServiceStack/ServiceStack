@@ -257,39 +257,39 @@ fetch(`/prerender${pagePath}`)
     <script type="text/javascript" src="/js/highlight.min.js"></script>
     <script>hljs.highlightAll()</script>
 
-    <script>
-        /* DOM functions used in Blazor Components */
-        JS = (function () {
-            return {
-                get(name) { return window[name] },
+<script>
+/* DOM functions used in Blazor Components */
+JS = (function () {
+    return {
+        get(name) { return window[name] },
 
-                /* Loading */
-                prerenderedPage() {
-                    const el = document.querySelector('#app-loading .content')
-                    return el && el.innerHTML || ''
-                },
+        /* Loading */
+        prerenderedPage() {
+            const el = document.querySelector('#app-loading .content')
+            return el && el.innerHTML || ''
+        },
 
-                /* ShellCommand */
-                copy(target) {
-                    let $el = document.createElement("input")
-                    let $lbl = target.parentElement.querySelector('label')
+        /* ShellCommand */
+        copy(target) {
+            let $el = document.createElement("input")
+            let $lbl = target.parentElement.querySelector('label')
 
-                    $el.setAttribute("value", $lbl.innerText)
-                    document.body.appendChild($el)
-                    $el.select()
-                    document.execCommand("copy")
-                    document.body.removeChild($el);
+            $el.setAttribute("value", $lbl.innerText)
+            document.body.appendChild($el)
+            $el.select()
+            document.execCommand("copy")
+            document.body.removeChild($el);
 
-                    if (typeof window.getSelection == "function") {
-                        const range = document.createRange()
-                        range.selectNodeContents($lbl)
-                        window.getSelection()?.removeAllRanges()
-                        window.getSelection()?.addRange(range)
-                    }
-                }
+            if (typeof window.getSelection == "function") {
+                const range = document.createRange()
+                range.selectNodeContents($lbl)
+                window.getSelection()?.removeAllRanges()
+                window.getSelection()?.addRange(range)
             }
-        })()
-    </script>
+        }
+    }
+})()
+</script>
 
 </body>
 </html>
