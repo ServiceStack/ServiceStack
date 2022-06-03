@@ -79,11 +79,11 @@ which gives the impression that the site has almost loaded and only requires a f
 <p>But we can do even better than an inert content placeholder, and load a temporary chrome of our App. But as this needs to be done
 before Blazor has loaded we need to implement this with a sprinkling of HTML + JS.</p>
 <p>First thing we need to do is move the scoped styles of our Apps
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Shared/MainLayout.razor">MainLayout</a> and
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Shared/NavMenu.razor">NavMenu</a> into an external
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/wwwroot/css/main-layout.css">main-layout.css</a> so our temp
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/MainLayout.razor">MainLayout</a> and
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/NavMenu.razor">NavMenu</a> into an external
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/css/main-layout.css">main-layout.css</a> so our temp
 App chrome can use it.</p>
-<p>Then in our <a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/wwwroot/index.html">/wwwroot/index.html</a> anything
+<p>Then in our <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html">/wwwroot/index.html</a> anything
 between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> is displayed whilst our Blazor App is loading, before it's replaced with the real App:</p>
 <pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
     &lt;!-- loading: render temp static app chrome to improve perceived performance --&gt;
@@ -177,7 +177,7 @@ need updating when add/removing menu items.</p>
 when loading the App from the first time.</p>
 <p>With the above temp App chrome already in place, a simple generic pre-rendering solution to be able to load any prerendered
 any page is to check if any prerendered content exists in the
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/tree/gh-pages/prerender">/prerender</a>
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/prerender">/prerender</a>
 folder for the current path, then replace the index.html Loading... page with if it does:</p>
 <pre><code class="language-js">const pagePath = path.endsWith('/') 
     ? path.substring(0, path.length - 2) + '/index.html' 
@@ -208,7 +208,7 @@ each prerendered page if preferred), although it's less maintenance if you autom
 your App.</p>
 <p>Which ever tool you choose would also need to be installed in your CI/GitHub Action if that's where it's run, so we've opted for
 a dependency-free solution by using the tool or .NET projects have: MSBuild.</p>
-<p>As our <a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Pages/Index.razor">/Pages/Index.razor</a> home page is pretty simple:</p>
+<p>As our <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Index.razor">/Pages/Index.razor</a> home page is pretty simple:</p>
 <pre><code class="language-razor">@page &quot;/&quot;
 
 &lt;h1&gt;Hello, world!&lt;/h1&gt;
@@ -219,7 +219,7 @@ Welcome to your new Blazor WASM app, if you're new to Blazor
 &lt;GettingStarted /&gt;
 </code></pre>
 <p>We can get most of the way there by replacing the <code>&lt;GettingStarted /&gt;</code> text with the
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Shared/GettingStarted.razor">GettingStarted.razor</a> component:</p>
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/GettingStarted.razor">GettingStarted.razor</a> component:</p>
 <pre><code class="language-xml">&lt;PropertyGroup&gt;
   &lt;ClientDir&gt;$(MSBuildProjectDirectory)/../MyApp.Client&lt;/ClientDir&gt;
   &lt;WwwRoot&gt;$(ClientDir)/wwwroot&lt;/WwwRoot&gt;
@@ -237,7 +237,7 @@ Welcome to your new Blazor WASM app, if you're new to Blazor
 <p>To test it out locally, you can run the MSBuild <code>PrerenderPages</code> task with:</p>
 <pre><code class="language-bash">$ dotnet msbuild -target:PrerenderPages
 </code></pre>
-<p>Whereas <a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80">GitHub Actions runs it</a>
+<p>Whereas <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80">GitHub Actions runs it</a>
 when it publishes your App with task parameters:</p>
 <pre><code class="language-bash">$ dotnet publish -c Release /p:APP_TASKS=prerender
 </code></pre>
@@ -254,9 +254,9 @@ to do with MSBuild alone so we've done this in a custom cleanup task that's gene
 <h3 id="prerenderclean-task">prerender:clean task</h3>
 <p>As we need something more powerful than MSBuild without wanting to add any additional tool dependencies, we've chosen to
 reuse the existing ASP.NET Core Server App for our custom tasks by calling
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp/Program.cs#L4">TaskRunner.Handle(args)</a>
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Program.cs#L4">TaskRunner.Handle(args)</a>
 at the start of our App, to run tasks defined in
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp/Tasks.cs">Tasks.cs</a>.</p>
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Tasks.cs">Tasks.cs</a>.</p>
 <p>This is what's used to implement our <code>-task prerender:clean</code> executed above:</p>
 <pre><code class="language-csharp">public static class TaskRunner
 {
@@ -299,12 +299,12 @@ at the start of our App, to run tasks defined in
 }
 </code></pre>
 <p>Now when we next commit code, the GitHub CI Action will run the above task to generate our
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/gh-pages/prerender/index.html">/prerender/index.html</a> page
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/gh-pages/prerender/index.html">/prerender/index.html</a> page
 that now loads our <a href="/">Home Page</a> instantly!</p>
 <p><a href="/"><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/home-prerendered.png" alt="" /></a></p>
 <p>The only issue now is that the default Blazor template behavior will yank our pre-rendered page, once during loading
 and another during Authorization. To stop the unwanted yanking we've updated the
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Shared/Loading.razor"><Loading/></a> component
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/Loading.razor"><Loading/></a> component
 to instead load the prerendered page content if it's <strong>for the current path</strong>:</p>
 <pre><code class="language-razor">@inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
@@ -356,12 +356,12 @@ for the <strong>box-shadow under the top navigation</strong> so you can tell whe
 instead of the C# Blazor version.</p>
 <h3 id="prerendering-markdown-content">Prerendering Markdown Content</h3>
 <p>The other pages that would greatly benefit from prerendering are the Markdown <code>/docs/*</code> pages (like this one) that's implemented in
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Pages/Docs.razor">Docs.razor</a>.</p>
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Docs.razor">Docs.razor</a>.</p>
 <p>However to enable SEO friendly content our <code>fetch(/prerender/*)</code> solution isn't good enough as the initial page download
 needs to contain the prerendered content, i.e. instead of being downloaded in after.</p>
 <h3 id="prerendermarkdown-task">prerender:markdown task</h3>
 <p>To do this our <code>prerender:markdown</code> Task scans all <code>*.md</code> pages in the <code>&lt;src&gt;</code> directory and uses the same
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/MarkdownUtils.cs">/MyApp.Client/MarkdownUtils.cs</a>
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/MarkdownUtils.cs">/MyApp.Client/MarkdownUtils.cs</a>
 implementation <code>Docs.razor</code> uses to generate the markdown and embeds it into the <code>index.html</code> loading page to generate
 the pre-rendered page:</p>
 <pre><code class="language-csharp">public static class TaskRunner
@@ -429,11 +429,11 @@ the pre-rendered page:</p>
     }
 }
 </code></pre>
-<p>Whilst the <code>wwwroot/index.html</code> is parsed with <a href="https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp/Tasks.cs">IndexTemplate</a>
+<p>Whilst the <code>wwwroot/index.html</code> is parsed with <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Tasks.cs">IndexTemplate</a>
 who uses the resulting layout to generate pages within <code>&lt;!--PAGE--&gt;&lt;!--/PAGE--&gt;</code> markers.</p>
 <p>Prerendering the <code>/wwwroot/content/*.md</code> pages are also executed by a MSBuild task run by GitHub Actions below which outputs
 all pre-generated pages to the
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/tree/gh-pages/docs">/wwwroot/docs/*.html</a> folder:</p>
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/docs">/wwwroot/docs/*.html</a> folder:</p>
 <pre><code class="language-xml">&lt;Target Name=&quot;AppTasks&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(APP_TASKS) != ''&quot;&gt;
   &lt;CallTarget Targets=&quot;PrerenderMarkdown&quot; Condition=&quot;$(APP_TASKS.Contains('prerender'))&quot; /&gt;
 &lt;/Target&gt;

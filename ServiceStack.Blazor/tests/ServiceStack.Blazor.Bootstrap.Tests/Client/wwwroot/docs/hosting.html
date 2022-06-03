@@ -51,17 +51,17 @@ pre-built static assets from CDN edge caches.</p>
 <p>A consequence of designing your UI decoupled from your back-end server is that it also becomes considerably
 cheaper to host as its static files can be hosted by any web server and is a task highly optimized by CDNs
 who are able to provide generous free &amp; low cost hosting options.</p>
-<h2 id="myapp.client"><a href="https://github.com/NetCoreTemplates/blazor-bootstrap/tree/main/MyApp.Client">/MyApp.Client</a></h2>
+<h2 id="myapp.client"><a href="https://github.com/NetCoreTemplates/blazor-wasm/tree/main/MyApp.Client">/MyApp.Client</a></h2>
 <p>This template takes advantage of its decoupled architecture and uses <a href="/docs/deploy">GitHub Actions to deploy</a>
 a copy of its static UI generated assets and hosted on:</p>
 <h3 id="github-pages-cdn">GitHub Pages CDN</h3>
 <h3 id="blazor-wasm.jamstacks.net"><a href="https://blazor-wasm.jamstacks.net">blazor-wasm.jamstacks.net</a></h3>
 <p>This is an optional deployment step which publishes a copy of your .NET App's <code>/wwwroot</code> folder to this templates
-<a href="https://github.com/NetCoreTemplates/blazor-bootstrap/tree/gh-pages">gh-pages</a> branch where it's automatically served from
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages">gh-pages</a> branch where it's automatically served from
 <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages">GitHub Pages CDN</a> at <strong>no cost</strong>.</p>
 <p>It's an optional but recommended optimization as it allows the initial download from your website to be served
 directly from CDN edge caches.</p>
-<h2 id="myapp"><a href="https://github.com/NetCoreTemplates/blazor-bootstrap/tree/main/MyApp">/MyApp</a></h2>
+<h2 id="myapp"><a href="https://github.com/NetCoreTemplates/blazor-wasm/tree/main/MyApp">/MyApp</a></h2>
 <p>The .NET 6 <code>/MyApp</code> backend server is required for this App's dynamic functions including the Hello API on the home page
 and its <a href="https://docs.servicestack.net/auth">built-in Authentication</a>.</p>
 <p>The C# project still contains the complete App and can be hosted independently with the entire App served

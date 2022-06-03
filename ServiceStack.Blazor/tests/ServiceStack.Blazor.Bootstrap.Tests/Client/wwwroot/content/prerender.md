@@ -60,12 +60,12 @@ But we can do even better than an inert content placeholder, and load a temporar
 before Blazor has loaded we need to implement this with a sprinkling of HTML + JS.
 
 First thing we need to do is move the scoped styles of our Apps
-[MainLayout](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Shared/MainLayout.razor) and
-[NavMenu](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Shared/NavMenu.razor) into an external
-[main-layout.css](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/wwwroot/css/main-layout.css) so our temp
+[MainLayout](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/MainLayout.razor) and
+[NavMenu](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/NavMenu.razor) into an external
+[main-layout.css](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/css/main-layout.css) so our temp
 App chrome can use it.
 
-Then in our [/wwwroot/index.html](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/wwwroot/index.html) anything
+Then in our [/wwwroot/index.html](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html) anything
 between `<div id="app"></div>` is displayed whilst our Blazor App is loading, before it's replaced with the real App.
 
 So Here we just paste in the **MainLayout** markup:
@@ -178,7 +178,7 @@ when loading the App from the first time.
 
 With the above temp App chrome already in place, a simple generic pre-rendering solution to be able to load any prerendered
 page is to check if any prerendered content exists in the
-[/prerender](https://github.com/NetCoreTemplates/blazor-bootstrap/tree/gh-pages/prerender)
+[/prerender](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/prerender)
 folder for the current path, then if it does replace the default index.html `Loading...` page with it:
 
 ```js
@@ -221,9 +221,9 @@ can easily be run from the command-line and importantly is supported by the [bUn
 be using to render component fragments in isolation.
 
 To distinguish prerendering tasks from our other Tests we've tagged 
-[PrerenderTasks.cs](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Tests/PrerenderTasks.cs)
+[PrerenderTasks.cs](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Tests/PrerenderTasks.cs)
 with the `prerender` Test category. The only configuration the tasks require is the location of the `ClientDir` WASM Project 
-defined in [appsettings.json](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Tests/appsettings.json) 
+defined in [appsettings.json](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Tests/appsettings.json) 
 that's setup in the constructor.
 
 The `Render<T>()` method renders the Blazor Page inside a `Bunit.TestContext` which it saves at the location 
@@ -293,7 +293,7 @@ To have CI automatically run it when it creates a production build of our App we
 </Target>
 ```
 
-Which allows [GitHub Actions to run it](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80)
+Which allows [GitHub Actions to run it](https://github.com/NetCoreTemplates/blazor-wasm/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80)
 when it publishes the App with:
 
 ```bash
@@ -301,14 +301,14 @@ $ dotnet publish -c Release /p:APP_TASKS=prerender
 ```
 
 Now when we next commit code, the GitHub CI Action will run the above task to generate our
-[/prerender/index.html](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/gh-pages/prerender/index.html) page
+[/prerender/index.html](https://github.com/NetCoreTemplates/blazor-wasm/blob/gh-pages/prerender/index.html) page
 that now loads our [Home Page](/) instantly!
 
 [![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/home-prerendered.png)](/)
 
 The only issue now is that the default Blazor template behavior will yank our pre-rendered page, once during loading
 and another during Authorization. To stop the unwanted yanking we've updated the
-[<Loading/>](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Shared/Loading.razor) component
+[<Loading/>](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/Loading.razor) component
 to instead load the prerendered page content if it's **for the current path**:
 
 ```razor
@@ -368,7 +368,7 @@ instead of the C# Blazor version.
 ### Prerendering Markdown Content
 
 The other pages that would greatly benefit from prerendering are the Markdown `/docs/*` pages (like this one) that's implemented in
-[Docs.razor](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Pages/Docs.razor).
+[Docs.razor](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Docs.razor).
 
 However to enable SEO friendly content our `fetch(/prerender/*)` solution isn't good enough as the initial page download
 needs to contain the prerendered content, i.e. instead of being downloaded in after.
@@ -376,10 +376,10 @@ needs to contain the prerendered content, i.e. instead of being downloaded in af
 ### PrerenderMarkdown Task
 
 To do this our `PrerenderMarkdown` Task scans all `*.md` pages in the 
-[content](https://github.com/NetCoreTemplates/blazor-bootstrap/tree/main/MyApp.Client/wwwroot/content)
+[content](https://github.com/NetCoreTemplates/blazor-wasm/tree/main/MyApp.Client/wwwroot/content)
 directory and uses the same
-[/MyApp.Client/MarkdownUtils.cs](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/MarkdownUtils.cs)
-implementation [Docs.razor](https://github.com/NetCoreTemplates/blazor-bootstrap/blob/main/MyApp.Client/Pages/Docs.razor)
+[/MyApp.Client/MarkdownUtils.cs](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/MarkdownUtils.cs)
+implementation [Docs.razor](https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Docs.razor)
 uses to generate the markdown and embeds it into the `index.html` loading page to generate the pre-rendered page:
 
 ```csharp
@@ -485,7 +485,7 @@ Whilst the `wwwroot/index.html` is parsed with `PageTemplate` above who uses the
 within `<!--PAGE--><!--/PAGE-->` markers.
 
 After it's also executed by the same MSBuild task run by GitHub Actions it prerenders all `/wwwroot/content/*.md` pages 
-which are written to the [/wwwroot/docs/*.html](https://github.com/NetCoreTemplates/blazor-bootstrap/tree/gh-pages/docs) folder.
+which are written to the [/wwwroot/docs/*.html](https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/docs) folder.
 
 This results in the path to the pre-generated markdown docs i.e. [/docs/prerender](/docs/prerender) having the **exact same path** 
 as its route in the Blazor App, which when exists, CDNs give priority to over the SPA fallback the Blazor App is loaded with.
