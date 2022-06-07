@@ -327,6 +327,24 @@ namespace ServiceStack
             response.SetContentLength(bytes.Length);
             return response.OutputStream.WriteAsync(bytes).AsTask();
         }
+
+        public static async Task WriteAsync(this IResponse response, ReadOnlyMemory<byte> bytes)
+        {
+            if (bytes.IsEmpty)
+            {
+                response.SetContentLength(0);
+                response.EndRequest();
+                return;
+            }
+
+            //retain behavior with ASP.NET's response.Write(string)
+            if (response.ContentType?.IndexOf(';') == -1)
+                response.ContentType += ContentFormat.Utf8Suffix;
+
+            response.SetContentLength(bytes.Length);
+            await response.OutputStream.WriteAsync(bytes);
+            await response.EndHttpHandlerRequestAsync();
+        }
  
         public static void EndWith(this IResponse res, HttpStatusCode code, string description=null)
         {

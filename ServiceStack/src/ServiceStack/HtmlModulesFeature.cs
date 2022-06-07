@@ -436,7 +436,8 @@ public class HtmlModule
         {
             var zipBytes = zipCache.GetOrAdd(compressor.Encoding, _ => compressor.Compress(cachedBytes!));
             httpRes.AddHeader(HttpHeaders.ContentEncoding, compressor.Encoding);
-            await httpRes.OutputStream.WriteAsync(zipBytes);
+            httpRes.AddHeader(HttpHeaders.ContentType, httpRes.ContentType);
+            await httpRes.WriteAsync(zipBytes);
             return true;
         }
         return false;
