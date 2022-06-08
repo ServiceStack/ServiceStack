@@ -1414,6 +1414,21 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
     }
 
+    public ApiResult<TResponse> ApiForm<TResponse>(IReturn<TResponse> request, MultipartFormDataContent body)
+    {
+        try
+        {
+            body.AddParams(request);
+            var relativeOrAbsoluteUrl = request.GetType().ToApiUrl();
+            var result = SendForm<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, body);
+            return ApiResult.Create(result);
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult<TResponse>();
+        }
+    }
+
     public async Task<TResponse> SendFormAsync<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token=default)
     {
         var client = GetHttpClient();
@@ -1453,6 +1468,21 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         try
         {
             var result = await SendFormAsync<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, request, token).ConfigAwait();
+            return ApiResult.Create(result);
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult<TResponse>();
+        }
+    }
+    
+    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(IReturn<TResponse> request, MultipartFormDataContent body, CancellationToken token=default)
+    {
+        try
+        {
+            body.AddParams(request);
+            var relativeOrAbsoluteUrl = request.GetType().ToApiUrl();
+            var result = await SendFormAsync<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, body, token).ConfigAwait();
             return ApiResult.Create(result);
         }
         catch (Exception ex)

@@ -708,6 +708,37 @@ public class AutoQueryCrudReferencesTests
     }
 
     [Test]
+    public void Can_send_Multipart_Requests_with_Request_DTO()
+    {
+        var client = CreateAuthClient();
+        
+        using var content = new MultipartFormDataContent()
+            .AddFile(nameof(MultipartRequest.ProfileUrl), "dto-profile.txt", new MemoryStream("ABC".ToUtf8Bytes()))
+            .AddFile(nameof(MultipartRequest.UploadedFiles), "dto-uploadedFiles1.txt", new MemoryStream("DEF".ToUtf8Bytes()))
+            .AddFile(nameof(MultipartRequest.UploadedFiles), "dto-uploadedFiles2.txt", new MemoryStream("GHI".ToUtf8Bytes()));
+
+        var request = new MultipartRequest {
+            Id = 2,
+            String = "bar",
+            Contact = new Contact { Id = 1, FirstName = "First", LastName = "Last" },
+        };
+
+        var api = client.ApiForm(request, content);
+        if (!api.Succeeded) api.Error.PrintDump();
+        
+        Assert.That(api.Succeeded);
+        var response = api.Response!;
+        Assert.That(response.Id, Is.EqualTo(2));
+        Assert.That(response.String, Is.EqualTo("bar"));
+        Assert.That(response.Contact.Id, Is.EqualTo(1));
+        Assert.That(response.Contact.FirstName, Is.EqualTo("First"));
+        Assert.That(response.ProfileUrl, Is.EqualTo($"/uploads/profiles/{DateTime.UtcNow:yyyy/MM/dd}/dto-profile.txt"));
+        Assert.That(response.UploadedFiles.Count, Is.EqualTo(2));
+        Assert.That(response.UploadedFiles[0].FilePath, Is.EqualTo($"/uploads/applications/app/2/{DateTime.UtcNow:yyyy/MM/dd}/dto-uploadedFiles1.txt"));
+        Assert.That(response.UploadedFiles[1].FilePath, Is.EqualTo($"/uploads/applications/app/2/{DateTime.UtcNow:yyyy/MM/dd}/dto-uploadedFiles2.txt"));
+    }
+
+    [Test]
     public async Task Can_send_Multipart_Requests_Async()
     {
         var client = CreateAuthClient();
