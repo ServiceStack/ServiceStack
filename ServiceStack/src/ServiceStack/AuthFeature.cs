@@ -387,6 +387,7 @@ namespace ServiceStack
 
             navItems.AddRange(authNavItems);
 
+            var uiFeature = appHost.GetPlugin<UiFeature>();
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.Auth = new AuthInfo {
                     HasAuthSecret = (appHost.Config.AdminAuthSecret != null).NullIfFalse(),
@@ -410,7 +411,7 @@ namespace ServiceStack
                             FormLayout = (x as AuthProvider)?.FormLayout,
                             Meta = x.Meta,
                         }),
-                    RoleLinks = new() {},
+                    RoleLinks = uiFeature?.RoleLinks ?? new(),
                 };
                 if (meta.Plugins.Auth.HasAuthSecret == true && AdminAuthSecretInfo != null)
                     meta.Plugins.Auth.AuthProviders.Add(AdminAuthSecretInfo);

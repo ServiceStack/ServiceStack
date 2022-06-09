@@ -1,19 +1,44 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.HtmlModules;
 using ServiceStack.Model;
 
 namespace ServiceStack;
 
-public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
+[Flags]
+public enum AdminUi
+{
+    None       = 0,
+    Users      = 1 << 0,
+    Validation = 1 << 1,
+    All = Users | Validation,
+}
+
+public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
 {
     public string Id => Plugins.Ui;
 
     public UiInfo Info { get; set; }
 
     public List<HtmlModule> HtmlModules { get; } = new();
+    
+    public HtmlModule AdminHtmlModule { get; set; } = new("/modules/admin-ui", "/admin-ui");
+    public AdminUi AdminUi { get; set; } = AdminUi.All;
+
+    /// <summary>
+    /// Links to make available to users in different roles (e.g. in built-in UIs) 
+    /// </summary>
+    public Dictionary<string, List<LinkInfo>> RoleLinks { get; set; } = new();
+
+    public LinkInfo DashboardLink { get; set; } = new()
+    {
+        Id = "",
+        Label = "Dashboard",
+        Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Home)),
+    };
 
     public List<IHtmlModulesHandler> Handlers { get; set; } = new()
     {
@@ -89,19 +114,34 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
                     Other = "other",
                 },
             },
-            AdminLinks = new()
-            {
-                new LinkInfo
-                {
-                    Id = "",
-                    Label = "Dashboard",
-                    Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Home)),
-                },
-            },
+            AdminLinks = new(),
         };
     }
+    
+    public void AddAdminLink(AdminUi feature, LinkInfo link)
+    {
+        if (!AdminUi.HasFlag(feature)) 
+            return;
+        
+        if (!RoleLinks.TryGetValue(RoleNames.Admin, out var roleLinks))
+            roleLinks = RoleLinks[RoleNames.Admin] = new();
+        roleLinks.Add(link.ToAdminRoleLink());
 
-    public void Register(IAppHost appHost) {}
+        Info.AdminLinks.Add(link);
+    }
+
+    public void BeforePluginsLoaded(IAppHost appHost)
+    {
+        if (AdminHtmlModule != null && AdminUi != AdminUi.None)
+        {
+            HtmlModules.Add(AdminHtmlModule);
+            AddAdminLink(AdminUi.None, DashboardLink);
+        }
+    }
+
+    public void Register(IAppHost appHost)
+    {
+    }
 
     public void AfterPluginsLoaded(IAppHost appHost)
     {
@@ -114,4 +154,14 @@ public class UiFeature : IPlugin, IPostInitPlugin, IHasStringId
             Module.Register(appHost);
         }
     }
+}
+
+public static class UiFeatureUtils
+{
+    public static LinkInfo ToAdminRoleLink(this LinkInfo link) => new() {
+        Id = link.Id,
+        Label = link.Label,
+        Icon = link.Icon,
+        Href = "../admin-ui" + (string.IsNullOrEmpty(link.Id) ? "" : "/" + link.Id) 
+    };
 }

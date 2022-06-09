@@ -16,7 +16,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
-    public class ValidationFeature : IPlugin, IPostInitPlugin, IAfterInitAppHost, Model.IHasStringId
+    public class ValidationFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IAfterInitAppHost, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.Validation;
         public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
@@ -45,6 +45,20 @@ namespace ServiceStack.Validation
         /// </summary>
         public Dictionary<string, string> ErrorCodeMessages => Validators.ErrorCodeMessages;
         
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            if (appHost.GetContainer().TryResolve<IValidationSource>() is IValidationSourceAdmin)
+            {
+                appHost.ConfigurePlugin<UiFeature>(feature => {
+                    feature.AddAdminLink(AdminUi.Validation, new LinkInfo {
+                        Id = "validation",
+                        Label = "Validation",
+                        Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Lock)),
+                    });
+                });
+            }
+        }
+
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
         /// will be validated.
@@ -103,7 +117,7 @@ namespace ServiceStack.Validation
             appHost.AddToAppMetadata(metadata => {
                 metadata.Plugins.Validation = new ValidationInfo {
                     HasValidationSource = hasValidationSource.NullIfFalse(), 
-                    HasValidationSourceAdmin = (container.TryResolve<IValidationSource>() is IValidationSourceAdmin).NullIfFalse(),
+                    HasValidationSourceAdmin = (appHost.GetContainer().TryResolve<IValidationSource>() is IValidationSourceAdmin).NullIfFalse(),
                     ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(),
                     TypeValidators = !EnableDeclarativeValidation ? null
                         : appHost.ScriptContext.ScriptMethods.SelectMany(x => 

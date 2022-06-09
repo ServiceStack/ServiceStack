@@ -21,6 +21,10 @@ public class ConfigureDb : IHostingStartup
             services.AddSingleton<IDbConnectionFactory>(dbFactory);
             dbFactory.RegisterConnection("chinook", 
                 context.Configuration.GetConnectionString("ChinookConnection"), SqliteDialect.Provider);
+            
+            // Add support for dynamically generated db rules
+            services.AddSingleton<IValidationSource>(c => 
+                new OrmLiteValidationSource(c.Resolve<IDbConnectionFactory>()));            
         })
         .ConfigureAppHost(appHost =>
         {
@@ -43,6 +47,8 @@ public class ConfigureDb : IHostingStartup
             
             db.DropAndCreateTable<FileSystemItem>();
             db.DropAndCreateTable<FileSystemFile>();
+            
+            appHost.Resolve<IValidationSource>().InitSchema();
         });
 }
 

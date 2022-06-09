@@ -79,8 +79,6 @@ namespace ServiceStack.Admin
             nameof(UserAuth.DigestHa1Hash),
         };
 
-        public HtmlModule HtmlModule { get; set; } = new("/modules/admin-ui", "/admin-ui");
-
         /// <summary>
         /// Invoked before user is created or updated.
         /// A non-null return (e.g. HttpResult/HttpError) invalidates the request and is used as the API Response instead
@@ -155,25 +153,19 @@ namespace ServiceStack.Admin
 
         public void BeforePluginsLoaded(IAppHost appHost)
         {
-            appHost.ConfigurePlugin<UiFeature>(feature =>
-            {
-                if (HtmlModule != null)
-                {
-                    feature.HtmlModules.Add(HtmlModule);
-                    feature.Info.AdminLinks.Add(new LinkInfo
-                    {
-                        Id = "users",
-                        Label = "Manage Users",
-                        Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
-                    });
-                }
+            appHost.ConfigurePlugin<UiFeature>(feature => {
+                feature.AddAdminLink(AdminUi.Users, new LinkInfo {
+                    Id = "users",
+                    Label = "Manage Users",
+                    Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
+                });
             });
         }
 
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(AdminUsersService));
-           
+
             appHost.AddToAppMetadata(meta => {
                 var host = (ServiceStackHost) appHost;
                 var authRepo = host.GetAuthRepository();
@@ -216,15 +208,6 @@ namespace ServiceStack.Admin
 
                     if (meta.Plugins.Auth == null)
                         throw new Exception(nameof(AdminUsersFeature) + " requires " + nameof(AuthFeature));
-
-                    if (HtmlModule != null)
-                    {
-                        meta.Plugins.Auth.RoleLinks[RoleNames.Admin] = new List<LinkInfo>
-                        {
-                            new() { Href = "../admin-ui", Label = "Dashboard", Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Home)) },
-                            new() { Href = "../admin-ui/users", Label = "Manage Users", Icon = Svg.ImageSvg(Svg.GetImage(Svg.Icons.Users, "currentColor")) },
-                        };
-                    }
                 }
             });
         }
