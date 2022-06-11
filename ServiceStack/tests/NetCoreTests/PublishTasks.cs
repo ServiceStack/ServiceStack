@@ -9,6 +9,7 @@ using ServiceStack.Data;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
 using ServiceStack.NativeTypes;
+using ServiceStack.OrmLite;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -132,14 +133,24 @@ public class PublishTasks
                 typeof(AdminUpdateUser),
                 typeof(AdminDeleteUser),
                 typeof(GetCrudEvents),
+                typeof(GetValidationRules),
+                typeof(ModifyValidationRules),
             };
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
                 new CredentialsAuthProvider(AppSettings),
             }));
             
+            var dbFactory = new OrmLiteConnectionFactory(":memory:",
+                SqliteDialect.Provider);
+            container.AddSingleton<IDbConnectionFactory>(dbFactory);
+
             container.AddSingleton<ICrudEvents>(c =>
                 new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
+            // Add support for dynamically generated db rules
+            container.AddSingleton<IValidationSource>(c => 
+                new OrmLiteValidationSource(c.Resolve<IDbConnectionFactory>()));            
+            container.Resolve<IValidationSource>().InitSchema();
 
             Plugins.Add(new AdminUsersFeature());
             Plugins.Add(new AutoQueryFeature());

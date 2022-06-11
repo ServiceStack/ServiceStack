@@ -1,8 +1,8 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-03-31 17:50:09
-Version: 6.03
+Date: 2022-06-10 21:21:19
+Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -52,6 +52,34 @@ export interface IPut
 
 export interface IDelete
 {
+}
+
+export class ValidateRule
+{
+    public validator: string;
+    public condition: string;
+    public errorCode: string;
+    public message: string;
+
+    public constructor(init?: Partial<ValidateRule>) { (Object as any).assign(this, init); }
+}
+
+export class ValidationRule extends ValidateRule
+{
+    public id: number;
+    // @Required()
+    public type: string;
+
+    public field: string;
+    public createdBy: string;
+    public createdDate?: string;
+    public modifiedBy: string;
+    public modifiedDate?: string;
+    public suspendedBy: string;
+    public suspendedDate?: string;
+    public notes: string;
+
+    public constructor(init?: Partial<ValidationRule>) { super(init); (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -306,6 +334,7 @@ export class NavItem
     public id: string;
     public className: string;
     public iconClass: string;
+    public iconSrc: string;
     public show: string;
     public hide: string;
     public children: NavItem[];
@@ -345,6 +374,9 @@ export class InputInfo
     public step?: number;
     public minLength?: number;
     public maxLength?: number;
+    public accept: string;
+    public capture: string;
+    public multiple?: boolean;
     public allowableValues: string[];
     public allowableEntries: KeyValuePair<String,String>[];
     public options: string;
@@ -793,6 +825,18 @@ export class AppMetadata
 }
 
 // @DataContract
+export class GetValidationRulesResponse
+{
+    // @DataMember(Order=1)
+    public results: ValidationRule[];
+
+    // @DataMember(Order=2)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<GetValidationRulesResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
 export class AuthenticateResponse implements IHasSessionId, IHasBearerToken
 {
     // @DataMember(Order=1)
@@ -944,6 +988,50 @@ export class MetadataApp implements IReturn<AppMetadata>
     public getTypeName() { return 'MetadataApp'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new AppMetadata(); }
+}
+
+// @Route("/validation/rules/{Type}")
+// @DataContract
+export class GetValidationRules implements IReturn<GetValidationRulesResponse>
+{
+    // @DataMember(Order=1)
+    public authSecret: string;
+
+    // @DataMember(Order=2)
+    public type: string;
+
+    public constructor(init?: Partial<GetValidationRules>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'GetValidationRules'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new GetValidationRulesResponse(); }
+}
+
+// @Route("/validation/rules")
+// @DataContract
+export class ModifyValidationRules implements IReturnVoid
+{
+    // @DataMember(Order=1)
+    public authSecret: string;
+
+    // @DataMember(Order=2)
+    public saveRules: ValidationRule[];
+
+    // @DataMember(Order=3)
+    public deleteRuleIds: number[];
+
+    // @DataMember(Order=4)
+    public suspendRuleIds: number[];
+
+    // @DataMember(Order=5)
+    public unsuspendRuleIds: number[];
+
+    // @DataMember(Order=6)
+    public clearCache?: boolean;
+
+    public constructor(init?: Partial<ModifyValidationRules>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'ModifyValidationRules'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() {}
 }
 
 /**
@@ -1232,7 +1320,7 @@ export type App = {
     unsubscribe: () => void;
     /** PetiteVue.createApp - create PetiteVue instance */
     createApp: (args: any) => any;
-    /** PetiteVue.nextTick - register callback to be fired after next async loop */
+    /** PetiteVue.nextTick - register callback to be fired afterA next async loop */
     nextTick: (f: Function) => void;
     /** PetiteVue.reactive - create a reactive store */
     reactive: Identity;
@@ -1240,6 +1328,10 @@ export type App = {
 
 /** Utility class for managing Forms UI and behavior */
 export type Forms = {
+    /** Server Metadata */
+    Server: AppMetadata;
+    /** Client Metadata APIs */
+    Meta: Meta,
     getId: (type: MetadataType, row: any) => any;
     getType: (typeRef: string | {
         namespace: string;
@@ -1321,12 +1413,18 @@ export type Meta = {
     CACHE: {};
     /** HTTP Errors specially handled by Locode */
     HttpErrors: Record<number, string>;
+    /** Server Metadata */
+    Server: AppMetadata;
     /** Map of Request DTO names to `MetadataOperationType` */
     OpsMap: Record<string, MetadataOperationType>;
     /** Map of DTO names to `MetadataType` */
     TypesMap: Record<string, MetadataType>;
     /** Map of DTO namespace + names to `MetadataType` */
     FullTypesMap: Record<string, MetadataType>;
+    /** Get list of Request DTOs */
+    operations: MetadataOperationType[];
+    /** Get list of unique API tags */
+    tags: string[];
     /** Find `MetadataOperationType` by API name */
     getOp: (opName: string) => MetadataOperationType;
     /** Find `MetadataType` by DTO name */

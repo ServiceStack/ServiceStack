@@ -410,8 +410,11 @@ function createForms(Meta, css, ui) {
         console.log('!supportsProp propType', propType, prop.type, prop.genericArgs, map(prop.genericArgs, x => inputType(x[0])), prop.input) /*debug*/
         return false
     }
+    let Server = Meta.Server
     /** @type {Forms} */
     return {
+        Meta,
+        Server,
         getId,
         getType,
         inputId,
@@ -592,6 +595,11 @@ function createForms(Meta, css, ui) {
             })
             return groups
         },
+        /** @param {} dataModel */
+        dataModelOps(dataModel) {
+            if (!dataModel) return []
+            return Server.api.operations.filter(x => Types.equals(x.dataModel, dataModel))
+        },
         /** @param {MetadataPropertyType} prop */
         complexProp(prop) {
             let propType = Types.typeName2(prop.type, prop.genericArgs)
@@ -722,6 +730,9 @@ function createMeta(app,appName) {
         }
         return defaultIcon
     }
-    return { CACHE, HttpErrors, OpsMap, TypesMap, FullTypesMap, getOp, getType, isEnum, enumValues, getIcon }
+    let Server = app
+    let tags = uniq(app.api.operations.flatMap(op => op.tags)).filter(x => !!x)
+    let operations = app.api.operations
+    return { CACHE, HttpErrors, Server, OpsMap, TypesMap, FullTypesMap, operations, tags, getOp, getType, isEnum, enumValues, getIcon }
 }
 /*:minify*/

@@ -1,20 +1,16 @@
 <script minify>
-import { Types, Forms, GetValidationRules, ScriptMethodType } from '../../lib/types'
-
 App.components({
     Validation: ({store, routes, client, Forms}) => {
         return {
             $template: '#validation-template',
             txtFilter: '',
             accessible: true,
-
             showTypeForm: false,
             /** @type {number?} */
             editTypeRule: null,
             showPropertyForm: false,
             /** @type {number?} */
             editPropertyRule: null,
-            
             loading: false,
             api: null,
             get errorSummary() {
@@ -24,7 +20,6 @@ App.components({
             get results() {
                 return this.api && this.api.response.results || []
             },
-
             get plugin() {
                 return Forms.Server.plugins.validation
             },
@@ -49,7 +44,6 @@ App.components({
                     this.showTypeForm = false;
                     this.editTypeRule = null;
                 }
-
                 if (rule.validator || rule.condition) {
                     return this.reset()
                 }
@@ -64,18 +58,14 @@ App.components({
                 this.showPropertyForm = true;
                 this.editPropertyRule = ruleId;
             },            
-            
             reset() {
                 this.api = null
                 this.showTypeForm = this.showPropertyForm = false
                 this.editTypeRule = this.editPropertyRule = null
-
                 if (!this.operation) return
-
                 apiSend(createClient, new GetValidationRules({type: routes.op}))
                     .then(r => this.api = r.api)
             },
-
             updated() {
                 this.reset()
             },
@@ -93,13 +83,10 @@ App.components({
 <template id="validation-template">
 <section class="" @vue:mounted="mounted" @vue:unmounted="unmounted">
     <div class="mt-4" v-scope="ApiSelector({ routes, Meta })"></div>
-
     <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
-
     <main class="mt-8 max-w-screen-xl">
         <div v-if="operation && !loading" class="flex flex-wrap">
             <div class="md:flex-1 md:w-1/2 md:p-2 pl-0">
-
                 <div class="">
                     <div class="flex mb-2">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -110,7 +97,6 @@ App.components({
                             Type Validation Rules
                         </h3>
                     </div>
-
                     <div>
                         <ul role="list" class="divide-y divide-gray-200">
                             <li v-for="x in results.filter(x => x.field == null)" :key="x.id" class="py-4">
@@ -133,7 +119,6 @@ App.components({
                                 </div>
                             </li>
                         </ul>
-
                         <div class="mt-4">
                             <button v-if="!showTypeForm" @click="viewTypeForm()"
                                     class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -145,10 +130,8 @@ App.components({
                         </div>
                     </div>
                 </div>
-                
             </div>
             <div class="md:flex-1 md:w-1/2 md:p-2 pr-0">
-
                 <div v-if="hasProperties" class="">
                     <div class="flex mb-2">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -159,7 +142,6 @@ App.components({
                             Property Validation Rules
                         </h3>
                     </div>
-
                     <div>
                         <ul role="list" class="divide-y divide-gray-200">
                             <li v-for="x in results.filter(x => x.field != null)" :key="x.id" class="py-4">
@@ -183,7 +165,6 @@ App.components({
                                 </div>
                             </li>
                         </ul>
-
                         <div class="mt-4">
                             <button v-if="!showPropertyForm" @click="viewPropertyForm()"
                                     class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -195,11 +176,9 @@ App.components({
                             })"></div>
                         </div>
                     </div>
-                    
                 </div>
             </div>
         </div>
-
         <div v-if="dataModelOps.length" class="mt-8">
             <h3 class="text-xl leading-6 font-medium text-gray-900">Quick Jump</h3>
             <div class="flex flex-wrap">
@@ -212,19 +191,13 @@ App.components({
             </div>
         </div>
     </main>
-    
 </section>
 </template>
-
 <script>
-import { Forms, ModifyValidationRules, ValidationRule } from '../../lib/types'
-import { apiSend } from '../../shared/js/core'
-
 App.components({
     EditValidationRule: ({ type, rule, properties, validators, done }) => {
         /** @param {string} id */
         let id = id => `${!properties ? 'type' : 'prop'}-${id}`
-        
         return {
             $template: '#edit-validation-rule-template',
             validators,
@@ -237,7 +210,6 @@ App.components({
             typeTab: 'validator',
             allowDelete: false,
             loading: false,
-
             [id('validator')]: '',
             [id('condition')]: '',
             get validator() { return this[id('validator')] },
@@ -245,17 +217,14 @@ App.components({
             get condition() { return this[id('condition')] },
             set condition(value) { return this[id('condition')] = value },
             confirmDelete: false,
-
             get model() { return this },
             api: null,
             get errorSummary() {
                 return this.api && this.api.error && this.api.summaryMessage()
             },
-            
             get formClass() { return 'shadow overflow-hidden sm:rounded-md bg-white' },
             get gridClass() { return 'grid grid-cols-12 gap-4' },
             get rowClass() { return 'col-span-12' },
-            
             get type() {
                 return type && type() || null
             },
@@ -279,12 +248,10 @@ App.components({
                     ? 'dto.Prop1 != dto.Prop2'
                     : 'it.isOdd()')
             },
-
             id,
             get ruleType() {
                 return this.isTypeValidator ? 'type' : 'prop'
             },
-
             /** @param {string} tab */
             setTypeTab(tab) {
                 this.typeTab = tab
@@ -293,7 +260,6 @@ App.components({
             activeTypeTab(tab) {
                 return this.typeTab === tab
             },
-
             /** @param {string} sel */
             focusValidator(sel) {
                 let txt = document.querySelector(sel)
@@ -311,18 +277,15 @@ App.components({
                     txt.focus()
                 }
             },
-
             /** @param {ScriptMethodType} v */
             editValidator(v) {
                 this.validator = this.editfmt(v)
                 return this.$nextTick(() => this.focusValidator(`#${id('validator')}`))
             },
-
             typesWrapper: {
                 'String[]': p => "['" + p + "']",
                 'String': p => "'" + p + "'",
             },
-
             /** @param {string} type
              *  @param {string} p 
              */
@@ -330,21 +293,17 @@ App.components({
                 const f = this.typesWrapper[type]
                 return f && f(p) || '{' + p + '}'
             },
-            
             /** @param {ScriptMethodType} v */
             editfmt(v) {
                 let paramNames = v.paramNames || []
                 return v.name + (paramNames .length > 0 ? `(${paramNames.map((p, i) =>
                     this.wrap(v.paramTypes[i], p)).join(',')})` : '')
             },
-            
             /** @param {ScriptMethodType} v */
             fmt(v) {
                 let paramNames = v.paramNames || []
                 return v.name + (paramNames.length > 0 ? `(${paramNames.join(',')})` : '')
             },
-
-
             async submitDelete() {
                 apiSend(createClient, new ModifyValidationRules({ deleteRuleIds: [this.rule.id] }))
                     .then(r => {
@@ -352,7 +311,6 @@ App.components({
                         this.done(this.rule)
                     })
             },
-
             submit() {
                 const request = new ValidationRule({
                     type: this.type.name,
@@ -367,7 +325,6 @@ App.components({
                 if (this.message) request.message = this.message
                 if (this.notes) request.notes = this.notes
                 if (this.rule) request.id = this.rule.id
-                
                 apiSend(createClient, new ModifyValidationRules({
                     saveRules: [request]
                 })).then(r => {
@@ -375,7 +332,6 @@ App.components({
                     this.done(request)
                 })
             },
-            
             mounted() {
                 this.field = map(this.properties, p => p[0] && p[0].name) || null
                 if (!this.rule) return
@@ -417,7 +373,6 @@ App.components({
                     </div>
                 </div>
             </div>
-
             <div class="flex flex-wrap sm:flex-nowrap">
                 <div class="flex-grow mb-3 sm:mb-0">
                     <fieldset :class="gridClass">
@@ -425,7 +380,6 @@ App.components({
                             <div v-if="typeTab=='validator'"      v-scope="Input({ input:{ id:id('validator'), name:'validator', type:'text', label:'', placeholder:placeholderValidator, help:'Choose from any of the pre-defined validator\'s below', spellcheck:false }, model, api:() => api })"></div>
                             <div v-else-if="typeTab=='condition'" v-scope="Input({ input:{ id:id('condition'), name:'condition', type:'text', label:'', placeholder:conditionValidator, help:'Script Expression that must evaluate to true, see: sharpscript.net', spellcheck:false }, model, api:() => api })"></div>
                         </div>
-                        
                         <div v-if="field" :class="rowClass">
                             <div v-scope="Input({ input:{ id:'field', type:'select', label:'', 
                                 help:'The property this rule applies to', allowableValues:() => properties.map(x => x.name) }, model, api:() => api })"></div>
@@ -469,10 +423,8 @@ App.components({
         </div>
     </div>
 </form>
-
 <div class="my-8">
     <h4 class="text-xl leading-6 font-medium text-gray-900">Quick Select {{isTypeValidator ? 'Type' : 'Property'}} Validator</h4>
-
     <div v-for="x in validators" :key="x.name + x.paramNames">
         <button type="button" @click="editValidator(x)"
                 class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -480,6 +432,5 @@ App.components({
         </button>
     </div>
 </div>
-    
 </template>
 <!--/minify-->

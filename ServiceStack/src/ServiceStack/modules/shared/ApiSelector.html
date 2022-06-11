@@ -1,0 +1,82 @@
+<script minify>
+/** requires awesomplete.js,awesomplete.css */
+App.components({
+    ApiSelector: ({ routes, Meta }) => {
+        let sort = (x,y) => x > y ? 1 : -1;
+        return {
+            $template: '#api-selector-template',
+            tag: null,
+            tags: Meta.tags,
+            $A: null,
+            getOperationNames() {
+                return this.tag
+                    ? Meta.operations.filter(x => x.tags && x.tags.indexOf(this.tag) >= 0).map(op => op.request.name)
+                    : Meta.operations.map(op => op.request.name);
+            },
+            open() {
+                if (this.$A) {
+                    this.$A.evaluate()
+                    this.$A.open()
+                }
+            },
+            selectOp(opName) {
+                let op = Meta.operations.some(op => op.request.name === opName) ? opName : null
+                if (op !== routes.op) {
+                    routes.to({ op })
+                }
+                return op
+            },
+            select(e) {
+                this.selectOp(e.text && e.text.value)
+            },
+            blur(e) {
+                setTimeout(() => {
+                    this.selectOp(e.target.value)
+                }, 0)
+            },
+            selectTag(tag) {
+                this.tag = this.tag === tag ? null : tag
+                this.$refs.awesomplete.value = ''
+                if (this.$A) {
+                    this.$A.list = this.getOperationNames()
+                    this.$A.evaluate()
+                    this.$A.open()
+                    this.$refs.awesomplete.focus()
+                }
+            },
+            sub:null,
+            unmounted:App.unsubscribe,
+            mounted() {
+                this.sub = App.events.subscribe('route:nav', args => this.updated())
+                this.updated()
+            },
+            updated() {
+                let $txtRequest = this.$refs.awesomplete
+                if (!$txtRequest) return
+                this.$A = this.$A || new Awesomplete($txtRequest, { minChars:0, maxItems:1000, sort,
+                    list: this.getOperationNames()
+                })
+                $txtRequest.value = routes.op || ''
+            },
+            unmounted() {
+                this.$A.destroy()
+                this.$A = null
+            },
+        }
+    }
+})
+</script>
+<template id="api-selector-template">
+<div>
+    <div class="flex flex-wrap">
+        <div v-for="x in tags" @click="selectTag(x)"
+             :class="`${x === tag ? 'bg-white shadow-inner' : 'bg-indigo-100 border-white'} mt-0.5 border text-xs inline-flex items-center font-bold leading-4 uppercase px-3 py-0.5 mr-1 text-indigo-800 rounded-full cursor-pointer`"
+        >{{x}}</div>
+    </div>
+    <input ref="awesomplete" @vue:mounted="mounted" @vue:unmounted="unmounted" @mousedown="open" @blur="blur" @awesomplete-select="select"
+           placeholder="Choose API" spellcheck="false"
+           class="awesomplete mt-2 flex-grow border py-2 px-3 text-grey-900 text-2xl
+              block w-full rounded-md disabled:bg-gray-100 border-gray-300 disabled:shadow-none shadow-sm 
+              focus:ring-rose-500 focus:border-rose-500" />
+</div>
+</template>

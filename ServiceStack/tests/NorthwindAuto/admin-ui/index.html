@@ -9,7 +9,7 @@ DEBUG = true /*debug*/
 </script>
 <style>
 /*file:css/app.css */
-/*shared:css/ui.css */
+/*shared:css/ui.css,css/awesomplete.css */
 /*file:custom.css */
 </style>
 <!--shared:custom-head-->
@@ -42,7 +42,7 @@ DEBUG = true /*debug*/
                 <div class="mx-auto px-4 sm:px-6 md:px-8">
                     <div class="py-4">
                         <div v-if="routes.admin === ''" v-scope="Dashboard({ store, routes, client })"></div>
-                        <div v-else-if="routes.admin === 'validation'" v-scope="Validation({ store, routes, client })"></div>
+                        <div v-else-if="routes.admin === 'validation'" v-scope="Validation({ store, routes, client, Forms })"></div>
                         <div v-else-if="routes.admin === 'users'" v-scope="AdminUsers({ store, routes, client })"></div>
                     </div>
                 </div>
@@ -71,7 +71,7 @@ DEBUG = true /*debug*/
 <script>
 Object.assign(window, exports) //import
 
-/*shared/js:core,Files,Types,createForms */
+/*shared/js:core,Files,Types,createForms,awesomplete */
 import { $1, humanify, combinePaths } from "@servicestack/client"
 import { setBodyClass } from "../shared/js/core"
 
@@ -95,7 +95,7 @@ let App = createApp(PetiteVue)
 /*files:js/*.js */
 </script>
 
-<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject-->
+<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject,ApiSelector-->
 <!--files:components/*.html-->
 <!--file:custom.html-->
 

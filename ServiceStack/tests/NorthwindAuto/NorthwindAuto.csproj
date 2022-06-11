@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <Folder Include="admin-ui\assets" />
-    <Folder Include="shared\css" />
   </ItemGroup>
 
 </Project>
