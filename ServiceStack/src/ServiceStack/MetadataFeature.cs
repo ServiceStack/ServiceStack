@@ -28,7 +28,7 @@ namespace ServiceStack
         public Action<OperationControl> DetailPageFilter { get; set; }
         
         public List<Action<AppMetadata>> AppMetadataFilters { get; } = new();
-        public List<Action<AppMetadata>> AfterAppMetadataFilters { get; } = new();
+        public List<Action<IRequest,AppMetadata>> AfterAppMetadataFilters { get; } = new();
 
         public bool ShowResponseStatusInMetadataPages { get; set; }
         
@@ -276,7 +276,7 @@ namespace ServiceStack
 
             foreach (var fn in feature.AfterAppMetadataFilters)
             {
-                fn(response);
+                fn(req,response);
             }
 
             return response;

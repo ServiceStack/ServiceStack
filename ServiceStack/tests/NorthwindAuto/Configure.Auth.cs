@@ -60,7 +60,7 @@ public class ConfigureAuth : IHostingStartup
                 // }
             });
             
-            appHost.GetPlugin<MetadataFeature>().AfterAppMetadataFilters.Add(meta =>
+            appHost.GetPlugin<MetadataFeature>().AfterAppMetadataFilters.Add((req,meta) =>
                 meta.Plugins.Auth.AuthProviders.RemoveAll(x => x.Name == "credentials"));
 
             appHost.Plugins.Add(new RegistrationFeature()); //Enable /register Service
