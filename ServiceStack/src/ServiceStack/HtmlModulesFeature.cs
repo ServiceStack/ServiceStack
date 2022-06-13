@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.HtmlModules;
@@ -377,33 +378,49 @@ public class HtmlModule
             {
                 try
                 {
-                    if (EnableHttpCaching == true && indexFileETag != null)
+                    async Task RenderTo(Stream stream)
                     {
-                        httpRes.ContentType ??= MimeTypes.HtmlUtf8;
-                        httpRes.AddHeader(HttpHeaders.ContentType, httpRes.ContentType);
+                        httpRes.ContentType = MimeTypes.HtmlUtf8;
 
-                        httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
-                        if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
-                            httpRes.AddHeader(HttpHeaders.CacheControl, CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
-
-                        if (req.ETagMatch(indexFileETag))
+                        var fragments = GetIndexFragments();
+                        var ctx = new HtmlModuleContext(this, httpReq);
+                        foreach (var fragment in fragments)
                         {
-                            httpRes.EndNotModified();
-                            return;
+                            await fragment.WriteToAsync(ctx, stream).ConfigAwait();
                         }
                     }
 
-                    if (EnableCompression == true && await TryReturnCompressedResponse(httpReq, httpRes).ConfigAwait())
-                        return;
-                    
-                    var fragments = GetIndexFragments();
-                    using var ms = MemoryStreamFactory.GetStream();
-                    var ctx = new HtmlModuleContext(this, httpReq);
-                    foreach (var fragment in fragments)
+                    var dynamicUi = httpReq.QueryString["IncludeTypes"] != null;
+                    if (dynamicUi)
                     {
-                        await fragment.WriteToAsync(ctx, ms).ConfigAwait();
+                        await RenderTo(httpRes.OutputStream);
+                        return;
                     }
-                    httpRes.ContentType = MimeTypes.HtmlUtf8;
+                    
+                    if (!dynamicUi)
+                    {
+                        if (EnableHttpCaching == true && indexFileETag != null)
+                        {
+                            httpRes.ContentType ??= MimeTypes.HtmlUtf8;
+                            httpRes.AddHeader(HttpHeaders.ContentType, httpRes.ContentType);
+
+                            httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
+                            if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
+                                httpRes.AddHeader(HttpHeaders.CacheControl, CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
+
+                            if (req.ETagMatch(indexFileETag))
+                            {
+                                httpRes.EndNotModified();
+                                return;
+                            }
+                        }
+
+                        if (EnableCompression == true && await TryReturnCompressedResponse(httpReq, httpRes).ConfigAwait())
+                            return;
+                    }
+                    
+                    using var ms = MemoryStreamFactory.GetStream();
+                    await RenderTo(ms);
                     ms.Position = 0;
 
                     // If EnableHttpCaching, calculate ETag hash from entire processed file 
