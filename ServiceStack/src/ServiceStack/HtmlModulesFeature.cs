@@ -379,6 +379,9 @@ public class HtmlModule
                 {
                     if (EnableHttpCaching == true && indexFileETag != null)
                     {
+                        httpRes.ContentType ??= MimeTypes.HtmlUtf8;
+                        httpRes.AddHeader(HttpHeaders.ContentType, httpRes.ContentType);
+
                         httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
                         if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
                             httpRes.AddHeader(HttpHeaders.CacheControl, CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
@@ -400,13 +403,16 @@ public class HtmlModule
                     {
                         await fragment.WriteToAsync(ctx, ms).ConfigAwait();
                     }
-                    httpRes.ContentType = MimeTypes.Html;
+                    httpRes.ContentType = MimeTypes.HtmlUtf8;
                     ms.Position = 0;
 
                     // If EnableHttpCaching, calculate ETag hash from entire processed file 
                     if (EnableHttpCaching == true && indexFileETag == null)
                     {
                         indexFileETag = ms.ToMd5Hash().Quoted();
+                        httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
+                        if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
+                            httpRes.AddHeader(HttpHeaders.CacheControl, CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
                     }
 
                     if (EnableCompression == true)

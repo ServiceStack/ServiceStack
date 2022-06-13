@@ -337,10 +337,6 @@ namespace ServiceStack
                 return;
             }
 
-            //retain behavior with ASP.NET's response.Write(string)
-            if (response.ContentType?.IndexOf(';') == -1)
-                response.ContentType += ContentFormat.Utf8Suffix;
-
             response.SetContentLength(bytes.Length);
             await response.OutputStream.WriteAsync(bytes);
             await response.EndHttpHandlerRequestAsync();
