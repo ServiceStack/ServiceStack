@@ -76,7 +76,7 @@ Object.assign(window, exports)
 import { $1, $$, humanify, combinePaths } from "@servicestack/client"
 import { setBodyClass, styleProperty, setStyleProperty, setFavIcon, Types } from "../shared/js/core"
 
-/*gateway:window.Server=MetadataApp({view:'explorer',jsconfig:'eccn,inv:false'})*/
+/*gateway:window.Server=MetadataApp({view:'explorer',jsconfig:'eccn,inv:false'})?*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth
     setBodyClass({ auth })

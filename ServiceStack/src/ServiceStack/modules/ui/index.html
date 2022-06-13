@@ -66,7 +66,7 @@ DEBUG = true /*debug*/
 <script>
 Object.assign(window, exports)
 /*shared/js:core,Files,Types,createForms */
-/*gateway:window.Server=MetadataApp({view:'explorer',jsconfig:'eccn,inv:false'})*/
+/*gateway:window.Server=MetadataApp({view:'explorer',jsconfig:'eccn,inv:false'})?*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth
     setBodyClass({ auth })

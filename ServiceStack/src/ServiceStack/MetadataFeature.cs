@@ -208,8 +208,16 @@ namespace ServiceStack
         {
             var feature = HostContext.AssertPlugin<MetadataFeature>();
             var typesConfig = nativeTypesMetadata.GetConfig(new TypesMetadata());
+            var includeTypes = req.QueryString["IncludeTypes"];
+            if (includeTypes != null)
+                typesConfig.IncludeTypes = includeTypes.Split(',').ToList();
+            
             feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
             var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, nativeTypesMetadata, req);
+            
+            if (includeTypes != null)
+                metadataTypes.RemoveIgnoredTypes(typesConfig);
+
             metadataTypes.Config = null;
             var uiFeature = HostContext.GetPlugin<UiFeature>();
 

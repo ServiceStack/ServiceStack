@@ -15,7 +15,10 @@ public class GatewayHandler : IHtmlModulesHandler
 
     public ReadOnlyMemory<byte> Execute(HtmlModuleContext ctx, string args)
     {
-        return ctx.Cache($"{Name}:{args}", _ =>
+        var key = args.EndsWith("?")
+            ? $"{Name}:{args}{ctx.Request.QueryString}"
+            : $"{Name}:{args}";
+        return ctx.Cache(key, _ =>
         {
             if (string.IsNullOrEmpty(args) || args.IndexOf('=') == -1)
                 throw new ArgumentException(@"Usage: gateway:arg=RequestDto({...})", nameof(args));
@@ -30,6 +33,14 @@ public class GatewayHandler : IHtmlModulesHandler
                     ?? throw new ArgumentException($"Request DTO not found: {requestName}");
 
             var dtoArgs = !string.IsNullOrEmpty(dtoArgsJs) ? JSON.parse(dtoArgsJs) : null;
+            if (args.EndsWith("?") && dtoArgs is Dictionary<string,object> dictArgs)
+            {
+                foreach (var entry in ctx.Request.QueryString.ToDictionary())
+                {
+                    dictArgs[entry.Key] = entry.Value;
+                }
+            }
+            
             var requestDto = ctx.AppHost.Metadata.CreateRequestDto(requestType, dtoArgs);
             var responseType = ctx.AppHost.Metadata.GetResponseTypeByRequest(requestType);
             var gateway = ctx.AppHost.GetServiceGateway(ctx.Request);

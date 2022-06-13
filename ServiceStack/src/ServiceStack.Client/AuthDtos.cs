@@ -339,6 +339,8 @@ public partial class MetadataApp : IReturn<AppMetadata>
 {
     [DataMember(Order = 1)]
     public string View { get; set; }
+    [DataMember(Order = 2)]
+    public List<string> IncludeTypes { get; set; }
 }
 
 [DataContract]
