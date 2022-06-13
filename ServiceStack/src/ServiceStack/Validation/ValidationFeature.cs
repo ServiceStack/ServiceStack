@@ -110,15 +110,17 @@ namespace ServiceStack.Validation
 
             var container = appHost.GetContainer();
             var hasValidationSource = ValidationSource != null || container.Exists<IValidationSource>(); 
-            if (hasValidationSource && AccessRole != null)
+            var hasValidationSourceAdmin = appHost.GetContainer().TryResolve<IValidationSource>() is IValidationSourceAdmin;
+            if (hasValidationSourceAdmin && AccessRole != null)
             {
                 appHost.RegisterServices(ServiceRoutes);
             }
 
-            appHost.AddToAppMetadata(metadata => {
+            appHost.AddToAppMetadata(metadata =>
+            {
                 metadata.Plugins.Validation = new ValidationInfo {
                     HasValidationSource = hasValidationSource.NullIfFalse(), 
-                    HasValidationSourceAdmin = (appHost.GetContainer().TryResolve<IValidationSource>() is IValidationSourceAdmin).NullIfFalse(),
+                    HasValidationSourceAdmin = hasValidationSourceAdmin.NullIfFalse(),
                     ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(),
                     TypeValidators = !EnableDeclarativeValidation ? null
                         : appHost.ScriptContext.ScriptMethods.SelectMany(x => 
