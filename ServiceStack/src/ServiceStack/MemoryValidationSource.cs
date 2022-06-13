@@ -11,8 +11,7 @@ namespace ServiceStack
 {
     public class MemoryValidationSource : IValidationSource, IValidationSourceAdmin, IClearable
     {
-        public static readonly ConcurrentDictionary<string, KeyValuePair<string, IValidateRule>[]> TypeRulesMap =
-            new ConcurrentDictionary<string, KeyValuePair<string, IValidateRule>[]>();
+        public static readonly ConcurrentDictionary<string, KeyValuePair<string, IValidateRule>[]> TypeRulesMap = new();
 
         public IEnumerable<KeyValuePair<string, IValidateRule>> GetValidationRules(Type type)
         {
@@ -23,14 +22,16 @@ namespace ServiceStack
             return ret;
         }
 
-        private readonly object semaphore = new object();
+        private readonly object semaphore = new();
         internal static int IdCounter;
 
-        public Task<List<ValidationRule>> GetAllValidateRulesAsync()
+        public List<ValidationRule> GetAllValidateRules()
         {
             var rules = TypeRulesMap.Values.SelectMany(x => x.Select(y => (ValidationRule)y.Value));
-            return rules.ToList().InTask();
+            return rules.ToList();
         }
+
+        public Task<List<ValidationRule>> GetAllValidateRulesAsync() => GetAllValidateRules().InTask(); 
 
         public Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName)
         {
@@ -41,7 +42,7 @@ namespace ServiceStack
             return ret.Map(x => (ValidationRule)x.Value).InTask();
         }
 
-        public Task SaveValidationRulesAsync(List<ValidationRule> validateRules)
+        public void SaveValidationRules(List<ValidationRule> validateRules)
         {
             lock (semaphore)
             {
@@ -73,6 +74,11 @@ namespace ServiceStack
                     TypeRulesMap[group.Key] = newTypeRules;
                 }
             }
+        }
+
+        public Task SaveValidationRulesAsync(List<ValidationRule> validateRules)
+        {
+            SaveValidationRules(validateRules);
             return TypeConstants.EmptyTask;
         }
 

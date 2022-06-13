@@ -58,6 +58,12 @@ namespace ServiceStack
             db.CreateTableIfNotExists<ValidationRule>();
         }
 
+        public List<ValidationRule> GetAllValidateRules()
+        {
+            using var db = OpenDbConnection();
+            return db.Select<ValidationRule>();
+        }
+
         public async Task<List<ValidationRule>> GetAllValidateRulesAsync()
         {
             using var db = OpenDbConnection();
@@ -76,6 +82,13 @@ namespace ServiceStack
         {
             using var db = OpenDbConnection();
             await db.SaveAllAsync(validateRules).ConfigAwait();
+            ClearValidationSourceCache();
+        }
+
+        public void SaveValidationRules(List<ValidationRule> validateRules)
+        {
+            using var db = OpenDbConnection();
+            db.SaveAll(validateRules);
             ClearValidationSourceCache();
         }
 
