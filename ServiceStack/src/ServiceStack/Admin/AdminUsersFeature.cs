@@ -158,6 +158,7 @@ namespace ServiceStack.Admin
                     Id = "users",
                     Label = "Manage Users",
                     Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
+                    Show = $"role:{AdminRole}",
                 });
             });
         }

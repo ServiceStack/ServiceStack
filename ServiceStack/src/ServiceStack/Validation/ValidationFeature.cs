@@ -54,6 +54,7 @@ namespace ServiceStack.Validation
                         Id = "validation",
                         Label = "Validation",
                         Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Lock)),
+                        Show = AccessRole != null ? $"role:{AccessRole}" : null,
                     });
                 });
             }

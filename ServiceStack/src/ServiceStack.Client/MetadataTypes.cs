@@ -164,6 +164,14 @@ namespace ServiceStack
         public string Href { get; set; }
         public string Label { get; set; }
         public ImageInfo Icon { get; set; }
+        /// <summary>
+        /// Only show if authAttributes.contains(Show) E.g. limit to role:TheRole 
+        /// </summary>
+        public string Show { get; set; }
+        /// <summary>
+        /// Do not show if authAttributes.contains(Hide) E.g. hide from role:TheRole 
+        /// </summary>
+        public string Hide { get; set; }
     }
 
     [Exclude(Feature.Soap)]

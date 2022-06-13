@@ -162,6 +162,7 @@ public static class UiFeatureUtils
         Id = link.Id,
         Label = link.Label,
         Icon = link.Icon,
-        Href = "../admin-ui" + (string.IsNullOrEmpty(link.Id) ? "" : "/" + link.Id) 
+        Href = "../admin-ui" + (string.IsNullOrEmpty(link.Id) ? "" : "/" + link.Id),
+        Show = link.Show,
     };
 }
