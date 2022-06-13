@@ -126,7 +126,7 @@ App.components({
                                     </div>
                                     <div class="flex-1 space-y-1">
                                         <div class="flex items-center">
-                                            <h3 class="text-sm font-medium">{{x.validator ? 'validator':'script'}}</h3>
+                                            <h3 class="text-sm font-medium">{{x.validator ? 'Validator':'Script'}}</h3>
                                         </div>
                                         <p class="text-sm text-gray-500"><b class="field">{{x.field}}</b>{{x.validator ?? x.condition}}</p>
                                     </div>
@@ -176,7 +176,7 @@ App.components({
                                     </div>
                                     <div class="flex-1 space-y-1">
                                         <div class="flex items-center">
-                                            <h3 class="text-sm font-medium">{{x.field}} {{x.validator ? 'validator':'script'}}</h3>
+                                            <h3 class="text-sm font-medium">{{x.field}} {{x.validator ? 'Validator':'Script'}}</h3>
                                         </div>
                                         <p class="text-sm text-gray-500">{{x.validator ?? x.condition}}</p>
                                     </div>
@@ -464,7 +464,7 @@ App.components({
             </button>
             <button type="submit" :disabled="loading"
                     :class="`${!loading ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-400'} ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
-                Create Rule
+                {{rule ? 'Edit' : 'Create'}} Rule
             </button>
         </div>
     </div>

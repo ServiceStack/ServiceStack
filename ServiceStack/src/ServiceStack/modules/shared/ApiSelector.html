@@ -68,9 +68,9 @@ App.components({
 </script>
 <template id="api-selector-template">
 <div>
-    <div class="flex flex-wrap">
+    <div class="flex lg:flex-wrap overflow-hidden">
         <div v-for="x in tags" @click="selectTag(x)"
-             :class="`${x === tag ? 'bg-white shadow-inner' : 'bg-indigo-100 border-white'} mt-0.5 border text-xs inline-flex items-center font-bold leading-4 uppercase px-3 py-0.5 mr-1 text-indigo-800 rounded-full cursor-pointer`"
+             :class="`${x === tag ? 'bg-white shadow-inner' : 'bg-indigo-100 border-white'} mt-0.5 whitespace-nowrap border text-xs inline-flex items-center font-bold leading-4 uppercase px-3 py-0.5 mr-1 text-indigo-800 rounded-full cursor-pointer`"
         >{{x}}</div>
     </div>
     <input ref="awesomplete" @vue:mounted="mounted" @vue:unmounted="unmounted" @mousedown="open" @blur="blur" @awesomplete-select="select"

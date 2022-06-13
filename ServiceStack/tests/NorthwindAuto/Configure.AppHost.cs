@@ -28,7 +28,7 @@ public class AppHost : AppHostBase, IHostingStartup
                 app.UseServiceStack(new AppHost());
         });
         
-    public AppHost() : base("Northwind Auto", typeof(MyServices).Assembly) { }
+    public AppHost() : base("My App", typeof(MyServices).Assembly) { }
 
     // Configure your AppHost with the necessary configuration and dependencies your App needs
     public override void Configure(Container container)
