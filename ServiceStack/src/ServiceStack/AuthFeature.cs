@@ -57,6 +57,8 @@ namespace ServiceStack
         }
 
         public Func<IAuthSession> SessionFactory { get; set; }
+        public Type SessionType { get; }
+        
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;
 
@@ -261,6 +263,7 @@ namespace ServiceStack
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.SessionFactory = sessionFactory;
+            this.SessionType = sessionFactory().GetType();
             this.authProviders = authProviders;
 
             ServiceRoutes = new Dictionary<Type, string[]> {

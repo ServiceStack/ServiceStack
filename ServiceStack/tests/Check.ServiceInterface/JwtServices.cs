@@ -48,7 +48,7 @@ namespace Check.ServiceInterface
                     jwtPayload["exp"] = request.JwtExpiry.Value.ToUnixTime().ToString();
             }
 
-            var jwtSession = request.ConvertTo<AuthUserSession>();
+            var jwtSession = (IAuthSession) request.ConvertTo(GetPlugin<AuthFeature>().SessionType);
             var token = jwtProvider.CreateJwtBearerToken(jwtSession);
 
             jwtProvider.CreatePayloadFilter = null;
