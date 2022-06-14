@@ -224,11 +224,11 @@ div.tags b {
         <p>
             The following operations are supported. For a formal definition, please review the Service <a href="?xsd={1}">XSD</a>.
         </p>
-        
-        {2}
 
-        <br /><h3><a href="https://docs.servicestack.net/clients-overview">Clients Overview</a></h3>  
-    
+        {2}
+        
+        <h3><a href="https://docs.servicestack.net/clients-overview">Clients Overview</a></h3>
+
         {3}
 
 	    {4}
@@ -298,6 +298,7 @@ if (document.querySelectorAll) {
             input.onkeyup = filter;
         }
 
+        let $id = $('#ui');
         function selectTag() {
             let $this = this;
             tagEls.forEach(function(el) {
@@ -312,6 +313,8 @@ if (document.querySelectorAll) {
                     history.pushState("", document.title, window.location.pathname + window.location.search);
             }
             filter();
+            if ($id)
+                $id.href = tag ? "ui?IncludeTypes={" + tag + "}" : "ui";
         }
         tagEls.forEach(function(el) {
             el.onclick = selectTag;

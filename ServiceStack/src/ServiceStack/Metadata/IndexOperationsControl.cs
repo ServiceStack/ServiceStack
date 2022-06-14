@@ -133,6 +133,11 @@ namespace ServiceStack.Metadata
                 Items = this.OperationNames,
                 ForEachItem = RenderRow
             }.ToString();
+            operationsPart = $"<div style=\"margin-bottom:3em\">{operationsPart}</div>\n"
+                + (HostContext.AppHost.HasUi()
+                    ? $"<div><h3><a id=\"ui\" href=\"ui\">API Explorer</a></h3></div>\n"
+                    : "");
+            
 
 #if !NETCORE
             var xsdsPart = new ListTemplate
