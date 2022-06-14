@@ -20,7 +20,7 @@ function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
     let allKeys = [page,...queryKeys]
     /** @return {string} */
     function getPage() {
-        return leftPart(location.href.substring(document.baseURI.length),'?')
+        return leftPart(location.href,'?').substring(document.baseURI.length)
     }
     /** @param {Record<string, any>} store
      *  @return {Record<string, any>} */
