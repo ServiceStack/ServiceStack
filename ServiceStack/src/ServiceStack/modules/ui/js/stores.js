@@ -24,11 +24,11 @@ let routes = usePageRoutes(App,{
             let op = this.op && Meta.OpsMap[this.op]
             if (op && Server.ui.modules.indexOf('/locode') >= 0) {
                 if (Crud.isQuery(op)) {
-                    return `/locode/${this.op}`
+                    return Meta.locodeUrl(this.op)
                 } else if (Crud.isCrud(op)) {
                     let queryOp = Server.api.operations.find(x => Crud.isQuery(x) && Types.equals(op.dataModel,x.dataModel))
                     if (queryOp)
-                        return `/locode/${queryOp.request.name}`
+                        return Meta.locodeUrl(queryOp.request.name) 
                 }
             }
             return ''
@@ -268,7 +268,7 @@ let store = App.reactive({
         if (Object.keys(roleLinks).length > 0) {
             this.authRoles.forEach(role => {
                 if (!roleLinks[role]) return;
-                roleLinks[role].forEach(link => to.push(link))
+                roleLinks[role].forEach(link => to.push(Object.assign(link, { href: Meta.urlWithState(link.href) })))
             })
         }
         return to

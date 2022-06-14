@@ -37,7 +37,7 @@ DEBUG = true /*debug*/
                 </div>
                 <div class="mx-auto px-4 sm:px-6 md:px-8">
                     <div class="py-4">
-                        <div v-if="routes.admin === ''" v-scope="Dashboard({ store, routes, client })"></div>
+                        <div v-if="routes.admin === ''" v-scope="Dashboard({ store, routes, client, Meta })"></div>
                         <div v-else-if="routes.admin === 'validation'" v-scope="Validation({ store, routes, client, Forms })"></div>
                         <div v-else-if="routes.admin === 'users'" v-scope="AdminUsers({ store, routes, client })"></div>
                     </div>

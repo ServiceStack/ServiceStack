@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-06-10 21:21:19
+Date: 2022-06-14 18:45:31
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -235,6 +235,8 @@ export class LinkInfo
     public href: string;
     public label: string;
     public icon: ImageInfo;
+    public show: string;
+    public hide: string;
 
     public constructor(init?: Partial<LinkInfo>) { (Object as any).assign(this, init); }
 }
@@ -984,6 +986,9 @@ export class MetadataApp implements IReturn<AppMetadata>
     // @DataMember(Order=1)
     public view: string;
 
+    // @DataMember(Order=2)
+    public includeTypes: string[];
+
     public constructor(init?: Partial<MetadataApp>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'MetadataApp'; }
     public getMethod() { return 'POST'; }
@@ -1435,6 +1440,10 @@ export type Meta = {
     enumValues: (type: string) => { key: string; value: string; }[];
     /** Get API Icon */
     getIcon: (args: ({ op?: MetadataOperationType; type?: MetadataType; })) => { svg: string; };
+    /** Get Locode URL */
+    locodeUrl: (op:string) => string;
+    /** Get URL with initial queryString state */
+    urlWithState: (url:string) => string;
 };
 
 /** Reactive store to manage page navigation state and sync with history.pushState */

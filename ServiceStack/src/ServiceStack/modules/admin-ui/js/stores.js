@@ -117,7 +117,7 @@ let store = App.reactive({
         if (Object.keys(roleLinks).length > 0) {
             this.authRoles.forEach(role => {
                 if (!roleLinks[role]) return;
-                roleLinks[role].forEach(link => to.push(link))
+                roleLinks[role].forEach(link => to.push(Object.assign(link, { href: Meta.urlWithState(link.href) })))
             })
         }
         return to

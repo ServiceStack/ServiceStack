@@ -176,6 +176,10 @@ export type Meta = {
     enumValues: (type: string) => { key: string; value: string; }[];
     /** Get API Icon */
     getIcon: (args: ({ op?: MetadataOperationType; type?: MetadataType; })) => { svg: string; };
+    /** Get Locode URL */
+    locodeUrl: (op:string) => string;
+    /** Get URL with initial queryString state */
+    urlWithState: (url:string) => string;
 };
 
 /** Reactive store to manage page navigation state and sync with history.pushState */

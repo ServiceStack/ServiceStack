@@ -730,9 +730,28 @@ function createMeta(app,appName) {
         }
         return defaultIcon
     }
+    let qs = queryString(location.search)
+    let stateQs = qs.IncludeTypes ? `?IncludeTypes=${qs.IncludeTypes}` : ''
+    /** Get Locode URL
+     * @param {string} op= */
+    function locodeUrl(op) {
+        return `/locode/${op || ''}${stateQs}`
+    }
+    /** Get URL with initial queryString state
+     * @param {string} url */
+    function urlWithState(url) {
+        if (!url) return url
+        let alreadyHasState = url.indexOf('IncludeTypes') >= 0
+        let isBuiltinUi = url.indexOf('/ui') >= 0 || url.indexOf('/locode') >= 0 || url.indexOf('/admin-ui') >= 0
+        if (!isBuiltinUi || alreadyHasState) return url
+        return url + (url.indexOf('?') >= 0
+            ? (stateQs ? '&' + stateQs.substring(1) : '')
+            : stateQs)
+    }
     let Server = app
     let tags = uniq(app.api.operations.flatMap(op => op.tags)).filter(x => !!x)
     let operations = app.api.operations
-    return { CACHE, HttpErrors, Server, OpsMap, TypesMap, FullTypesMap, operations, tags, getOp, getType, isEnum, enumValues, getIcon }
+    return { CACHE, HttpErrors, Server, OpsMap, TypesMap, FullTypesMap, operations, tags, 
+             getOp, getType, isEnum, enumValues, getIcon, locodeUrl, urlWithState }
 }
 /*:minify*/

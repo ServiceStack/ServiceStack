@@ -44,7 +44,7 @@ export let routes = usePageRoutes(App,{
     extend: {
         uiHref(args) {
             return this.op && Server.ui.modules.indexOf('/ui') >= 0
-                ? appendQueryString(`/ui/${this.op}`, args || {})
+                ? Meta.urlWithState(appendQueryString(`/ui/${this.op}`, args || {}))
                 : ''
         },
         onEditChange(fn) {
@@ -292,8 +292,8 @@ export let store = App.reactive({
         let roleLinks = this.auth && Server.plugins.auth && Server.plugins.auth.roleLinks || {} 
         if (Object.keys(roleLinks).length > 0) {
             this.authRoles.forEach(role => {
-                if (!roleLinks[role]) return;
-                roleLinks[role].forEach(link => to.push(link))
+                if (!roleLinks[role]) return
+                roleLinks[role].forEach(link => to.push(Object.assign(link, { href: Meta.urlWithState(link.href) })))
             })
         }
         return to
