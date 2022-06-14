@@ -259,7 +259,7 @@ namespace ServiceStack.Host
 
         private readonly StringMapTypeDeserializer typeDeserializer;
 
-        private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> propertyNamesMap = new(StringComparer.OrdinalIgnoreCase);
 
         public static Func<RestPath, string, string[], int> CalculateMatchScore { get; set; }
 

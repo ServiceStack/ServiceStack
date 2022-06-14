@@ -212,7 +212,7 @@ namespace ServiceStack
             var typesConfig = nativeTypesMetadata.GetConfig(new TypesMetadata());
             var includeTypes = req.QueryString["IncludeTypes"];
             if (includeTypes != null)
-                typesConfig.IncludeTypes = includeTypes.Split(',').ToList();
+                typesConfig.IncludeTypes = includeTypes.FromJsv<List<string>>();
             
             feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
             var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, nativeTypesMetadata, req);
