@@ -181,6 +181,8 @@ public class HtmlModule
         "/assets"
     };
 
+    public List<string> DynamicPageQueryStrings { get; set; } = new();
+
     public Dictionary<string, Func<HtmlModuleContext, ReadOnlyMemory<byte>>> Tokens { get; set; }
     public List<IHtmlModulesHandler> Handlers { get; set; } = new();
 
@@ -390,7 +392,7 @@ public class HtmlModule
                         }
                     }
 
-                    var dynamicUi = httpReq.QueryString["IncludeTypes"] != null;
+                    var dynamicUi = DynamicPageQueryStrings.Any(x => httpReq.QueryString[x] != null);
                     if (dynamicUi)
                     {
                         await RenderTo(httpRes.OutputStream);

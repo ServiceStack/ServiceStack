@@ -50,7 +50,9 @@ namespace ServiceStack
             } },
         };
 
-        public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui");
+        public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui") {
+            DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
+        };
 
         public bool EnableNav
         {

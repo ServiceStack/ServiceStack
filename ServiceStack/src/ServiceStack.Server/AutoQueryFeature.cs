@@ -144,7 +144,9 @@ namespace ServiceStack
             new() {Name = "Not Exists", Value = "%IsNull", ValueType = "none"},
         };
 
-        public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode");
+        public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode") {
+            DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
+        };
 
         public AutoQueryFeature()
         {

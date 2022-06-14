@@ -25,7 +25,9 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
 
     public List<HtmlModule> HtmlModules { get; } = new();
     
-    public HtmlModule AdminHtmlModule { get; set; } = new("/modules/admin-ui", "/admin-ui");
+    public HtmlModule AdminHtmlModule { get; set; } = new("/modules/admin-ui", "/admin-ui") {
+        DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
+    };
     public AdminUi AdminUi { get; set; } = AdminUi.All;
 
     /// <summary>
