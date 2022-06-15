@@ -9,8 +9,8 @@ namespace ServiceStack.Text
 {
     public class XmlSerializer
     {
-        public static readonly XmlWriterSettings XmlWriterSettings = new XmlWriterSettings();
-        public static readonly XmlReaderSettings XmlReaderSettings = new XmlReaderSettings();
+        public static readonly XmlWriterSettings XmlWriterSettings = new();
+        public static readonly XmlReaderSettings XmlReaderSettings = new();
 
         public static XmlSerializer Instance = new XmlSerializer();
 
@@ -29,11 +29,9 @@ namespace ServiceStack.Text
             try
             {
                 var stringReader = new StringReader(xml);
-                using (var reader = XmlReader.Create(stringReader, XmlReaderSettings))
-                {
-                    var serializer = new DataContractSerializer(type);
-                    return serializer.ReadObject(reader);
-                }
+                using var reader = XmlReader.Create(stringReader, XmlReaderSettings);
+                var serializer = new DataContractSerializer(type);
+                return serializer.ReadObject(reader);
             }
             catch (Exception ex)
             {
@@ -74,16 +72,12 @@ namespace ServiceStack.Text
         {
             try
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    using (var xw = XmlWriter.Create(ms, XmlWriterSettings))
-                    {
-                        var serializer = new DataContractSerializer(from.GetType());
-                        serializer.WriteObject(xw, from);
-                        xw.Flush();
-                        return ms.ReadToEnd();
-                    }
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                using var xw = XmlWriter.Create(ms, XmlWriterSettings);
+                var serializer = new DataContractSerializer(from.GetType());
+                serializer.WriteObject(xw, from);
+                xw.Flush();
+                return ms.ReadToEnd();
             }
             catch (Exception ex)
             {
@@ -95,11 +89,9 @@ namespace ServiceStack.Text
         {
             try
             {
-                using (var xw = XmlWriter.Create(writer, XmlWriterSettings))
-                {
-                    var serializer = new DataContractSerializer(value.GetType());
-                    serializer.WriteObject(xw, value);
-                }
+                using var xw = XmlWriter.Create(writer, XmlWriterSettings);
+                var serializer = new DataContractSerializer(value.GetType());
+                serializer.WriteObject(xw, value);
             }
             catch (Exception ex)
             {
@@ -110,11 +102,9 @@ namespace ServiceStack.Text
         public static void SerializeToStream(object obj, Stream stream)
         {
             if (obj == null) return;
-            using (var xw = XmlWriter.Create(stream, XmlWriterSettings))
-            {
-                var serializer = new DataContractSerializer(obj.GetType());
-                serializer.WriteObject(xw, obj);
-            }
+            using var xw = XmlWriter.Create(stream, XmlWriterSettings);
+            var serializer = new DataContractSerializer(obj.GetType());
+            serializer.WriteObject(xw, obj);
         }
     }
 }

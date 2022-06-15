@@ -303,7 +303,7 @@ public static partial class HttpUtils
 
     public static string GetResponseBody(this Exception ex)
     {
-        if (!(ex is WebException webEx) || webEx.Response == null || webEx.Status != WebExceptionStatus.ProtocolError)
+        if (ex is not WebException webEx || webEx.Response == null || webEx.Status != WebExceptionStatus.ProtocolError)
             return null;
 
         var errorResponse = (HttpWebResponse)webEx.Response;
@@ -313,7 +313,7 @@ public static partial class HttpUtils
 
     public static async Task<string> GetResponseBodyAsync(this Exception ex, CancellationToken token = default)
     {
-        if (!(ex is WebException webEx) || webEx.Response == null || webEx.Status != WebExceptionStatus.ProtocolError)
+        if (ex is not WebException webEx || webEx.Response == null || webEx.Status != WebExceptionStatus.ProtocolError)
             return null;
 
         var errorResponse = (HttpWebResponse)webEx.Response;
@@ -337,8 +337,7 @@ public static partial class HttpUtils
     {
         using var stream = webRes.GetResponseStream();
         using var reader = new StreamReader(stream, UseEncoding, true, 1024, leaveOpen: true);
-        string line;
-        while ((line = reader.ReadLine()) != null)
+        while (reader.ReadLine() is { } line)
         {
             yield return line;
         }

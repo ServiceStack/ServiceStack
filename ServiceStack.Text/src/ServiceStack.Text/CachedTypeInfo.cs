@@ -8,7 +8,7 @@ namespace ServiceStack.Text
 {
     public class CachedTypeInfo
     {
-        static Dictionary<Type, CachedTypeInfo> CacheMap = new Dictionary<Type, CachedTypeInfo>();
+        static Dictionary<Type, CachedTypeInfo> CacheMap = new();
 
         public static CachedTypeInfo Get(Type type)
         {

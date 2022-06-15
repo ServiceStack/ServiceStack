@@ -342,7 +342,7 @@ namespace ServiceStack
             return TypeSerializer.DeserializeFromString(strValue, type);
         }
 
-        private static readonly Dictionary<Type, List<string>> TypePropertyNamesMap = new Dictionary<Type, List<string>>();
+        private static readonly Dictionary<Type, List<string>> TypePropertyNamesMap = new();
 
         public static List<string> GetPropertyNames(this Type type)
         {
@@ -418,7 +418,7 @@ namespace ServiceStack
             return obj;
         }
 
-        private static Dictionary<Type, object> DefaultValueTypes = new Dictionary<Type, object>();
+        private static Dictionary<Type, object> DefaultValueTypes = new();
 
         public static object GetDefaultValue(this Type type)
         {

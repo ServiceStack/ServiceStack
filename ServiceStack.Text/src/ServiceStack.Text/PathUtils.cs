@@ -100,6 +100,9 @@ namespace ServiceStack
             return StringBuilderThreadStatic.ReturnAndFree(sb);
         }
 
+        /// <summary>
+        /// Create Directory if not exists 
+        /// </summary>
         public static string AssertDir(this string dirPath)
         {
             if (!dirPath.DirectoryExists())
@@ -107,7 +110,13 @@ namespace ServiceStack
             return dirPath;
         }
 
+        /// <summary>
+        /// Create Directory if not exists 
+        /// </summary>
         public static string AssertDir(this DirectoryInfo dirInfo) => dirInfo?.FullName.AssertDir();
+        /// <summary>
+        /// Create Directory if not exists 
+        /// </summary>
         public static string AssertDir(this FileInfo fileInfo) => fileInfo.DirectoryName?.AssertDir();
 
         private static readonly char[] Slashes = { '/', '\\' };

@@ -15,7 +15,7 @@ namespace ServiceStack.Text
     public sealed class DefaultMemory : MemoryProvider
     {
         private static DefaultMemory provider;
-        public static DefaultMemory Provider => provider ?? (provider = new DefaultMemory());
+        public static DefaultMemory Provider => provider ??= new DefaultMemory();
         private DefaultMemory() { }
 
         public static void Configure() => Instance = Provider;
@@ -172,7 +172,7 @@ namespace ServiceStack.Text
                         {
                             state = ParseState.DecimalPoint;
                         }
-                        else if (c > '0' && c <= '9')
+                        else if (c is > '0' and <= '9')
                         {
                             preResult = (ulong) (c - '0');
                             state = ParseState.Number;
@@ -193,7 +193,7 @@ namespace ServiceStack.Text
                         {
                             state = ParseState.DecimalPoint;
                         }
-                        else if (c > '0' && c <= '9')
+                        else if (c is > '0' and <= '9')
                         {
                             preResult = (ulong) (c - '0');
                             state = ParseState.Number;
@@ -206,7 +206,7 @@ namespace ServiceStack.Text
                         {
                             state = ParseState.FractionNumber;
                         }
-                        else if (c >= '0' && c <= '9')
+                        else if (c is >= '0' and <= '9')
                         {
                             if (isLargeNumber)
                             {
@@ -301,7 +301,7 @@ namespace ServiceStack.Text
                         if (c > '0' && c <= '9')
                         {
                             var exp = SignedInteger<long>.ParseInt64(value.Slice(i - 1, end - i + 1));
-                            if (exp < sbyte.MinValue || exp > sbyte.MaxValue)
+                            if (exp is < sbyte.MinValue or > sbyte.MaxValue)
                                 return false;
 
                             if (!expNegative)

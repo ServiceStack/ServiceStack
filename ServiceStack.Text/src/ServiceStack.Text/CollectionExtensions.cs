@@ -14,9 +14,7 @@ namespace ServiceStack
                 return new List<T>(withItems);
 
             var genericType = ofCollectionType.FirstGenericType();
-            var genericTypeDefinition = genericType != null
-                ? genericType.GetGenericTypeDefinition()
-                : null;
+            var genericTypeDefinition = genericType?.GetGenericTypeDefinition();
 
             if (genericTypeDefinition == typeof(HashSet<>))
                 return new HashSet<T>(withItems);

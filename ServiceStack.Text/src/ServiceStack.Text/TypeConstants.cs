@@ -33,43 +33,43 @@ namespace ServiceStack
         public static char[] NonWidthWhiteSpaceChars = { (char)0x200B };
         
         public static ReadOnlySpan<char> NullStringSpan => default;
-        public static ReadOnlySpan<char> EmptyStringSpan => new ReadOnlySpan<char>(NonWidthWhiteSpaceChars);
+        public static ReadOnlySpan<char> EmptyStringSpan => new(NonWidthWhiteSpaceChars);
 
         public static ReadOnlyMemory<char> NullStringMemory => default;
         public static ReadOnlyMemory<char> EmptyStringMemory => "".AsMemory();
 
-        public static readonly string[] EmptyStringArray = new string[0];
-        public static readonly long[] EmptyLongArray = new long[0];
-        public static readonly int[] EmptyIntArray = new int[0];
-        public static readonly char[] EmptyCharArray = new char[0];
-        public static readonly bool[] EmptyBoolArray = new bool[0];
-        public static readonly byte[] EmptyByteArray = new byte[0];
-        public static readonly object[] EmptyObjectArray = new object[0];
-        public static readonly Type[] EmptyTypeArray = new Type[0];
-        public static readonly FieldInfo[] EmptyFieldInfoArray = new FieldInfo[0];
-        public static readonly PropertyInfo[] EmptyPropertyInfoArray = new PropertyInfo[0];
+        public static readonly string[] EmptyStringArray = Array.Empty<string>();
+        public static readonly long[] EmptyLongArray = Array.Empty<long>();
+        public static readonly int[] EmptyIntArray = Array.Empty<int>();
+        public static readonly char[] EmptyCharArray = Array.Empty<char>();
+        public static readonly bool[] EmptyBoolArray = Array.Empty<bool>();
+        public static readonly byte[] EmptyByteArray = Array.Empty<byte>();
+        public static readonly object[] EmptyObjectArray = Array.Empty<object>();
+        public static readonly Type[] EmptyTypeArray = Type.EmptyTypes;
+        public static readonly FieldInfo[] EmptyFieldInfoArray = Array.Empty<FieldInfo>();
+        public static readonly PropertyInfo[] EmptyPropertyInfoArray = Array.Empty<PropertyInfo>();
 
-        public static readonly byte[][] EmptyByteArrayArray = new byte[0][];
+        public static readonly byte[][] EmptyByteArrayArray = Array.Empty<byte[]>();
 
-        public static readonly Dictionary<string, string> EmptyStringDictionary = new Dictionary<string, string>(0);
-        public static readonly Dictionary<string, object> EmptyObjectDictionary = new Dictionary<string, object>();
+        public static readonly Dictionary<string, string> EmptyStringDictionary = new(0);
+        public static readonly Dictionary<string, object> EmptyObjectDictionary = new();
 
-        public static readonly List<string> EmptyStringList = new List<string>(0);
-        public static readonly List<long> EmptyLongList = new List<long>(0);
-        public static readonly List<int> EmptyIntList = new List<int>(0);
-        public static readonly List<char> EmptyCharList = new List<char>(0);
-        public static readonly List<bool> EmptyBoolList = new List<bool>(0);
-        public static readonly List<byte> EmptyByteList = new List<byte>(0);
-        public static readonly List<object> EmptyObjectList = new List<object>(0);
-        public static readonly List<Type> EmptyTypeList = new List<Type>(0);
-        public static readonly List<FieldInfo> EmptyFieldInfoList = new List<FieldInfo>(0);
-        public static readonly List<PropertyInfo> EmptyPropertyInfoList = new List<PropertyInfo>(0);
+        public static readonly List<string> EmptyStringList = new(0);
+        public static readonly List<long> EmptyLongList = new(0);
+        public static readonly List<int> EmptyIntList = new(0);
+        public static readonly List<char> EmptyCharList = new(0);
+        public static readonly List<bool> EmptyBoolList = new(0);
+        public static readonly List<byte> EmptyByteList = new(0);
+        public static readonly List<object> EmptyObjectList = new(0);
+        public static readonly List<Type> EmptyTypeList = new(0);
+        public static readonly List<FieldInfo> EmptyFieldInfoList = new(0);
+        public static readonly List<PropertyInfo> EmptyPropertyInfoList = new(0);
     }
 
     public static class TypeConstants<T>
     {
-        public static readonly T[] EmptyArray = new T[0];
-        public static readonly List<T> EmptyList = new List<T>(0);
-        public static readonly HashSet<T> EmptyHashSet = new HashSet<T>();
+        public static readonly T[] EmptyArray = Array.Empty<T>();
+        public static readonly List<T> EmptyList = new(0);
+        public static readonly HashSet<T> EmptyHashSet = new();
     }
 }

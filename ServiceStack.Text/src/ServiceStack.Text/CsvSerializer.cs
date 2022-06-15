@@ -19,7 +19,7 @@ namespace ServiceStack.Text
 
         public static Action<object> OnSerialize { get; set; }
 
-        private static Dictionary<Type, WriteObjectDelegate> WriteFnCache = new Dictionary<Type, WriteObjectDelegate>();
+        private static Dictionary<Type, WriteObjectDelegate> WriteFnCache = new();
         internal static WriteObjectDelegate GetWriteFn(Type type)
         {
             try
@@ -51,7 +51,7 @@ namespace ServiceStack.Text
             }
         }
 
-        private static Dictionary<Type, ParseStringDelegate> ReadFnCache = new Dictionary<Type, ParseStringDelegate>();
+        private static Dictionary<Type, ParseStringDelegate> ReadFnCache = new();
         internal static ParseStringDelegate GetReadFn(Type type)
         {
             try

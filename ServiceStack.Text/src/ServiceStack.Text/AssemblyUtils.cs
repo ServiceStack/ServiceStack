@@ -17,7 +17,7 @@ namespace ServiceStack.Text
         private const string FileUri = "file:///";
         private const char UriSeperator = '/';
 
-        private static Dictionary<string, Type> TypeCache = new Dictionary<string, Type>();
+        private static Dictionary<string, Type> TypeCache = new();
 
         /// <summary>
         /// Find the type from the name supplied

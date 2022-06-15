@@ -27,7 +27,7 @@ namespace ServiceStack
 
     public class TypeProperties<T> : TypeProperties
     {
-        public static readonly TypeProperties<T> Instance = new TypeProperties<T>();
+        public static readonly TypeProperties<T> Instance = new();
 
         static TypeProperties()
         {
@@ -60,7 +60,7 @@ namespace ServiceStack
 
     public abstract class TypeProperties
     {
-        static Dictionary<Type, TypeProperties> CacheMap = new Dictionary<Type, TypeProperties>();
+        static Dictionary<Type, TypeProperties> CacheMap = new();
 
         public static readonly Type FactoryType = typeof(TypeProperties<>);
 
