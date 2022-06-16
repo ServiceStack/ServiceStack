@@ -274,6 +274,8 @@ namespace ServiceStack
     [Exclude(Feature.Soap)]
     public class RequestLogsInfo : IMeta
     {
+        public string AccessRole { get; set; }
+        [Obsolete("Use AccessRole")]
         public string[] RequiredRoles { get; set; }
         public string RequestLogger { get; set; }
         public Dictionary<string,string[]> ServiceRoutes { get; set; }

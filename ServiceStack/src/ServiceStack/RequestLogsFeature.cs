@@ -49,7 +49,13 @@ namespace ServiceStack
         /// <summary>
         /// Limit access to /requestlogs service to these roles
         /// </summary>
+        [Obsolete("Use AccessRole")]
         public string[] RequiredRoles { get; set; }
+        
+        /// <summary>
+        /// Limit API access to users in role
+        /// </summary>
+        public string AccessRole { get; set; } = RoleNames.Admin;
 
         /// <summary>
         /// Change the RequestLogger provider. Default is InMemoryRollingRequestLogger
@@ -62,7 +68,7 @@ namespace ServiceStack
         public Type[] ExcludeRequestDtoTypes { get; set; }
 
         /// <summary>
-        /// Don't log request bodys for services with sensitive information.
+        /// Don't log request body's for services with sensitive information.
         /// By default Auth and Registration requests are hidden.
         /// </summary>
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
@@ -80,8 +86,7 @@ namespace ServiceStack
         /// <summary>
         /// Never attempt to serialize these types
         /// </summary>
-        public List<Type> IgnoreTypes { get; set; } = new List<Type> {
-        };
+        public List<Type> IgnoreTypes { get; set; } = new();
         
         /// <summary>
         /// Allow ignoring 
@@ -110,7 +115,6 @@ namespace ServiceStack
         {
             this.AtRestPath = "/requestlogs";
             this.IgnoreFilter = DefaultIgnoreFilter;
-            this.RequiredRoles = new[] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
             this.LimitToServiceRequests = true;
@@ -131,7 +135,7 @@ namespace ServiceStack
             requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
             requestLogger.LimitToServiceRequests = LimitToServiceRequests;
             requestLogger.SkipLogging = SkipLogging;
-            requestLogger.RequiredRoles = RequiredRoles;
+            requestLogger.RequiredRoles = RequiredRoles ?? new []{ AccessRole };
             requestLogger.EnableErrorTracking = EnableErrorTracking;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
