@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.HtmlModules;
@@ -14,7 +13,8 @@ public enum AdminUi
     None       = 0,
     Users      = 1 << 0,
     Validation = 1 << 1,
-    All = Users | Validation,
+    Logging    = 1 << 2,
+    All = Users | Validation | Logging,
 }
 
 public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId

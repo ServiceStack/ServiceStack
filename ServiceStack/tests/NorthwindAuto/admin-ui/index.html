@@ -44,6 +44,7 @@ DEBUG = true /*debug*/
                         <div v-if="routes.admin === ''" v-scope="Dashboard({ store, routes, client, Meta })"></div>
                         <div v-else-if="routes.admin === 'validation'" v-scope="Validation({ store, routes, client, Forms })"></div>
                         <div v-else-if="routes.admin === 'users'" v-scope="AdminUsers({ store, routes, client })"></div>
+                        <div v-else-if="routes.admin === 'logging'" v-scope="Logging({ store, routes, client })"></div>
                     </div>
                 </div>
             </div>

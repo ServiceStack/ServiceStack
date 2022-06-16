@@ -8,7 +8,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class RequestLogsFeature : IPlugin, Model.IHasStringId
+    public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     {
         public string Id { get; set; } = Plugins.RequestLogs;
         /// <summary>
@@ -158,19 +158,35 @@ namespace ServiceStack
                 });
             }
 
-            appHost.ConfigurePlugin<MetadataFeature>(
-                feature => feature.AddDebugLink(AtRestPath, "Request Logs"));
-            
-            appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(RequestLogEntry));
+            appHost.ConfigurePlugin<MetadataFeature>(feature =>
+            {
+                feature.ExportTypes.Add(typeof(RequestLogEntry));
+                feature.AddDebugLink(AtRestPath, "Request Logs");
+            });
             
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.RequestLogs = new RequestLogsInfo {
+                    AccessRole = AccessRole,
                     RequiredRoles = RequiredRoles,
                     ServiceRoutes = new Dictionary<string, string[]> {
                         { nameof(RequestLogsService), new[] {AtRestPath} },
                     },
                     RequestLogger = requestLogger.GetType().Name,
                 };
+            });
+        }
+
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.ConfigurePlugin<UiFeature>(feature =>
+            {
+                var role = RequiredRoles?.Length > 0 ? RequiredRoles[0] : AccessRole; 
+                feature.AddAdminLink(AdminUi.Logging, new LinkInfo {
+                    Id = "logging",
+                    Label = "Logging",
+                    Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Logs)),
+                    Show = $"role:{role}",
+                });
             });
         }
     }
