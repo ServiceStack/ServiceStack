@@ -54,6 +54,16 @@ namespace ServiceStack
             if (fn != null)
                 feature.AppMetadataFilters.Add(fn);
         }
+
+        public static void AddToAfterAppMetadataFilters(this IAppHost appHost, Action<IRequest,AppMetadata> fn)
+        {
+            var feature = appHost.GetPlugin<MetadataFeature>();
+            if (feature == null)
+                return;
+            
+            if (fn != null)
+                feature.AfterAppMetadataFilters.Add(fn);
+        }
     }
     
     /// <summary>

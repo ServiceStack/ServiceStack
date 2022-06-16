@@ -99,6 +99,9 @@ public class AppHost : AppHostBase, IHostingStartup
         Plugins.Add(new ServiceStack.Api.OpenApi.OpenApiFeature());
     }
 
+    // public override string ResolveLocalizedString(string text, IRequest request = null) => 
+    //     text == null ? null : $"({text})";
+
     public override string? GetCompressionType(IRequest request)
     {
         if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))
