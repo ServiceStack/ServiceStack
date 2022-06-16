@@ -21,7 +21,7 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         public SqlTiming[] GetInProgressCommands()
         {
-            return SqlProfiler == null ? null : SqlProfiler.GetInProgressCommands();
+            return SqlProfiler?.GetInProgressCommands();
         }
 
         /// <summary>
@@ -49,28 +49,19 @@ namespace ServiceStack.MiniProfiler
         /// How many sql data readers were executed in all <see cref="Timing"/> steps.
         /// </summary>
 		[DataMember(Order = 17, Name = "ExecutedReaders")]
-		public int ExecutedReaders
-        {
-            get { return GetExecutedCount(ExecuteType.Reader); }
-        }
+		public int ExecutedReaders => GetExecutedCount(ExecuteType.Reader);
 
         /// <summary>
         /// How many sql scalar queries were executed in all <see cref="Timing"/> steps.
         /// </summary>
 		[DataMember(Order = 18, Name = "ExecutedScalars")]
-		public int ExecutedScalars
-        {
-            get { return GetExecutedCount(ExecuteType.Scalar); }
-        }
+		public int ExecutedScalars => GetExecutedCount(ExecuteType.Scalar);
 
         /// <summary>
         /// How many sql non-query statements were executed in all <see cref="Timing"/> steps.
         /// </summary>
 		[DataMember(Order = 19, Name = "ExecutedNonQueries")]
-		public int ExecutedNonQueries
-        {
-            get { return GetExecutedCount(ExecuteType.NonQuery); }
-        }
+		public int ExecutedNonQueries => GetExecutedCount(ExecuteType.NonQuery);
 
         /// <summary>
         /// Returns all <see cref="SqlTiming"/> results contained in all child <see cref="Timing"/> steps.
@@ -93,9 +84,7 @@ namespace ServiceStack.MiniProfiler
             if (Head == null)
                 return;
 
-            int count;
-
-            stats.IsDuplicate = _sqlExecutionCounts.TryGetValue(stats.CommandString, out count);
+            stats.IsDuplicate = _sqlExecutionCounts.TryGetValue(stats.CommandString, out var count);
             _sqlExecutionCounts[stats.CommandString] = count + 1;
 
             HasSqlTimings = true;

@@ -289,7 +289,7 @@ namespace ServiceStack.Auth
 
         // Keep in-memory map of userAuthId's when no IAuthRepository exists 
         private static long transientUserAuthId;
-        static readonly ConcurrentDictionary<string, long> transientUserIdsMap = new ConcurrentDictionary<string, long>();
+        static readonly ConcurrentDictionary<string, long> transientUserIdsMap = new();
 
         // Merge tokens into session when no IAuthRepository exists
         public virtual string CreateOrMergeAuthSession(IAuthSession session, IAuthTokens tokens)

@@ -4,14 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Text;
-//using System.Web.Routing;
-//using System.Web.Script.Serialization;
 
 namespace ServiceStack.MiniProfiler
 {
@@ -78,7 +75,7 @@ namespace ServiceStack.MiniProfiler
         [DataMember(Order = 6, Name = "Root")]
         public Timing Root
         {
-            get { return _root; }
+            get => _root;
             set
             {
                 _root = value;
@@ -144,10 +141,7 @@ namespace ServiceStack.MiniProfiler
         /// Milliseconds, to one decimal place, that this MiniProfiler ran.
         /// </summary>
 		[DataMember(Order = 9, Name = "DurationMilliseconds")]
-        public decimal DurationMilliseconds
-        {
-            get { return _root.DurationMilliseconds ?? GetRoundedMilliseconds(ElapsedTicks); }
-        }
+        public decimal DurationMilliseconds => _root.DurationMilliseconds ?? GetRoundedMilliseconds(ElapsedTicks);
 
         /// <summary>
         /// Returns true when <see cref="Root"/> or any of its <see cref="Timing.Children"/> are <see cref="Timing.IsTrivial"/>.
@@ -187,15 +181,12 @@ namespace ServiceStack.MiniProfiler
         /// Any Timing step with a duration less than or equal to this will be hidden by default in the UI; defaults to 2.0 ms.
         /// </summary>
 		[DataMember(Order = 12, Name = "TrivialDurationThresholdMilliseconds")]
-		public decimal TrivialDurationThresholdMilliseconds
-        {
-            get { return Settings.TrivialDurationThresholdMilliseconds; }
-        }
+		public decimal TrivialDurationThresholdMilliseconds => Settings.TrivialDurationThresholdMilliseconds;
 
         /// <summary>
         /// Ticks since this MiniProfiler was started.
         /// </summary>
-		internal long ElapsedTicks { get { return _sw.ElapsedTicks; } }
+		internal long ElapsedTicks => _sw.ElapsedTicks;
 
         /// <summary>
         /// Json representing the collection of CustomTimings relating to this Profiler
@@ -242,16 +233,13 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         public override bool Equals(object obj)
         {
-            return obj != null && obj is MiniProfiler && Id.Equals(((MiniProfiler)obj).Id);
+            return obj is MiniProfiler profiler && Id.Equals(profiler.Id);
         }
 
         /// <summary>
         /// Returns hashcode of Id.
         /// </summary>
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
         public IDisposable Step(string name)
         {
@@ -358,7 +346,7 @@ namespace ServiceStack.MiniProfiler
         /// <param name="level">This step's visibility level; allows filtering when MiniProfiler.Start is called.</param>
         public static IDisposable StepStatic(string name, ProfileLevel level = ProfileLevel.Info)
         {
-            return MiniProfilerExtensions.Step(Current, name, level);
+            return Current.Step(name, level);
         }
 
         /// <summary>
@@ -438,12 +426,10 @@ namespace ServiceStack.MiniProfiler
         public MiniProfiler Clone()
         {
             var serializer = new DataContractSerializer(typeof(MiniProfiler), null, int.MaxValue, false, true, null);
-            using (var ms = new System.IO.MemoryStream())
-            {
-                serializer.WriteObject(ms, this);
-                ms.Position = 0;
-                return (MiniProfiler)serializer.ReadObject(ms);
-            }
+            using var ms = new System.IO.MemoryStream();
+            serializer.WriteObject(ms, this);
+            ms.Position = 0;
+            return (MiniProfiler)serializer.ReadObject(ms);
         }
     }
 
@@ -479,7 +465,7 @@ namespace ServiceStack.MiniProfiler
         /// <returns></returns>
         public static T Inline<T>(this MiniProfiler profiler, Func<T> selector, string name)
         {
-            if (selector == null) throw new ArgumentNullException("selector");
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
             if (profiler == null) return selector();
             using (profiler.StepImpl(name))
             {
@@ -529,12 +515,12 @@ namespace ServiceStack.MiniProfiler
             var text = StringBuilderCache.Allocate()
                 .Append(HttpUtility.HtmlEncode(Environment.MachineName)).Append(" at ").Append(DateTime.UtcNow).AppendLine();
 
-            Stack<Timing> timings = new Stack<Timing>();
+            var timings = new Stack<Timing>();
             timings.Push(profiler.Root);
             while (timings.Count > 0)
             {
                 var timing = timings.Pop();
-                string name = HttpUtility.HtmlEncode(timing.Name);
+                var name = HttpUtility.HtmlEncode(timing.Name);
                 text.AppendFormat("{2} {0} = {1:###,##0.##}ms", name, timing.DurationMilliseconds, new string('>', timing.Depth)).AppendLine();
                 if (timing.HasChildren)
                 {
