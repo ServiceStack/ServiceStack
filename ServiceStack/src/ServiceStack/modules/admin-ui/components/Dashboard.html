@@ -4,6 +4,12 @@ App.components({
         return {
             $template: '#dashboard-template',
             get urlApiExplorer() { return Meta.urlWithState('../ui') },
+            get adminFeatures() {
+                return { validation:'Validation', users:'Users', logging:'Logging' }
+            },
+            featureColor(id) {
+                return Meta.Server.ui.adminLinks.some(link => link.id === id) ? 'green' : 'gray'
+            },
         }
     } 
 })
@@ -92,5 +98,20 @@ App.components({
         </div>
     </dl>
 </a>
+<a href="https://docs.servicestack.net/admin-ui-features" class="block mt-5 rounded-lg bg-white hover:bg-gray-50 shadow">
+    <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Admin UI Features</h3>
+        <div class="mt-2 max-w-2xl text-sm text-gray-500">
+            <p>Discover and learn how to enable new Admin UI Features</p>
+        </div>
+        <div class="mt-5">
+            <span v-for="(label,id) in adminFeatures" :key="id" 
+                  :class="`mr-2 inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-${featureColor(id)}-100 text-${featureColor(id)}-800`">
+              <svg :class="`-ml-0.5 mr-1.5 h-2 w-2 text-${featureColor(id)}-400`" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+              {{label}}
+            </span>
+        </div>
+    </div>
+</a>    
 </template>
 <!--/minify-->

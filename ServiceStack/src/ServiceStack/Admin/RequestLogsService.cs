@@ -8,9 +8,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Admin
 {
-    [ExcludeMetadata]
     [DataContract]
-    public class RequestLogs
+    public class RequestLogs : IReturn<RequestLogsResponse>
     {
         [DataMember(Order=1)] public int? BeforeSecs { get; set; }
         [DataMember(Order=2)] public int? AfterSecs { get; set; }
@@ -34,7 +33,6 @@ namespace ServiceStack.Admin
         [DataMember(Order=20)] public TimeSpan? DurationLessThan { get; set; }
     }
 
-    [ExcludeMetadata]
     [DataContract]
     public class RequestLogsResponse
     {
@@ -49,10 +47,10 @@ namespace ServiceStack.Admin
     }
 
     [DefaultRequest(typeof(RequestLogs))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
+    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     public class RequestLogsService : Service
     {
-        private static readonly Dictionary<string, string> Usage = new Dictionary<string, string> {
+        private static readonly Dictionary<string, string> Usage = new() {
             {"int BeforeSecs",      "Requests before elapsed time"},
             {"int AfterSecs",       "Requests after elapsed time"},
             {"string IpAddress",    "Requests matching Ip Address"},

@@ -135,6 +135,7 @@ public class PublishTasks
                 typeof(GetCrudEvents),
                 typeof(GetValidationRules),
                 typeof(ModifyValidationRules),
+                typeof(RequestLogs),
             };
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
@@ -154,6 +155,7 @@ public class PublishTasks
 
             Plugins.Add(new AdminUsersFeature());
             Plugins.Add(new AutoQueryFeature());
+            Plugins.Add(new RequestLogsFeature());
         }
     }
 

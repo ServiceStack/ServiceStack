@@ -1,6 +1,4 @@
 <script>
-import { RequestLogs } from 'lib/types'
-import { parseCookie, apiValueFmt, fromXsdDuration, fromByteArray } from '@servicestack/client'
 App.components({
     Logging: ({store, routes, client, Forms}) => {
         function parseJwt(token) {
@@ -11,7 +9,6 @@ App.components({
             }).join(''));
             return JSON.parse(jsonPayload);
         }
-        
         let allFields = 'id,dateTime,statusCode,statusDescription,httpMethod,absoluteUri,pathInfo,requestBody,requestDto,userAuthId,sessionId,ipAddress,forwardedFor,referer,headers,formData,items,session,responseDto,errorResponse,exceptionSource,exceptionData,requestDuration,meta'
         let summaryFields = 'id,statusCode,httpMethod,pathInfo,userAuthId,sessionId,ipAddress,requestDuration'.split(',')
         let ignoredHeaders = [':method','Cookie']
@@ -24,7 +21,6 @@ App.components({
                 return typeof obj === 'string' && obj.startsWith('PT')
                     ? fromXsdDuration(obj)
                     : apiValueFmt(obj)
-                
             },
             hasItems(obj) {
                 return !obj ? false : typeof obj === 'object' 
@@ -84,7 +80,6 @@ App.components({
                 let jwt = map(this.selectedCookies, x => x.find(c => c.name === 'ss-tok'))
                 return jwt && parseJwt(jwt.value) 
             },
-            
             mounted() {
                 this.update()
             },
@@ -119,8 +114,6 @@ App.components({
             </div>
         </div>
     </div>
-
-
     <div v-if="selected" class="relative z-20" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
         <div class="fixed overflow-hidden">
             <div class="absolute overflow-hidden">
@@ -164,7 +157,6 @@ App.components({
                                         </div>
                                     </div>
                                 </div>
-
                                 <!-- Divider container -->
                                 <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
                                     <div v-if="hasItems(select('requestDto'))">
@@ -189,7 +181,6 @@ App.components({
                                             </tr>
                                         </table>
                                     </div>
-
                                     <div v-if="hasItems(selectedCookies)" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
                                             <h2 class="font-medium text-white">Cookies</h2>
@@ -212,7 +203,6 @@ App.components({
                                             </tr>
                                         </table>
                                     </div>
-
                                     <div v-if="hasItems(selectedJwt)" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
                                             <h2 class="font-medium text-white">JWT</h2>
@@ -232,7 +222,6 @@ App.components({
                                             </tr>
                                         </table>
                                     </div>
-                                    
                                 </div>
                             </div>
                         </form>
@@ -241,6 +230,5 @@ App.components({
             </div>
         </div>
     </div>
-
 </section>
 </template>

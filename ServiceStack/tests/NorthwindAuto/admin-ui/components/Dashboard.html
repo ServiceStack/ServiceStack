@@ -5,7 +5,7 @@ App.components({
             $template: '#dashboard-template',
             get urlApiExplorer() { return Meta.urlWithState('../ui') },
             get adminFeatures() {
-                return { validation:'Validation', users:'Manage Users', logging:'Logging' }
+                return { validation:'Validation', users:'Users', logging:'Logging' }
             },
             featureColor(id) {
                 return Meta.Server.ui.adminLinks.some(link => link.id === id) ? 'green' : 'gray'

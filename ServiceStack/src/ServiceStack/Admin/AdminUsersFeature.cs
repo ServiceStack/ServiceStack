@@ -156,7 +156,7 @@ namespace ServiceStack.Admin
             appHost.ConfigurePlugin<UiFeature>(feature => {
                 feature.AddAdminLink(AdminUi.Users, new LinkInfo {
                     Id = "users",
-                    Label = "Manage Users",
+                    Label = "Users",
                     Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
                     Show = $"role:{AdminRole}",
                 });

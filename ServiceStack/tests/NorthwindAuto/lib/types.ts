@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-06-14 18:45:31
+Date: 2022-06-17 13:07:30
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -482,6 +482,7 @@ export class SharpPagesInfo
 
 export class RequestLogsInfo
 {
+    public accessRole: string;
     public requiredRoles: string[];
     public requestLogger: string;
     public serviceRoutes: { [index: string]: string[]; };
@@ -803,6 +804,38 @@ export class ResponseStatus
     public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
 }
 
+export class RequestLogEntry
+{
+    public id: number;
+    public dateTime: string;
+    public statusCode: number;
+    public statusDescription: string;
+    public httpMethod: string;
+    public absoluteUri: string;
+    public pathInfo: string;
+    // @StringLength(2147483647)
+    public requestBody: string;
+
+    public requestDto: Object;
+    public userAuthId: string;
+    public sessionId: string;
+    public ipAddress: string;
+    public forwardedFor: string;
+    public referer: string;
+    public headers: { [index: string]: string; };
+    public formData: { [index: string]: string; };
+    public items: { [index: string]: string; };
+    public session: Object;
+    public responseDto: Object;
+    public errorResponse: Object;
+    public exceptionSource: string;
+    public exceptionData: any;
+    public requestDuration: string;
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<RequestLogEntry>) { (Object as any).assign(this, init); }
+}
+
 export class KeyValuePair<TKey, TValue>
 {
     public key: TKey;
@@ -977,6 +1010,21 @@ export class QueryResponse<T>
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<QueryResponse<T>>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class RequestLogsResponse
+{
+    // @DataMember(Order=1)
+    public results: RequestLogEntry[];
+
+    // @DataMember(Order=2)
+    public usage: { [index: string]: string; };
+
+    // @DataMember(Order=3)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<RequestLogsResponse>) { (Object as any).assign(this, init); }
 }
 
 // @Route("/metadata/app")
@@ -1262,6 +1310,76 @@ export class GetCrudEvents extends QueryDb<CrudEvent> implements IReturn<QueryRe
     public getTypeName() { return 'GetCrudEvents'; }
     public getMethod() { return 'GET'; }
     public createResponse() { return new QueryResponse<CrudEvent>(); }
+}
+
+// @Route("/requestlogs")
+// @DataContract
+export class RequestLogs implements IReturn<RequestLogsResponse>
+{
+    // @DataMember(Order=1)
+    public beforeSecs?: number;
+
+    // @DataMember(Order=2)
+    public afterSecs?: number;
+
+    // @DataMember(Order=3)
+    public ipAddress: string;
+
+    // @DataMember(Order=4)
+    public forwardedFor: string;
+
+    // @DataMember(Order=5)
+    public userAuthId: string;
+
+    // @DataMember(Order=6)
+    public sessionId: string;
+
+    // @DataMember(Order=7)
+    public referer: string;
+
+    // @DataMember(Order=8)
+    public pathInfo: string;
+
+    // @DataMember(Order=9)
+    public ids: number[];
+
+    // @DataMember(Order=10)
+    public beforeId?: number;
+
+    // @DataMember(Order=11)
+    public afterId?: number;
+
+    // @DataMember(Order=12)
+    public hasResponse?: boolean;
+
+    // @DataMember(Order=13)
+    public withErrors?: boolean;
+
+    // @DataMember(Order=14)
+    public skip: number;
+
+    // @DataMember(Order=15)
+    public take?: number;
+
+    // @DataMember(Order=16)
+    public enableSessionTracking?: boolean;
+
+    // @DataMember(Order=17)
+    public enableResponseTracking?: boolean;
+
+    // @DataMember(Order=18)
+    public enableErrorTracking?: boolean;
+
+    // @DataMember(Order=19)
+    public durationLongerThan?: string;
+
+    // @DataMember(Order=20)
+    public durationLessThan?: string;
+
+    public constructor(init?: Partial<RequestLogs>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'RequestLogs'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new RequestLogsResponse(); }
 }
 
 

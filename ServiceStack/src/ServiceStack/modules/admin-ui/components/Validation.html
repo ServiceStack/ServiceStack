@@ -131,7 +131,7 @@ App.components({
                     </div>
                 </div>
             </div>
-            <div class="md:flex-1 md:w-1/2 md:p-2 pr-0">
+            <div class="md:flex-1 md:w-1/2 md:p-2 pr-0 mt-4 sm:mt-0">
                 <div v-if="hasProperties" class="">
                     <div class="flex mb-2">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -350,7 +350,7 @@ App.components({
 <template id="edit-validation-rule-template">
 <form @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted">
     <div class="relative px-4 py-5 bg-white sm:p-6">
-        <div v-scope="CloseButton({ onclick:() => done({field}) })" title="Close"></div>
+        <div class="hidden sm:block" v-scope="CloseButton({ onclick:() => done({field}) })" title="Close"></div>
         <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
         <div>
             <div class="mb-4">
