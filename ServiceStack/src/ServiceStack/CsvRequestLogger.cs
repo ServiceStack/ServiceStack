@@ -163,18 +163,15 @@ namespace ServiceStack
         public override List<RequestLogEntry> GetLatestLogs(int? take)
         {
             var logFile = files.GetFile(GetLogFilePath(this.requestLogsPattern, CurrentDateFn()));
-            if (logFile.Exists())
-            {
-                using (var reader = logFile.OpenText())
-                {
-                    var results = CsvSerializer.DeserializeFromReader<List<RequestLogEntry>>(reader);
-                    return take.HasValue
-                        ? results.Take(take.Value).ToList()
-                        : results;
-                }
-            }
+            if (!logFile.Exists()) 
+                return base.GetLatestLogs(take);
+            
+            using var reader = logFile.OpenText();
+            var results = CsvSerializer.DeserializeFromReader<List<RequestLogEntry>>(reader);
+            return take.HasValue
+                ? results.Take(take.Value).ToList()
+                : results;
 
-            return base.GetLatestLogs(take);
         }
     }
 }

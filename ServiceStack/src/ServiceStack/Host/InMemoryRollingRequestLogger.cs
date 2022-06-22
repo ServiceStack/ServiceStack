@@ -12,7 +12,7 @@ namespace ServiceStack.Host
         internal static long requestId = 0;
 
         public const int DefaultCapacity = 1000;
-        protected readonly ConcurrentQueue<RequestLogEntry> logEntries = new ConcurrentQueue<RequestLogEntry>();
+        protected readonly ConcurrentQueue<RequestLogEntry> logEntries = new();
         protected readonly int capacity;
 
         public bool EnableSessionTracking { get; set; }
@@ -124,6 +124,8 @@ namespace ServiceStack.Host
                 entry.Session = EnableSessionTracking ? request.GetSession() : null;
                 entry.StatusCode = request.Response.StatusCode;
                 entry.StatusDescription = request.Response.StatusDescription;
+                if (request.Response is IHasHeaders hasHeaders)
+                    entry.ResponseHeaders = hasHeaders.Headers;
 
                 var isClosed = request.Response.IsClosed;
                 if (!isClosed)

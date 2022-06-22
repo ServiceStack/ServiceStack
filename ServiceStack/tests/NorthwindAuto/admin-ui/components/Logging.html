@@ -1,6 +1,7 @@
 <script>
 import { RequestLogs } from 'lib/types'
 import { parseCookie, apiValueFmt, fromXsdDuration, fromByteArray } from '@servicestack/client'
+import { isInput } from '../../shared/js/core'
 App.components({
     Logging: ({store, routes, client, Forms}) => {
         function parseJwt(token) {
@@ -61,6 +62,11 @@ App.components({
                 return Object.keys(this.selected.headers).filter(x => ignoredHeaders.indexOf(x) < 0)
                     .reduce((acc,x) => { acc[x] = this.selected.headers[x]; return acc }, {})
             },
+            get responseHeaders() {
+                if (!this.selected || !this.selected.responseHeaders) return null
+                return Object.keys(this.selected.responseHeaders).filter(x => ignoredHeaders.indexOf(x) < 0)
+                    .reduce((acc,x) => { acc[x] = this.selected.responseHeaders[x]; return acc }, {})
+            },
             statusColor(status) {
                 return map(status, x => x <= 300 
                     ? 'text-green-700' : x < 400 ? 'text-amber-600' : x < 500 ? 'text-red-700' : null) || 'text-gray-700'
@@ -84,16 +90,39 @@ App.components({
                 let jwt = map(this.selectedCookies, x => x.find(c => c.name === 'ss-tok'))
                 return jwt && parseJwt(jwt.value) 
             },
+            keydown(e) {
+                if (isInput(e.target) || this.results.length === 0) return
+                let row = this.selected
+                if (!row) return this.selected = this.results[0]
+                let activeIndex = this.results.findIndex(x => x.id === row.id)
+                let navs = {
+                    ArrowUp:   activeIndex - 1,
+                    ArrowDown: activeIndex + 1,
+                    Home: 0,
+                    End: this.results.length -1,
+                }
+                let nextIndex = navs[e.key]
+                if (nextIndex != null) {
+                    this.selected = this.results[nextIndex % this.results.length]
+                    if (e.key.startsWith('Arrow')) {
+                        e.preventDefault()
+                    }
+                }
+            },
             
             mounted() {
                 this.update()
+                document.addEventListener('keydown', this.keydown)
+            },
+            unmounted() {
+                document.removeEventListener('keydown', this.keydown)
             },
         }
     } 
 })
 </script>
 <template id="logging-template">
-<section @vue:mounted="mounted">
+<section @vue:mounted="mounted" @vue:unmounted="unmounted" ref="section">
     <div class="flex flex-col">
         <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
@@ -102,7 +131,7 @@ App.components({
                         <thead class="bg-gray-50">
                         <tr>
                             <th v-for="k in uniqueKeys" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                <b></b>{{keyFmt(k)}}
+                                {{keyFmt(k)}}
                             </th>
                         </tr>
                         </thead>
@@ -151,11 +180,11 @@ App.components({
                                                     <span class="text-gray-500 mr-0.5">IP</span>
                                                     {{ select('ipAddress') }}
                                                 </div>
-                                                <div v-if="selectedSession" class="ml-2 flex items-center" :title="`${selectedSession.key} cookie`">
+                                                <div v-if="selectedSession" class="ml-2 flex items-center" :title="`${selectedSession && selectedSession.key} cookie`">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
                                                         <path fill="currentColor" d="M21 18.5h-6.18A3 3 0 0 0 13 16.68V13.5h3.17a4.33 4.33 0 0 0 1.3-8.5A6 6 0 0 0 6.06 6.63A3.5 3.5 0 0 0 7 13.5h4v3.18a3 3 0 0 0-1.82 1.82H3a1 1 0 0 0 0 2h6.18a3 3 0 0 0 5.64 0H21a1 1 0 0 0 0-2Zm-14-7a1.5 1.5 0 0 1 0-3a1 1 0 0 0 1-1a4 4 0 0 1 7.79-1.29a1 1 0 0 0 .78.67a2.31 2.31 0 0 1 1.93 2.29a2.34 2.34 0 0 1-2.33 2.33Zm5 9a1 1 0 1 1 1-1a1 1 0 0 1-1 1Z"/>
                                                     </svg>
-                                                    {{ selectedSession.value }}
+                                                    {{ selectedSession && selectedSession.value }}
                                                 </div>
                                             </div>
                                         </div>
@@ -170,6 +199,7 @@ App.components({
                                     <div v-if="hasItems(select('requestDto'))">
                                         <div v-scope="PreviewObject({ val:() => select('requestDto') })"></div>
                                     </div>
+
                                     <div v-if="hasItems(selectedHeaders)" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
                                             <h2 class="font-medium text-white">HTTP Headers</h2>
@@ -178,6 +208,26 @@ App.components({
                                     <div v-if="hasItems(selectedHeaders)" class="flex overflow-auto">
                                         <table>
                                             <tr v-for="(value,key) in selectedHeaders">
+                                                <th class="text-left font-medium align-top py-2 px-4 whitespace-nowrap">
+                                                    <div class=" whitespace-nowrap w-[9em] overflow-hidden" :title="key">
+                                                        {{key}}
+                                                    </div>
+                                                </th>
+                                                <td class="align-top py-2 px-4">
+                                                    {{value}}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div v-if="hasItems(responseHeaders)" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">HTTP Response Headers</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="hasItems(responseHeaders)" class="flex overflow-auto">
+                                        <table>
+                                            <tr v-for="(value,key) in responseHeaders">
                                                 <th class="text-left font-medium align-top py-2 px-4 whitespace-nowrap">
                                                     <div class=" whitespace-nowrap w-[9em] overflow-hidden" :title="key">
                                                         {{key}}

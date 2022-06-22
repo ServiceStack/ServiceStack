@@ -32,6 +32,7 @@ namespace ServiceStack
         public Dictionary<string, string> Headers { get; set; }
         public Dictionary<string, string> FormData { get; set; }
         public Dictionary<string, string> Items { get; set; }
+        public Dictionary<string, string> ResponseHeaders { get; set; }
         public object Session { get; set; }
         public object ResponseDto { get; set; }
         public object ErrorResponse { get; set; }

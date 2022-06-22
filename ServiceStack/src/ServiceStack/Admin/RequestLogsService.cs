@@ -24,13 +24,14 @@ namespace ServiceStack.Admin
         [DataMember(Order=11)] public int? AfterId { get; set; }
         [DataMember(Order=12)] public bool? HasResponse { get; set; }
         [DataMember(Order=13)] public bool? WithErrors { get; set; }
-        [DataMember(Order=14)] public int Skip { get; set; }
-        [DataMember(Order=15)] public int? Take { get; set; }
-        [DataMember(Order=16)] public bool? EnableSessionTracking { get; set; }
-        [DataMember(Order=17)] public bool? EnableResponseTracking { get; set; }
-        [DataMember(Order=18)] public bool? EnableErrorTracking { get; set; }
-        [DataMember(Order=19)] public TimeSpan? DurationLongerThan { get; set; }
-        [DataMember(Order=20)] public TimeSpan? DurationLessThan { get; set; }
+        [DataMember(Order=14)] public bool? EnableSessionTracking { get; set; }
+        [DataMember(Order=15)] public bool? EnableResponseTracking { get; set; }
+        [DataMember(Order=16)] public bool? EnableErrorTracking { get; set; }
+        [DataMember(Order=17)] public TimeSpan? DurationLongerThan { get; set; }
+        [DataMember(Order=28)] public TimeSpan? DurationLessThan { get; set; }
+        [DataMember(Order=19)] public int Skip { get; set; }
+        [DataMember(Order=20)] public int? Take { get; set; }
+        [DataMember(Order=21)] public string OrderBy { get; set; }
     }
 
     [DataContract]
@@ -62,13 +63,14 @@ namespace ServiceStack.Admin
             {"int BeforeId",        "Requests before RequestLog Id"},
             {"int AfterId",         "Requests after RequestLog Id"},
             {"bool WithErrors",     "Requests with errors"},
-            {"int Skip",            "Skip past N results"},
-            {"int Take",            "Only look at last N results"},
             {"bool EnableSessionTracking",  "Turn On/Off Session Tracking"},
             {"bool EnableResponseTracking", "Turn On/Off Tracking of Responses"},
             {"bool EnableErrorTracking",    "Turn On/Off Tracking of Errors"},
             {"TimeSpan DurationLongerThan", "Requests with a duration longer than"},
             {"TimeSpan DurationLessThan", "Requests with a duration less than"},
+            {"int Skip",            "Skip past N results"},
+            {"int Take",            "Only look at last N results"},
+            {"string OrderBy",      "Order results by specified fields, e.g. SessionId,-Id"},
         };
 
         public IRequestLogger RequestLogger { get; set; }
@@ -118,10 +120,14 @@ namespace ServiceStack.Admin
             if (request.DurationLessThan.HasValue)
                 logs = logs.Where(x => x.RequestDuration < request.DurationLessThan.Value);
 
-            var results = logs.Skip(request.Skip).OrderByDescending(x => x.Id).ToList();
+            var query = logs.Skip(request.Skip);
+
+            var results = string.IsNullOrEmpty(request.OrderBy)
+                ? query.OrderByDescending(x => x.Id)
+                : query.OrderBy(request.OrderBy);
 
             return new RequestLogsResponse {
-                Results = results,
+                Results = results.ToList(),
                 Usage = Usage,
             };
         }

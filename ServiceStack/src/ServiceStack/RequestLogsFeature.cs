@@ -118,7 +118,11 @@ namespace ServiceStack
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
             this.LimitToServiceRequests = true;
-            this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };
+            this.ExcludeRequestDtoTypes = new[]
+            {
+                typeof(RequestLogs),
+                typeof(HotReloadFiles),
+            };
             this.HideRequestBodyForRequestDtoTypes = new[] {
                 typeof(Authenticate), typeof(Register)
             };

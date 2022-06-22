@@ -16,7 +16,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
 {
-    public class AspNetResponse : IHttpResponse
+    public class AspNetResponse : IHttpResponse, IHasHeaders
     {
         //private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));
 
@@ -182,6 +182,8 @@ namespace ServiceStack.Host.AspNet
         {
             response.Cookies.Clear();
         }
+
+        public Dictionary<string, string> Headers => response.Headers.ToDictionary();
     }
 }
 
