@@ -358,7 +358,7 @@ namespace ServiceStack.Auth
 
             if (!string.IsNullOrEmpty(session.UserName))
                 jwtPayload["preferred_username"] = session.UserName;
-            else if (!string.IsNullOrEmpty(session.UserAuthName) && !session.UserAuthName.Contains("@"))
+            else if (!string.IsNullOrEmpty(session.UserAuthName))
                 jwtPayload["preferred_username"] = session.UserAuthName;
 
             var profileUrl = session.GetProfileUrl();
