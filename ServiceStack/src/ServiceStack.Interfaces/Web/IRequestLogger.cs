@@ -17,11 +17,21 @@ namespace ServiceStack.Web
         /// Turn On/Off Raw Request Body Tracking
         /// </summary>
         bool EnableRequestBodyTracking { get; set; }
+        
+        /// <summary>
+        /// Turn On/Off Raw Request Body Tracking per-request
+        /// </summary>
+        Func<IRequest, bool> FilterRequestBodyTracking { get; set; }
 
         /// <summary>
         /// Turn On/Off Tracking of Responses
         /// </summary>
         bool EnableResponseTracking { get; set; }
+
+        /// <summary>
+        /// Turn On/Off Tracking of Responses per-request
+        /// </summary>
+        Func<IRequest, bool> FilterResponseTracking { get; set; }
 
         /// <summary>
         /// Turn On/Off Tracking of Exceptions

@@ -27,10 +27,20 @@ namespace ServiceStack
         public bool EnableRequestBodyTracking { get; set; }
 
         /// <summary>
+        /// Turn On/Off Raw Request Body Tracking per-request
+        /// </summary>
+        Func<IRequest, bool> FilterRequestBodyTracking { get; set; }
+
+        /// <summary>
         /// Turn On/Off Tracking of Responses
         /// </summary>
         public bool EnableResponseTracking { get; set; }
 
+        /// <summary>
+        /// Turn On/Off Tracking of Responses per-request
+        /// </summary>
+        Func<IRequest, bool> FilterResponseTracking { get; set; }
+        
         /// <summary>
         /// Turn On/Off Tracking of Exceptions
         /// </summary>
@@ -139,7 +149,9 @@ namespace ServiceStack
             var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
             requestLogger.EnableSessionTracking = EnableSessionTracking;
             requestLogger.EnableResponseTracking = EnableResponseTracking;
+            requestLogger.FilterResponseTracking = FilterResponseTracking;
             requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
+            requestLogger.FilterRequestBodyTracking = FilterRequestBodyTracking;
             requestLogger.LimitToServiceRequests = LimitToServiceRequests;
             requestLogger.SkipLogging = SkipLogging;
             requestLogger.RequiredRoles = RequiredRoles ?? new []{ AccessRole };

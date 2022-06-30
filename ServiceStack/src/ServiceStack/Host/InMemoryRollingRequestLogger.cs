@@ -18,8 +18,10 @@ namespace ServiceStack.Host
         public bool EnableSessionTracking { get; set; }
 
         public bool EnableRequestBodyTracking { get; set; }
+        public Func<IRequest, bool> FilterRequestBodyTracking { get; set; }
 
         public bool EnableResponseTracking { get; set; }
+        public Func<IRequest, bool> FilterResponseTracking { get; set; }
 
         public bool EnableErrorTracking { get; set; }
 
@@ -143,7 +145,8 @@ namespace ServiceStack.Host
                     if (!isClosed)
                         entry.FormData = request.FormData.ToDictionary();
 
-                    if (EnableRequestBodyTracking && request.CanReadRequestBody())
+                    var enableRequestBodyTracking = FilterRequestBodyTracking?.Invoke(request);
+                    if (enableRequestBodyTracking ?? EnableRequestBodyTracking && request.CanReadRequestBody())
                     {
 #if NETCORE
                         // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
@@ -160,7 +163,8 @@ namespace ServiceStack.Host
 
             if (!response.IsErrorResponse())
             {
-                if (EnableResponseTracking)
+                var enableResponseTracking = FilterResponseTracking?.Invoke(request);
+                if (enableResponseTracking ?? EnableResponseTracking)
                     entry.ResponseDto = response.GetResponseDto();
             }
             else
