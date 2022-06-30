@@ -98,13 +98,16 @@ namespace ServiceStack
         /// </summary>
         public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
 
+        /// <summary>
+        /// Default take, if none is specified
+        /// </summary>
+        public int DefaultLimit { get; set; } = 100;
         
         public bool DefaultIgnoreFilter(object o)
         {
             var type = o.GetType();
             return IgnoreTypes?.Contains(type) == true || o is IDisposable;
         }
-        
 
         public RequestLogsFeature(int capacity) : this()
         {
@@ -176,6 +179,7 @@ namespace ServiceStack
                         { nameof(RequestLogsService), new[] {AtRestPath} },
                     },
                     RequestLogger = requestLogger.GetType().Name,
+                    DefaultLimit = DefaultLimit,
                 };
             });
         }

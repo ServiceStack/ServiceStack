@@ -278,6 +278,7 @@ namespace ServiceStack
         [Obsolete("Use AccessRole")]
         public string[] RequiredRoles { get; set; }
         public string RequestLogger { get; set; }
+        public int DefaultLimit { get; set; }
         public Dictionary<string,string[]> ServiceRoutes { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }

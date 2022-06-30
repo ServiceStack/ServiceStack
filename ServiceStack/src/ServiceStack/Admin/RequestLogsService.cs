@@ -44,7 +44,8 @@ namespace ServiceStack.Admin
 
         [DataMember(Order=1)] public List<RequestLogEntry> Results { get; set; }
         [DataMember(Order=2)] public Dictionary<string, string> Usage { get; set; }
-        [DataMember(Order=3)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order=3)] public int Total { get; set; }
+        [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }
     }
 
     [DefaultRequest(typeof(RequestLogs))]
@@ -81,15 +82,17 @@ namespace ServiceStack.Admin
                 throw new Exception("No IRequestLogger is registered");
 
             if (!HostContext.DebugMode)
-            {
                 await RequiredRoleAttribute.AssertRequiredRolesAsync(Request, RequestLogger.RequiredRoles);
-            }
 
             if (request.EnableSessionTracking.HasValue)
                 RequestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
 
+            var feature = GetPlugin<RequestLogsFeature>();
+            var defaultLimit = feature?.DefaultLimit ?? 100;
+
             var now = DateTime.UtcNow;
-            var logs = RequestLogger.GetLatestLogs(request.Take).AsQueryable();
+            var snapshot = RequestLogger.GetLatestLogs(null);
+            var logs = snapshot.AsQueryable();
 
             if (request.BeforeSecs.HasValue)
                 logs = logs.Where(x => (now - x.DateTime) <= TimeSpan.FromSeconds(request.BeforeSecs.Value));
@@ -97,6 +100,8 @@ namespace ServiceStack.Admin
                 logs = logs.Where(x => (now - x.DateTime) > TimeSpan.FromSeconds(request.AfterSecs.Value));
             if (!request.IpAddress.IsNullOrEmpty())
                 logs = logs.Where(x => x.IpAddress == request.IpAddress);
+            if (!request.ForwardedFor.IsNullOrEmpty())
+                logs = logs.Where(x => x.ForwardedFor == request.ForwardedFor);
             if (!request.UserAuthId.IsNullOrEmpty())
                 logs = logs.Where(x => x.UserAuthId == request.UserAuthId);
             if (!request.SessionId.IsNullOrEmpty())
@@ -113,21 +118,23 @@ namespace ServiceStack.Admin
                 logs = logs.Where(x => x.Id > request.AfterId);
             if (request.WithErrors.HasValue)
                 logs = request.WithErrors.Value
-                    ? logs.Where(x => x.ErrorResponse != null)
+                    ? logs.Where(x => x.ErrorResponse != null || x.StatusCode >= 400)
                     : logs.Where(x => x.ErrorResponse == null);
             if (request.DurationLongerThan.HasValue)
                 logs = logs.Where(x => x.RequestDuration > request.DurationLongerThan.Value);
             if (request.DurationLessThan.HasValue)
                 logs = logs.Where(x => x.RequestDuration < request.DurationLessThan.Value);
 
-            var query = logs.Skip(request.Skip);
+            var query = string.IsNullOrEmpty(request.OrderBy)
+                ? logs.OrderByDescending(x => x.Id)
+                : logs.OrderBy(request.OrderBy);
 
-            var results = string.IsNullOrEmpty(request.OrderBy)
-                ? query.OrderByDescending(x => x.Id)
-                : query.OrderBy(request.OrderBy);
+            var results = query.Skip(request.Skip);
+            results = results.Take(request.Take.GetValueOrDefault(defaultLimit));
 
             return new RequestLogsResponse {
                 Results = results.ToList(),
+                Total = snapshot.Count,
                 Usage = Usage,
             };
         }
