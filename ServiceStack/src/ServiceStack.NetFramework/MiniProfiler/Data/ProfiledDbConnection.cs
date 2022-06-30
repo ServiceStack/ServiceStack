@@ -43,8 +43,8 @@ namespace ServiceStack.MiniProfiler.Data
         /// </summary>
         protected DbConnection _conn // TODO: in MiniProfiler 2.0, make private
         {
-            get { return InnerConnection; }
-            set { InnerConnection = value; }
+            get => InnerConnection;
+            set => InnerConnection = value;
         }
 
         /// <summary>
@@ -52,14 +52,14 @@ namespace ServiceStack.MiniProfiler.Data
         /// </summary>
         protected IDbProfiler _profiler // TODO: in MiniProfiler 2.0, make private
         {
-            get { return Profiler; }
-            set { Profiler = value; }
+            get => Profiler;
+            set => Profiler = value;
         }
 
         protected bool autoDisposeConnection // Wrapper property for backwards compatibility
         {
-            get { return AutoDisposeConnection; }
-            set { AutoDisposeConnection = value; }
+            get => AutoDisposeConnection;
+            set => AutoDisposeConnection = value;
         }
 
         protected override DbCommand CreateDbCommand()
@@ -69,11 +69,11 @@ namespace ServiceStack.MiniProfiler.Data
 
         public ProfiledDbConnection Clone()
         {
-            ICloneable tail = _conn as ICloneable;
-            if (tail == null) throw new NotSupportedException("Underlying " + _conn.GetType().FullName + " is not cloneable");
+            if (_conn is not ICloneable tail) 
+                throw new NotSupportedException("Underlying " + _conn.GetType().FullName + " is not cloneable");
             return new ProfiledDbConnection((DbConnection)tail.Clone(), _profiler, AutoDisposeConnection);
         }
-        object ICloneable.Clone() { return Clone(); }
+        object ICloneable.Clone() => Clone();
     }
 }
 

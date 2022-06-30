@@ -15,7 +15,7 @@ namespace ServiceStack.MiniProfiler.Data
         {
             while (link != null)
             {
-                if ((object)key == (object)link.Key)
+                if (key == link.Key)
                 {
                     value = link.Value;
                     return true;
@@ -31,8 +31,7 @@ namespace ServiceStack.MiniProfiler.Data
             do
             {
                 var snapshot = Interlocked.CompareExchange(ref head, null, null);
-                TValue found;
-                if (TryGet(snapshot, key, out found))
+                if (TryGet(snapshot, key, out var found))
                 { // existing match; report the existing value instead
                     value = found;
                     return false;
@@ -49,9 +48,9 @@ namespace ServiceStack.MiniProfiler.Data
             Value = value;
             Tail = tail;
         }
-        public TKey Key { get; private set; }
-        public TValue Value { get; private set; }
-        public Link<TKey, TValue> Tail { get; private set; }
+        public TKey Key { get; }
+        public TValue Value { get; }
+        public Link<TKey, TValue> Tail { get; }
     }
 }
 

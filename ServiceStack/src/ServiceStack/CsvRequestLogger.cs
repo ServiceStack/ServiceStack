@@ -15,9 +15,9 @@ namespace ServiceStack
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(CsvRequestLogger));
 
-        readonly object semaphore = new object();
-        private List<RequestLogEntry> logs = new List<RequestLogEntry>();
-        private List<RequestLogEntry> errorLogs = new List<RequestLogEntry>();
+        readonly object semaphore = new();
+        private List<RequestLogEntry> logs = new();
+        private List<RequestLogEntry> errorLogs = new();
 
         private readonly IVirtualFiles files;
         private readonly string requestLogsPattern;
@@ -49,22 +49,20 @@ namespace ServiceStack
                 if (this.files.FileExists(logFile))
                 {
                     var file = this.files.GetFile(logFile);
-                    using (var reader = file.OpenText())
+                    using var reader = file.OpenText();
+                    string first = null, last = null;
+                    while (reader.ReadLine() is { } line)
                     {
-                        string first = null, last = null, line;
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            if (first == null)
-                                first = line;
+                        if (first == null)
+                            first = line;
 
-                            last = line;
-                        }
-                        if (last != null)
-                        {
-                            var entry = (first + "\n" + last).FromCsv<RequestLogEntry>();
-                            if (entry.Id > 0)
-                                return entry;
-                        }
+                        last = line;
+                    }
+                    if (last != null)
+                    {
+                        var entry = (first + "\n" + last).FromCsv<RequestLogEntry>();
+                        if (entry.Id > 0)
+                            return entry;
                     }
                 }
             }

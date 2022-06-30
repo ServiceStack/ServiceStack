@@ -19,7 +19,7 @@ namespace ServiceStack.MiniProfiler.Data
         /// </summary>
         public bool BindByName
         {
-            get { return bindByName; }
+            get => bindByName;
             set
             {
                 if (bindByName != value)
@@ -33,15 +33,16 @@ namespace ServiceStack.MiniProfiler.Data
                 }
             }
         }
+        
         static Link<Type, Action<IDbCommand, bool>> bindByNameCache;
         static Action<IDbCommand, bool> GetBindByName(Type commandType)
         {
-            if (commandType == null) return null; // GIGO
-            Action<IDbCommand, bool> action;
-            if (Link<Type, Action<IDbCommand, bool>>.TryGet(bindByNameCache, commandType, out action))
-            {
+            if (commandType == null) 
+                return null; // GIGO
+            
+            if (Link<Type, Action<IDbCommand, bool>>.TryGet(bindByNameCache, commandType, out var action))
                 return action;
-            }
+
             var prop = commandType.GetProperty("BindByName", BindingFlags.Public | BindingFlags.Instance);
             action = null;
             ParameterInfo[] indexers;
@@ -65,15 +66,12 @@ namespace ServiceStack.MiniProfiler.Data
             return action;
         }
 
-
         public ProfiledDbCommand(DbCommand cmd, DbConnection conn, IDbProfiler profiler)
-            : base(cmd, conn, profiler)
-        {
-        }
+            : base(cmd, conn, profiler) {}
 
         protected override DbConnection DbConnection
         {
-            get { return base.DbConnection; }
+            get => base.DbConnection;
             set
             {
                 // TODO: we need a way to grab the IDbProfiler which may not be the same as the MiniProfiler, it could be wrapped
@@ -87,41 +85,37 @@ namespace ServiceStack.MiniProfiler.Data
             }
         }
 
-        #region Wrapper properties for backwards compatibility
-
         protected DbCommand _cmd
         {
-            get { return DbCommand; }
-            set { DbCommand = value; }
+            get => DbCommand;
+            set => DbCommand = value;
         }
 
         protected DbConnection _conn
         {
-            get { return DbConnection; }
-            set { DbConnection = value; }
+            get => DbConnection;
+            set => DbConnection = value;
         }
 
         protected DbTransaction _tran
         {
-            get { return DbTransaction; }
-            set { DbTransaction = value; }
+            get => DbTransaction;
+            set => DbTransaction = value;
         }
 
         protected IDbProfiler _profiler
         {
-            get { return DbProfiler; }
-            set { DbProfiler = value; }
+            get => DbProfiler;
+            set => DbProfiler = value;
         }
-
-        #endregion
 
         public ProfiledDbCommand Clone()
         { // EF expects ICloneable
-            ICloneable tail = _cmd as ICloneable;
-            if (tail == null) throw new NotSupportedException("Underlying " + _cmd.GetType().FullName + " is not cloneable");
+            if (_cmd is not ICloneable tail) 
+                throw new NotSupportedException("Underlying " + _cmd.GetType().FullName + " is not cloneable");
             return new ProfiledDbCommand((DbCommand)tail.Clone(), _conn, _profiler);
         }
-        object ICloneable.Clone() { return Clone(); }
+        object ICloneable.Clone() => Clone();
     }
 }
 

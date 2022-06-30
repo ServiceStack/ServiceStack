@@ -12,30 +12,24 @@ namespace ServiceStack.MiniProfiler.Data
         /// <summary>
         /// Every provider factory must have an Instance public field
         /// </summary>
-        public new static ProfiledDbProviderFactory Instance = new ProfiledDbProviderFactory();
+        public new static ProfiledDbProviderFactory Instance = new();
 
         /// <summary>
         /// Used for db provider apis internally 
         /// </summary>
-        private ProfiledDbProviderFactory ()
-	    {
-	    }
+        private ProfiledDbProviderFactory() {}
 
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbCommand CreateCommand()
-        {
-            return new ProfiledDbCommand(WrappedFactory.CreateCommand(), null, Profiler);
-        }
+        public override DbCommand CreateCommand() => 
+            new ProfiledDbCommand(WrappedFactory.CreateCommand(), null, Profiler);
 
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbConnection CreateConnection()
-        {
-            return new ProfiledDbConnection(WrappedFactory.CreateConnection(), Profiler);
-        }
+        public override DbConnection CreateConnection() => 
+            new ProfiledDbConnection(WrappedFactory.CreateConnection(), Profiler);
     }
 }
 
