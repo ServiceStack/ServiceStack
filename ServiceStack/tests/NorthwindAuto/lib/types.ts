@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-06-17 13:07:30
+Date: 2022-06-30 21:19:49
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -485,6 +485,7 @@ export class RequestLogsInfo
     public accessRole: string;
     public requiredRoles: string[];
     public requestLogger: string;
+    public defaultLimit: number;
     public serviceRoutes: { [index: string]: string[]; };
     public meta: { [index: string]: string; };
 
@@ -825,6 +826,7 @@ export class RequestLogEntry
     public headers: { [index: string]: string; };
     public formData: { [index: string]: string; };
     public items: { [index: string]: string; };
+    public responseHeaders: { [index: string]: string; };
     public session: Object;
     public responseDto: Object;
     public errorResponse: Object;
@@ -1022,6 +1024,9 @@ export class RequestLogsResponse
     public usage: { [index: string]: string; };
 
     // @DataMember(Order=3)
+    public total: number;
+
+    // @DataMember(Order=4)
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<RequestLogsResponse>) { (Object as any).assign(this, init); }
@@ -1356,25 +1361,28 @@ export class RequestLogs implements IReturn<RequestLogsResponse>
     public withErrors?: boolean;
 
     // @DataMember(Order=14)
-    public skip: number;
-
-    // @DataMember(Order=15)
-    public take?: number;
-
-    // @DataMember(Order=16)
     public enableSessionTracking?: boolean;
 
-    // @DataMember(Order=17)
+    // @DataMember(Order=15)
     public enableResponseTracking?: boolean;
 
-    // @DataMember(Order=18)
+    // @DataMember(Order=16)
     public enableErrorTracking?: boolean;
 
-    // @DataMember(Order=19)
+    // @DataMember(Order=17)
     public durationLongerThan?: string;
 
-    // @DataMember(Order=20)
+    // @DataMember(Order=28)
     public durationLessThan?: string;
+
+    // @DataMember(Order=19)
+    public skip: number;
+
+    // @DataMember(Order=20)
+    public take?: number;
+
+    // @DataMember(Order=21)
+    public orderBy: string;
 
     public constructor(init?: Partial<RequestLogs>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'RequestLogs'; }

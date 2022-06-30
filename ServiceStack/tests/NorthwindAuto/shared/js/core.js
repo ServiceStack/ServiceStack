@@ -332,6 +332,13 @@ export function iconHtml(icon, opt) {
     return ''
 }
 
+/** Is element an Input control
+ * @param {Element} e */
+let InputTags = 'INPUT,SELECT,TEXTAREA'.split(',')
+export function isInput(e) {
+    return e && InputTags.indexOf(e.tagName) >= 0
+}
+
 let SORT_METHODS = ['GET','POST','PATCH','PUT','DELETE']
 
 /** @param {MetadataOperationType} op */

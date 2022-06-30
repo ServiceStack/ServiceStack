@@ -4,19 +4,28 @@ App.components({
         function parseJwt(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
+            let jsonPayload = decodeURIComponent(window.atob(base64).split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join(''));
             return JSON.parse(jsonPayload);
         }
+        let fieldLabels = { statusCode:'status', pathInfo:'path', httpMethod:'method', 
+            userAuthId:'userId', ipAddress:'ip', requestDuration:'duration' }
         let allFields = 'id,dateTime,statusCode,statusDescription,httpMethod,absoluteUri,pathInfo,requestBody,requestDto,userAuthId,sessionId,ipAddress,forwardedFor,referer,headers,formData,items,session,responseDto,errorResponse,exceptionSource,exceptionData,requestDuration,meta'
         let summaryFields = 'id,statusCode,httpMethod,pathInfo,userAuthId,sessionId,ipAddress,requestDuration'.split(',')
         let ignoredHeaders = [':method','Cookie']
+        let queryFields = 'beforeSecs,afterSecs,ipAddress,forwardedFor,userAuthId,sessionId,referer,pathInfo,ids,beforeId' 
+            + ',afterId,hasResponse,withErrors,durationLongerThan,durationLessThan,skip,take,orderBy'.split(',')
+        let linkFields = 'userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,skip'.split(',')
         return {
             $template: '#logging-template',
-            selected: null,
+            routes,
+            sort: null,
             api: null,
+            take: Forms.Server.plugins.requestLogs.defaultLimit,
             parseCookie,
+            fieldLabels,
+            linkFields,
             apiValueFmt(obj) {
                 return typeof obj === 'string' && obj.startsWith('PT')
                     ? fromXsdDuration(obj)
@@ -34,18 +43,38 @@ App.components({
             get results() {
                 return this.api && this.api.response.results || []
             },
+            get total() {
+                return this.api && this.api.response.total
+            },
             get uniqueKeys() {
                 // let show = k => typeof k !== 'string' || k.substring(0, 2) !== '__'
                 // return uniqueKeys(this.results).filter(show)
                 return summaryFields
             },
             keyFmt: t => humanize(toPascalCase(t)),
+            hasFilters() {
+                for (let i; i<linkFields.length; i++) {
+                    let x = linkFields[i]
+                    if (routes[x]) 
+                        return true
+                }
+                return false
+            },
             update() {
-                apiSend(createClient, new RequestLogs({ take: 100 }))
+                let request = new RequestLogs({ take: 100 })
+                if (routes.orderBy)
+                    request.orderBy = routes.orderBy
+                linkFields.forEach(x => {
+                    if (routes[x]) request[x] = routes[x]
+                })
+                apiSend(createClient, request)
                     .then(r => this.api = r.api)
             },
+            get selected() {
+                return routes.show && this.results.find(x => x.id == routes.show)
+            },
             toggle(row) {
-                this.selected = this.selected && this.selected.id === row.id ? null : row
+                routes.to({ show: routes.show == row.id ? '' : row.id })
             },
             // required to avoid JS errors, as v-if guards not honoured in petite-vue
             select(arg) {
@@ -56,6 +85,11 @@ App.components({
                 if (!this.selected || !this.selected.headers) return null
                 return Object.keys(this.selected.headers).filter(x => ignoredHeaders.indexOf(x) < 0)
                     .reduce((acc,x) => { acc[x] = this.selected.headers[x]; return acc }, {})
+            },
+            get responseHeaders() {
+                if (!this.selected || !this.selected.responseHeaders) return null
+                return Object.keys(this.selected.responseHeaders).filter(x => ignoredHeaders.indexOf(x) < 0)
+                    .reduce((acc,x) => { acc[x] = this.selected.responseHeaders[x]; return acc }, {})
             },
             statusColor(status) {
                 return map(status, x => x <= 300 
@@ -73,22 +107,99 @@ App.components({
             },
             get selectedSession() {
                 return this.selectedCookies && 
-                    map(this.selectedCookies.find(x => x.name === 'ss-id') || this.selectedCookies.find(x => x.name === 'ss-pid'), 
+                    map(this.selectedCookies.find(x => x.name === 'ss-opt') === 'perm'
+                        ? this.selectedCookies.find(x => x.name === 'ss-pid')
+                        : this.selectedCookies.find(x => x.name === 'ss-id') || this.selectedCookies.find(x => x.name === 'ss-pid'), 
                         x => ({ key:x.name, value: x.value })) 
             },
             get selectedJwt() {
                 let jwt = map(this.selectedCookies, x => x.find(c => c.name === 'ss-tok'))
                 return jwt && parseJwt(jwt.value) 
             },
+            href(links) {
+                return Object.assign(linkFields.reduce((acc,x) => { acc[x] = ''; return acc }, {}), links)
+            },
+            clearFilters() {
+                routes.to(this.href({show:''}))
+            },
+            keydown(e) {
+                if (isInput(e.target) || this.results.length === 0) return
+                if (e.key === 'Escape') {
+                    this.clearFilters()
+                    return
+                }
+                let row = this.selected
+                if (!row) return routes.to({ show:map(this.results[0], x => x.id) || '' })
+                let activeIndex = this.results.findIndex(x => x.id === row.id)
+                let navs = {
+                    ArrowUp:   activeIndex - 1,
+                    ArrowDown: activeIndex + 1,
+                    Home: 0,
+                    End: this.results.length -1,
+                }
+                let nextIndex = navs[e.key]
+                if (nextIndex != null) {
+                    routes.to({ show: map(this.results[nextIndex % this.results.length], x => x.id) })
+                    if (e.key.startsWith('Arrow')) {
+                        e.preventDefault()
+                    }
+                }
+            },
+            get canPrev() { return routes.skip > 0 },
+            get canNext() { return this.results.length >= this.take },
+            nextSkip(skip) {
+                skip += routes.skip
+                if (typeof this.total == 'number') {
+                    const lastPage = Math.floor(this.total / this.take) * this.take
+                    if (skip > lastPage) return lastPage
+                }
+                if (skip < 0) return 0
+                return skip
+            },
+            sub: null,
             mounted() {
+                this.sub = App.events.subscribe('route:nav', args => this.update())
                 this.update()
+                document.addEventListener('keydown', this.keydown)
+            },
+            unmounted() {
+                document.removeEventListener('keydown', this.keydown)
+                App.unsubscribe.call(this)
             },
         }
     } 
 })
 </script>
 <template id="logging-template">
-<section @vue:mounted="mounted">
+<div class="mb-2 flex flex-wrap">
+    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+      <button v-href="href({ withErrors:true })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+          Has Errors
+      </button>
+      <button v-href="href({ hasResponse:true })" type="button" class="-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+          Has Response
+      </button>
+    </span>
+    <div v-if="hasFilters" class="px-2">
+        <button type="button" @click="clearFilters" title="Reset Filters"
+                class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/></svg>
+        </button>
+    </div>
+    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+      <button type="button" :class="[canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
+            'relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
+            title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" :class="[canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
+            '-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
+            title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+      </button>
+    </span>
+</div>
+<section @vue:mounted="mounted" @vue:unmounted="unmounted" ref="section">
     <div class="flex flex-col">
         <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
@@ -96,8 +207,14 @@ App.components({
                     <table class="divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                         <tr>
-                            <th v-for="k in uniqueKeys" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                <b></b>{{keyFmt(k)}}
+                            <th v-for="k in uniqueKeys" v-href="{ orderBy:routes.orderBy === k ? `-${k}` : routes.orderBy === `-${k}` ? '' : k }"
+                                class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                <div class="flex">
+                                    <span class="mr-1 select-none">{{keyFmt(fieldLabels[k] || k)}}</span>
+                                    <svg class="w-4 h-4" v-if="routes.orderBy===k" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor"/></g></svg>
+                                    <svg class="w-4 h-4" v-else-if="routes.orderBy===`-${k}`" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor"/></g></svg>
+                                    <span v-else class="w-4 h-4"></span>
+                                </div>
                             </th>
                         </tr>
                         </thead>
@@ -130,7 +247,10 @@ App.components({
                                                     {{ select('statusCode') }}
                                                 </div>
                                                 <div class="ml-2">
-                                                    {{ select('httpMethod') }} {{ select('pathInfo') }}
+                                                    {{ select('httpMethod') }}
+                                                    <a v-href="href({ pathInfo:select('pathInfo') })" class="text-blue-600 hover:text-blue-800">
+                                                        {{ select('pathInfo') }}
+                                                    </a>
                                                 </div>
                                             </h2>
                                             <div class="text-sm text-gray-500 flex flex-wrap">
@@ -138,17 +258,23 @@ App.components({
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
                                                         <path fill="currentColor" d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"/>
                                                     </svg>
-                                                    {{ select('userAuthId') }}
+                                                    <a v-href="href({ userAuthId:select('userAuthId') })" class="text-blue-600 hover:text-blue-800">
+                                                        {{ select('userAuthId') }}
+                                                    </a>
                                                 </div>
                                                 <div v-if="select('ipAddress')" class="ml-2 flex items-center" title="IP Address">
                                                     <span class="text-gray-500 mr-0.5">IP</span>
-                                                    {{ select('ipAddress') }}
+                                                    <a v-href="href({ ipAddress:select('ipAddress') })" class="text-blue-600 hover:text-blue-800">
+                                                        {{ select('ipAddress') }}
+                                                    </a>
                                                 </div>
-                                                <div v-if="selectedSession" class="ml-2 flex items-center" :title="`${selectedSession.key} cookie`">
+                                                <div v-if="selectedSession" class="ml-2 flex items-center" :title="`${selectedSession && selectedSession.key} cookie`">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
                                                         <path fill="currentColor" d="M21 18.5h-6.18A3 3 0 0 0 13 16.68V13.5h3.17a4.33 4.33 0 0 0 1.3-8.5A6 6 0 0 0 6.06 6.63A3.5 3.5 0 0 0 7 13.5h4v3.18a3 3 0 0 0-1.82 1.82H3a1 1 0 0 0 0 2h6.18a3 3 0 0 0 5.64 0H21a1 1 0 0 0 0-2Zm-14-7a1.5 1.5 0 0 1 0-3a1 1 0 0 0 1-1a4 4 0 0 1 7.79-1.29a1 1 0 0 0 .78.67a2.31 2.31 0 0 1 1.93 2.29a2.34 2.34 0 0 1-2.33 2.33Zm5 9a1 1 0 1 1 1-1a1 1 0 0 1-1 1Z"/>
                                                     </svg>
-                                                    {{ selectedSession.value }}
+                                                    <a v-href="href({ sessionId:selectedSession.value })" class="text-blue-600 hover:text-blue-800">
+                                                        {{ selectedSession && selectedSession.value }}
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
@@ -170,6 +296,31 @@ App.components({
                                     <div v-if="hasItems(selectedHeaders)" class="flex overflow-auto">
                                         <table>
                                             <tr v-for="(value,key) in selectedHeaders">
+                                                <th class="text-left font-medium align-top py-2 px-4 whitespace-nowrap">
+                                                    <div class=" whitespace-nowrap w-[9em] overflow-hidden" :title="key">
+                                                        {{key}}
+                                                    </div>
+                                                </th>
+                                                <td class="align-top py-2 px-4">
+                                                    <a v-if="key === 'X-Forwarded-For'" v-href="href({ forwardedFor:value })" class="text-blue-600 hover:text-blue-800">
+                                                        {{value}}
+                                                    </a>
+                                                    <a v-else-if="key === 'Referer'" v-href="href({ referer:value })" class="text-blue-600 hover:text-blue-800">
+                                                        {{value}}
+                                                    </a>
+                                                    <span v-else>{{value}}</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div v-if="hasItems(responseHeaders)" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">HTTP Response Headers</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="hasItems(responseHeaders)" class="flex overflow-auto">
+                                        <table>
+                                            <tr v-for="(value,key) in responseHeaders">
                                                 <th class="text-left font-medium align-top py-2 px-4 whitespace-nowrap">
                                                     <div class=" whitespace-nowrap w-[9em] overflow-hidden" :title="key">
                                                         {{key}}
