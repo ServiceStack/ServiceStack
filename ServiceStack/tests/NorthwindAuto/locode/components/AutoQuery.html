@@ -5,7 +5,7 @@ import { Crud, map, canAccess, apiSend, invalidAccessMessage } from "../../share
 import { Meta, Forms, resolveApiUrl } from "../js/init"
 import { createState } from "../js/stores"
 
-App.component('AutoQuery', ({ store, routes, settings }) => {
+App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
     /** @return {MetadataTypeName} */
     let dataModelRef = () => map(store.op, op => op.dataModel)
     /** @return {MetadataTypeName} */
@@ -53,8 +53,8 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         filterOperations(fn) {
             const to = []
             const existingKeys = {}
-    
-            Server.api.operations.forEach(op => {
+
+            Forms.Server.api.operations.forEach(op => {
                 if (!op.dataModel)
                     return
     
@@ -216,6 +216,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
             settings.clearPrefs(routes.op)
             this.updated()
         },
+        get $qs() { return queryString(location.search) },
         
         sub:null,
         unmounted:App.unsubscribe,
@@ -330,7 +331,7 @@ App.component('AutoQuery', ({ store, routes, settings }) => {
         <div class="p-4 flex items-center">
             <div class="flex justify-between w-full">
                 <div class="flex">
-                    <button v-if="canCreate && !routes.new" type="button" v-href="{ new:true }"
+                    <button v-if="canCreate && !routes.new" type="button" v-href="{ new:true, edit:null, $qs }"
                             class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
                         <span>New {{humanify(store.opDataModel)}}</span>
@@ -403,6 +404,7 @@ App.components({
             complexProp(column) {
                 return Forms.complexProp(column)
             },
+            get $qs() { return queryString(location.search) },
         }
     },
     SettingsIcons({ routes, settings, name }) {
@@ -438,7 +440,7 @@ App.components({
                                     <path d="M9.586 11L7.05 8.464L8.464 7.05l4.95 4.95l-4.95 4.95l-1.414-1.414L9.586 13H3v-2h6.586zM11 3h8c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2h-8v-2h8V5h-8V3z" fill="currentColor" fill-rule="evenodd"/>
                                 </svg>
                             </button>
-                            <button v-else-if="canCreate" type="button" :title="`New ${humanify(store.opDataModel)}`" v-href="{ new:true, edit:null }" :disabled="!state.apiCreate"
+                            <button v-else-if="canCreate" type="button" :title="`New ${humanify(store.opDataModel)}`" v-href="{ new:true, edit:null, $qs }" :disabled="!state.apiCreate"
                                     class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
                             </button>

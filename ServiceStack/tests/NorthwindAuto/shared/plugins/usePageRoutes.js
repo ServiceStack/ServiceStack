@@ -70,11 +70,11 @@ export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
             this.set(args)
             let cleanArgs = state(this)
             if (typeof args.$on == 'function') args.$on(cleanArgs)
-            let href = args.$qs ? this.href({ $qs:args.$qs }) : this.href()
+            let href = args.$qs ? this.href({ $qs:args.$qs }) : this.href(null)
             history.pushState(cleanArgs, this[page], href)
             publish('to', cleanArgs)
         },
-        /** @param { Record<string, any>} args */
+        /** @param {Record<string,any>} args */
         href(args) {
             /**: can't mutate reactive stores before createApp() */
             if (args && typeof args['$page'] != 'undefined') args[page] = args['$page']

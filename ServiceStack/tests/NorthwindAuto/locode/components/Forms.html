@@ -15,6 +15,7 @@ App.components({
             get formClass() { return map(this.css, x => x.form) || Forms.formClass },
             get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
             get state() { return state && state() },
+            /** @type ApiState */
             get apiCreate() { return map(this.state, x => x.apiCreate) },
             /** @type ApiResult */
             get api() { return map(this.apiCreate, x => x.api) },
@@ -38,7 +39,19 @@ App.components({
                             done()
                         }
                     })
-            }
+            },
+            mounted() {
+                /**: populate initial model from queryString (set by navigation) */
+                let model = this.model
+                let qs = queryString(location.search)
+                Object.keys(qs).forEach(k => {
+                    if (k === 'new') return
+                    let prop = toCamelCase(k)
+                    if (qs[k] != null) {
+                        model[prop] = qs[k]
+                    }
+                })
+            },
         }
     },
     /** @param {EditComponentArgs} args */
@@ -215,7 +228,7 @@ App.components({
 </script>
 <!--minify-->
 <template id="create-form-template">
-<form ref="form" v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass">
+<form ref="form" @vue:mounted="mounted"  v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass">
     <div class="relative px-4 py-5 bg-white sm:p-6">
         <div v-scope="CloseButton({ onclick:done })" title="Close"></div>
         <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
@@ -224,7 +237,7 @@ App.components({
             <div class="flex-grow mb-3 sm:mb-0">
                 <fieldset :class="gridClass">
                     <div v-for="{ input, rowClass, prop } in gridInputs" :class="rowClass">
-                        <div :key="input.id" v-scope="Input({ input, prop, model, api:() => api })"></div>
+                        <div :key="input.id" v-scope="Input({ input, prop, model:() => model, api:() => api })"></div>
                     </div>
                 </fieldset>
             </div>
@@ -240,6 +253,7 @@ App.components({
     </div>
 </form>
 </template>
+
 <template id="edit-form-template">
     <form ref="form" v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted" @vue:unmounted="unmounted">
         <div class="relative px-4 py-5 bg-white sm:p-6">
