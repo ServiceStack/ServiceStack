@@ -27,8 +27,12 @@ namespace ServiceStack.OrmLite
         /// <summary>
         /// Invoked when a DB Connection is opened
         /// </summary>
-        Action<IDbConnection> OnOpenConnection { get; set; } 
-            
+        void InitConnection(IDbConnection dbConn);
+
+        /// <summary>
+        /// Custom delegate invoked when a DB Connection is opened
+        /// </summary>
+        Action<IDbConnection> OnOpenConnection { get; set; }
 
         IOrmLiteExecFilter ExecFilter { get; set; }
 

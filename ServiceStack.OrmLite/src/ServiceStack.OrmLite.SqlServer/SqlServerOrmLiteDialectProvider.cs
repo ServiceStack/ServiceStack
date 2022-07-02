@@ -21,7 +21,7 @@ namespace ServiceStack.OrmLite.SqlServer
 {
     public class SqlServerOrmLiteDialectProvider : OrmLiteDialectProviderBase<SqlServerOrmLiteDialectProvider>
     {
-        public static SqlServerOrmLiteDialectProvider Instance = new SqlServerOrmLiteDialectProvider();
+        public static SqlServerOrmLiteDialectProvider Instance = new();
 
         public SqlServerOrmLiteDialectProvider()
         {
@@ -773,5 +773,12 @@ namespace ServiceStack.OrmLite.SqlServer
         }
 #endif
 
+        public override void InitConnection(IDbConnection dbConn)
+        {
+            if (dbConn is OrmLiteConnection ormLiteConn && dbConn.ToDbConnection() is SqlConnection sqlConn)
+                ormLiteConn.ConnectionId = sqlConn.ClientConnectionId;
+            
+            OnOpenConnection?.Invoke(dbConn);
+        }
     }
 }

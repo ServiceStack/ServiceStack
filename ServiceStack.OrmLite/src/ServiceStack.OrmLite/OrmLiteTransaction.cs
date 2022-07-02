@@ -48,12 +48,38 @@ namespace ServiceStack.OrmLite
 
         public void Commit()
         {
-            Transaction.Commit();
+            var id = Diagnostics.OrmLite.WriteTransactionCommitBefore(Transaction.IsolationLevel, db);
+            try
+            {
+                Transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                Diagnostics.OrmLite.WriteTransactionCommitError(id, Transaction.IsolationLevel, db, ex);
+                throw;
+            }
+            finally
+            {
+                Diagnostics.OrmLite.WriteTransactionCommitAfter(id, Transaction.IsolationLevel, db);
+            }
         }
 
         public void Rollback()
         {
-            Transaction.Rollback();
+            var id = Diagnostics.OrmLite.WriteTransactionRollbackBefore(Transaction.IsolationLevel, db, null);
+            try
+            {
+                Transaction.Rollback();
+            }
+            catch (Exception ex)
+            {
+                Diagnostics.OrmLite.WriteTransactionCommitError(id, Transaction.IsolationLevel, db, ex);
+                throw;
+            }
+            finally
+            {
+                Diagnostics.OrmLite.WriteTransactionCommitAfter(id, Transaction.IsolationLevel, db);
+            }
         }
 
         public IDbConnection Connection => Transaction.Connection;

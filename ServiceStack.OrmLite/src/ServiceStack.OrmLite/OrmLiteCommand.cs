@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using ServiceStack.Data;
 
@@ -16,6 +17,8 @@ namespace ServiceStack.OrmLite
             this.dbCmd = dbCmd;
             this.DialectProvider = dbConn.GetDialectProvider();
         }
+
+        public Guid ConnectionId => dbConn.ConnectionId;
 
         public void Dispose()
         {

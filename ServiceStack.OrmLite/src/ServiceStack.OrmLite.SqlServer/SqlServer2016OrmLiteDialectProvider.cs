@@ -11,7 +11,7 @@ namespace ServiceStack.OrmLite.SqlServer
 			base.RegisterConverter<String>(new SqlServerJsonStringConverter());
 		}
 
-        public new static SqlServer2016OrmLiteDialectProvider Instance = new SqlServer2016OrmLiteDialectProvider();
+        public new static SqlServer2016OrmLiteDialectProvider Instance = new();
 
         public override SqlExpression<T> SqlExpression<T>() => new SqlServer2016Expression<T>(this);
     }

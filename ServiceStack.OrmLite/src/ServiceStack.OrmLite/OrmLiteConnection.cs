@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace ServiceStack.OrmLite
         public IOrmLiteDialectProvider DialectProvider { get; set; }
         public string LastCommandText { get; set; }
         public int? CommandTimeout { get; set; }
+        public Guid ConnectionId { get; set; }
 
         public OrmLiteConnection(OrmLiteConnectionFactory factory)
         {
@@ -57,7 +59,21 @@ namespace ServiceStack.OrmLite
 
         public void Close()
         {
-            DbConnection.Close();
+            var id = Diagnostics.OrmLite.WriteConnectionCloseBefore(DbConnection);
+            var connectionId = DbConnection.GetConnectionId();
+            try
+            {
+                DbConnection.Close();
+            }
+            catch (Exception ex)
+            {
+                Diagnostics.OrmLite.WriteConnectionCloseError(id, connectionId, DbConnection, ex);
+                throw;
+            }
+            finally
+            {
+                Diagnostics.OrmLite.WriteConnectionCloseAfter(id, connectionId, DbConnection);
+            }
         }
 
         public void ChangeDatabase(string databaseName)
@@ -82,12 +98,25 @@ namespace ServiceStack.OrmLite
 
             if (DbConnection.State == ConnectionState.Closed)
             {
-                DbConnection.Open();
-                //so the internal connection is wrapped for example by miniprofiler
-                if (Factory.ConnectionFilter != null)
-                    dbConnection = Factory.ConnectionFilter(dbConnection);
+                var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(DbConnection);
+                try
+                {
+                    DbConnection.Open();
+                    //so the internal connection is wrapped for example by miniprofiler
+                    if (Factory.ConnectionFilter != null)
+                        dbConnection = Factory.ConnectionFilter(dbConnection);
 
-                DialectProvider.OnOpenConnection?.Invoke(dbConnection);
+                    DialectProvider.InitConnection(dbConnection);
+                }
+                catch (Exception ex)
+                {
+                    Diagnostics.OrmLite.WriteConnectionOpenError(id, DbConnection, ex);
+                    throw;
+                }
+                finally
+                {
+                    Diagnostics.OrmLite.WriteConnectionOpenAfter(id, DbConnection);
+                }
             }
         }
 
@@ -98,12 +127,25 @@ namespace ServiceStack.OrmLite
 
             if (DbConnection.State == ConnectionState.Closed)
             {
-                await DialectProvider.OpenAsync(DbConnection, token).ConfigAwait();
-                //so the internal connection is wrapped for example by miniprofiler
-                if (Factory.ConnectionFilter != null)
-                    dbConnection = Factory.ConnectionFilter(dbConnection);
+                var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(DbConnection);
+                try
+                {
+                    await DialectProvider.OpenAsync(DbConnection, token).ConfigAwait();
+                    //so the internal connection is wrapped for example by miniprofiler
+                    if (Factory.ConnectionFilter != null)
+                        dbConnection = Factory.ConnectionFilter(dbConnection);
 
-                DialectProvider.OnOpenConnection?.Invoke(dbConnection);
+                    DialectProvider.InitConnection(dbConnection);
+                }
+                catch (Exception ex)
+                {
+                    Diagnostics.OrmLite.WriteConnectionOpenError(id, DbConnection, ex);
+                    throw;
+                }
+                finally
+                {
+                    Diagnostics.OrmLite.WriteConnectionOpenAfter(id, DbConnection);
+                }
             }
         }
 

@@ -5,7 +5,7 @@ namespace ServiceStack.OrmLite.Sqlite
 {
     public class SqliteOrmLiteDialectProvider : SqliteOrmLiteDialectProviderBase
     {
-        public static SqliteOrmLiteDialectProvider Instance = new SqliteOrmLiteDialectProvider();
+        public static SqliteOrmLiteDialectProvider Instance = new();
 
         protected override IDbConnection CreateConnection(string connectionString)
         {

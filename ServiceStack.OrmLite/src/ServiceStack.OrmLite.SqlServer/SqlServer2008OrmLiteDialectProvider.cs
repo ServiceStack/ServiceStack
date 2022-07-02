@@ -5,7 +5,7 @@ namespace ServiceStack.OrmLite.SqlServer
 {
     public class SqlServer2008OrmLiteDialectProvider : SqlServerOrmLiteDialectProvider
     {
-        public new static SqlServer2008OrmLiteDialectProvider Instance = new SqlServer2008OrmLiteDialectProvider();
+        public new static SqlServer2008OrmLiteDialectProvider Instance = new();
 
         public override string SqlConcat(IEnumerable<object> args)
         {

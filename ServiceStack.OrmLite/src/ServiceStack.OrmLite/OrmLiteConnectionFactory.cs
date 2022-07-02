@@ -338,6 +338,12 @@ namespace ServiceStack.OrmLite
                 : dbTrans;
         }
 
+        public static Guid GetConnectionId(this IDbConnection db) =>
+            db is OrmLiteConnection conn ? conn.ConnectionId : Guid.Empty;
+
+        public static Guid GetConnectionId(this IDbCommand dbCmd) =>
+            dbCmd is OrmLiteCommand cmd ? cmd.ConnectionId : Guid.Empty;
+        
         public static void RegisterConnection(this IDbConnectionFactory dbFactory, string namedConnection, string connectionString, IOrmLiteDialectProvider dialectProvider)
         {
             ((OrmLiteConnectionFactory)dbFactory).RegisterConnection(namedConnection, connectionString, dialectProvider);

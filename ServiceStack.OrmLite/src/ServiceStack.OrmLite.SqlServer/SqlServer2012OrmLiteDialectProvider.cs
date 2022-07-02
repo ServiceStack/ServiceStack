@@ -12,7 +12,7 @@ namespace ServiceStack.OrmLite.SqlServer
 {
     public class SqlServer2012OrmLiteDialectProvider : SqlServerOrmLiteDialectProvider
     {
-        public new static SqlServer2012OrmLiteDialectProvider Instance = new SqlServer2012OrmLiteDialectProvider();
+        public new static SqlServer2012OrmLiteDialectProvider Instance = new();
 
         public override bool DoesSequenceExist(IDbCommand dbCmd, string sequenceName)
         {

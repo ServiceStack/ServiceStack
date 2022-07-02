@@ -565,6 +565,14 @@ namespace ServiceStack.OrmLite
             return $"-- {text}";
         }
 
+        public virtual void InitConnection(IDbConnection dbConn)
+        {
+            if (dbConn is OrmLiteConnection ormLiteConn)
+                ormLiteConn.ConnectionId = Guid.NewGuid();
+            
+            OnOpenConnection?.Invoke(dbConn);
+        }
+
         public virtual SelectItem GetRowVersionSelectColumn(FieldDefinition field, string tablePrefix = null)
         {
             return new SelectItemColumn(this, field.FieldName, null, tablePrefix);

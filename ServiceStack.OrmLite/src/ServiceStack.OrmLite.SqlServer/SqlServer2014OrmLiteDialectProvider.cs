@@ -6,7 +6,7 @@ namespace ServiceStack.OrmLite.SqlServer
 {
     public class SqlServer2014OrmLiteDialectProvider : SqlServer2012OrmLiteDialectProvider
     {
-        public new static SqlServer2014OrmLiteDialectProvider Instance = new SqlServer2014OrmLiteDialectProvider();
+        public new static SqlServer2014OrmLiteDialectProvider Instance = new();
 
         public override string GetColumnDefinition(FieldDefinition fieldDef)
         {
