@@ -148,7 +148,7 @@ App.components({
             get canPrev() { return routes.skip > 0 },
             get canNext() { return this.results.length >= this.take },
             nextSkip(skip) {
-                skip += routes.skip
+                skip += (parseInt(routes.skip, 10) || 0)
                 if (typeof this.total == 'number') {
                     const lastPage = Math.floor(this.total / this.take) * this.take
                     if (skip > lastPage) return lastPage
@@ -182,7 +182,7 @@ App.components({
     </span>
     <div v-if="hasFilters" class="px-2">
         <button type="button" @click="clearFilters" title="Reset Filters"
-                class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/></svg>
         </button>
     </div>
