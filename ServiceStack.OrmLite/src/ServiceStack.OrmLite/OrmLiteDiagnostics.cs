@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ServiceStack.OrmLite;
 
-public class OrmLiteDiagnosticEvent
+public class OrmLiteDiagnosticEvent : IMeta
 {
     public Guid OperationId { get; internal set; }
     public string Operation { get; internal set; }
@@ -16,6 +17,7 @@ public class OrmLiteDiagnosticEvent
     public string TransactionName { get; internal set; }
     public Exception Exception { get; internal set; }
     public long Timestamp { get; internal set; }
+    public Dictionary<string, string> Meta { get; set; }
 }
 
 internal static class OrmLiteDiagnostics
@@ -152,9 +154,9 @@ internal static class OrmLiteDiagnostics
     public static void WriteConnectionCloseError(this DiagnosticListener listener, Guid operationId,
         Guid clientConnectionId, IDbConnection dbConn, Exception ex, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteConnectionCloseAfter))
+        if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteConnectionCloseError))
         {
-            listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseAfter, new OrmLiteDiagnosticEvent {
+            listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseError, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
                 ConnectionId = clientConnectionId,
@@ -202,9 +204,9 @@ internal static class OrmLiteDiagnostics
     public static void WriteTransactionCommitError(this DiagnosticListener listener, Guid operationId,
         IsolationLevel isolationLevel, IDbConnection dbConn, Exception ex, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteTransactionCommitAfter))
+        if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteTransactionCommitError))
         {
-            listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitAfter, new OrmLiteDiagnosticEvent {
+            listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitError, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
                 IsolationLevel = isolationLevel,
