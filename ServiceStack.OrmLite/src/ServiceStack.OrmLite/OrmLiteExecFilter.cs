@@ -60,6 +60,7 @@ namespace ServiceStack.OrmLite
         {
             var dbCmd = CreateCommand(dbConn);
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
+            Exception e = null;
             try
             {
                 var ret = filter(dbCmd);
@@ -67,13 +68,16 @@ namespace ServiceStack.OrmLite
             }
             catch (Exception ex)
             {
-                Diagnostics.OrmLite.WriteCommandError(id, dbCmd, ex);
+                e = ex;
                 OrmLiteConfig.ExceptionFilter?.Invoke(dbCmd, ex);
                 throw;
             }
             finally
             {
-                Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
+                if (e != null)
+                    Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
+                else
+                    Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -93,19 +97,23 @@ namespace ServiceStack.OrmLite
         {
             var dbCmd = CreateCommand(dbConn);
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
+            Exception e = null;
             try
             {
                 filter(dbCmd);
             }
             catch (Exception ex)
             {
-                Diagnostics.OrmLite.WriteCommandError(id, dbCmd, ex);
+                e = ex;
                 OrmLiteConfig.ExceptionFilter?.Invoke(dbCmd, ex);
                 throw;
             }
             finally
             {
-                Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
+                if (e != null)
+                    Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
+                else
+                    Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -114,6 +122,7 @@ namespace ServiceStack.OrmLite
         {
             var dbCmd = CreateCommand(dbConn);
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
+            Exception e = null;
 
             try
             {
@@ -121,14 +130,16 @@ namespace ServiceStack.OrmLite
             }
             catch (Exception ex)
             {
-                var useEx = ex.UnwrapIfSingleException(); 
-                Diagnostics.OrmLite.WriteCommandError(id, dbCmd, ex);
-                OrmLiteConfig.ExceptionFilter?.Invoke(dbCmd, useEx);
-                throw useEx;
+                e = ex.UnwrapIfSingleException(); 
+                OrmLiteConfig.ExceptionFilter?.Invoke(dbCmd, e);
+                throw e;
             }
             finally
             {
-                Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
+                if (e != null)
+                    Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
+                else
+                    Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -143,6 +154,7 @@ namespace ServiceStack.OrmLite
         {
             var dbCmd = CreateCommand(dbConn);
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
+            Exception e = null;
 
             try
             {
@@ -150,14 +162,16 @@ namespace ServiceStack.OrmLite
             }
             catch (Exception ex)
             {
-                var useEx = ex.UnwrapIfSingleException();
-                Diagnostics.OrmLite.WriteCommandError(id, dbCmd, ex);
-                OrmLiteConfig.ExceptionFilter?.Invoke(dbCmd, useEx);
-                throw useEx;
+                e = ex.UnwrapIfSingleException();
+                OrmLiteConfig.ExceptionFilter?.Invoke(dbCmd, e);
+                throw e;
             }
             finally
             {
-                Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
+                if (e != null)
+                    Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
+                else
+                    Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -169,7 +183,6 @@ namespace ServiceStack.OrmLite
             try
             {
                 var results = filter(dbCmd);
-
                 foreach (var item in results)
                 {
                     yield return item;
