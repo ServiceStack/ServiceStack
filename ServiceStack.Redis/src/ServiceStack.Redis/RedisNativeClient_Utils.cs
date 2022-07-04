@@ -134,50 +134,12 @@ namespace ServiceStack.Redis
 
                 if (Ssl)
                 {
-                    if (Env.IsMono)
-                    {
-                        //Mono doesn't support EncryptionPolicy
-                        sslStream = new SslStream(networkStream,
-                            leaveInnerStreamOpen: false,
-                            userCertificateValidationCallback: RedisConfig.CertificateValidationCallback,
-                            userCertificateSelectionCallback: RedisConfig.CertificateSelectionCallback);
-                    }
-                    else
-                    {
-#if NETSTANDARD || NET472
-                        sslStream = new SslStream(networkStream,
-                            leaveInnerStreamOpen: false,
-                            userCertificateValidationCallback: RedisConfig.CertificateValidationCallback,
-                            userCertificateSelectionCallback: RedisConfig.CertificateSelectionCallback,
-                            encryptionPolicy: EncryptionPolicy.RequireEncryption);
-#else
-                        var ctor = typeof(SslStream).GetConstructors()
-                            .First(x => x.GetParameters().Length == 5);
+                    sslStream = new SslStream(networkStream,
+                        leaveInnerStreamOpen: false,
+                        userCertificateValidationCallback: RedisConfig.CertificateValidationCallback,
+                        userCertificateSelectionCallback: RedisConfig.CertificateSelectionCallback,
+                        encryptionPolicy: EncryptionPolicy.RequireEncryption);
 
-                        var policyType = AssemblyUtils.FindType("System.Net.Security.EncryptionPolicy");
-                        var policyValue = Enum.Parse(policyType, "RequireEncryption");
-
-                        sslStream = (SslStream)ctor.Invoke(new[] {
-                            networkStream,
-                            false,
-                            RedisConfig.CertificateValidationCallback,
-                            RedisConfig.CertificateSelectionCallback,
-                            policyValue,
-                        });
-#endif                        
-                    }
-
-#if NETSTANDARD || NET472
-                    var task = sslStream.AuthenticateAsClientAsync(Host);
-                    if (ConnectTimeout > 0)
-                    {
-                        task.Wait(ConnectTimeout);
-                    }
-                    else
-                    {
-                        task.Wait();
-                    }
-#else
                     if (SslProtocols != null)
                     {
                         sslStream.AuthenticateAsClient(Host, new X509CertificateCollection(), 
@@ -187,7 +149,6 @@ namespace ServiceStack.Redis
                     {
                         sslStream.AuthenticateAsClient(Host);
                     }
-#endif
 
                     if (!sslStream.IsEncrypted)
                         throw new Exception($"Could not establish an encrypted connection to '{Host}:{Port}'");
