@@ -1435,7 +1435,7 @@ namespace ServiceStack
                         inputMs.Dispose();
                     }
                     var res = request.Response;
-                    if (res != null && res.UseBufferedStream && res.OutputStream is MemoryStream outputMs)
+                    if (res is { UseBufferedStream: true, OutputStream: MemoryStream outputMs })
                     {
                         try 
                         { 

@@ -60,8 +60,7 @@ namespace ServiceStack.Host.AspNet
             {
                 foreach (var key in httpContext.Items.Keys)
                 {
-                    var strKey = key as string;
-                    if (strKey == null) continue;
+                    if (key is not string strKey) continue;
                     Items[strKey] = httpContext.Items[key];
                 }
             }
@@ -94,9 +93,8 @@ namespace ServiceStack.Host.AspNet
         public string ContentType => request.ContentType;
 
         private string httpMethod;
-        public string HttpMethod => httpMethod
-            ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
-            ?? request.HttpMethod);
+        public string HttpMethod => httpMethod ??= 
+            this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride) ?? request.HttpMethod;
 
         public string Verb => HttpMethod;
 
@@ -112,29 +110,12 @@ namespace ServiceStack.Host.AspNet
         public string UserAgent => request.UserAgent;
 
         private Dictionary<string, object> items;
-        public Dictionary<string, object> Items
-        {
-            get
-            {
-                if (items == null)
-                {
-                    items = new Dictionary<string, object>();
-                }
-                return items;
-            }
-        }
+        public Dictionary<string, object> Items => items ??= new Dictionary<string, object>();
 
         private string responseContentType;
         public string ResponseContentType
         {
-            get
-            {
-                if (responseContentType == null)
-                {
-                    responseContentType = this.GetResponseContentType();
-                }
-                return responseContentType;
-            }
+            get => responseContentType ??= this.GetResponseContentType();
             set
             {
                 this.responseContentType = value;
@@ -189,13 +170,13 @@ namespace ServiceStack.Host.AspNet
         }
 
         private NameValueCollection headers;
-        public NameValueCollection Headers => headers ?? (headers = request.Headers);
+        public NameValueCollection Headers => headers ??= request.Headers;
 
         private NameValueCollection queryString;
-        public NameValueCollection QueryString => queryString ?? (queryString = request.QueryString);
+        public NameValueCollection QueryString => queryString ??= request.QueryString;
 
         private NameValueCollection formData;
-        public NameValueCollection FormData => formData ?? (formData = request.Form);
+        public NameValueCollection FormData => formData ??= request.Form;
 
         public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 

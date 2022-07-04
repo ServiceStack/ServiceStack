@@ -45,7 +45,7 @@ namespace ServiceStack.Host.NetCore
             this.RequestAttributes = attrs;
 
             //Kestrel does not decode '+' into space
-            this.PathInfo = this.OriginalPathInfo = (pathInfo ?? request.Path.Value).Replace("+", " ").Replace("%2f", "/");  
+            this.PathInfo = this.OriginalPathInfo = (pathInfo ?? request.Path.Value)?.Replace("+", " ").Replace("%2f", "/");  
             this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, PathInfo);
         }
 
