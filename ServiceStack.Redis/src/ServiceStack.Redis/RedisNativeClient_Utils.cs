@@ -652,11 +652,6 @@ namespace ServiceStack.Redis
                         WriteCommandToSendBuffer(cmdWithBinaryArgs);
                         didWriteToBuffer = true;
                     }
-                    else
-                    {
-                        Interlocked.Increment(ref RedisState.TotalRetrySuccess);
-                        Diagnostics.Redis.WriteCommandRetry(id, cmdWithBinaryArgs, operation);
-                    }
 
                     if (Pipeline == null) //pipeline will handle flush if in pipeline
                     {
@@ -669,6 +664,12 @@ namespace ServiceStack.Redis
 
                         completePipelineFn(fn);
                         return default;
+                    }
+
+                    if (i > 0)
+                    {
+                        Interlocked.Increment(ref RedisState.TotalRetrySuccess);
+                        Diagnostics.Redis.WriteCommandRetry(id, cmdWithBinaryArgs, operation);
                     }
 
                     var result = default(T);
