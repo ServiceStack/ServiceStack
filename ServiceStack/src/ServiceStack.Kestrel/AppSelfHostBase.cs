@@ -169,17 +169,9 @@ namespace ServiceStack
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(serviceStackHandler.RequestName))
-                    operationName = serviceStackHandler.RequestName;
-
-                if (serviceStackHandler is RestHandler restHandler)
-                {
-                    httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
-                }
-
                 try
                 {
-                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
+                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
                 }
                 catch (Exception ex)
                 {
@@ -187,7 +179,7 @@ namespace ServiceStack
                     if (logFactory != null)
                     {
                         var log = logFactory.CreateLogger(GetType());
-                        log.LogError(default(EventId), ex, ex.Message);
+                        log.LogError(default, ex, ex.Message);
                     }
                 }
                 finally

@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 using ServiceStack.Text;
@@ -191,5 +192,13 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
+    }
+}
+
+public static class HttpAsyncTaskHandlerUtils
+{
+    public static string GetOperationName(this IServiceStackHandler handler)
+    {
+        return handler.RequestName;
     }
 }

@@ -118,14 +118,42 @@ namespace ServiceStack
             }
         }
 
+        public static IHttpHandler InitHandler(IHttpHandler handler, IHttpRequest httpReq)
+        {
+            if (handler is IServiceStackHandler ssHandler)
+                httpReq.OperationName = ssHandler.GetOperationName();
+
+            var appHost = HostContext.AppHost;
+            var shouldProfile = appHost.ShouldProfileRequest(httpReq);
+            if (appHost.Container.Exists<IRequestLogger>() || shouldProfile)
+            {
+                httpReq.SetItem(Keywords.RequestDuration, System.Diagnostics.Stopwatch.GetTimestamp());
+            }
+            if (shouldProfile)
+            {
+                // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/ActivityUserGuide.md
+                var activity = new System.Diagnostics.Activity(Diagnostics.Activity.HttpBegin);
+                activity.SetParentId(httpReq.GetTraceId());
+                var id = Diagnostics.ServiceStack.WriteRequestBefore(httpReq);
+                activity.AddTag(Diagnostics.Activity.OperationId, id);
+                httpReq.SetItem(Keywords.RequestActivity, activity);
+                Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackActivityArgs { Request = httpReq, Activity = activity });
+            }
+
+            return handler;
+        }
+
 #if !NETCORE
         // Entry point for ASP.NET
-        public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated)
+        public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated) => 
+            InitHandler(GetHandlerInternal(ctx, requestType, url, pathTranslated, out var httpReq), httpReq);
+
+        internal IHttpHandler GetHandlerInternal(HttpContext ctx, string requestType, string url, string pathTranslated, out IHttpRequest httpReq)
         {
             var appHost = HostContext.AppHost;
 
             DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
-            var httpReq = new Host.AspNet.AspNetRequest(ctx.Request.RequestContext.HttpContext, url.SanitizedVirtualPath());
+            httpReq = new Host.AspNet.AspNetRequest(ctx.Request.RequestContext.HttpContext, url.SanitizedVirtualPath());
 
             foreach (var rawHttpHandler in appHost.RawHttpHandlersArray)
             {
@@ -138,7 +166,7 @@ namespace ServiceStack
 
             //WebDev Server auto requests '/default.aspx' so re-correct path to different default document
             var mode = appHost.Config.HandlerFactoryPath;
-            if (mode == null && (url == "/default.aspx" || url == "/Default.aspx"))
+            if (mode == null && url is "/default.aspx" or "/Default.aspx")
                 pathInfo = "/";
 
             //Default Request /
@@ -172,10 +200,14 @@ namespace ServiceStack
             return GetHandlerForPathInfo(httpReq, pathTranslated)
                ?? NotFoundHttpHandler;
         }
+        
 #endif
 
         // Entry point for HttpListener and .NET Core
-        public static IHttpHandler GetHandler(IHttpRequest httpReq)
+        public static IHttpHandler GetHandler(IHttpRequest httpReq) =>
+            InitHandler(GetHandlerInternal(httpReq), httpReq);
+
+        internal static IHttpHandler GetHandlerInternal(IHttpRequest httpReq)
         {
             var appHost = HostContext.AppHost;
 

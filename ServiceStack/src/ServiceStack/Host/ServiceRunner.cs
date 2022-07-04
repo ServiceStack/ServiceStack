@@ -47,12 +47,6 @@ namespace ServiceStack.Host
 
         public virtual void BeforeEachRequest(IRequest req, TRequest request, object service)
         {
-            var requestLogger = AppHost.TryResolve<IRequestLogger>();
-            if (requestLogger != null)
-            {
-                req.SetItem(Keywords.RequestDuration, Stopwatch.StartNew());
-            }
-            
             OnBeforeExecute(req, request, service);
         }
 
@@ -221,9 +215,8 @@ namespace ServiceStack.Host
                 try
                 {
                     req.Items[Keywords.HasLogged] = true;
-                    var stopWatch = req.GetItem(Keywords.RequestDuration) as Stopwatch;
                     var logDto = !req.IsMultiRequest() ? requestDto : req.Dto;
-                    requestLogger.Log(req, logDto, response, stopWatch?.Elapsed ?? TimeSpan.Zero);
+                    requestLogger.Log(req, logDto, response, req.GetElapsed());
                 }
                 catch (Exception ex)
                 {

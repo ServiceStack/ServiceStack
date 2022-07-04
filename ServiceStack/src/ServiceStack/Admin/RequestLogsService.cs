@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Web;
 
 namespace ServiceStack.Admin
@@ -13,25 +12,26 @@ namespace ServiceStack.Admin
     {
         [DataMember(Order=1)] public int? BeforeSecs { get; set; }
         [DataMember(Order=2)] public int? AfterSecs { get; set; }
-        [DataMember(Order=3)] public string IpAddress { get; set; }
-        [DataMember(Order=4)] public string ForwardedFor { get; set; }
-        [DataMember(Order=5)] public string UserAuthId { get; set; }
-        [DataMember(Order=6)] public string SessionId { get; set; }
-        [DataMember(Order=7)] public string Referer { get; set; }
-        [DataMember(Order=8)] public string PathInfo { get; set; }
-        [DataMember(Order=9)] public long[] Ids { get; set; }
-        [DataMember(Order=10)] public int? BeforeId { get; set; }
-        [DataMember(Order=11)] public int? AfterId { get; set; }
-        [DataMember(Order=12)] public bool? HasResponse { get; set; }
-        [DataMember(Order=13)] public bool? WithErrors { get; set; }
-        [DataMember(Order=14)] public bool? EnableSessionTracking { get; set; }
-        [DataMember(Order=15)] public bool? EnableResponseTracking { get; set; }
-        [DataMember(Order=16)] public bool? EnableErrorTracking { get; set; }
-        [DataMember(Order=17)] public TimeSpan? DurationLongerThan { get; set; }
-        [DataMember(Order=28)] public TimeSpan? DurationLessThan { get; set; }
-        [DataMember(Order=19)] public int Skip { get; set; }
-        [DataMember(Order=20)] public int? Take { get; set; }
-        [DataMember(Order=21)] public string OrderBy { get; set; }
+        [DataMember(Order=3)] public string OperationName { get; set; }
+        [DataMember(Order=4)] public string IpAddress { get; set; }
+        [DataMember(Order=5)] public string ForwardedFor { get; set; }
+        [DataMember(Order=6)] public string UserAuthId { get; set; }
+        [DataMember(Order=7)] public string SessionId { get; set; }
+        [DataMember(Order=8)] public string Referer { get; set; }
+        [DataMember(Order=9)] public string PathInfo { get; set; }
+        [DataMember(Order=10)] public long[] Ids { get; set; }
+        [DataMember(Order=11)] public int? BeforeId { get; set; }
+        [DataMember(Order=12)] public int? AfterId { get; set; }
+        [DataMember(Order=13)] public bool? HasResponse { get; set; }
+        [DataMember(Order=14)] public bool? WithErrors { get; set; }
+        [DataMember(Order=15)] public bool? EnableSessionTracking { get; set; }
+        [DataMember(Order=16)] public bool? EnableResponseTracking { get; set; }
+        [DataMember(Order=17)] public bool? EnableErrorTracking { get; set; }
+        [DataMember(Order=18)] public TimeSpan? DurationLongerThan { get; set; }
+        [DataMember(Order=19)] public TimeSpan? DurationLessThan { get; set; }
+        [DataMember(Order=20)] public int Skip { get; set; }
+        [DataMember(Order=21)] public int? Take { get; set; }
+        [DataMember(Order=22)] public string OrderBy { get; set; }
     }
 
     [DataContract]
@@ -98,6 +98,8 @@ namespace ServiceStack.Admin
                 logs = logs.Where(x => (now - x.DateTime) <= TimeSpan.FromSeconds(request.BeforeSecs.Value));
             if (request.AfterSecs.HasValue)
                 logs = logs.Where(x => (now - x.DateTime) > TimeSpan.FromSeconds(request.AfterSecs.Value));
+            if (!request.OperationName.IsNullOrEmpty())
+                logs = logs.Where(x => x.OperationName == request.OperationName);
             if (!request.IpAddress.IsNullOrEmpty())
                 logs = logs.Where(x => x.IpAddress == request.IpAddress);
             if (!request.ForwardedFor.IsNullOrEmpty())

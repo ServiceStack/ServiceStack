@@ -1254,6 +1254,9 @@ namespace ServiceStack
         }
 
         public virtual bool HasUi() => HasPlugin<UiFeature>();
+
+        public virtual bool ShouldProfileRequest(IRequest req) =>
+            Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestBefore);
     }
 
 }

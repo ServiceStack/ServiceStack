@@ -26,7 +26,7 @@ public sealed class ExampleDiagnosticObserver :
     void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
     {
         Console.WriteLine($@"diagnosticListener: {diagnosticListener.Name}");
-        if (diagnosticListener.Name == Diagnostics.Listeners.OrmLite)
+        if (diagnosticListener.Name is Diagnostics.Listeners.OrmLite or Diagnostics.Listeners.ServiceStack)
         {
             var subscription = diagnosticListener.Subscribe(this);
             subscriptions.Add(subscription);

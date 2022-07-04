@@ -469,7 +469,7 @@ namespace ServiceStack
 
         public static string GetOperationName(this HttpListenerRequest request)
         {
-            return request.Url.Segments[request.Url.Segments.Length - 1];
+            return request.Url.Segments[request.Url.Segments.Length - 1].UrlDecode();
         }
 
         public static string GetLastPathInfo(this HttpListenerRequest request)

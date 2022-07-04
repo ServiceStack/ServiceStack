@@ -47,7 +47,7 @@ namespace ServiceStack
             
             RequestContext.Instance.StartRequestContext();
 
-            var operationName = context.Request.GetOperationName().UrlDecode();
+            var operationName = context.Request.GetOperationName();
 
             var httpReq = (ListenerRequest)context.ToRequest(operationName);
             var httpRes = httpReq.Response;
@@ -56,12 +56,7 @@ namespace ServiceStack
 
             if (handler is IServiceStackHandler serviceStackHandler)
             {
-                if (serviceStackHandler is RestHandler restHandler)
-                {
-                    httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
-                }
-
-                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
+                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
                 await task.ContinueWith(x => httpRes.Close(), 
                     TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent).ConfigAwait();
                 //Matches Exceptions handled in HttpListenerBase.InitTask()

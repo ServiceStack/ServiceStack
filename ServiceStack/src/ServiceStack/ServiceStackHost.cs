@@ -1429,6 +1429,22 @@ namespace ServiceStack
             {
                 if (request != null)
                 {
+                    if (ShouldProfileRequest(request))
+                    {
+                        // Populated in HttpHandlerFactory.InitHandler
+                        if (request.GetItem(Keywords.RequestActivity) is System.Diagnostics.Activity activity
+                            && activity.GetTagItem(Diagnostics.Activity.OperationId) is Guid id)
+                        {
+                            var ex = HttpError.GetException(request.Response.Dto);
+                            if (ex != null)
+                                Diagnostics.ServiceStack.WriteRequestError(id, request, ex);
+                            else
+                                Diagnostics.ServiceStack.WriteRequestAfter(id, request);
+                            
+                            Diagnostics.ServiceStack.StopActivity(activity, new ServiceStackActivityArgs { Request = request, Activity = activity });
+                        }
+                    }
+                    
                     // Release Buffered Streams immediately
                     if (request.UseBufferedStream && request.InputStream is MemoryStream inputMs)
                     {

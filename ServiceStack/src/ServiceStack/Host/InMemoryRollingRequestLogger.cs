@@ -108,6 +108,8 @@ namespace ServiceStack.Host
             var entry = new RequestLogEntry
             {
                 Id = Interlocked.Increment(ref requestId),
+                TraceId = request.GetTraceId(),
+                OperationName = request.OperationName,
                 DateTime = CurrentDateFn(),
                 RequestDuration = requestDuration,
             };

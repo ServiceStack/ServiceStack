@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
@@ -329,6 +330,25 @@ namespace ServiceStack
                 }
                 return new SessionSourceResult(session, roles, permissions);
             }
+        }
+
+        public static string GetTraceId(this IRequest req)
+        {
+            if (req is IHasTraceId hasTraceId)
+                return hasTraceId.TraceId;
+            if (req.Items.TryGetValue(Keywords.TraceId, out var traceId))
+                return (string)traceId;
+            var newId = Guid.NewGuid().ToString();
+            req.Items[Keywords.TraceId] = newId;
+            return newId;
+        }
+
+        public static TimeSpan GetElapsed(this IRequest req)
+        {
+            var oLong = req.GetItem(Keywords.RequestDuration);
+            return oLong is long timestamp
+                ? TimeSpan.FromTicks(Stopwatch.GetTimestamp() - timestamp)
+                : TimeSpan.Zero;
         }
     }
 

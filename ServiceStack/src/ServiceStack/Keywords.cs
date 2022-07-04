@@ -46,7 +46,6 @@ namespace ServiceStack
         public const string EventModelId = "__eventmodelid";
         public const string IRequest = "__irequest";
         public const string Attributes = "__attrs";
-        public const string RequestDuration = "_requestDurationStopwatch";
         public const string Code = "code";
         public const string State = "state";
         public const string View = "View";
@@ -66,6 +65,9 @@ namespace ServiceStack
         public const string reset = nameof(reset);
         public const string Count = nameof(Count);
         public const string FilePath = nameof(FilePath);
+        public const string RequestDuration = "__timestamp";
+        public const string RequestActivity = "__activity";
+        public const string TraceId = nameof(TraceId);
         
         public const string Allows = "allows";
         public const string Embed = "embed";

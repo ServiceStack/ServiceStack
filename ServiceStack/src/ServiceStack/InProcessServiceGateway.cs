@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using ServiceStack.Web;
-using System;
-using ServiceStack.FluentValidation;
-using ServiceStack.FluentValidation.Results;
 using ServiceStack.Validation;
 
 namespace ServiceStack
@@ -171,23 +168,32 @@ namespace ServiceStack
             var holdVerb = SetVerb(requestDto);
 
             req.RequestAttributes |= RequestAttributes.InProcess;
+
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 return ExecSync<TResponse>(requestDto);
             }
             catch (AggregateException ae)
             {
-                var ex = ae.UnwrapIfSingleException();
-                HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
-                throw ex;
+                e = ae.UnwrapIfSingleException();
+                HostContext.RaiseGatewayException(req, requestDto, e).Wait();
+                throw e;
             }
             catch (Exception ex)
             {
+                e = ex;
                 HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -204,6 +210,8 @@ namespace ServiceStack
 
             req.SetInProcessRequest();
 
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 var response = await ExecAsync<TResponse>(requestDto);
@@ -211,11 +219,17 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                e = ex;
                 await HostContext.RaiseGatewayException(req, requestDto, ex);
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -245,23 +259,31 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.SetInProcessRequest();
 
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 return ExecSync<TResponse[]>(typedArray).ToList();
             }
             catch (AggregateException ae)
             {
-                var ex = ae.UnwrapIfSingleException();
-                HostContext.RaiseGatewayException(req, requestDtos, ex).Wait();
-                throw ex;
+                e = ae.UnwrapIfSingleException();
+                HostContext.RaiseGatewayException(req, requestDtos, e).Wait();
+                throw e;
             }
             catch (Exception ex)
             {
+                e = ex;
                 HostContext.RaiseGatewayException(req, requestDtos, ex).Wait();
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
@@ -278,6 +300,8 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.SetInProcessRequest();
 
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 var response = await ExecAsync<TResponse[]>(typedArray);
@@ -285,11 +309,17 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                e = ex;
                 await HostContext.RaiseGatewayException(req, requestDtos, ex);
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
@@ -307,17 +337,25 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 var response = HostContext.ServiceController.Execute(requestDto, req);
             }
             catch (Exception ex)
             {
+                e = ex;
                 HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -336,17 +374,25 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 await HostContext.ServiceController.GatewayExecuteAsync(requestDto, req, applyFilters: false);
             }
             catch (Exception ex)
             {
+                e = ex;
                 await HostContext.RaiseGatewayException(req, requestDto, ex);
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -366,17 +412,25 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 var response = HostContext.ServiceController.Execute(typedArray, req);
             }
             catch (Exception ex)
             {
+                e = ex;
                 HostContext.RaiseGatewayException(req, requestDtos, ex).Wait();
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
@@ -394,17 +448,25 @@ namespace ServiceStack
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
 
+            var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+            Exception e = null;
             try
             {
                 await HostContext.ServiceController.GatewayExecuteAsync(typedArray, req, applyFilters: false);
             }
             catch (Exception ex)
             {
+                e = ex;
                 await HostContext.RaiseGatewayException(req, requestDtos, ex);
                 throw;
             }
             finally
             {
+                if (e != null)
+                    Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
+                else
+                    Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
+                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);

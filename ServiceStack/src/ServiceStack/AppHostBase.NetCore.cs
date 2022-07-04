@@ -258,18 +258,10 @@ namespace ServiceStack
                     await next().ConfigAwait();
                     return;
                 }
-
-                if (!string.IsNullOrEmpty(serviceStackHandler.RequestName))
-                    operationName = serviceStackHandler.RequestName;
-
-                if (serviceStackHandler is RestHandler restHandler)
-                {
-                    httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
-                }
-
+    
                 try
                 {
-                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName).ConfigAwait();
+                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName).ConfigAwait();
                 }
                 catch (Exception ex)
                 {

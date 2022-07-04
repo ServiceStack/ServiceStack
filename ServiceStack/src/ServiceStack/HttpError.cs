@@ -139,6 +139,25 @@ namespace ServiceStack
             ValidationError.CreateException(errorCode, errorMessage, fieldName);
 
         public ResponseStatus ToResponseStatus() => Response.GetResponseStatus()
-                                                    ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
+            ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
+
+        public static Exception GetException(object responseDto)
+        {
+            if (responseDto is Exception e)
+                return e;
+            
+            if (responseDto is IHttpError httpError)
+                return new HttpError(HttpStatusCode.InternalServerError, httpError.Message) {
+                    ErrorCode = httpError.ErrorCode,
+                };
+
+            var status = responseDto.GetResponseStatus();
+            if (status?.ErrorCode != null)
+                return new HttpError(HttpStatusCode.InternalServerError, status.Message ?? status.ErrorCode) {
+                    ErrorCode = status.ErrorCode,
+                };
+            
+            return null;
+        }
     }
 }

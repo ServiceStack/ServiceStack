@@ -1,23 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ServiceStack.OrmLite;
 
-public class OrmLiteDiagnosticEvent : IMeta
+public class OrmLiteDiagnosticEvent : DiagnosticEvent
 {
-    public Guid OperationId { get; internal set; }
-    public string Operation { get; internal set; }
     public Guid ConnectionId { get; internal set; }
     public IDbConnection Connection { get; internal set; }
     public IDbCommand Command { get; internal set; }
     public IsolationLevel IsolationLevel { get; internal set; }
     public string TransactionName { get; internal set; }
-    public Exception Exception { get; internal set; }
-    public long Timestamp { get; internal set; }
-    public Dictionary<string, string> Meta { get; set; }
 }
 
 internal static class OrmLiteDiagnostics
@@ -31,6 +25,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteCommandBefore, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbCmd.GetConnectionId(),
                 Command = dbCmd,
                 Timestamp = Stopwatch.GetTimestamp()
@@ -47,6 +42,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteCommandAfter, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbCmd.GetConnectionId(),
                 Command = dbCmd,
                 Timestamp = Stopwatch.GetTimestamp()
@@ -62,6 +58,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteCommandError, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbCmd.GetConnectionId(),
                 Command = dbCmd,
                 Exception = ex,
@@ -79,6 +76,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionOpenBefore, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 Connection = dbConn,
                 Timestamp = Stopwatch.GetTimestamp()
             });
@@ -95,6 +93,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionOpenAfter, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbConn.GetConnectionId(),
                 Connection = dbConn,
                 Timestamp = Stopwatch.GetTimestamp()
@@ -110,6 +109,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionOpenError, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbConn.GetConnectionId(),
                 Connection = dbConn,
                 Exception = ex,
@@ -127,6 +127,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseBefore, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbConn.GetConnectionId(),
                 Connection = dbConn,
                 Timestamp = Stopwatch.GetTimestamp()
@@ -144,6 +145,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseAfter, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = clientConnectionId,
                 Connection = dbConn,
                 Timestamp = Stopwatch.GetTimestamp()
@@ -159,6 +161,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseError, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = clientConnectionId,
                 Connection = dbConn,
                 Exception = ex,
@@ -177,6 +180,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitBefore, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 Timestamp = Stopwatch.GetTimestamp()
@@ -194,6 +198,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitAfter, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 Timestamp = Stopwatch.GetTimestamp()
@@ -209,6 +214,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitError, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 Exception = ex,
@@ -227,6 +233,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionRollbackBefore, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 TransactionName = transactionName,
@@ -246,6 +253,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionRollbackAfter, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 TransactionName = transactionName,
@@ -263,6 +271,7 @@ internal static class OrmLiteDiagnostics
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionRollbackError, new OrmLiteDiagnosticEvent {
                 OperationId = operationId,
                 Operation = operation,
+                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 TransactionName = transactionName,
