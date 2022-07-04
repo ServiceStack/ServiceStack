@@ -12,7 +12,7 @@ let transition = useTransitions(App, { sidebar: true })
 let routes = usePageRoutes(App,{
     page:'admin',
     queryKeys:('tab,provider,q,page,sort,new,edit,op,skip,' +
-        'show,orderBy,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors').split(','),
+        'show,orderBy,operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors').split(','),
     handlers: {
         nav(state) { console.log('nav', state) } /*debug*/
     }

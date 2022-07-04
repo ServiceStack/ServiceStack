@@ -9,14 +9,14 @@ App.components({
                 .join(''));
             return JSON.parse(jsonPayload);
         }
-        let fieldLabels = { statusCode:'status', pathInfo:'path', httpMethod:'method', 
+        let fieldLabels = { operationName:'operation', statusCode:'status', pathInfo:'path', httpMethod:'method', 
             userAuthId:'userId', ipAddress:'ip', requestDuration:'duration' }
         let allFields = 'id,dateTime,statusCode,statusDescription,httpMethod,absoluteUri,pathInfo,requestBody,requestDto,userAuthId,sessionId,ipAddress,forwardedFor,referer,headers,formData,items,session,responseDto,errorResponse,exceptionSource,exceptionData,requestDuration,meta'
-        let summaryFields = 'id,statusCode,httpMethod,pathInfo,userAuthId,sessionId,ipAddress,requestDuration'.split(',')
+        let summaryFields = 'id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration'.split(',')
         let ignoredHeaders = [':method','Cookie']
         let queryFields = 'beforeSecs,afterSecs,ipAddress,forwardedFor,userAuthId,sessionId,referer,pathInfo,ids,beforeId' 
             + ',afterId,hasResponse,withErrors,durationLongerThan,durationLessThan,skip,take,orderBy'.split(',')
-        let linkFields = 'userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,skip'.split(',')
+        let linkFields = 'operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,skip'.split(',')
         return {
             $template: '#logging-template',
             routes,
@@ -173,10 +173,10 @@ App.components({
 <template id="logging-template">
 <div class="mb-2 flex flex-wrap">
     <span class="relative z-0 inline-flex shadow-sm rounded-md">
-      <button v-href="href({ withErrors:true })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+      <button v-href="href({ withErrors:!routes.withErrors })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
           Has Errors
       </button>
-      <button v-href="href({ hasResponse:true })" type="button" class="-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+      <button v-href="href({ hasResponse:!routes.hasResponse })" type="button" class="-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
           Has Response
       </button>
     </span>
@@ -203,7 +203,7 @@ App.components({
     <div class="flex flex-col">
         <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
-                <div class="md:shadow border-b border-gray-200 md:rounded-lg">
+                <div v-if="results.length" class="md:shadow border-b border-gray-200 md:rounded-lg">
                     <table class="divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                         <tr>
@@ -227,6 +227,9 @@ App.components({
                         </tr>
                         </tbody>
                     </table>
+                </div>
+                <div v-else>
+                    <h3 class="p-2">No Results</h3>
                 </div>
             </div>
         </div>
@@ -254,7 +257,12 @@ App.components({
                                                 </div>
                                             </h2>
                                             <div class="text-sm text-gray-500 flex flex-wrap">
-                                                <div v-if="select('userAuthId')" class="flex items-center" title="User Id">
+                                                <div v-if="select('operationName')" class="flex items-center" title="API">
+                                                    <a v-href="href({ operationName:select('operationName') })" class="text-blue-600 hover:text-blue-800">
+                                                        {{ select('operationName') }}
+                                                    </a>
+                                                </div>
+                                                <div v-if="select('userAuthId')" class="ml-2 flex items-center" title="User Id">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
                                                         <path fill="currentColor" d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"/>
                                                     </svg>
@@ -274,6 +282,14 @@ App.components({
                                                     </svg>
                                                     <a v-href="href({ sessionId:selectedSession.value })" class="text-blue-600 hover:text-blue-800">
                                                         {{ selectedSession && selectedSession.value }}
+                                                    </a>
+                                                </div>
+                                                <div v-if="select('traceId')" class="ml-2 flex items-center" title="Trace Id">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
+                                                        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13.544 10.456a4.368 4.368 0 0 0-6.176 0l-3.089 3.088a4.367 4.367 0 1 0 6.177 6.177L12 18.177"/><path d="M10.456 13.544a4.368 4.368 0 0 0 6.176 0l3.089-3.088a4.367 4.367 0 1 0-6.177-6.177L12 5.823"/></g>
+                                                    </svg>
+                                                    <a v-href="href({ traceId:select('traceId') })" class="text-blue-600 hover:text-blue-800">
+                                                        {{ select('traceId') }}
                                                     </a>
                                                 </div>
                                             </div>

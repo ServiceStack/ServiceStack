@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-06-30 21:19:49
+Date: 2022-07-04 18:11:34
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -808,6 +808,8 @@ export class ResponseStatus
 export class RequestLogEntry
 {
     public id: number;
+    public traceId: string;
+    public operationName: string;
     public dateTime: string;
     public statusCode: number;
     public statusDescription: string;
@@ -1328,60 +1330,63 @@ export class RequestLogs implements IReturn<RequestLogsResponse>
     public afterSecs?: number;
 
     // @DataMember(Order=3)
-    public ipAddress: string;
+    public operationName: string;
 
     // @DataMember(Order=4)
-    public forwardedFor: string;
+    public ipAddress: string;
 
     // @DataMember(Order=5)
-    public userAuthId: string;
+    public forwardedFor: string;
 
     // @DataMember(Order=6)
-    public sessionId: string;
+    public userAuthId: string;
 
     // @DataMember(Order=7)
-    public referer: string;
+    public sessionId: string;
 
     // @DataMember(Order=8)
-    public pathInfo: string;
+    public referer: string;
 
     // @DataMember(Order=9)
-    public ids: number[];
+    public pathInfo: string;
 
     // @DataMember(Order=10)
-    public beforeId?: number;
+    public ids: number[];
 
     // @DataMember(Order=11)
-    public afterId?: number;
+    public beforeId?: number;
 
     // @DataMember(Order=12)
-    public hasResponse?: boolean;
+    public afterId?: number;
 
     // @DataMember(Order=13)
-    public withErrors?: boolean;
+    public hasResponse?: boolean;
 
     // @DataMember(Order=14)
-    public enableSessionTracking?: boolean;
+    public withErrors?: boolean;
 
     // @DataMember(Order=15)
-    public enableResponseTracking?: boolean;
+    public enableSessionTracking?: boolean;
 
     // @DataMember(Order=16)
-    public enableErrorTracking?: boolean;
+    public enableResponseTracking?: boolean;
 
     // @DataMember(Order=17)
+    public enableErrorTracking?: boolean;
+
+    // @DataMember(Order=18)
     public durationLongerThan?: string;
 
-    // @DataMember(Order=28)
+    // @DataMember(Order=19)
     public durationLessThan?: string;
 
-    // @DataMember(Order=19)
+    // @DataMember(Order=20)
     public skip: number;
 
-    // @DataMember(Order=20)
+    // @DataMember(Order=21)
     public take?: number;
 
-    // @DataMember(Order=21)
+    // @DataMember(Order=22)
     public orderBy: string;
 
     public constructor(init?: Partial<RequestLogs>) { (Object as any).assign(this, init); }
