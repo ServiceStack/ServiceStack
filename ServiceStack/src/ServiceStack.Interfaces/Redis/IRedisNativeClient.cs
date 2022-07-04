@@ -89,8 +89,8 @@ namespace ServiceStack.Redis
         long SetBit(string key, int offset, int value);
 
         string RandomKey();
-        void Rename(string oldKeyname, string newKeyname);
-        bool RenameNx(string oldKeyname, string newKeyname);
+        void Rename(string oldKeyName, string newKeyName);
+        bool RenameNx(string oldKeyName, string newKeyName);
         bool Expire(string key, int seconds);
         bool PExpire(string key, long ttlMs);
         bool ExpireAt(string key, long unixTime);
