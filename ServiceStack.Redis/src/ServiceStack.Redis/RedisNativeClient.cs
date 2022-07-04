@@ -43,7 +43,7 @@ namespace ServiceStack.Redis
 
         internal const int Success = 1;
         internal const int OneGb = 1073741824;
-        private readonly byte[] endData = new[] { (byte)'\r', (byte)'\n' };
+        private readonly byte[] endData = { (byte)'\r', (byte)'\n' };
 
         private int clientPort;
         private string lastCommand;
@@ -65,6 +65,8 @@ namespace ServiceStack.Redis
         public bool HadExceptions => deactivatedAtTicks > 0;
 
         protected Socket socket;
+        internal Socket Socket => socket;
+        
         [Obsolete("The direct stream is no longer directly available", true)] // API BREAKING CHANGE since exposed
         protected BufferedStream Bstream;
         protected SslStream sslStream;
@@ -2492,26 +2494,36 @@ namespace ServiceStack.Redis
 
         private void SafeConnectionClose()
         {
+            Exception e = null;
+            var id = Guid.Empty;
+
             try
             {
+                id = Diagnostics.Redis.WriteConnectionCloseBefore(this);
+                
                 // workaround for a .net bug: http://support.microsoft.com/kb/821625
                 bufferedReader?.Close();
             }
-            catch { }
+            catch (Exception ex) { e = ex; }
             try
             {
                 sslStream?.Close();
             }
-            catch { }
+            catch (Exception ex) { e = ex; }
             try
             {
                 socket?.Close();
             }
-            catch { }
+            catch (Exception ex) { e = ex; }
 
             bufferedReader = null;
             sslStream = null;
             socket = null;
+            
+            if (e != null)
+                Diagnostics.Redis.WriteConnectionCloseError(id, this, e);
+            else
+                Diagnostics.Redis.WriteConnectionCloseAfter(id, this);
         }
     }
 }

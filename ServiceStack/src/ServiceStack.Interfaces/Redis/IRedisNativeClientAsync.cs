@@ -108,8 +108,8 @@ namespace ServiceStack.Redis
         ValueTask<long> SetBitAsync(string key, int offset, int value, CancellationToken token = default);
         ValueTask<long> BitCountAsync(string key, CancellationToken token = default);
         ValueTask<string> RandomKeyAsync(CancellationToken token = default);
-        ValueTask RenameAsync(string oldKeyname, string newKeyname, CancellationToken token = default);
-        ValueTask<bool> RenameNxAsync(string oldKeyname, string newKeyname, CancellationToken token = default);
+        ValueTask RenameAsync(string oldKeyName, string newKeyName, CancellationToken token = default);
+        ValueTask<bool> RenameNxAsync(string oldKeyName, string newKeyName, CancellationToken token = default);
         ValueTask<bool> ExpireAsync(string key, int seconds, CancellationToken token = default);
         ValueTask<bool> PExpireAsync(string key, long ttlMs, CancellationToken token = default);
         ValueTask<bool> ExpireAtAsync(string key, long unixTime, CancellationToken token = default);

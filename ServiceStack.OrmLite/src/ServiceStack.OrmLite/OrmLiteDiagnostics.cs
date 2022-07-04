@@ -5,14 +5,6 @@ using System.Runtime.CompilerServices;
 
 namespace ServiceStack.OrmLite;
 
-public class OrmLiteDiagnosticEvent : DiagnosticEvent
-{
-    public Guid ConnectionId { get; internal set; }
-    public IDbConnection Connection { get; internal set; }
-    public IDbCommand Command { get; internal set; }
-    public IsolationLevel IsolationLevel { get; internal set; }
-    public string TransactionName { get; internal set; }
-}
 
 internal static class OrmLiteDiagnostics
 {

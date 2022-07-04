@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
+using System.Net.Sockets;
 
 namespace ServiceStack;
 
@@ -57,6 +59,27 @@ public class Diagnostics
             public const string WriteTransactionRollbackAfter = Prefix + nameof(WriteTransactionRollbackAfter);
             public const string WriteTransactionRollbackError = Prefix + nameof(WriteTransactionRollbackError);
         }
+        
+        public static class Redis
+        {
+            private const string Prefix = Listeners.Redis + ".";
+            
+            public const string WriteCommandBefore = Prefix + nameof(WriteCommandBefore);
+            public const string WriteCommandAfter = Prefix + nameof(WriteCommandAfter);
+            public const string WriteCommandRetry = Prefix + nameof(WriteCommandRetry);
+            public const string WriteCommandError = Prefix + nameof(WriteCommandError);
+            
+            public const string WriteConnectionOpenBefore = Prefix + nameof(WriteConnectionOpenBefore);
+            public const string WriteConnectionOpenAfter = Prefix + nameof(WriteConnectionOpenAfter);
+            public const string WriteConnectionOpenError = Prefix + nameof(WriteConnectionOpenError);
+            
+            public const string WriteConnectionCloseBefore = Prefix + nameof(WriteConnectionCloseBefore);
+            public const string WriteConnectionCloseAfter = Prefix + nameof(WriteConnectionCloseAfter);
+            public const string WriteConnectionCloseError = Prefix + nameof(WriteConnectionCloseError);
+            
+            public const string WritePoolRent = Prefix + nameof(WritePoolRent);
+            public const string WritePoolReturn = Prefix + nameof(WritePoolReturn);
+        }
     }
     
     public static class Activity
@@ -83,6 +106,27 @@ public abstract class DiagnosticEvent
     public Exception Exception { get; set; }
     public long Timestamp { get; set; }
     public Dictionary<string, string> Meta { get; set; }
+}
+
+public class OrmLiteDiagnosticEvent : DiagnosticEvent
+{
+    public Guid ConnectionId { get; set; }
+    public IDbConnection Connection { get; set; }
+    public IDbCommand Command { get; set; }
+    public IsolationLevel IsolationLevel { get; set; }
+    public string TransactionName { get; set; }
+}
+
+public class RedisDiagnosticEvent : DiagnosticEvent
+{
+    public byte[][] Command { get; set; }
+    /// <summary>
+    /// RedisNativeClient instance, late-bound object to decouple 
+    /// </summary>
+    public object Client { get; set; }
+    public Socket Socket { get; set; }
+    public string Host { get; set; }
+    public int Port { get; set; }
 }
 
 public static class DiagnosticsUtils
