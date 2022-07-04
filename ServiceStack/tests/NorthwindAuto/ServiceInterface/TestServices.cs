@@ -72,10 +72,28 @@ public class SubType
     public string Name { get; set; }
 }
 
+public class ProfileRedis {}
+
 
 public class TestServices : Service
 {
     public object Any(AllTypes request) => request;
 
     public object Any(AllCollectionTypes request) => request;
+
+    public object Any(ProfileRedis request)
+    {
+        Cache.Set("foo", "bar");
+        Cache.Set("bax", 1);
+        Cache.Set("qux", new Poco { Name = nameof(Poco) });
+        
+        Redis.IncrementValueBy("incr", 10);
+        
+        Redis.Hashes["hash"].AddRange(new Dictionary<string, string> {
+            {"foo","bar"}, 
+            {"baz","1"}
+        });
+        
+        return request;
+    }
 }
