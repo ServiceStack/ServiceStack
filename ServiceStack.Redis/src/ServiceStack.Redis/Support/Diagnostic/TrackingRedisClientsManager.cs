@@ -15,12 +15,13 @@ namespace ServiceStack.Redis.Support.Diagnostic
     /// Tracks each IRedisClient instance allocated from the IRedisClientsManager logging when they are allocated and disposed. 
     /// Periodically writes the allocated instances to the log for diagnostic purposes.
     /// </summary>
-    public partial class TrackingRedisClientsManager : IRedisClientsManager
+    public partial class TrackingRedisClientsManager : IRedisClientsManager, IHasStats
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(TrackingRedisClientsManager));
 
-        private readonly HashSet<TrackingFrame> trackingFrames = new HashSet<TrackingFrame>();
+        private readonly HashSet<TrackingFrame> trackingFrames = new();
         private readonly IRedisClientsManager redisClientsManager;
+        public Dictionary<string, long> Stats => RedisStats.ToDictionary();
 
         public TrackingRedisClientsManager(IRedisClientsManager redisClientsManager)
         {

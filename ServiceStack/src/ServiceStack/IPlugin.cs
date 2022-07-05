@@ -44,6 +44,8 @@ namespace ServiceStack
         public const string RedisErrorLogs = "redislogs";
         public const string AdminUsers = "adminusers";
         public const string Ui = "ui";
+        public const string FileUpload = "filesupload";
+        public const string Profiling = "profiling";
 
         public static void AddToAppMetadata(this IAppHost appHost, Action<AppMetadata> fn)
         {

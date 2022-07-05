@@ -26,7 +26,7 @@ namespace ServiceStack.Redis
     /// 1 master and multiple replicated read replicas.
     /// </summary>
     public partial class PooledRedisClientManager
-        : IRedisClientsManager, IRedisFailover, IHandleClientDispose, IHasRedisResolver
+        : IRedisClientsManager, IRedisFailover, IHandleClientDispose, IHasRedisResolver, IHasStats
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientManager));
 
@@ -854,6 +854,8 @@ namespace ServiceStack.Redis
         {
             return new DisposablePooledClient<T>(this);
         }
+
+        public Dictionary<string, long> Stats => RedisStats.ToDictionary();
     }
 
 }

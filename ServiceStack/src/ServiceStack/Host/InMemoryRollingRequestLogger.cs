@@ -98,9 +98,8 @@ namespace ServiceStack.Host
 
             logEntries.Enqueue(entry);
 
-            RequestLogEntry dummy;
             if (logEntries.Count > capacity)
-                logEntries.TryDequeue(out dummy);
+                logEntries.TryDequeue(out _);
         }
 
         protected RequestLogEntry CreateEntry(IRequest request, object requestDto, object response, TimeSpan requestDuration, Type requestType)
@@ -216,10 +215,9 @@ namespace ServiceStack.Host
 
         public virtual List<RequestLogEntry> GetLatestLogs(int? take)
         {
-            var requestLogEntries = logEntries.ToArray();
             return take.HasValue
-                ? new List<RequestLogEntry>(requestLogEntries.Take(take.Value))
-                : new List<RequestLogEntry>(requestLogEntries);
+                ? new List<RequestLogEntry>(logEntries.Take(take.Value))
+                : new List<RequestLogEntry>(logEntries);
         }
 
         public static object ToSerializableErrorResponse(object response)

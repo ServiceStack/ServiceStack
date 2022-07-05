@@ -24,7 +24,7 @@ namespace ServiceStack.Redis
     /// Allows the configuration of different ReadWrite and ReadOnly hosts
     /// </summary>
     public partial class BasicRedisClientManager
-        : IRedisClientsManager, IRedisFailover, IHasRedisResolver
+        : IRedisClientsManager, IRedisFailover, IHasRedisResolver, IHasStats
     {
         public static ILog Log = LogManager.GetLogger(typeof(BasicRedisClientManager));
         
@@ -177,5 +177,7 @@ namespace ServiceStack.Redis
         public void Dispose()
         {
         }
+
+        public Dictionary<string, long> Stats => RedisStats.ToDictionary();
     }
 }

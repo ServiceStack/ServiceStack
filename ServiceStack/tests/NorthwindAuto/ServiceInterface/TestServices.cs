@@ -72,7 +72,7 @@ public class SubType
     public string Name { get; set; }
 }
 
-public class ProfileRedis {}
+public class ProfileGen {}
 
 
 public class TestServices : Service
@@ -81,7 +81,7 @@ public class TestServices : Service
 
     public object Any(AllCollectionTypes request) => request;
 
-    public object Any(ProfileRedis request)
+    public object Any(ProfileGen request)
     {
         Cache.Set("foo", "bar");
         Cache.Set("bax", 1);

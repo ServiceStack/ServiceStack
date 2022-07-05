@@ -29,7 +29,7 @@ namespace ServiceStack.Redis
         internal static long TotalRetrySuccess = 0;
         internal static long TotalRetryTimedout = 0;
 
-        internal static readonly ConcurrentDictionary<RedisClient, DateTime> DeactivatedClients = new ConcurrentDictionary<RedisClient, DateTime>();
+        internal static readonly ConcurrentDictionary<RedisClient, DateTime> DeactivatedClients = new();
 
         internal static void DeactivateClient(RedisClient client)
         {

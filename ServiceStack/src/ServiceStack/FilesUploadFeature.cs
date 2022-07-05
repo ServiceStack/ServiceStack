@@ -17,7 +17,7 @@ namespace ServiceStack;
 
 public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 {
-    public string Id => "filesupload";
+    public string Id => Plugins.FileUpload;
     public UploadLocation[] Locations { get; set; }
     public string BasePath { get; set; }
     public FilesUploadErrorMessages Errors { get; set; } = new();
