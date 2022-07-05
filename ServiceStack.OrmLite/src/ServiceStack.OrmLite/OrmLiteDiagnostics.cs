@@ -15,6 +15,7 @@ internal static class OrmLiteDiagnostics
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.OrmLite.WriteCommandBefore, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteCommandBefore,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -32,6 +33,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteCommandAfter))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteCommandAfter, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteCommandAfter,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -48,6 +50,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteCommandError))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteCommandError, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteCommandError,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -66,6 +69,7 @@ internal static class OrmLiteDiagnostics
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionOpenBefore, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteConnectionOpenBefore,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -83,6 +87,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteConnectionOpenAfter))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionOpenAfter, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteConnectionOpenAfter,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -99,6 +104,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteConnectionOpenError))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionOpenError, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteConnectionOpenError,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -117,6 +123,7 @@ internal static class OrmLiteDiagnostics
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseBefore, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteConnectionCloseBefore,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -135,6 +142,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteConnectionCloseAfter))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseAfter, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteConnectionCloseAfter,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -151,6 +159,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteConnectionCloseError))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteConnectionCloseError, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteConnectionCloseError,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -188,6 +197,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteTransactionCommitAfter))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitAfter, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteTransactionCommitAfter,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -204,6 +214,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteTransactionCommitError))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitError, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteTransactionCommitError,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -223,6 +234,7 @@ internal static class OrmLiteDiagnostics
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionRollbackBefore, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteTransactionRollbackBefore,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -243,6 +255,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteTransactionRollbackAfter))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionRollbackAfter, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteTransactionRollbackAfter,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),
@@ -261,6 +274,7 @@ internal static class OrmLiteDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteTransactionRollbackError))
         {
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionRollbackError, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteTransactionRollbackError,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),

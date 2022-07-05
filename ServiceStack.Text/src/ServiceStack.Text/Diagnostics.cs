@@ -98,28 +98,42 @@ public class Diagnostics
     public static DiagnosticListener Redis => Instance.redis;
 }
 
+[Flags]
+public enum ProfileSource
+{
+    None = 0,
+    ServiceStack = 1 << 0,
+    Redis = 1 << 1,
+    OrmLite = 1 << 2,
+    All = ServiceStack | OrmLite | Redis,
+}
+
 public abstract class DiagnosticEvent
 {
+    public virtual string Source => GetType().Name.Replace(nameof(DiagnosticEvent), "");
+    public string EventType { get; set; }
     public Guid OperationId { get; set; }
     public string Operation { get; set; }
     public string? TraceId { get; set; }
-    public Exception Exception { get; set; }
+    public Exception? Exception { get; set; }
     public long Timestamp { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
 public class OrmLiteDiagnosticEvent : DiagnosticEvent
 {
-    public Guid ConnectionId { get; set; }
-    public IDbConnection Connection { get; set; }
-    public IDbCommand Command { get; set; }
-    public IsolationLevel IsolationLevel { get; set; }
-    public string TransactionName { get; set; }
+    public override string Source => "OrmLite";
+    public Guid? ConnectionId { get; set; }
+    public IDbConnection? Connection { get; set; }
+    public IDbCommand? Command { get; set; }
+    public IsolationLevel? IsolationLevel { get; set; }
+    public string? TransactionName { get; set; }
 }
 
 public class RedisDiagnosticEvent : DiagnosticEvent
 {
-    public byte[][] Command { get; set; }
+    public override string Source => "Redis";
+    public byte[][]? Command { get; set; }
     /// <summary>
     /// RedisNativeClient instance, late-bound object to decouple 
     /// </summary>

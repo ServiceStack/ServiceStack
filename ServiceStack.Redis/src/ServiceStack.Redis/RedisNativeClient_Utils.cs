@@ -561,13 +561,14 @@ namespace ServiceStack.Redis
                 }
             }
             Active = true;
-            Diagnostics.Redis.WritePoolRent(this, operation);
+            rentId = Diagnostics.Redis.WritePoolRent(this, operation);
         }
 
         internal void Deactivate([CallerMemberName] string operation = "")
         {
             Active = false;
-            Diagnostics.Redis.WritePoolReturn(this, operation);
+            Diagnostics.Redis.WritePoolReturn(rentId, this, operation);
+            rentId = Guid.Empty;
         }
 
         /// <summary>

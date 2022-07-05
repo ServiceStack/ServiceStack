@@ -89,6 +89,8 @@ namespace ServiceStack.Redis
             private set => Interlocked.Exchange(ref active, value ? YES : NO);
         }
 
+        private Guid rentId = Guid.Empty;
+
         internal IHandleClientDispose ClientManager { get; set; }
 
         internal long LastConnectedAtTimestamp;

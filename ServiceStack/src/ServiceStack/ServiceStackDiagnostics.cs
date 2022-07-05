@@ -7,6 +7,7 @@ namespace ServiceStack;
 
 public class RequestDiagnosticEvent : DiagnosticEvent
 {
+    public override string Source => "ServiceStack";
     public string TraceId { get; set; }
     public IRequest Request { get; set; }
 }
@@ -20,6 +21,7 @@ internal static class ServiceStackDiagnostics
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.ServiceStack.WriteRequestBefore, new RequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteRequestBefore,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = req.GetTraceId(),
@@ -36,6 +38,7 @@ internal static class ServiceStackDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestAfter))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteRequestAfter, new RequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteRequestAfter,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = req.GetTraceId(),
@@ -51,6 +54,7 @@ internal static class ServiceStackDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestError))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteRequestError, new RequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteRequestError,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = req.GetTraceId(),
@@ -68,6 +72,7 @@ internal static class ServiceStackDiagnostics
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.ServiceStack.WriteGatewayBefore, new RequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteGatewayBefore,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = req.GetTraceId(),
@@ -84,6 +89,7 @@ internal static class ServiceStackDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteGatewayAfter))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteGatewayAfter, new RequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteGatewayAfter,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = req.GetTraceId(),
@@ -99,6 +105,7 @@ internal static class ServiceStackDiagnostics
         if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteGatewayError))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteGatewayError, new RequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteGatewayError,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = req.GetTraceId(),
