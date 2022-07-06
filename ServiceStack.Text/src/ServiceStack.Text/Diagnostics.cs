@@ -117,6 +117,7 @@ public abstract class DiagnosticEvent
     public string? TraceId { get; set; }
     public Exception? Exception { get; set; }
     public long Timestamp { get; set; }
+    public object DiagnosticEntry { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 

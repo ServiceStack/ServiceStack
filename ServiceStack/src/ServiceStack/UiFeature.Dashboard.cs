@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class AdminDashboard {}
+public class AdminDashboard : IReturn<AdminDashboardResponse> {}
 public class AdminDashboardResponse : IHasResponseStatus
 {
     public ServerStats ServerStats { get; set; }

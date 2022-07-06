@@ -239,7 +239,7 @@ App.components({
                         </tbody>
                     </table>
                 </div>
-                <div v-else>
+                <div v-else-if="api && api.completed">
                     <h3 class="p-2">No Results</h3>
                 </div>
             </div>

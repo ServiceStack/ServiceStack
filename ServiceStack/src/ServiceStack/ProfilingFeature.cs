@@ -9,17 +9,31 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Admin;
 using ServiceStack.Configuration;
+using ServiceStack.Logging;
+using ServiceStack.NativeTypes;
+using ServiceStack.Web;
 
 namespace ServiceStack;
 
-
-public class AdminProfiling
+public class AdminProfiling : IReturn<AdminProfilingResponse>
 {
+    public string Source { get; set; }
+    public string EventType { get; set; }
+    public int? ThreadId { get; set; }
+    public string UserAuthId { get; set; }
+    public string SessionId { get; set; }
+    public int Skip { get; set; }
+    public int? Take { get; set; }
+    public string OrderBy { get; set; }
+    public bool? Pending { get; set; }
 }
+
 public class AdminProfilingResponse
 {
     public List<DiagnosticEntry> Results { get; set; }
+    public int Total { get; set; }
     public ResponseStatus ResponseStatus { get; set; }
 }
 
@@ -30,17 +44,27 @@ public class AdminProfilingService : Service
     public async Task<object> Any(AdminProfiling request)
     {
         var feature = HostContext.AppHost.AssertPlugin<ProfilingFeature>();
+
         if (!HostContext.DebugMode)
             await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
 
-        var snapshot = feature.Observer.GetLatestEntries(null);
+        var snapshot = request.Pending != true 
+            ? feature.Observer.GetLatestEntries(null)
+            : feature.Observer.GetPendingEntries(null);
+        
         var logs = snapshot.AsQueryable();
 
-        logs = logs.Take(feature.DefaultLimit);
+        var query = string.IsNullOrEmpty(request.OrderBy)
+            ? logs.OrderByDescending(x => x.Id)
+            : logs.OrderBy(request.OrderBy);
+
+        var results = query.Skip(request.Skip);
+        results = results.Take(request.Take.GetValueOrDefault(feature.DefaultLimit));
         
         return new AdminProfilingResponse
         {
-            Results = logs.ToList(),
+            Results = results.ToList(),
+            Total = snapshot.Count,
         };
     }
 }
@@ -51,7 +75,38 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     public const int DefaultCapacity = 10000;
 
     public string AccessRole { get; set; } = RoleNames.Admin;
+
+    /// <summary>
+    /// Don't log requests of these types. By default Profiling/Metadata requests are excluded
+    /// </summary>
+    public List<Type> ExcludeRequestDtoTypes { get; set; } = new();
+
+    /// <summary>
+    /// Don't log requests from these path infos prefixes
+    /// </summary>
+    public List<string> ExcludeRequestPathInfoStartingWith { get; set; } = new();
     
+    /// <summary>
+    /// Turn On/Off Tracking of Responses per-request
+    /// </summary>
+    public Func<IRequest, bool>? ExcludeRequestsFilter { get; set; }
+
+    /// <summary>
+    /// Don't log request body's for services with sensitive information.
+    /// By default Auth and Registration requests are hidden.
+    /// </summary>
+    public List<Type> HideRequestBodyForRequestDtoTypes { get; set; } = new();
+
+    /// <summary>
+    /// Don't log Response DTO Types
+    /// </summary>
+    public List<Type> ExcludeResponseTypes { get; set; } = new();
+    
+    /// <summary>
+    /// Turn On/Off Tracking of Responses per-request
+    /// </summary>
+    public Func<IRequest, bool>? ResponseTrackingFilter { get; set; }
+
     /// <summary>
     /// Which features to Profile, default all
     /// </summary>
@@ -65,12 +120,43 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// <summary>
     /// Default take, if none is specified
     /// </summary>
-    public int DefaultLimit { get; set; } = 100;
+    public int DefaultLimit { get; set; } = 50;
 
     public ProfilerDiagnosticObserver Observer { get; set; }
     
     public void Register(IAppHost appHost)
     {
+        this.ExcludeRequestPathInfoStartingWith = new[] {
+            "/js/petite-vue.js",
+            "/js/servicestack-client.js",
+            "/js/require.js",
+            "/js/servicestack-client.js",
+            "/admin-ui",
+        }.ToList();
+        // Sync with RequestLogsFeature
+        this.ExcludeRequestDtoTypes = new[]
+        {
+            typeof(RequestLogs),
+            typeof(HotReloadFiles),
+            typeof(TypesCommonJs),
+            typeof(MetadataApp),
+            typeof(AdminDashboard),
+            typeof(AdminProfiling),
+            typeof(NativeTypesBase),
+        }.ToList();
+        this.HideRequestBodyForRequestDtoTypes = new[] 
+        {
+            typeof(Authenticate), 
+            typeof(Register),
+        }.ToList();
+        this.ExcludeResponseTypes = new[]
+        {
+            typeof(AppMetadata),
+            typeof(MetadataTypes),
+            typeof(byte[]),
+            typeof(string),
+        }.ToList();
+        
         appHost.RegisterService(typeof(AdminProfilingService));
         
         Observer = new ProfilerDiagnosticObserver(this);
@@ -113,7 +199,6 @@ public sealed class ProfilerDiagnosticObserver :
 
     void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
     {
-        Console.WriteLine($@"diagnosticListener: {diagnosticListener.Name}");
         if ((feature.Profile.HasFlag(ProfileSource.ServiceStack) && diagnosticListener.Name is Diagnostics.Listeners.ServiceStack)
             || (feature.Profile.HasFlag(ProfileSource.OrmLite) && diagnosticListener.Name is Diagnostics.Listeners.OrmLite)
             || (feature.Profile.HasFlag(ProfileSource.Redis) && diagnosticListener.Name is Diagnostics.Listeners.Redis))
@@ -131,21 +216,46 @@ public sealed class ProfilerDiagnosticObserver :
 
     public void OnError(Exception error)
     {
+        var log = LogManager.GetLogger(typeof(ProfilerDiagnosticObserver));
+        log.Error(error.Message, error);
     }
     
     public List<DiagnosticEntry> GetLatestEntries(int? take)
     {
-        return take.HasValue
-            ? new List<DiagnosticEntry>(entries.Take(take.Value))
-            : new List<DiagnosticEntry>(entries);
+        return take != null 
+            ? entries.Where(x => !x.Deleted).Take(take.Value).ToList()
+            : entries.Where(x => !x.Deleted).ToList();
+    }
+
+    public List<DiagnosticEntry> GetPendingEntries(int? take)
+    {
+        var to = new List<DiagnosticEntry>();
+        var i = 0;
+        foreach (var entry in refs)
+        {
+            if (i++ > take)
+                break;
+            if (entry.Value is DiagnosticEvent origEvent)
+            {
+                var origEntry = origEvent switch {
+                    RequestDiagnosticEvent ssEvent => ToDiagnosticEntry(ssEvent),
+                    OrmLiteDiagnosticEvent dbEvent => ToDiagnosticEntry(dbEvent),
+                    RedisDiagnosticEvent redisEvent => ToDiagnosticEntry(redisEvent),
+                    _ => CreateDiagnosticEntry(origEvent)
+                };
+                to.Add(origEntry);
+            }
+        }
+        return to;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void Add(DiagnosticEntry entry)
+    DiagnosticEntry AddEntry(DiagnosticEntry entry)
     {
         entries.Enqueue(entry);
         if (entries.Count > capacity)
             entries.TryDequeue(out _);
+        return entry;
     }
 
     public DiagnosticEntry CreateDiagnosticEntry(DiagnosticEvent e, DiagnosticEvent? orig = null)
@@ -158,6 +268,7 @@ public sealed class ProfilerDiagnosticObserver :
             Operation = e.Operation,
             TraceId = e.TraceId,
             Timestamp = e.Timestamp,
+            ThreadId = Thread.CurrentThread.ManagedThreadId,
         };
 
         if (e.Exception != null)
@@ -168,8 +279,6 @@ public sealed class ProfilerDiagnosticObserver :
         if (orig != null)
         {
             to.Duration = TimeSpan.FromTicks(e.Timestamp - orig.Timestamp);
-            //$"{after.Operation} {after.Command.CommandText}".Print();
-            Console.WriteLine($@"Took: {(e.Timestamp - orig.Timestamp) / (double)Stopwatch.Frequency}s");
         }
 
         return to;
@@ -179,23 +288,104 @@ public sealed class ProfilerDiagnosticObserver :
     {
         var to = CreateDiagnosticEntry(e, orig);
 
-        to.Command = e.Request.PathInfo;
-        to.NamedArgs = orig == null 
-            ? e.Request.Dto.ToObjectDictionary() 
-            : e.Request.Response.Dto.ToObjectDictionary();
+        to.TraceId ??= e.Request.GetTraceId();
+
+        var requestType = e.Request.Dto?.GetType();
+        var responseDto = e.Request.Response.Dto.GetResponseDto();
+        var responseType = responseDto?.GetType();
+        to.Command = requestType != null 
+            ? requestType.Name 
+            : e.Request.OperationName;
+        to.Message = e.Request.PathInfo;
+        
+        if (orig == null)
+        {
+            if (IncludeRequestDto(requestType))
+                to.NamedArgs = e.Request.Dto.ToObjectDictionary();
+        }
+        else
+        {
+            // Need to update original request since Request DTO isn't known at start of request
+            if (orig.DiagnosticEntry is DiagnosticEntry entry)
+            {
+                entry.Command = to.Command;
+                entry.Message = to.Message;
+                if (IncludeRequestDto(requestType))
+                    entry.NamedArgs = e.Request.Dto.ToObjectDictionary();
+            }
+            
+            if (responseType != null && (feature.ExcludeRequestsFilter == null || feature.ExcludeRequestsFilter.Invoke(e.Request) == false))
+            {
+                if (!feature.ExcludeResponseTypes.Any(x => x.IsInstanceOfType(responseDto)))
+                {
+                    to.NamedArgs = responseDto.ToObjectDictionary();
+                }
+            }
+        }
 
         return to;
     }
+
+    private bool IncludeRequestDto(Type? requestType) => requestType != null && 
+        !feature.HideRequestBodyForRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType));
+
+    bool ShouldTrack(RequestDiagnosticEvent e)
+    {
+        if (feature.ExcludeRequestPathInfoStartingWith.Any(x => e.Request.PathInfo.StartsWith(x)))
+            return false;
+        
+        var requestType = e.Request.Dto?.GetType();
+        if (requestType != null)
+        {
+            if (feature.ExcludeRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
+                return false;
+        }
+        else
+        {
+            var requestName = e.Request.OperationName; // Request DTO Type isn't created at WriteRequestBefore
+            if (feature.ExcludeRequestDtoTypes.Any(x => x.Name == requestName))
+                return false;
+        }
+        if (feature.ExcludeRequestsFilter != null && feature.ExcludeRequestsFilter(e.Request))
+            return false;
+        
+        return true;
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddServiceStack(RequestDiagnosticEvent before)
     {
+        // Request DTO isn't known at WriteRequestBefore
+        if (!ShouldTrack(before))
+        {
+            LogNotTracked(before);
+            return;
+        }
+        
         refs[before.OperationId] = before;
-        Add(ToDiagnosticEntry(before));
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
     }
+
+    [Conditional("DEBUG")]
+    private static void LogNotTracked(RequestDiagnosticEvent before)
+    {
+        Console.WriteLine($"!{before.EventType}.ShouldTrack({before.Request.OperationName}, {before.Request.PathInfo})");
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddServiceStack(RequestDiagnosticEvent before, RequestDiagnosticEvent after)
     {
-        Add(ToDiagnosticEntry(before, after));
+        if (!ShouldTrack(before) || !ShouldTrack(after))
+        {
+            // Mark entry already in queue for deletion
+            if (before.DiagnosticEntry is DiagnosticEntry entry)
+                entry.Deleted = true;
+            
+            LogNotTracked(before);
+            return;
+        }
+
+        after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
     }
 
     public DiagnosticEntry ToDiagnosticEntry(OrmLiteDiagnosticEvent e, OrmLiteDiagnosticEvent? orig = null)
@@ -204,26 +394,39 @@ public sealed class ProfilerDiagnosticObserver :
         if (e.Command != null)
         {
             to.Command = e.Command.CommandText;
+            to.Message = to.Command.LeftPart(' ');
             to.NamedArgs = new();
             foreach (IDbDataParameter p in e.Command.Parameters)
             {
-                to.NamedArgs[p.ParameterName] = p.Value;
+                to.NamedArgs[p.ParameterName] = p.Value is DBNull
+                    ? "null"
+                    : p.Value;
             }
         }
-        
+        else
+        {
+            if (to.EventType.Contains("ConnectionOpen"))
+                to.Message = "Open Connection";
+            else if (to.EventType.Contains("ConnectionClose"))
+                to.Message = "Close Connection";
+            else if (to.EventType.Contains("TransactionCommit"))
+                to.Message = "Commit Transaction";
+            else if (to.EventType.Contains("TransactionRollback"))
+                to.Message = "Rollback Transaction";
+        }
         return to;
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddOrmLite(OrmLiteDiagnosticEvent before)
     {
         refs[before.OperationId] = before;
-        Add(ToDiagnosticEntry(before));
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddOrmLite(OrmLiteDiagnosticEvent before, OrmLiteDiagnosticEvent after)
     {
-        Add(ToDiagnosticEntry(before, after));
+        after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
     }
 
     public DiagnosticEntry ToDiagnosticEntry(RedisDiagnosticEvent e, RedisDiagnosticEvent? orig = null)
@@ -245,8 +448,19 @@ public sealed class ProfilerDiagnosticObserver :
                 });
         
             to.ArgLengths = e.Command.Map(x => x.LongLength);
+            to.Message = to.Args.FirstOrDefault();
             to.Command = string.Join(" ", to.Args);
-            to.Key = to.Args.Count > 1 ? to.Args[0] : null;
+        }
+        else
+        {
+            if (to.EventType.Contains("ConnectionOpen"))
+                to.Message = "Open Connection";
+            else if (to.EventType.Contains("ConnectionClose"))
+                to.Message = "Close Connection";
+            else if (to.EventType == Diagnostics.Events.Redis.WritePoolRent)
+                to.Message = "Rent from Pool";
+            else if (to.EventType == Diagnostics.Events.Redis.WritePoolReturn)
+                to.Message = "Return to Pool";
         }
 
         return to;
@@ -255,17 +469,18 @@ public sealed class ProfilerDiagnosticObserver :
     void AddRedis(RedisDiagnosticEvent before)
     {
         refs[before.OperationId] = before;
-        Add(ToDiagnosticEntry(before));
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddRedis(RedisDiagnosticEvent before, RedisDiagnosticEvent after)
     {
-        Add(ToDiagnosticEntry(before, after));
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
     }
 
     public void OnNext(KeyValuePair<string, object> kvp)
     {
+        Console.WriteLine();
         Console.WriteLine(kvp.Key);
         Console.WriteLine(kvp.Value);
 
@@ -438,8 +653,6 @@ public sealed class ProfilerDiagnosticObserver :
             if (refs.TryRemove(redisPoolAfter.OperationId, out var orig) && orig is RedisDiagnosticEvent redisOrig)
                 AddRedis(redisOrig, redisPoolAfter);
         }
-        
-        Console.WriteLine();
     }
 
     void IObserver<DiagnosticListener>.OnError(Exception error)
@@ -495,22 +708,19 @@ public class DiagnosticEntry
     /// SQL, Redis
     /// </summary>
     public string Command { get; set; }
-    /// <summary>
-    /// Primary or Target Key
-    /// </summary>
-    public string? Key { get; set; }
     public string? UserId { get; set; }
     public string? SessionId { get; set; }
     /// <summary>
     /// Redis positional Args
     /// </summary>
-    public List<string> Args { get; set; }
-    public List<long> ArgLengths { get; set; }
+    public List<string>? Args { get; set; }
+    public List<long>? ArgLengths { get; set; }
     /// <summary>
     /// OrmLite Args
     /// </summary>
-    public Dictionary<string, object?> NamedArgs { get; set; }
+    public Dictionary<string, object?>? NamedArgs { get; set; }
     public TimeSpan? Duration { get; set; }
     public long Timestamp { get; set; }
     public Dictionary<string, string> Meta { get; set; }
+    internal bool Deleted { get; set; }
 }

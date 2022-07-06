@@ -12,6 +12,7 @@ using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
@@ -142,11 +143,15 @@ namespace ServiceStack
         /// </summary>
         internal static void CompleteRequest(IRequest request)
         {
+            var appHost = AssertAppHost();
             try
             {
-                AssertAppHost().OnEndRequest(request);
+                appHost.OnEndRequest(request);
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                appHost.OnLogError(typeof(HostContext), ex.Message, ex);
+            }
         }
 
         public static IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)

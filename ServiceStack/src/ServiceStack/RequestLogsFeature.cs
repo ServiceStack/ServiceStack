@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -28,7 +29,7 @@ namespace ServiceStack
         /// <summary>
         /// Turn On/Off Raw Request Body Tracking per-request
         /// </summary>
-        Func<IRequest, bool> FilterRequestBodyTracking { get; set; }
+        public Func<IRequest, bool> RequestBodyTrackingFilter { get; set; }
 
         /// <summary>
         /// Turn On/Off Tracking of Responses
@@ -38,7 +39,7 @@ namespace ServiceStack
         /// <summary>
         /// Turn On/Off Tracking of Responses per-request
         /// </summary>
-        Func<IRequest, bool> FilterResponseTracking { get; set; }
+        public Func<IRequest, bool> ResponseTrackingFilter { get; set; }
         
         /// <summary>
         /// Turn On/Off Tracking of Exceptions
@@ -82,6 +83,11 @@ namespace ServiceStack
         /// </summary>
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
         
+        /// <summary>
+        /// Don't log Response DTO Types
+        /// </summary>
+        public Type[] ExcludeResponseTypes { get; set; }
+
         /// <summary>
         /// Limit logging to only Service Requests
         /// </summary>
@@ -130,15 +136,29 @@ namespace ServiceStack
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
             this.LimitToServiceRequests = true;
+            
+            // Sync with ProfilingFeature
             this.ExcludeRequestDtoTypes = new[]
             {
                 typeof(RequestLogs),
                 typeof(HotReloadFiles),
+                typeof(TypesCommonJs),
+                typeof(MetadataApp),
                 typeof(AdminDashboard),
                 typeof(AdminProfiling),
+                typeof(NativeTypesBase),
             };
-            this.HideRequestBodyForRequestDtoTypes = new[] {
-                typeof(Authenticate), typeof(Register)
+            this.HideRequestBodyForRequestDtoTypes = new[] 
+            {
+                typeof(Authenticate), 
+                typeof(Register),
+            };
+            this.ExcludeResponseTypes = new[]
+            {
+                typeof(AppMetadata),
+                typeof(MetadataTypes),
+                typeof(byte[]),
+                typeof(string),
             };
         }
 
@@ -150,15 +170,16 @@ namespace ServiceStack
             var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
             requestLogger.EnableSessionTracking = EnableSessionTracking;
             requestLogger.EnableResponseTracking = EnableResponseTracking;
-            requestLogger.FilterResponseTracking = FilterResponseTracking;
+            requestLogger.ResponseTrackingFilter = ResponseTrackingFilter;
             requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
-            requestLogger.FilterRequestBodyTracking = FilterRequestBodyTracking;
+            requestLogger.RequestBodyTrackingFilter = RequestBodyTrackingFilter;
             requestLogger.LimitToServiceRequests = LimitToServiceRequests;
             requestLogger.SkipLogging = SkipLogging;
             requestLogger.RequiredRoles = RequiredRoles ?? new []{ AccessRole };
             requestLogger.EnableErrorTracking = EnableErrorTracking;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
+            requestLogger.ExcludeResponseTypes = ExcludeResponseTypes;
             requestLogger.RequestLogFilter = RequestLogFilter;
             requestLogger.IgnoreFilter = IgnoreFilter;
             requestLogger.CurrentDateFn = CurrentDateFn;

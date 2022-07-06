@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-07-06 15:57:14
+Date: 2022-07-06 18:45:02
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -850,6 +850,31 @@ export class RequestLogEntry
     public constructor(init?: Partial<RequestLogEntry>) { (Object as any).assign(this, init); }
 }
 
+export class DiagnosticEntry
+{
+    public id: number;
+    public traceId: string;
+    public source: string;
+    public eventType: string;
+    public message: string;
+    public operation: string;
+    public threadId: number;
+    public error: ResponseStatus;
+    public commandType: string;
+    public command: string;
+    public key: string;
+    public userId: string;
+    public sessionId: string;
+    public args: string[];
+    public argLengths: number[];
+    public namedArgs: { [index: string]: Object; };
+    public duration?: string;
+    public timestamp: number;
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<DiagnosticEntry>) { (Object as any).assign(this, init); }
+}
+
 export class KeyValuePair<TKey, TValue>
 {
     public key: TKey;
@@ -1050,6 +1075,15 @@ export class RequestLogsResponse
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<RequestLogsResponse>) { (Object as any).assign(this, init); }
+}
+
+export class AdminProfilingResponse
+{
+    public results: DiagnosticEntry[];
+    public total: number;
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminProfilingResponse>) { (Object as any).assign(this, init); }
 }
 
 // @Route("/metadata/app")
@@ -1420,6 +1454,23 @@ export class RequestLogs implements IReturn<RequestLogsResponse>
     public getTypeName() { return 'RequestLogs'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new RequestLogsResponse(); }
+}
+
+export class AdminProfiling implements IReturn<AdminProfilingResponse>
+{
+    public source: string;
+    public eventType: string;
+    public threadId?: number;
+    public userAuthId: string;
+    public sessionId: string;
+    public skip: number;
+    public take?: number;
+    public orderBy: string;
+
+    public constructor(init?: Partial<AdminProfiling>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminProfiling'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminProfilingResponse(); }
 }
 
 

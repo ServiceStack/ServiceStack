@@ -179,6 +179,7 @@ internal static class OrmLiteDiagnostics
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.OrmLite.WriteTransactionCommitBefore, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteTransactionCommitBefore,
                 OperationId = operationId,
                 Operation = operation,
                 TraceId = Activity.Current.GetTraceId(),

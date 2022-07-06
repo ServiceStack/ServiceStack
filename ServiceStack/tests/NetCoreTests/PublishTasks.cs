@@ -158,6 +158,7 @@ public class PublishTasks
             Plugins.Add(new AdminUsersFeature());
             Plugins.Add(new AutoQueryFeature());
             Plugins.Add(new RequestLogsFeature());
+            Plugins.Add(new ProfilingFeature());
         }
     }
 
