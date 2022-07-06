@@ -181,6 +181,8 @@ namespace ServiceStack.Host
                 .ToList();
         }
 
+        public Type? GetRequestType(string requestDtoName) => GetOperationType(requestDtoName); 
+
         public Type? GetOperationType(string operationTypeName)
         {
             var opName = operationTypeName.ToLowerInvariant();

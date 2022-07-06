@@ -51,6 +51,8 @@ namespace ServiceStack.Messaging
         public string Tag { get; set; }
         public Dictionary<string, string> Meta { get; set; }
         public object Body { get; set; }
+
+        public static Message<T> Create<T>(T request) => new(request);
     }
 
     /// <summary>
