@@ -21,7 +21,7 @@ namespace ServiceStack.Web
         /// <summary>
         /// Turn On/Off Raw Request Body Tracking per-request
         /// </summary>
-        Func<IRequest, bool> FilterRequestBodyTracking { get; set; }
+        Func<IRequest, bool> RequestBodyTrackingFilter { get; set; }
 
         /// <summary>
         /// Turn On/Off Tracking of Responses
@@ -31,7 +31,7 @@ namespace ServiceStack.Web
         /// <summary>
         /// Turn On/Off Tracking of Responses per-request
         /// </summary>
-        Func<IRequest, bool> FilterResponseTracking { get; set; }
+        Func<IRequest, bool> ResponseTrackingFilter { get; set; }
 
         /// <summary>
         /// Turn On/Off Tracking of Exceptions
@@ -63,6 +63,11 @@ namespace ServiceStack.Web
         /// By default Auth and Registration requests are hidden.
         /// </summary>
         Type[] HideRequestBodyForRequestDtoTypes { get; set; }
+        
+        /// <summary>
+        /// Don't log Response DTO Types
+        /// </summary>
+        public Type[] ExcludeResponseTypes { get; set; }
 
         /// <summary>
         /// Customize Request Log Entry

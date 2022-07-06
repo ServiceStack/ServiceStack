@@ -18,10 +18,10 @@ namespace ServiceStack.Host
         public bool EnableSessionTracking { get; set; }
 
         public bool EnableRequestBodyTracking { get; set; }
-        public Func<IRequest, bool> FilterRequestBodyTracking { get; set; }
+        public Func<IRequest, bool> RequestBodyTrackingFilter { get; set; }
 
         public bool EnableResponseTracking { get; set; }
-        public Func<IRequest, bool> FilterResponseTracking { get; set; }
+        public Func<IRequest, bool> ResponseTrackingFilter { get; set; }
 
         public bool EnableErrorTracking { get; set; }
 
@@ -34,6 +34,8 @@ namespace ServiceStack.Host
         public Type[] ExcludeRequestDtoTypes { get; set; }
 
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
+        
+        public Type[] ExcludeResponseTypes { get; set; }
 
         public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
@@ -139,14 +141,14 @@ namespace ServiceStack.Host
 
                 if (HideRequestBodyForRequestDtoTypes != null
                     && requestType != null
-                    && !HideRequestBodyForRequestDtoTypes.Contains(requestType))
+                    && !HideRequestBodyForRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
                 {
                     entry.RequestDto = requestDto;
 
                     if (!isClosed)
                         entry.FormData = request.FormData.ToDictionary();
 
-                    var enableRequestBodyTracking = FilterRequestBodyTracking?.Invoke(request);
+                    var enableRequestBodyTracking = RequestBodyTrackingFilter?.Invoke(request);
                     if (enableRequestBodyTracking ?? EnableRequestBodyTracking && request.CanReadRequestBody())
                     {
 #if NETCORE
@@ -164,9 +166,15 @@ namespace ServiceStack.Host
 
             if (!response.IsErrorResponse())
             {
-                var enableResponseTracking = FilterResponseTracking?.Invoke(request);
+                var enableResponseTracking = ResponseTrackingFilter?.Invoke(request);
                 if (enableResponseTracking ?? EnableResponseTracking)
-                    entry.ResponseDto = response.GetResponseDto();
+                {
+                    var responseDto = response.GetResponseDto();
+                    if (responseDto != null && !ExcludeResponseTypes.Any(x => x.IsInstanceOfType(responseDto)))
+                    {
+                        entry.ResponseDto = responseDto;
+                    }
+                }
             }
             else
             {
@@ -198,7 +206,7 @@ namespace ServiceStack.Host
         {
             return ExcludeRequestDtoTypes != null
                    && requestType != null
-                   && ExcludeRequestDtoTypes.Contains(requestType);
+                   && ExcludeRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType));
         }
 
         public Dictionary<string, string> SerializableItems(Dictionary<string, object> items)
