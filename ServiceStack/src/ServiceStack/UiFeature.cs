@@ -139,7 +139,7 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         {
             HtmlModules.Add(AdminHtmlModule);
             AddAdminLink(AdminUi.None, DashboardLink);
-            appHost.RegisterService(typeof(GetAdminDashboardServices));
+            appHost.RegisterService(typeof(AdminDashboardServices));
         }
     }
 

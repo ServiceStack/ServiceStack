@@ -73,6 +73,7 @@ public class SubType
 }
 
 public class ProfileGen {}
+public class ProfileGenResponse {}
 
 
 public class TestServices : Service
@@ -94,6 +95,6 @@ public class TestServices : Service
             {"baz","1"}
         });
         
-        return request;
+        return new ProfileGenResponse();
     }
 }

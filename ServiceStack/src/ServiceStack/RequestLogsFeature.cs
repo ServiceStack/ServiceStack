@@ -134,6 +134,8 @@ namespace ServiceStack
             {
                 typeof(RequestLogs),
                 typeof(HotReloadFiles),
+                typeof(AdminDashboard),
+                typeof(AdminProfiling),
             };
             this.HideRequestBodyForRequestDtoTypes = new[] {
                 typeof(Authenticate), typeof(Register)

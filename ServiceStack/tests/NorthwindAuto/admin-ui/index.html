@@ -103,14 +103,13 @@ let App = createApp(PetiteVue)
 <!--file:custom.html-->
 
 <script>
-let api = Server.api
-let allTypes =  [...api.operations.map(x => x.request), ...api.operations.map(x => x.response), ...api.types.map(x => x)]
+let allTypes =  [...Server.api.operations.map(x => x.request), ...Server.api.operations.map(x => x.response), ...Server.api.types.map(x => x)]
     .filter(x => x).reduce((acc,x) => { acc[x.name] = x; return acc }, {})
 
 App.build({
+    Server,
     app: Server.app,
     ui: Server.ui,
-    api,
     serviceName: Server.app.serviceName,
     get plugins() { return Server.plugins },
     allTypes,

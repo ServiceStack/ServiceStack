@@ -5,8 +5,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class GetAdminDashboard {}
-public class GetAdminDashboardResponse : IHasResponseStatus
+public class AdminDashboard {}
+public class AdminDashboardResponse : IHasResponseStatus
 {
     public ServerStats ServerStats { get; set; }
     public ResponseStatus ResponseStatus { get; set; }
@@ -21,11 +21,11 @@ public class ServerStats
 }
 
 
-[DefaultRequest(typeof(GetAdminDashboard))]
+[DefaultRequest(typeof(AdminDashboard))]
 [Restrict(VisibilityTo = RequestAttributes.Localhost)]
-public class GetAdminDashboardServices : Service
+public class AdminDashboardServices : Service
 {
-    public object Any(GetAdminDashboard request)
+    public object Any(AdminDashboard request)
     {
         var mqServer = TryResolve<IMessageService>();
         var mqWorker = mqServer?.GetStats();
@@ -36,7 +36,7 @@ public class GetAdminDashboardServices : Service
             MqWorkers = mqWorker.ToDictionary(),
         };
         
-        return new GetAdminDashboardResponse
+        return new AdminDashboardResponse
         {
             ServerStats = stats,
         };
@@ -58,8 +58,6 @@ public static class AdminStatsUtils
             [nameof(stats.TotalNormalMessagesReceived)] = stats.TotalNormalMessagesReceived,
             [nameof(stats.TotalPriorityMessagesReceived)] = stats.TotalPriorityMessagesReceived,
         };
-        if (stats.LastMessageProcessed != null)
-            to[nameof(stats.LastMessageProcessed)] = stats.LastMessageProcessed.Value.ToUnixTime();
         
         return to;
     }

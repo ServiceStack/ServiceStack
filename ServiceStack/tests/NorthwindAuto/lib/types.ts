@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-07-04 18:11:34
+Date: 2022-07-06 15:57:14
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -766,6 +766,16 @@ export class MetadataTypes
     public constructor(init?: Partial<MetadataTypes>) { (Object as any).assign(this, init); }
 }
 
+export class ServerStats
+{
+    public redis: { [index: string]: number; };
+    public serverEvents: { [index: string]: string; };
+    public mqDescription: string;
+    public mqWorkers: { [index: string]: number; };
+
+    public constructor(init?: Partial<ServerStats>) { (Object as any).assign(this, init); }
+}
+
 // @DataContract
 export class ResponseError
 {
@@ -861,6 +871,14 @@ export class AppMetadata
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<AppMetadata>) { (Object as any).assign(this, init); }
+}
+
+export class AdminDashboardResponse
+{
+    public serverStats: ServerStats;
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminDashboardResponse>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -1048,6 +1066,15 @@ export class MetadataApp implements IReturn<AppMetadata>
     public getTypeName() { return 'MetadataApp'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new AppMetadata(); }
+}
+
+export class AdminDashboard implements IReturn<AdminDashboardResponse>
+{
+
+    public constructor(init?: Partial<AdminDashboard>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminDashboard'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminDashboardResponse(); }
 }
 
 // @Route("/validation/rules/{Type}")

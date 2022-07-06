@@ -171,7 +171,7 @@ App.components({
 })
 </script>
 <template id="logging-template">
-<div class="mb-2 flex flex-wrap">
+<div @vue:mounted="mounted" @vue:unmounted="unmounted" class="mb-2 flex flex-wrap">
     <span class="relative z-0 inline-flex shadow-sm rounded-md">
       <button v-href="href({ withErrors:!routes.withErrors })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
           Has Errors
@@ -199,7 +199,7 @@ App.components({
       </button>
     </span>
 </div>
-<section @vue:mounted="mounted" @vue:unmounted="unmounted" ref="section">
+<section ref="section">
     <div class="flex flex-col">
         <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
