@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Admin;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
@@ -323,6 +324,14 @@ public sealed class ProfilerDiagnosticObserver :
             ? requestType.Name 
             : e.Request.OperationName;
         to.Message = e.Request.PathInfo;
+        to.SessionId = e.Request.GetSessionId();
+        var session = e.Request.Items.TryGetValue(Keywords.Session, out var oSession)
+            ? oSession as IAuthSession
+            : null;
+        to.UserAuthId = session != null 
+            ? session.UserAuthId 
+            : (e.Request.Cookies.TryGetValue(HttpHeaders.XUserAuthId, out var cUserId) ? cUserId.Value : null) 
+                ?? e.Request.Response.GetHeader(HttpHeaders.XUserAuthId);
         
         if (orig == null)
         {
@@ -336,6 +345,8 @@ public sealed class ProfilerDiagnosticObserver :
             {
                 entry.Command = to.Command;
                 entry.Message = to.Message;
+                entry.SessionId ??= to.SessionId;
+                entry.UserAuthId ??= to.UserAuthId;
                 if (IncludeRequestDto(requestType))
                     entry.NamedArgs = e.Request.Dto.ToObjectDictionary();
             }
@@ -392,10 +403,13 @@ public sealed class ProfilerDiagnosticObserver :
         before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
     }
 
+    private static readonly ILog log = LogManager.GetLogger(typeof(ProfilerDiagnosticObserver));
+    
     [Conditional("DEBUG")]
     private static void LogNotTracked(RequestDiagnosticEvent before)
     {
-        Console.WriteLine($"!{before.EventType}.ShouldTrack({before.Request.OperationName}, {before.Request.PathInfo})");
+        if (log.IsDebugEnabled)
+            log.Debug($"!{before.EventType}.ShouldTrack({before.Request.OperationName}, {before.Request.PathInfo})");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
