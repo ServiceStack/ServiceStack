@@ -15,7 +15,6 @@ App.components({
         let fieldLabels = { operationName:'operation', statusCode:'status', pathInfo:'path', httpMethod:'method', 
             userAuthId:'userId', ipAddress:'ip', requestDuration:'duration' }
         
-        let allFields = 'id,dateTime,statusCode,statusDescription,httpMethod,absoluteUri,pathInfo,requestBody,requestDto,userAuthId,sessionId,ipAddress,forwardedFor,referer,headers,formData,items,session,responseDto,errorResponse,exceptionSource,exceptionData,requestDuration,meta'
         let summaryFields = 'id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration'.split(',')
         let ignoredHeaders = [':method','Cookie']
         let queryFields = 'beforeSecs,afterSecs,ipAddress,forwardedFor,userAuthId,sessionId,referer,pathInfo,ids,beforeId' 
@@ -136,6 +135,13 @@ App.components({
                     this.clearFilters()
                     return
                 }
+                if (e.key === 'ArrowLeft' && this.canPrev) {
+                    routes.to({ skip:this.nextSkip(-this.take) })
+                    return 
+                } else if (e.key === 'ArrowRight' && this.canNext) {
+                    routes.to({ skip:this.nextSkip(this.take) })
+                    return 
+                }
                 let row = this.selected
                 if (!row) return routes.to({ show:map(this.results[0], x => x.id) || '' })
                 let activeIndex = this.results.findIndex(x => x.id === row.id)
@@ -206,6 +212,10 @@ App.components({
             '-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
             title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" @click="update" title="Refresh"
+            class="ml-2 inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M21.168 8A10.003 10.003 0 0 0 12 2c-5.185 0-9.45 3.947-9.95 9"/><path d="M17 8h4.4a.6.6 0 0 0 .6-.6V3M2.881 16c1.544 3.532 5.068 6 9.168 6c5.186 0 9.45-3.947 9.951-9"/><path d="M7.05 16h-4.4a.6.6 0 0 0-.6.6V21"/></g></svg>
       </button>
     </span>
 </div>
@@ -301,8 +311,9 @@ App.components({
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
                                                         <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13.544 10.456a4.368 4.368 0 0 0-6.176 0l-3.089 3.088a4.367 4.367 0 1 0 6.177 6.177L12 18.177"/><path d="M10.456 13.544a4.368 4.368 0 0 0 6.176 0l3.089-3.088a4.367 4.367 0 1 0-6.177-6.177L12 5.823"/></g>
                                                     </svg>
-                                                    <a v-href="href({ traceId:select('traceId') })" class="text-blue-600 hover:text-blue-800">
-                                                        {{ select('traceId') }}
+                                                    <a v-href="href({ $page:'profiling', traceId:select('traceId') })" :title="select('traceId')" 
+                                                       class="text-blue-600 hover:text-blue-800">
+                                                        trace request
                                                     </a>
                                                 </div>
                                             </div>
@@ -317,6 +328,32 @@ App.components({
                                 <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
                                     <div v-if="hasItems(select('requestDto'))">
                                         <div v-scope="PreviewObject({ val:() => select('requestDto') })"></div>
+                                    </div>
+
+                                    <div v-if="select('responseDto')" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">Response</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="select('responseDto')" class="flex overflow-auto">
+                                        <div class="p-2 relative w-full">
+                                            <span class="relative z-0 inline-flex shadow-sm rounded-md">
+                                              <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" v-href="{ body:tab }"
+                                                 :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], routes.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                                                {{name}}
+                                              </a>
+                                            </span>
+                                            <div v-if="routes.body == ''" class="pt-2 icon-outer" style="min-height:2.5rem">
+                                                <div class="absolute right-4" v-scope="CopyIcon({ cls:'icon', text:() => indentJson(select('responseDto')) })"></div>
+                                                <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="indentJson(select('responseDto'))"></code></pre>
+                                            </div>
+                                            <div v-else-if="routes.body == 'raw'" class="flex pt-2">
+                                                <textarea class="flex-1" rows="10" v-html="JSON.stringify(select('responseDto'))"></textarea>
+                                            </div>
+                                            <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+                                                <div v-scope="PreviewObject({ val:() => select('responseDto') })"></div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div v-if="hasItems(selectedHeaders)" class="bg-indigo-700 text-white px-3 py-3">

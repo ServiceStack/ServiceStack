@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-07-06 18:45:02
+Date: 2022-07-07 14:42:45
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -492,6 +492,15 @@ export class RequestLogsInfo
     public constructor(init?: Partial<RequestLogsInfo>) { (Object as any).assign(this, init); }
 }
 
+export class ProfilingInfo
+{
+    public accessRole: string;
+    public defaultLimit: number;
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<ProfilingInfo>) { (Object as any).assign(this, init); }
+}
+
 export class FilesUploadLocation
 {
     public name: string;
@@ -651,6 +660,7 @@ export class PluginInfo
     public validation: ValidationInfo;
     public sharpPages: SharpPagesInfo;
     public requestLogs: RequestLogsInfo;
+    public profiling: ProfilingInfo;
     public filesUpload: FilesUploadInfo;
     public adminUsers: AdminUsersInfo;
     public meta: { [index: string]: string; };
@@ -862,8 +872,7 @@ export class DiagnosticEntry
     public error: ResponseStatus;
     public commandType: string;
     public command: string;
-    public key: string;
-    public userId: string;
+    public userAuthId: string;
     public sessionId: string;
     public args: string[];
     public argLengths: number[];
@@ -1461,11 +1470,14 @@ export class AdminProfiling implements IReturn<AdminProfilingResponse>
     public source: string;
     public eventType: string;
     public threadId?: number;
+    public traceId: string;
     public userAuthId: string;
     public sessionId: string;
     public skip: number;
     public take?: number;
     public orderBy: string;
+    public withErrors?: boolean;
+    public pending?: boolean;
 
     public constructor(init?: Partial<AdminProfiling>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminProfiling'; }

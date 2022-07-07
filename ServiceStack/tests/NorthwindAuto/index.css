@@ -35,6 +35,11 @@ em {
 .auth .sm\:auth\:hidden, .noauth .sm\:noauth\:hidden, .page .sm\:page\:hidden, .nopage .sm\:nopage\:hidden { display: block }
 .auth .sm\:auth\:block, .noauth .sm\:noauth\:block, .page .sm\:page\:block, .nopage .sm\:nopage\:block { display: none }
 
+.bg-gray-50 .hljs, .lg\:bg-gray-50 .hljs { background-color: transparent }
+[lang=json] .hljs-attr, .language-typescript .hljs-attr { color: rgb(17 24 39) }
+[lang=json] .hljs-string { color: rgb(21 128 61) }
+[lang=json] .hljs-number, [lang=json] .hljs-number { color:#00f }
+
 @media (max-width: 640px) {
     .auth .sm\:auth\:hidden, .noauth .sm\:noauth\:hidden, .page .sm\:page\:hidden, .nopage .sm\:nopage\:hidden { display: none }
     .auth .sm\:auth\:block, .noauth .sm\:noauth\:block, .page .sm\:page\:block, .nopage .sm\:nopage\:block { display: block }

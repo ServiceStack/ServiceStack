@@ -152,6 +152,7 @@ namespace ServiceStack
         public ValidationInfo Validation { get; set; }
         public SharpPagesInfo SharpPages { get; set; }
         public RequestLogsInfo RequestLogs { get; set; }
+        public ProfilingInfo Profiling { get; set; }
         public FilesUploadInfo FilesUpload { get; set; }
         public AdminUsersInfo AdminUsers { get; set; }
         public Dictionary<string, string> Meta { get; set; }
@@ -280,6 +281,14 @@ namespace ServiceStack
         public string RequestLogger { get; set; }
         public int DefaultLimit { get; set; }
         public Dictionary<string,string[]> ServiceRoutes { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class ProfilingInfo : IMeta
+    {
+        public string AccessRole { get; set; }
+        public int DefaultLimit { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

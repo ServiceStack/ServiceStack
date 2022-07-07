@@ -8,6 +8,7 @@ let DEBUG = false
 DEBUG = true /*debug*/
 </script>
 <style>
+/*vfs[]:/css/highlight.css*/
 /*file:css/app.css */
 /*shared:css/ui.css,css/awesomplete.css */
 /*file:custom.css */
@@ -99,11 +100,23 @@ let App = createApp(PetiteVue)
 /*files:js/*.js */
 </script>
 
-<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject,ApiSelector-->
+<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject,CopyIcon,ApiSelector-->
 <!--files:components/*.html-->
 <!--file:custom.html-->
 
+<script src="../js/highlight.js?vfx=hash"></script>
 <script>
+App.directive('highlightjs', ({ effect, get, el}) => {
+    effect(() => {
+        let src = get()
+        if (src) {
+            el.className = '' // remove existing stale class
+            el.innerHTML = enc(src)
+            hljs.highlightElement(el)
+        }
+    })
+})
+
 let allTypes =  [...Server.api.operations.map(x => x.request), ...Server.api.operations.map(x => x.response), ...Server.api.types.map(x => x)]
     .filter(x => x).reduce((acc,x) => { acc[x.name] = x; return acc }, {})
 

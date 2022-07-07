@@ -22,11 +22,13 @@ public class AdminProfiling : IReturn<AdminProfilingResponse>
     public string Source { get; set; }
     public string EventType { get; set; }
     public int? ThreadId { get; set; }
+    public string TraceId { get; set; }
     public string UserAuthId { get; set; }
     public string SessionId { get; set; }
     public int Skip { get; set; }
     public int? Take { get; set; }
     public string OrderBy { get; set; }
+    public bool? WithErrors { get; set; }
     public bool? Pending { get; set; }
 }
 
@@ -53,6 +55,23 @@ public class AdminProfilingService : Service
             : feature.Observer.GetPendingEntries(null);
         
         var logs = snapshot.AsQueryable();
+        
+        if (!request.Source.IsNullOrEmpty())
+            logs = logs.Where(x => x.Source == request.Source);
+        if (!request.EventType.IsNullOrEmpty())
+            logs = logs.Where(x => x.EventType == request.EventType);
+        if (!request.TraceId.IsNullOrEmpty())
+            logs = logs.Where(x => x.TraceId == request.TraceId);
+        if (request.ThreadId != null)
+            logs = logs.Where(x => x.ThreadId == request.ThreadId.Value);
+        if (!request.UserAuthId.IsNullOrEmpty())
+            logs = logs.Where(x => x.UserAuthId == request.UserAuthId);
+        if (!request.SessionId.IsNullOrEmpty())
+            logs = logs.Where(x => x.SessionId == request.SessionId);
+        if (request.WithErrors.HasValue)
+            logs = request.WithErrors.Value
+                ? logs.Where(x => x.Error != null)
+                : logs.Where(x => x.Error == null);
 
         var query = string.IsNullOrEmpty(request.OrderBy)
             ? logs.OrderByDescending(x => x.Id)
@@ -162,6 +181,13 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         Observer = new ProfilerDiagnosticObserver(this);
         var subscription = DiagnosticListener.AllListeners.Subscribe(Observer);
         appHost.OnDisposeCallbacks.Add(host => subscription.Dispose());
+        
+        appHost.AddToAppMetadata(meta => {
+            meta.Plugins.Profiling = new ProfilingInfo {
+                AccessRole = AccessRole,
+                DefaultLimit = DefaultLimit,
+            };
+        });
     }
 
     public void BeforePluginsLoaded(IAppHost appHost)
@@ -708,7 +734,7 @@ public class DiagnosticEntry
     /// SQL, Redis
     /// </summary>
     public string Command { get; set; }
-    public string? UserId { get; set; }
+    public string? UserAuthId { get; set; }
     public string? SessionId { get; set; }
     /// <summary>
     /// Redis positional Args

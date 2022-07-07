@@ -79,6 +79,7 @@ namespace ServiceStack
         }
 
         public string ErrorCode { get; set; }
+        public string StackTrace { get; set; }
 
         public string ContentType { get; set; }
 
@@ -149,12 +150,14 @@ namespace ServiceStack
             if (responseDto is IHttpError httpError)
                 return new HttpError(HttpStatusCode.InternalServerError, httpError.Message) {
                     ErrorCode = httpError.ErrorCode,
+                    StackTrace = httpError.StackTrace,
                 };
 
             var status = responseDto.GetResponseStatus();
             if (status?.ErrorCode != null)
                 return new HttpError(HttpStatusCode.InternalServerError, status.Message ?? status.ErrorCode) {
                     ErrorCode = status.ErrorCode,
+                    StackTrace = status.StackTrace,
                 };
             
             return null;

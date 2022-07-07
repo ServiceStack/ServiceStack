@@ -54,7 +54,10 @@ namespace ServiceStack
                     }
                 }
                 
-                sb.AppendLine(e.ToString());
+                if (e is HttpError httpError)
+                    sb.AppendLine(httpError.StackTrace);
+                else
+                    sb.AppendLine(e.ToString());
                 
                 var innerMessages = new List<string>();
                 var innerEx = e.InnerException;
