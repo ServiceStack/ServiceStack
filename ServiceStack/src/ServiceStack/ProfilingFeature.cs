@@ -10,7 +10,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Admin;
-using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
@@ -20,15 +19,16 @@ namespace ServiceStack;
 
 public class AdminProfiling : IReturn<AdminProfilingResponse>
 {
-    public string Source { get; set; }
-    public string EventType { get; set; }
+    public string? Source { get; set; }
+    public string? EventType { get; set; }
     public int? ThreadId { get; set; }
-    public string TraceId { get; set; }
-    public string UserAuthId { get; set; }
-    public string SessionId { get; set; }
+    public string? TraceId { get; set; }
+    public string? UserAuthId { get; set; }
+    public string? SessionId { get; set; }
+    public string? Tag { get; set; }
     public int Skip { get; set; }
     public int? Take { get; set; }
-    public string OrderBy { get; set; }
+    public string? OrderBy { get; set; }
     public bool? WithErrors { get; set; }
     public bool? Pending { get; set; }
 }
@@ -69,6 +69,8 @@ public class AdminProfilingService : Service
             logs = logs.Where(x => x.UserAuthId == request.UserAuthId);
         if (!request.SessionId.IsNullOrEmpty())
             logs = logs.Where(x => x.SessionId == request.SessionId);
+        if (!request.Tag.IsNullOrEmpty())
+            logs = logs.Where(x => x.Tag == request.Tag);
         if (request.WithErrors.HasValue)
             logs = request.WithErrors.Value
                 ? logs.Where(x => x.Error != null)
@@ -141,10 +143,22 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// Default take, if none is specified
     /// </summary>
     public int DefaultLimit { get; set; } = 50;
+    
+    public List<string> SummaryFields { get; set; }
+
+    /// <summary>
+    /// Attach custom data to request profiling summary fields
+    /// </summary>
+    public Func<IRequest,string?>? GetTag { get; set; }
+    
+    /// <summary>
+    /// Customize DiagnosticEntry that gets captured
+    /// </summary>
+    public Action<DiagnosticEntry, DiagnosticEvent>? DiagnosticEntryFilter { get; set; }
 
     public ProfilerDiagnosticObserver Observer { get; set; }
-    
-    public void Register(IAppHost appHost)
+
+    public ProfilingFeature()
     {
         this.ExcludeRequestPathInfoStartingWith = new[] {
             "/js/petite-vue.js",
@@ -176,16 +190,34 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             typeof(byte[]),
             typeof(string),
         }.ToList();
-        
+        this.SummaryFields = new List<string> {
+            nameof(DiagnosticEntry.Id),
+            nameof(DiagnosticEntry.TraceId),
+            nameof(DiagnosticEntry.Source),
+            nameof(DiagnosticEntry.EventType),
+            nameof(DiagnosticEntry.Message),
+            nameof(DiagnosticEntry.ThreadId),
+            nameof(DiagnosticEntry.UserAuthId),
+            nameof(DiagnosticEntry.Duration),
+            nameof(DiagnosticEntry.Timestamp),
+        };
+    }
+
+    public void Register(IAppHost appHost)
+    {
         appHost.RegisterService(typeof(AdminProfilingService));
         
         Observer = new ProfilerDiagnosticObserver(this);
         var subscription = DiagnosticListener.AllListeners.Subscribe(Observer);
         appHost.OnDisposeCallbacks.Add(host => subscription.Dispose());
         
+        if (!SummaryFields.Contains(nameof(DiagnosticEntry.Tag)) && GetTag != null)
+            SummaryFields.Add(nameof(DiagnosticEntry.Tag));
+        
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.Profiling = new ProfilingInfo {
                 AccessRole = AccessRole,
+                SummaryFields = SummaryFields,
                 DefaultLimit = DefaultLimit,
             };
         });
@@ -235,7 +267,7 @@ public sealed class ProfilerDiagnosticObserver :
         }
     }
 
-    private ConcurrentDictionary<Guid, object> refs = new();
+    private readonly ConcurrentDictionary<Guid, object> refs = new();
 
     public void OnCompleted()
     {
@@ -294,6 +326,8 @@ public sealed class ProfilerDiagnosticObserver :
             EventType = e.EventType,
             Operation = e.Operation,
             TraceId = e.TraceId,
+            UserAuthId = e.UserAuthId,
+            Tag = e.Tag,
             Timestamp = e.Timestamp,
             ThreadId = Thread.CurrentThread.ManagedThreadId,
         };
@@ -311,6 +345,12 @@ public sealed class ProfilerDiagnosticObserver :
         return to;
     }
 
+    public DiagnosticEntry Filter(DiagnosticEntry entry, DiagnosticEvent e)
+    {
+        feature.DiagnosticEntryFilter?.Invoke(entry, e);
+        return entry;
+    }
+
     public DiagnosticEntry ToDiagnosticEntry(RequestDiagnosticEvent e, RequestDiagnosticEvent? orig = null)
     {
         var to = CreateDiagnosticEntry(e, orig);
@@ -325,13 +365,7 @@ public sealed class ProfilerDiagnosticObserver :
             : e.Request.OperationName;
         to.Message = e.Request.PathInfo;
         to.SessionId = e.Request.GetSessionId();
-        var session = e.Request.Items.TryGetValue(Keywords.Session, out var oSession)
-            ? oSession as IAuthSession
-            : null;
-        to.UserAuthId = session != null 
-            ? session.UserAuthId 
-            : (e.Request.Cookies.TryGetValue(HttpHeaders.XUserAuthId, out var cUserId) ? cUserId.Value : null) 
-                ?? e.Request.Response.GetHeader(HttpHeaders.XUserAuthId);
+        to.UserAuthId = HostContext.AppHost.TryGetUserId(e.Request);
         
         if (orig == null)
         {
@@ -360,7 +394,7 @@ public sealed class ProfilerDiagnosticObserver :
             }
         }
 
-        return to;
+        return Filter(to, e);
     }
 
     private bool IncludeRequestDto(Type? requestType) => requestType != null && 
@@ -454,7 +488,7 @@ public sealed class ProfilerDiagnosticObserver :
             else if (to.EventType.Contains("TransactionRollback"))
                 to.Message = "Rollback Transaction";
         }
-        return to;
+        return Filter(to, e);
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddOrmLite(OrmLiteDiagnosticEvent before)
@@ -488,7 +522,7 @@ public sealed class ProfilerDiagnosticObserver :
                 });
         
             to.ArgLengths = e.Command.Map(x => x.LongLength);
-            to.Message = to.Args.FirstOrDefault();
+            to.Message = to.Args.FirstOrDefault() ?? "";
             to.Command = string.Join(" ", to.Args);
         }
         else
@@ -502,8 +536,7 @@ public sealed class ProfilerDiagnosticObserver :
             else if (to.EventType == Diagnostics.Events.Redis.WritePoolReturn)
                 to.Message = "Return to Pool";
         }
-
-        return to;
+        return Filter(to, e);
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddRedis(RedisDiagnosticEvent before)
@@ -761,6 +794,10 @@ public class DiagnosticEntry
     public Dictionary<string, object?>? NamedArgs { get; set; }
     public TimeSpan? Duration { get; set; }
     public long Timestamp { get; set; }
+    /// <summary>
+    /// Custom data that can be attached with ProfilingFeature.GetTag  
+    /// </summary>
+    public string? Tag { get; set; }
     public Dictionary<string, string> Meta { get; set; }
     internal bool Deleted { get; set; }
 }

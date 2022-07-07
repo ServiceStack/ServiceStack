@@ -18,11 +18,9 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteCommandBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbCmd.GetConnectionId(),
                 Command = dbCmd,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
             return operationId;
         }
         return Guid.Empty;
@@ -36,11 +34,9 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteCommandAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbCmd.GetConnectionId(),
                 Command = dbCmd,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,12 +49,10 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteCommandError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbCmd.GetConnectionId(),
                 Command = dbCmd,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
 
@@ -72,10 +66,8 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteConnectionOpenBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Connection = dbConn,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
 
             return operationId;
         }
@@ -90,11 +82,9 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteConnectionOpenAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbConn.GetConnectionId(),
                 Connection = dbConn,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,12 +97,10 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteConnectionOpenError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbConn.GetConnectionId(),
                 Connection = dbConn,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
 
@@ -126,11 +114,9 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteConnectionCloseBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = dbConn.GetConnectionId(),
                 Connection = dbConn,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
             return operationId;
         }
         return Guid.Empty;
@@ -145,11 +131,9 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteConnectionCloseAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = clientConnectionId,
                 Connection = dbConn,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -162,12 +146,10 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteConnectionCloseError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 ConnectionId = clientConnectionId,
                 Connection = dbConn,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
 
@@ -182,11 +164,9 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteTransactionCommitBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
             return operationId;
         }
         return Guid.Empty;
@@ -201,11 +181,9 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteTransactionCommitAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -218,12 +196,10 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteTransactionCommitError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
 
@@ -238,12 +214,10 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteTransactionRollbackBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 TransactionName = transactionName,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
             return operationId;
         }
         return Guid.Empty;
@@ -259,12 +233,10 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteTransactionRollbackAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 TransactionName = transactionName,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -278,13 +250,11 @@ internal static class OrmLiteDiagnostics
                 EventType = Diagnostics.Events.OrmLite.WriteTransactionRollbackError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 TransactionName = transactionName,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     

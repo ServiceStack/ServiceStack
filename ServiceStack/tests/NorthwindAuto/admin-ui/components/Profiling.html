@@ -5,8 +5,8 @@ import { apiValueFmt, fromXsdDuration, lastRightPart, dateFmt, ApiResult } from 
 App.components({
     Profiling: ({store, routes, client, Forms}) => {
 
-        let summaryFields = 'id,traceId,source,eventType,message,threadId,userAuthId,duration,timestamp'.split(',')
-        let linkFields = 'id,traceId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,skip'.split(',')
+        let summaryFields = Forms.Server.plugins.profiling.summaryFields.map(toCamelCase) 
+        let linkFields = 'id,traceId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,tag,skip'.split(',')
 
         let fieldLabels = { eventType:'event', threadId:'thread', userAuthId:'userId' }
         let timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric',minute:'numeric',second:'numeric',fractionalSecondDigits:3,hour12:false})
@@ -46,6 +46,9 @@ App.components({
             },
             get errorSummary() {
                 return this.api && this.api.error && this.api.summaryMessage()
+            },
+            isLinkable(s) {
+                return s.indexOf('{') < 0 && s.indexOf('[') && s.indexOf('"') && s.indexOf("'") < 0 && s.length < 100 
             },
 
             apiValueTitle(obj,k) {
@@ -338,6 +341,18 @@ App.components({
 
                                 <!-- Divider container -->
                                 <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
+                                    <div v-if="select('tag')" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">Tag</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="select('tag')" class="p-4">
+                                        <a v-if="isLinkable(select('tag'))" v-href="href({ tag:select('tag') })" class="text-blue-600 hover:text-blue-800">
+                                            {{select('tag')}}
+                                        </a>
+                                        <div v-else class="font-mono whitespace-pre">{{select('tag')}}</div>
+                                    </div>
+
                                     <div v-if="select('command')" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
                                             <h2 class="font-medium text-white">Command</h2>

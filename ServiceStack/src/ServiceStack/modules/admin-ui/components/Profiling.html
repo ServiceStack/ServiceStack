@@ -1,10 +1,9 @@
 <script>
 App.components({
     Profiling: ({store, routes, client, Forms}) => {
-        let allFields = 'id,traceId,source,eventType,message,operation,threadId,error,commandType,command,key,userId,sessionId,args,argLengths,namedArgs,duration?,timestamp,meta'
-        let summaryFields = 'id,traceId,source,eventType,message,threadId,userId,duration,timestamp'.split(',')
-        let linkFields = 'id,traceId,source,eventType,operation,threadId,commandType,userId,sessionId'.split(',')
-        let fieldLabels = { eventType:'event', threadId:'thread', userId:'user' }
+        let summaryFields = Forms.Server.plugins.profiling.summaryFields.map(toCamelCase) 
+        let linkFields = 'id,traceId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,tag,skip'.split(',')
+        let fieldLabels = { eventType:'event', threadId:'thread', userAuthId:'userId' }
         let timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric',minute:'numeric',second:'numeric',fractionalSecondDigits:3,hour12:false})
         let showTitle = 'traceId,eventType,duration,timestamp'.split(',')
         return {
@@ -12,6 +11,7 @@ App.components({
             api: null,
             fieldLabels,
             linkFields,
+            take: Forms.Server.plugins.profiling.defaultLimit,
             update() {
                 let request = new AdminProfiling()
                 if (routes.orderBy)
@@ -27,8 +27,20 @@ App.components({
                     ? Object.keys(obj).length > 0
                     : obj.length
             },
+            get selectedArgs() {
+                let namedArgs = this.select('namedArgs')
+                let args = this.select('args')
+                return this.hasItems(namedArgs)
+                    ? namedArgs
+                    : this.hasItems(args)
+                        ? args
+                        : null
+            },
             get errorSummary() {
                 return this.api && this.api.error && this.api.summaryMessage()
+            },
+            isLinkable(s) {
+                return s.indexOf('{') < 0 && s.indexOf('[') && s.indexOf('"') && s.indexOf("'") < 0 && s.length < 100 
             },
             apiValueTitle(obj,k) {
                 if (showTitle.indexOf(k) >= 0) {
@@ -85,8 +97,14 @@ App.components({
                 routes.to({ show: routes.show === row.id ? '' : row.id })
             },
             // required to avoid JS errors, as v-if guards not honoured in petite-vue
-            select(arg) {
-                return this.selected && this.selected[arg]
+            /**
+             * @param arg
+             * @param {Function?} f
+             * @returns {*}
+             */
+            select(arg, f) {
+                let ret = this.selected && this.selected[arg]
+                return f ? f(ret) : ret
             },
             expanded(id) { return map(this.selected, x => x.id === id) },
             statusColor(error) {
@@ -110,6 +128,13 @@ App.components({
                 if (isInput(e.target) || this.results.length === 0) return
                 if (e.key === 'Escape') {
                     this.clearFilters()
+                    return
+                }
+                if (e.key === 'ArrowLeft' && this.canPrev) {
+                    routes.to({ skip:this.nextSkip(-this.take) })
+                    return
+                } else if (e.key === 'ArrowRight' && this.canNext) {
+                    routes.to({ skip:this.nextSkip(this.take) })
                     return
                 }
                 let row = this.selected
@@ -157,7 +182,7 @@ App.components({
 <template id="profiling-template">
 <div @vue:mounted="mounted" @vue:unmounted="unmounted" class="mb-2 flex flex-wrap">
     <span class="relative z-0 inline-flex shadow-sm rounded-md">
-      <button v-href="href({ withErrors:!routes.withErrors })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+      <button v-href="href({ withErrors:!routes.withErrors })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
           Has Errors
       </button>
     </span>
@@ -172,13 +197,17 @@ App.components({
         'relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
           title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
-  </button>
-  <button type="button" :class="[canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
-        '-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
-          title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
-  </button>
-</span>
+      </button>
+      <button type="button" :class="[canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
+            '-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
+              title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
+            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" @click="update" title="Refresh"
+              class="ml-2 inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M21.168 8A10.003 10.003 0 0 0 12 2c-5.185 0-9.45 3.947-9.95 9"/><path d="M17 8h4.4a.6.6 0 0 0 .6-.6V3M2.881 16c1.544 3.532 5.068 6 9.168 6c5.186 0 9.45-3.947 9.951-9"/><path d="M7.05 16h-4.4a.6.6 0 0 0-.6.6V21"/></g></svg>
+      </button>
+    </span>
 </div>
 <section>
     <div class="flex flex-col">
@@ -201,7 +230,7 @@ App.components({
                         </thead>
                         <tbody>
                         <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
-                            :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : statusBackground(row.statusCode,index) + ' hover:bg-yellow-50']">
+                            :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : statusBackground(row.error,index) + ' hover:bg-yellow-50']">
                             <td v-for="k in uniqueKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <span :title="apiValueTitle(row[k],k)">{{ apiValueFmt(row[k],k) }}</span>
                             </td>
@@ -231,16 +260,25 @@ App.components({
                                                     {{ select('message') || apiValueFmt(select('eventType'),'eventType') }}
                                                 </div>
                                                 <div class="ml-2 text-gray-600">
-                                                    ({{select('source')}})
+                                                    (<a v-href="href({ source:select('source') })" class="text-blue-600 hover:text-blue-800">{{select('source')}}</a>
+                                                     <a v-href="href({ eventType:select('eventType') })" class="text-blue-600 hover:text-blue-800" :title="select('eventType')">{{apiValueFmt(select('eventType'),'eventType')}}</a>)
                                                 </div>
                                             </h2>
                                             <div class="text-sm text-gray-500 flex flex-wrap">
-                                                <div v-if="select('traceId')" class="flex items-center" title="Trace Id">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
-                                                        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13.544 10.456a4.368 4.368 0 0 0-6.176 0l-3.089 3.088a4.367 4.367 0 1 0 6.177 6.177L12 18.177"/><path d="M10.456 13.544a4.368 4.368 0 0 0 6.176 0l3.089-3.088a4.367 4.367 0 1 0-6.177-6.177L12 5.823"/></g>
+                                                <div v-if="select('traceId')" class="" title="Trace Id">
+                                                    <a v-href="href({ traceId:select('traceId') })" class="flex items-center text-blue-600 hover:text-blue-800" :title="select('traceId')">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
+                                                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13.544 10.456a4.368 4.368 0 0 0-6.176 0l-3.089 3.088a4.367 4.367 0 1 0 6.177 6.177L12 18.177"/><path d="M10.456 13.544a4.368 4.368 0 0 0 6.176 0l3.089-3.088a4.367 4.367 0 1 0-6.177-6.177L12 5.823"/></g>
+                                                        </svg>
+                                                        trace request
+                                                    </a>
+                                                </div>
+                                                <div v-if="select('threadId')" class="ml-2 flex items-end" title="Thread Id">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" viewBox="0 0 24 24">
+                                                        <path fill="currentColor" d="M14 12.415V5h1V4H8v1h1v7.414l-2 2V15h9v-.586l-2-2Zm3 1.583v2L12 16v4.5l-.5 1.5l-.5-1.5V16l-5-.002v-2h.002L8 12V5.998H7v-3h8.999v3h-1V12l2 1.998Z"/>
                                                     </svg>
-                                                    <a v-href="href({ traceId:select('traceId') })" class="text-blue-600 hover:text-blue-800">
-                                                        {{ select('traceId') }}
+                                                    <a v-href="href({ threadId:select('threadId') })" class="text-blue-600 hover:text-blue-800">
+                                                        {{ select('threadId') }}
                                                     </a>
                                                 </div>
                                                 <div v-if="select('userAuthId')" class="ml-2 flex items-center" title="User Id">
@@ -284,6 +322,17 @@ App.components({
                                 </div>
                                 <!-- Divider container -->
                                 <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
+                                    <div v-if="select('tag')" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">Tag</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="select('tag')" class="p-4">
+                                        <a v-if="isLinkable(select('tag'))" v-href="href({ tag:select('tag') })" class="text-blue-600 hover:text-blue-800">
+                                            {{select('tag')}}
+                                        </a>
+                                        <div v-else class="font-mono whitespace-pre">{{select('tag')}}</div>
+                                    </div>
                                     <div v-if="select('command')" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
                                             <h2 class="font-medium text-white">Command</h2>
@@ -292,16 +341,62 @@ App.components({
                                     <div v-if="select('command')" class="p-4">
                                         {{ select('command') }}
                                     </div>
-                                    <div v-if="hasItems(select('namedArgs')) || hasItems(select('args'))" class="bg-indigo-700 text-white px-3 py-3">
+                                    <div v-if="selectedArgs" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
                                             <h2 class="font-medium text-white">Arguments</h2>
                                         </div>
                                     </div>
-                                    <div v-if="hasItems(select('namedArgs'))">
-                                        <div v-scope="PreviewObject({ val:() => select('namedArgs') })"></div>
+                                    <div v-if="selectedArgs" class="flex overflow-auto">
+                                        <div class="p-2 relative w-full">
+                                            <span class="relative z-0 inline-flex shadow-sm rounded-md">
+                                              <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" v-href="{ body:tab }"
+                                                 :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], routes.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                                                {{name}}
+                                              </a>
+                                            </span>
+                                            <div v-if="routes.body == ''" class="pt-2 icon-outer" style="min-height:2.5rem">
+                                                <div class="absolute right-4" v-scope="CopyIcon({ cls:'icon', text:() => indentJson(selectedArgs) })"></div>
+                                                <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="indentJson(selectedArgs)"></code></pre>
+                                            </div>
+                                            <div v-else-if="routes.body == 'raw'" class="flex pt-2">
+                                                <textarea class="flex-1" rows="10" v-html="JSON.stringify(selectedArgs)"></textarea>
+                                            </div>
+                                            <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+                                                <div v-scope="PreviewObject({ val:() => selectedArgs })"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div v-else-if="hasItems(select('args'))" class="p-4">
-                                        <div v-scope="PreviewObject({ val:() => select('args') })"></div>
+                                    <div v-if="select('error')" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">Error</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="select('error')" class="flex overflow-auto">
+                                        <div class="p-2 relative w-full">
+                                            <div class="pt-2 icon-outer" style="min-height:2.5rem">
+                                                <div class="absolute right-4" v-scope="CopyIcon({ cls:'icon', text:() => indentJson(select('error')) })"></div>
+                                                <table>
+                                                    <tr>
+                                                        <th class="text-left font-medium align-top pr-2">Code</th>
+                                                        <td>{{select('error', x => x.errorCode)}}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left font-medium align-top pr-2">Message</th>
+                                                        <td>{{select('error', x => x.message)}}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left font-medium align-top pr-2">StackTrace</th>
+                                                        <td>
+                                                            <div class="whitespace-pre">{{select('error', x => x.stackTrace)}}</div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-if="hasItems(select('error', x => x.errors))">
+                                                        <th class="text-left font-medium align-top pr-2">Errors</th>
+                                                        <td><div v-scope="PreviewObject({ val:() => select('error', x => x.errors) })"></div></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -16,6 +16,7 @@ public class Diagnostics
     public static class Listeners
     {
         public const string ServiceStack = "ServiceStack";
+        public const string Client = "ServiceStack.Client";
         public const string OrmLite = "ServiceStack.OrmLite";
         public const string Redis = "ServiceStack.Redis";
     }
@@ -33,6 +34,15 @@ public class Diagnostics
             public const string WriteGatewayBefore = Prefix + nameof(WriteGatewayBefore);
             public const string WriteGatewayAfter = Prefix + nameof(WriteGatewayAfter);
             public const string WriteGatewayError = Prefix + nameof(WriteGatewayError);
+        }
+        
+        public static class Client
+        {
+            private const string Prefix = Listeners.Client + ".";
+            
+            public const string WriteRequestBefore = Prefix + nameof(WriteRequestBefore);
+            public const string WriteRequestAfter = Prefix + nameof(WriteRequestAfter);
+            public const string WriteRequestError = Prefix + nameof(WriteRequestError);
         }
         
         public static class OrmLite
@@ -87,13 +97,17 @@ public class Diagnostics
         public const string HttpBegin = nameof(HttpBegin);
         public const string HttpEnd = nameof(HttpEnd);
         public const string OperationId = nameof(OperationId);
+        public const string UserId = nameof(UserId);
+        public const string Tag = nameof(Tag);
     }
 
     private DiagnosticListener servicestack { get; set; } = new(Listeners.ServiceStack);
+    private DiagnosticListener client { get; set; } = new(Listeners.Client);
     private DiagnosticListener ormlite { get; set; } = new(Listeners.OrmLite);
     private DiagnosticListener redis { get; set; } = new(Listeners.Redis);
 
     public static DiagnosticListener ServiceStack => Instance.servicestack;
+    public static DiagnosticListener Client => Instance.client;
     public static DiagnosticListener OrmLite => Instance.ormlite;
     public static DiagnosticListener Redis => Instance.redis;
 }
@@ -103,9 +117,10 @@ public enum ProfileSource
 {
     None = 0,
     ServiceStack = 1 << 0,
-    Redis = 1 << 1,
-    OrmLite = 1 << 2,
-    All = ServiceStack | OrmLite | Redis,
+    Client = 1 << 1,
+    Redis = 1 << 2,
+    OrmLite = 1 << 3,
+    All = ServiceStack | Client | OrmLite | Redis,
 }
 
 public abstract class DiagnosticEvent
@@ -115,9 +130,11 @@ public abstract class DiagnosticEvent
     public Guid OperationId { get; set; }
     public string Operation { get; set; }
     public string? TraceId { get; set; }
+    public string? UserAuthId { get; set; }
     public Exception? Exception { get; set; }
     public long Timestamp { get; set; }
     public object DiagnosticEntry { get; set; }
+    public string? Tag { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
@@ -146,7 +163,7 @@ public class RedisDiagnosticEvent : DiagnosticEvent
 
 public static class DiagnosticsUtils
 {
-    public static string? GetTraceId(this Activity? activity)
+    public static Activity? GetRoot(Activity? activity)
     {
         if (activity == null)
             return null;
@@ -154,6 +171,26 @@ public static class DiagnosticsUtils
         {
             activity = activity.Parent;
         }
-        return activity.ParentId;
+        return activity;
+    }
+
+    public static string? GetTraceId(this Activity? activity) => GetRoot(activity)?.ParentId;
+    public static string? GetUserId(this Activity? activity) => 
+        GetRoot(activity)?.GetTagItem(Diagnostics.Activity.UserId) as string;
+    public static string? GetTag(this Activity? activity) => 
+        GetRoot(activity)?.GetTagItem(Diagnostics.Activity.Tag) as string;
+
+    public static T Init<T>(this T evt, Activity? activity)
+        where T : DiagnosticEvent
+    {
+        var rootActivity = GetRoot(activity);
+        if (rootActivity != null)
+        {
+            evt.TraceId ??= rootActivity.GetTraceId();
+            evt.UserAuthId ??= rootActivity.GetUserId();
+            evt.Tag ??= rootActivity.GetTag();
+        }
+        evt.Timestamp = Stopwatch.GetTimestamp();
+        return evt;
     }
 }

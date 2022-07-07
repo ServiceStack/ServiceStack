@@ -663,6 +663,21 @@ namespace ServiceStack
         }
         
         /// <summary>
+        /// Try infer UserId from IRequest
+        /// </summary>
+        /// <returns></returns>
+        public virtual string TryGetUserId(IRequest req)
+        {
+            var session = req.Items.TryGetValue(Keywords.Session, out var oSession)
+                ? oSession as IAuthSession
+                : null;
+            return session != null 
+                ? session.UserAuthId 
+                : (req.Cookies.TryGetValue(HttpHeaders.XUserAuthId, out var cUserId) ? cUserId.Value : null) 
+                  ?? req.Response.GetHeader(HttpHeaders.XUserAuthId);
+        }
+
+        /// <summary>
         /// Override to intercept &amp; customize Exception responses 
         /// </summary>
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)

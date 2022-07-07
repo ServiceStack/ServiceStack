@@ -36,7 +36,7 @@ App.component('ApiForm', ({ store, routes }) => {
                     return this.apiResult && this.apiResult.api.summaryMessage(except)   
                 },
                 title: Forms.opTitle(s.op),
-                get apiRequestJson() { return this.requestDto && JSON.stringify(this.requestDto, undefined, 4) || '' },
+                get apiRequestJson() { return this.requestDto && indentJson(this.requestDto) || '' },
                 formLayout: Forms.resolveFormLayout(s.op),
             }))
             if (ret.opName !== opName) throw new Error('!!state.opName')
@@ -62,7 +62,7 @@ App.component('ApiForm', ({ store, routes }) => {
             let state = this.state
             if (!(form && form.tagName === 'FORM')) throw new Error('!form')
             state.requestDto = createDto(state.opName, Forms.formValues(form))
-            state.formJson = JSON.stringify(state.requestDto, undefined, 4)
+            state.formJson = indentJson(state.requestDto)
             return state.requestDto
         },
         updateRequestDto(json){
@@ -78,7 +78,7 @@ App.component('ApiForm', ({ store, routes }) => {
         },
         onAjaxFormInput(e) {
             if (!this.hasState) return
-            this.state.formJson = JSON.stringify(Forms.formValues(e.target.tagName === 'FORM' ? e.target : e.target.form), undefined, 4)
+            this.state.formJson = indentJson(Forms.formValues(e.target.tagName === 'FORM' ? e.target : e.target.form))
         },
         onJsonFormInput(e) { 
             this.updateRequestDto(e.target.value) 

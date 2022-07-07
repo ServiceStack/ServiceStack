@@ -24,10 +24,7 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteRequestBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = req.GetTraceId(),
-                Request = req,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(req));
             return operationId;
         }
         return Guid.Empty;
@@ -41,10 +38,7 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteRequestAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = req.GetTraceId(),
-                Request = req,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(req));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,11 +51,8 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteRequestError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = req.GetTraceId(),
-                Request = req,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(req));
         }
     }
 
@@ -75,10 +66,7 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteGatewayBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = req.GetTraceId(),
-                Request = req,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(req));
             return operationId;
         }
         return Guid.Empty;
@@ -92,10 +80,7 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteGatewayAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = req.GetTraceId(),
-                Request = req,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(req));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -108,14 +93,32 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteGatewayError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = req.GetTraceId(),
-                Request = req,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(req));
         }
     }
-    
+}
+
+public static class ServiceStackDiagnosticsUtils
+{
+    public static RequestDiagnosticEvent Init(this RequestDiagnosticEvent evt, IRequest req)
+    {
+        if (req != null)
+        {
+            var appHost = HostContext.AppHost;
+            evt.Request = req;
+            evt.TraceId ??= req.GetTraceId();
+            evt.UserAuthId ??= appHost.TryGetUserId(req);
+
+            if (evt.Tag == null)
+            {
+                var feature = appHost.AssertPlugin<ProfilingFeature>();
+                evt.Tag = feature.GetTag?.Invoke(req);
+            }
+        }
+        evt.Timestamp = Stopwatch.GetTimestamp();
+        return evt;
+    }
 }
 
 public class ServiceStackActivityArgs

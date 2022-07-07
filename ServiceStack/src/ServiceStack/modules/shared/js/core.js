@@ -211,7 +211,7 @@ function apiSend(createClient, requestDto, queryArgs) {
         : newClient.api(requestDto, Object.assign({ jsconfig: 'eccn' }, queryArgs))
     return task.then(api => ({
         api,
-        json: JSON.stringify(api.response || api.error, undefined, 4),
+        json: indentJson(api.response || api.error),
         text: JSON.stringify(api.response || api.error),
         opName,
         requestDto,
@@ -425,4 +425,15 @@ function iconFallbackSrc(src,fallbackSrc) {
  * @return {string}
  */
 function hidden(o) { return '' }
+/** Return indented JSON
+ * @param o
+ * @return {string}
+ */
+function indentJson(o) {
+    if (o == null) return ''
+    if ('__type' in o) delete o['__type']
+    if (o.ResponseStatus) delete o.ResponseStatus['__type']
+    if (o.responseStatus) delete o.responseStatus['__type']
+    return JSON.stringify(o, undefined, 4) 
+}
 /*:minify*/

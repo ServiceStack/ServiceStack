@@ -136,6 +136,16 @@ namespace ServiceStack
                 activity.SetParentId(httpReq.GetTraceId());
                 var id = Diagnostics.ServiceStack.WriteRequestBefore(httpReq);
                 activity.AddTag(Diagnostics.Activity.OperationId, id);
+
+                var userId = appHost.TryGetUserId(httpReq);
+                if (userId != null)
+                    activity.AddTag(Diagnostics.Activity.UserId, userId);
+
+                var feature = appHost.GetPlugin<ProfilingFeature>();
+                var tag = feature?.GetTag?.Invoke(httpReq);
+                if (tag != null)
+                    activity.AddTag(Diagnostics.Activity.Tag, tag);
+
                 httpReq.SetItem(Keywords.RequestActivity, activity);
                 Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackActivityArgs { Request = httpReq, Activity = activity });
             }

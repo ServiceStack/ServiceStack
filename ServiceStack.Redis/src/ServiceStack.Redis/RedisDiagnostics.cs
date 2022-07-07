@@ -18,10 +18,8 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteCommandBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Command = command,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
             return operationId;
         }
         return Guid.Empty;
@@ -35,10 +33,9 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteCommandAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Command = command,
                 Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,10 +47,8 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteCommandRetry,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Command = command,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,11 +61,9 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteCommandError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Command = command,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     
@@ -84,13 +77,11 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteConnectionOpenBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
 
             return operationId;
         }
@@ -105,13 +96,11 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteConnectionOpenAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -123,14 +112,12 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteConnectionOpenError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     

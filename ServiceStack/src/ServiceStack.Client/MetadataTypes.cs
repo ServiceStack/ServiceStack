@@ -289,6 +289,7 @@ namespace ServiceStack
     {
         public string AccessRole { get; set; }
         public int DefaultLimit { get; set; }
+        public List<string> SummaryFields { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

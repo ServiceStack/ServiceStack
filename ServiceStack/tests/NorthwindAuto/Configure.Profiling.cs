@@ -1,5 +1,6 @@
 using MyApp.ServiceInterface;
 using ServiceStack;
+using ServiceStack.Auth;
 using ServiceStack.Messaging;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureProfiling))]
@@ -12,7 +13,9 @@ public class ConfigureProfiling : IHostingStartup
     {
         builder.ConfigureAppHost(
             host => {
-                host.Plugins.Add(new ProfilingFeature());
+                host.Plugins.Add(new ProfilingFeature {
+                    GetTag = req => req.PathInfo.ToMd5Hash(),
+                });
                 host.Plugins.Add(new ServerEventsFeature());
                 
                 host.Container.Register<IMessageService>(c => new BackgroundMqService());
