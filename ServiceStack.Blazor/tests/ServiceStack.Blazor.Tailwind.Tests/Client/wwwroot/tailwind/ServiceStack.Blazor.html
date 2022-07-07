@@ -193,3 +193,46 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
 }
 </div>
+@using System.IO
+@using Microsoft.AspNetCore.Components.Forms
+@inherits UiComponentBase
+@inject JsonApiClient jsonApiClient
+@typeparam TReq
+
+<div class="max-w-xl m-2 mt-4" @ref="fileDropContainer">
+    <label for="blazor-input-file"
+           class="@ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none")">
+    <span class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        @if (!uploading)
+        {
+            <span class="font-medium text-gray-600">
+                Drop files to Attach, or <span class="text-blue-600 underline">browse</span>
+            </span>
+        }
+        else
+        {
+            <span class="font-medium text-gray-600">
+                @progress
+            </span>
+        }
+
+
+    </span>
+    @if (toggleInputClear)
+    {
+    <InputFile id="blazor-input-file" OnChange="@OnChange" class="w-auto absolute opacity-0 h-32"/>
+    }
+    else
+    {
+    <InputFile id="blazor-input-file" OnChange="@OnChange" class="w-auto absolute opacity-0 h-32"/>
+    }
+    </label>
+</div>
+<CascadingValue Value="errorStatus">
+    <ErrorSummary/>
+</CascadingValue>
