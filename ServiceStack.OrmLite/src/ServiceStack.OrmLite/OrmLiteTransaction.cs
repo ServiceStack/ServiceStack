@@ -48,7 +48,8 @@ namespace ServiceStack.OrmLite
 
         public void Commit()
         {
-            var id = Diagnostics.OrmLite.WriteTransactionCommitBefore(Transaction.IsolationLevel, db);
+            var isolationLevel = Transaction.IsolationLevel;
+            var id = Diagnostics.OrmLite.WriteTransactionCommitBefore(isolationLevel, db);
             Exception e = null;
             try
             {
@@ -62,15 +63,16 @@ namespace ServiceStack.OrmLite
             finally
             {
                 if (e != null)
-                    Diagnostics.OrmLite.WriteTransactionCommitError(id, Transaction.IsolationLevel, db, e);
+                    Diagnostics.OrmLite.WriteTransactionCommitError(id, isolationLevel, db, e);
                 else
-                    Diagnostics.OrmLite.WriteTransactionCommitAfter(id, Transaction.IsolationLevel, db);
+                    Diagnostics.OrmLite.WriteTransactionCommitAfter(id, isolationLevel, db);
             }
         }
 
         public void Rollback()
         {
-            var id = Diagnostics.OrmLite.WriteTransactionRollbackBefore(Transaction.IsolationLevel, db, null);
+            var isolationLevel = Transaction.IsolationLevel;
+            var id = Diagnostics.OrmLite.WriteTransactionRollbackBefore(isolationLevel, db, null);
             Exception e = null;
             try
             {
@@ -84,9 +86,9 @@ namespace ServiceStack.OrmLite
             finally
             {
                 if (e != null)
-                    Diagnostics.OrmLite.WriteTransactionRollbackError(id, Transaction.IsolationLevel, db, null, e);
+                    Diagnostics.OrmLite.WriteTransactionRollbackError(id, isolationLevel, db, null, e);
                 else
-                    Diagnostics.OrmLite.WriteTransactionRollbackAfter(id, Transaction.IsolationLevel, db, null);
+                    Diagnostics.OrmLite.WriteTransactionRollbackAfter(id, isolationLevel, db, null);
             }
         }
 
