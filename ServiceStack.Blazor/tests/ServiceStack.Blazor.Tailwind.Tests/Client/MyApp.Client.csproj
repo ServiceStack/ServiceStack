@@ -31,6 +31,6 @@
       <None Include="wwwroot\tailwind\ServiceStack.Blazor.html" />
     </ItemGroup>
     <Target Name="Tailwind" BeforeTargets="Build">
-        <Exec Command="npm run ui:build"/>
+        <Exec Command="npm run ui:build" />
     </Target>
 </Project>

@@ -24,6 +24,11 @@ namespace MyApp
                     db.CreateBooking("Booking 2", RoomType.Double, 12, 120, "manager@email.com");
                     db.CreateBooking("Booking the 3rd", RoomType.Suite, 13, 130, "employee@email.com");
                 }
+
+                if (db.CreateTableIfNotExists<FileUpload>())
+                {
+                    
+                }
             });
     }
 
