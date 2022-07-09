@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -348,12 +349,43 @@ namespace ServiceStack.Aws.DynamoDb
             return to;
         }
 
+        private readonly ConcurrentDictionary<Type, Dictionary<string,string>> typeAliasesMap = new();
+
         public virtual AttributeValue ToMapAttributeValue(IPocoDynamo db, object oMap)
         {
-            var map = oMap as IDictionary
-                ?? oMap.ToObjectDictionary();
+            var type = oMap.GetType();
+            if (oMap is not IDictionary map)
+            {
+                var objMap = oMap.ToObjectDictionary();
+                var typeAliases = typeAliasesMap.GetOrAdd(type, t =>
+                {
+                    var aliases = new Dictionary<string, string>();
+                    foreach (var p in TypeProperties.Get(t).PublicPropertyInfos)
+                    {
+                        var aliasAttr = p.FirstAttribute<AliasAttribute>();
+                        if (aliasAttr?.Name != null)
+                            aliases[p.Name] = aliasAttr.Name;
+                    }
+                    return aliases;
+                });
 
-            var meta = DynamoMetadata.GetType(oMap.GetType());
+                if (typeAliases.Count == 0)
+                {
+                    map = objMap;
+                }
+                else
+                {
+                    map = new Dictionary<string, object>();
+                    foreach (var entry in objMap)
+                    {
+                        if (!typeAliases.TryGetValue(entry.Key, out var key))
+                            key = entry.Key;
+                        map[key] = entry.Value;
+                    }
+                }
+            }
+
+            var meta = DynamoMetadata.GetType(type);
 
             var to = new Dictionary<string, AttributeValue>();
             foreach (var key in map.Keys)
