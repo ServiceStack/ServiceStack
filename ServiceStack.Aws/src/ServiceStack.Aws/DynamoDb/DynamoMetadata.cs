@@ -8,14 +8,13 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Amazon.DynamoDBv2.DataModel;
-using ServiceStack.Aws.Support;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Aws.DynamoDb
 {
     public class DynamoMetadata
     {
-        public static DynamoConverters Converters = new DynamoConverters();
+        public static DynamoConverters Converters = new();
 
         public static readonly Dictionary<Type, string> FieldTypeMap = new Dictionary<Type, string>()
             .Set<string>(DynamoType.String)
@@ -57,7 +56,7 @@ namespace ServiceStack.Aws.DynamoDb
         {
             var metadata = Types.FirstOrDefault(x => x.Type == table);
             if (metadata == null || !metadata.IsTable)
-                throw new ArgumentNullException(nameof(table), "Table has not been registered: " + table.Name);
+                throw new ArgumentNullException(nameof(table), @"Table has not been registered: " + table.Name);
 
             return metadata;
         }
@@ -111,8 +110,7 @@ namespace ServiceStack.Aws.DynamoDb
         // Should only be called at StartUp
         public static DynamoMetadataType RegisterTable(Type type)
         {
-            if (Types == null)
-                Types = new HashSet<DynamoMetadataType>();
+            Types ??= new HashSet<DynamoMetadataType>();
 
             Types.RemoveWhere(x => x.Type == type);
 
@@ -244,7 +242,7 @@ namespace ServiceStack.Aws.DynamoDb
                     ProjectionType = projectionType,
                     ProjectedFields = projectionType == DynamoProjectionType.Include 
                         ? new[] { x.Name } 
-                        : new string[0],
+                        : Array.Empty<string>(),
                 };
             });
 
@@ -291,7 +289,7 @@ namespace ServiceStack.Aws.DynamoDb
                 ProjectionType = projectionType,
                 ProjectedFields = projectionType == DynamoProjectionType.Include 
                     ? indexProps.Where(x => x.Name != hashField).Select(x => x.Name).ToArray()
-                    : new string[0],
+                    : Array.Empty<string>(),
             };
         }
 
@@ -328,7 +326,7 @@ namespace ServiceStack.Aws.DynamoDb
                 ProjectionType = projectionType,
                 ProjectedFields = projectionType == DynamoProjectionType.Include
                     ? indexProps.Where(x => x.Name != indexHash.Name).Select(x => x.Name).ToArray()
-                    : new string[0],
+                    : Array.Empty<string>(),
                 ReadCapacityUnits = indexProvision?.ReadCapacityUnits ?? metadata.ReadCapacityUnits,
                 WriteCapacityUnits = indexProvision?.WriteCapacityUnits ?? metadata.WriteCapacityUnits,
             };

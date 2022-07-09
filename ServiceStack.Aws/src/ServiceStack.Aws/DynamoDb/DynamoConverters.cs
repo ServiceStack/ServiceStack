@@ -266,7 +266,7 @@ namespace ServiceStack.Aws.DynamoDb
 
         private static object ApplyFieldBehavior(IPocoDynamo db, DynamoMetadataType type, DynamoMetadataField field, object instance, object value)
         {
-            if (type == null || field == null || !field.IsAutoIncrement)
+            if (type == null || field is not { IsAutoIncrement: true })
                 return value;
 
             var needsId = IsNumberDefault(value);
@@ -304,20 +304,17 @@ namespace ServiceStack.Aws.DynamoDb
                         ? new AttributeValue { NULL = true } 
                         : new AttributeValue { S = str };
                 case DynamoType.Number:
-                    return new AttributeValue
-                    {
-                        N = value is string numStr
-                            ? numStr
-                            : DynamicNumber.GetNumber(value.GetType()).ToString(value)
+                    return new AttributeValue {
+                        N = value as string ?? DynamicNumber.GetNumber(value.GetType()).ToString(value)
                     };
                 case DynamoType.Bool:
                     return new AttributeValue { BOOL = (bool)value };
                 case DynamoType.Binary:
-                    return value is MemoryStream stream
-                        ? new AttributeValue { B = stream }
-                        : value is Stream
-                            ? new AttributeValue { B = new MemoryStream(((Stream)value).ReadFully()) }
-                            : new AttributeValue { B = new MemoryStream((byte[])value) };
+                    return value switch {
+                        MemoryStream ms => new AttributeValue { B = ms },
+                        Stream stream => new AttributeValue { B = new MemoryStream(stream.ReadFully()) },
+                        _ => new AttributeValue { B = new MemoryStream((byte[])value) }
+                    };
                 case DynamoType.NumberSet:
                     return ToNumberSetAttributeValue(value);
                 case DynamoType.StringSet:
@@ -371,7 +368,7 @@ namespace ServiceStack.Aws.DynamoDb
                         value);
                 }
 
-                to[key.ToString()] = value != null
+                to[key.ToString()!] = value != null
                     ? ToAttributeValue(db, value.GetType(), GetFieldType(value.GetType()), value)
                     : new AttributeValue { NULL = true };
             }
