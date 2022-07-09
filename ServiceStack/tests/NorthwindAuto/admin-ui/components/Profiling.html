@@ -1,14 +1,18 @@
 <script>
 import { AdminProfiling, DiagnosticEntry } from "../../lib/types"
 import { apiValueFmt, fromXsdDuration, lastRightPart, dateFmt, ApiResult } from "@servicestack/client"
+import { hasModifierKey, isInput } from "../../shared/js/core"
 
 App.components({
     Profiling: ({store, routes, client, Forms}) => {
 
+        let plugin = Forms.Server.plugins.profiling
         let summaryFields = Forms.Server.plugins.profiling.summaryFields.map(toCamelCase) 
         let linkFields = 'id,traceId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,tag,skip'.split(',')
 
         let fieldLabels = { eventType:'event', threadId:'thread', userAuthId:'userId' }
+        if (plugin.tagLabel)
+            fieldLabels.tag = plugin.tagLabel
         let timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric',minute:'numeric',second:'numeric',fractionalSecondDigits:3,hour12:false})
         let showTitle = 'traceId,eventType,duration,timestamp'.split(',')
 
@@ -17,7 +21,7 @@ App.components({
             api: null,
             fieldLabels,
             linkFields,
-            take: Forms.Server.plugins.profiling.defaultLimit,
+            take: plugin.defaultLimit,
 
             update() {
                 let request = new AdminProfiling()
@@ -58,6 +62,7 @@ App.components({
                 return ''
             },
             apiValueFmt(obj, k) {
+                if (obj == null) return ''
                 if (k === 'traceId') {
                     return obj.indexOf(':') 
                         ? lastRightPart(obj, ':')
@@ -136,8 +141,9 @@ App.components({
                 routes.to(this.href({show:''}))
             },
 
+            /** @param {KeyboardEvent} e */
             keydown(e) {
-                if (isInput(e.target) || this.results.length === 0) return
+                if (hasModifierKey(e) || isInput(e.target) || this.results.length === 0) return
                 if (e.key === 'Escape') {
                     this.clearFilters()
                     return
@@ -343,7 +349,7 @@ App.components({
                                 <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
                                     <div v-if="select('tag')" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
-                                            <h2 class="font-medium text-white">Tag</h2>
+                                            <h2 class="font-medium text-white">{{keyFmt(fieldLabels.tag || 'tag')}}</h2>
                                         </div>
                                     </div>
                                     <div v-if="select('tag')" class="p-4">
@@ -417,10 +423,16 @@ App.components({
                                                         <td><div v-scope="PreviewObject({ val:() => select('error', x => x.errors) })"></div></td>
                                                     </tr>
                                                 </table>
-                                                
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div v-if="select('stackTrace')" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">StackTrace</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="select('stackTrace')" class="pt-4 font-mono whitespace-pre">{{ select('stackTrace') }}</div>
                                     
                                 </div>
 

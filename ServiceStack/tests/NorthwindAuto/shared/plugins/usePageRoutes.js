@@ -17,7 +17,7 @@ import { App, Routes } from "../../lib/types"
  * @return {T & Routes}
  */
 export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
-    if (typeof page  != 'string' || page === '')
+    if (typeof page != 'string' || page === '')
         throw new Error('page is required')
     if (typeof queryKeys == 'undefined' || !queryKeys.length)
         throw new Error('Array of queryKeys is required')
@@ -57,12 +57,18 @@ export function usePageRoutes(App, { page, queryKeys, handlers, extend }) {
         },
         /** @param {Record<string, any>} args */
         set(args) {
-            if (typeof args['$page'] != 'undefined') args[page] = args['$page']
-            Object.keys(args).forEach(k => {
-                if (allKeys.indexOf(k) >= 0) {
-                    this[k] = args[k]
-                }
-            })
+            if (typeof args['$page'] != 'undefined') {
+                this[page] = args[page] = args['$page']
+            }
+            if (args['$clear']) {
+                allKeys.forEach(k => this[k] = args[k] != null ? args[k] : '')
+            } else {
+                Object.keys(args).forEach(k => {
+                    if (allKeys.indexOf(k) >= 0) {
+                        this[k] = args[k]
+                    }
+                })
+            }
         },
         get state() { return state(this) },
         /** @param { Record<string, any>} args */

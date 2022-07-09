@@ -66,6 +66,7 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteGatewayBefore,
                 OperationId = operationId,
                 Operation = operation,
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
             }.Init(req));
             return operationId;
         }
@@ -113,7 +114,7 @@ public static class ServiceStackDiagnosticsUtils
             if (evt.Tag == null)
             {
                 var feature = appHost.AssertPlugin<ProfilingFeature>();
-                evt.Tag = feature.GetTag?.Invoke(req);
+                evt.Tag = feature.TagResolver?.Invoke(req);
             }
         }
         evt.Timestamp = Stopwatch.GetTimestamp();

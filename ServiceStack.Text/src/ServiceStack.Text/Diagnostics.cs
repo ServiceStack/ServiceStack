@@ -12,6 +12,13 @@ public class Diagnostics
 {
     private static readonly Diagnostics Instance = new();
     private Diagnostics(){}
+
+    private bool includeStackTrace;
+    public static bool IncludeStackTrace
+    {
+        get => Instance.includeStackTrace;
+        set => Instance.includeStackTrace = value;
+    }
     
     public static class Listeners
     {
@@ -60,6 +67,8 @@ public class Diagnostics
             public const string WriteConnectionCloseBefore = Prefix + nameof(WriteConnectionCloseBefore);
             public const string WriteConnectionCloseAfter = Prefix + nameof(WriteConnectionCloseAfter);
             public const string WriteConnectionCloseError = Prefix + nameof(WriteConnectionCloseError);
+
+            public const string WriteTransactionOpen = Prefix + nameof(WriteTransactionOpen);
 
             public const string WriteTransactionCommitBefore = Prefix + nameof(WriteTransactionCommitBefore);
             public const string WriteTransactionCommitAfter = Prefix + nameof(WriteTransactionCommitAfter);
@@ -135,6 +144,7 @@ public abstract class DiagnosticEvent
     public long Timestamp { get; set; }
     public object DiagnosticEntry { get; set; }
     public string? Tag { get; set; }
+    public string? StackTrace { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 

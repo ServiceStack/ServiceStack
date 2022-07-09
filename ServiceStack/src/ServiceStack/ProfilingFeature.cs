@@ -133,6 +133,11 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// Which features to Profile, default all
     /// </summary>
     public ProfileSource Profile { get; set; } = ProfileSource.All;
+    
+    /// <summary>
+    /// Whether to include CallStack StackTrace 
+    /// </summary>
+    public bool? IncludeStackTrace { get; set; }
 
     /// <summary>
     /// Size of circular buffer of profiled events
@@ -149,7 +154,11 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// <summary>
     /// Attach custom data to request profiling summary fields
     /// </summary>
-    public Func<IRequest,string?>? GetTag { get; set; }
+    public Func<IRequest,string?>? TagResolver { get; set; }
+    /// <summary>
+    /// Label to show for custom tag
+    /// </summary>
+    public string? TagLabel { get; set; }
     
     /// <summary>
     /// Customize DiagnosticEntry that gets captured
@@ -205,19 +214,23 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
     public void Register(IAppHost appHost)
     {
+        if (IncludeStackTrace != null)
+            Diagnostics.IncludeStackTrace = IncludeStackTrace.Value;
+        
         appHost.RegisterService(typeof(AdminProfilingService));
         
         Observer = new ProfilerDiagnosticObserver(this);
         var subscription = DiagnosticListener.AllListeners.Subscribe(Observer);
         appHost.OnDisposeCallbacks.Add(host => subscription.Dispose());
         
-        if (!SummaryFields.Contains(nameof(DiagnosticEntry.Tag)) && GetTag != null)
+        if (!SummaryFields.Contains(nameof(DiagnosticEntry.Tag)) && TagResolver != null)
             SummaryFields.Add(nameof(DiagnosticEntry.Tag));
         
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.Profiling = new ProfilingInfo {
                 AccessRole = AccessRole,
                 SummaryFields = SummaryFields,
+                TagLabel = TagLabel,
                 DefaultLimit = DefaultLimit,
             };
         });
@@ -330,7 +343,14 @@ public sealed class ProfilerDiagnosticObserver :
             Tag = e.Tag,
             Timestamp = e.Timestamp,
             ThreadId = Thread.CurrentThread.ManagedThreadId,
+            StackTrace = e.StackTrace,
         };
+        if (e.Exception != null)
+        {
+            to.StackTrace ??= e.Exception.StackTrace;
+            if (to.Error?.StackTrace != null)
+                to.Error.StackTrace = null;
+        }
 
         if (e.Exception != null)
         {
@@ -483,6 +503,8 @@ public sealed class ProfilerDiagnosticObserver :
                 to.Message = "Open Connection";
             else if (to.EventType.Contains("ConnectionClose"))
                 to.Message = "Close Connection";
+            else if (to.EventType.Contains("TransactionOpen"))
+                to.Message = "Open Transaction";
             else if (to.EventType.Contains("TransactionCommit"))
                 to.Message = "Commit Transaction";
             else if (to.EventType.Contains("TransactionRollback"))
@@ -635,6 +657,11 @@ public sealed class ProfilerDiagnosticObserver :
                 AddOrmLite(dbOrig, dbCloseError);
         }
         
+        if (kvp.Key == Diagnostics.Events.OrmLite.WriteTransactionOpen && kvp.Value is OrmLiteDiagnosticEvent commitOpen)
+        {
+            AddOrmLite(commitOpen);
+        }
+
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteTransactionCommitBefore && kvp.Value is OrmLiteDiagnosticEvent commitBefore)
         {
             AddOrmLite(commitBefore);
@@ -795,9 +822,10 @@ public class DiagnosticEntry
     public TimeSpan? Duration { get; set; }
     public long Timestamp { get; set; }
     /// <summary>
-    /// Custom data that can be attached with ProfilingFeature.GetTag  
+    /// Custom data that can be attached with ProfilingFeature.TagResolver  
     /// </summary>
     public string? Tag { get; set; }
+    public string? StackTrace { get; set; }
     public Dictionary<string, string> Meta { get; set; }
     internal bool Deleted { get; set; }
 }

@@ -1,7 +1,7 @@
 <script>
 import { RequestLogs } from 'lib/types'
 import { parseCookie, apiValueFmt, fromXsdDuration, fromByteArray } from '@servicestack/client'
-import { isInput } from '../../shared/js/core'
+import { hasModifierKey, isInput } from '../../shared/js/core'
 App.components({
     Logging: ({store, routes, client, Forms}) => {
         function parseJwt(token) {
@@ -130,7 +130,7 @@ App.components({
             },
             
             keydown(e) {
-                if (isInput(e.target) || this.results.length === 0) return
+                if (hasModifierKey(e) || isInput(e.target) || this.results.length === 0) return
                 if (e.key === 'Escape') {
                     this.clearFilters()
                     return

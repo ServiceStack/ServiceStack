@@ -13,8 +13,10 @@ public class ConfigureProfiling : IHostingStartup
     {
         builder.ConfigureAppHost(
             host => {
-                host.Plugins.Add(new ProfilingFeature {
-                    GetTag = req => req.PathInfo.ToMd5Hash(),
+                host.Plugins.AddIfDebug(new ProfilingFeature {
+                    TagLabel = "Tenant",
+                    TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0,5),
+                    IncludeStackTrace = true,
                 });
                 host.Plugins.Add(new ServerEventsFeature());
                 
@@ -22,12 +24,13 @@ public class ConfigureProfiling : IHostingStartup
                 var mqServer = host.Container.Resolve<IMessageService>();
 
                 mqServer.RegisterHandler<ProfileGen>(host.ExecuteMessage);
+                mqServer.RegisterHandler<CreateMqBooking>(host.ExecuteMessage);
             },
             afterAppHostInit: host => {
                 host.ServiceController.Execute(new ProfileGen());
                 
                 host.Resolve<IMessageService>().Start();
-                host.ExecuteMessage(Message.Create(new ProfileGen()));
+                // host.ExecuteMessage(Message.Create(new ProfileGen()));
             });
     }
 }

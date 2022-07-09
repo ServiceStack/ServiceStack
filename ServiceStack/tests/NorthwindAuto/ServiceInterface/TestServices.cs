@@ -1,4 +1,7 @@
+using MyApp.ServiceModel;
 using ServiceStack;
+using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 
 namespace MyApp.ServiceInterface;
 
@@ -76,12 +79,31 @@ public class ProfileGen {}
 public class ProfileGenResponse {}
 
 
+public class CreateMqBooking : AuditBase, ICreateDb<Booking>, IReturn<IdResponse>
+{
+    [Description("Name this Booking is for"), ValidateNotEmpty]
+    public string Name { get; set; } = string.Empty;
+    public RoomType RoomType { get; set; }
+    [ValidateGreaterThan(0)]
+    public int RoomNumber { get; set; }
+    [ValidateGreaterThan(0)]
+    public decimal Cost { get; set; }
+    public DateTime BookingStartDate { get; set; }
+    [FieldCss(Label = "text-green-800", Input = "bg-green-100")]
+    public DateTime? BookingEndDate { get; set; }
+    [Input(Type = "textarea"), FieldCss(Field="col-span-12 text-center", Input = "bg-green-100")]
+    public string? Notes { get; set; }
+}
+
 public class TestServices : Service
 {
     public object Any(AllTypes request) => request;
 
     public object Any(AllCollectionTypes request) => request;
-
+    
+    // public IAutoQueryDb AutoQuery { get; set; }
+    // public Task<object> Post(CreateMqBooking request) => AutoQuery.CreateAsync(request, base.Request);
+    
     public object Any(ProfileGen request)
     {
         Cache.Set("foo", "bar");
@@ -93,6 +115,20 @@ public class TestServices : Service
         Redis.Hashes["hash"].AddRange(new Dictionary<string, string> {
             {"foo","bar"}, 
             {"baz","1"}
+        });
+        
+        Db.CreateBooking("4th of the Bookings", RoomType.Single, 44, 400, "admin@email.com");
+        
+        PublishMessage(new CreateMqBooking {
+            Name = "Booking no 6",
+            RoomType = RoomType.Queen,
+            Cost = 166,
+            RoomNumber = 16,
+            BookingStartDate = DateTime.Now,
+            CreatedDate = DateTime.Now,
+            CreatedBy = "employee@email.com",
+            ModifiedDate = DateTime.Now,
+            ModifiedBy = "employee@email.com",
         });
         
         return new ProfileGenResponse();

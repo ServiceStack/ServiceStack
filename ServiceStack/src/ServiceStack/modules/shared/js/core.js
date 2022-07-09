@@ -307,6 +307,11 @@ let InputTags = 'INPUT,SELECT,TEXTAREA'.split(',')
 function isInput(e) {
     return e && InputTags.indexOf(e.tagName) >= 0
 }
+/** Whether any modifier keys were pressed
+ * @param {KeyboardEvent} e */
+function hasModifierKey(e) {
+    return e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.code === 'MetaLeft' || e.code === 'MetaRight'
+}
 let SORT_METHODS = ['GET','POST','PATCH','PUT','DELETE']
 /** @param {MetadataOperationType} op */
 function opSortName(op) {

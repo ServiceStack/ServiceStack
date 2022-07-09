@@ -1,7 +1,5 @@
 using System;
-using System.Data;
 using System.Diagnostics;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 
 namespace ServiceStack.Redis;
@@ -34,7 +32,6 @@ public static class RedisDiagnostics
                 OperationId = operationId,
                 Operation = operation,
                 Command = command,
-                Timestamp = Stopwatch.GetTimestamp()
             }.Init(Activity.Current));
         }
     }
@@ -48,6 +45,7 @@ public static class RedisDiagnostics
                 OperationId = operationId,
                 Operation = operation,
                 Command = command,
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
             }.Init(Activity.Current));
         }
     }
@@ -81,6 +79,7 @@ public static class RedisDiagnostics
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
             }.Init(Activity.Current));
 
             return operationId;
@@ -131,13 +130,11 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteConnectionCloseBefore,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
 
             return operationId;
         }
@@ -152,13 +149,11 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteConnectionCloseAfter,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -170,14 +165,12 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WriteConnectionCloseError,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
                 Exception = ex,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+            }.Init(Activity.Current));
         }
     }
     
@@ -191,13 +184,12 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WritePoolRent,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
+            }.Init(Activity.Current));
 
             return operationId;
         }
@@ -213,13 +205,12 @@ public static class RedisDiagnostics
                 EventType = Diagnostics.Events.Redis.WritePoolReturn,
                 OperationId = operationId,
                 Operation = operation,
-                TraceId = Activity.Current.GetTraceId(),
                 Client = client,
                 Socket = client.Socket,
                 Host = client.Host,
                 Port = client.Port,
-                Timestamp = Stopwatch.GetTimestamp()
-            });
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
+            }.Init(Activity.Current));
         }
     }
 }

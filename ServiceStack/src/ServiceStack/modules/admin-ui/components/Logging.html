@@ -122,7 +122,7 @@ App.components({
                 routes.to(this.href({show:''}))
             },
             keydown(e) {
-                if (isInput(e.target) || this.results.length === 0) return
+                if (hasModifierKey(e) || isInput(e.target) || this.results.length === 0) return
                 if (e.key === 'Escape') {
                     this.clearFilters()
                     return

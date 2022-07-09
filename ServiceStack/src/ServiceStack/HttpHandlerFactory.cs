@@ -142,7 +142,7 @@ namespace ServiceStack
                     activity.AddTag(Diagnostics.Activity.UserId, userId);
 
                 var feature = appHost.GetPlugin<ProfilingFeature>();
-                var tag = feature?.GetTag?.Invoke(httpReq);
+                var tag = feature?.TagResolver?.Invoke(httpReq);
                 if (tag != null)
                     activity.AddTag(Diagnostics.Activity.Tag, tag);
 
