@@ -262,7 +262,7 @@ namespace ServiceStack.Aws.DynamoDb
                     throw new NotImplementedException("DynamoDb only supports begins_with* patterns");
 
                 var beginWith = pattern.Substring(0, pattern.Length - 1);
-                if (beginWith.Contains('*'))
+                if (beginWith.IndexOf('*') >= 0)
                     throw new NotImplementedException("DynamoDb only supports begins_with* patterns");
 
                 foreach (var item in await Dynamo.FromScan<CacheEntry>(x => x.Id.StartsWith(beginWith))
