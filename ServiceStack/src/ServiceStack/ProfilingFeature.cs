@@ -826,6 +826,6 @@ public class DiagnosticEntry
     /// </summary>
     public string? Tag { get; set; }
     public string? StackTrace { get; set; }
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string?> Meta { get; set; }
     internal bool Deleted { get; set; }
 }

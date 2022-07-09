@@ -409,6 +409,25 @@ App.components({
                                         </div>
                                     </div>
                                     <div v-if="select('stackTrace')" class="pt-4 font-mono whitespace-pre">{{ select('stackTrace') }}</div>
+                                    <div v-if="hasItems(select('meta'))" class="bg-indigo-700 text-white px-3 py-3">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <h2 class="font-medium text-white">Meta</h2>
+                                        </div>
+                                    </div>
+                                    <div v-if="hasItems(select('meta'))" class="flex overflow-auto">
+                                        <table>
+                                            <tr v-for="(value,key) in select('meta')">
+                                                <th class="text-left font-medium align-top py-2 px-4 whitespace-nowrap">
+                                                    <div class=" whitespace-nowrap w-[9em] overflow-hidden" :title="key">
+                                                        {{key}}
+                                                    </div>
+                                                </th>
+                                                <td class="align-top py-2 px-4">
+                                                    {{value}}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </form>

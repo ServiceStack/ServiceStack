@@ -97,10 +97,6 @@ public class AppHost : AppHostBase, IHostingStartup
             typeof(GetAccessToken)
         };
         Plugins.Add(new ServiceStack.Api.OpenApi.OpenApiFeature());
-        
-        Plugins.Add(new RequestLogsFeature {
-            EnableResponseTracking = true,
-        });
     }
 
     // public override string ResolveLocalizedString(string text, IRequest request = null) => 

@@ -13,10 +13,32 @@ public class ConfigureProfiling : IHostingStartup
     {
         builder.ConfigureAppHost(
             host => {
+                host.Plugins.AddIfDebug(new RequestLogsFeature {
+                    EnableResponseTracking = true,
+                    RequestLogFilter = (req, entry) => {
+                        entry.Meta = new() {
+                            ["RemoteIp"] = req.RemoteIp,
+                            ["Referrer"] = req.UrlReferrer?.ToString(),
+                            ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
+                        };
+                    },
+                });
+                
                 host.Plugins.AddIfDebug(new ProfilingFeature {
                     TagLabel = "Tenant",
                     TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0,5),
                     IncludeStackTrace = true,
+                    DiagnosticEntryFilter = (entry, evt) => {
+                        if (evt is RequestDiagnosticEvent requestEvent)
+                        {
+                            var req = requestEvent.Request;
+                            entry.Meta = new() {
+                                ["RemoteIp"] = req.RemoteIp,
+                                ["Referrer"] = req.UrlReferrer?.ToString(),
+                                ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
+                            };
+                        }
+                    },
                 });
                 host.Plugins.Add(new ServerEventsFeature());
                 
