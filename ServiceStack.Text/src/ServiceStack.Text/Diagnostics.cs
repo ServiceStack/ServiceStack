@@ -41,6 +41,11 @@ public class Diagnostics
             public const string WriteGatewayBefore = Prefix + nameof(WriteGatewayBefore);
             public const string WriteGatewayAfter = Prefix + nameof(WriteGatewayAfter);
             public const string WriteGatewayError = Prefix + nameof(WriteGatewayError);
+            
+            public const string WriteMqRequestBefore = Prefix + nameof(WriteMqRequestBefore);
+            public const string WriteMqRequestAfter = Prefix + nameof(WriteMqRequestAfter);
+            public const string WriteMqRequestError = Prefix + nameof(WriteMqRequestError);
+            public const string WriteMqRequestPublish = Prefix + nameof(WriteMqRequestPublish);
         }
         
         public static class Client
@@ -108,6 +113,9 @@ public class Diagnostics
         public const string OperationId = nameof(OperationId);
         public const string UserId = nameof(UserId);
         public const string Tag = nameof(Tag);
+        public const string MqBegin = nameof(MqBegin);
+        public const string MqEnd = nameof(MqEnd);
+
     }
 
     private DiagnosticListener servicestack { get; set; } = new(Listeners.ServiceStack);

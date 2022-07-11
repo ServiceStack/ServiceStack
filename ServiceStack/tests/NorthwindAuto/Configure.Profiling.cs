@@ -53,6 +53,8 @@ public class ConfigureProfiling : IHostingStartup
                 
                 host.Resolve<IMessageService>().Start();
                 // host.ExecuteMessage(Message.Create(new ProfileGen()));
+                var messageProducer = host.GetMessageProducer();
+                host.PublishMessage(messageProducer, new ProfileGen());
             });
     }
 }

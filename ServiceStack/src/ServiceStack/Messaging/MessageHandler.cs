@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
@@ -66,18 +67,17 @@ namespace ServiceStack.Messaging
 
         public int ProcessQueue(IMessageQueueClient mqClient, string queueName, Func<bool> doNext = null)
         {
-            var msgsProcessed = 0;
+            var messagesProcessed = 0;
             try
             {
-                IMessage<T> message;
-                while ((message = mqClient.GetAsync<T>(queueName)) != null)
+                while (mqClient.GetAsync<T>(queueName) is { } message)
                 {
                     ProcessMessage(mqClient, message);
 
-                    msgsProcessed++;
+                    messagesProcessed++;
 
                     if (doNext != null && !doNext()) 
-                        return msgsProcessed;
+                        return messagesProcessed;
                 }
             }
             catch (TaskCanceledException) {}
@@ -86,7 +86,7 @@ namespace ServiceStack.Messaging
                 Log.Error("Error serializing message from mq server: " + ex.Message, ex);
             }
 
-            return msgsProcessed;
+            return messagesProcessed;
         }
 
         public IMessageHandlerStats GetStats()
@@ -100,7 +100,7 @@ namespace ServiceStack.Messaging
         {
             Log.Error("Message exception handler threw an error", ex);
 
-            bool requeue = !(ex is UnRetryableMessagingException)
+            bool requeue = ex is not UnRetryableMessagingException
                 && message.RetryAttempts < retryCount;
 
             if (requeue)
@@ -124,6 +124,28 @@ namespace ServiceStack.Messaging
             this.MqClient = mqClient;
             bool msgHandled = false;
 
+
+            Activity origActivity = null;
+            Activity activity = null;
+            if (Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
+            {
+                origActivity = Activity.Current;
+                if (origActivity == null)
+                {
+                    var traceId = message.TraceId;
+                    if (traceId != null)
+                    {
+                        activity = new Activity(Diagnostics.Activity.MqBegin);
+                        activity.SetParentId(traceId);
+                        if (message.Tag != null)
+                            activity.AddTag(Diagnostics.Activity.Tag, message.Tag);
+
+                        Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackMqActivityArgs { Message = message, Activity = activity });
+                    }
+                }
+            }
+            
+            var id = Diagnostics.ServiceStack.WriteMqRequestBefore(message);
             try
             {
                 var response = processMessageFn(message);
@@ -141,6 +163,7 @@ namespace ServiceStack.Messaging
                 
                 if (responseEx != null)
                 {
+                    Diagnostics.ServiceStack.WriteMqRequestError(id, message, responseEx);
                     TotalMessagesFailed++;
 
                     if (message.ReplyTo != null)
@@ -148,10 +171,12 @@ namespace ServiceStack.Messaging
                         var replyClient = ReplyClientFactory(message.ReplyTo);
                         if (replyClient != null)
                         {
+                            Diagnostics.ServiceStack.WriteMqRequestPublish(id, replyClient, message.ReplyTo, response);
                             replyClient.SendOneWay(message.ReplyTo, response);
                         }
                         else
                         {
+                            Diagnostics.ServiceStack.WriteMqRequestPublish(id, mqClient, message.ReplyTo, response);
                             var responseDto = response.GetResponseDto();
                             mqClient.Publish(message.ReplyTo, MessageFactory.Create(responseDto));
                         }
@@ -162,6 +187,7 @@ namespace ServiceStack.Messaging
                     processInExceptionFn(this, message, responseEx);
                     return;
                 }
+                Diagnostics.ServiceStack.WriteMqRequestAfter(id, message);
 
                 this.TotalMessagesProcessed++;
 
@@ -185,6 +211,7 @@ namespace ServiceStack.Messaging
                         var messageOptions = (MessageOption) message.Options;
                         if (messageOptions.Has(MessageOption.NotifyOneWay))
                         {
+                            Diagnostics.ServiceStack.WriteMqRequestPublish(id, mqClient, QueueNames<T>.Out, response);
                             mqClient.Notify(QueueNames<T>.Out, message);
                         }
                     }
@@ -214,9 +241,6 @@ namespace ServiceStack.Messaging
                                 return;
                         }
 
-                        // Leave as-is to work around a Mono 2.6.7 compiler bug
-                        if (!responseType.IsUserType()) 
-                            return;
                         mqReplyTo = new QueueNames(responseType).In;
                     }
 
@@ -225,6 +249,7 @@ namespace ServiceStack.Messaging
                     {
                         try
                         {
+                            Diagnostics.ServiceStack.WriteMqRequestPublish(id, replyClient, mqReplyTo, response);
                             replyClient.SendOneWay(mqReplyTo, response);
                             return;
                         }
@@ -244,6 +269,7 @@ namespace ServiceStack.Messaging
                         responseMessage = MessageFactory.Create(response);
 
                     responseMessage.ReplyId = message.Id;
+                    Diagnostics.ServiceStack.WriteMqRequestPublish(id, mqClient, responseMessage.ReplyId.ToString(), response);
                     mqClient.Publish(mqReplyTo, responseMessage);
                 }
             }
@@ -270,6 +296,11 @@ namespace ServiceStack.Messaging
 
                 this.TotalNormalMessagesReceived++;
                 LastMessageProcessed = DateTime.UtcNow;
+
+                if (activity != null)
+                {
+                    Diagnostics.ServiceStack.StopActivity(activity, new ServiceStackMqActivityArgs { Message = message, Activity = activity });
+                }
             }
         }
 

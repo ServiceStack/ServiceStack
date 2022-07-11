@@ -54,7 +54,7 @@ App.components({
             apiValueFmt(obj, k) {
                 if (obj == null) return ''
                 if (k === 'traceId') {
-                    return obj.indexOf(':') 
+                    return obj.indexOf(':') >= 0
                         ? lastRightPart(obj, ':')
                         : lastRightPart(obj, '-')
                 }
@@ -86,6 +86,14 @@ App.components({
                 return summaryFields
             },
             keyFmt: t => humanize(toPascalCase(t)),
+            msgFmt(s) {
+                let size = 30
+                return !s || s.length < size
+                    ? s 
+                    : s[0] === '/' 
+                        ? '...' + s.substring(s.length - size)
+                        : s.substring(Math.min(size, s.length - size)) + '...'
+            },
             hasFilters() {
                 for (let i; i<linkFields.length; i++) {
                     let x = linkFields[i]
@@ -261,8 +269,9 @@ App.components({
                                     <div class="flex items-start justify-between space-x-3">
                                         <div class="space-y-1">
                                             <h2 class="flex text-lg">
-                                                <div :class="['font-medium text-gray-900',statusColor(select('error'))]">
-                                                    {{ select('message') || apiValueFmt(select('eventType'),'eventType') }}
+                                                <div :class="['font-medium text-gray-900',statusColor(select('error'))]"
+                                                     :title="select('message') || apiValueFmt(select('eventType'),'eventType')">
+                                                    {{ msgFmt(select('message') || apiValueFmt(select('eventType'),'eventType')) }}
                                                 </div>
                                                 <div class="ml-2 text-gray-600">
                                                     (<a v-href="href({ source:select('source') })" class="text-blue-600 hover:text-blue-800">{{select('source')}}</a>

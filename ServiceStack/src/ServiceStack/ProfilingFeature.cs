@@ -173,7 +173,7 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             "/js/petite-vue.js",
             "/js/servicestack-client.js",
             "/js/require.js",
-            "/js/servicestack-client.js",
+            "/js/highlight.js",
             "/admin-ui",
         }.ToList();
         // Sync with RequestLogsFeature
@@ -344,6 +344,7 @@ public sealed class ProfilerDiagnosticObserver :
             Timestamp = e.Timestamp,
             ThreadId = Thread.CurrentThread.ManagedThreadId,
             StackTrace = e.StackTrace,
+            OperationId = e.OperationId,
         };
         if (e.Exception != null)
         {
@@ -417,6 +418,35 @@ public sealed class ProfilerDiagnosticObserver :
         return Filter(to, e);
     }
 
+    public DiagnosticEntry ToDiagnosticEntry(MqRequestDiagnosticEvent e, MqRequestDiagnosticEvent? orig = null)
+    {
+        var to = CreateDiagnosticEntry(e, orig);
+        
+        var dto = e.Message?.Body ?? e.Body;
+        if (IncludeRequestDto(dto.GetType()))
+            to.NamedArgs = dto.ToObjectDictionary();
+
+        to.Command = dto.GetType().Name;
+        to.Message = e.ReplyTo != null
+            ? "reply:" + e.ReplyTo
+            : e.Message != null
+                ? "to:" + e.Message.Id
+                : "";
+
+        // Original MQ Request populates TraceId + Tag in IMessage
+        if (orig != null)
+        {
+            to.TraceId ??= orig.TraceId;
+            to.Tag ??= orig.Tag;
+        }
+
+        to.TraceId ??= e.Message?.TraceId ?? to.TraceId;
+        to.Tag ??= e.Message?.Tag;
+
+        return Filter(to, e);
+    }
+
+
     private bool IncludeRequestDto(Type? requestType) => requestType != null && 
         !feature.HideRequestBodyForRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType));
 
@@ -439,6 +469,19 @@ public sealed class ProfilerDiagnosticObserver :
         }
         if (feature.ExcludeRequestsFilter != null && feature.ExcludeRequestsFilter(e.Request))
             return false;
+        
+        return true;
+    }
+    
+    bool ShouldTrack(MqRequestDiagnosticEvent e)
+    {
+        var dto = e.Message?.Body ?? e.Body; 
+        var requestType = dto?.GetType();
+        if (requestType != null)
+        {
+            if (feature.ExcludeRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
+                return false;
+        }
         
         return true;
     }
@@ -481,6 +524,35 @@ public sealed class ProfilerDiagnosticObserver :
 
         after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
     }
+    
+    /**
+     * MQ
+     */
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddServiceStack(MqRequestDiagnosticEvent before)
+    {
+        // Request DTO isn't known at WriteRequestBefore
+        if (!ShouldTrack(before))
+            return;
+        
+        refs[before.OperationId] = before;
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddServiceStack(MqRequestDiagnosticEvent before, MqRequestDiagnosticEvent after)
+    {
+        if (!ShouldTrack(before) || !ShouldTrack(after))
+        {
+            // Mark entry already in queue for deletion
+            if (before.DiagnosticEntry is DiagnosticEntry entry)
+                entry.Deleted = true;
+            return;
+        }
+
+        after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
+    }
+    
 
     public DiagnosticEntry ToDiagnosticEntry(OrmLiteDiagnosticEvent e, OrmLiteDiagnosticEvent? orig = null)
     {
@@ -595,6 +667,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddServiceStack(reqOrig, reqError);
         }
 
+        /** Gateway */
         if (kvp.Key == Diagnostics.Events.ServiceStack.WriteGatewayBefore && kvp.Value is RequestDiagnosticEvent gatewayBefore)
         {
             AddServiceStack(gatewayBefore);
@@ -610,6 +683,30 @@ public sealed class ProfilerDiagnosticObserver :
                 AddServiceStack(reqOrig, gatewayError);
         }
         
+        /** MQ */
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestBefore && kvp.Value is MqRequestDiagnosticEvent mqReqBefore)
+        {
+            AddServiceStack(mqReqBefore);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestAfter && kvp.Value is MqRequestDiagnosticEvent mqReqAfter)
+        {
+            if (refs.TryRemove(mqReqAfter.OperationId, out var orig) && orig is MqRequestDiagnosticEvent reqOrig)
+                AddServiceStack(reqOrig, mqReqAfter);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestError && kvp.Value is MqRequestDiagnosticEvent mqReqError)
+        {
+            if (refs.TryRemove(mqReqError.OperationId, out var orig) && orig is MqRequestDiagnosticEvent reqOrig)
+                AddServiceStack(reqOrig, mqReqError);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestPublish && kvp.Value is MqRequestDiagnosticEvent mqReqPublish)
+        {
+            var orig = refs.TryRemove(mqReqPublish.OperationId, out var refOrig)
+                ? refOrig
+                : entries.FirstOrDefault(x => x.OperationId == mqReqPublish.OperationId); 
+            if (orig is MqRequestDiagnosticEvent reqOrig)
+                AddServiceStack(reqOrig, mqReqPublish);
+        }
+
         
         /** OrmLite */
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteCommandBefore && kvp.Value is OrmLiteDiagnosticEvent dbBefore)
@@ -627,6 +724,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddOrmLite(dbOrig, dbError);
         }
         
+        /*** OrmLite Connections */
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteConnectionOpenBefore && kvp.Value is OrmLiteDiagnosticEvent dbOpenBefore)
         {
             AddOrmLite(dbOpenBefore);
@@ -657,6 +755,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddOrmLite(dbOrig, dbCloseError);
         }
         
+        /** OrmLite Transactions */
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteTransactionOpen && kvp.Value is OrmLiteDiagnosticEvent commitOpen)
         {
             AddOrmLite(commitOpen);
@@ -714,6 +813,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddRedis(redisOrig, redisError);
         }
         
+        /*** Redis Connections */
         if (kvp.Key == Diagnostics.Events.Redis.WriteConnectionOpenBefore && kvp.Value is RedisDiagnosticEvent redisOpenBefore)
         {
             AddRedis(redisOpenBefore);
@@ -744,6 +844,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddRedis(redisOrig, redisCloseError);
         }
         
+        /*** Redis Pools */
         if (kvp.Key == Diagnostics.Events.Redis.WritePoolRent && kvp.Value is RedisDiagnosticEvent redisPoolBefore)
         {
             AddRedis(redisPoolBefore);
@@ -828,4 +929,5 @@ public class DiagnosticEntry
     public string? StackTrace { get; set; }
     public Dictionary<string, string?> Meta { get; set; }
     internal bool Deleted { get; set; }
+    internal Guid? OperationId { get; set; }
 }

@@ -743,6 +743,7 @@ namespace ServiceStack.Messaging
         {
             if (messageBody is IMessage message)
             {
+                Diagnostics.ServiceStack.Init(message);
                 Publish(message.ToInQueueName(), message);
             }
             else

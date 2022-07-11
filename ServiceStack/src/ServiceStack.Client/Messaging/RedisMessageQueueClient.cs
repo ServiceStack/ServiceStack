@@ -36,6 +36,7 @@ namespace ServiceStack.Messaging
         {
             if (messageBody is IMessage message)
             {
+                Diagnostics.ServiceStack.InitMessage(message);
                 Publish(message.ToInQueueName(), message);
             }
             else

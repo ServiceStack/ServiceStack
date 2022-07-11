@@ -31,6 +31,7 @@ namespace ServiceStack.Aws.Sqs
         {
             if (messageBody is IMessage message)
             {
+                Diagnostics.ServiceStack.Init(message);
                 Publish(message.ToInQueueName(), message);
             }
             else

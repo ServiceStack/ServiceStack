@@ -37,7 +37,7 @@ namespace ServiceStack.RabbitMq
         {
             get
             {
-                if (channel == null || !channel.IsOpen)
+                if (channel is not { IsOpen: true })
                 {
                     channel = Connection.OpenChannel();
                     //prefetch size is no supported by RabbitMQ
@@ -57,6 +57,7 @@ namespace ServiceStack.RabbitMq
         {
             if (messageBody is IMessage message)
             {
+                Diagnostics.ServiceStack.Init(message);
                 Publish(message.ToInQueueName(), message);
             }
             else
