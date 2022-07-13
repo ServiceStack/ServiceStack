@@ -37,7 +37,7 @@ App.components({
                     ? namedArgs
                     : this.hasItems(args)
                         ? args
-                        : null
+                        : this.select('arg')
             },
             get errorSummary() {
                 return this.api && this.api.error && this.api.summaryMessage()
@@ -90,9 +90,9 @@ App.components({
                 let size = 30
                 return !s || s.length < size
                     ? s 
-                    : s[0] === '/' 
+                    : s[0] === '/' || s.indexOf('http://') >= 0 || s.indexOf('https://') >= 0
                         ? '...' + s.substring(s.length - size)
-                        : s.substring(Math.min(size, s.length - size)) + '...'
+                        : s.substring(0, Math.min(size, s.length - size)) + '...'
             },
             hasFilters() {
                 for (let i; i<linkFields.length; i++) {

@@ -478,7 +478,8 @@ export function hidden(o) { return '' }
  */
 export function indentJson(o) {
     if (o == null) return ''
-    if ('__type' in o) delete o['__type']
+    if (typeof o == 'string') o
+    if (typeof o == 'object' && '__type' in o) delete o['__type']
     if (o.ResponseStatus) delete o.ResponseStatus['__type']
     if (o.responseStatus) delete o.responseStatus['__type']
     return JSON.stringify(o, undefined, 4) 

@@ -55,6 +55,10 @@ public class ConfigureProfiling : IHostingStartup
                 // host.ExecuteMessage(Message.Create(new ProfileGen()));
                 var messageProducer = host.GetMessageProducer();
                 host.PublishMessage(messageProducer, new ProfileGen());
+                
+                var client = new JsonApiClient("https://chinook.locode.dev");
+                var api = client.Api(new QueryAlbums { Take = 5 });
+                
             });
     }
 }

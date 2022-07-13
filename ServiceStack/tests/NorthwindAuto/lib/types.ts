@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-07-09 14:19:44
+Date: 2022-07-14 03:42:45
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -876,6 +876,7 @@ export class DiagnosticEntry
     public command: string;
     public userAuthId: string;
     public sessionId: string;
+    public arg: string;
     public args: string[];
     public argLengths: number[];
     public namedArgs: { [index: string]: Object; };
