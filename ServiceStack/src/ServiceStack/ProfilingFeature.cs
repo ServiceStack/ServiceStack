@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -570,15 +571,18 @@ public sealed class ProfilerDiagnosticObserver :
 
         if (orig == null)
         {
+            to.Command = (httpReq != null
+                ? httpReq.Method.Method + " " + httpReq.RequestUri?.AbsolutePath
+                : null) ?? Unknown;
             var requestType = e.Request?.GetType();
             if (requestType == typeof(string) || requestType?.IsValueType == true)
             {
-                to.Command = e.HttpRequest?.RequestUri?.AbsolutePath ?? Unknown;
                 to.Arg = e.Request?.ToString() ?? Unknown;
             }
             else
             {
-                to.Command = requestType?.Name ?? e.HttpRequest?.RequestUri?.ToString().LeftPart('?') ?? Unknown;
+                if (requestType != null && e.Request is not IDictionary)
+                    to.Command = csharpGen.Type(requestType.Name, requestType.GetGenericArguments().Select(x => x.Name).ToArray());
                 if (IncludeRequestDto(requestType))
                     to.NamedArgs = e.Request.ToObjectDictionary();
             }
@@ -599,18 +603,30 @@ public sealed class ProfilerDiagnosticObserver :
         var requestBody = content?.ReadAsString();
         if (requestBody == null) 
             return StringBody(requestBody);
-        
-        var isJson = content is System.Net.Http.StringContent sc &&
-                     MimeTypes.MatchesContentType(sc.Headers.ContentType?.MediaType, MimeTypes.Json);
-        if (isJson)
+
+        if (content is System.Net.Http.StringContent sc)
         {
-            try
+            if (MimeTypes.MatchesContentType(sc.Headers.ContentType?.MediaType, MimeTypes.Json))
             {
-                return JSON.parse(requestBody);
+                try
+                {
+                    return JSON.parse(requestBody);
+                }
+                catch (Exception e)
+                {
+                    log.Error($"Could not parse JSON", e);
+                }
             }
-            catch (Exception e)
+            if (MimeTypes.MatchesContentType(sc.Headers.ContentType?.MediaType, MimeTypes.FormUrlEncoded))
             {
-                log.Error($"Could not parse JSON", e);
+                try
+                {
+                    return Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(requestBody);
+                }
+                catch (Exception e)
+                {
+                    log.Error($"Could not parse Form " + MimeTypes.FormUrlEncoded, e);
+                }
             }
         }
         return StringBody(requestBody);

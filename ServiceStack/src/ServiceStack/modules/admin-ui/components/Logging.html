@@ -256,11 +256,11 @@ App.components({
                                     <div class="flex items-start justify-between space-x-3">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
                                         <div class="space-y-1">
                                             <h2 class="text-lg font-medium text-gray-900 flex">
-                                                <div :class="['font-medium',statusColor(select('statusCode'))]">
+                                                <div v-if="select('statusCode')" :class="['mr-2 font-medium',statusColor(select('statusCode'))]">
                                                     {{ select('statusCode') }}
                                                 </div>
-                                                <div class="ml-2">
-                                                    {{ select('httpMethod') }}
+                                                <div>
+                                                    <span v-if="select('statusCode')" >{{ select('httpMethod') }}</span>
                                                     <a v-href="href({ pathInfo:select('pathInfo') })" class="text-blue-600 hover:text-blue-800">
                                                         {{ select('pathInfo') }}
                                                     </a>
@@ -312,8 +312,25 @@ App.components({
                                 </div>
                                 <!-- Divider container -->
                                 <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
-                                    <div v-if="hasItems(select('requestDto'))">
-                                        <div v-scope="PreviewObject({ val:() => select('requestDto') })"></div>
+                                    <div v-if="select('requestDto')" class="flex overflow-auto">
+                                        <div class="p-2 relative w-full">
+                                            <span class="relative z-0 inline-flex shadow-sm rounded-md">
+                                              <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" v-href="{ body:tab }"
+                                                 :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], routes.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                                                {{name}}
+                                              </a>
+                                            </span>
+                                            <div v-if="routes.body == ''" class="pt-2 icon-outer" style="min-height:2.5rem">
+                                                <div class="absolute right-4" v-scope="CopyIcon({ cls:'icon', text:() => indentJson(select('requestDto')) })"></div>
+                                                <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="indentJson(select('requestDto'))"></code></pre>
+                                            </div>
+                                            <div v-else-if="routes.body == 'raw'" class="flex pt-2">
+                                                <textarea class="flex-1" rows="10" v-html="JSON.stringify(select('requestDto'))"></textarea>
+                                            </div>
+                                            <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+                                                <div v-scope="PreviewObject({ val:() => select('requestDto') })"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div v-if="select('responseDto')" class="bg-indigo-700 text-white px-3 py-3">
                                         <div class="flex items-start justify-between space-x-3">
