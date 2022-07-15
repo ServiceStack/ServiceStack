@@ -350,6 +350,9 @@ namespace ServiceStack
                 ? TimeSpan.FromTicks(Stopwatch.GetTimestamp() - timestamp)
                 : TimeSpan.Zero;
         }
+
+        public static bool AllowConnection(this IRequest req, bool requireSecureConnection) =>
+            !requireSecureConnection || req.IsSecureConnection || req.RequestAttributes.HasFlag(RequestAttributes.MessageQueue);
     }
 
     public class SessionSourceResult

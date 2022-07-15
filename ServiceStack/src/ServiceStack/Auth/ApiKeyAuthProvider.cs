@@ -308,7 +308,7 @@ namespace ServiceStack.Auth
 
         public virtual async Task PreAuthenticateWithApiKeyAsync(IRequest req, IResponse res, ApiKey apiKey)
         {
-            if (RequireSecureConnection && !req.IsSecureConnection)
+            if (!req.AllowConnection(RequireSecureConnection))
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
 
             ValidateApiKey(req, apiKey);
@@ -528,7 +528,7 @@ namespace ServiceStack
         internal static ApiKeyAuthProvider AssertValidApiKeyRequest(this IRequest req)
         {
             var apiKeyAuth = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(AuthenticateService.ApiKeyProvider);
-            if (apiKeyAuth.RequireSecureConnection && !req.IsSecureConnection)
+            if (!req.AllowConnection(apiKeyAuth.RequireSecureConnection))
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
 
             return apiKeyAuth;

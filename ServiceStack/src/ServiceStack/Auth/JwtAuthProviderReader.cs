@@ -550,7 +550,7 @@ namespace ServiceStack.Auth
                 var parts = bearerToken.Split('.');
                 if (parts.Length == 3)
                 {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
+                    if (!req.AllowConnection(RequireSecureConnection))
                         throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
 
                     var jwtPayload = GetVerifiedJwtPayload(req, parts);
@@ -570,7 +570,7 @@ namespace ServiceStack.Auth
 
                 if (parts.Length == 5) //Encrypted JWE Token
                 {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
+                    if (!req.AllowConnection(RequireSecureConnection))
                         throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
 
                     var jwtPayload = GetVerifiedJwtPayload(req, parts);

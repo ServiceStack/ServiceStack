@@ -64,7 +64,7 @@ namespace ServiceStack.Auth
             var shouldReturnTokens = authContext.DidAuthenticate;
             if (shouldReturnTokens && SetBearerTokenOnAuthenticateResponse && authContext.AuthResponse.BearerToken == null && session.IsAuthenticated)
             {
-                if (!RequireSecureConnection || authService.Request.IsSecureConnection)
+                if (authService.Request.AllowConnection(RequireSecureConnection))
                 {
                     IEnumerable<string> roles = null, perms = null;
                     var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
@@ -470,7 +470,7 @@ namespace ServiceStack.Auth
         {
             var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
-            if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
+            if (!Request.AllowConnection(jwtAuthProvider.RequireSecureConnection))
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
             if (Request.ResponseContentType.MatchesContentType(MimeTypes.Html))

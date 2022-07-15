@@ -341,7 +341,7 @@ namespace ServiceStack.Auth
             var shouldReturnTokens = authContext.DidAuthenticate;
             if (shouldReturnTokens && authContext.AuthResponse.BearerToken == null && session.IsAuthenticated)
             {
-                if (!RequireSecureConnection || authService.Request.IsSecureConnection)
+                if (authService.Request.AllowConnection(RequireSecureConnection))
                 {
                     var (user, roles) = await GetUserAndRolesAsync(authService, session.UserAuthName).ConfigAwait();
 
