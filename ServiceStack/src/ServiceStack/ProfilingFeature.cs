@@ -277,7 +277,7 @@ public sealed class ProfilerDiagnosticObserver :
 
     void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
     {
-        Console.WriteLine(diagnosticListener.Name);
+        // Console.WriteLine(diagnosticListener.Name);
         if ((feature.Profile.HasFlag(ProfileSource.ServiceStack) && diagnosticListener.Name is Diagnostics.Listeners.ServiceStack)
             || (feature.Profile.HasFlag(ProfileSource.Client) &&
                 diagnosticListener.Name is Diagnostics.Listeners.HttpClient or Diagnostics.Listeners.Client)
@@ -771,9 +771,9 @@ public sealed class ProfilerDiagnosticObserver :
 
     public void OnNext(KeyValuePair<string, object> kvp)
     {
-        Console.WriteLine();
-        Console.WriteLine(kvp.Key);
-        Console.WriteLine(kvp.Value);
+        // Console.WriteLine();
+        // Console.WriteLine(kvp.Key);
+        // Console.WriteLine(kvp.Value);
 
         /** ServiceStack */
         if (kvp.Key == Diagnostics.Events.ServiceStack.WriteRequestBefore && kvp.Value is RequestDiagnosticEvent reqBefore)
