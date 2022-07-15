@@ -7,6 +7,8 @@ public class CreateFileUpload : ICreateDb<FileUpload>, IReturn<IdResponse>
 {
     [Input(Type = "file"), UploadTo("fs")]
     public string FilePath { get; set; }
+    
+    public string MyVal { get; set; }
 }
 
 public class QueryFileUpload : QueryDb<FileUpload>
@@ -20,4 +22,5 @@ public class FileUpload
     public int Id { get; set; }
     
     public string FilePath { get; set; }
+    public string MyVal { get; set; }
 }

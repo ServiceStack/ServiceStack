@@ -1,7 +1,7 @@
 ﻿@page "/file-upload"
 <h3>FileUploadPage</h3>
 
-<FileUpload Request="request" FilePropertyName="'FilePath'"></FileUpload>
+<FileUpload Request="request" FilePropertyName="@nameof(CreateFileUpload.FilePath)"/>
 
 
 @code {
@@ -9,6 +9,6 @@
     // Any additional values should be populated on the request object before the upload starts.
     CreateFileUpload request = new()
     {
-
+        MyVal = "test"
     };
 }
