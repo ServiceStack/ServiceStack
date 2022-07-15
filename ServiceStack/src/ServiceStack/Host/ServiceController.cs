@@ -399,7 +399,7 @@ namespace ServiceStack.Host
             return null;
         }
 
-        private readonly Dictionary<Type, List<Type>> serviceExecCache = new Dictionary<Type, List<Type>>();
+        private readonly Dictionary<Type, List<Type>> serviceExecCache = new();
         public void ResetServiceExecCachesIfNeeded(Type serviceType, Type requestType)
         {
             if (!serviceExecCache.TryGetValue(serviceType, out var requestTypes))

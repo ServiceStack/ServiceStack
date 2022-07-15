@@ -307,6 +307,11 @@ let InputTags = 'INPUT,SELECT,TEXTAREA'.split(',')
 function isInput(e) {
     return e && InputTags.indexOf(e.tagName) >= 0
 }
+/** Whether any modifier keys were pressed
+ * @param {KeyboardEvent} e */
+function hasModifierKey(e) {
+    return e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.code === 'MetaLeft' || e.code === 'MetaRight'
+}
 let SORT_METHODS = ['GET','POST','PATCH','PUT','DELETE']
 /** @param {MetadataOperationType} op */
 function opSortName(op) {
@@ -431,7 +436,8 @@ function hidden(o) { return '' }
  */
 function indentJson(o) {
     if (o == null) return ''
-    if ('__type' in o) delete o['__type']
+    if (typeof o == 'string') o
+    if (typeof o == 'object' && '__type' in o) delete o['__type']
     if (o.ResponseStatus) delete o.ResponseStatus['__type']
     if (o.responseStatus) delete o.responseStatus['__type']
     return JSON.stringify(o, undefined, 4) 

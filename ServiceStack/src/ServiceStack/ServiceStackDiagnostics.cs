@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using ServiceStack.Messaging;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -8,8 +9,17 @@ namespace ServiceStack;
 public class RequestDiagnosticEvent : DiagnosticEvent
 {
     public override string Source => "ServiceStack";
-    public string TraceId { get; set; }
     public IRequest Request { get; set; }
+}
+
+public class MqRequestDiagnosticEvent : DiagnosticEvent
+{
+    public override string Source => "ServiceStack";
+    public IMessage Message { get; set; }
+    public IMessageQueueClient MqClient { get; set; }
+    public IOneWayClient OneWayClient { get; set; }
+    public string ReplyTo { get; set; }
+    public object Body { get; set; }
 }
 
 internal static class ServiceStackDiagnostics
@@ -66,6 +76,7 @@ internal static class ServiceStackDiagnostics
                 EventType = Diagnostics.Events.ServiceStack.WriteGatewayBefore,
                 OperationId = operationId,
                 Operation = operation,
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
             }.Init(req));
             return operationId;
         }
@@ -97,6 +108,77 @@ internal static class ServiceStackDiagnostics
             }.Init(req));
         }
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Guid WriteMqRequestBefore(this DiagnosticListener listener, IMessage msg, [CallerMemberName] string operation = "")
+    {
+        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
+        {
+            var operationId = Guid.NewGuid();
+            listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestBefore, new MqRequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteMqRequestBefore,
+                Operation = operation,
+                Message = msg,
+            }.Init(operationId));
+            return operationId;
+        }
+        return Guid.Empty;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteMqRequestAfter(this DiagnosticListener listener, Guid operationId, IMessage msg, [CallerMemberName] string operation = "")
+    {
+        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestAfter))
+        {
+            listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestAfter, new MqRequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteMqRequestAfter,
+                Operation = operation,
+                Message = msg,
+            }.Init(operationId));
+        }
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteMqRequestError(this DiagnosticListener listener, Guid operationId, IMessage msg,
+        Exception ex, [CallerMemberName] string operation = "")
+    {
+        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestError))
+        {
+            listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestError, new MqRequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteMqRequestError,
+                Operation = operation,
+                Message = msg,
+                Exception = ex,
+            }.Init(operationId));
+        }
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteMqRequestPublish(this DiagnosticListener listener, Guid operationId, IMessageQueueClient replyClient, string replyTo, object response, [CallerMemberName] string operation = "")
+    {
+        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestPublish))
+        {
+            listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestPublish, new MqRequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteMqRequestPublish,
+                Operation = operation,
+                MqClient = replyClient,
+                ReplyTo = replyTo,
+                Body = response,
+            }.Init(operationId));
+        }
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteMqRequestPublish(this DiagnosticListener listener, Guid operationId, IOneWayClient replyClient, string replyTo, object response, [CallerMemberName] string operation = "")
+    {
+        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestPublish))
+        {
+            listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestPublish, new MqRequestDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteMqRequestPublish,
+                Operation = operation,
+                OneWayClient = replyClient,
+                ReplyTo = replyTo,
+                Body = response,
+            }.Init(operationId));
+        }
+    }
+
 }
 
 public static class ServiceStackDiagnosticsUtils
@@ -113,8 +195,22 @@ public static class ServiceStackDiagnosticsUtils
             if (evt.Tag == null)
             {
                 var feature = appHost.AssertPlugin<ProfilingFeature>();
-                evt.Tag = feature.GetTag?.Invoke(req);
+                evt.Tag = feature.TagResolver?.Invoke(req);
             }
+        }
+        evt.Timestamp = Stopwatch.GetTimestamp();
+        return evt;
+    }
+    
+    public static MqRequestDiagnosticEvent Init(this MqRequestDiagnosticEvent evt, Guid operationId)
+    {
+        evt.OperationId = operationId;
+        var activity = Activity.Current;
+        if (activity != null)
+        {
+            evt.TraceId ??= activity.GetTraceId();
+            evt.UserAuthId = activity.GetUserId();
+            evt.Tag = activity.GetTag();
         }
         evt.Timestamp = Stopwatch.GetTimestamp();
         return evt;
@@ -124,5 +220,10 @@ public static class ServiceStackDiagnosticsUtils
 public class ServiceStackActivityArgs
 {
     public IRequest Request { get; set; }
+    public Activity Activity { get; set; }
+}
+public class ServiceStackMqActivityArgs
+{
+    public IMessage Message { get; set; }
     public Activity Activity { get; set; }
 }

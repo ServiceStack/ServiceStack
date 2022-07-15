@@ -36,54 +36,49 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Allows_registration_of_10_operations()
         {
-            using (var appHost = new LicenseTestsAppHost(typeof(Services10)))
-            {
-                appHost.Init();
-                appHost.Start(Config.ListeningOn);
+            using var appHost = new LicenseTestsAppHost(typeof(Services10));
+            appHost.Init();
+            appHost.Start(Config.ListeningOn);
 
-                Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(10));
-            }
+            appHost.Metadata.GetOperationDtos().Map(x => x.Name).PrintDump();
+            Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(10));
         }
 
         [Test]
         public void Throws_on_registration_of_11_operations()
         {
-            using (var appHost = new NoLicenseTestsAppHost(typeof(Services10), typeof(Service1)))
-            {
-                Assert.Throws(Is.TypeOf<LicenseException>()
-                            .Or.TypeOf<TargetInvocationException>()
-                            .With.Property("InnerException").TypeOf<LicenseException>(),
+            using var appHost = new NoLicenseTestsAppHost(typeof(Services10), typeof(Service1));
+            Assert.Throws(Is.TypeOf<LicenseException>()
+                    .Or.TypeOf<TargetInvocationException>()
+                    .With.Property("InnerException").TypeOf<LicenseException>(),
                 () => {
                     appHost.Init();
                     appHost.Start(Config.ListeningOn);
                 });
-            }
         }
 
         [Ignore("TODO: Ignore reason"), Test]
         public void Allows_MegaDto_through_ServiceClient()
         {
-            using (var appHost = new LicenseTestsAppHost(typeof(MegaDtoService)))
-            {
-                appHost.Init();
-                appHost.Start(Config.ListeningOn);
+            using var appHost = new LicenseTestsAppHost(typeof(MegaDtoService));
+            appHost.Init();
+            appHost.Start(Config.ListeningOn);
 
-                var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
-                var request = MegaDto.Create();
+            var request = MegaDto.Create();
 
-                var response = client.Post(request);
-                Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
+            var response = client.Post(request);
+            Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
 
-                Assert.Throws<LicenseException>(() =>
-                    request.ToJson());
+            Assert.Throws<LicenseException>(() =>
+                request.ToJson());
 
-                response = client.Post(request);
-                Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
+            response = client.Post(request);
+            Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
 
-                Assert.Throws<LicenseException>(() =>
-                    MegaDto.Create().ToJson());
-            }
+            Assert.Throws<LicenseException>(() =>
+                MegaDto.Create().ToJson());
         }
     }
 
@@ -146,13 +141,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 //            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
             Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
 
-            using (var appHost = new LicenseTestsAppHost(typeof(Services10), typeof(Service1)))
-            {
-                appHost.Init();
-                appHost.Start(Config.ListeningOn);
+            using var appHost = new LicenseTestsAppHost(typeof(Services10), typeof(Service1));
+            appHost.Init();
+            appHost.Start(Config.ListeningOn);
 
-                Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(11));
-            }
+            Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(11));
         }
     }
 
@@ -264,7 +257,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             private readonly List<Type> services;
             public LicenseTestsAppHost(params Type[] services)
-                : base(typeof(LicenseTestsAppHost).Name)
+                : base(nameof(LicenseTestsAppHost))
             {
                 this.services = new List<Type>(services);
             }
@@ -277,6 +270,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 Plugins.RemoveAll(x => x is NativeTypesFeature);
+                Plugins.RemoveAll(x => x is UiFeature);
                 GetPlugin<MetadataFeature>().ServiceRoutes.Clear();
             }
         }

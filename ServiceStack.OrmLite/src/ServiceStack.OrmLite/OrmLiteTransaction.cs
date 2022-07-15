@@ -11,6 +11,18 @@ namespace ServiceStack.OrmLite
 
         private readonly IDbConnection db;
 
+        public static OrmLiteTransaction Create(IDbConnection db, IsolationLevel? isolationLevel = null)
+        {
+            var dbTrans = isolationLevel != null
+                ? db.BeginTransaction(isolationLevel.Value)
+                : db.BeginTransaction();
+
+            Diagnostics.OrmLite.WriteTransactionOpen(dbTrans.IsolationLevel, db);
+            var trans = new OrmLiteTransaction(db, dbTrans);
+
+            return trans;
+        }
+
         public OrmLiteTransaction(IDbConnection db, IDbTransaction transaction)
         {
             this.db = db;

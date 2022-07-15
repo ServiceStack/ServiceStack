@@ -359,9 +359,12 @@ namespace ServiceStack
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
 
-            appHost.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new AuthFeatureUnauthorizedHttpHandler(this);
-            appHost.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new AuthFeatureAccessDeniedHttpHandler(this);
-            appHost.CustomErrorHttpHandlers[HttpStatusCode.PaymentRequired] = new AuthFeatureAccessDeniedHttpHandler(this);
+            if (!appHost.CustomErrorHttpHandlers.ContainsKey(HttpStatusCode.Unauthorized))
+                appHost.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new AuthFeatureUnauthorizedHttpHandler(this);
+            if (!appHost.CustomErrorHttpHandlers.ContainsKey(HttpStatusCode.Forbidden))
+                appHost.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new AuthFeatureAccessDeniedHttpHandler(this);
+            if (!appHost.CustomErrorHttpHandlers.ContainsKey(HttpStatusCode.PaymentRequired))
+                appHost.CustomErrorHttpHandlers[HttpStatusCode.PaymentRequired] = new AuthFeatureAccessDeniedHttpHandler(this);
 
             AuthProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 

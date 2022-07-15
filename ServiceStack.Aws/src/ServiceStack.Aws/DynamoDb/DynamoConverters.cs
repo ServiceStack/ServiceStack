@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -266,7 +267,7 @@ namespace ServiceStack.Aws.DynamoDb
 
         private static object ApplyFieldBehavior(IPocoDynamo db, DynamoMetadataType type, DynamoMetadataField field, object instance, object value)
         {
-            if (type == null || field == null || !field.IsAutoIncrement)
+            if (type == null || field is not { IsAutoIncrement: true })
                 return value;
 
             var needsId = IsNumberDefault(value);
@@ -304,20 +305,17 @@ namespace ServiceStack.Aws.DynamoDb
                         ? new AttributeValue { NULL = true } 
                         : new AttributeValue { S = str };
                 case DynamoType.Number:
-                    return new AttributeValue
-                    {
-                        N = value is string numStr
-                            ? numStr
-                            : DynamicNumber.GetNumber(value.GetType()).ToString(value)
+                    return new AttributeValue {
+                        N = value as string ?? DynamicNumber.GetNumber(value.GetType()).ToString(value)
                     };
                 case DynamoType.Bool:
                     return new AttributeValue { BOOL = (bool)value };
                 case DynamoType.Binary:
-                    return value is MemoryStream stream
-                        ? new AttributeValue { B = stream }
-                        : value is Stream
-                            ? new AttributeValue { B = new MemoryStream(((Stream)value).ReadFully()) }
-                            : new AttributeValue { B = new MemoryStream((byte[])value) };
+                    return value switch {
+                        MemoryStream ms => new AttributeValue { B = ms },
+                        Stream stream => new AttributeValue { B = new MemoryStream(stream.ReadFully()) },
+                        _ => new AttributeValue { B = new MemoryStream((byte[])value) }
+                    };
                 case DynamoType.NumberSet:
                     return ToNumberSetAttributeValue(value);
                 case DynamoType.StringSet:
@@ -351,12 +349,43 @@ namespace ServiceStack.Aws.DynamoDb
             return to;
         }
 
+        private readonly ConcurrentDictionary<Type, Dictionary<string,string>> typeAliasesMap = new();
+
         public virtual AttributeValue ToMapAttributeValue(IPocoDynamo db, object oMap)
         {
-            var map = oMap as IDictionary
-                ?? oMap.ToObjectDictionary();
+            var type = oMap.GetType();
+            if (oMap is not IDictionary map)
+            {
+                var objMap = oMap.ToObjectDictionary();
+                var typeAliases = typeAliasesMap.GetOrAdd(type, t =>
+                {
+                    var aliases = new Dictionary<string, string>();
+                    foreach (var p in TypeProperties.Get(t).PublicPropertyInfos)
+                    {
+                        var aliasAttr = p.FirstAttribute<AliasAttribute>();
+                        if (aliasAttr?.Name != null)
+                            aliases[p.Name] = aliasAttr.Name;
+                    }
+                    return aliases;
+                });
 
-            var meta = DynamoMetadata.GetType(oMap.GetType());
+                if (typeAliases.Count == 0)
+                {
+                    map = objMap;
+                }
+                else
+                {
+                    map = new Dictionary<string, object>();
+                    foreach (var entry in objMap)
+                    {
+                        if (!typeAliases.TryGetValue(entry.Key, out var key))
+                            key = entry.Key;
+                        map[key] = entry.Value;
+                    }
+                }
+            }
+
+            var meta = DynamoMetadata.GetType(type);
 
             var to = new Dictionary<string, AttributeValue>();
             foreach (var key in map.Keys)
@@ -371,7 +400,7 @@ namespace ServiceStack.Aws.DynamoDb
                         value);
                 }
 
-                to[key.ToString()] = value != null
+                to[key.ToString()!] = value != null
                     ? ToAttributeValue(db, value.GetType(), GetFieldType(value.GetType()), value)
                     : new AttributeValue { NULL = true };
             }

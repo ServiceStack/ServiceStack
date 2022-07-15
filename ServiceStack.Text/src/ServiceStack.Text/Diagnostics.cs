@@ -12,6 +12,13 @@ public class Diagnostics
 {
     private static readonly Diagnostics Instance = new();
     private Diagnostics(){}
+
+    private bool includeStackTrace;
+    public static bool IncludeStackTrace
+    {
+        get => Instance.includeStackTrace;
+        set => Instance.includeStackTrace = value;
+    }
     
     public static class Listeners
     {
@@ -19,6 +26,25 @@ public class Diagnostics
         public const string Client = "ServiceStack.Client";
         public const string OrmLite = "ServiceStack.OrmLite";
         public const string Redis = "ServiceStack.Redis";
+
+        // HttpClient Listener
+        public const string HttpClient = "HttpHandlerDiagnosticListener";
+    }
+    
+    public static class Keys
+    {
+        public const string OperationId = nameof(OperationId);
+        public const string Request = nameof(Request);
+        public const string ResponseType = nameof(ResponseType);
+
+        public const string Response = nameof(Response);
+        public const string LoggingRequestId = nameof(LoggingRequestId);
+        public const string Timestamp = nameof(Timestamp);
+#if NET6_0_OR_GREATER
+        public static readonly System.Net.Http.HttpRequestOptionsKey<Guid> HttpRequestOperationId = new(OperationId);
+        public static readonly System.Net.Http.HttpRequestOptionsKey<object> HttpRequestRequest = new(Request);
+        public static readonly System.Net.Http.HttpRequestOptionsKey<object> HttpRequestResponseType = new(ResponseType);
+#endif
     }
     
     public static class Events
@@ -34,6 +60,11 @@ public class Diagnostics
             public const string WriteGatewayBefore = Prefix + nameof(WriteGatewayBefore);
             public const string WriteGatewayAfter = Prefix + nameof(WriteGatewayAfter);
             public const string WriteGatewayError = Prefix + nameof(WriteGatewayError);
+            
+            public const string WriteMqRequestBefore = Prefix + nameof(WriteMqRequestBefore);
+            public const string WriteMqRequestAfter = Prefix + nameof(WriteMqRequestAfter);
+            public const string WriteMqRequestError = Prefix + nameof(WriteMqRequestError);
+            public const string WriteMqRequestPublish = Prefix + nameof(WriteMqRequestPublish);
         }
         
         public static class Client
@@ -43,6 +74,17 @@ public class Diagnostics
             public const string WriteRequestBefore = Prefix + nameof(WriteRequestBefore);
             public const string WriteRequestAfter = Prefix + nameof(WriteRequestAfter);
             public const string WriteRequestError = Prefix + nameof(WriteRequestError);
+        }
+        
+        public static class HttpClient
+        {
+            private const string Prefix = "System.Net.Http.";
+            
+            public const string Request = Prefix + nameof(Request);
+            public const string Response = Prefix + nameof(Response);
+
+            public const string OutStart = Prefix + "HttpRequestOut.Start";
+            public const string OutStop = Prefix + "HttpRequestOut.Stop";
         }
         
         public static class OrmLite
@@ -60,6 +102,8 @@ public class Diagnostics
             public const string WriteConnectionCloseBefore = Prefix + nameof(WriteConnectionCloseBefore);
             public const string WriteConnectionCloseAfter = Prefix + nameof(WriteConnectionCloseAfter);
             public const string WriteConnectionCloseError = Prefix + nameof(WriteConnectionCloseError);
+
+            public const string WriteTransactionOpen = Prefix + nameof(WriteTransactionOpen);
 
             public const string WriteTransactionCommitBefore = Prefix + nameof(WriteTransactionCommitBefore);
             public const string WriteTransactionCommitAfter = Prefix + nameof(WriteTransactionCommitAfter);
@@ -99,6 +143,8 @@ public class Diagnostics
         public const string OperationId = nameof(OperationId);
         public const string UserId = nameof(UserId);
         public const string Tag = nameof(Tag);
+        public const string MqBegin = nameof(MqBegin);
+        public const string MqEnd = nameof(MqEnd);
     }
 
     private DiagnosticListener servicestack { get; set; } = new(Listeners.ServiceStack);
@@ -135,6 +181,8 @@ public abstract class DiagnosticEvent
     public long Timestamp { get; set; }
     public object DiagnosticEntry { get; set; }
     public string? Tag { get; set; }
+    public string? StackTrace { get; set; }
+    public Guid? ClientOperationId { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 

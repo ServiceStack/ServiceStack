@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-07-08 03:38:14
+Date: 2022-07-14 03:42:45
 Version: 6.11
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -497,6 +497,7 @@ export class ProfilingInfo
     public accessRole: string;
     public defaultLimit: number;
     public summaryFields: string[];
+    public tagLabel: string;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<ProfilingInfo>) { (Object as any).assign(this, init); }
@@ -875,12 +876,14 @@ export class DiagnosticEntry
     public command: string;
     public userAuthId: string;
     public sessionId: string;
+    public arg: string;
     public args: string[];
     public argLengths: number[];
     public namedArgs: { [index: string]: Object; };
     public duration?: string;
     public timestamp: number;
     public tag: string;
+    public stackTrace: string;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<DiagnosticEntry>) { (Object as any).assign(this, init); }
@@ -1475,6 +1478,7 @@ export class AdminProfiling implements IReturn<AdminProfilingResponse>
     public traceId: string;
     public userAuthId: string;
     public sessionId: string;
+    public tag: string;
     public skip: number;
     public take?: number;
     public orderBy: string;

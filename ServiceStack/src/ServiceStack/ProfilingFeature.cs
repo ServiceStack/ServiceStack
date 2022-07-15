@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -133,6 +134,11 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// Which features to Profile, default all
     /// </summary>
     public ProfileSource Profile { get; set; } = ProfileSource.All;
+    
+    /// <summary>
+    /// Whether to include CallStack StackTrace 
+    /// </summary>
+    public bool? IncludeStackTrace { get; set; }
 
     /// <summary>
     /// Size of circular buffer of profiled events
@@ -149,7 +155,11 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// <summary>
     /// Attach custom data to request profiling summary fields
     /// </summary>
-    public Func<IRequest,string?>? GetTag { get; set; }
+    public Func<IRequest,string?>? TagResolver { get; set; }
+    /// <summary>
+    /// Label to show for custom tag
+    /// </summary>
+    public string? TagLabel { get; set; }
     
     /// <summary>
     /// Customize DiagnosticEntry that gets captured
@@ -158,13 +168,18 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
     public ProfilerDiagnosticObserver Observer { get; set; }
 
+    /// <summary>
+    /// Maximum char/byte length of string response body
+    /// </summary>
+    public int MaxBodyLength { get; set; } = 10 * 10 * 1024;
+
     public ProfilingFeature()
     {
         this.ExcludeRequestPathInfoStartingWith = new[] {
             "/js/petite-vue.js",
             "/js/servicestack-client.js",
             "/js/require.js",
-            "/js/servicestack-client.js",
+            "/js/highlight.js",
             "/admin-ui",
         }.ToList();
         // Sync with RequestLogsFeature
@@ -205,19 +220,23 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
     public void Register(IAppHost appHost)
     {
+        if (IncludeStackTrace != null)
+            Diagnostics.IncludeStackTrace = IncludeStackTrace.Value;
+        
         appHost.RegisterService(typeof(AdminProfilingService));
         
         Observer = new ProfilerDiagnosticObserver(this);
         var subscription = DiagnosticListener.AllListeners.Subscribe(Observer);
         appHost.OnDisposeCallbacks.Add(host => subscription.Dispose());
         
-        if (!SummaryFields.Contains(nameof(DiagnosticEntry.Tag)) && GetTag != null)
+        if (!SummaryFields.Contains(nameof(DiagnosticEntry.Tag)) && TagResolver != null)
             SummaryFields.Add(nameof(DiagnosticEntry.Tag));
         
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.Profiling = new ProfilingInfo {
                 AccessRole = AccessRole,
                 SummaryFields = SummaryFields,
+                TagLabel = TagLabel,
                 DefaultLimit = DefaultLimit,
             };
         });
@@ -258,9 +277,14 @@ public sealed class ProfilerDiagnosticObserver :
 
     void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
     {
+        Console.WriteLine(diagnosticListener.Name);
         if ((feature.Profile.HasFlag(ProfileSource.ServiceStack) && diagnosticListener.Name is Diagnostics.Listeners.ServiceStack)
+            || (feature.Profile.HasFlag(ProfileSource.Client) &&
+                diagnosticListener.Name is Diagnostics.Listeners.HttpClient or Diagnostics.Listeners.Client)
             || (feature.Profile.HasFlag(ProfileSource.OrmLite) && diagnosticListener.Name is Diagnostics.Listeners.OrmLite)
-            || (feature.Profile.HasFlag(ProfileSource.Redis) && diagnosticListener.Name is Diagnostics.Listeners.Redis))
+            || (feature.Profile.HasFlag(ProfileSource.Redis) && diagnosticListener.Name is Diagnostics.Listeners.Redis)
+            // || diagnosticListener.Name == "Microsoft.AspNetCore") Server
+            )
         {
             var subscription = diagnosticListener.Subscribe(this);
             subscriptions.Add(subscription);
@@ -308,6 +332,15 @@ public sealed class ProfilerDiagnosticObserver :
         return to;
     }
 
+    private static readonly ILog log = LogManager.GetLogger(typeof(ProfilerDiagnosticObserver));
+    
+    [Conditional("DEBUG")]
+    private static void LogNotTracked(RequestDiagnosticEvent before)
+    {
+        if (log.IsDebugEnabled)
+            log.Debug($"!{before.EventType}.ShouldTrack({before.Request.OperationName}, {before.Request.PathInfo})");
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     DiagnosticEntry AddEntry(DiagnosticEntry entry)
     {
@@ -330,7 +363,15 @@ public sealed class ProfilerDiagnosticObserver :
             Tag = e.Tag,
             Timestamp = e.Timestamp,
             ThreadId = Thread.CurrentThread.ManagedThreadId,
+            StackTrace = e.StackTrace,
+            OperationId = e.OperationId,
         };
+        if (e.Exception != null)
+        {
+            to.StackTrace ??= e.Exception.StackTrace;
+            if (to.Error?.StackTrace != null)
+                to.Error.StackTrace = null;
+        }
 
         if (e.Exception != null)
         {
@@ -397,6 +438,35 @@ public sealed class ProfilerDiagnosticObserver :
         return Filter(to, e);
     }
 
+    public DiagnosticEntry ToDiagnosticEntry(MqRequestDiagnosticEvent e, MqRequestDiagnosticEvent? orig = null)
+    {
+        var to = CreateDiagnosticEntry(e, orig);
+        
+        var dto = e.Message?.Body ?? e.Body;
+        if (IncludeRequestDto(dto.GetType()))
+            to.NamedArgs = dto.ToObjectDictionary();
+
+        to.Command = dto.GetType().Name;
+        to.Message = e.ReplyTo != null
+            ? "reply:" + e.ReplyTo
+            : e.Message != null
+                ? "to:" + e.Message.Id
+                : "";
+
+        // Original MQ Request populates TraceId + Tag in IMessage
+        if (orig != null)
+        {
+            to.TraceId ??= orig.TraceId;
+            to.Tag ??= orig.Tag;
+        }
+
+        to.TraceId ??= e.Message?.TraceId ?? to.TraceId;
+        to.Tag ??= e.Message?.Tag;
+
+        return Filter(to, e);
+    }
+
+
     private bool IncludeRequestDto(Type? requestType) => requestType != null && 
         !feature.HideRequestBodyForRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType));
 
@@ -423,6 +493,19 @@ public sealed class ProfilerDiagnosticObserver :
         return true;
     }
     
+    bool ShouldTrack(MqRequestDiagnosticEvent e)
+    {
+        var dto = e.Message?.Body ?? e.Body; 
+        var requestType = dto?.GetType();
+        if (requestType != null)
+        {
+            if (feature.ExcludeRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
+                return false;
+        }
+        
+        return true;
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddServiceStack(RequestDiagnosticEvent before)
     {
@@ -436,15 +519,119 @@ public sealed class ProfilerDiagnosticObserver :
         refs[before.OperationId] = before;
         before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
     }
-
-    private static readonly ILog log = LogManager.GetLogger(typeof(ProfilerDiagnosticObserver));
     
-    [Conditional("DEBUG")]
-    private static void LogNotTracked(RequestDiagnosticEvent before)
+#if NET6_0_OR_GREATER
+
+    bool ShouldTrack(HttpClientDiagnosticEvent e)
     {
-        if (log.IsDebugEnabled)
-            log.Debug($"!{before.EventType}.ShouldTrack({before.Request.OperationName}, {before.Request.PathInfo})");
+        var requestType = e.Request?.GetType();
+        if (requestType != null)
+        {
+            if (feature.ExcludeRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
+                return false;
+        }
+        return true;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddClient(HttpClientDiagnosticEvent before)
+    {
+        // Request DTO isn't known at WriteRequestBefore
+        if (!ShouldTrack(before))
+            return;
+        
+        refs[before.OperationId] = before;
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddClient(HttpClientDiagnosticEvent before, HttpClientDiagnosticEvent after)
+    {
+        if (!ShouldTrack(before) || !ShouldTrack(after))
+        {
+            // Mark entry already in queue for deletion
+            if (before.DiagnosticEntry is DiagnosticEntry entry)
+                entry.Deleted = true;
+            return;
+        }
+
+        after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
+    }
+
+    const string Unknown = "(unknown)";
+
+    readonly NativeTypes.CSharp.CSharpGenerator csharpGen = new(new MetadataTypesConfig());
+    public DiagnosticEntry ToDiagnosticEntry(HttpClientDiagnosticEvent e, HttpClientDiagnosticEvent? orig = null)
+    {
+        var to = CreateDiagnosticEntry(e, orig);
+
+        var httpReq = e.HttpRequest ?? orig?.HttpRequest;
+        if (httpReq != null)
+            to.Message = $"{httpReq.Method} {httpReq.RequestUri?.ToString().LeftPart('?')}";
+
+        if (orig == null)
+        {
+            to.Command = (httpReq != null
+                ? httpReq.Method.Method + " " + httpReq.RequestUri?.AbsolutePath
+                : null) ?? Unknown;
+            var requestType = e.Request?.GetType();
+            if (requestType == typeof(string) || requestType?.IsValueType == true)
+            {
+                to.Arg = e.Request?.ToString() ?? Unknown;
+            }
+            else
+            {
+                if (requestType != null && e.Request is not IDictionary)
+                    to.Command = csharpGen.Type(requestType.Name, requestType.GetGenericArguments().Select(x => x.Name).ToArray());
+                if (IncludeRequestDto(requestType))
+                    to.NamedArgs = e.Request.ToObjectDictionary();
+            }
+        }
+        else
+        {
+            var responseType = e.Response?.GetType() ?? orig.ResponseType;
+            to.Command = responseType != null
+                 ? csharpGen.Type(responseType.Name,responseType.GetGenericArguments().Select(x => x.Name).ToArray())
+                 : httpReq?.RequestUri?.AbsolutePath ?? Unknown;
+        }
+
+        return Filter(to, e);
+    }
+
+    private object ReadHttpContent(System.Net.Http.HttpContent? content)
+    {
+        var requestBody = content?.ReadAsString();
+        if (requestBody == null) 
+            return StringBody(requestBody);
+
+        if (content is System.Net.Http.StringContent sc)
+        {
+            if (MimeTypes.MatchesContentType(sc.Headers.ContentType?.MediaType, MimeTypes.Json))
+            {
+                try
+                {
+                    return JSON.parse(requestBody);
+                }
+                catch (Exception e)
+                {
+                    log.Error($"Could not parse JSON", e);
+                }
+            }
+            if (MimeTypes.MatchesContentType(sc.Headers.ContentType?.MediaType, MimeTypes.FormUrlEncoded))
+            {
+                try
+                {
+                    return Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(requestBody);
+                }
+                catch (Exception e)
+                {
+                    log.Error($"Could not parse Form " + MimeTypes.FormUrlEncoded, e);
+                }
+            }
+        }
+        return StringBody(requestBody);
+    }
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddServiceStack(RequestDiagnosticEvent before, RequestDiagnosticEvent after)
@@ -461,6 +648,35 @@ public sealed class ProfilerDiagnosticObserver :
 
         after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
     }
+    
+    /**
+     * MQ
+     */
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddServiceStack(MqRequestDiagnosticEvent before)
+    {
+        // Request DTO isn't known at WriteRequestBefore
+        if (!ShouldTrack(before))
+            return;
+        
+        refs[before.OperationId] = before;
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddServiceStack(MqRequestDiagnosticEvent before, MqRequestDiagnosticEvent after)
+    {
+        if (!ShouldTrack(before) || !ShouldTrack(after))
+        {
+            // Mark entry already in queue for deletion
+            if (before.DiagnosticEntry is DiagnosticEntry entry)
+                entry.Deleted = true;
+            return;
+        }
+
+        after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
+    }
+    
 
     public DiagnosticEntry ToDiagnosticEntry(OrmLiteDiagnosticEvent e, OrmLiteDiagnosticEvent? orig = null)
     {
@@ -483,6 +699,8 @@ public sealed class ProfilerDiagnosticObserver :
                 to.Message = "Open Connection";
             else if (to.EventType.Contains("ConnectionClose"))
                 to.Message = "Close Connection";
+            else if (to.EventType.Contains("TransactionOpen"))
+                to.Message = "Open Transaction";
             else if (to.EventType.Contains("TransactionCommit"))
                 to.Message = "Commit Transaction";
             else if (to.EventType.Contains("TransactionRollback"))
@@ -573,6 +791,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddServiceStack(reqOrig, reqError);
         }
 
+        /** Gateway */
         if (kvp.Key == Diagnostics.Events.ServiceStack.WriteGatewayBefore && kvp.Value is RequestDiagnosticEvent gatewayBefore)
         {
             AddServiceStack(gatewayBefore);
@@ -587,7 +806,146 @@ public sealed class ProfilerDiagnosticObserver :
             if (refs.TryRemove(gatewayError.OperationId, out var orig) && orig is RequestDiagnosticEvent reqOrig)
                 AddServiceStack(reqOrig, gatewayError);
         }
+
+#if NET6_0_OR_GREATER
+        /** Client */
         
+        /** HttpClient */
+        // if (kvp.Key == Diagnostics.Events.Client.WriteRequestBefore && kvp.Value is HttpClientDiagnosticEvent clientBefore)
+        // {
+        //     AddServiceStack(clientBefore);
+        // }
+        if (kvp.Key == Diagnostics.Events.HttpClient.OutStart)
+        {
+            var obj = kvp.Value.ToObjectDictionary();
+            // Console.WriteLine($"<{kvp.Value.GetType().Name}> = {string.Join(',', obj.Keys)} :: {string.Join(',', obj.Values.Select(x => x.GetType()?.Name))}");
+        }
+        if (kvp.Key == Diagnostics.Events.HttpClient.Request)
+        {
+            var obj = kvp.Value.ToObjectDictionary();
+            // Console.WriteLine($"<{kvp.Value.GetType().Name}> = {string.Join(',', obj.Keys)} :: {string.Join(',', obj.Values.Select(x => x.GetType()?.Name))}");
+            if (obj.TryGetValue(Diagnostics.Keys.Request, out var oValue) && oValue is System.Net.Http.HttpRequestMessage httpReq
+                && obj.TryGetValue(Diagnostics.Keys.LoggingRequestId, out var oGuid) && oGuid is Guid loggingRequestId
+                && obj.TryGetValue(Diagnostics.Keys.Timestamp, out var oLong) && oLong is long timestamp)
+            {
+                var entry = new HttpClientDiagnosticEvent {
+                    EventType = Diagnostics.Events.HttpClient.Request,
+                    OperationId = loggingRequestId,
+                    HttpRequest = httpReq,
+                }.Init(Activity.Current);
+                entry.Timestamp = timestamp;
+                entry.ClientOperationId = httpReq.Options.TryGetValue(Diagnostics.Keys.HttpRequestOperationId, out var operationId)
+                        ? operationId
+                        : null;
+                entry.Request = httpReq.Options.TryGetValue(Diagnostics.Keys.HttpRequestRequest, out var request)
+                    ? request
+                    : httpReq.RequestUri != null && !HttpUtils.HasRequestBody(httpReq.Method.Method)
+                        ? Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(httpReq.RequestUri.Query)
+                        : null;
+                entry.ResponseType = httpReq.Options.TryGetValue(Diagnostics.Keys.HttpRequestResponseType, out var oType) && oType is Type responseType
+                    ? responseType
+                    : null;
+
+                entry.Request ??= ReadHttpContent(httpReq.Content);
+                
+                AddClient(entry);
+            }
+        }
+        // if (kvp.Key == Diagnostics.Events.HttpClient.OutStop)
+        // {
+        //     var obj = kvp.Value.ToObjectDictionary();
+        // }
+        if (kvp.Key == Diagnostics.Events.HttpClient.Response)
+        {
+            var obj = kvp.Value.ToObjectDictionary();
+            if (obj.TryGetValue(Diagnostics.Keys.Response, out var oValue) && oValue is System.Net.Http.HttpResponseMessage httpRes
+               && obj.TryGetValue(Diagnostics.Keys.LoggingRequestId, out var oGuid) && oGuid is Guid loggingRequestId
+               && obj.TryGetValue(Diagnostics.Keys.Timestamp, out var oLong) && oLong is long timestamp)
+            {
+                var entry = new HttpClientDiagnosticEvent {
+                    EventType = Diagnostics.Events.HttpClient.Response,
+                    OperationId = loggingRequestId,
+                    HttpResponse = httpRes,
+                    Exception = (int)httpRes.StatusCode >= 400
+                        ? new HttpError(httpRes.StatusCode, httpRes.ReasonPhrase)
+                        : null,
+                }.Init(Activity.Current);
+                entry.Timestamp = timestamp;
+
+                // JsonApiClient
+                if (refs.TryRemove(loggingRequestId, out var orig) && orig is HttpClientDiagnosticEvent reqOrig)
+                {
+                    if (reqOrig.ClientOperationId != null)
+                        refs[reqOrig.ClientOperationId.Value] = entry;
+
+                    AddClient(reqOrig, entry);
+                }
+                else
+                {
+                    // Normal HttpClient
+                    AddClient(entry);
+                    entry.Response ??= ReadHttpContent(httpRes.Content);
+                }
+            }
+        }
+        if (kvp.Key == Diagnostics.Events.Client.WriteRequestAfter && kvp.Value is HttpClientDiagnosticEvent clientAfter)
+        {
+            if (refs.TryRemove(clientAfter.OperationId, out var httpEntry) && httpEntry is HttpClientDiagnosticEvent httpAfter)
+            {
+                httpAfter.Response = clientAfter.Response;
+                if (httpAfter.DiagnosticEntry is DiagnosticEntry entry)
+                {
+                    if (httpAfter.Response != null && !feature.ExcludeResponseTypes.Any(x => x.IsInstanceOfType(httpAfter.Response)))
+                    {
+                        httpAfter.ResponseType = httpAfter.Response.GetType();
+                        entry.Arg = clientAfter.Response switch {
+                            string s => StringBody(s),
+                            byte[] => "(bytes)",
+                            System.IO.Stream => "(stream)",
+                            System.Net.Http.HttpResponseMessage => "(HttpResponseMessage)",
+                            _ => null,
+                        };
+                        if (entry.Arg == null)
+                            entry.NamedArgs = clientAfter.Response.ToObjectDictionary();
+                    }
+                }
+            }
+        }
+        if (kvp.Key == Diagnostics.Events.Client.WriteRequestError && kvp.Value is HttpClientDiagnosticEvent clientError)
+        {
+            if (refs.TryRemove(clientError.OperationId, out var httpEntry) && httpEntry is HttpClientDiagnosticEvent httpAfter)
+            {
+                httpAfter.Exception = clientError.Exception;
+                if (httpAfter.DiagnosticEntry is DiagnosticEntry entry)
+                    entry.Error = DtoUtils.CreateResponseStatus(clientError.Exception, request:null, debugMode:true);
+            }
+        }
+#endif
+        
+        /** MQ */
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestBefore && kvp.Value is MqRequestDiagnosticEvent mqReqBefore)
+        {
+            AddServiceStack(mqReqBefore);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestAfter && kvp.Value is MqRequestDiagnosticEvent mqReqAfter)
+        {
+            if (refs.TryRemove(mqReqAfter.OperationId, out var orig) && orig is MqRequestDiagnosticEvent reqOrig)
+                AddServiceStack(reqOrig, mqReqAfter);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestError && kvp.Value is MqRequestDiagnosticEvent mqReqError)
+        {
+            if (refs.TryRemove(mqReqError.OperationId, out var orig) && orig is MqRequestDiagnosticEvent reqOrig)
+                AddServiceStack(reqOrig, mqReqError);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteMqRequestPublish && kvp.Value is MqRequestDiagnosticEvent mqReqPublish)
+        {
+            var orig = refs.TryRemove(mqReqPublish.OperationId, out var refOrig)
+                ? refOrig
+                : entries.FirstOrDefault(x => x.OperationId == mqReqPublish.OperationId); 
+            if (orig is MqRequestDiagnosticEvent reqOrig)
+                AddServiceStack(reqOrig, mqReqPublish);
+        }
+
         
         /** OrmLite */
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteCommandBefore && kvp.Value is OrmLiteDiagnosticEvent dbBefore)
@@ -605,6 +963,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddOrmLite(dbOrig, dbError);
         }
         
+        /*** OrmLite Connections */
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteConnectionOpenBefore && kvp.Value is OrmLiteDiagnosticEvent dbOpenBefore)
         {
             AddOrmLite(dbOpenBefore);
@@ -635,6 +994,12 @@ public sealed class ProfilerDiagnosticObserver :
                 AddOrmLite(dbOrig, dbCloseError);
         }
         
+        /** OrmLite Transactions */
+        if (kvp.Key == Diagnostics.Events.OrmLite.WriteTransactionOpen && kvp.Value is OrmLiteDiagnosticEvent commitOpen)
+        {
+            AddOrmLite(commitOpen);
+        }
+
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteTransactionCommitBefore && kvp.Value is OrmLiteDiagnosticEvent commitBefore)
         {
             AddOrmLite(commitBefore);
@@ -687,6 +1052,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddRedis(redisOrig, redisError);
         }
         
+        /*** Redis Connections */
         if (kvp.Key == Diagnostics.Events.Redis.WriteConnectionOpenBefore && kvp.Value is RedisDiagnosticEvent redisOpenBefore)
         {
             AddRedis(redisOpenBefore);
@@ -717,6 +1083,7 @@ public sealed class ProfilerDiagnosticObserver :
                 AddRedis(redisOrig, redisCloseError);
         }
         
+        /*** Redis Pools */
         if (kvp.Key == Diagnostics.Events.Redis.WritePoolRent && kvp.Value is RedisDiagnosticEvent redisPoolBefore)
         {
             AddRedis(redisPoolBefore);
@@ -726,6 +1093,15 @@ public sealed class ProfilerDiagnosticObserver :
             if (refs.TryRemove(redisPoolAfter.OperationId, out var orig) && orig is RedisDiagnosticEvent redisOrig)
                 AddRedis(redisOrig, redisPoolAfter);
         }
+    }
+
+    private string StringBody(string? s)
+    {
+        return s == null 
+            ? string.Empty 
+            : s.Length < feature.MaxBodyLength 
+                ? s 
+                : s.Substring(0, feature.MaxBodyLength) + "...";
     }
 
     void IObserver<DiagnosticListener>.OnError(Exception error)
@@ -784,6 +1160,10 @@ public class DiagnosticEntry
     public string? UserAuthId { get; set; }
     public string? SessionId { get; set; }
     /// <summary>
+    /// Single Arg
+    /// </summary>
+    public string? Arg { get; set; }
+    /// <summary>
     /// Redis positional Args
     /// </summary>
     public List<string>? Args { get; set; }
@@ -795,9 +1175,11 @@ public class DiagnosticEntry
     public TimeSpan? Duration { get; set; }
     public long Timestamp { get; set; }
     /// <summary>
-    /// Custom data that can be attached with ProfilingFeature.GetTag  
+    /// Custom data that can be attached with ProfilingFeature.TagResolver  
     /// </summary>
     public string? Tag { get; set; }
-    public Dictionary<string, string> Meta { get; set; }
+    public string? StackTrace { get; set; }
+    public Dictionary<string, string?> Meta { get; set; }
     internal bool Deleted { get; set; }
+    internal Guid? OperationId { get; set; }
 }

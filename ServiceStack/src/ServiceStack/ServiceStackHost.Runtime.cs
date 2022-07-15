@@ -1063,8 +1063,8 @@ namespace ServiceStack
         public virtual void PublishMessage<T>(IMessageProducer messageProducer, T message)
         {
             if (messageProducer == null)
-                throw new ArgumentNullException(nameof(messageProducer), "No IMessageFactory was registered, cannot PublishMessage");
-
+                throw new ArgumentNullException(nameof(messageProducer), @"No IMessageFactory was registered, cannot PublishMessage");
+            
             messageProducer.Publish(message);
         }
 

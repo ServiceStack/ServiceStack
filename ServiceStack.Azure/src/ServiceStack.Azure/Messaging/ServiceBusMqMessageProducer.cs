@@ -42,6 +42,7 @@ namespace ServiceStack.Azure.Messaging
             // Ensure we're publishing an IMessage
             if (messageBody is IMessage message)
             {
+                Diagnostics.ServiceStack.Init(message);
                 Publish(message.ToInQueueName(), message);
             }
             else

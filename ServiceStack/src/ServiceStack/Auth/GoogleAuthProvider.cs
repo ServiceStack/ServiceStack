@@ -77,7 +77,7 @@ namespace ServiceStack.Auth
         protected override async Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token = default)
         {
             var url = this.UserProfileUrl.AddQueryParam("access_token", accessToken);
-            var json = await url.GetJsonFromUrlAsync().ConfigAwait();
+            var json = await url.GetJsonFromUrlAsync(token:token).ConfigAwait();
             var obj = JsonObject.Parse(json);
             
             obj.MoveKey("id", "user_id");

@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 
 namespace ServiceStack.OrmLite;
 
-
 internal static class OrmLiteDiagnostics
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,6 +66,7 @@ internal static class OrmLiteDiagnostics
                 OperationId = operationId,
                 Operation = operation,
                 Connection = dbConn,
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
             }.Init(Activity.Current));
 
             return operationId;
@@ -152,6 +152,26 @@ internal static class OrmLiteDiagnostics
             }.Init(Activity.Current));
         }
     }
+    
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Guid WriteTransactionOpen(this DiagnosticListener listener, IsolationLevel isolationLevel,
+        IDbConnection dbConn, [CallerMemberName] string operation = "")
+    {
+        if (listener.IsEnabled(Diagnostics.Events.OrmLite.WriteTransactionOpen))
+        {
+            var operationId = Guid.NewGuid();
+            listener.Write(Diagnostics.Events.OrmLite.WriteTransactionOpen, new OrmLiteDiagnosticEvent {
+                EventType = Diagnostics.Events.OrmLite.WriteTransactionOpen,
+                OperationId = operationId,
+                Operation = operation,
+                IsolationLevel = isolationLevel,
+                Connection = dbConn,
+            }.Init(Activity.Current));
+            return operationId;
+        }
+        return Guid.Empty;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid WriteTransactionCommitBefore(this DiagnosticListener listener, IsolationLevel isolationLevel,
@@ -217,6 +237,7 @@ internal static class OrmLiteDiagnostics
                 IsolationLevel = isolationLevel,
                 Connection = dbConn,
                 TransactionName = transactionName,
+                StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
             }.Init(Activity.Current));
             return operationId;
         }

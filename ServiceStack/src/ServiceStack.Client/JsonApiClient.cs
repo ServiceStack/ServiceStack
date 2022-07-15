@@ -201,7 +201,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     internal sealed class CompressContent : HttpContent
     {
         private readonly HttpContent content;
-        private IStreamCompressor compressor;
+        private readonly IStreamCompressor compressor;
         public CompressContent(HttpContent content, IStreamCompressor compressor)
         {
             this.content = content;
@@ -279,7 +279,10 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return await SendAsync<TResponse>(httpMethod, requestUri, request, token).ConfigAwait();
     }
 
-    public async Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object? request, CancellationToken token = default)
+    public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object? request, CancellationToken token = default)
+        => SendAsync<TResponse>(httpMethod, absoluteUrl, request, null, token);
+    
+    public async Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object? request, object? dto, CancellationToken token = default)
     {
         var client = GetHttpClient();
         absoluteUrl = GetAbsoluteUrl(httpMethod, request, absoluteUrl);
@@ -289,27 +292,40 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return typedResponse;
 
         var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
+        var id = Diagnostics.Client.WriteRequestBefore(httpReq, request, typeof(TResponse));
+        Exception? e = null;
+        TResponse? response = default; 
 
         try
         {
             var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();
 
             if (typeof(TResponse) == typeof(HttpResponseMessage))
-                return (TResponse)(object) httpRes;
+                return (TResponse)(object)httpRes;
 
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var response = await HandleUnauthorizedResponseAsync<TResponse>(client, httpMethod, absoluteUrl, request, token).ConfigAwait();
+                response = await HandleUnauthorizedResponseAsync<TResponse>(client, httpMethod, absoluteUrl, request, token)
+                    .ConfigAwait();
                 if (response != null)
                     return response;
             }
 
-            return await ConvertToResponseAsync<TResponse>(httpRes, httpMethod, absoluteUrl, request, token).ConfigAwait();
+            return response = await ConvertToResponseAsync<TResponse>(httpRes, httpMethod, absoluteUrl, request, token)
+                .ConfigAwait();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            LogManager.GetLogger(GetType()).Error(e, nameof(SendAsync) + ": " + e.Message);
+            e = ex;
+            LogManager.GetLogger(GetType()).Error(ex, nameof(SendAsync) + ": " + ex.Message);
             throw;
+        }
+        finally
+        {
+            if (e != null)
+                Diagnostics.Client.WriteRequestError(id, httpReq, e);
+            else
+                Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
         }
     }
 
@@ -364,7 +380,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return Send<TResponse>(httpMethod, requestUri, request);
     }
 
-    public TResponse Send<TResponse>(string httpMethod, string absoluteUrl, object? request)
+    public TResponse Send<TResponse>(string httpMethod, string absoluteUrl, object? request) =>
+        Send<TResponse>(httpMethod, absoluteUrl, request, null);
+    public TResponse Send<TResponse>(string httpMethod, string absoluteUrl, object? request, object? dto)
     {
         var client = GetHttpClient();
         absoluteUrl = GetAbsoluteUrl(httpMethod, request, absoluteUrl);
@@ -374,6 +392,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return typedResponse;
 
         var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
+        var id = Diagnostics.Client.WriteRequestBefore(httpReq, request ?? dto, typeof(TResponse));
+        Exception? e = null;
+        TResponse? response = default; 
 
         try
         {
@@ -384,17 +405,25 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var response = HandleUnauthorizedResponse<TResponse>(client, httpMethod, absoluteUrl, request);
+                response = HandleUnauthorizedResponse<TResponse>(client, httpMethod, absoluteUrl, request);
                 if (response != null)
                     return response;
             }
 
-            return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
+            return response = ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            LogManager.GetLogger(GetType()).Error(e, nameof(Send) + ": " + e.Message);
+            e = ex;
+            LogManager.GetLogger(GetType()).Error(ex, nameof(Send) + ": " + ex.Message);
             throw;
+        }
+        finally
+        {
+            if (e != null)
+                Diagnostics.Client.WriteRequestError(id, httpReq, e);
+            else
+                Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
         }
     }
 
@@ -418,20 +447,38 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                 var accessToken = accessTokenResponse.AccessToken;
                 var tokenCookie = this.GetTokenCookie();
                 var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
+                var id = Diagnostics.Client.WriteRequestBefore(refreshRequest, request, typeof(GetAccessTokenResponse));
+                Exception? e = null;
+                TResponse? response = default;
 
-                if (!string.IsNullOrEmpty(accessToken))
+                try
                 {
-                    refreshRequest.AddBearerToken(this.BearerToken = accessToken);
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                }
-                else if (tokenCookie != null)
-                {
-                    this.SetTokenCookie(tokenCookie);
-                }
-                else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+                    if (!string.IsNullOrEmpty(accessToken))
+                    {
+                        refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                    }
+                    else if (tokenCookie != null)
+                    {
+                        this.SetTokenCookie(tokenCookie);
+                    }
+                    else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
 
-                var refreshTokenResponse = client.Send(refreshRequest);
-                return ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest);
+                    var refreshTokenResponse = client.Send(refreshRequest);
+                    return response = ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest);
+                }
+                catch (Exception ex)
+                {
+                    e = ex;
+                    throw;
+                }
+                finally
+                {
+                    if (e != null)
+                        Diagnostics.Client.WriteRequestError(id, refreshRequest, e);
+                    else
+                        Diagnostics.Client.WriteRequestAfter(id, refreshRequest, response);
+                }
             }
             catch (Exception e)
             {
@@ -446,8 +493,28 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         {
             AddBasicAuth(client);
             var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
-            var response = client.Send(httpReq);
-            return ConvertToResponse<TResponse>(response, httpMethod, absoluteUrl, request);
+
+            var id = Diagnostics.Client.WriteRequestBefore(httpReq, request, typeof(TResponse));
+            Exception? e = null;
+            TResponse? response = default;
+
+            try
+            {
+                var httpRes = client.Send(httpReq);
+                return response = ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
+            }
+            catch (Exception ex)
+            {
+                e = ex;
+                throw;
+            }
+            finally
+            {
+                if (e != null)
+                    Diagnostics.Client.WriteRequestError(id, httpReq, e);
+                else
+                    Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
+            }
         }
         
         return default;
@@ -475,19 +542,39 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                 var tokenCookie = this.GetTokenCookie();
                 var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
 
-                if (!string.IsNullOrEmpty(accessToken))
+                var id = Diagnostics.Client.WriteRequestBefore(refreshRequest, request, typeof(GetAccessTokenResponse));
+                Exception? e = null;
+                TResponse? response = default;
+
+                try
                 {
-                    refreshRequest.AddBearerToken(this.BearerToken = accessToken);
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                }
-                else if (tokenCookie != null)
-                {
-                    this.SetTokenCookie(tokenCookie);
-                }
-                else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+                    if (!string.IsNullOrEmpty(accessToken))
+                    {
+                        refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                    }
+                    else if (tokenCookie != null)
+                    {
+                        this.SetTokenCookie(tokenCookie);
+                    }
+                    else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
                     
-                var refreshTokenResponse = await client.SendAsync(refreshRequest, token).ConfigAwait();
-                return await ConvertToResponseAsync<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
+                    var refreshTokenResponse = await client.SendAsync(refreshRequest, token).ConfigAwait();
+                    return response = await ConvertToResponseAsync<TResponse>(
+                        refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
+                }
+                catch (Exception ex)
+                {
+                    e = ex;
+                    throw;
+                }
+                finally
+                {
+                    if (e != null)
+                        Diagnostics.Client.WriteRequestError(id, refreshRequest, e);
+                    else
+                        Diagnostics.Client.WriteRequestAfter(id, refreshRequest, response);
+                }
             }
             catch (Exception e)
             {
@@ -502,8 +589,28 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         {
             AddBasicAuth(client);
             var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
-            var response = await client.SendAsync(httpReq, token).ConfigAwait();
-            return await ConvertToResponseAsync<TResponse>(response, httpMethod, absoluteUrl, request, token).ConfigAwait();
+
+            var id = Diagnostics.Client.WriteRequestBefore(httpReq, request, typeof(TResponse));
+            Exception? e = null;
+            TResponse? response = default;
+
+            try
+            {
+                var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();
+                return response = await ConvertToResponseAsync<TResponse>(httpRes, httpMethod, absoluteUrl, request, token).ConfigAwait();
+            }
+            catch (Exception ex)
+            {
+                e = ex;
+                throw;
+            }
+            finally
+            {
+                if (e != null)
+                    Diagnostics.Client.WriteRequestError(id, httpReq, e);
+                else
+                    Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
+            }
         }
         
         return default;
@@ -638,32 +745,22 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                 return filterResponse;
         }
 
+        TResponse? response = default;
         if (typeof(TResponse) == typeof(string))
-        {
-            var result = ThrowIfError(() => httpRes.Content.ReadAsString(), httpRes, request, absoluteUrl);
-            var response = (TResponse) (object) result;
-            ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
-            return response;
-        }
+            response = (TResponse) (object) ThrowIfError(() => httpRes.Content.ReadAsString(), httpRes, request, absoluteUrl);
         if (typeof(TResponse) == typeof(byte[]))
-        {
-            var result = ThrowIfError(() => httpRes.Content.ReadAsByteArray(), httpRes, request, absoluteUrl);
-            var response = (TResponse) (object) result;
-            ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
-            return response;
-        }
+            response = (TResponse) (object) ThrowIfError(() => httpRes.Content.ReadAsByteArray(), httpRes, request, absoluteUrl);
         if (typeof(TResponse) == typeof(Stream))
+            response = (TResponse) (object) ThrowIfError(() => httpRes.Content.ReadAsStream(), httpRes, request, absoluteUrl);
+
+        if (response == null)
         {
-            var result = ThrowIfError(() => httpRes.Content.ReadAsStream(), httpRes, request, absoluteUrl);
-            var response = (TResponse) (object) result;
-            ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
-            return response;
+            var json = ThrowIfError(() => httpRes.Content.ReadAsString(), httpRes, request, absoluteUrl);
+            response = json.FromJson<TResponse>();
         }
 
-        var json = ThrowIfError(() => httpRes.Content.ReadAsString(), httpRes, request, absoluteUrl);
-        var obj = json.FromJson<TResponse>();
-        ResultsFilterResponse?.Invoke(httpRes, obj, httpMethod, absoluteUrl, request);
-        return obj;
+        ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
+        return response;
     }
 
     private void ApplyWebRequestFilters(HttpRequestMessage httpReq)
@@ -827,14 +924,14 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     }
 
     public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto) =>
-        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto);
     public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) =>
-        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, token);
+        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto, token);
 
     public Task<TResponse> GetAsync<TResponse>(object requestDto) =>
-        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto);
     public Task<TResponse> GetAsync<TResponse>(object requestDto, CancellationToken token) =>
-        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, token);
+        SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto, token);
 
     public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl) =>
         SendAsync<TResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
@@ -842,20 +939,20 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         SendAsync<TResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null, token);
 
     public Task GetAsync(IReturnVoid requestDto) =>
-        SendAsync<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        SendAsync<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto);
     public Task GetAsync(IReturnVoid requestDto, CancellationToken token) =>
-        SendAsync<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, token);
+        SendAsync<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto, token);
 
 
     public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto) =>
-        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto);
     public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) =>
-        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, token);
+        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto, token);
 
     public Task<TResponse> DeleteAsync<TResponse>(object requestDto) =>
-        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto);
     public Task<TResponse> DeleteAsync<TResponse>(object requestDto, CancellationToken token) =>
-        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, token);
+        SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto, token);
 
     public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl) =>
         SendAsync<TResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null);
@@ -863,9 +960,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         SendAsync<TResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null, token);
 
     public Task DeleteAsync(IReturnVoid requestDto) =>
-        SendAsync<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        SendAsync<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto);
     public Task DeleteAsync(IReturnVoid requestDto, CancellationToken token) =>
-        SendAsync<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, token);
+        SendAsync<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto, token);
 
 
     public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto) =>
@@ -939,7 +1036,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
         var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
-        return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
+        return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, requestDto, token);
     }
 
     public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto, CancellationToken token = default)
@@ -948,7 +1045,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
         var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
-        return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
+        return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, requestDto, token);
     }
 
     public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token = default)
@@ -957,7 +1054,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
         var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
-        return SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
+        return SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, requestDto, token);
     }
 
     public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request, CancellationToken token = default)
@@ -966,7 +1063,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
         var requestBody = HttpUtils.HasRequestBody(httpVerb) ? request : null;
-        return SendAsync<TResponse>(httpVerb, ResolveUrl(httpVerb, relativeOrAbsoluteUrl), requestBody, token);
+        return SendAsync<TResponse>(httpVerb, ResolveUrl(httpVerb, relativeOrAbsoluteUrl), requestBody, request, token);
     }
 
 
@@ -1008,9 +1105,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     }
 
     public TResponse Get<TResponse>(IReturn<TResponse> requestDto) =>
-        Send<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        Send<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto);
     public TResponse Get<TResponse>(object requestDto) =>
-        Send<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        Send<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto);
 
     public TResponse Get<TResponse>(string relativeOrAbsoluteUrl) =>
         Send<TResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
@@ -1028,7 +1125,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         QueryResponse<TResponse> response;
         do
         {
-            response = Send<QueryResponse<TResponse>>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, queryDto), null);
+            response = Send<QueryResponse<TResponse>>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, queryDto), null, queryDto);
             foreach (var result in response.Results)
             {
                 yield return result;
@@ -1040,20 +1137,20 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
 
     public void Get(IReturnVoid requestDto) =>
-        Send<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        Send<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, requestDto);
 
 
     public TResponse Delete<TResponse>(IReturn<TResponse> requestDto) =>
-        Send<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        Send<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto);
 
     public TResponse Delete<TResponse>(object requestDto) =>
-        Send<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        Send<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto);
 
     public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl) =>
         Send<TResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null);
 
     public void Delete(IReturnVoid requestDto) =>
-        Send<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        Send<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, requestDto);
 
 
     public TResponse Post<TResponse>(IReturn<TResponse> requestDto) =>
@@ -1377,6 +1474,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return typedResponse;
 
         var httpReq = CreateRequest(httpMethod, absoluteUrl, request:request);
+        var id = Diagnostics.Client.WriteRequestBefore(httpReq, request, typeof(TResponse));
+        Exception? e = null;
+        TResponse? response = default; 
 
         try
         {
@@ -1387,17 +1487,25 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var response = HandleUnauthorizedResponse<TResponse>(client, httpMethod, absoluteUrl, request:request);
+                response = HandleUnauthorizedResponse<TResponse>(client, httpMethod, absoluteUrl, request:request);
                 if (response != null)
                     return response;
             }
 
             return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            e = ex;
             LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendForm)}: " + e.Message);
             throw;
+        }
+        finally
+        {
+            if (e != null)
+                Diagnostics.Client.WriteRequestError(id, httpReq, e);
+            else
+                Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
         }
     }
     
@@ -1439,6 +1547,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return typedResponse;
 
         var httpReq = CreateRequest(httpMethod, absoluteUrl, request:request);
+        var id = Diagnostics.Client.WriteRequestBefore(httpReq, request, typeof(TResponse));
+        Exception? e = null;
+        TResponse? response = default; 
 
         try
         {
@@ -1449,17 +1560,25 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
             if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var response = await HandleUnauthorizedResponseAsync<TResponse>(client, httpMethod, absoluteUrl, request:request, token).ConfigAwait();
+                response = await HandleUnauthorizedResponseAsync<TResponse>(client, httpMethod, absoluteUrl, request:request, token).ConfigAwait();
                 if (response != null)
                     return response;
             }
 
             return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            e = ex;
             LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendFormAsync)}: " + e.Message);
             throw;
+        }
+        finally
+        {
+            if (e != null)
+                Diagnostics.Client.WriteRequestError(id, httpReq, e);
+            else
+                Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
         }
     }
     
