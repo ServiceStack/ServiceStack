@@ -41,6 +41,17 @@ public class AdminProfilingResponse
     public ResponseStatus ResponseStatus { get; set; }
 }
 
+public class AdminProfilingStatus : IReturn<AdminProfilingStatusResponse>
+{
+    
+}
+
+public class AdminProfilingStatusResponse
+{
+    public long CounterStartTimeStamp { get; set; }
+    public DateTime ServerStartDateTime { get; set; }
+}
+
 [DefaultRequest(typeof(AdminProfiling))]
 [Restrict(VisibilityTo = RequestAttributes.Localhost)]
 public class AdminProfilingService : Service
@@ -88,6 +99,16 @@ public class AdminProfilingService : Service
         {
             Results = results.ToList(),
             Total = snapshot.Count,
+        };
+    }
+
+    public object Any(AdminProfilingStatus request)
+    {
+        var feature = HostContext.AppHost.AssertPlugin<ProfilingFeature>();
+        return new AdminProfilingStatusResponse
+        {
+            ServerStartDateTime = DateTime.UtcNow - (new TimeSpan(Stopwatch.GetTimestamp() - feature.CounterStart)),
+            CounterStartTimeStamp = feature.CounterStart
         };
     }
 }
@@ -167,6 +188,8 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     public Action<DiagnosticEntry, DiagnosticEvent>? DiagnosticEntryFilter { get; set; }
 
     public ProfilerDiagnosticObserver Observer { get; set; }
+    
+    public long CounterStart { get; set; }
 
     /// <summary>
     /// Maximum char/byte length of string response body
@@ -216,6 +239,7 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             nameof(DiagnosticEntry.Duration),
             nameof(DiagnosticEntry.Timestamp),
         };
+        this.CounterStart = Stopwatch.GetTimestamp();
     }
 
     public void Register(IAppHost appHost)
