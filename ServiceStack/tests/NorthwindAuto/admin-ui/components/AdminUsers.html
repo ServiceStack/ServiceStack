@@ -157,7 +157,7 @@ import { mapGet, resolve } from "@servicestack/client"
 import { Forms } from "../js/init";
 
 (function (){
-    let formLayout = store.adminUsers.formLayout
+    let formLayout = map(store.adminUsers, x => x.formLayout) || []
     let inputIds = formLayout.map(input => input.id)
     let exceptFields = [...formLayout.map(x => x.id), 'password', 'id']
 

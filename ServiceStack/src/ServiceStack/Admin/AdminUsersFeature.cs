@@ -120,16 +120,6 @@ namespace ServiceStack.Admin
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
 
-        /// <summary>
-        /// Customize Admin Users FormLayout
-        /// </summary>
-        public ApiCss Css { get; set; } = new()
-        {
-            Form = "max-w-screen-lg",
-            Fieldset = "grid grid-cols-12 gap-6", 
-            Field = "col-span-12",
-        };
-
         public AdminUsersFeature RemoveFromUserForm(params string[] fieldNames) =>
             RemoveFromUserForm(input => fieldNames.Contains(input.Name));
         public AdminUsersFeature RemoveFromUserForm(Predicate<InputInfo> match)
@@ -192,7 +182,6 @@ namespace ServiceStack.Admin
                         QueryUserAuthProperties = QueryUserAuthProperties,
                         QueryMediaRules = QueryMediaRules, 
                         FormLayout = FormLayout,
-                        Css = Css,
                     };
                     if (authRepo is IQueryUserAuth)
                         plugin.Enabled.Add("query");

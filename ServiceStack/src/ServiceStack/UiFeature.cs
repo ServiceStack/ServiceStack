@@ -117,6 +117,15 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
                     Other = "other",
                 },
             },
+            Admin = new()
+            {
+                Css = new ApiCss
+                {
+                    Form = "max-w-screen-lg",
+                    Fieldset = "grid grid-cols-12 gap-6", 
+                    Field = "col-span-12",
+                }
+            },
             AdminLinks = new(),
         };
     }

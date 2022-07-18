@@ -19,5 +19,5 @@ function createClient(fn) {
 let client = createClient()
 let appName = 'admin-ui'
 let Meta = createMeta(Server, appName)
-let Forms = createForms(Meta, Server.plugins.adminUsers.css, Server.ui)
+let Forms = createForms(Meta, Server.ui.admin.css, Server.ui)
 /*:minify*/

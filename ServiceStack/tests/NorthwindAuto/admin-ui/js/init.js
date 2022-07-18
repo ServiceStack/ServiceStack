@@ -27,6 +27,6 @@ export let client = createClient()
 
 let appName = 'admin-ui'
 export let Meta = createMeta(Server, appName)
-export let Forms = createForms(Meta, Server.plugins.adminUsers.css, Server.ui)
+export let Forms = createForms(Meta, Server.ui.admin.css, Server.ui)
 
 /*:minify*/

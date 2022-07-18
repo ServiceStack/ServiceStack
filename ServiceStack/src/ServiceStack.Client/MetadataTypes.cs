@@ -542,6 +542,11 @@ namespace ServiceStack
         public ExplorerUi Explorer { get; set; }
         
         /// <summary>
+        /// The default styles to use for rendering Admin UI 
+        /// </summary>
+        public AdminUi Admin { get; set; }
+        
+        /// <summary>
         /// The default formats for displaying info
         /// </summary>
         public ApiFormat DefaultFormats { get; set; }
@@ -579,6 +584,9 @@ namespace ServiceStack
     [Exclude(Feature.Soap)]
     public class AdminUi
     {
+        /// <summary>
+        /// Customize Admin Users FormLayout
+        /// </summary>
         public ApiCss Css { get; set; }
     }
 
