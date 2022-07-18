@@ -214,7 +214,7 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             nameof(DiagnosticEntry.ThreadId),
             nameof(DiagnosticEntry.UserAuthId),
             nameof(DiagnosticEntry.Duration),
-            nameof(DiagnosticEntry.Timestamp),
+            nameof(DiagnosticEntry.Date),
         };
     }
 
@@ -362,6 +362,7 @@ public sealed class ProfilerDiagnosticObserver :
             UserAuthId = e.UserAuthId,
             Tag = e.Tag,
             Timestamp = e.Timestamp,
+            Date = e.Date,
             ThreadId = Thread.CurrentThread.ManagedThreadId,
             StackTrace = e.StackTrace,
             OperationId = e.OperationId,
@@ -834,6 +835,7 @@ public sealed class ProfilerDiagnosticObserver :
                     HttpRequest = httpReq,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
+                entry.Date = new DateTime(timestamp); //https://stackoverflow.com/a/1438667/85785
                 entry.ClientOperationId = httpReq.Options.TryGetValue(Diagnostics.Keys.HttpRequestOperationId, out var operationId)
                         ? operationId
                         : null;
@@ -871,6 +873,7 @@ public sealed class ProfilerDiagnosticObserver :
                         : null,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
+                entry.Date = new DateTime(timestamp); //https://stackoverflow.com/a/1438667/85785
 
                 // JsonApiClient
                 if (refs.TryRemove(loggingRequestId, out var orig) && orig is HttpClientDiagnosticEvent reqOrig)
@@ -1174,6 +1177,7 @@ public class DiagnosticEntry
     public Dictionary<string, object?>? NamedArgs { get; set; }
     public TimeSpan? Duration { get; set; }
     public long Timestamp { get; set; }
+    public DateTime Date { get; set; }
     /// <summary>
     /// Custom data that can be attached with ProfilingFeature.TagResolver  
     /// </summary>

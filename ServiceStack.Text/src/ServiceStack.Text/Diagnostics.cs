@@ -40,6 +40,7 @@ public class Diagnostics
         public const string Response = nameof(Response);
         public const string LoggingRequestId = nameof(LoggingRequestId);
         public const string Timestamp = nameof(Timestamp);
+        public const string Date = nameof(Date);
 #if NET6_0_OR_GREATER
         public static readonly System.Net.Http.HttpRequestOptionsKey<Guid> HttpRequestOperationId = new(OperationId);
         public static readonly System.Net.Http.HttpRequestOptionsKey<object> HttpRequestRequest = new(Request);
@@ -179,6 +180,7 @@ public abstract class DiagnosticEvent
     public string? UserAuthId { get; set; }
     public Exception? Exception { get; set; }
     public long Timestamp { get; set; }
+    public DateTime Date { get; set; }
     public object DiagnosticEntry { get; set; }
     public string? Tag { get; set; }
     public string? StackTrace { get; set; }
@@ -239,6 +241,7 @@ public static class DiagnosticsUtils
             evt.Tag ??= rootActivity.GetTag();
         }
         evt.Timestamp = Stopwatch.GetTimestamp();
+        evt.Date = DateTime.UtcNow;
         return evt;
     }
 }

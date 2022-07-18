@@ -1,6 +1,6 @@
 <script>
 import { AdminProfiling, DiagnosticEntry } from "../../lib/types"
-import { apiValueFmt, fromXsdDuration, lastRightPart, dateFmt, ApiResult } from "@servicestack/client"
+import { apiValueFmt, fromXsdDuration, lastRightPart, dateFmt, ApiResult, toDate } from "@servicestack/client"
 import { hasModifierKey, isInput } from "../../shared/js/core"
 
 App.components({
@@ -10,7 +10,7 @@ App.components({
         let summaryFields = Forms.Server.plugins.profiling.summaryFields.map(toCamelCase) 
         let linkFields = 'id,traceId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,tag,skip'.split(',')
 
-        let fieldLabels = { eventType:'event', threadId:'thread', userAuthId:'userId' }
+        let fieldLabels = { eventType:'event', threadId:'thread', userAuthId:'userId', date:'time' }
         if (plugin.tagLabel)
             fieldLabels.tag = plugin.tagLabel
         let timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric',minute:'numeric',second:'numeric',fractionalSecondDigits:3,hour12:false})
@@ -74,6 +74,10 @@ App.components({
                         evt = evt.substring('Write'.length)
                     }
                     return evt
+                }
+                if (k === 'date') {
+                    let d = toDate(obj)
+                    return timeFmt.format(d)
                 }
                 if (k === 'timestamp') {
                     let d = new Date(obj / 10)
@@ -338,12 +342,12 @@ App.components({
                                                         {{ apiValueFmt(select('duration'),'duration') }}
                                                     </span>
                                                 </div>
-                                                <div v-if="select('timestamp')" class="ml-2 flex items-center" title="Timestamp">
+                                                <div v-if="select('date')" class="ml-2 flex items-center" title="Time">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
                                                         <path fill="currentColor" d="M7 11h2v2H7v-2zm14-5v14c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2l.01-14c0-1.1.88-2 1.99-2h1V2h2v2h8V2h2v2h1c1.1 0 2 .9 2 2zM5 8h14V6H5v2zm14 12V10H5v10h14zm-4-7h2v-2h-2v2zm-4 0h2v-2h-2v2z"/>
                                                     </svg>
                                                     <span class="text-gray-600">
-                                                        {{ apiValueFmt(select('timestamp'),'timestamp') }}
+                                                        {{ apiValueFmt(select('date'),'date') }}
                                                     </span>
                                                 </div>
                                             </div>
