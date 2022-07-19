@@ -173,8 +173,8 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// </summary>
     public int MaxBodyLength { get; set; } = 10 * 10 * 1024;
 
-    protected internal long counterStartTick = Stopwatch.GetTimestamp();
-    protected internal DateTime counterStartDateTime = DateTime.UtcNow;
+    protected internal long startTick = Stopwatch.GetTimestamp();
+    protected internal DateTime startDateTime = DateTime.UtcNow;
 
     public ProfilingFeature()
     {
@@ -838,7 +838,7 @@ public sealed class ProfilerDiagnosticObserver :
                     HttpRequest = httpReq,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
-                entry.Date = feature.counterStartDateTime + TimeSpan.FromTicks(timestamp - feature.counterStartTick);
+                entry.Date = feature.startDateTime + TimeSpan.FromTicks(timestamp - feature.startTick);
                 entry.ClientOperationId = httpReq.Options.TryGetValue(Diagnostics.Keys.HttpRequestOperationId, out var operationId)
                         ? operationId
                         : null;
@@ -876,7 +876,7 @@ public sealed class ProfilerDiagnosticObserver :
                         : null,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
-                entry.Date = feature.counterStartDateTime + TimeSpan.FromTicks(timestamp - feature.counterStartTick);
+                entry.Date = feature.startDateTime + TimeSpan.FromTicks(timestamp - feature.startTick);
 
                 // JsonApiClient
                 if (refs.TryRemove(loggingRequestId, out var orig) && orig is HttpClientDiagnosticEvent reqOrig)
