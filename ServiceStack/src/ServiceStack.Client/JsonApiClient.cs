@@ -1528,7 +1528,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         {
             body.AddParams(request);
             var relativeOrAbsoluteUrl = request.GetType().ToApiUrl();
-            var result = SendForm<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, body);
+            var result = SendForm<TResponse>(ServiceClientUtils.GetHttpMethod(request.GetType()) ?? HttpMethods.Post, relativeOrAbsoluteUrl, body);
             return ApiResult.Create(result);
         }
         catch (Exception ex)
@@ -1601,7 +1601,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         {
             body.AddParams(request);
             var relativeOrAbsoluteUrl = request.GetType().ToApiUrl();
-            var result = await SendFormAsync<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, body, token).ConfigAwait();
+            var result = await SendFormAsync<TResponse>(ServiceClientUtils.GetHttpMethod(request.GetType()) ?? HttpMethods.Post, relativeOrAbsoluteUrl, body, token).ConfigAwait();
             return ApiResult.Create(result);
         }
         catch (Exception ex)
