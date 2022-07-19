@@ -212,6 +212,7 @@ public static class ServiceStackDiagnosticsUtils
             evt.UserAuthId = activity.GetUserId();
             evt.Tag = activity.GetTag();
         }
+        evt.Date = DateTime.UtcNow;
         evt.Timestamp = Stopwatch.GetTimestamp();
         return evt;
     }
