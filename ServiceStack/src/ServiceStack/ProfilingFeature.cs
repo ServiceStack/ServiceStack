@@ -173,6 +173,9 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// </summary>
     public int MaxBodyLength { get; set; } = 10 * 10 * 1024;
 
+    protected internal long counterStartTick = Stopwatch.GetTimestamp();
+    protected internal DateTime counterStartDateTime = DateTime.UtcNow;
+
     public ProfilingFeature()
     {
         this.ExcludeRequestPathInfoStartingWith = new[] {
@@ -835,7 +838,7 @@ public sealed class ProfilerDiagnosticObserver :
                     HttpRequest = httpReq,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
-                entry.Date = new DateTime(timestamp); //https://stackoverflow.com/a/1438667/85785
+                entry.Date = feature.counterStartDateTime + TimeSpan.FromTicks(timestamp - feature.counterStartTick);
                 entry.ClientOperationId = httpReq.Options.TryGetValue(Diagnostics.Keys.HttpRequestOperationId, out var operationId)
                         ? operationId
                         : null;
@@ -873,7 +876,7 @@ public sealed class ProfilerDiagnosticObserver :
                         : null,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
-                entry.Date = new DateTime(timestamp); //https://stackoverflow.com/a/1438667/85785
+                entry.Date = feature.counterStartDateTime + TimeSpan.FromTicks(timestamp - feature.counterStartTick);
 
                 // JsonApiClient
                 if (refs.TryRemove(loggingRequestId, out var orig) && orig is HttpClientDiagnosticEvent reqOrig)
