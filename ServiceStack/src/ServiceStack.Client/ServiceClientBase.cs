@@ -625,7 +625,7 @@ namespace ServiceStack
             if (typeof(TResponse) == typeof(object))
                 return (TResponse)this.Send(this.GetResponseType(request), request);
 
-            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
+            var httpMethod = GetHttpMethod(request);
             if (httpMethod != null)
             {
                 return httpMethod switch {
@@ -1149,13 +1149,13 @@ namespace ServiceStack
         public virtual void SendOneWay(object request)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType()) ?? HttpMethod ?? DefaultHttpMethod;
+            var httpMethod = GetHttpMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
             SendOneWay(httpMethod, ResolveUrl(httpMethod, requestUri), request);
         }
 
         public virtual void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
-            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType()) ?? HttpMethod ?? DefaultHttpMethod;
+            var httpMethod = GetHttpMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
             SendOneWay(httpMethod, ResolveUrl(httpMethod, relativeOrAbsoluteUrl), request);
         }
 
@@ -1193,7 +1193,7 @@ namespace ServiceStack
             if (typeof(TResponse) == typeof(object))
                 return (TResponse) await this.SendAsync(this.GetResponseType(request), request, token);
 
-            var httpMethod = ServiceClientUtils.GetHttpMethod(request.GetType());
+            var httpMethod = GetHttpMethod(request);
             if (httpMethod != null)
             {
                 return httpMethod switch {
@@ -1670,6 +1670,7 @@ namespace ServiceStack
             return Send<TResponse>(httpVerb, relativeOrAbsoluteUrl, requestDto);
         }
 
+        public string GetHttpMethod(object request) => ServiceClientUtils.GetHttpMethod(request.GetType());
 
         /// <summary>
         /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
@@ -1758,12 +1759,13 @@ namespace ServiceStack
         
         public virtual TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
         {
-            return PostFilesWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray());
+            return PostFilesWithRequest<TResponse>(ResolveTypedUrl(GetHttpMethod(request) ?? HttpMethods.Post, request), request, files.ToArray());
         }
 
         public virtual TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
         {
-            return PostFilesWithRequest<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray());
+            return PostFilesWithRequest<TResponse>(ResolveUrl(
+                GetHttpMethod(request) ?? HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray());
         }
 
         private TResponse PostFilesWithRequest<TResponse>(string requestUri, object request, UploadFile[] files)
@@ -1773,7 +1775,7 @@ namespace ServiceStack
 
             WebRequest createWebRequest()
             {
-                var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
+                var webRequest = PrepareWebRequest(GetHttpMethod(request) ?? HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
 

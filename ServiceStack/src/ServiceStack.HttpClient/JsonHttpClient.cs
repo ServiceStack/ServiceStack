@@ -956,6 +956,8 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null).GetSyncResponse();
     }
 
+    public string GetHttpMethod(object request) => ServiceClientUtils.GetHttpMethod(request.GetType());
+
     public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null, string fieldName = "file", CancellationToken token = default)
     {
         using var content = new MultipartFormDataContent();
@@ -981,7 +983,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
     public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "file", CancellationToken token = default)
     {
-        return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, 
+        return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(GetHttpMethod(request) ?? HttpMethods.Post, request), fileToUpload, 
             fileName:fileName, request:request, fieldName:fieldName, token);
     }
 
@@ -1014,7 +1016,8 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
         content.Add(fileContent, fieldName, fileName);
 
-        var result = await SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl),
+        var httpMethod = GetHttpMethod(request) ?? HttpMethods.Post;
+        var result = await SendAsync<TResponse>(httpMethod, ResolveUrl(httpMethod, relativeOrAbsoluteUrl),
             content, token).ConfigAwait();
         return result;
     }
