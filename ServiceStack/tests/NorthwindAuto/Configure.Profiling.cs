@@ -1,3 +1,4 @@
+using Chinook.ServiceModel;
 using MyApp.ServiceInterface;
 using ServiceStack;
 using ServiceStack.Auth;
@@ -15,30 +16,30 @@ public class ConfigureProfiling : IHostingStartup
             host => {
                 host.Plugins.AddIfDebug(new RequestLogsFeature {
                     EnableResponseTracking = true,
-                    RequestLogFilter = (req, entry) => {
-                        entry.Meta = new() {
-                            ["RemoteIp"] = req.RemoteIp,
-                            ["Referrer"] = req.UrlReferrer?.ToString(),
-                            ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
-                        };
-                    },
+                    // RequestLogFilter = (req, entry) => {
+                    //     entry.Meta = new() {
+                    //         ["RemoteIp"] = req.RemoteIp,
+                    //         ["Referrer"] = req.UrlReferrer?.ToString(),
+                    //         ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
+                    //     };
+                    // },
                 });
                 
                 host.Plugins.AddIfDebug(new ProfilingFeature {
-                    TagLabel = "Tenant",
-                    TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0,5),
+                    // TagLabel = "Tenant",
+                    // TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0,5),
                     IncludeStackTrace = true,
-                    DiagnosticEntryFilter = (entry, evt) => {
-                        if (evt is RequestDiagnosticEvent requestEvent)
-                        {
-                            var req = requestEvent.Request;
-                            entry.Meta = new() {
-                                ["RemoteIp"] = req.RemoteIp,
-                                ["Referrer"] = req.UrlReferrer?.ToString(),
-                                ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
-                            };
-                        }
-                    },
+                    // DiagnosticEntryFilter = (entry, evt) => {
+                    //     if (evt is RequestDiagnosticEvent requestEvent)
+                    //     {
+                    //         var req = requestEvent.Request;
+                    //         entry.Meta = new() {
+                    //             ["RemoteIp"] = req.RemoteIp,
+                    //             ["Referrer"] = req.UrlReferrer?.ToString(),
+                    //             ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
+                    //         };
+                    //     }
+                    // },
                 });
                 host.Plugins.Add(new ServerEventsFeature());
                 

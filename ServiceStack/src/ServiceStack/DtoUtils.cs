@@ -68,8 +68,9 @@ namespace ServiceStack
                     innerMessages.Add(innerEx.Message);
                     innerEx = innerEx.InnerException;
                 }
+                var stackTrace = StringBuilderCache.ReturnAndFree(sb);
                 
-                responseStatus.StackTrace = StringBuilderCache.ReturnAndFree(sb);
+                responseStatus.StackTrace = stackTrace;
                 if (innerMessages.Count > 0)
                 {
                     responseStatus.Meta ??= new Dictionary<string, string>();

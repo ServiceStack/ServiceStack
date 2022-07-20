@@ -1,3 +1,4 @@
+using Chinook.ServiceModel;
 using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
@@ -95,25 +96,25 @@ public class CreateMqBooking : AuditBase, ICreateDb<Booking>, IReturn<IdResponse
     public string? Notes { get; set; }
 }
 
-[Route("/albums", "POST")]
-public class CreateAlbums : IReturn<IdResponse>, IPost, ICreateDb<Albums>
-{
-    [ValidateNotEmpty]
-    public string Title { get; set; }
-    [ValidateGreaterThan(0)]
-    public long ArtistId { get; set; }
-}
+// [Route("/albums", "POST")]
+// public class CreateAlbums : IReturn<IdResponse>, IPost, ICreateDb<Albums>
+// {
+//     [ValidateNotEmpty]
+//     public string Title { get; set; }
+//     [ValidateGreaterThan(0)]
+//     public long ArtistId { get; set; }
+// }
 
-public class QueryAlbums : QueryDb<Albums>, IGet
-{
-    public long? AlbumId { get; set; }
-}
-public class Albums
-{
-    public long AlbumId { get; set; }
-    public string Title { get; set; }
-    public long ArtistId { get; set; }
-}
+// public class QueryAlbums : QueryDb<Albums>, IGet
+// {
+//     public long? AlbumId { get; set; }
+// }
+// public class Albums
+// {
+//     public long AlbumId { get; set; }
+//     public string Title { get; set; }
+//     public long ArtistId { get; set; }
+// }
 
 public class TestServices : Service
 {
@@ -129,7 +130,7 @@ public class TestServices : Service
         var client = new JsonApiClient("https://chinook.locode.dev");
         var api = client.Api(new QueryAlbums { Take = 5 });
 
-        var errorApi = client.Api(new CreateAlbums { Title = "New", ArtistId = 1 });
+        var errorApi = client.Api(new CreateAlbums());
 
         var json = "https://chinook.locode.dev/api/QueryAlbums?Take=5".GetJsonFromUrl();
         "https://chinook.locode.dev/api/CreateAlbums".PostToUrl(new { Title = "New2", ArtistId = 2 });

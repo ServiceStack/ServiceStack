@@ -12,7 +12,7 @@ public static class ApiResult
 {
     public const string FieldErrorCode = "ValidationException";
 
-    public static ApiResult<TResponse> Create<TResponse>(TResponse response) => new(response);
+    public static ApiResult<TResponse> Create<TResponse >(TResponse response) => new(response);
 
     public static ApiResult<TResponse> CreateError<TResponse>(ResponseStatus errorStatus) => new(errorStatus);
     public static ApiResult<EmptyResponse> CreateError(ResponseStatus errorStatus) => new(errorStatus);
@@ -22,8 +22,8 @@ public static class ApiResult
     public static ApiResult<EmptyResponse> CreateError(string message, string? errorCode = nameof(Exception)) =>
         new(ErrorUtils.CreateError(message, errorCode));
 
-    public static ApiResult<TResponse> CreateError<TResponse>(Exception ex) => new(ErrorUtils.CreateError(ex));
-    public static ApiResult<EmptyResponse> CreateError(Exception ex) => new(ErrorUtils.CreateError(ex));
+    public static ApiResult<TResponse> CreateError<TResponse>(Exception ex) => new(ErrorUtils.CreateError(ex)) { StackTrace = ex.StackTrace };
+    public static ApiResult<EmptyResponse> CreateError(Exception ex) => new(ErrorUtils.CreateError(ex)) { StackTrace = ex.StackTrace };
 
     public static ApiResult<TResponse> CreateFieldError<TResponse>(string fieldName, string message, string? errorCode = FieldErrorCode)
     {
@@ -50,7 +50,7 @@ public class ApiResult<TResponse> : IHasErrorStatus
     public bool Succeeded => !Failed && Response != null;
     public bool Completed => Response != null || Error != null;
     public bool IsLoading { get; set; }
-
+    public string? StackTrace { get; set; }
     public string? ErrorMessage => Error?.Message;
 
     public ResponseError[] Errors => Error?.Errors?.ToArray() ?? TypeConstants<ResponseError>.EmptyArray;

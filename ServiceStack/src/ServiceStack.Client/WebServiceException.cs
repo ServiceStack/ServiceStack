@@ -125,14 +125,14 @@ namespace ServiceStack
                     sb.Append("Field Errors:\n");
                     foreach (var error in status.Errors)
                     {
-                        sb.Append($"  [{error.FieldName}] {error.ErrorCode}:{error.Message}\n");
+                        sb.Append($"  [{error.FieldName}] {error.ErrorCode}: {error.Message}\n");
 
                         if (error.Meta != null && error.Meta.Count > 0)
                         {
                             sb.Append("  Field Meta:\n");
                             foreach (var entry in error.Meta)
                             {
-                                sb.Append($"    {entry.Key}:{entry.Value}\n");
+                                sb.Append($"    {entry.Key}: {entry.Value}\n");
                             }
                         }
                     }
@@ -143,7 +143,7 @@ namespace ServiceStack
                     sb.Append("Meta:\n");
                     foreach (var entry in status.Meta)
                     {
-                        sb.Append($"  {entry.Key}:{entry.Value}\n");
+                        sb.Append($"  {entry.Key}: {entry.Value}\n");
                     }
                 }
             }

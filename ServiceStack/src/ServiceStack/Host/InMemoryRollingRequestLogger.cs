@@ -113,57 +113,54 @@ namespace ServiceStack.Host
                 OperationName = request.OperationName,
                 DateTime = CurrentDateFn(),
                 RequestDuration = requestDuration,
+                HttpMethod = request.Verb,
+                AbsoluteUri = request.AbsoluteUri,
+                PathInfo = request.PathInfo,
+                IpAddress = request.UserHostAddress,
+                ForwardedFor = request.Headers[HttpHeaders.XForwardedFor],
+                Referer = request.Headers[HttpHeaders.Referer],
+                Headers = request.Headers.ToDictionary(),
+                UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId),
+                Items = SerializableItems(request.Items),
+                Session = EnableSessionTracking ? request.GetSession() : null,
+                StatusCode = request.Response.StatusCode,
+                StatusDescription = request.Response.StatusDescription
             };
 
-            if (request != null)
+            if (request.Response is IHasHeaders hasHeaders)
+                entry.ResponseHeaders = hasHeaders.Headers;
+
+            var isClosed = request.Response.IsClosed;
+            if (!isClosed)
             {
-                entry.HttpMethod = request.Verb;
-                entry.AbsoluteUri = request.AbsoluteUri;
-                entry.PathInfo = request.PathInfo;
-                entry.IpAddress = request.UserHostAddress;
-                entry.ForwardedFor = request.Headers[HttpHeaders.XForwardedFor];
-                entry.Referer = request.Headers[HttpHeaders.Referer];
-                entry.Headers = request.Headers.ToDictionary();
-                entry.UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId);
-                entry.Items = SerializableItems(request.Items);
-                entry.Session = EnableSessionTracking ? request.GetSession() : null;
-                entry.StatusCode = request.Response.StatusCode;
-                entry.StatusDescription = request.Response.StatusDescription;
-                if (request.Response is IHasHeaders hasHeaders)
-                    entry.ResponseHeaders = hasHeaders.Headers;
-
-                var isClosed = request.Response.IsClosed;
-                if (!isClosed)
-                {
-                    entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
-                    entry.SessionId = request.GetSessionId();
-                }
-
-                if (HideRequestBodyForRequestDtoTypes != null
-                    && requestType != null
-                    && !HideRequestBodyForRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
-                {
-                    entry.RequestDto = requestDto;
-
-                    if (!isClosed)
-                        entry.FormData = request.FormData.ToDictionary();
-
-                    var enableRequestBodyTracking = RequestBodyTrackingFilter?.Invoke(request);
-                    if (enableRequestBodyTracking ?? EnableRequestBodyTracking && request.CanReadRequestBody())
-                    {
-#if NETCORE
-                        // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
-                        if (!request.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
-                        {
-                            entry.RequestBody = request.GetRawBody();
-                        }
-#else
-                        entry.RequestBody = request.GetRawBody();
-#endif
-                    }
-                }
+                entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
+                entry.SessionId = request.GetSessionId();
             }
 
+            if (HideRequestBodyForRequestDtoTypes != null
+                && requestType != null
+                && !HideRequestBodyForRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
+            {
+                entry.RequestDto = requestDto;
+
+                if (!isClosed)
+                    entry.FormData = request.FormData.ToDictionary();
+
+                var enableRequestBodyTracking = RequestBodyTrackingFilter?.Invoke(request);
+                if (enableRequestBodyTracking ?? EnableRequestBodyTracking && request.CanReadRequestBody())
+                {
+#if NETCORE
+                    // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
+                    if (!request.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
+                    {
+                        entry.RequestBody = request.GetRawBody();
+                    }
+#else
+                    entry.RequestBody = request.GetRawBody();
+#endif
+                }
+            }
+                
             if (!response.IsErrorResponse())
             {
                 var enableResponseTracking = ResponseTrackingFilter?.Invoke(request);

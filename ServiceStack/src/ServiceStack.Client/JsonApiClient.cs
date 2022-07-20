@@ -875,7 +875,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         {
             StatusCode = (int)httpRes.StatusCode,
             StatusDescription = httpRes.ReasonPhrase,
-            ResponseHeaders = httpRes.Headers.ToWebHeaderCollection()
+            ResponseHeaders = httpRes.Headers.ToWebHeaderCollection(),
         };
 
         try
@@ -919,6 +919,10 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     {
         var webEx = ToWebServiceException(httpRes, response,
             stream => JsonSerializer.DeserializeFromStream<TResponse>(stream));
+
+        var status = webEx.ResponseStatus;
+        if (status.StackTrace == null && Diagnostics.IncludeStackTrace)
+            status.StackTrace = Environment.StackTrace;
 
         throw webEx;
     }

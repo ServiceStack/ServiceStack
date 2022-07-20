@@ -25,7 +25,11 @@ App.components({
             parseCookie,
             fieldLabels,
             linkFields,
-            apiValueFmt(obj) {
+            apiValueFmt(obj, k) {
+                if (k === 'requestDuration' && obj === 'PT0S') return ''
+                if (k === 'sessionId') {
+                    return obj && obj.substring(0,10)
+                }
                 return typeof obj === 'string' && obj.startsWith('PT')
                     ? fromXsdDuration(obj)
                     : apiValueFmt(obj)
@@ -232,7 +236,7 @@ App.components({
                         <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
                             :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : statusBackground(row.statusCode,index) + ' hover:bg-yellow-50']">
                             <td v-for="k in uniqueKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ apiValueFmt(row[k]) }}
+                                <span :title="row[k]">{{ apiValueFmt(row[k], k) }}</span>
                             </td>
                         </tr>
                         </tbody>

@@ -62,6 +62,7 @@ internal static class ServiceStackDiagnostics
                 OperationId = operationId,
                 Operation = operation,
                 Exception = ex,
+                StackTrace = ex?.StackTrace ?? (Diagnostics.IncludeStackTrace ? Environment.StackTrace : null),
             }.Init(req));
         }
     }
@@ -105,6 +106,7 @@ internal static class ServiceStackDiagnostics
                 OperationId = operationId,
                 Operation = operation,
                 Exception = ex,
+                StackTrace = ex?.StackTrace ?? (Diagnostics.IncludeStackTrace ? Environment.StackTrace : null),
             }.Init(req));
         }
     }
@@ -147,6 +149,7 @@ internal static class ServiceStackDiagnostics
                 Operation = operation,
                 Message = msg,
                 Exception = ex,
+                StackTrace = ex?.StackTrace ?? (Diagnostics.IncludeStackTrace ? Environment.StackTrace : null),
             }.Init(operationId));
         }
     }

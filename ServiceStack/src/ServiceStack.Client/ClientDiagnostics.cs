@@ -69,6 +69,7 @@ public static class ClientDiagnostics
                 Operation = operation,
                 HttpRequest = httpReq,
                 Exception = ex,
+                StackTrace = ex?.StackTrace ?? (Diagnostics.IncludeStackTrace ? Environment.StackTrace : null),
             }.Init(Activity.Current));
         }
     }

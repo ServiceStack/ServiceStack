@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Net.Sockets;
+using ServiceStack.Text;
 
 namespace ServiceStack;
 
@@ -157,6 +158,24 @@ public class Diagnostics
     public static DiagnosticListener Client => Instance.client;
     public static DiagnosticListener OrmLite => Instance.ormlite;
     public static DiagnosticListener Redis => Instance.redis;
+    
+    public static string? CreateStackTrace(Exception? e)
+    {
+        if (e?.StackTrace == null)
+            return null;
+
+        var sb = StringBuilderCache.Allocate();
+        sb.AppendLine(e.StackTrace);
+            
+        var innerEx = e.InnerException;
+        while (innerEx != null)
+        {
+            sb.AppendLine("");
+            sb.AppendLine(innerEx.ToString());
+            innerEx = innerEx.InnerException;
+        }
+        return StringBuilderCache.ReturnAndFree(sb);
+    }
 }
 
 [Flags]

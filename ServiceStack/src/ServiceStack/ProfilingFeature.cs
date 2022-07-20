@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using ServiceStack.Model;
 using ServiceStack.NativeTypes;
 using ServiceStack.Web;
 
@@ -372,20 +373,9 @@ public sealed class ProfilerDiagnosticObserver :
             Timestamp = e.Timestamp,
             Date = e.Date,
             ThreadId = Thread.CurrentThread.ManagedThreadId,
-            StackTrace = e.StackTrace,
             OperationId = e.OperationId,
         };
-        if (e.Exception != null)
-        {
-            to.StackTrace ??= e.Exception.StackTrace;
-            if (to.Error?.StackTrace != null)
-                to.Error.StackTrace = null;
-        }
-
-        if (e.Exception != null)
-        {
-            to.Error = DtoUtils.CreateResponseStatus(e.Exception, request:null, debugMode:true);
-        }
+        SetException(to, e.Exception);
 
         if (orig != null)
         {
@@ -393,6 +383,18 @@ public sealed class ProfilerDiagnosticObserver :
         }
 
         return to;
+    }
+
+    public static void SetException(DiagnosticEntry to, Exception? ex)
+    {
+        if (ex != null)
+            to.StackTrace ??= Diagnostics.CreateStackTrace(ex);
+
+        if (ex != null)
+            to.Error = DtoUtils.CreateResponseStatus(ex, request: null, debugMode: true);
+
+        if (to.StackTrace != null && to.Error?.StackTrace != null && ex is not IResponseStatusConvertible)
+            to.Error.StackTrace = null;
     }
 
     public DiagnosticEntry Filter(DiagnosticEntry entry, DiagnosticEvent e)
@@ -877,7 +879,9 @@ public sealed class ProfilerDiagnosticObserver :
                     OperationId = loggingRequestId,
                     HttpResponse = httpRes,
                     Exception = (int)httpRes.StatusCode >= 400
-                        ? new HttpError(httpRes.StatusCode, httpRes.ReasonPhrase)
+                        ? new HttpError(httpRes.StatusCode, httpRes.ReasonPhrase) {
+                            StackTrace = Diagnostics.IncludeStackTrace ? Environment.StackTrace : null,
+                        }
                         : null,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
@@ -928,7 +932,10 @@ public sealed class ProfilerDiagnosticObserver :
             {
                 httpAfter.Exception = clientError.Exception;
                 if (httpAfter.DiagnosticEntry is DiagnosticEntry entry)
-                    entry.Error = DtoUtils.CreateResponseStatus(clientError.Exception, request:null, debugMode:true);
+                {
+                    entry.StackTrace = null; // Clear low quality HttpClient Error
+                    SetException(entry, clientError.Exception);
+                }
             }
         }
 #endif

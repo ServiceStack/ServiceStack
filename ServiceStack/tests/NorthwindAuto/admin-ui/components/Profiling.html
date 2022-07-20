@@ -131,7 +131,7 @@ App.components({
              */
             select(arg, f) {
                 let ret = this.selected && this.selected[arg]
-                return f ? f(ret) : ret
+                return f && ret ? f(ret) : ret
             },
             expanded(id) { return map(this.selected, x => x.id === id) },
             statusColor(error) {
