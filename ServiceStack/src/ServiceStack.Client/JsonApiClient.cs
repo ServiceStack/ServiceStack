@@ -921,7 +921,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             stream => JsonSerializer.DeserializeFromStream<TResponse>(stream));
 
         var status = webEx.ResponseStatus;
-        if (status.StackTrace == null && Diagnostics.IncludeStackTrace)
+        if (status is { StackTrace: null } && Diagnostics.IncludeStackTrace)
             status.StackTrace = Environment.StackTrace;
 
         throw webEx;
