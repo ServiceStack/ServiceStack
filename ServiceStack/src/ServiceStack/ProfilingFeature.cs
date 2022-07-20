@@ -97,6 +97,9 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     public string Id => Plugins.Profiling;
     public const int DefaultCapacity = 10000;
 
+    /// <summary>
+    /// Limit API access to users in role
+    /// </summary>
     public string AccessRole { get; set; } = RoleNames.Admin;
 
     /// <summary>
@@ -150,6 +153,9 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// </summary>
     public int DefaultLimit { get; set; } = 50;
     
+    /// <summary>
+    /// The properties displayed in Profiling UI results grid
+    /// </summary>
     public List<string> SummaryFields { get; set; }
 
     /// <summary>
@@ -166,7 +172,7 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// </summary>
     public Action<DiagnosticEntry, DiagnosticEvent>? DiagnosticEntryFilter { get; set; }
 
-    public ProfilerDiagnosticObserver Observer { get; set; }
+    ProfilerDiagnosticObserver Observer { get; set; }
 
     /// <summary>
     /// Maximum char/byte length of string response body
