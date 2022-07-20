@@ -103,6 +103,16 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     public string AccessRole { get; set; } = RoleNames.Admin;
 
     /// <summary>
+    /// Which features to Profile, default all
+    /// </summary>
+    public ProfileSource Profile { get; set; } = ProfileSource.All;
+
+    /// <summary>
+    /// Size of circular buffer of profiled events
+    /// </summary>
+    public int Capacity { get; set; } = DefaultCapacity;
+
+    /// <summary>
     /// Don't log requests of these types. By default Profiling/Metadata requests are excluded
     /// </summary>
     public List<Type> ExcludeRequestDtoTypes { get; set; } = new();
@@ -132,31 +142,11 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     /// Turn On/Off Tracking of Responses per-request
     /// </summary>
     public Func<IRequest, bool>? ResponseTrackingFilter { get; set; }
-
-    /// <summary>
-    /// Which features to Profile, default all
-    /// </summary>
-    public ProfileSource Profile { get; set; } = ProfileSource.All;
     
     /// <summary>
     /// Whether to include CallStack StackTrace 
     /// </summary>
     public bool? IncludeStackTrace { get; set; }
-
-    /// <summary>
-    /// Size of circular buffer of profiled events
-    /// </summary>
-    public int Capacity { get; set; } = DefaultCapacity;
-    
-    /// <summary>
-    /// Default take, if none is specified
-    /// </summary>
-    public int DefaultLimit { get; set; } = 50;
-    
-    /// <summary>
-    /// The properties displayed in Profiling UI results grid
-    /// </summary>
-    public List<string> SummaryFields { get; set; }
 
     /// <summary>
     /// Attach custom data to request profiling summary fields
@@ -168,17 +158,26 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     public string? TagLabel { get; set; }
     
     /// <summary>
+    /// The properties displayed in Profiling UI results grid
+    /// </summary>
+    public List<string> SummaryFields { get; set; }
+    
+    /// <summary>
+    /// Default take, if none is specified
+    /// </summary>
+    public int DefaultLimit { get; set; } = 50;
+    
+    /// <summary>
     /// Customize DiagnosticEntry that gets captured
     /// </summary>
     public Action<DiagnosticEntry, DiagnosticEvent>? DiagnosticEntryFilter { get; set; }
-
-    ProfilerDiagnosticObserver Observer { get; set; }
 
     /// <summary>
     /// Maximum char/byte length of string response body
     /// </summary>
     public int MaxBodyLength { get; set; } = 10 * 10 * 1024;
 
+    protected internal ProfilerDiagnosticObserver Observer { get; set; }
     protected internal long startTick = Stopwatch.GetTimestamp();
     protected internal DateTime startDateTime = DateTime.UtcNow;
 
