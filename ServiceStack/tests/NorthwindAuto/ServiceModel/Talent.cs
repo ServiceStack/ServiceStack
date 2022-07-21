@@ -537,6 +537,7 @@ public class DeleteJobApplicationEvent : IDeleteDb<JobApplicationEvent>,
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 public class QueryAppUser : QueryDb<AppUser>
 {
     public string? EmailContains { get; set; }
