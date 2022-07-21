@@ -156,18 +156,21 @@ public class TestServices : Service
         });
         
         Db.CreateBooking("4th of the Bookings", RoomType.Single, 44, 400, "admin@email.com");
-        
-        PublishMessage(new CreateMqBooking {
-            Name = "Booking no 6",
+
+        var mqRequest = new CreateMqBooking {
+            Name = "John Smith",
             RoomType = RoomType.Queen,
-            Cost = 166,
-            RoomNumber = 16,
+            Cost = 200,
+            RoomNumber = 101,
             BookingStartDate = DateTime.Now,
             CreatedDate = DateTime.Now,
             CreatedBy = "employee@email.com",
             ModifiedDate = DateTime.Now,
             ModifiedBy = "employee@email.com",
-        });
+        };
+        PublishMessage(mqRequest);
+        
+        Gateway.Send(mqRequest);
         
         return new ProfileGenResponse();
     }

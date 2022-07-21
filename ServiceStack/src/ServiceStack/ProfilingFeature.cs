@@ -483,7 +483,7 @@ public sealed class ProfilerDiagnosticObserver :
 
     bool ShouldTrack(RequestDiagnosticEvent e)
     {
-        if (feature.ExcludeRequestPathInfoStartingWith.Any(x => e.Request.PathInfo.StartsWith(x)))
+        if (feature.ExcludeRequestPathInfoStartingWith.Any(x => e.Request.PathInfo?.StartsWith(x) == true))
             return false;
         
         var requestType = e.Request.Dto?.GetType();
