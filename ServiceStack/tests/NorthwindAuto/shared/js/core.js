@@ -165,11 +165,11 @@ export function canAccess(op, auth) {
 
     if (!requiredRoles.every(role => roles.indexOf(role) >= 0))
         return false
-    if (!requiresAnyRole.some(role => roles.indexOf(role) >= 0) && requiresAnyRole.length > 0)
+    if (requiresAnyRole.length > 0 && !requiresAnyRole.some(role => roles.indexOf(role) >= 0))
         return false
     if (!requiredPermissions.every(perm => permissions.indexOf(perm) >= 0))
         return false
-    if (!requiresAnyPermission.every(perm => permissions.indexOf(perm) >= 0) && requiresAnyPermission.length > 0)
+    if (requiresAnyPermission.length > 0 && !requiresAnyPermission.every(perm => permissions.indexOf(perm) >= 0))
         return false
 
     return true
@@ -196,12 +196,12 @@ export function invalidAccessMessage(op, auth) {
     if (missingPerms.length > 0)
         return `Requires ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
 
-    missingRoles = requiresAnyRole.filter(x => roles.indexOf(x) < 0)
-    if (missingRoles.length > 0)
-        return `Requires any ${missingRoles.map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
-    missingPerms = requiresAnyPermission.filter(x => permissions.indexOf(x) < 0)
-    if (missingPerms.length > 0)
-        return `Requires any ${missingPerms.map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
+    if (requiresAnyRole.length > 0 && !requiresAnyRole.some(role => roles.indexOf(role) >= 0))
+        return `Requires any ${requiresAnyRole.filter(x => roles.indexOf(x) < 0)
+            .map(x => '<b>' + x + '</b>').join(', ')} Role` + (missingRoles.length > 1 ? 's' : '')
+   if (requiresAnyPermission.length > 0 && !requiresAnyPermission.every(perm => permissions.indexOf(perm) >= 0))
+        return `Requires any ${requiresAnyPermission.filter(x => permissions.indexOf(x) < 0)
+            .map(x => '<b>' + x + '</b>').join(', ')} Permission` + (missingPerms.length > 1 ? 's' : '')
     return null
 }
 
