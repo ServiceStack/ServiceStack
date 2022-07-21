@@ -165,11 +165,11 @@ export function canAccess(op, auth) {
 
     if (!requiredRoles.every(role => roles.indexOf(role) >= 0))
         return false
-    if (!requiresAnyRole.some(role => roles.indexOf(role) >= 0))
+    if (!requiresAnyRole.some(role => roles.indexOf(role) >= 0) && requiresAnyRole.length > 0)
         return false
     if (!requiredPermissions.every(perm => permissions.indexOf(perm) >= 0))
         return false
-    if (!requiresAnyPermission.every(perm => permissions.indexOf(perm) >= 0))
+    if (!requiresAnyPermission.every(perm => permissions.indexOf(perm) >= 0) && requiresAnyPermission.length > 0)
         return false
 
     return true
