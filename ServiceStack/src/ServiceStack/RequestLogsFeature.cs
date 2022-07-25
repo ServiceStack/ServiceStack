@@ -99,12 +99,12 @@ namespace ServiceStack
         public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
         /// <summary>
-        /// Never attempt to serialize these types
+        /// Ignore logging and serializing these Request DTOs
         /// </summary>
         public List<Type> IgnoreTypes { get; set; } = new();
         
         /// <summary>
-        /// Allow ignoring 
+        /// Use custom Ignore Request DTO predicate
         /// </summary>
         public Func<object,bool> IgnoreFilter { get; set; } 
 
