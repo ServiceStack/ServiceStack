@@ -90,7 +90,7 @@ After which we end up with HTML similar to the structure below:
                 </ul>
             </nav>
         </header>
-        <!-- <Siderbar/> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+        <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
         <div class="mobile relative z-40 md:hidden" role="dialog" aria-modal="true">
             ...
             <nav class="mt-5 px-2 space-y-1">
