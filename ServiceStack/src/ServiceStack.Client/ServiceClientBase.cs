@@ -1127,7 +1127,9 @@ namespace ServiceStack
 
         public void Publish<T>(IMessage<T> message)
         {
+#if NET472 || NET6_0_OR_GREATER
             Diagnostics.ServiceStack.InitMessage(message);
+#endif            
             var requestDto = message.GetBody();
 
             if (message.CreatedDate != default(DateTime))

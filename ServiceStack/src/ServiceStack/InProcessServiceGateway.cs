@@ -169,7 +169,9 @@ namespace ServiceStack
 
             req.RequestAttributes |= RequestAttributes.InProcess;
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -189,11 +191,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -210,7 +213,9 @@ namespace ServiceStack
 
             req.SetInProcessRequest();
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -225,11 +230,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -259,7 +265,9 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.SetInProcessRequest();
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -279,11 +287,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
@@ -300,7 +309,9 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.SetInProcessRequest();
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -315,11 +326,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
@@ -337,7 +349,9 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -351,11 +365,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif                
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -374,7 +389,9 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -388,11 +405,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif                
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
@@ -412,7 +430,9 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -426,11 +446,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
@@ -448,7 +469,9 @@ namespace ServiceStack
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
 
+#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.ServiceStack.WriteGatewayBefore(req);
+#endif
             Exception e = null;
             try
             {
@@ -462,11 +485,12 @@ namespace ServiceStack
             }
             finally
             {
+#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.ServiceStack.WriteGatewayError(id, req, e);
                 else
                     Diagnostics.ServiceStack.WriteGatewayAfter(id, req);
-                
+#endif                
                 req.Dto = holdDto;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);

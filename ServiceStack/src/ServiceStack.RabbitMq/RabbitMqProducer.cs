@@ -57,7 +57,9 @@ namespace ServiceStack.RabbitMq
         {
             if (messageBody is IMessage message)
             {
+#if NET472 || NET6_0_OR_GREATER
                 Diagnostics.ServiceStack.Init(message);
+#endif
                 Publish(message.ToInQueueName(), message);
             }
             else

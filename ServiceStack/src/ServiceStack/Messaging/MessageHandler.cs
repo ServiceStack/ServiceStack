@@ -124,7 +124,7 @@ namespace ServiceStack.Messaging
             this.MqClient = mqClient;
             bool msgHandled = false;
 
-
+#if NET472 || NET6_0_OR_GREATER
             Activity origActivity = null;
             Activity activity = null;
             if (Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
@@ -146,6 +146,7 @@ namespace ServiceStack.Messaging
             }
             
             var id = Diagnostics.ServiceStack.WriteMqRequestBefore(message);
+#endif
             try
             {
                 var response = processMessageFn(message);
@@ -163,7 +164,9 @@ namespace ServiceStack.Messaging
                 
                 if (responseEx != null)
                 {
+#if NET472 || NET6_0_OR_GREATER
                     Diagnostics.ServiceStack.WriteMqRequestError(id, message, responseEx);
+#endif
                     TotalMessagesFailed++;
 
                     if (message.ReplyTo != null)
@@ -171,12 +174,16 @@ namespace ServiceStack.Messaging
                         var replyClient = ReplyClientFactory(message.ReplyTo);
                         if (replyClient != null)
                         {
+#if NET472 || NET6_0_OR_GREATER
                             Diagnostics.ServiceStack.WriteMqRequestPublish(id, replyClient, message.ReplyTo, response);
+#endif
                             replyClient.SendOneWay(message.ReplyTo, response);
                         }
                         else
                         {
+#if NET472 || NET6_0_OR_GREATER
                             Diagnostics.ServiceStack.WriteMqRequestPublish(id, mqClient, message.ReplyTo, response);
+#endif
                             var responseDto = response.GetResponseDto();
                             mqClient.Publish(message.ReplyTo, MessageFactory.Create(responseDto));
                         }
@@ -187,8 +194,9 @@ namespace ServiceStack.Messaging
                     processInExceptionFn(this, message, responseEx);
                     return;
                 }
+#if NET472 || NET6_0_OR_GREATER
                 Diagnostics.ServiceStack.WriteMqRequestAfter(id, message);
-
+#endif
                 this.TotalMessagesProcessed++;
 
                 //If there's no response publish the request message to its OutQ
@@ -211,7 +219,9 @@ namespace ServiceStack.Messaging
                         var messageOptions = (MessageOption) message.Options;
                         if (messageOptions.Has(MessageOption.NotifyOneWay))
                         {
+#if NET472 || NET6_0_OR_GREATER
                             Diagnostics.ServiceStack.WriteMqRequestPublish(id, mqClient, QueueNames<T>.Out, response);
+#endif
                             mqClient.Notify(QueueNames<T>.Out, message);
                         }
                     }
@@ -249,7 +259,9 @@ namespace ServiceStack.Messaging
                     {
                         try
                         {
+#if NET472 || NET6_0_OR_GREATER
                             Diagnostics.ServiceStack.WriteMqRequestPublish(id, replyClient, mqReplyTo, response);
+#endif
                             replyClient.SendOneWay(mqReplyTo, response);
                             return;
                         }
@@ -269,7 +281,9 @@ namespace ServiceStack.Messaging
                         responseMessage = MessageFactory.Create(response);
 
                     responseMessage.ReplyId = message.Id;
+#if NET472 || NET6_0_OR_GREATER
                     Diagnostics.ServiceStack.WriteMqRequestPublish(id, mqClient, responseMessage.ReplyId.ToString(), response);
+#endif
                     mqClient.Publish(mqReplyTo, responseMessage);
                 }
             }
@@ -297,10 +311,12 @@ namespace ServiceStack.Messaging
                 this.TotalNormalMessagesReceived++;
                 LastMessageProcessed = DateTime.UtcNow;
 
+#if NET472 || NET6_0_OR_GREATER
                 if (activity != null)
                 {
                     Diagnostics.ServiceStack.StopActivity(activity, new ServiceStackMqActivityArgs { Message = message, Activity = activity });
                 }
+#endif
             }
         }
 

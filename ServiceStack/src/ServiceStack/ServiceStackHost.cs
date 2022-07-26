@@ -201,7 +201,6 @@ namespace ServiceStack
                 typeof(ScriptAdminService),
                 typeof(AdminDashboardServices),
                 typeof(RequestLogsService),
-                typeof(AdminProfilingService),
                 typeof(AutoQueryMetadataService),
                 typeof(AdminUsersService),
                 typeof(GetApiKeysService),
@@ -214,6 +213,9 @@ namespace ServiceStack
                 typeof(DeleteFileUploadService),
                 typeof(Validation.GetValidationRulesService),
                 typeof(Validation.ModifyValidationRulesService),
+#if NET472 || NET6_0_OR_GREATER
+                typeof(AdminProfilingService),
+#endif
             };
 
             JsConfig.InitStatics();
@@ -1431,6 +1433,7 @@ namespace ServiceStack
             {
                 if (request != null)
                 {
+#if NET472 || NET6_0_OR_GREATER
                     if (ShouldProfileRequest(request))
                     {
                         // Populated in HttpHandlerFactory.InitHandler
@@ -1446,6 +1449,7 @@ namespace ServiceStack
                             Diagnostics.ServiceStack.StopActivity(activity, new ServiceStackActivityArgs { Request = request, Activity = activity });
                         }
                     }
+#endif
                     
                     // Release Buffered Streams immediately
                     if (request.UseBufferedStream && request.InputStream is MemoryStream inputMs)
