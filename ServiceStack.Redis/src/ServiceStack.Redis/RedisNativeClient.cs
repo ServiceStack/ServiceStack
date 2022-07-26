@@ -2501,9 +2501,8 @@ namespace ServiceStack.Redis
 
             try
             {
-#if NET472 || NET6_0_OR_GREATER
                 id = Diagnostics.Redis.WriteConnectionCloseBefore(this);
-#endif                
+                
                 // workaround for a .net bug: http://support.microsoft.com/kb/821625
                 bufferedReader?.Close();
             }
@@ -2523,12 +2522,10 @@ namespace ServiceStack.Redis
             sslStream = null;
             socket = null;
             
-#if NET472 || NET6_0_OR_GREATER
             if (e != null)
                 Diagnostics.Redis.WriteConnectionCloseError(id, this, e);
             else
                 Diagnostics.Redis.WriteConnectionCloseAfter(id, this);
-#endif                
         }
     }
 }

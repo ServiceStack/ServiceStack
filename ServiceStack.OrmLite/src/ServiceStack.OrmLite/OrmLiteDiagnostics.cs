@@ -1,4 +1,3 @@
-#if NET472 || NET6_0_OR_GREATER
 using System;
 using System.Data;
 using System.Diagnostics;
@@ -281,4 +280,4 @@ internal static class OrmLiteDiagnostics
     }
     
 }
-#endif
+

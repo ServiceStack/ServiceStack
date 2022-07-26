@@ -145,10 +145,8 @@ namespace ServiceStack
                 typeof(TypesCommonJs),
                 typeof(MetadataApp),
                 typeof(AdminDashboard),
-                typeof(NativeTypesBase),
-#if NET472 || NET6_0_OR_GREATER
                 typeof(AdminProfiling),
-#endif
+                typeof(NativeTypesBase),
             };
             this.HideRequestBodyForRequestDtoTypes = new[] 
             {

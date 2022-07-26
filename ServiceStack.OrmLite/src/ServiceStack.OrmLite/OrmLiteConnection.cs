@@ -59,9 +59,7 @@ namespace ServiceStack.OrmLite
 
         public void Close()
         {
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteConnectionCloseBefore(DbConnection);
-#endif
             var connectionId = DbConnection.GetConnectionId();
             Exception e = null;
             try
@@ -75,12 +73,10 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.OrmLite.WriteConnectionCloseError(id, connectionId, DbConnection, e);
                 else
                     Diagnostics.OrmLite.WriteConnectionCloseAfter(id, connectionId, DbConnection);
-#endif
             }
         }
 
@@ -106,9 +102,7 @@ namespace ServiceStack.OrmLite
 
             if (DbConnection.State == ConnectionState.Closed)
             {
-#if NET472 || NET6_0_OR_GREATER
                 var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(DbConnection);
-#endif
                 Exception e = null;
                 try
                 {
@@ -126,12 +120,10 @@ namespace ServiceStack.OrmLite
                 }
                 finally
                 {
-#if NET472 || NET6_0_OR_GREATER
                     if (e != null)
                         Diagnostics.OrmLite.WriteConnectionOpenError(id, DbConnection, e);
                     else
                         Diagnostics.OrmLite.WriteConnectionOpenAfter(id, DbConnection);
-#endif
                 }
             }
         }
@@ -143,9 +135,7 @@ namespace ServiceStack.OrmLite
 
             if (DbConnection.State == ConnectionState.Closed)
             {
-#if NET472 || NET6_0_OR_GREATER
                 var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(DbConnection);
-#endif
                 Exception e = null;
                 try
                 {
@@ -163,12 +153,10 @@ namespace ServiceStack.OrmLite
                 }
                 finally
                 {
-#if NET472 || NET6_0_OR_GREATER
                     if (e != null)
                         Diagnostics.OrmLite.WriteConnectionOpenError(id, DbConnection, e);
                     else
                         Diagnostics.OrmLite.WriteConnectionOpenAfter(id, DbConnection);
-#endif
                 }
             }
         }

@@ -1,4 +1,3 @@
-#if NET472 || NET6_0_OR_GREATER
 #nullable enable
 
 using System;
@@ -1203,4 +1202,3 @@ public class DiagnosticEntry
     internal bool Deleted { get; set; }
     internal Guid? OperationId { get; set; }
 }
-#endif

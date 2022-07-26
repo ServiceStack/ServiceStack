@@ -106,9 +106,7 @@ namespace ServiceStack.Redis
                     logDebug($"Attempting {type} connection to '{Host}:{Port}' (SEND {SendTimeout}, RECV {ReceiveTimeout} Timeouts)...");
                 }
 
-#if NET472 || NET6_0_OR_GREATER
                 id = Diagnostics.Redis.WriteConnectionOpenBefore(this);
-#endif                
                 if (ConnectTimeout <= 0)
                 {
                     socket.Connect(Host, Port);
@@ -227,12 +225,11 @@ namespace ServiceStack.Redis
 #if DEBUG
                 DebugAllowSync = oldDebugAllowSync;
 #endif
-#if NET472 || NET6_0_OR_GREATER
+                
                 if (e != null)
                     Diagnostics.Redis.WriteConnectionOpenError(id, this, e);
                 else
                     Diagnostics.Redis.WriteConnectionOpenAfter(id, this);
-#endif                    
             }
         }
 
@@ -564,18 +561,14 @@ namespace ServiceStack.Redis
                 }
             }
             Active = true;
-#if NET472 || NET6_0_OR_GREATER            
             rentId = Diagnostics.Redis.WritePoolRent(this, operation);
-#endif
         }
 
         internal void Deactivate([CallerMemberName] string operation = "")
         {
             Active = false;
-#if NET472 || NET6_0_OR_GREATER            
             Diagnostics.Redis.WritePoolReturn(rentId, this, operation);
             rentId = Guid.Empty;
-#endif            
         }
 
         /// <summary>
@@ -656,9 +649,7 @@ namespace ServiceStack.Redis
 
                     if (!didWriteToBuffer) //only write to buffer once
                     {
-#if NET472 || NET6_0_OR_GREATER
                         id = Diagnostics.Redis.WriteCommandBefore(cmdWithBinaryArgs, operation);
-#endif                        
                         WriteCommandToSendBuffer(cmdWithBinaryArgs);
                         didWriteToBuffer = true;
                     }
@@ -679,9 +670,7 @@ namespace ServiceStack.Redis
                     if (i > 0)
                     {
                         Interlocked.Increment(ref RedisState.TotalRetrySuccess);
-#if NET472 || NET6_0_OR_GREATER                        
                         Diagnostics.Redis.WriteCommandRetry(id, cmdWithBinaryArgs, operation);
-#endif                        
                     }
 
                     var result = default(T);
@@ -732,12 +721,10 @@ namespace ServiceStack.Redis
                 }
                 finally
                 {
-#if NET472 || NET6_0_OR_GREATER                    
                     if (wasError != null)
                         Diagnostics.Redis.WriteCommandError(id, cmdWithBinaryArgs, originalEx ?? wasError, operation);
                     else
                         Diagnostics.Redis.WriteCommandAfter(id, cmdWithBinaryArgs, operation);
-#endif                        
                 }
             }
         }

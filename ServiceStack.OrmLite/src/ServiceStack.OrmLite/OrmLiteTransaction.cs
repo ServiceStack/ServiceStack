@@ -17,9 +17,7 @@ namespace ServiceStack.OrmLite
                 ? db.BeginTransaction(isolationLevel.Value)
                 : db.BeginTransaction();
 
-#if NET472 || NET6_0_OR_GREATER
             Diagnostics.OrmLite.WriteTransactionOpen(dbTrans.IsolationLevel, db);
-#endif
             var trans = new OrmLiteTransaction(db, dbTrans);
 
             return trans;
@@ -63,9 +61,7 @@ namespace ServiceStack.OrmLite
         public void Commit()
         {
             var isolationLevel = Transaction.IsolationLevel;
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteTransactionCommitBefore(isolationLevel, db);
-#endif
             Exception e = null;
             try
             {
@@ -78,21 +74,17 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.OrmLite.WriteTransactionCommitError(id, isolationLevel, db, e);
                 else
                     Diagnostics.OrmLite.WriteTransactionCommitAfter(id, isolationLevel, db);
-#endif
             }
         }
 
         public void Rollback()
         {
             var isolationLevel = Transaction.IsolationLevel;
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteTransactionRollbackBefore(isolationLevel, db, null);
-#endif
             Exception e = null;
             try
             {
@@ -105,12 +97,10 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.OrmLite.WriteTransactionRollbackError(id, isolationLevel, db, null, e);
                 else
                     Diagnostics.OrmLite.WriteTransactionRollbackAfter(id, isolationLevel, db, null);
-#endif
             }
         }
 

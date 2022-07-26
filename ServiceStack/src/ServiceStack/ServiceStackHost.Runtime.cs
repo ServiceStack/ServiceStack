@@ -1270,10 +1270,8 @@ namespace ServiceStack
 
         public virtual bool HasUi() => HasPlugin<UiFeature>();
 
-#if NET472 || NET6_0_OR_GREATER
         public virtual bool ShouldProfileRequest(IRequest req) =>
             Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestBefore);
-#endif
     }
 
 }

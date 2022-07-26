@@ -1,4 +1,3 @@
-#if NET472 || NET6_0_OR_GREATER
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -215,4 +214,3 @@ public static class RedisDiagnostics
         }
     }
 }
-#endif

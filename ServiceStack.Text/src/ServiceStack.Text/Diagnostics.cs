@@ -1,4 +1,3 @@
-#if NET472 || NET6_0_OR_GREATER
 #nullable enable
 
 using System;
@@ -265,4 +264,3 @@ public static class DiagnosticsUtils
         return evt;
     }
 }
-#endif

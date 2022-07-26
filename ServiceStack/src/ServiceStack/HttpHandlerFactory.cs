@@ -123,7 +123,6 @@ namespace ServiceStack
             if (handler is IServiceStackHandler ssHandler)
                 httpReq.OperationName = ssHandler.GetOperationName();
 
-#if NET472 || NET6_0_OR_GREATER
             var appHost = HostContext.AppHost;
             var shouldProfile = appHost.ShouldProfileRequest(httpReq);
             if (appHost.Container.Exists<IRequestLogger>() || shouldProfile)
@@ -150,7 +149,7 @@ namespace ServiceStack
                 httpReq.SetItem(Keywords.RequestActivity, activity);
                 Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackActivityArgs { Request = httpReq, Activity = activity });
             }
-#endif
+
             return handler;
         }
 

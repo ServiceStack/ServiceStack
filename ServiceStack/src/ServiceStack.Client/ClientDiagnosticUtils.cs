@@ -1,4 +1,3 @@
-#if NET472 || NET6_0_OR_GREATER
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using ServiceStack.Messaging;
@@ -22,4 +21,3 @@ public static class ClientDiagnosticUtils
         }
     }
 }
-#endif

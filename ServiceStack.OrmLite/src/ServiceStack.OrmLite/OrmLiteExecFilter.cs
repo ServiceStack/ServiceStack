@@ -59,9 +59,7 @@ namespace ServiceStack.OrmLite
         public virtual T Exec<T>(IDbConnection dbConn, Func<IDbCommand, T> filter)
         {
             var dbCmd = CreateCommand(dbConn);
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
-#endif
             Exception e = null;
             try
             {
@@ -76,12 +74,10 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
                 else
                     Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
-#endif
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -100,9 +96,7 @@ namespace ServiceStack.OrmLite
         public virtual void Exec(IDbConnection dbConn, Action<IDbCommand> filter)
         {
             var dbCmd = CreateCommand(dbConn);
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
-#endif
             Exception e = null;
             try
             {
@@ -116,12 +110,10 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
                 else
                     Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
-#endif
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -129,9 +121,7 @@ namespace ServiceStack.OrmLite
         public virtual async Task<T> Exec<T>(IDbConnection dbConn, Func<IDbCommand, Task<T>> filter)
         {
             var dbCmd = CreateCommand(dbConn);
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
-#endif
             Exception e = null;
 
             try
@@ -146,12 +136,10 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
                 else
                     Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
-#endif
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -165,9 +153,7 @@ namespace ServiceStack.OrmLite
         public virtual async Task Exec(IDbConnection dbConn, Func<IDbCommand, Task> filter)
         {
             var dbCmd = CreateCommand(dbConn);
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
-#endif
             Exception e = null;
 
             try
@@ -182,12 +168,10 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 if (e != null)
                     Diagnostics.OrmLite.WriteCommandError(id, dbCmd, e);
                 else
                     Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
-#endif
                 DisposeCommand(dbCmd, dbConn);
             }
         }
@@ -195,9 +179,7 @@ namespace ServiceStack.OrmLite
         public virtual IEnumerable<T> ExecLazy<T>(IDbConnection dbConn, Func<IDbCommand, IEnumerable<T>> filter)
         {
             var dbCmd = CreateCommand(dbConn);
-#if NET472 || NET6_0_OR_GREATER
             var id = Diagnostics.OrmLite.WriteCommandBefore(dbCmd);
-#endif
             try
             {
                 var results = filter(dbCmd);
@@ -208,9 +190,7 @@ namespace ServiceStack.OrmLite
             }
             finally
             {
-#if NET472 || NET6_0_OR_GREATER
                 Diagnostics.OrmLite.WriteCommandAfter(id, dbCmd);
-#endif
                 DisposeCommand(dbCmd, dbConn);
             }
         }

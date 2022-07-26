@@ -190,9 +190,7 @@ namespace ServiceStack.Redis
 
                     if (!didWriteToBuffer) //only write to buffer once
                     {
-#if NET472 || NET6_0_OR_GREATER
                         id = Diagnostics.Redis.WriteCommandBefore(cmdWithBinaryArgs, operation);
-#endif
                         WriteCommandToSendBuffer(cmdWithBinaryArgs);
                         didWriteToBuffer = true;
                     }
@@ -213,9 +211,7 @@ namespace ServiceStack.Redis
                     if (i > 0)
                     {
                         Interlocked.Increment(ref RedisState.TotalRetrySuccess);
-#if NET472 || NET6_0_OR_GREATER
                         Diagnostics.Redis.WriteCommandRetry(id, cmdWithBinaryArgs, operation);
-#endif
                     }
 
                     var result = default(T);
@@ -266,13 +262,10 @@ namespace ServiceStack.Redis
                 }
                 finally
                 {
-#if NET472 || NET6_0_OR_GREATER
-                    
                     if (wasError != null)
                         Diagnostics.Redis.WriteCommandError(id, cmdWithBinaryArgs, originalEx ?? wasError, operation);
                     else
                         Diagnostics.Redis.WriteCommandAfter(id, cmdWithBinaryArgs, operation);
-#endif
                 }
             }
         }
