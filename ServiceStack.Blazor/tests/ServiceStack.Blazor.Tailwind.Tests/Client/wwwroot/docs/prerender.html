@@ -146,7 +146,7 @@ which gives the impression that the site has almost loaded and only requires a f
 <p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/youtube-placeholder.png" alt="" /></p>
 <p>But we can do even better than an inert content placeholder, and load a temporary chrome of our App. But as this needs to be done
 before Blazor has loaded we need to implement this with a sprinkling of HTML + JS.</p>
-<p>Essentialy we need to the Chrome and navigation of our App from the
+<p>Essentially we need to copy the Chrome and navigation of our App from the
 <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/Header.razor">Header</a>,
 <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/Sidebar.razor">Sidebar</a> and
 <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/MainLayout.razor">MainLayout</a>
@@ -172,7 +172,7 @@ where anything between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> w
                 &lt;/ul&gt;
             &lt;/nav&gt;
         &lt;/header&gt;
-        &lt;!-- &lt;Siderbar/&gt; Off-canvas menu for mobile, show/hide based on off-canvas menu state. --&gt;
+        &lt;!-- &lt;Sidebar&gt; Off-canvas menu for mobile, show/hide based on off-canvas menu state. --&gt;
         &lt;div class=&quot;mobile relative z-40 md:hidden&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
             ...
             &lt;nav class=&quot;mt-5 px-2 space-y-1&quot;&gt;
