@@ -183,7 +183,8 @@ code.hljs {
 .hljs-code,
 .hljs-addition,
 .hljs-title.class_.inherited__,
-.hljs-string {
+.hljs-string,
+.hljs-meta .hljs-string {
   color: #98c379;
 }
 
@@ -227,10 +228,8 @@ code.hljs {
   prevent top level .keyword and .string scopes
   from leaking into meta by accident
 */
-.hljs-meta .hljs-keyword,
-.hljs-meta .hljs-string
-{
-  color: #be5046;
+.hljs-meta .hljs-keyword {
+  color: #e2e8f0;
 }
 
 .hljs-meta .hljs-keyword,
