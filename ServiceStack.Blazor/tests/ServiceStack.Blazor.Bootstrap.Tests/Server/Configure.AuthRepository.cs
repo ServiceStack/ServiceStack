@@ -83,36 +83,22 @@ public class ConfigureAuthRepository : IHostingStartup
                 },
 
                 // Add Custom Fields to Create/Edit User Forms
-                UserFormLayout = new() {
-                    new()
-                    {
-                        Input.For<AppUser>(x => x.Email),
-                    },
-                    new()
-                    {
-                        Input.For<AppUser>(x => x.DisplayName),
-                    },
-                    new()
-                    {
-                        Input.For<AppUser>(x => x.Company),
-                        Input.For<AppUser>(x => x.Department),
-                    },
-                    new() {
-                        Input.For<AppUser>(x => x.PhoneNumber, c => c.Type = Input.Types.Tel)
-                    },
-                    new() {
-                        Input.For<AppUser>(x => x.Nickname, c => {
-                            c.Help = "Public alias (3-12 lower alpha numeric chars)";
-                            c.Pattern = "^[a-z][a-z0-9_.-]{3,12}$";
-                            //c.Required = true;
-                        })
-                    },
-                    new() {
-                        Input.For<AppUser>(x => x.ProfileUrl, c => c.Type = Input.Types.Url)
-                    },
-                    new() {
-                        Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate),
-                    },
+                FormLayout = new() {
+                    Input.For<AppUser>(x => x.Email),
+                    Input.For<AppUser>(x => x.DisplayName),
+                    Input.For<AppUser>(x => x.Company),
+                    Input.For<AppUser>(x => x.Department, c => c.FieldsPerRow(2)),
+                    Input.For<AppUser>(x => x.PhoneNumber, c => {
+                        c.Type = Input.Types.Tel;
+                        c.FieldsPerRow(2);
+                    }),
+                    Input.For<AppUser>(x => x.Nickname, c => {
+                        c.Help = "Public alias (3-12 lower alpha numeric chars)";
+                        c.Pattern = "^[a-z][a-z0-9_.-]{3,12}$";
+                        //c.Required = true;
+                    }),
+                    Input.For<AppUser>(x => x.ProfileUrl, c => c.Type = Input.Types.Url),
+                    Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate),
                 }
             });
 

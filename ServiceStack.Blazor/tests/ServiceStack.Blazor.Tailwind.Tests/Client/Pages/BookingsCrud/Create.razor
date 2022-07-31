@@ -70,9 +70,15 @@
         BookingStartDate = DateTime.UtcNow,
     };
 
-    string[] VisibleFields => new[]{
-        nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate),
-        nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
+    // Hide Error Summary Messages for Visible Fields which displays contextual validation errors
+    string[] VisibleFields => new[] {
+        nameof(request.Name),
+        nameof(request.RoomType),
+        nameof(request.RoomNumber),
+        nameof(request.BookingStartDate),
+        nameof(request.BookingEndDate),
+        nameof(request.Cost),
+        nameof(request.Notes),
     };
 
     ApiResult<IdResponse> api = new();

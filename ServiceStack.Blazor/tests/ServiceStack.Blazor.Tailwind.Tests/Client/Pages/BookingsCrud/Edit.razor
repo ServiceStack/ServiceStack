@@ -76,11 +76,17 @@
     [Parameter] public EventCallback<IdResponse> done { get; set; }
     [Parameter] public string? @class { get; set; }
 
-    string[] VisibleFields => new[]{
-        nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate), 
-        nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
+    // Hide Error Summary Messages for Visible Fields which displays contextual validation errors
+    string[] VisibleFields => new[] {
+        nameof(request.Name),
+        nameof(request.RoomType),
+        nameof(request.RoomNumber),
+        nameof(request.BookingStartDate),
+        nameof(request.BookingEndDate),
+        nameof(request.Cost),
+        nameof(request.Notes),
     };
-
+    
     UpdateBooking request = new();
 
     async Task refresh()
