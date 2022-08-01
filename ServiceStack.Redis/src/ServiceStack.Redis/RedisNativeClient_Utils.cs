@@ -1044,11 +1044,15 @@ namespace ServiceStack.Redis
                 throw CreateResponseError("Invalid length");
             }
 
-            if (c == ':' || c == '+')
+            if (c is ':' or '+')
             {
                 //match the return value
                 return r.Substring(1).ToUtf8Bytes();
             }
+
+            if (r == "*0")
+                return Array.Empty<byte>();
+            
             throw CreateResponseError("Unexpected reply: " + r);
         }
 
