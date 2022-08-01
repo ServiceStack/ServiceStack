@@ -1,4 +1,4 @@
-<script>
+<script minify>
 App.components({
     Logging: ({store, routes, client, Forms}) => {
         function parseJwt(token) {
@@ -13,8 +13,6 @@ App.components({
             userAuthId:'userId', ipAddress:'ip', requestDuration:'duration' }
         let summaryFields = 'id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration'.split(',')
         let ignoredHeaders = [':method','Cookie']
-        let queryFields = 'beforeSecs,afterSecs,ipAddress,forwardedFor,userAuthId,sessionId,referer,pathInfo,ids,beforeId' 
-            + ',afterId,hasResponse,withErrors,durationLongerThan,durationLessThan,skip,take,orderBy'.split(',')
         let linkFields = 'operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,skip'.split(',')
         return {
             $template: '#logging-template',
@@ -125,36 +123,7 @@ App.components({
             clearFilters() {
                 routes.to(this.href({show:''}))
             },
-            keydown(e) {
-                if (hasModifierKey(e) || isInput(e.target) || this.results.length === 0) return
-                if (e.key === 'Escape') {
-                    this.clearFilters()
-                    return
-                }
-                if (e.key === 'ArrowLeft' && this.canPrev) {
-                    routes.to({ skip:this.nextSkip(-this.take) })
-                    return 
-                } else if (e.key === 'ArrowRight' && this.canNext) {
-                    routes.to({ skip:this.nextSkip(this.take) })
-                    return 
-                }
-                let row = this.selected
-                if (!row) return routes.to({ show:map(this.results[0], x => x.id) || '' })
-                let activeIndex = this.results.findIndex(x => x.id === row.id)
-                let navs = {
-                    ArrowUp:   activeIndex - 1,
-                    ArrowDown: activeIndex + 1,
-                    Home: 0,
-                    End: this.results.length -1,
-                }
-                let nextIndex = navs[e.key]
-                if (nextIndex != null) {
-                    routes.to({ show: map(this.results[nextIndex % this.results.length], x => x.id) })
-                    if (e.key.startsWith('Arrow')) {
-                        e.preventDefault()
-                    }
-                }
-            },
+            keydown,
             get canPrev() { return routes.skip > 0 },
             get canNext() { return this.results.length >= this.take },
             nextSkip(skip) {

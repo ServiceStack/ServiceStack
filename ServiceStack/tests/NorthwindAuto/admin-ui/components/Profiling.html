@@ -1,7 +1,7 @@
-<script>
+<script minify>
 import { AdminProfiling, DiagnosticEntry } from "../../lib/types"
-import { apiValueFmt, fromXsdDuration, lastRightPart, dateFmt, ApiResult, toDate } from "@servicestack/client"
-import { hasModifierKey, isInput } from "../../shared/js/core"
+import { apiValueFmt, fromXsdDuration, lastRightPart, toDate } from "@servicestack/client"
+import { keydown } from "../js/stores"
 
 App.components({
     Profiling: ({store, routes, client, Forms}) => {
@@ -154,36 +154,7 @@ App.components({
             },
 
             /** @param {KeyboardEvent} e */
-            keydown(e) {
-                if (hasModifierKey(e) || isInput(e.target) || this.results.length === 0) return
-                if (e.key === 'Escape') {
-                    this.clearFilters()
-                    return
-                }
-                if (e.key === 'ArrowLeft' && this.canPrev) {
-                    routes.to({ skip:this.nextSkip(-this.take) })
-                    return
-                } else if (e.key === 'ArrowRight' && this.canNext) {
-                    routes.to({ skip:this.nextSkip(this.take) })
-                    return
-                }
-                let row = this.selected
-                if (!row) return routes.to({ show:map(this.results[0], x => x.id) || '' })
-                let activeIndex = this.results.findIndex(x => x.id === row.id)
-                let navs = {
-                    ArrowUp:   activeIndex - 1,
-                    ArrowDown: activeIndex + 1,
-                    Home: 0,
-                    End: this.results.length -1,
-                }
-                let nextIndex = navs[e.key]
-                if (nextIndex != null) {
-                    routes.to({ show: map(this.results[nextIndex % this.results.length], x => x.id) })
-                    if (e.key.startsWith('Arrow')) {
-                        e.preventDefault()
-                    }
-                }
-            },
+            keydown,
             get canPrev() { return routes.skip > 0 },
             get canNext() { return this.results.length >= this.take },
             nextSkip(skip) {

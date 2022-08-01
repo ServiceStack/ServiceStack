@@ -3,7 +3,7 @@
  * Execute tailwindui.com transition definition rules
  * @type {Transition}
  * */
-let transition = useTransitions(App, { sidebar: true })
+let transition = useTransitions(App, { sidebar: true, redisnew: false })
 /**
  * The App's reactive `routes` navigation component used for all App navigation
  * @remarks
@@ -18,6 +18,38 @@ let routes = usePageRoutes(App,{
         nav(state) { console.log('nav', state) } /*debug*/
     }
 })
+/** @param {KeyboardEvent} e */
+function keydown(e) {
+    if (hasModifierKey(e) || isInput(e.target) || this.results.length === 0) return
+    if (e.key === 'Escape') {
+        this.clearFilters()
+        return
+    }
+    if (e.key === 'ArrowLeft' && this.canPrev) {
+        routes.to({ skip:this.nextSkip(-this.take) })
+        return
+    } else if (e.key === 'ArrowRight' && this.canNext) {
+        routes.to({ skip:this.nextSkip(this.take) })
+        return
+    }
+    let row = this.selected
+    if (!row) return routes.to({ show:map(this.results[0], x => x.id) || '' })
+    let activeIndex = this.results.findIndex(x => x.id === row.id)
+    let navs = {
+        ArrowUp:   activeIndex - 1,
+        ArrowDown: activeIndex + 1,
+        Home: 0,
+        End: this.results.length -1,
+    }
+    let nextIndex = navs[e.key]
+    if (nextIndex != null) {
+        if (nextIndex === -1) nextIndex = this.results.length - 1
+        routes.to({ show: map(this.results[nextIndex % this.results.length], x => x.id) })
+        if (e.key.startsWith('Arrow')) {
+            e.preventDefault()
+        }
+    }
+}
 /**
  * App's primary reactive store maintaining global functionality for Admin UI
  * @remarks
