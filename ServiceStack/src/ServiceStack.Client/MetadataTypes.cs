@@ -155,6 +155,7 @@ namespace ServiceStack
         public ProfilingInfo Profiling { get; set; }
         public FilesUploadInfo FilesUpload { get; set; }
         public AdminUsersInfo AdminUsers { get; set; }
+        public AdminRedisInfo AdminRedis { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -328,6 +329,14 @@ namespace ServiceStack
         
         public List<InputInfo> FormLayout { get; set; }
         public ApiCss Css { get; set; } 
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class AdminRedisInfo : IMeta
+    {
+        public int QueryLimit { get; set; }
+        public List<int> Databases { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

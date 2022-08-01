@@ -50,16 +50,14 @@ public class ConfigureProfiling : IHostingStartup
                 mqServer.RegisterHandler<CreateMqBooking>(host.ExecuteMessage);
             },
             afterAppHostInit: host => {
-                host.ServiceController.Execute(new ProfileGen());
-                
+                // host.ServiceController.Execute(new ProfileGen());
                 host.Resolve<IMessageService>().Start();
                 // host.ExecuteMessage(Message.Create(new ProfileGen()));
-                var messageProducer = host.GetMessageProducer();
-                host.PublishMessage(messageProducer, new ProfileGen());
-                
-                var client = new JsonApiClient("https://chinook.locode.dev");
-                var api = client.Api(new QueryAlbums { Take = 5 });
-                
+                // var messageProducer = host.GetMessageProducer();
+                // host.PublishMessage(messageProducer, new ProfileGen());
+                //
+                // var client = new JsonApiClient("https://chinook.locode.dev");
+                // var api = client.Api(new QueryAlbums { Take = 5 });
             });
     }
 }

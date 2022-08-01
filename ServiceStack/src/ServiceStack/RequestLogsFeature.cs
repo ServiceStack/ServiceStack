@@ -146,6 +146,7 @@ namespace ServiceStack
                 typeof(MetadataApp),
                 typeof(AdminDashboard),
                 typeof(AdminProfiling),
+                typeof(AdminRedis),
                 typeof(NativeTypesBase),
             };
             this.HideRequestBodyForRequestDtoTypes = new[] 

@@ -1,8 +1,8 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-07-18 18:30:04
-Version: 6.11
+Date: 2022-07-29 17:59:17
+Version: 6.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -662,6 +662,15 @@ export class AdminUsersInfo
     public constructor(init?: Partial<AdminUsersInfo>) { (Object as any).assign(this, init); }
 }
 
+export class AdminRedisInfo
+{
+    public queryLimit: number;
+    public databases: number[];
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<AdminRedisInfo>) { (Object as any).assign(this, init); }
+}
+
 export class PluginInfo
 {
     public loaded: string[];
@@ -673,6 +682,7 @@ export class PluginInfo
     public profiling: ProfilingInfo;
     public filesUpload: FilesUploadInfo;
     public adminUsers: AdminUsersInfo;
+    public adminRedis: AdminRedisInfo;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<PluginInfo>) { (Object as any).assign(this, init); }
@@ -898,6 +908,24 @@ export class DiagnosticEntry
     public constructor(init?: Partial<DiagnosticEntry>) { (Object as any).assign(this, init); }
 }
 
+export class RedisSearchResult
+{
+    public id: string;
+    public type: string;
+    public ttl: number;
+    public size: number;
+
+    public constructor(init?: Partial<RedisSearchResult>) { (Object as any).assign(this, init); }
+}
+
+export class RedisText
+{
+    public text: string;
+    public children: RedisText[];
+
+    public constructor(init?: Partial<RedisText>) { (Object as any).assign(this, init); }
+}
+
 export class KeyValuePair<TKey, TValue>
 {
     public key: TKey;
@@ -1107,6 +1135,17 @@ export class AdminProfilingResponse
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<AdminProfilingResponse>) { (Object as any).assign(this, init); }
+}
+
+export class AdminRedisResponse
+{
+    public db: number;
+    public searchResults: RedisSearchResult[];
+    public info: { [index: string]: string; };
+    public result: RedisText;
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminRedisResponse>) { (Object as any).assign(this, init); }
 }
 
 // @Route("/metadata/app")
@@ -1498,6 +1537,20 @@ export class AdminProfiling implements IReturn<AdminProfilingResponse>
     public getTypeName() { return 'AdminProfiling'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new AdminProfilingResponse(); }
+}
+
+export class AdminRedis implements IReturn<AdminRedisResponse>, IPost
+{
+    public db?: number;
+    public query: string;
+    public take?: number;
+    public position?: number;
+    public args: string[];
+
+    public constructor(init?: Partial<AdminRedis>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminRedis'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminRedisResponse(); }
 }
 
 

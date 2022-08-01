@@ -1,0 +1,792 @@
+<script minify>
+import { $1 } from '@servicestack/client'
+import { AdminRedis } from '../../lib/types'
+import { keydown } from '../js/stores'
+
+App.components({
+    Redis: ({store, routes, client, Forms}) => {
+
+        /** @param {string} cmd
+         *  @returns {string[]}
+         */
+        let parseCommand = cmd => {
+            let args = []
+            let lastPos = 0
+            for (let i = 0; i < cmd.length; i++) {
+                let c = cmd[i]
+                if (c === '{' || c === '[' || c === '"') {
+                    break //stop splitting args if value is complex type
+                }
+                if (c === ' ') {
+                    let arg = cmd.substring(lastPos, i)
+                    args.push(arg)
+                    lastPos = i + 1
+                }
+            }
+            args.push(cmd.substring(lastPos))
+            return args
+        }
+        /** @param {RedisText} r
+         *  @returns {*}
+         */
+        let asObject = r => {
+            if (!r)
+                return null
+            if (r.children && r.children.length > 0) {
+                let to = []
+                for (let i = 0, len = r.children.length; i < len; i++) {
+                    let child = r.children[i]
+                    let value = child.text || child.children.map(asObject)
+                    to.push(value)
+                }
+                return to
+            }
+            return r.text
+        }
+        /** @param {RedisText} r
+         *  @returns {*}
+         */
+        let asList = r => {
+            let children = r && r.children || [];
+            let to = children.map(x => x.text);
+            return to;
+        }
+        /** @param {RedisText} r
+         *  @returns {*}
+         */
+        let asKeyValues = r => {
+            let list = asList(r)
+            let to = {}
+            for (let i = 0; i < list.length; i += 2) {
+                let key = list[i]
+                let val = list[i + 1]
+                to[key] = val
+            }
+            return to
+        }
+        /** @param {string} x
+         *  @returns {string}
+         */
+        let toQuery = x => !x ? '*'
+            : x.indexOf('*') >= 0 || x.indexOf('?') >= 0 || (x.indexOf('[') >= 0 && x.indexOf(']') >= 0)
+                ? x
+                : x + '*'
+        let searchResultKeys = ['id','type','ttl','size']
+        let linkFields = 'id,skip'.split(',')
+        let redisTypes = { string:'String', list:'List', set:'Set', zset:'Sorted Set', hash:'Hash' }
+        let tryJsonParse = s => {
+            try {
+                if (typeof s == 'string')
+                    return JSON.parse(s)
+            } catch (e) {}
+            return s
+        }
+
+        return {
+            $template: '#redis-template',
+            store, routes,
+            tabs: { 'Info':'', 'Search':'search', 'Command':'command' },
+            get plugin() { return Forms.Server.plugins.adminRedis },
+
+            tryJsonParse,
+            redisTypes,
+            searchResultKeys,
+
+            db: 0,
+            query:'',
+            command:'',
+            itemEdit:'',
+            itemOrig:'',
+            itemField:'',
+            itemScore:0,
+            api: null,
+            apiSave: null,
+            apiRelated: null,
+            relatedQuery: '',
+            item: null,
+            success: false,
+            callLog: [],
+            
+            get gridClass() { return Forms.gridClass },
+            get rowClass() { return 'col-span-12 sm:col-span-6' },
+
+            get response() { return this.api && this.api.response },
+            get results() { return map(this.response, x => x.searchResults) || [] },
+
+            get relatedResults() { return map(this.apiRelated && this.apiRelated.response, x => x.searchResults.sort((x,y) => x.id > y.id ? 1 : -1)) || [] },
+            
+            get errorSummary() { return this.api && this.api.error && this.api.summaryMessage() },
+
+            get selected() {
+                return routes.show && this.results.find(x => x.id === routes.show)
+            },
+            get itemType() { return map(this.item, x => x.type) || '' },
+            get itemValue() { return map(this.item, x => x.value) || '' },
+
+            expanded(id) { return map(this.selected, x => x.id === id) },
+            toggle(row) {
+                routes.to({ show: routes.show === row.id ? '' : row.id })
+            },
+            
+            resizeEdit() {
+                /**@type {HTMLTextAreaElement} */
+                let e = this.$refs.txtEdit
+                e.style.height = '1px'
+                e.style.height = Math.max(10 + e.scrollHeight, 160) + 'px'
+            },
+            prettyPrint() {
+                this.itemEdit = indentJson(JSON.parse(this.itemEdit))
+                App.nextTick(this.resizeEdit)
+            },
+
+            handleDone(model) {
+                routes.to({ new:'' })
+                if (model && model.key) {
+                    routes.to({ show: model.key })
+                }
+            },
+            save() {
+                if (!this.item) return
+                let { id, type } = this.item
+                this.success = false
+                let value = this.itemEdit
+                
+                let request = this.createRequest()
+                if (type === 'string') {
+                    request.args = ['SET', id, value]
+                } else if (type === 'list') {
+                    request.args = ['LPUSH', id, value]
+                } else if (type === 'set') {
+                    request.args = ['SADD', id, value]
+                } else if (type === 'zset') {
+                    request.args = ['ZADD', id, this.itemScore, value]
+                } else if (type === 'hash') {
+                    request.args = ['HSET', id, this.itemField, value]
+                } else {
+                    return
+                }
+
+                return this.send(request, { id, type })
+                    .then(r => {
+                        this.apiSave = r.api
+                        let success = this.apiSave.error == null
+                        if (success) {
+                            this.item = null
+                            this.load(id, type)
+                        }
+                    })
+            },
+            del() {
+                let { id, type } = this.item
+                let request = this.createRequest({ args: ['DEL', id] })
+                return this.send(request, { id, type })
+                    .then(r => {
+                        this.apiSave = r.api
+                        this.success = r.api.error == null
+                        if (this.success) {
+                            this.item = null
+                            routes.to({ show:'' })
+                        }
+                    })
+            },
+            delItem(value) {
+                if (!this.item) return
+                let { id, type } = this.item
+
+                let request = this.createRequest()
+                if (type === 'list') {
+                    request.args = ['LREM', id, 1, value]
+                } else if (type === 'set') {
+                    request.args = ['SREM', id, value]
+                } else if (type === 'zset') {
+                    request.args = ['ZREM', id, value]
+                } else if (type === 'hash') {
+                    request.args = ['HDEL', id, value]
+                } else {
+                    return
+                }
+
+                return this.send(request, { id, type })
+                    .then(r => {
+                        this.apiSave = r.api
+                        let success = r.api.error == null
+                        if (success) {
+                            this.item = null
+                            this.load(id, type)
+                        }
+                    })
+            },
+            
+            setItemEdit(value) {
+                this.itemEdit = value || ''
+                this.itemOrig = this.itemEdit
+                this.itemField = ''
+                this.itemScore = 0 
+            },
+
+            /** @param {string} s */
+            isComplexJson(s) {
+                return map(s.trim(), x => x.startsWith('{') || x.startsWith('['))
+            },
+            call(args, opt, f) {
+                let request = this.createRequest({ args })
+                return apiSend(createClient, request)
+                    .then(r => {
+                        let result = map(r.api.response, x => x.result)
+                        let value = result && f(result) || null
+                        let error = r.api.error || null
+                        this.setItemEdit(result && result.text)
+                        let { id, type } = opt
+                        let item = { id, type, request, value, error, result }
+                        this.callLog.unshift(item)
+                        this.item = item
+                        App.nextTick(() => map($1('[autofocus]'), x => x.focus()))
+                        
+                        let sepPos = id.lastIndexOf(':')
+                        if (sepPos === -1) id.lastIndexOf('/')
+                        if (sepPos !== -1) {
+                            let parent = id.substring(0, sepPos + 1)
+                            this.relatedQuery = parent + '*'
+                            this.send(new AdminRedis({ query: this.relatedQuery }))
+                                .then(r => this.apiRelated = r.api)
+                        } else {
+                            this.apiRelated = null
+                            this.relatedQuery = ''
+                        }
+                    })
+            },
+
+            /** @param {*?} args
+             * @returns {AdminRedis} */
+            createRequest(args) {
+              return new AdminRedis(Object.assign({ db: parseInt(this.db) }, args))
+            },
+            
+            reset() {
+                console.log('reset')
+                this.success = false
+                this.apiSave = null
+                this.setItemEdit('')
+            },
+            
+            load(id, type) {
+                if (id === (this.item && this.item.id)) {
+                    this.setItemEdit(map(this.item.result, x => x.text))
+                    return
+                }
+                if (type === 'string') {
+                    return this.call(['GET', id], { id, type }, r => tryJsonParse(r.text))
+                } else if (type === 'list') {
+                    return this.call(['LRANGE', id, '0', '-1'], { id, type }, r => asList(r))
+                } else if (type === 'set') {
+                    return this.call(['SMEMBERS', id], { id, type }, r => asList(r))
+                } else if (type === 'zset') {
+                    return this.call(['ZRANGE', id, '0', '-1', 'WITHSCORES'], { id, type }, r => asKeyValues(r))
+                } else if (type === 'hash') {
+                    return this.call(['HGETALL', id], { id, type }, r => asKeyValues(r))
+                }
+            },
+
+            update() {
+                this.reset()
+
+                if (routes.show) {
+                    let type = this.selected && this.selected.type
+                    if (type) {
+                        this.load(routes.show, type)
+                    } else {
+                        this.send(this.createRequest({ args: ['TYPE',routes.show] }), { id:routes.show })
+                            .then(r => {
+                                let type = map(r.api.response, x => x.result.text)
+                                if (type)
+                                    this.load(routes.show, type)
+                            })
+                    }
+                }
+                
+                let request = this.createRequest()
+                if (routes.tab === '')
+                    request.args = ['INFO']
+                else if (routes.tab === 'search')
+                    request.query = toQuery(this.query)
+                else if (routes.tab === 'command' && this.command !== '')
+                    request.args = parseCommand(this.command)
+                else
+                    return
+
+                this.send(request)
+                    .then(r => {
+                        this.api = r.api
+                        if (r.api.response && r.api.response.db != null)
+                            this.db = r.api.response.db
+                    })
+            },
+
+            /** @param {AdminRedis} request
+             * @param {{id:string|*,type:string|*}?} opt
+             * @returns {*}
+             */
+            send(request, opt) {
+                return apiSend(createClient, request)
+                    .then(r => {
+
+                        if (!opt) opt = { id:null, type:null }
+                        let { id, type } = opt
+                        let result = map(r.api.response, x => x.result)
+                        let error = r.api.error || null
+                        let item = { id, type, request, error, result }
+                        this.callLog.unshift(item)
+                        
+                        return r
+                    })
+            },
+
+            href(links) {
+                return Object.assign(linkFields.reduce((acc,x) => { acc[x] = ''; return acc }, {}), links)
+            },
+            clearFilters() {
+                routes.to(this.href({show:''}))
+            },
+
+            get canPrev() { return routes.skip > 0 },
+            get canNext() { return this.results.length >= this.take },
+            nextSkip(skip) {
+                skip += (parseInt(routes.skip, 10) || 0)
+                if (typeof this.total == 'number') {
+                    const lastPage = Math.floor(this.total / this.take) * this.take
+                    if (skip > lastPage) return lastPage
+                }
+                if (skip < 0) return 0
+                return skip
+            },
+            keydown,
+
+            sub: null,
+            mounted() {
+                this.sub = App.events.subscribe('route:nav', args => this.update())
+                this.update()
+                document.addEventListener('keydown', this.keydown)
+            },
+            unmounted() {
+                document.removeEventListener('keydown', this.keydown)
+                App.unsubscribe.call(this)
+            },
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="redis-template">
+<section class="" @vue:mounted="mounted" @vue:unmounted="unmounted">
+
+    <div>
+        <div class="sm:hidden">
+            <label for="redis-tabs" class="sr-only">Select a tab</label>
+            <select id="redis-tabs" 
+                    class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    @change="routes.to({ tab: $event.target.value })">
+                <option v-for="(tab,name) in tabs" :selected="routes.tab == tab" :value="tab">{{name}}</option>
+            </select>
+        </div>
+        <div class="hidden sm:block">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <a v-for="(tab,name) in tabs" v-href="{ tab }" 
+                       :class="`${routes.tab == tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`">
+                        {{name}}
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+    <div v-if="routes.tab == ''">
+        <div class="p-4 flex">
+            <h4 class="mr-12 font-medium text-3xl">Redis Database</h4>
+            <div>
+                <select v-model="db">
+                    <option v-for="db in plugin.databases" :selected="response && response.db == db" :value="db">{{db}}</option>
+                </select>
+            </div>
+        </div>
+        <div v-scope="PreviewObject({ val:() => response && response.info })"></div>
+    </div>
+    <div v-else-if="routes.tab == 'search'">
+        <div class="relative my-4">
+            <div class="bg-white py-1.5 px-3.5">
+                <svg class="absolute ml-2.5 mt-2.5 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path>
+                </svg>
+                <input type="search" v-model="query" placeholder="Search..." @keyup="update"
+                       class="border rounded-full overflow-hidden flex w-full py-1 pl-8 border-gray-200">
+            </div>
+        </div>
+
+        <div class="flex">
+            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
+                    <div v-if="hasItems(results)" class="md:shadow border-b border-gray-200 md:rounded-lg">
+                        <table class="divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <th v-for="k in searchResultKeys" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                    <div class="flex">
+                                        <span class="mr-1 select-none">{{k}}</span>
+                                    </div>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
+                                :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50') + ' hover:bg-yellow-50']">
+                                <td v-for="k in searchResultKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <span :title="row[k]">{{ row[k] }}</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else-if="api && api.completed">
+                        <h3 class="p-2">No Results</h3>
+                    </div>
+                </div>
+            </div>
+            <div v-if="selected" class="pl-4 flex-1">
+                <div>
+                    <div v-if="item" class="p-2 relative w-full">
+                        <span class="relative z-0 inline-flex shadow-sm rounded-md">
+                          <a v-for="(tab,name) in {Pretty:'',Preview:'preview',Edit:'edit'}" v-href="{ body:tab }"
+                             :class="[{ Pretty:'rounded-l-md',Preview:'-ml-px',Edit:'rounded-r-md -ml-px' }[name], routes.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                            {{name}}
+                          </a>
+                        </span>
+                        <div v-if="routes.body == ''" class="pt-2 icon-outer" style="min-height:2.5rem">
+                            <div class="absolute right-4" v-scope="CopyIcon({ cls:'icon', text:() => indentJson(itemValue) })"></div>
+                            <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="indentJson(itemValue)"></code></pre>
+                        </div>
+                        <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+                            <div v-if="itemType=='list'||itemType=='set'">
+                                <div class="md:shadow border-b border-gray-200 md:rounded-lg">
+                                    <table>
+                                        <tr v-for="(row,index) in itemValue" :key="index"
+                                            :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                            <td class="px-6 py-4 text-sm text-gray-900">{{ row }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div v-else-if="itemType=='zset'">
+                                <div class="md:shadow border-b border-gray-200 md:rounded-lg">
+                                    <table class="divide-y divide-gray-200">
+                                        <tr v-for="(value,key,index) in itemValue" :key="index"
+                                            :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                            <td class="px-6 py-4 text-sm text-gray-900">{{ key }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-900">{{ value }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div v-else-if="itemType=='string' && !isComplexJson(item.result.text)" class="p-4">{{item.result.text}}</div>
+                            <div v-else v-scope="PreviewObject({ val:() => itemValue })"></div>
+                        </div>
+                        <div v-else-if="routes.body == 'edit'" class="pt-2">
+                            <div v-if="apiSave && apiSave.error" v-scope="ErrorSummary({ errorSummary: () => apiSave.error && apiSave.summaryMessage() })"></div>
+                            <div v-else-if="success" class="rounded-md bg-green-50 p-4 mb-2">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-green-800">Successfully saved</p>
+                                    </div>
+                                    <div class="ml-auto pl-3">
+                                        <div class="-mx-1.5 -my-1.5">
+                                            <button type="button" @click="success=false" class="inline-flex bg-green-50 rounded-md p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-50 focus:ring-green-600">
+                                                <span class="sr-only">Dismiss</span>
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div v-if="itemType=='string'" class="flex flex-col">
+                                <textarea ref="txtEdit" :class="inputClass('','h-40')" @keyup="resizeEdit" @focus="resizeEdit" v-model="itemEdit"></textarea>
+                                <div class="mt-2 flex justify-between">
+                                    <div>
+                                        <button v-if="isComplexJson(itemEdit)" type="button" title="Pretty Print" @click="prettyPrint"
+                                                class="inline-flex items-center px-2.5 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M16 4c-2 0-5 1-5 5v9c0 3-5 5-5 5s5 2 5 5v11c0 4 3 5 5 5M32 4c2 0 5 1 5 5v9c0 3 5 5 5 5s-5 2-5 5v11c0 4-3 5-5 5"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="flex">
+                                        <div class="mr-2" v-scope="ConfirmDelete({ done:del })"></div>
+                                        <button type="button" :disabled="itemEdit == itemOrig" @click="save" class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 disabled:text-gray-400 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else-if="itemType=='list' || itemType=='set'" class="flex flex-col">
+                                <div class="flex">
+                                    <div class="md:shadow border-b border-gray-200 md:rounded-lg">
+                                        <table>
+                                            <tr v-for="(row,index) in itemValue" :key="index"
+                                                :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                                <td class="px-6 py-4 text-sm text-gray-900">{{ row }}</td>
+                                                <td class="pr-2 pt-2 w-6">
+                                                    <button type="button" @click="delItem(row)" title="Remove" class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                        <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                                            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 14.828L12.001 12m2.828-2.828L12.001 12m0 0L9.172 9.172M12.001 12l2.828 2.828M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12s4.477 10 10 10Z"/>
+                                                        </svg>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <form @submit.prevent="save" class="mt-2 flex items-end">
+                                    <div class="mr-2">
+                                        <input type="text" v-model="itemEdit" placeholder="Value" aria-invalid="false" autocomplete="new-password" autofocus 
+                                               :class="inputClass()">
+                                    </div>
+                                    <div>
+                                        <button type="submit" :disabled="itemEdit == ''" class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 disabled:text-gray-400 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                            Add
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div v-else-if="itemType=='zset' || itemType=='hash'" class="flex flex-col">
+
+                                <div class="flex">
+                                    <div class="md:shadow border-b border-gray-200 md:rounded-lg">
+                                        <table>
+                                            <tr v-for="(value,key,index) in itemValue" :key="index"
+                                                :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                                <td class="px-6 py-4 text-sm text-gray-900">{{ key }}</td>
+                                                <td class="px-6 py-4 text-sm text-gray-900">
+                                                    <div v-if="isComplexJson(value)" v-scope="PreviewObject({ val:() => tryJsonParse(value) })"></div>
+                                                    <div v-else>{{ value }}</div>
+                                                </td>
+                                                <td class="pr-2 pt-2 w-6">
+                                                    <button type="button" @click="delItem(key)" title="Remove" class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                        <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                                            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 14.828L12.001 12m2.828-2.828L12.001 12m0 0L9.172 9.172M12.001 12l2.828 2.828M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12s4.477 10 10 10Z"/>
+                                                        </svg>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <form @submit.prevent="save" class="mt-2 flex items-end">
+                                    <div class="flex">
+                                        <input v-if="itemType=='hash'" type="text" v-model="itemField" placeholder="Field" aria-invalid="false" autocomplete="new-password" autofocus :class="inputClass('','mr-2')">
+                                        <input type="text" v-model="itemEdit" placeholder="Value" aria-invalid="false" autocomplete="new-password" :class="inputClass('','mr-2')">
+                                        <input v-if="itemType=='zset'" type="number" step="any" v-model="itemScore" placeholder="Score" aria-invalid="false" :class="inputClass('','mr-2')">
+                                    </div>
+                                    <div>
+                                        <button type="submit" :disabled="itemEdit == ''" class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 disabled:text-gray-400 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                            Add
+                                        </button>
+                                    </div>
+                                </form>
+
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="relatedResults.length > 1" class="mt-8 p-4 max-w-sm rounded overflow-hidden shadow">
+                    <div class="flex flex-col">
+                        <div class="-ml-2 -mt-2 flex flex-wrap items-baseline">
+                            <h3 class="ml-2 mt-2 text-lg leading-6 font-medium text-gray-900">Related Results</h3>
+                            <p class="ml-2 mt-1 text-sm text-gray-500 truncate">for {{relatedQuery}}</p>
+                        </div>
+                        <nav class="mt-2 space-y-1">
+                            <a v-for="x in relatedResults" v-href="{ show: x.id }"
+                               :class="`${routes.show==x.id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'} flex items-center px-3 py-2 text-sm font-medium rounded-md`">
+                                <span class="truncate"> {{ x.id }} </span>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+                
+            </div>
+            <div v-else class="pl-4 flex-1 max-w-screen-md">
+
+                <div id="redisnew" class="z-10 relative inline-block text-left" @click="$1(`[data-transition-for=redisnew]`).classList.remove('hidden'), transition('redisnew')">
+                    <div>
+                        <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500" id="menu-button" aria-expanded="true" aria-haspopup="true">
+                            New
+                            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div data-transition="{
+                            entering: { cls:'transition ease-out duration-100', from:'transform opacity-0 scale-95', to:'transform opacity-100 scale-100'}, 
+                            leaving:  { cls:'transition ease-in duration-75', from:'transform opacity-100 scale-100', to:'transform opacity-0 scale-95' } 
+                        }" data-transition-for="redisnew" 
+                         class="origin-top-right absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden" 
+                         role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                        <div class="py-1" role="none">
+                            <a v-for="(name,type) in redisTypes" v-href="{ new:type }" class="text-gray-700 hover:text-gray-900 hover:bg-gray-100 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">{{name}}</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="routes.new" class="mt-4" v-scope="NewKey({ db:() => db, type:() => routes.new, send, done:handleDone })"></div>
+                
+            </div>
+        </div>
+    </div>
+    <div v-else-if="routes.tab == 'command'" class="flex flex-col">
+
+        <div class="mt-4 flex">
+            <input type="text" v-model="command" placeholder="Command..." class="w-full rounded-md">
+            <span class="ml-2 relative z-0 inline-flex shadow-sm rounded-md">
+              <button v-href="href({ withErrors:!routes.withErrors })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                  Go
+              </button>
+            </span>
+        </div>
+        
+        <div v-if="hasItems(callLog)">
+            <div class="my-2 text-center">
+                <button @click="callLog.length=0">clear history</button>
+            </div>
+            <div class="md:shadow border-b border-gray-200 md:rounded-lg">
+                <table class="divide-y divide-gray-200 w-full">
+                    <tr v-for="(c, index) in callLog" :key="index"
+                        :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                        <td class="px-6 py-4 text-sm text-gray-900 font-medium whitespace-nowrap w-6">
+                            <span>{{c.request.db}}&gt;</span>
+                            <span v-if="c.request.query">query</span>
+                            <span v-else-if="hasItems(c.request.args)">command</span>
+                            <span v-else>unknown</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900 truncate">
+                            <div class="grid">
+                                <span v-if="c.request.query" :title="c.request.query">{{c.request.query}}</span>
+                                <span v-else-if="hasItems(c.request.args)" :title="c.request.args.join(' ')" class="whitespace-nowrap truncate">{{c.request.args.join(' ')}}</span>
+                                <span v-else>{{c.request}}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+</section>
+</template>
+<!--/minify-->
+
+<script minify>
+App.components({ 
+    ConfirmDelete({ done }) {
+        return {
+            $template: '#confirm-delete-template',
+            confirmDelete: false,
+            done,
+        }
+    } 
+})
+</script>
+<template id="confirm-delete-template">
+<div>
+    <input id="confirmDelete" type="checkbox" v-model="confirmDelete" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+    <label for="confirmDelete" class="mx-1 select-none">confirm</label>
+    <button type="button" :disabled="!confirmDelete" @click="done" :class="`${confirmDelete ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
+        Delete
+    </button>
+</div>
+</template>
+
+<script minify>
+App.components({
+    NewKey({ db, type, done, send }) {
+        let newKey = () => ({ key:'', field:'', score:0, value:'' })
+        return {
+            $template: '#new-key-template',
+            get db() { return resolve(db) },
+            get type() { return resolve(type) },
+            done,
+            model: newKey(),
+            api: null,
+
+            get errorSummary() { return this.api && this.api.error && this.api.summaryMessage() },
+            get formClass() { return Forms.formClass },
+            get gridClass() { return Forms.gridClass },
+            get rowClass() { return 'col-span-12 sm:col-span-6' },
+
+            submit() {
+                let type = this.type
+                let id = this.model.key
+
+                let request = new AdminRedis({ db: parseInt(this.db) })
+                
+                if (type === 'string') {
+                    request.args = ['SET', id, this.model.value]
+                } else if (type === 'list') {
+                    request.args = ['LPUSH', id, this.model.value]
+                } else if (type === 'set') {
+                    request.args = ['SADD', id, this.model.value]
+                } else if (type === 'zset') {
+                    request.args = ['ZADD', id, this.model.score, this.model.value]
+                } else if (type === 'hash') {
+                    request.args = ['HSET', id, this.model.field, this.model.value]
+                }
+
+                return send(request, { id, type })
+                    .then(r => {
+                        this.api = r.api
+                        if (this.api.error == null) {
+                            this.model.type = type
+                            done(this.model)
+                            this.model = newKey()
+                        }
+                    })
+            }
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="new-key-template">
+    <form @submit.prevent="submit" :class="formClass">
+        <div class="relative px-4 py-5 bg-white sm:p-6">
+            <div v-scope="CloseButton({ onclick:done })" title="Close"></div>
+            <div class="text-xl text-gray-900 text-center mb-4">Create {{ redisTypes[type] }}</div>
+            <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+
+            <div class="flex flex-wrap sm:flex-nowrap">
+                <div class="flex-grow mb-3 sm:mb-0">
+                    <fieldset :class="gridClass">
+                        <div :class="['zset','hash'].indexOf(type) === -1 ? 'col-span-12' : rowClass" v-scope="Input({ input:{id:'key', type:'text', label:'Key'}, model:() => model })"></div>
+                        <div v-if="type=='zset'" :class="rowClass" v-scope="Input({ input:{id:'score', type:'number', label:'Score', step:'any'}, model:() => model })"></div>
+                        <div v-if="type=='hash'" :class="rowClass" v-scope="Input({ input:{id:'field', type:'text', label:'Field'}, model:() => model })"></div>
+                        <div class="col-span-12" v-scope="Input({ input:{id:'value', type:'textarea', label:'Value'}, model:() => model })"></div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6">
+            <div class="flex justify-end">
+                <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                <button type="submit" :disabled="!model.key" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 disabled:bg-indigo-400 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Create
+                </button>
+            </div>
+        </div>
+    </form>
+</template>
+<!--/minify-->

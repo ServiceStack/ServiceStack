@@ -43,6 +43,7 @@ namespace ServiceStack
         public const string HotReload = "hotreload";
         public const string RedisErrorLogs = "redislogs";
         public const string AdminUsers = "adminusers";
+        public const string AdminRedis = "adminredis";
         public const string Ui = "ui";
         public const string FileUpload = "filesupload";
         public const string Profiling = "profiling";

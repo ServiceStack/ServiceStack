@@ -200,6 +200,7 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             typeof(MetadataApp),
             typeof(AdminDashboard),
             typeof(AdminProfiling),
+            typeof(AdminRedis),
             typeof(NativeTypesBase),
         }.ToList();
         this.HideRequestBodyForRequestDtoTypes = new[] 
