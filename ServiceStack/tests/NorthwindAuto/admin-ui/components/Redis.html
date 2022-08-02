@@ -71,9 +71,6 @@ App.components({
             : x.indexOf('*') >= 0 || x.indexOf('?') >= 0 || (x.indexOf('[') >= 0 && x.indexOf(']') >= 0)
                 ? x
                 : x + '*'
-        let searchResultKeys = ['id','type','ttl','size']
-        let linkFields = 'id,skip'.split(',')
-        let redisTypes = { string:'String', list:'List', set:'Set', zset:'Sorted Set', hash:'Hash' }
         let tryJsonParse = s => {
             try {
                 if (typeof s == 'string')
@@ -81,6 +78,10 @@ App.components({
             } catch (e) {}
             return s
         }
+        let join = a => a ? a.join(' ') : ''
+        let searchResultKeys = ['id','type','ttl','size']
+        let linkFields = 'id,skip'.split(',')
+        let redisTypes = { string:'String', list:'List', set:'Set', zset:'Sorted Set', hash:'Hash' }
 
         return {
             $template: '#redis-template',
@@ -88,6 +89,7 @@ App.components({
             tabs: { 'Info':'', 'Search':'search', 'Command':'command' },
             get plugin() { return Forms.Server.plugins.adminRedis },
 
+            join,
             tryJsonParse,
             redisTypes,
             searchResultKeys,
@@ -247,7 +249,7 @@ App.components({
                         if (sepPos !== -1) {
                             let parent = id.substring(0, sepPos + 1)
                             this.relatedQuery = parent + '*'
-                            this.send(new AdminRedis({ query: this.relatedQuery }))
+                            this.send(this.createRequest({ query: this.relatedQuery }))
                                 .then(r => this.apiRelated = r.api)
                         } else {
                             this.apiRelated = null
@@ -309,10 +311,23 @@ App.components({
                     request.args = ['INFO']
                 else if (routes.tab === 'search')
                     request.query = toQuery(this.query)
-                else if (routes.tab === 'command' && this.command !== '')
-                    request.args = parseCommand(this.command)
                 else
                     return
+
+                this.send(request)
+                    .then(r => {
+                        this.api = r.api
+                        if (r.api.response && r.api.response.db != null)
+                            this.db = r.api.response.db
+                    })
+            },
+            
+            exec() {
+                this.reset()
+
+                let request = this.createRequest()
+                if (this.command !== '')
+                    request.args = parseCommand(this.command)
 
                 this.send(request)
                     .then(r => {
@@ -648,40 +663,46 @@ App.components({
             </div>
         </div>
     </div>
-    <div v-else-if="routes.tab == 'command'" class="flex flex-col">
+    <div v-else-if="routes.tab == 'command'" class="flex flex-col mt-4">
 
-        <div class="mt-4 flex">
+        <form @submit.prevent="exec" class="flex">
             <input type="text" v-model="command" placeholder="Command..." class="w-full rounded-md">
             <span class="ml-2 relative z-0 inline-flex shadow-sm rounded-md">
-              <button v-href="href({ withErrors:!routes.withErrors })" type="button" class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+              <button type="submit" class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                   Go
               </button>
             </span>
-        </div>
+        </form>
         
         <div v-if="hasItems(callLog)">
             <div class="my-2 text-center">
                 <button @click="callLog.length=0">clear history</button>
             </div>
-            <div class="md:shadow border-b border-gray-200 md:rounded-lg">
-                <table class="divide-y divide-gray-200 w-full">
-                    <tr v-for="(c, index) in callLog" :key="index"
-                        :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                        <td class="px-6 py-4 text-sm text-gray-900 font-medium whitespace-nowrap w-6">
-                            <span>{{c.request.db}}&gt;</span>
-                            <span v-if="c.request.query">query</span>
-                            <span v-else-if="hasItems(c.request.args)">command</span>
-                            <span v-else>unknown</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-900 truncate">
-                            <div class="grid">
-                                <span v-if="c.request.query" :title="c.request.query">{{c.request.query}}</span>
-                                <span v-else-if="hasItems(c.request.args)" :title="c.request.args.join(' ')" class="whitespace-nowrap truncate">{{c.request.args.join(' ')}}</span>
-                                <span v-else>{{c.request}}</span>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 align-middle inline-block sm:px-6 lg:px-8 w-full">
+                    <div class="md:shadow border-b border-gray-200 md:rounded-lg">
+                        <table class="divide-y divide-gray-200 w-full">
+                            <tr v-for="(c, index) in callLog" :key="index"
+                                :class="c.error ? 'bg-red-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium whitespace-nowrap w-6 align-top">
+                                    <span>{{c.request.db}}&gt;</span>
+                                    <span v-if="c.request.query">query</span>
+                                    <span v-else-if="hasItems(c.request.args)">command</span>
+                                    <span v-else>unknown</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 align-top truncate">
+                                    <div class="grid">
+                                        <span v-if="c.request.query" :title="c.request.query">{{c.request.query}}</span>
+                                        <span v-else-if="hasItems(c.request.args)" :title="join(c.request.args)" class="whitespace-nowrap truncate">{{join(c.request.args)}}</span>
+                                        <span v-else>{{c.request}}</span>
+                                        <span v-if="c.error"><b>error:</b> {{ c.error && c.error.message }}</span>
+                                        <span v-else-if="c.value" class="mt-2" v-scope="PreviewObject({ val:() => c.value })" :title="c.result && c.result.text || ''"></span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
