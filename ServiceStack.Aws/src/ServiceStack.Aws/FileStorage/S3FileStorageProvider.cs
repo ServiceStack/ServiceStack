@@ -519,13 +519,27 @@ namespace ServiceStack.Aws.FileStorage
 
             var bki = new S3BucketKeyInfo(path);
 
-            var request = new PutBucketRequest
+            if (bki.Key.IsNullOrEmpty())
             {
-                BucketName = bki.BucketName,
-                UseClientRegion = true
-            };
+                var request = new PutBucketRequest
+                {
+                    BucketName = bki.BucketName,
+                    UseClientRegion = true
+                };
 
-            S3Client.PutBucket(request);
+                S3Client.PutBucket(request);
+            }
+            else
+            {
+                var request = new PutObjectRequest
+                {
+                    BucketName = bki.BucketName,
+                    Key = bki.Key + "/",
+                    StorageClass = S3StorageClass.Standard
+                };
+
+                S3Client.PutObject(request);
+            } 
         }
     }
 }
