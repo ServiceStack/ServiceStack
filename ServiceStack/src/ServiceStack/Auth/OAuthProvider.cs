@@ -134,6 +134,6 @@ namespace ServiceStack.Auth
             return tokens;
         }
 
-        public virtual void LoadUserOAuthProvider(IAuthSession userSession, IAuthTokens tokens) { }
+        public virtual Task LoadUserOAuthProviderAsync(IAuthSession userSession, IAuthTokens tokens) => Task.CompletedTask;
     }
 }

@@ -125,20 +125,29 @@ namespace ServiceStack.Auth
             return obj;
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override async Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (authSession is not AuthUserSession userSession)
-                return;
-            
-            base.LoadUserOAuthProvider(authSession, tokens);
-            
-            // if the id_token has been returned populate any roles
-            var idTokens  = JwtAuthProviderReader.ExtractPayload(tokens.Items["id_token"]);
-            if(idTokens.ContainsKey("roles"))
+            if (authSession is AuthUserSession userSession)
             {
-                authSession.Roles ??= new List<string>();
-                var roles = (idTokens["roles"] as List<object>).ConvertTo<List<string>>();
-                authSession.Roles.AddRange(roles);
+                await base.LoadUserOAuthProviderAsync(authSession, tokens).ConfigAwait();
+
+                // if the id_token has been returned populate any roles
+                var idTokens = JwtAuthProviderReader.ExtractPayload(tokens.Items["id_token"]);
+                if (idTokens.ContainsKey("roles"))
+                {
+                    authSession.Roles ??= new List<string>();
+                    var roles = (idTokens["roles"] as List<object>).ConvertTo<List<string>>();
+
+                    var authRepo = HostContext.AppHost.GetAuthRepositoryAsync();
+                    if (authRepo != null)
+                    {
+                        await authRepo.MergeRolesAsync(authSession.UserAuthId, Provider, roles).ConfigAwait();
+                    }
+                    else
+                    {
+                        authSession.Roles.AddRange(roles);
+                    }
+                }
             }
         }
     }

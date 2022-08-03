@@ -190,18 +190,20 @@ namespace ServiceStack.Auth
                 Log.Error($"Could not retrieve VK user info for '{tokens.DisplayName}'", ex);
             }
 
-            LoadUserOAuthProvider(userSession, tokens);
+            await LoadUserOAuthProviderAsync(userSession, tokens).ConfigAwait();
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens) {
-            if (!(authSession is AuthUserSession userSession))
-                return;
-
-            userSession.UserName = tokens.UserName ?? userSession.UserName;
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.FirstName = tokens.FirstName ?? userSession.DisplayName;
-            userSession.LastName = tokens.LastName ?? userSession.LastName;
-            userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens) 
+        {
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.UserName = tokens.UserName ?? userSession.UserName;
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.FirstName = tokens.FirstName ?? userSession.DisplayName;
+                userSession.LastName = tokens.LastName ?? userSession.LastName;
+                userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
+            }
+            return Task.CompletedTask;
         }
 
         protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken) {

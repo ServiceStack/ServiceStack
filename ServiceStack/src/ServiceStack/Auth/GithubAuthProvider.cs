@@ -202,19 +202,21 @@ namespace ServiceStack.Auth
                 Log.Error($"Could not retrieve github user info for '{tokens.DisplayName}'", ex);
             }
 
-            LoadUserOAuthProvider(userSession, tokens);
+            await LoadUserOAuthProviderAsync(userSession, tokens).ConfigAwait();
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (!(authSession is AuthUserSession userSession)) return;
-
-            userSession.UserName = tokens.UserName ?? userSession.UserName;
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.Company = tokens.Company ?? userSession.Company;
-            userSession.Country = tokens.Country ?? userSession.Country;
-            userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
-            userSession.Email = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.UserName = tokens.UserName ?? userSession.UserName;
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.Company = tokens.Company ?? userSession.Company;
+                userSession.Country = tokens.Country ?? userSession.Country;
+                userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+                userSession.Email = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            }
+            return Task.CompletedTask;
         }
     }
 }

@@ -120,7 +120,6 @@ namespace ServiceStack.Auth
             try
             {
                 //sig = md5( request_params_composed_string + md5(access_token + application_secret_key)  )
-
                 string innerSignature = Encoding.UTF8.GetBytes(tokens.AccessTokenSecret + ConsumerSecret).ToMd5Hash();
                 string signature = Encoding.UTF8.GetBytes($"application_key={PublicKey}" + innerSignature).ToMd5Hash();
 
@@ -165,22 +164,23 @@ namespace ServiceStack.Auth
                 Log.Error($"Could not retrieve Odnoklassniki user info for '{tokens.DisplayName}'", ex);
             }
 
-            LoadUserOAuthProvider(userSession, tokens);
+            await LoadUserOAuthProviderAsync(userSession, tokens).ConfigAwait();
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
-
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.FirstName = tokens.FirstName ?? userSession.DisplayName;
-            userSession.LastName = tokens.LastName ?? userSession.LastName;
-            userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
-            userSession.Language = tokens.Language ?? userSession.Language;
-            userSession.Country = tokens.Country ?? userSession.Country;
-            userSession.City = tokens.City ?? userSession.City;
-            userSession.Gender = tokens.Gender ?? userSession.Gender;
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.FirstName = tokens.FirstName ?? userSession.DisplayName;
+                userSession.LastName = tokens.LastName ?? userSession.LastName;
+                userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
+                userSession.Language = tokens.Language ?? userSession.Language;
+                userSession.Country = tokens.Country ?? userSession.Country;
+                userSession.City = tokens.City ?? userSession.City;
+                userSession.Gender = tokens.Gender ?? userSession.Gender;
+            }
+            return Task.CompletedTask;
         }
     }
 

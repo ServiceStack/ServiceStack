@@ -109,8 +109,8 @@ namespace ServiceStack.Auth
         {
             try
             {
-                string json = await $"https://login.yandex.ru/info?format=json&oauth_token={tokens.AccessTokenSecret}".GetJsonFromUrlAsync().ConfigAwait();
-                JsonObject obj = JsonObject.Parse(json);
+                var json = await $"https://login.yandex.ru/info?format=json&oauth_token={tokens.AccessTokenSecret}".GetJsonFromUrlAsync(token:token).ConfigAwait();
+                var obj = JsonObject.Parse(json);
 
                 tokens.UserId = obj.Get("id");
                 tokens.UserName = obj.Get("display_name");
@@ -121,7 +121,7 @@ namespace ServiceStack.Auth
                 tokens.BirthDateRaw = obj.Get("birthday");
                 userSession.UserAuthName = tokens.Email;
 
-                LoadUserOAuthProvider(userSession, tokens);
+                await LoadUserOAuthProviderAsync(userSession, tokens).ConfigAwait();
             }
             catch (Exception ex)
             {
@@ -129,18 +129,20 @@ namespace ServiceStack.Auth
             }
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
-
-            userSession.UserName = tokens.UserName ?? userSession.UserName;
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.FirstName = tokens.FirstName ?? userSession.DisplayName;
-            userSession.LastName = tokens.LastName ?? userSession.LastName;
-            userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
-            userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
-            userSession.Email = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.UserName = tokens.UserName ?? userSession.UserName;
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.FirstName = tokens.FirstName ?? userSession.DisplayName;
+                userSession.LastName = tokens.LastName ?? userSession.LastName;
+                userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
+                userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+                userSession.Email = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            }
+            return Task.CompletedTask;
         }
+        
     }
 }

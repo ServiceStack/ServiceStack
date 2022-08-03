@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -154,7 +156,8 @@ namespace ServiceStack.Auth
         }
     }
 
-    public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
+    public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> 
+        : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -686,7 +689,7 @@ namespace ServiceStack.Auth
                 });
             }
         }
-
+        
         public virtual void AssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
         {
             var userAuth = GetUserAuth(userAuthId);

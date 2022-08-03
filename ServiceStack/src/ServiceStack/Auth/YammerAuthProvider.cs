@@ -228,7 +228,7 @@ namespace ServiceStack.Auth
                 Log.Error($"Could not retrieve Yammer user info for '{tokens.DisplayName}'", ex);
             }
 
-            this.LoadUserOAuthProvider(userSession, tokens);
+            await LoadUserOAuthProviderAsync(userSession, tokens).ConfigAwait();
         }
 
         /// <summary>
@@ -240,17 +240,18 @@ namespace ServiceStack.Auth
         /// <param name="tokens">
         /// The OAuth tokens.
         /// </param>
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (!(authSession is AuthUserSession userSession))
-                return;
-
-            userSession.UserAuthId = tokens.UserId ?? userSession.UserAuthId;
-            userSession.UserAuthName = tokens.UserName ?? userSession.UserAuthName;
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
-            userSession.LastName = tokens.LastName ?? userSession.LastName;
-            userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.UserAuthId = tokens.UserId ?? userSession.UserAuthId;
+                userSession.UserAuthName = tokens.UserName ?? userSession.UserAuthName;
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
+                userSession.LastName = tokens.LastName ?? userSession.LastName;
+                userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            }
+            return Task.CompletedTask;
         }
     }
 

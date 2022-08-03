@@ -185,17 +185,19 @@ namespace ServiceStack.Auth
                 throw;
             }
 
-            LoadUserOAuthProvider(userSession, tokens);
+            await LoadUserOAuthProviderAsync(userSession, tokens).ConfigAwait();
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (!(authSession is AuthUserSession userSession)) return;
-            
-            userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
-            userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.Email = tokens.Email ?? userSession.Email;
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
+                userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.Email = tokens.Email ?? userSession.Email;
+            }
+            return Task.CompletedTask;
         }
     }
 

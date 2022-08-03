@@ -100,4 +100,10 @@ namespace ServiceStack.Auth
         Task UnAssignRolesAsync(string userAuthId,
             ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default);
     }
+
+    public interface IManageSourceRolesAsync
+    {
+        Task MergeRolesAsync(string userAuthId, string source, ICollection<string> roles, CancellationToken token=default);
+        Task<Tuple<ICollection<string>,ICollection<string>>> GetLocalRolesAndPermissionsAsync(string userAuthId, CancellationToken token=default);
+    }
 }

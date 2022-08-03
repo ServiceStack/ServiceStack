@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -372,6 +373,43 @@ namespace ServiceStack.Auth
 
         public static Task<List<IUserAuth>> SearchUserAuthsAsync(this IAuthRepositoryAsync authRepo, string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default) => 
             authRepo.AssertQueryUserAuthAsync().SearchUserAuthsAsync(query:query, orderBy: orderBy, skip: skip, take: take, token: token);
+        
+        public static async Task MergeRolesAsync(this IAuthRepositoryAsync authRepo, string userAuthId, string source, ICollection<string> roles, CancellationToken token=default)
+        {
+            if (string.IsNullOrEmpty(userAuthId))
+                throw new ArgumentNullException(nameof(userAuthId));
+            if (roles.IsEmpty())
+                return;
+            
+            if (authRepo is IManageSourceRolesAsync manageSourceRoles)
+            {
+                await manageSourceRoles.MergeRolesAsync(userAuthId, source, roles, token).ConfigAwait();
+                return;
+            }
+
+            var log = LogManager.GetLogger(authRepo.GetType());
+            var rolesStr = roles.Join(", ");
+            log.Warn($"As '{authRepo.GetType()}' doesn't support IManageSourceRolesAsync, the '{rolesStr}' roles from '{source}' will only be added to user '{userAuthId}' and will need to be manually removed if removed from '{source}'");
+            
+            if (authRepo is IManageRolesAsync manageRoles)
+            {
+                await manageRoles.AssignRolesAsync(userAuthId, roles:roles, token: token).ConfigAwait();
+            }
+            else
+            {
+                var userAuth = await authRepo.GetUserAuthAsync(userAuthId, token: token).ConfigAwait();
+                await authRepo.AssignRolesAsync(userAuth, roles: roles, token: token).ConfigAwait();
+            }
+        }
+        
+        public static Task<Tuple<ICollection<string>,ICollection<string>>> GetLocalRolesAndPermissionsAsync(this IManageRolesAsync manageRoles, string userAuthId, CancellationToken token=default)
+        {
+            if (manageRoles is IManageSourceRolesAsync manageSourceRoles)
+            {
+                return manageSourceRoles.GetLocalRolesAndPermissionsAsync(userAuthId, token);
+            }
+            return manageRoles.GetRolesAndPermissionsAsync(userAuthId, token);
+        }
 
         public static void ValidateNewUser(this IUserAuth newUser)
         {

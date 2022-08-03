@@ -86,7 +86,7 @@ namespace ServiceStack.Auth
     }
 
     public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> 
-        : IUserAuthRepositoryAsync, IRequiresSchema, IClearableAsync, IManageRolesAsync, IManageApiKeysAsync, IQueryUserAuthAsync
+        : IUserAuthRepositoryAsync, IRequiresSchema, IClearableAsync, IManageRolesAsync, IManageApiKeysAsync, IQueryUserAuthAsync, IManageSourceRolesAsync
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -479,14 +479,33 @@ namespace ServiceStack.Auth
                 var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
                 return userAuth?.Permissions ?? TypeConstants.EmptyStringList;
             }
-            else
+            return await ExecAsync(async db => {
+                return (await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null, token).ConfigAwait())
+                    .ConvertAll(x => x.Permission);
+            }).ConfigAwait();
+        }
+
+        public async Task<Tuple<ICollection<string>, ICollection<string>>> GetLocalRolesAndPermissionsAsync(string userAuthId, CancellationToken token = default)
+        {
+            if (UseDistinctRoleTables)
             {
-                return await ExecAsync(async db =>
-                {
-                    return (await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null, token).ConfigAwait())
-                        .ConvertAll(x => x.Permission);
+                ICollection<string> roles = new List<string>();
+                ICollection<string> permissions = new List<string>();
+                var rolesAndPerms = await ExecAsync(async db => {
+                    return await db.KeyValuePairsAsync<string,string>(db.From<UserAuthRole>()
+                        .Where(x => x.UserAuthId == int.Parse(userAuthId) && x.RefIdStr == null)
+                        .Select(x => new { x.Role, x.Permission }), token).ConfigAwait(); 
                 }).ConfigAwait();
+                foreach (var kvp in rolesAndPerms)
+                {
+                    if (kvp.Key != null)
+                        roles.Add(kvp.Key);
+                    if (kvp.Value != null)
+                        permissions.Add(kvp.Value);
+                }
+                return Tuple.Create(roles, permissions);
             }
+            return await GetRolesAndPermissionsAsync(userAuthId, token);
         }
 
         public virtual async Task<Tuple<ICollection<string>, ICollection<string>>> GetRolesAndPermissionsAsync(string userAuthId, CancellationToken token=default)
@@ -577,6 +596,44 @@ namespace ServiceStack.Auth
             }
         }
 
+        public async Task MergeRolesAsync(string userAuthId, string source, ICollection<string> roles, CancellationToken token = default)
+        {
+            if (UseDistinctRoleTables)
+            {
+                var userId = userAuthId.ToInt();
+                await ExecAsync(async db =>
+                {
+                    var now = DateTime.UtcNow;
+                    var userAuthRoles = await db.SelectAsync<UserAuthRole>(x => x.UserAuthId == userId && x.Role != null && x.RefIdStr == source, token).ConfigAwait();
+                    var roleList = userAuthRoles.Map(x => x.Role);
+                    var rolesToAdd = roles.Where(x => !roleList.Contains(x)).ToList();
+                    var rolesToRemove = roleList.Where(x => !roles.Contains(x)).ToList();
+                    
+                    if (rolesToAdd.Count > 0)
+                    {
+                        foreach (var role in rolesToAdd)
+                        {
+                            await db.InsertAsync(new UserAuthRole
+                            {
+                                UserAuthId = userId,
+                                Role = role,
+                                CreatedDate = now,
+                                ModifiedDate = now,
+                                RefIdStr = source,
+                            }, token: token).ConfigAwait();
+                        }
+                    }
+                    if (rolesToRemove.Count > 0)
+                    {
+                        await db.DeleteAsync<UserAuthRole>(x => 
+                            x.UserAuthId == userId && x.RefIdStr == source && rolesToRemove.Contains(x.Role), token:token).ConfigAwait();
+                    }
+                    
+                }).ConfigAwait();
+            }
+            await AssignRolesAsync(userAuthId, roles:roles, token:token);
+        }
+
         public virtual async Task AssignRolesAsync(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
         {
             var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
@@ -586,9 +643,7 @@ namespace ServiceStack.Auth
                 {
                     foreach (var missingRole in roles.Where(x => userAuth.Roles == null || !userAuth.Roles.Contains(x)))
                     {
-                        if (userAuth.Roles == null)
-                            userAuth.Roles = new List<string>();
-
+                        userAuth.Roles ??= new List<string>();
                         userAuth.Roles.Add(missingRole);
                     }
                 }
@@ -597,9 +652,7 @@ namespace ServiceStack.Auth
                 {
                     foreach (var missingPermission in permissions.Where(x => userAuth.Permissions == null || !userAuth.Permissions.Contains(x)))
                     {
-                        if (userAuth.Permissions == null)
-                            userAuth.Permissions = new List<string>();
-
+                        userAuth.Permissions ??= new List<string>();
                         userAuth.Permissions.Add(missingPermission);
                     }
                 }

@@ -165,19 +165,21 @@ namespace ServiceStack.Auth
                 Log.Error($"Could not retrieve facebook user info for '{tokens.DisplayName}'", ex);
             }
 
-            LoadUserOAuthProvider(userSession, tokens);
+            await LoadUserOAuthProviderAsync(userSession, tokens).ConfigAwait();
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (authSession is not AuthUserSession userSession) return;
-
-            userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
-            userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
-            userSession.LastName = tokens.LastName ?? userSession.LastName;
-            userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
+                userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
+                userSession.LastName = tokens.LastName ?? userSession.LastName;
+                userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            }
+            return Task.CompletedTask;
         }
         
     }

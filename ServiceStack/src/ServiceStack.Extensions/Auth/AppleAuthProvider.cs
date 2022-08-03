@@ -516,8 +516,7 @@ namespace ServiceStack.Auth
                 
             userSession.UserAuthName = tokens.UserName ?? tokens.Email;
 
-            LoadUserOAuthProvider(userSession, tokens);
-            return TypeConstants.EmptyTask;
+            return LoadUserOAuthProviderAsync(userSession, tokens);
         }
     }
 

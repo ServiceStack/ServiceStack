@@ -217,8 +217,7 @@ namespace ServiceStack.Auth
                 Log.Error($"Could not retrieve '{Provider}' profile user info for '{tokens.DisplayName}'", ex);
             }
 
-            LoadUserOAuthProvider(userSession, tokens);
-            return TypeConstants.EmptyTask;
+            return LoadUserOAuthProviderAsync(userSession, tokens);
         }
 
         /// <summary>
@@ -226,19 +225,21 @@ namespace ServiceStack.Auth
         /// </summary>
         public Func<IAuthSession,IAuthTokens, string> ResolveUnknownDisplayName { get; set; }
         
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        public override Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (!(authSession is AuthUserSession userSession))
-                return;
+            if (authSession is AuthUserSession userSession)
+            {
+                userSession.UserName = tokens.UserName ?? userSession.UserName;
+                userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
+                userSession.LastName = tokens.LastName ?? userSession.LastName;
+                userSession.Email = userSession.PrimaryEmail =
+                    tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
 
-            userSession.UserName = tokens.UserName ?? userSession.UserName;
-            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-            userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
-            userSession.LastName = tokens.LastName ?? userSession.LastName;
-            userSession.Email = userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
-            
-            if (userSession.DisplayName == null && ResolveUnknownDisplayName != null)
-                userSession.DisplayName = ResolveUnknownDisplayName(authSession, tokens);
+                if (userSession.DisplayName == null && ResolveUnknownDisplayName != null)
+                    userSession.DisplayName = ResolveUnknownDisplayName(authSession, tokens);
+            }
+            return Task.CompletedTask;
         }
     }
 }

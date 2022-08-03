@@ -212,7 +212,7 @@ namespace ServiceStack.Auth
                     {
                         var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                         var userAuthProvider = authProvider as OAuthProvider;
-                        userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
+                        userAuthProvider?.LoadUserOAuthProviderAsync(session, oAuthToken);
                     }
 
                     var httpRes = authService.Request.Response as IHttpResponse;

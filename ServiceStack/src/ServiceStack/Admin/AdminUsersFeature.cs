@@ -430,7 +430,7 @@ namespace ServiceStack.Admin
         {
             if (AuthRepositoryAsync is IManageRolesAsync manageRoles)
             {
-                var tuple = await manageRoles.GetRolesAndPermissionsAsync(user.Id.ToString());
+                var tuple = await manageRoles.GetLocalRolesAndPermissionsAsync(user.Id.ToString());
                 user.Roles = tuple.Item1.ToList();
                 user.Permissions = tuple.Item2.ToList();
             }

@@ -145,7 +145,7 @@ namespace ServiceStack.Auth
                         var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
 
                         var userAuthProvider = authProvider as OAuthProvider;
-                        userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
+                        userAuthProvider?.LoadUserOAuthProviderAsync(session, oAuthToken);
                     }
 
                     var failed = await ValidateAccountAsync(authService, authRepo, session, tokens, token).ConfigAwait();
