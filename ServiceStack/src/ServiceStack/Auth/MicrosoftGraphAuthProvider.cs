@@ -127,7 +127,7 @@ namespace ServiceStack.Auth
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (!(authSession is AuthUserSession userSession))
+            if (authSession is not AuthUserSession userSession)
                 return;
             
             base.LoadUserOAuthProvider(authSession, tokens);

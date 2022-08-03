@@ -696,9 +696,7 @@ namespace ServiceStack.Auth
                 {
                     foreach (var missingRole in roles.Where(x => userAuth.Roles == null || !userAuth.Roles.Contains(x)))
                     {
-                        if (userAuth.Roles == null)
-                            userAuth.Roles = new List<string>();
-
+                        userAuth.Roles ??= new List<string>();
                         userAuth.Roles.Add(missingRole);
                     }
                 }
@@ -707,9 +705,7 @@ namespace ServiceStack.Auth
                 {
                     foreach (var missingPermission in permissions.Where(x => userAuth.Permissions == null || !userAuth.Permissions.Contains(x)))
                     {
-                        if (userAuth.Permissions == null)
-                            userAuth.Permissions = new List<string>();
-
+                        userAuth.Permissions ??= new List<string>();
                         userAuth.Permissions.Add(missingPermission);
                     }
                 }
@@ -730,8 +726,7 @@ namespace ServiceStack.Auth
                         {
                             if (!roleSet.Contains(role))
                             {
-                                db.Insert(new UserAuthRole
-                                {
+                                db.Insert(new UserAuthRole {
                                     UserAuthId = userAuth.Id,
                                     Role = role,
                                     CreatedDate = now,
@@ -748,8 +743,7 @@ namespace ServiceStack.Auth
                         {
                             if (!permissionSet.Contains(permission))
                             {
-                                db.Insert(new UserAuthRole
-                                {
+                                db.Insert(new UserAuthRole {
                                     UserAuthId = userAuth.Id,
                                     Permission = permission,
                                     CreatedDate = now,
