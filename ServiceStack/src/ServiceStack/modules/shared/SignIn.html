@@ -95,7 +95,7 @@ App.component('SignIn', ({ plugin, provider, login, api }) => {
                 </div>
                 <div class="mt-6 grid grid-cols-3 gap-3">
                     <div v-for="provider in oauthProviders">
-                        <a :href="`${provider.navItem.href}?continue=${baseUri}`" :title="getLabel(provider)" 
+                        <a :href="`${BASE_URL}${provider.navItem.href}?continue=${baseUri}`" :title="getLabel(provider)" 
                            class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                             <span v-if="provider.icon" v-scope="Image(provider.icon, {cls:'h-5 w-5 text-gray-700'})"></span>
                             <svg v-else class="h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
