@@ -133,13 +133,13 @@ namespace ServiceStack.Auth
         {
             var result = await base.OnAuthenticatedAsync(authService, session, tokens, authInfo, token);
             var roles = tokens.GetRoles();
-            session.Roles.AddRange(roles);
+            if(roles.Length > 0)
+                session.Roles.AddRange(roles);
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync();
-            if (authRepo == null)
-                return result;
-
-            await authRepo.MergeRolesAsync(session.UserAuthId, Provider, roles, token: token).ConfigAwait();
+            if (authRepo != null && roles.Length > 0)
+                await authRepo.MergeRolesAsync(session.UserAuthId, Provider, roles, token: token).ConfigAwait();  
+            
             return result;
         }
 
