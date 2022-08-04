@@ -39,4 +39,23 @@ namespace ServiceStack.Auth
         public string RequestTokenSecret { get; set; }
         public Dictionary<string, string> Items { get; set; }
     }
+    
+    public static class AuthTokenUtils
+    {
+        public static void AddRoles(this IAuthTokens authTokens, ICollection<string> roles)
+        {
+            if (roles.IsEmpty())
+                return;
+
+            authTokens.Items ??= new();
+            authTokens.Items["roles"] = string.Join(",", roles);
+        }
+
+        public static string[] GetRoles(this IAuthTokens authTokens)
+        {
+            return authTokens.Items != null && authTokens.Items.TryGetValue("roles", out var rolesStr)
+                ? rolesStr.Split(',')
+                : Array.Empty<string>();
+        }
+    }
 }
