@@ -91,7 +91,7 @@ After which we end up with HTML similar to the structure below:
             </nav>
         </header>
         <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
-        <div class="mobile relative z-40 md:hidden" role="dialog" aria-modal="true">
+        <div class="mobile relative z-40 hidden" role="dialog" aria-modal="true">
             ...
             <nav class="mt-5 px-2 space-y-1">
             </nav>
@@ -185,8 +185,8 @@ If you click refresh the [/counter](/counter) page a few times you'll see the ne
 Our App is now in a pretty shippable state with decent UX of a loading page that looks like it loaded instantly instead
 of the "under construction" Loading... page from the default Blazor WASM project template.
 
-It's not quite a zero maintenance solution but still fairly low maintenance as only the `SIDEBAR` and `TOP` csv lists
-need updating when add/removing menu items.
+It's a fairly low maintenance solution with the primary concession being the App's main navigation menus are defined in 
+`SIDEBAR` and `TOP` csv lists so it maintains a single source of truth for both C# and JS generated UIs.
 
 ### Improving UX with Prerendering
 
@@ -382,9 +382,7 @@ the alternate layout with an `Authenticating...` text that will appear under the
 ```
 
 This last change brings us to the optimal UX we have now with the home page loading instantly whilst our Blazor App
-is loading in the background that'll eventually replace the home page with its identical looking C# version except
-for the **box-shadow under the top navigation** so you can tell when you're looking at the pre-rendered version
-instead of the C# Blazor version.
+is loading in the background that'll eventually replace the home page with its identical looking C# version.
 
 ### Prerendering Markdown Content
 

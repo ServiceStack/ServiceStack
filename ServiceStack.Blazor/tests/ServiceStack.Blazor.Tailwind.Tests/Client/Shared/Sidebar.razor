@@ -73,7 +73,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public bool Collapse { get; set; }
+    public bool Collapse { get; set; } = true;
 
     [Parameter, EditorRequired]
     public EventCallback<bool> Toggle { get; set; }
