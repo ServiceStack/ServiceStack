@@ -67,7 +67,7 @@ Essentially we need to copy the Chrome and navigation of our App from the
 [MainLayout](https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/MainLayout.razor) 
 and paste it into 
 [/wwwroot/index.html](https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/wwwroot/index.html)
-where anything between `<div id="app"></div>` which is displayed whilst our Blazor App is loading, before it's replaced with the real App.
+where anything between `<div id="app"></div>` is displayed whilst our Blazor App is loading, before it's replaced with the real C# rendered App.
 
 After which we end up with HTML similar to the structure below:
 
@@ -172,8 +172,7 @@ Which takes care of both rendering the top and sidebar menus as well as highligh
 nav item being loaded, and because we're rendering our real App navigation with real links, users will be able to navigate
 to the page they want before our App has loaded.
 
-To minimize maintenance efforts our Blazor App also makes use of the `TOP` and `SIDEBAR` items to render its Navigation Menus, which it 
-renders with C#.
+To minimize maintenance efforts the C# Blazor App also uses the navigation defined in `TOP` and `SIDEBAR` to render its Navigation Menus.
 
 With just this, every page now benefits from an instant App chrome to give the perception that our App has loaded instantly
 before any C# in our Blazor App is run. E.g. here's what the [Blazor Counter](/counter) page looks like while it's loading:
