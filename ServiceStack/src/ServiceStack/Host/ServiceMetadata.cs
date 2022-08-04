@@ -307,7 +307,8 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IRequest httpReq, Operation operation)
         {
-            if (HostContext.Config is { EnableAccessRestrictions: false } || operation.RequestType.ForceInclude())
+            if (HostContext.Config is { EnableAccessRestrictions: false } 
+                || operation.RequestType.ForceInclude())
                 return true;
 
             if (operation.RequestType.ExcludesFeature(Feature.Metadata))
