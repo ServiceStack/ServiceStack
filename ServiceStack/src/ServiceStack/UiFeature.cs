@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
@@ -148,7 +149,7 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         {
             HtmlModules.Add(AdminHtmlModule);
             AddAdminLink(AdminUi.None, DashboardLink);
-            appHost.RegisterService(typeof(AdminDashboardServices));
+            appHost.RegisterService(typeof(AdminDashboardService));
         }
     }
 
