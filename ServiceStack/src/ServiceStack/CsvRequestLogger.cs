@@ -148,6 +148,9 @@ namespace ServiceStack
             var requestType = requestDto?.GetType();
 
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
+
+            RequestLogFilter?.Invoke(request, entry);
+
             lock (semaphore)
             {
                 logs.Add(entry);

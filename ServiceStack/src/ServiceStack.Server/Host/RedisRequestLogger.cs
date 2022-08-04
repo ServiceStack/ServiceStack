@@ -32,6 +32,8 @@ namespace ServiceStack.Host
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
             entry.Id = redisLogEntry.GetNextSequence();
 
+            RequestLogFilter?.Invoke(request, entry);
+
             var key = UrnId.Create<RequestLogEntry>(entry.Id).ToLower();
             var nowScore = CurrentDateFn().ToUnixTime();
 
