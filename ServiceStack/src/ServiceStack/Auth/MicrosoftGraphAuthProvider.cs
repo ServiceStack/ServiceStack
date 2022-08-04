@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -125,6 +126,19 @@ namespace ServiceStack.Auth
             return obj;
         }
 
+        public override async Task<IHttpResult> OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo,
+            CancellationToken token = default)
+        {
+            var result = await base.OnAuthenticatedAsync(authService, session, tokens, authInfo, token);
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync();
+            var roles = session.Roles;
+            if (authRepo != null)
+            {
+                await authRepo.MergeRolesAsync(session.UserAuthId, Provider, roles, token: token).ConfigAwait();
+            }
+            return result;
+        }
+
         public override async Task LoadUserOAuthProviderAsync(IAuthSession authSession, IAuthTokens tokens)
         {
             if (authSession is AuthUserSession userSession)
@@ -137,16 +151,7 @@ namespace ServiceStack.Auth
                 {
                     authSession.Roles ??= new List<string>();
                     var roles = (idTokens["roles"] as List<object>).ConvertTo<List<string>>();
-
-                    var authRepo = HostContext.AppHost.GetAuthRepositoryAsync();
-                    if (authRepo != null)
-                    {
-                        await authRepo.MergeRolesAsync(authSession.UserAuthId, Provider, roles).ConfigAwait();
-                    }
-                    else
-                    {
-                        authSession.Roles.AddRange(roles);
-                    }
+                    authSession.Roles.AddRange(roles);
                 }
             }
         }
