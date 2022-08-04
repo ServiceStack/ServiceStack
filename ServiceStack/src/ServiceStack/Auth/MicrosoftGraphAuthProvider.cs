@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
@@ -114,7 +115,8 @@ namespace ServiceStack.Auth
             {
                 try
                 {
-                    var profileUrl = await AuthHttpGateway.CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
+                    var profileUrl = await AuthHttpGateway
+                        .CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
                     obj[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
                 }
                 catch (Exception ex)
@@ -126,16 +128,21 @@ namespace ServiceStack.Auth
             return obj;
         }
 
-        public override async Task<IHttpResult> OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo,
+        public override async Task<IHttpResult> OnAuthenticatedAsync(IServiceBase authService, IAuthSession session,
+            IAuthTokens tokens, Dictionary<string, string> authInfo,
             CancellationToken token = default)
         {
             var result = await base.OnAuthenticatedAsync(authService, session, tokens, authInfo, token);
+            var roles = tokens.Items.ContainsKey("roles")
+                ? tokens.GetRoles().ToList()
+                : new List<string>();
+            session.Roles.AddRange(roles);
+
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync();
-            var roles = session.Roles;
-            if (authRepo != null)
-            {
-                await authRepo.MergeRolesAsync(session.UserAuthId, Provider, roles, token: token).ConfigAwait();
-            }
+            if (authRepo == null)
+                return result;
+
+            await authRepo.MergeRolesAsync(session.UserAuthId, Provider, roles, token: token).ConfigAwait();
             return result;
         }
 
@@ -149,9 +156,8 @@ namespace ServiceStack.Auth
                 var idTokens = JwtAuthProviderReader.ExtractPayload(tokens.Items["id_token"]);
                 if (idTokens.ContainsKey("roles"))
                 {
-                    authSession.Roles ??= new List<string>();
                     var roles = (idTokens["roles"] as List<object>).ConvertTo<List<string>>();
-                    authSession.Roles.AddRange(roles);
+                    tokens.AddRoles(roles);
                 }
             }
         }
