@@ -152,7 +152,7 @@ before Blazor has loaded we need to implement this with a sprinkling of HTML + J
 <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/MainLayout.razor">MainLayout</a>
 and paste it into
 <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/wwwroot/index.html">/wwwroot/index.html</a>
-where anything between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> which is displayed whilst our Blazor App is loading, before it's replaced with the real App.</p>
+where anything between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> is displayed whilst our Blazor App is loading, before it's replaced with the real C# rendered App.</p>
 <p>After which we end up with HTML similar to the structure below:</p>
 <pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
     &lt;!-- loading: render temp static app chrome to improve perceived performance --&gt;
@@ -249,8 +249,7 @@ $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, ic
 <p>Which takes care of both rendering the top and sidebar menus as well as highlighting the active menu for the active
 nav item being loaded, and because we're rendering our real App navigation with real links, users will be able to navigate
 to the page they want before our App has loaded.</p>
-<p>To minimize maintenance efforts our Blazor App also makes use of the <code>TOP</code> and <code>SIDEBAR</code> items to render its Navigation Menus, which it
-renders with C#.</p>
+<p>To minimize maintenance efforts the C# Blazor App also uses the navigation defined in <code>TOP</code> and <code>SIDEBAR</code> to render its Navigation Menus.</p>
 <p>With just this, every page now benefits from an instant App chrome to give the perception that our App has loaded instantly
 before any C# in our Blazor App is run. E.g. here's what the <a href="/counter">Blazor Counter</a> page looks like while it's loading:</p>
 <p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/loading.png" alt="" /></p>
