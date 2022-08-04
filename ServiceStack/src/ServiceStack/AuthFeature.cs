@@ -495,7 +495,7 @@ namespace ServiceStack
         }
 
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public static Regex ValidUserNameRegEx = new(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
+        public static Regex ValidUserNameRegEx = new(@"^(?=.{3,36}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
 
         public static bool IsValidUsername(this AuthFeature feature, string userName)
         {
