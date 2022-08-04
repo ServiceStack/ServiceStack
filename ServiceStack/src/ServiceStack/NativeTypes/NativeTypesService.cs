@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
-using ServiceStack.Model;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
@@ -74,6 +73,7 @@ namespace ServiceStack.NativeTypes
     public class TypesCommonJs : NativeTypesBase
     {
         public bool? Cache { get; set; }
+        public string Vfx { get; set; }
     }
 
     public class NativeTypesBase
@@ -111,6 +111,7 @@ namespace ServiceStack.NativeTypes
         public List<string> DefaultImports { get; set; }
         public List<string> IncludeTypes { get; set; }
         public List<string> ExcludeTypes { get; set; }
+        public List<string> ExportTags { get; set; }
         public List<string> TreatTypesAsStrings { get; set; }
     }
 
@@ -518,11 +519,8 @@ namespace ServiceStack.NativeTypes
 
         private static void ExportMissingSystemTypes(MetadataTypesConfig typesConfig)
         {
-            if (typesConfig.ExportTypes == null)
-                typesConfig.ExportTypes = new HashSet<Type>();
-
+            typesConfig.ExportTypes ??= new HashSet<Type>();
             typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
-
             typesConfig.ExportTypes.Remove(typeof(IMeta));
         }
     }

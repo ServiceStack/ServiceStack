@@ -58,6 +58,7 @@ namespace ServiceStack.NativeTypes
                 DefaultImports = req.DefaultImports ?? defaults.DefaultImports?.ToList(),
                 IncludeTypes = TrimArgs(req.IncludeTypes ?? defaults.IncludeTypes?.ToList()),
                 ExcludeTypes = TrimArgs(req.ExcludeTypes ?? defaults.ExcludeTypes?.ToList()),
+                ExportTags = TrimArgs(req.ExportTags ?? defaults.ExportTags?.ToList()),
                 TreatTypesAsStrings = TrimArgs(req.TreatTypesAsStrings ?? defaults.TreatTypesAsStrings?.ToList()),
                 ExportValueTypes = req.ExportValueTypes ?? defaults.ExportValueTypes,
                 ExportAttributes = defaults.ExportAttributes?.ToSet(),
@@ -82,7 +83,7 @@ namespace ServiceStack.NativeTypes
             return GetGenerator(config).GetMetadataTypes(req, predicate);
         }
         
-        public MetadataTypesGenerator GetGenerator() => new MetadataTypesGenerator(meta, defaults);
+        public MetadataTypesGenerator GetGenerator() => new(meta, defaults);
 
         public MetadataTypesGenerator GetGenerator(MetadataTypesConfig config)
         {
@@ -115,12 +116,14 @@ namespace ServiceStack.NativeTypes
             var ignoreNamespaces = config.IgnoreTypesInNamespaces ?? new List<string>();
             var exportTypes = config.ExportTypes ?? new HashSet<Type>();
 
+            var exportTags = config.ExportTags ?? TypeConstants<string>.EmptyList;
+
             bool ShouldIgnoreOperation(Operation op)
             {
                 if (predicate != null && !predicate(op))
                     return true;
 
-                if (!meta.IsVisible(req, op))
+                if (!meta.IsVisible(req, op) && exportTags.All(tag => op.Tags?.Any(x => x.Name == tag) != true))
                     return true;
 
                 if (skipTypes.Contains(op.RequestType))

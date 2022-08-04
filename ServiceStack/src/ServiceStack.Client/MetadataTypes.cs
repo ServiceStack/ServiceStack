@@ -89,6 +89,7 @@ namespace ServiceStack
         public List<string> DefaultImports { get; set; }
         public List<string> IncludeTypes { get; set; }
         public List<string> ExcludeTypes { get; set; }
+        public List<string> ExportTags { get; set; }
         public List<string> TreatTypesAsStrings { get; set; }
         public bool ExportValueTypes { get; set; }
 

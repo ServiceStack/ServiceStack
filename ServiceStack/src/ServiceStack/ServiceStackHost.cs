@@ -209,7 +209,7 @@ namespace ServiceStack
                 typeof(ReplaceFileUploadService),
                 typeof(GetFileUploadService),
                 typeof(DeleteFileUploadService),
-                typeof(AdminDashboardServices),
+                typeof(AdminDashboardService),
                 typeof(AdminUsersService),
                 typeof(AdminProfilingService),
                 typeof(AdminRedisService),
