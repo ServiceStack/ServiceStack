@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 
 namespace ServiceStack;
 
+[ExcludeMetadata]
 public class AdminDashboard : IReturn<AdminDashboardResponse> {}
 public class AdminDashboardResponse : IHasResponseStatus
 {
@@ -21,7 +23,6 @@ public class ServerStats
 
 
 [DefaultRequest(typeof(AdminDashboard))]
-[Restrict(VisibilityTo = RequestAttributes.Localhost)]
 public class AdminDashboardServices : Service
 {
     public object Any(AdminDashboard request)

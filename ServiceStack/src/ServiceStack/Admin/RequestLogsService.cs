@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Web;
 
 namespace ServiceStack.Admin
 {
-    [DataContract]
+    [DataContract, ExcludeMetadata]
     public class RequestLogs : IReturn<RequestLogsResponse>
     {
         [DataMember(Order=1)] public int? BeforeSecs { get; set; }
@@ -49,7 +50,6 @@ namespace ServiceStack.Admin
     }
 
     [DefaultRequest(typeof(RequestLogs))]
-    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     public class RequestLogsService : Service
     {
         private static readonly Dictionary<string, string> Usage = new() {

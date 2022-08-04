@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-07-29 17:59:17
+Date: 2022-08-04 13:52:47
 Version: 6.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000

@@ -62,22 +62,8 @@ namespace ServiceStack.Desktop
             DesktopConfig.Instance.ProxyConfigs.AddRange(ProxyConfigs);
         }
     }
-
     
-/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
-#if !SOURCE
-    [ExcludeMetadata] public partial class DesktopFile {}
-    [ExcludeMetadata] public partial class DesktopDownloadUrl {}
-    [ExcludeMetadata] public partial class EvalScript {}
-    
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public partial class DesktopFileService {}
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public partial class DesktopDownloadUrlService {}
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public partial class DesktopScriptServices {}
-#endif
-    
+    [ExcludeMetadata]
     public partial class DesktopFile : IRequiresRequestStream, IReturn<string>
     {
         public string File { get; set; }
@@ -154,6 +140,7 @@ namespace ServiceStack.Desktop
         }
     }
 
+    [ExcludeMetadata]
     public partial class DesktopDownloadUrl : IRequiresRequestStream, IReturnVoid
     {
         public string File { get; set; }
@@ -209,6 +196,7 @@ namespace ServiceStack.Desktop
         }
     }
 
+    [ExcludeMetadata]
     public partial class EvalScript : IReturn<string>
     {
         public string AuthSecret { get; set; }

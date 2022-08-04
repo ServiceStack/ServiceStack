@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Html;
 using ServiceStack.NativeTypes;
 using ServiceStack.Text;
@@ -213,12 +214,6 @@ namespace ServiceStack.Admin
         }
     }
         
-/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
-#if !SOURCE
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public partial class AdminUsersService {}
-#endif
-
     public partial class AdminUsersService : Service
     {
         private async Task<AdminUsersFeature> AssertRequiredRole()

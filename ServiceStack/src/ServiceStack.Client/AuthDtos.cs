@@ -270,7 +270,7 @@ public class UserApiKey : IMeta
     [DataMember(Order = 4)] public Dictionary<string, string> Meta { get; set; }
 }
 
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>, IMeta
 {
     [DataMember(Order = 1)]
@@ -294,7 +294,7 @@ public class ConvertSessionToTokenResponse : IMeta
     public ResponseStatus ResponseStatus { get; set; }
 }
     
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
 {
     [DataMember(Order = 1)]
@@ -312,7 +312,7 @@ public class GetAccessTokenResponse : IHasResponseStatus, IMeta
     [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
 }
 
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class GetNavItems : IReturn<GetNavItemsResponse>
 {
     [DataMember(Order = 1)]
@@ -334,7 +334,7 @@ public class GetNavItemsResponse : IMeta
     public ResponseStatus ResponseStatus { get; set; }
 }
 
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class MetadataApp : IReturn<AppMetadata>
 {
     [DataMember(Order = 1)]
@@ -484,7 +484,7 @@ public class ModifyValidationRules : IReturnVoid
 }
     
 //CrudEvents
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class GetCrudEvents : QueryDb<CrudEvent>
 {
     [DataMember(Order = 1)]
@@ -495,7 +495,7 @@ public partial class GetCrudEvents : QueryDb<CrudEvent>
     public string ModelId { get; set; }
 }
 
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class CheckCrudEvents : IReturn<CheckCrudEventsResponse>
 {
     [DataMember(Order = 1)]
@@ -614,14 +614,14 @@ public abstract class AdminUserBase : IMeta
     [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
 }
     
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class AdminCreateUser : AdminUserBase, IPost, IReturn<AdminUserResponse>
 {
     [DataMember(Order = 10)] public List<string> Roles { get; set; }
     [DataMember(Order = 11)] public List<string> Permissions { get; set; }
 }
     
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserResponse>
 {
     [DataMember(Order = 10)] public string Id { get; set; }
@@ -633,13 +633,13 @@ public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserRes
     [DataMember(Order = 16)] public List<string> RemovePermissions { get; set; }
 }
     
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class AdminGetUser : IGet, IReturn<AdminUserResponse>
 {
     [DataMember(Order = 10)] public string Id { get; set; }
 }
     
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class AdminDeleteUser : IDelete, IReturn<AdminDeleteUserResponse>
 {
     [DataMember(Order = 10)] public string Id { get; set; }
@@ -661,7 +661,7 @@ public partial class AdminUserResponse : IHasResponseStatus
     [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
 }
     
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class AdminQueryUsers : IGet, IReturn<AdminUsersResponse>
 {
     [DataMember(Order = 1)] public string Query { get; set; }
@@ -696,7 +696,7 @@ public class UploadedFile
 /// <summary>
 /// Upload a file to the specified managed location
 /// </summary>
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class StoreFileUpload : IReturn<StoreFileUploadResponse>, IHasBearerToken, IPost
 {
     [DataMember(Order = 1)]
@@ -718,7 +718,7 @@ public partial class StoreFileUploadResponse
 /// <summary>
 /// Download file from the specified managed location
 /// </summary>
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class GetFileUpload : IReturn<byte[]>, IHasBearerToken, IGet
 {
     [DataMember(Order = 1)]
@@ -734,7 +734,7 @@ public partial class GetFileUpload : IReturn<byte[]>, IHasBearerToken, IGet
 /// <summary>
 /// Overwrite file at the specified managed location
 /// </summary>
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class ReplaceFileUpload : IReturn<ReplaceFileUploadResponse>, IHasBearerToken, IPut
 {
     [DataMember(Order = 1)]
@@ -754,7 +754,7 @@ public partial class ReplaceFileUploadResponse
 /// <summary>
 /// Delete file at the specified managed location
 /// </summary>
-[DataContract]
+[DataContract, ExcludeMetadata]
 public partial class DeleteFileUpload : IReturn<DeleteFileUploadResponse>, IHasBearerToken, IDelete
 {
     [DataMember(Order = 1)]
@@ -772,23 +772,3 @@ public partial class DeleteFileUploadResponse
     [DataMember(Order = 2)]
     public ResponseStatus ResponseStatus { get; set; }
 }
-
-
-/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
-#if !SOURCE
-[ExcludeMetadata] public partial class GetAccessToken {}
-[ExcludeMetadata] public partial class ConvertSessionToToken {}
-[ExcludeMetadata] public partial class GetNavItems {}
-[ExcludeMetadata] public partial class MetadataApp { }
-[ExcludeMetadata] public partial class GetCrudEvents {}
-[ExcludeMetadata] public partial class CheckCrudEvents {}
-[ExcludeMetadata] public partial class AdminCreateUser {}
-[ExcludeMetadata] public partial class AdminUpdateUser {}
-[ExcludeMetadata] public partial class AdminGetUser {}
-[ExcludeMetadata] public partial class AdminDeleteUser {}
-[ExcludeMetadata] public partial class AdminQueryUsers {}
-[ExcludeMetadata] public partial class StoreFileUpload {}
-[ExcludeMetadata] public partial class GetFileUpload {}
-[ExcludeMetadata] public partial class ReplaceFileUpload {}
-[ExcludeMetadata] public partial class DeleteFileUpload {}
-#endif

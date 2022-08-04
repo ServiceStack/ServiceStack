@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Redis;
 
 namespace ServiceStack.Admin;
 
+[ExcludeMetadata]
 public class AdminRedis : IPost, IReturn<AdminRedisResponse>
 {
     public int? Db { get; set; }

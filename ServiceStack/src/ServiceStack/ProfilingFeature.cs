@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.NativeTypes;
@@ -19,6 +20,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
+[ExcludeMetadata]
 public class AdminProfiling : IReturn<AdminProfilingResponse>
 {
     public string? Source { get; set; }
@@ -43,7 +45,6 @@ public class AdminProfilingResponse
 }
 
 [DefaultRequest(typeof(AdminProfiling))]
-[Restrict(VisibilityTo = RequestAttributes.Localhost)]
 public class AdminProfilingService : Service
 {
     public async Task<object> Any(AdminProfiling request)

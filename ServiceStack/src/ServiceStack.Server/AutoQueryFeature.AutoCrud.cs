@@ -111,14 +111,6 @@ namespace ServiceStack
         }
     }
     
-/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
-#if !SOURCE
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public partial class GetCrudEventsService {}
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public partial class CheckCrudEventService {}
-#endif
-    
     [DefaultRequest(typeof(GetCrudEvents))]
     public partial class GetCrudEventsService : Service
     {
