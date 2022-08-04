@@ -53,7 +53,7 @@ namespace ServiceStack.Auth
 
         public static string[] GetRoles(this IAuthTokens authTokens)
         {
-            return authTokens.Items != null && authTokens.Items.TryGetValue("roles", out var rolesStr)
+            return authTokens?.Items != null && authTokens.Items.TryGetValue("roles", out var rolesStr)
                 ? rolesStr.Split(',')
                 : Array.Empty<string>();
         }

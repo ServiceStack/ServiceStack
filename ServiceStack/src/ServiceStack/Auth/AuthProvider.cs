@@ -158,8 +158,7 @@ namespace ServiceStack.Auth
             var hasTokens = tokens != null && authInfo != null;
             if (hasTokens && SaveExtendedUserInfo)
             {
-                if (tokens.Items == null)
-                    tokens.Items = new Dictionary<string, string>();
+                tokens.Items ??= new();
 
                 foreach (var entry in authInfo)
                 {
@@ -169,6 +168,10 @@ namespace ServiceStack.Auth
                     tokens.Items[entry.Key] = entry.Value;
                 }
             }
+
+            var oauthRoles = tokens.GetRoles();
+            if (oauthRoles.Length > 0)
+                session.Roles.AddRange(oauthRoles);
 
             if (session is IAuthSessionExtended authSession)
             {
@@ -183,7 +186,7 @@ namespace ServiceStack.Auth
                     return failed;
                 }
             }
-
+            
             var authRepo = GetAuthRepositoryAsync(authService.Request);
             await using (authRepo as IAsyncDisposable)
             {
@@ -256,6 +259,10 @@ namespace ServiceStack.Auth
                         session.UserAuthId = CreateOrMergeAuthSession(session, tokens);
                     }
                 }
+
+                // If OAuth Providers have their own roles, merge them and tag them with the Provider name
+                if (oauthRoles.Length > 0)
+                    await authRepo.MergeRolesAsync(session.UserAuthId, Provider, oauthRoles, token: token).ConfigAwait();  
             }
 
             try

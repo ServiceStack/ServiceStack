@@ -132,13 +132,6 @@ namespace ServiceStack.Auth
             CancellationToken token = default)
         {
             var result = await base.OnAuthenticatedAsync(authService, session, tokens, authInfo, token);
-            var roles = tokens.GetRoles();
-            if(roles.Length > 0)
-                session.Roles.AddRange(roles);
-
-            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync();
-            if (authRepo != null && roles.Length > 0)
-                await authRepo.MergeRolesAsync(session.UserAuthId, Provider, roles, token: token).ConfigAwait();  
             
             return result;
         }
