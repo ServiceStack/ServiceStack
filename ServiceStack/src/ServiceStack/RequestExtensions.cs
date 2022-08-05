@@ -442,5 +442,10 @@ namespace ServiceStack
             await buffer.WriteToAsync(output, token: token);
             buffer.SetLength(buffer.Position = 0); //reset
         }
+
+        public static void CompletedAuthentication(this IRequest req)
+        {
+            req.Items[Keywords.DidAuthenticate] = true;
+        }
     }
 }

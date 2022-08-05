@@ -279,7 +279,7 @@ namespace ServiceStack.Auth
             finally
             {
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
-                authService.Request.Items[Keywords.DidAuthenticate] = true;
+                authService.Request.CompletedAuthentication();
             }
 
             return null;

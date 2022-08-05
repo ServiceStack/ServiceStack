@@ -241,7 +241,7 @@ namespace ServiceStack.Auth
 #pragma warning disable 618
                 this.SaveSession(authService, session, SessionExpiry);
 #pragma warning restore 618
-                authService.Request.Items[Keywords.DidAuthenticate] = true;
+                authService.Request.CompletedAuthentication();
             }
 
             return null;
