@@ -549,7 +549,7 @@ namespace ServiceStack.Auth
                 }
                 else
                 {
-                    var reqParams = ctx.Request.GetRequestParams();
+                    var reqParams = ctx.Request.GetRequestParams(exclude:null);
                     foreach (var entry in reqParams)
                     {
                         if (sb.Length > 0)

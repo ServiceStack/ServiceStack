@@ -1179,7 +1179,7 @@ Plugins:
         public static Dictionary<string, object> GetScriptRequestParams(this IRequest request, bool importRequestParams=false)
         {
             var to = importRequestParams
-                ? request.GetRequestParams().ToObjectDictionary()
+                ? request.GetRequestParams(exclude:null).ToObjectDictionary()
                 : new Dictionary<string, object>();
             
             to[nameof(IRequest.RawUrl)] = request.RawUrl;

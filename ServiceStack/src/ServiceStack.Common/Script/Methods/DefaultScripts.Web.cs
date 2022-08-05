@@ -47,7 +47,7 @@ namespace ServiceStack.Script
 
         public object importRequestParams(ScriptScopeContext scope)
         {
-            var args = req(scope).GetRequestParams();
+            var args = RequestScriptUtils.GetRequestParams(req(scope));
             foreach (var entry in args)
             {
                 scope.ScopedParams[entry.Key] = entry.Value;
@@ -57,7 +57,7 @@ namespace ServiceStack.Script
 
         public object importRequestParams(ScriptScopeContext scope, IEnumerable onlyImportArgNames)
         {
-            var args = req(scope).GetRequestParams();
+            var args = RequestScriptUtils.GetRequestParams(req(scope));
             var names = toVarNames(onlyImportArgNames);
             foreach (var name in names)
             {

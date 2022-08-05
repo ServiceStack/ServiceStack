@@ -6,21 +6,21 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public static class RequestExtensions
+    public static class RequestScriptUtils
     {
         /// <summary>
         /// Duplicate Params are given a unique key by appending a #1 suffix
         /// </summary>
-        public static Dictionary<string, string> GetRequestParams(this IRequest request)
+        public static Dictionary<string, string> GetRequestParams(IRequest request)
         {
             if (request == null)
-                throw new ArgumentNullException(nameof(request));
+                return new();
             
             var map = new Dictionary<string, string>();
 
             AddToMap(request.QueryString, map);
 
-            if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put) && request.FormData != null)
+            if (request.Verb is HttpMethods.Post or HttpMethods.Put && request.FormData != null)
             {
                 AddToMap(request.FormData, map);
             }
@@ -28,11 +28,15 @@ namespace ServiceStack
             return map;
         }
 
-        private static void AddToMap(NameValueCollection nvc, Dictionary<string, string> map)
+        public static void AddToMap(this NameValueCollection nvc, Dictionary<string, string> map, HashSet<string> exclude = null)
         {
             for (int index = 0; index < nvc.Count; index++)
             {
                 var name = nvc.GetKey(index);
+                
+                if (exclude != null && exclude.Contains(name))
+                    continue;
+                
                 var values = nvc.GetValues(name); // Only use string name instead of index which returns multiple values 
 
                 if (name == null) //thank you .NET Framework!

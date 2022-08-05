@@ -183,7 +183,7 @@ namespace ServiceStack.Host
                         {
                             var restPath = req.GetRoute();
                             var request = restPath != null 
-                                ? RestHandler.CreateRequest(req, restPath, req.GetRequestParams(), requestType.CreateInstance())
+                                ? RestHandler.CreateRequest(req, restPath, req.GetRequestParams(exclude:null), requestType.CreateInstance())
                                 : KeyValueDataContractDeserializer.Instance.Parse(req.QueryString, requestType);
 
                             var rawReq = (IRequiresRequestStream)request;

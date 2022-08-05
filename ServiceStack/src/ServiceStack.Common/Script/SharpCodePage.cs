@@ -39,7 +39,7 @@ namespace ServiceStack.Script
                 if (arg == null)
                 {
                     if (requestParams == null)
-                        requestParams = (scope.GetValue("Request") as Web.IRequest)?.GetRequestParams();
+                        requestParams = RequestScriptUtils.GetRequestParams(scope.GetValue("Request") as Web.IRequest);
 
                     if (requestParams != null && requestParams.TryGetValue(renderParam.Name, out var reqParam))
                         arg = reqParam;

@@ -353,6 +353,32 @@ namespace ServiceStack
 
         public static bool AllowConnection(this IRequest req, bool requireSecureConnection) =>
             !requireSecureConnection || req.IsSecureConnection || req.RequestAttributes.HasFlag(RequestAttributes.MessageQueue);
+
+        public static void CompletedAuthentication(this IRequest req)
+        {
+            req.Items[Keywords.DidAuthenticate] = true;
+        }
+
+        public static Dictionary<string, string> GetRequestParams(this IRequest request) =>
+            GetRequestParams(request, HostContext.AppHost?.Config.IgnoreWarningsOnPropertyNames);
+            
+        /// <summary>
+        /// Duplicate Params are given a unique key by appending a #1 suffix
+        /// </summary>
+        public static Dictionary<string, string> GetRequestParams(this IRequest request, HashSet<string> exclude)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+            
+            var map = new Dictionary<string, string>();
+
+            request.QueryString.AddToMap(map, exclude);
+
+            if (request.Verb is HttpMethods.Post or HttpMethods.Put && request.FormData != null)
+                request.FormData.AddToMap(map, exclude);
+
+            return map;
+        }
     }
 
     public class SessionSourceResult
@@ -443,9 +469,5 @@ namespace ServiceStack
             buffer.SetLength(buffer.Position = 0); //reset
         }
 
-        public static void CompletedAuthentication(this IRequest req)
-        {
-            req.Items[Keywords.DidAuthenticate] = true;
-        }
     }
 }
