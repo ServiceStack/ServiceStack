@@ -170,6 +170,7 @@ namespace ServiceStack.Auth
             }
 
             var oauthRoles = tokens.GetRoles();
+            session.Roles ??= new List<string>();
             if (oauthRoles.Length > 0)
                 session.Roles.AddRange(oauthRoles);
 
