@@ -224,7 +224,7 @@ namespace ServiceStack
             appHost.ConfigurePlugin<UiFeature>(feature =>
             {
                 var role = RequiredRoles?.Length > 0 ? RequiredRoles[0] : AccessRole; 
-                feature.AddAdminLink(AdminUi.Logging, new LinkInfo {
+                feature.AddAdminLink(AdminUiFeature.Logging, new LinkInfo {
                     Id = "logging",
                     Label = "Logging",
                     Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Logs)),

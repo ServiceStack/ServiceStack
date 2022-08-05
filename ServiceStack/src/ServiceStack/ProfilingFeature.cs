@@ -181,7 +181,7 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     {
         appHost.ConfigurePlugin<UiFeature>(feature =>
         {
-            feature.AddAdminLink(AdminUi.Logging, new LinkInfo {
+            feature.AddAdminLink(AdminUiFeature.Profiling, new LinkInfo {
                 Id = "profiling",
                 Label = "Profiling",
                 Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Profiling)),

@@ -143,7 +143,7 @@ namespace ServiceStack.Admin
         public void BeforePluginsLoaded(IAppHost appHost)
         {
             appHost.ConfigurePlugin<UiFeature>(feature => {
-                feature.AddAdminLink(AdminUi.Users, new LinkInfo {
+                feature.AddAdminLink(AdminUiFeature.Users, new LinkInfo {
                     Id = "users",
                     Label = "Users",
                     Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),

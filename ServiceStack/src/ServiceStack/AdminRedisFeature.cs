@@ -41,7 +41,7 @@ public class AdminRedisFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     public void BeforePluginsLoaded(IAppHost appHost)
     {
         appHost.ConfigurePlugin<UiFeature>(feature => {
-            feature.AddAdminLink(AdminUi.Users, new LinkInfo {
+            feature.AddAdminLink(AdminUiFeature.Redis, new LinkInfo {
                 Id = "redis",
                 Label = "Redis",
                 Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Redis, fill:"currentColor", stroke:"none")),

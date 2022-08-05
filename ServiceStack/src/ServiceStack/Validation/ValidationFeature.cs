@@ -50,7 +50,7 @@ namespace ServiceStack.Validation
             if (appHost.GetContainer().TryResolve<IValidationSource>() is IValidationSourceAdmin)
             {
                 appHost.ConfigurePlugin<UiFeature>(feature => {
-                    feature.AddAdminLink(AdminUi.Validation, new LinkInfo {
+                    feature.AddAdminLink(AdminUiFeature.Validation, new LinkInfo {
                         Id = "validation",
                         Label = "Validation",
                         Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Lock)),

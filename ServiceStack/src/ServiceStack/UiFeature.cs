@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Admin;
-using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.HtmlModules;
@@ -10,13 +9,16 @@ using ServiceStack.Model;
 namespace ServiceStack;
 
 [Flags]
-public enum AdminUi
+public enum AdminUiFeature
 {
     None       = 0,
     Users      = 1 << 0,
     Validation = 1 << 1,
     Logging    = 1 << 2,
-    All = Users | Validation | Logging,
+    Profiling  = 1 << 3,
+    Redis      = 1 << 4,
+    Database   = 1 << 5,
+    All = Users | Validation | Logging | Profiling | Redis | Database,
 }
 
 public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
@@ -30,7 +32,7 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
     public HtmlModule AdminHtmlModule { get; set; } = new("/modules/admin-ui", "/admin-ui") {
         DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
     };
-    public AdminUi AdminUi { get; set; } = AdminUi.All;
+    public AdminUiFeature AdminUi { get; set; } = AdminUiFeature.All;
 
     /// <summary>
     /// Links to make available to users in different roles (e.g. in built-in UIs) 
@@ -131,7 +133,7 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         };
     }
     
-    public void AddAdminLink(AdminUi feature, LinkInfo link)
+    public void AddAdminLink(AdminUiFeature feature, LinkInfo link)
     {
         if (!AdminUi.HasFlag(feature)) 
             return;
@@ -145,10 +147,10 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
-        if (AdminHtmlModule != null && AdminUi != AdminUi.None)
+        if (AdminHtmlModule != null && AdminUi != AdminUiFeature.None)
         {
             HtmlModules.Add(AdminHtmlModule);
-            AddAdminLink(AdminUi.None, DashboardLink);
+            AddAdminLink(AdminUiFeature.None, DashboardLink);
             appHost.RegisterService(typeof(AdminDashboardService));
         }
     }
