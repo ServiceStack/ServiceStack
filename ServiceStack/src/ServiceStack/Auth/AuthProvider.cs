@@ -128,7 +128,7 @@ namespace ServiceStack.Auth
 
             await service.RemoveSessionAsync(token).ConfigAwait();
 
-            if (feature != null && feature.DeleteSessionCookiesOnLogout)
+            if (feature is { DeleteSessionCookiesOnLogout: true })
             {
                 service.Request.Response.DeleteSessionCookies();
                 service.Request.Response.DeleteJwtCookie();
@@ -340,7 +340,7 @@ namespace ServiceStack.Auth
         protected static bool LoginMatchesSession(IAuthSession session, string userName)
         {
             if (session == null || userName == null) return false;
-            var isEmail = userName.Contains("@");
+            var isEmail = userName.IndexOf('@') >= 0;
             if (isEmail)
             {
                 if (!userName.EqualsIgnoreCase(session.Email))
@@ -414,12 +414,12 @@ namespace ServiceStack.Auth
 
             var authFeature = HostContext.GetPlugin<AuthFeature>();
 
-            if (authFeature != null && authFeature.ValidateUniqueUserNames && await UserNameAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
+            if (authFeature is { ValidateUniqueUserNames: true } && await UserNameAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
                 return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "UserNameAlreadyExists")));
             }
 
-            if (authFeature != null && authFeature.ValidateUniqueEmails && await EmailAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
+            if (authFeature is { ValidateUniqueEmails: true } && await EmailAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
                 return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "EmailAlreadyExists")));
             }
@@ -458,20 +458,17 @@ namespace ServiceStack.Auth
         
         protected virtual object ConvertToClientError(object failedResult, bool isHtml)
         {
-            if (!isHtml)
-            {
-                if (failedResult is IHttpResult httpRes)
-                {
-                    if (httpRes.Headers.TryGetValue(HttpHeaders.Location, out var location))
-                    {
-                        var parts = location.SplitOnLast("f=");
-                        if (parts.Length == 2)
-                        {
-                            return new HttpError(HttpStatusCode.BadRequest, parts[1], parts[1].SplitCamelCase());
-                        }
-                    }
-                }
-            }
+            if (isHtml) 
+                return failedResult;
+            if (failedResult is not IHttpResult httpRes) 
+                return failedResult;
+            if (!httpRes.Headers.TryGetValue(HttpHeaders.Location, out var location)) 
+                return failedResult;
+            
+            var parts = location.SplitOnLast("f=");
+            if (parts.Length == 2)
+                return new HttpError(HttpStatusCode.BadRequest, parts[1], parts[1].SplitCamelCase());
+            
             return failedResult;
         }
 
