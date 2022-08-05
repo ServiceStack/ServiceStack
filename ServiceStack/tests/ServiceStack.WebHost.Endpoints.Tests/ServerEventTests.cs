@@ -849,6 +849,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        [Ignore("Needs Review, hangs GitHub CI")]
         public async Task Does_send_raw_string_messages()
         {
             using (var client1 = CreateServerEventsClient())
