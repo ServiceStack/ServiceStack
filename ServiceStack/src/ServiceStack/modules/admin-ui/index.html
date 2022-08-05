@@ -45,6 +45,7 @@ DEBUG = true /*debug*/
                             <div v-else-if="routes.admin === 'logging'" v-scope="Logging({ store, routes, client, Forms })"></div>
                             <div v-else-if="routes.admin === 'profiling'" v-scope="Profiling({ store, routes, client, Forms })"></div>
                             <div v-else-if="routes.admin === 'redis'" v-scope="Redis({ store, routes, client, Forms })"></div>
+                            <div v-else-if="routes.admin === 'database'" v-scope="Database({ store, routes, client, Forms })"></div>
                         </div>
                     </div>
                 </div>
@@ -67,7 +68,7 @@ DEBUG = true /*debug*/
 </div>
 <script src="../js/require.js?vfx=hash"></script>
 <script src="../js/servicestack-client.js?vfx=hash"></script>
-<script src="../types/js?exportTags=admin&vfx=hash"></script>
+<script src="../types/js?exportTags=admin,auth&vfx=hash"></script>
 <script>
 Object.assign(window, exports) //import
 /*shared/js:core,Files,Types,createForms,awesomplete */

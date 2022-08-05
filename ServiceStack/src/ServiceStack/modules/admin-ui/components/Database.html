@@ -1,0 +1,26 @@
+<script minify>
+App.components({
+    Database: ({store, routes, client, Forms}) => {
+        return {
+            $template: '#database-template',
+            update() {
+            },
+            sub: null,
+            mounted() {
+                this.sub = App.events.subscribe('route:nav', args => this.update())
+                this.update()
+                // document.addEventListener('keydown', this.keydown)
+            },
+            unmounted() {
+                // document.removeEventListener('keydown', this.keydown)
+                App.unsubscribe.call(this)
+            },
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="database-template">
+    <section class="" @vue:mounted="mounted" @vue:unmounted="unmounted">
+    </section>
+</template>
