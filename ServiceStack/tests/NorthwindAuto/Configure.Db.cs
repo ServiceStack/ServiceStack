@@ -49,6 +49,8 @@ public class ConfigureDb : IHostingStartup
             db.DropAndCreateTable<FileSystemFile>();
             
             appHost.Resolve<IValidationSource>().InitSchema();
+            
+            appHost.Plugins.Add(new AdminDatabaseFeature());
         });
 }
 

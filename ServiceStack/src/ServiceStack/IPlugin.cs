@@ -44,6 +44,7 @@ namespace ServiceStack
         public const string RedisErrorLogs = "redislogs";
         public const string AdminUsers = "adminusers";
         public const string AdminRedis = "adminredis";
+        public const string AdminDatabase = "admindb";
         public const string Ui = "ui";
         public const string FileUpload = "filesupload";
         public const string Profiling = "profiling";

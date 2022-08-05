@@ -157,6 +157,7 @@ namespace ServiceStack
         public FilesUploadInfo FilesUpload { get; set; }
         public AdminUsersInfo AdminUsers { get; set; }
         public AdminRedisInfo AdminRedis { get; set; }
+        public AdminDatabaseInfo AdminDatabase { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -338,6 +339,13 @@ namespace ServiceStack
     {
         public int QueryLimit { get; set; }
         public List<int> Databases { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class AdminDatabaseInfo : IMeta
+    {
+        public int QueryLimit { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

@@ -49,6 +49,7 @@ DEBUG = true /*debug*/
                             <div v-else-if="routes.admin === 'logging'" v-scope="Logging({ store, routes, client, Forms })"></div>
                             <div v-else-if="routes.admin === 'profiling'" v-scope="Profiling({ store, routes, client, Forms })"></div>
                             <div v-else-if="routes.admin === 'redis'" v-scope="Redis({ store, routes, client, Forms })"></div>
+                            <div v-else-if="routes.admin === 'database'" v-scope="Database({ store, routes, client, Forms })"></div>
                         </div>
                     </div>
                 </div>
