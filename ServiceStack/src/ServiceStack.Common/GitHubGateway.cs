@@ -108,7 +108,7 @@ namespace ServiceStack
 
                 return repo.Full_Name;
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 if (ex.IsNotFound())
                     return null;
