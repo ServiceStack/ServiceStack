@@ -124,6 +124,18 @@ namespace ServiceStack.OrmLite.SqlServer
             return sql;
         }
 
+        public override List<string> GetSchemas(IDbCommand dbCmd)
+        {
+            var sql = "SELECT DISTINCT TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'";
+            return dbCmd.SqlColumn<string>(sql);
+        }
+
+        public override Dictionary<string, List<string>> GetSchemaTables(IDbCommand dbCmd)
+        {
+            var sql = "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'";
+            return dbCmd.Lookup<string, string>(sql);
+        }
+
         public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
         {
             var sql = $"SELECT count(*) FROM sys.schemas WHERE name = '{schemaName.SqlParam()}'";

@@ -463,6 +463,18 @@ namespace ServiceStack.OrmLite.PostgreSQL
             return sql;
         }
 
+        public override List<string> GetSchemas(IDbCommand dbCmd)
+        {
+            var sql = "SELECT DISTINCT TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA NOT IN ('information_schema', 'pg_catalog')";
+            return dbCmd.SqlColumn<string>(sql);
+        }
+
+        public override Dictionary<string, List<string>> GetSchemaTables(IDbCommand dbCmd)
+        {
+            var sql = "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA NOT IN ('information_schema', 'pg_catalog')";
+            return dbCmd.Lookup<string, string>(sql);
+        }
+
         public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
         {
             dbCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = '{GetSchemaName(schemaName).SqlParam()}');";

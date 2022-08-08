@@ -520,7 +520,7 @@ namespace ServiceStack.OrmLite
 
         protected virtual void ApplyTags(StringBuilder sqlBuilder, ISet<string> tags)
         {
-            if (tags != null && tags.Count > 0)
+            if (tags is { Count: > 0 })
             {
                 foreach (var tag in tags)
                 {
@@ -1310,6 +1310,10 @@ namespace ServiceStack.OrmLite
         public static IEnumerable<FieldDefinition> GetFieldDefinitions(ModelDefinition modelDef) => modelDef.FieldDefinitions.OrderBy(fd=>fd.Order);
 
         public abstract string ToCreateSchemaStatement(string schemaName);
+
+        public virtual List<string> GetSchemas(IDbCommand dbCmd) => new() { "default" };
+
+        public virtual Dictionary<string, List<string>> GetSchemaTables(IDbCommand dbCmd) => new();
 
         public abstract bool DoesSchemaExist(IDbCommand dbCmd, string schemaName);
 

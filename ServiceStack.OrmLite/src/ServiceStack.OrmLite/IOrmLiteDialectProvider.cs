@@ -198,7 +198,10 @@ namespace ServiceStack.OrmLite
 
         List<string> SequenceList(Type tableType);
         Task<List<string>> SequenceListAsync(Type tableType, CancellationToken token=default);
-        
+
+        List<string> GetSchemas(IDbCommand dbCmd);
+        Dictionary<string, List<string>> GetSchemaTables(IDbCommand dbCmd);
+
         bool DoesSchemaExist(IDbCommand dbCmd, string schema);
         Task<bool> DoesSchemaExistAsync(IDbCommand dbCmd, string schema, CancellationToken token=default);
         bool DoesTableExist(IDbConnection db, string tableName, string schema = null);

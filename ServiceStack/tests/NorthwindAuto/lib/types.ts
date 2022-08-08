@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-08-04 13:52:47
+Date: 2022-08-08 11:55:00
 Version: 6.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -671,6 +671,23 @@ export class AdminRedisInfo
     public constructor(init?: Partial<AdminRedisInfo>) { (Object as any).assign(this, init); }
 }
 
+export class SchemaInfo
+{
+    public name: string;
+    public tables: string[];
+
+    public constructor(init?: Partial<SchemaInfo>) { (Object as any).assign(this, init); }
+}
+
+export class AdminDatabaseInfo
+{
+    public queryLimit: number;
+    public schemas: SchemaInfo[];
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<AdminDatabaseInfo>) { (Object as any).assign(this, init); }
+}
+
 export class PluginInfo
 {
     public loaded: string[];
@@ -683,6 +700,7 @@ export class PluginInfo
     public filesUpload: FilesUploadInfo;
     public adminUsers: AdminUsersInfo;
     public adminRedis: AdminRedisInfo;
+    public adminDatabase: AdminDatabaseInfo;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<PluginInfo>) { (Object as any).assign(this, init); }
@@ -730,6 +748,7 @@ export class MetadataTypesConfig
     public defaultImports: string[];
     public includeTypes: string[];
     public excludeTypes: string[];
+    public exportTags: string[];
     public treatTypesAsStrings: string[];
     public exportValueTypes: boolean;
     public globalNamespace: string;

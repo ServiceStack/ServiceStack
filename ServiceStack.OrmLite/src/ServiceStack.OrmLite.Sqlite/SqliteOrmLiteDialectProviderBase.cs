@@ -184,15 +184,16 @@ namespace ServiceStack.OrmLite.Sqlite
         public override string GetQuotedTableName(string tableName, string schema = null) =>
             GetQuotedName(GetTableName(tableName, schema));
 
-        public override SqlExpression<T> SqlExpression<T>()
+        public override SqlExpression<T> SqlExpression<T>() => new SqliteExpression<T>(this);
+
+        public override Dictionary<string, List<string>> GetSchemaTables(IDbCommand dbCmd)
         {
-            return new SqliteExpression<T>(this);
+            return new Dictionary<string, List<string>> {
+                ["default"] = dbCmd.SqlColumn<string>("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'") 
+            };
         }
 
-        public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
-        {
-            throw new NotImplementedException("Schemas are not supported by sqlite");
-        }
+        public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName) => false;
 
         public override string ToCreateSchemaStatement(string schemaName)
         {

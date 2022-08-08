@@ -559,7 +559,7 @@ namespace ServiceStack.OrmLite
             return dbCmd.ConvertToList<T>();
         }
 
-        internal static List<T> SqlColumn<T>(this IDbCommand dbCmd, string sql, object anonType = null)
+        public static List<T> SqlColumn<T>(this IDbCommand dbCmd, string sql, object anonType = null)
         {
             dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql).CommandText = sql;
             return dbCmd.ConvertToList<T>();
@@ -808,7 +808,7 @@ namespace ServiceStack.OrmLite
             return columValues;
         }
 
-        internal static Dictionary<K, List<V>> Lookup<K, V>(this IDbCommand dbCmd, string sql, object anonType = null)
+        public static Dictionary<K, List<V>> Lookup<K, V>(this IDbCommand dbCmd, string sql, object anonType = null)
         {
             return dbCmd.SetParameters(anonType.ToObjectDictionary(), false, sql:ref sql).Lookup<K, V>(sql);
         }

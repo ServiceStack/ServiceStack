@@ -245,10 +245,8 @@ namespace ServiceStack.OrmLite
 
         internal static DataTable GetSchemaTable(this IDbCommand dbCmd, string sql)
         {
-            using (var reader = dbCmd.ExecReader(sql, CommandBehavior.KeyInfo)) //KeyInfo required for npgsql
-            {
-                return reader.GetSchemaTable();
-            }
+            using var reader = dbCmd.ExecReader(sql, CommandBehavior.KeyInfo);
+            return reader.GetSchemaTable();
         }
 
         public static ColumnSchema[] GetTableColumns(this IDbCommand dbCmd, Type table) => 
