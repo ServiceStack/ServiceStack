@@ -16,7 +16,7 @@ namespace ServiceStack.Aws.Tests.FileStorage
             var s3ConnectionFactory = new S3ConnectionFactory(
                 AwsConfig.AwsAccessKey,
                 AwsConfig.AwsSecretKey, 
-                RegionEndpoint.USEast1);
+                RegionEndpoint.USEast2);
 
             providerFactory = () => new S3FileStorageProvider(s3ConnectionFactory);
             

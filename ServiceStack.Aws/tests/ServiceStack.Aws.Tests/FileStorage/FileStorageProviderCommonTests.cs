@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Aws.FileStorage;
 using ServiceStack.Aws.Support;
@@ -20,6 +21,7 @@ namespace ServiceStack.Aws.Tests.FileStorage
         {
             var provider = providerFactory();
             provider.DeleteFolder(baseFolderName, recursive: true);
+            Thread.Sleep(5000);
             provider.CreateFolder(baseFolderName);
         }
 
