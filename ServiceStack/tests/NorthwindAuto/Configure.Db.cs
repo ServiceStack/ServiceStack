@@ -50,7 +50,28 @@ public class ConfigureDb : IHostingStartup
             
             appHost.Resolve<IValidationSource>().InitSchema();
             
-            appHost.Plugins.Add(new AdminDatabaseFeature());
+            appHost.Plugins.Add(new AdminDatabaseFeature {
+                DatabasesFilter = dbs => {
+                    dbs.Each(db => {
+                        if (db.Name == "main")
+                        {
+                            db.Alias = "Northwind";
+                            db.Schemas[0].Alias = "Traders";
+                        }
+                        else if (db.Name == "chinook")
+                        {
+                            db.Alias = "Chinook";
+                            db.Schemas[0].Alias = "Music";
+                        }
+                    });
+                },
+                // SchemasFilter = schemas => {
+                //     schemas.Add(new SchemaInfo {
+                //         Name = "test",
+                //         Tables = new() { "Test" },
+                //     });
+                // },
+            });
         });
 }
 

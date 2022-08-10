@@ -346,13 +346,22 @@ namespace ServiceStack
     public class AdminDatabaseInfo : IMeta
     {
         public int QueryLimit { get; set; }
-        public List<SchemaInfo> Schemas { get; set; }
+        public List<DatabaseInfo> Databases { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
-
+    
+    [Exclude(Feature.Soap)]
+    public class DatabaseInfo
+    {
+        public string Alias { get; set; }
+        public string Name { get; set; }
+        public List<SchemaInfo> Schemas { get; set; }
+    }
+    
     [Exclude(Feature.Soap)]
     public class SchemaInfo
     {
+        public string Alias { get; set; }
         public string Name { get; set; }
         public List<string> Tables { get; set; }
     }

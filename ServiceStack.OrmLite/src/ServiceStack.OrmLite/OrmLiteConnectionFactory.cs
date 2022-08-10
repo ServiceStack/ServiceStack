@@ -387,5 +387,8 @@ namespace ServiceStack.OrmLite
             }
             return await dbFactory.OpenAsync().ConfigAwait();
         }
+        
+        public static Dictionary<string, OrmLiteConnectionFactory> GetNamedConnections(this IDbConnectionFactory dbFactory) => 
+            OrmLiteConnectionFactory.NamedConnections;
     }
 }

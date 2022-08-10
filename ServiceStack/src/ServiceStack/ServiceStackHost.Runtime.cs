@@ -841,12 +841,11 @@ namespace ServiceStack
         public virtual IDbConnection GetDbConnection(IRequest req = null)
         {
             var dbFactory = Container.TryResolve<IDbConnectionFactory>();
-
             if (req != null)
             {
                 if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
                 {
-                    if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
+                    if (dbFactory is not IDbConnectionFactoryExtended dbFactoryExtended)
                         throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
                     if (connInfo.ConnectionString != null)
@@ -864,7 +863,7 @@ namespace ServiceStack
                     var namedConnectionAttr = req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
                     if (namedConnectionAttr != null)
                     {
-                        if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
+                        if (dbFactory is not IDbConnectionFactoryExtended dbFactoryExtended)
                             throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
                         return dbFactoryExtended.OpenDbConnection(namedConnectionAttr.Name);
@@ -873,6 +872,19 @@ namespace ServiceStack
             }
 
             return dbFactory.OpenDbConnection();
+        }
+
+        public virtual IDbConnection GetDbConnection(string namedConnection)
+        {
+            var dbFactory = Container.TryResolve<IDbConnectionFactory>();
+
+            if (namedConnection == null) 
+                return dbFactory.OpenDbConnection();
+            
+            if (dbFactory is not IDbConnectionFactoryExtended dbFactoryExtended)
+                throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+            
+            return dbFactoryExtended.OpenDbConnection(namedConnection);
         }
 
         public virtual string GetDbNamedConnection(IRequest req)

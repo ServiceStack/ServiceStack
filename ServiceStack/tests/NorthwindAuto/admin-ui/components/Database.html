@@ -1,15 +1,37 @@
 <script minify>
-import { $1 } from '@servicestack/client'
+import { $1, flatMap } from '@servicestack/client'
 import { keydown } from '../js/stores'
 import { hasItems } from '../../shared/js/core'
 
 App.components({
     Database: ({store, routes, client, Forms}) => {
+        
+        let schemaKey = (db,schema) => `${db}.${schema}`
+        
         return {
             $template: '#database-template',
+            collapsed: {},
+            get plugin() { return Forms.Server.plugins.adminDatabase },
+            get databases() { return this.plugin.databases },
+            get schemas() { return flatMap(x => x.schemas, this.databases) },
+            
+            toggle(db,schema) {
+                let key = schemaKey(db,schema)
+                this.collapsed[key] = !this.collapsed[key]
+            },
+            
+            isCollapsed(db,schema) {
+                return this.collapsed[schemaKey(db,schema)]
+            },
+            
+            dbAlias(db) {
+                return map(this.databases.find(x => x.name === db), x => x.alias) || db
+            },
+            schemaAlias(db, schema) {
+                return map(this.databases.find(x => x.name === db), x => map(x.schemas.find(s => s.name === schema), s => s.alias)) || schema
+            },
             
             update() {
-                
             },
 
             sub: null,
@@ -30,5 +52,81 @@ App.components({
 <template id="database-template">
     <section class="" @vue:mounted="mounted" @vue:unmounted="unmounted">
         
+        <div v-if="!routes.table" class="flex flex-wrap">
+            <nav v-for="db in databases" class="flex-1 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Tables">
+                <div class="">
+
+                <span class="text-2xl text-gray-900 group flex items-center pr-2 py-2 text-sm font-medium rounded-md">
+                    <svg class="text-gray-500 mr-3 h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6a8 3 0 0 0 16 0V6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></g></svg>
+                    {{db.alias || db.name}}
+                </span>
+
+                    <div v-for="schema in db.schemas" class="space-y-1">
+                        <button type="button" @click.prevent="toggle(db.name,schema.name)"
+                                class="bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pr-2 py-2 text-left text-sm font-medium">
+                            <svg :class="[!isCollapsed(db.name,schema.name) ? 'text-gray-400 rotate-90' : 'text-gray-300','mr-2 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
+                            </svg>
+                            {{schema.alias || schema.name}}
+                        </button>
+                        <div v-if="!isCollapsed(db.name,schema.name)" class="space-y-1">
+                            <a v-for="table in schema.tables" v-href="{ db:db.name, schema:schema.name, table }"
+                               :class="[table == routes.table ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
+                                    'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
+                                <span class="nav-item flex-grow">{{table}}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div v-else>
+
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol role="list" class="flex items-center space-x-4">
+                    <li title="All Databases">
+                        <div>
+                            <a v-href="{ db:'', schema:'', table:'' }" class="text-gray-400 hover:text-gray-500">
+                                <svg class="flex-shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                                </svg>
+                                <span class="sr-only">Home</span>
+                            </a>
+                        </div>
+                    </li>
+                    <li v-if="routes.db" :title="`${routes.db} database`">
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                            </svg>
+                            <a v-href="{ db:routes.db, schema:'', table:'' }" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                {{dbAlias(routes.db)}}
+                            </a>
+                        </div>
+                    </li>
+                    <li v-if="routes.schema" :title="`${routes.schema} schema`">
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                            </svg>
+                            <a v-href="{ db:routes.db, schema:routes.schema, table:'' }" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                {{schemaAlias(routes.db, routes.schema)}}
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                            </svg>
+                            <span class="ml-4 text-sm font-medium text-gray-700" aria-current="page">{{routes.table}}</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            
+            
+        </div>
+
     </section>
 </template>
