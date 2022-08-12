@@ -94,10 +94,14 @@ function createForms(Meta, css, ui) {
      * @return {MetadataPropertyType|null} */
     function getPrimaryKey(type) {
         if (!type) return null
-        let typeProps = typeProperties(type)
-        let id = typeProps.find(x => x.name.toLowerCase() === 'id')
+        return getPrimaryKeyByProps(typeProperties(type)) 
+    }
+    /** @param {MetadataPropertyType[]} type
+     * @return {MetadataPropertyType|null} */
+    function getPrimaryKeyByProps(props) {
+        let id = props.find(x => x.name.toLowerCase() === 'id')
         if (id && id.isPrimaryKey) return id
-        let pk = typeProps.find(x => x.isPrimaryKey)
+        let pk = props.find(x => x.isPrimaryKey)
         let ret = pk || id
         if (!ret) {
             let crudType = crudModel(type)
@@ -105,7 +109,7 @@ function createForms(Meta, css, ui) {
                 return getPrimaryKey(getType({ name: crudType }))
             }
             console.error(`Primary Key not found in ${type.name}`)
-        } 
+        }
         return ret || null
     }
     /** @param {MetadataType} type 
@@ -439,6 +443,7 @@ function createForms(Meta, css, ui) {
         colClass,
         inputProp,
         getPrimaryKey,
+        getPrimaryKeyByProps,
         typeProperties,
         relativeTime,
         relativeTimeFromMs,

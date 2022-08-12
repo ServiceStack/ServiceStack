@@ -8,7 +8,7 @@ App.components({
             Server: Meta.Server, 
             get urlApiExplorer() { return Meta.urlWithState('../ui') },
             get adminFeatures() {
-                return { validation:'Validation', users:'Users', logging:'Logging', profiling:'Profiling' }
+                return { validation:'Validation', users:'Users', logging:'Logging', profiling:'Profiling', database:'Database', redis:'Redis' }
             },
             featureColor(id) {
                 return Meta.Server.ui.adminLinks.some(link => link.id === id) ? 'green' : 'gray'

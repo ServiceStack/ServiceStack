@@ -36,6 +36,7 @@ App.components({
             "%IsNull": (k,v) => [k, 'null'],
             */
         }
+        let unknownIdSeq = 1
         
         return {
             $template: '#database-template',
@@ -50,8 +51,23 @@ App.components({
             get plugin() { return Forms.Server.plugins.adminDatabase },
             get databases() { return this.plugin.databases },
             get schemas() { return flatMap(x => x.schemas, this.databases) },
-            
-            toggle(db,schema) {
+
+            show: null,
+            get selected() { return routes.show && this.results.find(x => x.id === routes.show) },
+            toggle(row) { routes.to({ show: routes.show === row.id ? '' : row.id }) },
+            expanded(id) { return routes.show === id },
+            // required to avoid JS errors, as v-if guards not honoured in petite-vue
+            /**
+             * @param arg
+             * @param {Function?} f
+             * @returns {*}
+             */
+            select(arg, f) {
+                let ret = this.selected && this.selected[arg]
+                return f && ret ? f(ret) : ret
+            },
+
+            toggleSchema(db,schema) {
                 let key = schemaKey(db,schema)
                 this.collapsed[key] = !this.collapsed[key]
             },
@@ -79,6 +95,7 @@ App.components({
             filter: null,
             filters: [],
             filtersCount: 0,
+            keydown,
             get canFirst() { return this.skip > 0 },
             get canPrev() { return this.skip > 0 },
             get canNext() { return this.results.length >= this.take },
@@ -217,8 +234,6 @@ App.components({
                         return
                     }
 
-                    this.apiLoading = true
-                    
                     this.filters = refreshFilters(this.columns)
                     this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
 
@@ -226,11 +241,20 @@ App.components({
                     let skipRefresh = newState === this.lastState
                     if (skipRefresh) return
                     this.lastState = newState
-                    
+
+                    this.apiLoading = true
                     let args = this.createRequestArgs()
                     apiSend(createClient, new AdminDatabase(args)).then(r => {
                         this.apiLoading = false
                         this.api = r.api
+                        /** populate row.id with PK if Id doesn't exist */
+                        map(r.api.response, r => {
+                            r.results.filter(x => x.id == null).forEach(x => {
+                                x.id = x.Id 
+                                    || map(Forms.getPrimaryKeyByProps(this.viewModelColumns), pk => mapGet(x, pk.name)) 
+                                    || unknownIdSeq++
+                            })
+                        })
                     })
                 }
             },
@@ -239,10 +263,10 @@ App.components({
             mounted() {
                 this.sub = App.events.subscribe('route:nav', args => this.update())
                 this.update()
-                // document.addEventListener('keydown', this.keydown)
+                document.addEventListener('keydown', this.keydown)
             },
             unmounted() {
-                // document.removeEventListener('keydown', this.keydown)
+                document.removeEventListener('keydown', this.keydown)
                 App.unsubscribe.call(this)
             },
         }
@@ -262,7 +286,7 @@ App.components({
                     </span>
 
                     <div v-for="schema in db.schemas" class="space-y-1">
-                        <button type="button" @click.prevent="toggle(db.name,schema.name)"
+                        <button type="button" @click.prevent="toggleSchema(db.name,schema.name)"
                                 class="bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pr-2 py-2 text-left text-sm font-medium">
                             <svg :class="[!isCollapsed(db.name,schema.name) ? 'text-gray-400 rotate-90' : 'text-gray-300','mr-2 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 20 20" aria-hidden="true">
                                 <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
@@ -286,7 +310,7 @@ App.components({
                 <ol role="list" class="flex items-center space-x-4">
                     <li title="All Databases">
                         <div>
-                            <a v-href="{ db:'', schema:'', table:'' }" class="text-gray-400 hover:text-gray-500">
+                            <a v-href="{ db:'', schema:'', table:'', show:'', skip:'' }" class="text-gray-400 hover:text-gray-500">
                                 <svg class="flex-shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                                 </svg>
@@ -299,7 +323,7 @@ App.components({
                             <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                                 <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
                             </svg>
-                            <a v-href="{ db:routes.db, schema:'', table:'' }" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                            <a v-href="{ db:routes.db, schema:'', table:'', show:'', skip:'' }" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
                                 {{dbAlias(routes.db)}}
                             </a>
                         </div>
@@ -309,7 +333,7 @@ App.components({
                             <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                                 <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
                             </svg>
-                            <a v-href="{ db:routes.db, schema:routes.schema, table:'' }" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                            <a v-href="{ db:routes.db, schema:routes.schema, table:'', show:'', skip:'' }" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
                                 {{schemaAlias(routes.db, routes.schema)}}
                             </a>
                         </div>
@@ -432,7 +456,8 @@ App.components({
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr v-for="(row,index) in results" :class="`${index % 2 == 0 ? 'bg-white' : 'bg-gray-50'}`">
+                                    <tr v-for="(row,index) in results" :key="index" @click="toggle(row)"
+                                        :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : 'hover:bg-yellow-50']">
                                         <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             <div v-if="refInfo(row,c)" class="text-blue-700 flex cursor-pointer" v-href="refInfo(row,c).href">
                                                 <span class="mr-1" v-scope="Image(refInfo(row,c).icon, { cls:'w-5 h-5' })"></span>
@@ -447,11 +472,63 @@ App.components({
                         </div>
                     </div>
                 </div>
-                
-                
             </div>
-            
         </div>
+
+        <div v-if="selected" class="relative z-20" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+            <div class="fixed overflow-hidden">
+                <div class="absolute overflow-hidden">
+                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+                        <div class="pointer-events-auto w-screen max-w-2xl">
+                            <form v-if="selected" class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+                                <div class="flex-1">
+                                    
+                                    <!-- Header -->
+                                    <div class="bg-gray-50 px-4 py-6 sm:px-6">
+                                        <div class="flex items-start justify-between space-x-3">
+                                            <div class="space-y-1">
+                                                <h2 class="flex text-lg">
+                                                    <div :class="['font-medium text-gray-900']">
+                                                        {{routes.table}} {{selected.id}}
+                                                    </div>
+                                                </h2>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
+
+                                        <div class="flex overflow-auto">
+                                            <div class="p-2 relative w-full">
+                                            <span class="relative z-0 inline-flex shadow-sm rounded-md">
+                                              <a v-for="(tab,name) in {Pretty:'',Raw:'raw',Preview:'preview'}" v-href="{ body:tab }"
+                                                 :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], routes.body == tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                                                {{name}}
+                                              </a>
+                                            </span>
+                                                <div v-if="routes.body == ''" class="pt-2 icon-outer" style="min-height:2.5rem">
+                                                    <div class="absolute right-4" v-scope="CopyIcon({ cls:'icon', text:() => indentJson(selected) })"></div>
+                                                    <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="indentJson(selected)"></code></pre>
+                                                </div>
+                                                <div v-else-if="routes.body == 'raw'" class="flex pt-2">
+                                                    <textarea class="flex-1" rows="10" v-html="JSON.stringify(selected)"></textarea>
+                                                </div>
+                                                <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+                                                    <div v-scope="PreviewObject({ val:() => selected })"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
 
     </section>
 </template>

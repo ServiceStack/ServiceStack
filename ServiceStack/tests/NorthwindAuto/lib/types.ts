@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-08-12 17:57:36
+Date: 2022-08-13 01:21:18
 Version: 6.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1179,9 +1179,9 @@ export class AdminRedisResponse
 
 export class AdminDatabaseResponse
 {
+    public results: { [index:string]: Object; }[];
     public total?: number;
     public columns: MetadataPropertyType[];
-    public results: { [index:string]: Object; }[];
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<AdminDatabaseResponse>) { (Object as any).assign(this, init); }

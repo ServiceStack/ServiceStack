@@ -273,9 +273,10 @@ public class AdminDatabaseService : Service
                 {
                     Name = x.ColumnName,
                     Type = type.GetMetadataPropertyType(),
-                    IsValueType = underlyingType.IsValueType ? true : (bool?) null,
-                    IsEnum = underlyingType.IsEnum ? true : (bool?) null,
+                    IsValueType = underlyingType.IsValueType ? true : null,
+                    IsEnum = underlyingType.IsEnum ? true : null,
                     GenericArgs = MetadataTypesGenerator.ToGenericArgs(type),
+                    IsPrimaryKey = x.IsKey ? true : null,
                 };
             });
         }
