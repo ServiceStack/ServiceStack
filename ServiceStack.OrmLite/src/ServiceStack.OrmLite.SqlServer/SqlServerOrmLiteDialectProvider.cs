@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 #if MSDATA
 using Microsoft.Data.SqlClient;
 #else
@@ -713,11 +714,11 @@ namespace ServiceStack.OrmLite.SqlServer
         public override Task DisableForeignKeysCheckAsync(IDbCommand cmd, CancellationToken token = default) => 
             cmd.ExecNonQueryAsync("EXEC sp_msforeachtable \"ALTER TABLE ? NOCHECK CONSTRAINT all\"", null, token);
         
-        protected SqlConnection Unwrap(IDbConnection db) => (SqlConnection)db.ToDbConnection();
+        protected DbConnection Unwrap(IDbConnection db) => (DbConnection)db.ToDbConnection();
 
-        protected SqlCommand Unwrap(IDbCommand cmd) => (SqlCommand)cmd.ToDbCommand();
+        protected DbCommand Unwrap(IDbCommand cmd) => (DbCommand)cmd.ToDbCommand();
 
-        protected SqlDataReader Unwrap(IDataReader reader) => (SqlDataReader)reader;
+        protected DbDataReader Unwrap(IDataReader reader) => (DbDataReader)reader;
 
 #if ASYNC
         public override Task OpenAsync(IDbConnection db, CancellationToken token = default)

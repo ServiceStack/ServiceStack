@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -765,20 +766,11 @@ namespace ServiceStack.OrmLite.PostgreSQL
 
         public override string SqlRandom => "RANDOM()";
 
-        protected NpgsqlConnection Unwrap(IDbConnection db)
-        {
-            return (NpgsqlConnection)db.ToDbConnection();
-        }
+        protected DbConnection Unwrap(IDbConnection db) => (DbConnection)db.ToDbConnection();
 
-        protected NpgsqlCommand Unwrap(IDbCommand cmd)
-        {
-            return (NpgsqlCommand)cmd.ToDbCommand();
-        }
+        protected DbCommand Unwrap(IDbCommand cmd) => (DbCommand)cmd.ToDbCommand();
 
-        protected NpgsqlDataReader Unwrap(IDataReader reader)
-        {
-            return (NpgsqlDataReader)reader;
-        }
+        protected DbDataReader Unwrap(IDataReader reader) => (DbDataReader)reader;
 
 #if ASYNC
         public override Task OpenAsync(IDbConnection db, CancellationToken token = default)
