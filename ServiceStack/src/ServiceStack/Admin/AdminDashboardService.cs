@@ -5,7 +5,7 @@ using ServiceStack.Redis;
 
 namespace ServiceStack.Admin;
 
-[ExcludeMetadata, Tag("admin")]
+[ExcludeMetadata, Tag(TagNames.Admin)]
 public class AdminDashboard : IReturn<AdminDashboardResponse> {}
 public class AdminDashboardResponse : IHasResponseStatus
 {

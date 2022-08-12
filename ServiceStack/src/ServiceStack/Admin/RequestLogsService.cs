@@ -8,7 +8,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Admin
 {
-    [DataContract, ExcludeMetadata, Tag("admin")]
+    [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
     public class RequestLogs : IReturn<RequestLogsResponse>
     {
         [DataMember(Order=1)] public int? BeforeSecs { get; set; }

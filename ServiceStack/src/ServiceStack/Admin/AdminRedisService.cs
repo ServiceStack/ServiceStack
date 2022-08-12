@@ -7,7 +7,7 @@ using ServiceStack.Redis;
 
 namespace ServiceStack.Admin;
 
-[ExcludeMetadata, Tag("admin")]
+[ExcludeMetadata, Tag(TagNames.Admin)]
 public class AdminRedis : IPost, IReturn<AdminRedisResponse>
 {
     public int? Db { get; set; }

@@ -73,7 +73,8 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
     {
         Info = new UiInfo
         {
-            HideTags = new List<string> { TagNames.Auth },
+            HideTags = new() { TagNames.Auth, TagNames.Admin },
+            AlwaysHideTags = new() { TagNames.Admin },
             BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
             Theme = new ThemeInfo
             {

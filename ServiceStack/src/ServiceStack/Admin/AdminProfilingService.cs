@@ -6,7 +6,7 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Admin;
 
-[ExcludeMetadata, Tag("admin")]
+[ExcludeMetadata, Tag(TagNames.Admin)]
 public class AdminProfiling : IReturn<AdminProfilingResponse>
 {
     public string? Source { get; set; }

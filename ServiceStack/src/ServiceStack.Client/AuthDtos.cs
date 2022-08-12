@@ -446,7 +446,7 @@ public class DynamicRequest
 }
     
 //Validation Rules
-[DataContract, ExcludeMetadata, Tag("admin")]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public class GetValidationRules : IReturn<GetValidationRulesResponse>
 {
     [DataMember(Order = 1)]
@@ -462,7 +462,7 @@ public class GetValidationRulesResponse
     [DataMember(Order = 2)]
     public ResponseStatus ResponseStatus { get; set; }
 }
-[DataContract, ExcludeMetadata, Tag("admin")]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public class ModifyValidationRules : IReturnVoid
 {
     [DataMember(Order = 1)]
@@ -614,14 +614,14 @@ public abstract class AdminUserBase : IMeta
     [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
 }
     
-[DataContract, ExcludeMetadata, Tag("admin")]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminCreateUser : AdminUserBase, IPost, IReturn<AdminUserResponse>
 {
     [DataMember(Order = 10)] public List<string> Roles { get; set; }
     [DataMember(Order = 11)] public List<string> Permissions { get; set; }
 }
     
-[DataContract, ExcludeMetadata, Tag("admin")]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserResponse>
 {
     [DataMember(Order = 10)] public string Id { get; set; }
@@ -633,13 +633,13 @@ public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserRes
     [DataMember(Order = 16)] public List<string> RemovePermissions { get; set; }
 }
     
-[DataContract, ExcludeMetadata, Tag("admin")]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminGetUser : IGet, IReturn<AdminUserResponse>
 {
     [DataMember(Order = 10)] public string Id { get; set; }
 }
     
-[DataContract, ExcludeMetadata, Tag("admin")]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminDeleteUser : IDelete, IReturn<AdminDeleteUserResponse>
 {
     [DataMember(Order = 10)] public string Id { get; set; }
@@ -661,7 +661,7 @@ public partial class AdminUserResponse : IHasResponseStatus
     [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
 }
     
-[DataContract, ExcludeMetadata, Tag("admin")]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminQueryUsers : IGet, IReturn<AdminUsersResponse>
 {
     [DataMember(Order = 1)] public string Query { get; set; }
