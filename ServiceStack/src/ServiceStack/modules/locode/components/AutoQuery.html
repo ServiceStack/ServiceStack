@@ -14,6 +14,8 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
         filter: null,
         filters: [],
         filtersCount: 0,
+        get plugin() { return Forms.Server.plugins.autoQuery },
+        get definitions() { return this.plugin.viewerConventions },
         state: createState(routes.op),
         prefs: refreshPrefs(),
         hasPrefs: settings.hasPrefs(routes.op),
@@ -208,7 +210,7 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
     </div>
     <div v-if="invalidAccess" class="w-body md:w-body overflow-auto" v-scope="EnsureAccess({ store, message:() => invalidAccess, $on:updated })"></div>
     <div v-else-if="hasState" class="pt-1">
-        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, columns:() => viewModelColumns, prefs:() => settings.op(routes.op), save:updatePrefs })"></div>
+        <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, settings, maxLimit:plugin.maxLimit, columns:() => viewModelColumns, prefs:() => settings.op(routes.op), save:updatePrefs })"></div>
         <div class="pl-1 pt-1 flex flex-wrap">
             <div class="flex pb-1 sm:pb-0">
                 <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @click="Modal.show('query-prefs')">
@@ -281,7 +283,11 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
                 </div>
             </div>
         </div>
-        <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, settings, filters:() => filters, save, done:() => open='' })"></div>
+        <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, definitions, 
+            prefs:name => settings.opProp(routes.op, name), 
+            saveProp:(name,prefs) => settings.saveOpProp(routes.op, name, x => Object.assign(x, prefs)),
+            saveFilters: (f,filters) => settings.saveOpProp(routes.op, f.column.name, x => x.filters=filters),
+            filters:() => filters, save, done:() => open='' })"></div>
         <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
         <div v-if="apiLoading" v-scope="Loading()"></div>
         <div v-else>
@@ -296,7 +302,10 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
                 <div v-else v-scope="EditForm({ store, routes, settings, state:() => state, save, done:() => routes.to({ edit:null }) })"></div>
             </div>
             <div v-if="results.length">
-                <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save, done:() => filter=null })" class="relative"></div>
+                <div v-if="filter" v-scope="FilterColumn({ store, routes, definitions, 
+                    prefs:() => settings.opProp(routes.op, filter && filter.column.name), 
+                    saveProp:(name,prefs) => settings.saveOpProp(routes.op, name, x => Object.assign(x, prefs)),
+                    filter:() => filter, save, done:() => filter=null })" class="relative"></div>
                 <div ref="results" v-scope="Results({ store, routes, settings, state:() => state, dataModel:() => dataModel, columns:() => columns, results: () => results, onFilter: x => filter=x })"></div>
             </div>
         </div>

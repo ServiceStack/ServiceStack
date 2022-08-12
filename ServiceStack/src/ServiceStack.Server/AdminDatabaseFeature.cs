@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -85,7 +87,7 @@ public class AdminDatabaseFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 }
 
 
-[ExcludeMetadata, Tag("admin")]
+[ExcludeMetadata, Tag(TagNames.Admin)]
 public class AdminDatabase : IGet, IReturn<AdminDatabaseResponse>
 {
     public string? Db { get; set; }
@@ -95,12 +97,15 @@ public class AdminDatabase : IGet, IReturn<AdminDatabaseResponse>
     public int? Take { get; set; }
     public int? Skip { get; set; }
     public string? OrderBy { get; set; }
+    public string? Include { get; set; }
 }
 
+[Csv(CsvBehavior.FirstEnumerable)]
 public class AdminDatabaseResponse : IHasResponseStatus
 {
     public List<Dictionary<string, object?>> Results { get; set; }
-
+    public long? Total { get; set; }
+    public List<MetadataPropertyType>? Columns { get; set; }
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
@@ -123,39 +128,44 @@ public class AdminDatabaseService : Service
                 nameof(AdminDatabase.Skip),
                 nameof(AdminDatabase.Take),
                 nameof(AdminDatabase.OrderBy),
+                nameof(AdminDatabase.Include),
             };
         }
     }
 
     private static char[] Delims = { '=', '!', '<', '>', '[', ']' }; 
     
-    public object Any(AdminDatabase request)
+    public async Task<object> Any(AdminDatabase request)
     {
         using var db = HostContext.AppHost.GetDbConnection(request.Db is null or "main" ? null : request.Db);
         var dialect = db.GetDialectProvider();
 
         var schema = request.Schema == "default" ? null : request.Schema;
         var table = dialect.GetQuotedTableName(request.Table, schema);
-        var sb = StringBuilderCache.Allocate();
+        var sb = StringBuilderCache.Allocate().AppendLine();
         var fields = request.Fields.IsEmpty()
             ? "*"
             : string.Join(",", request.Fields.Map(x => dialect.GetQuotedName(x.SafeVarName())));
-        
-        sb.AppendLine($"SELECT {fields} FROM {table}");
+
         var qs = Request.GetRequestParams(exclude:IgnoreFields);
         
         var filters = new List<string>();
         var dbParams = new Dictionary<string, object>();
-        
+
+        var i = 0;
         foreach (var entry in qs)
         {
             string? op = null;
             var name = entry.Key;
+            var value = entry.Value.SqlVerifyFragment();
+
             if (Array.IndexOf(Delims, entry.Key[0]) >= 0)
             {
                 var pos = entry.Key.LastIndexOfAny(Delims);
                 op = entry.Key.Substring(0, pos + 1);
                 name = entry.Key.Substring(pos + 1);
+                if (op == ">")
+                    op += "=";
             }
             else
             {
@@ -164,18 +174,51 @@ public class AdminDatabaseService : Service
                 {
                     name = entry.Key.Substring(0, pos);
                     op = entry.Key.Substring(pos);
-                    if (op is ">" or "<" or "!")
+                    if (op is "<" or "!")
                         op += "=";
                 }
             }
             
+            // Support AutoQuery conventions as well 
+            if (name.EndsWith("StartsWith"))
+            {
+                name = name.Substring(0, name.Length - "StartsWith".Length);
+                value = value + "%";
+            }
+            else if (name.EndsWith("EndsWith"))
+            {
+                name = name.Substring(0, name.Length - "EndsWith".Length);
+                value = "%" + value;
+            }
+            else if (name.EndsWith("Contains"))
+            {
+                name = name.Substring(0, name.Length - "Contains".Length);
+                value = "%" + value + "%";
+            }
+            else if (name.EndsWith("IsNull"))
+            {
+                name = name.Substring(0, name.Length - "IsNull".Length);
+                value = "null";
+            }
+            else if (name.EndsWith("IsNotNull"))
+            {
+                name = name.Substring(0, name.Length - "IsNotNull".Length);
+                op = "!";
+                value = "null";
+            }
+            else if (name.EndsWith("In"))
+            {
+                name = name.Substring(0, name.Length - "In".Length);
+                op = "[]";
+            }
+
             var quotedName = dialect.GetQuotedColumnName(name);
-            var paramName = "@" + name;
-            var value = entry.Value.SqlVerifyFragment();
+            var paramName = $"@p{i++}";
             if (value == "null")
             {
-                filters.Add($"{quotedName} IS NULL");
-                filters.Add($"{quotedName} IS NOT NULL");
+                filters.Add(op == "!"
+                    ? $"{quotedName} IS NOT NULL"
+                    : $"{quotedName} IS NULL");
             }
             if (op != null)
             {
@@ -187,13 +230,13 @@ public class AdminDatabaseService : Service
                 }
                 else
                 {
-                    dbParams[name] = value;
+                    dbParams[paramName] = value;
                     filters.Add($"{dialect.SqlCast(quotedName, "VARCHAR")} {op} {paramName}");
                 }
             }
             else
             {
-                dbParams[name] = value;
+                dbParams[paramName] = value;
                 filters.Add(value?.IndexOf('%') >= 0
                     ? $"{dialect.SqlCast(quotedName, "VARCHAR")} LIKE {paramName}"
                     : $"{quotedName} = {paramName}");
@@ -211,13 +254,42 @@ public class AdminDatabaseService : Service
 
         var feature = AssertPlugin<AdminDatabaseFeature>();
         var take = Math.Min(request.Take.GetValueOrDefault(feature.QueryLimit), feature.QueryLimit);
-        sb.AppendLine(dialect.SqlLimit(request.Skip, take));
 
         var sql = StringBuilderCache.ReturnAndFree(sb);
-        var results = db.SqlList<Dictionary<string, object?>>(sql, dbParams);
+        var resultsSql = $"SELECT {fields} FROM {table}" + sql + Environment.NewLine + dialect.SqlLimit(request.Skip, take);
+        var results = await db.SqlListAsync<Dictionary<string, object?>>(resultsSql, dbParams);
+        long? total = null;
+
+        List<MetadataPropertyType>? columns = null;
+        var includes = request.Include?.Split(',') ?? Array.Empty<string>();
+        if (includes.Contains("columns"))
+        {
+            var columnSchemas = db.GetTableColumns($"SELECT * FROM {table}" + Environment.NewLine + dialect.SqlLimit(0,1));
+            columns = columnSchemas.Map(x =>
+            {
+                var type = GenerateCrudServices.DefaultResolveColumnType(x, dialect);
+                var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+                return new MetadataPropertyType
+                {
+                    Name = x.ColumnName,
+                    Type = type.GetMetadataPropertyType(),
+                    IsValueType = underlyingType.IsValueType ? true : (bool?) null,
+                    IsEnum = underlyingType.IsEnum ? true : (bool?) null,
+                    GenericArgs = MetadataTypesGenerator.ToGenericArgs(type),
+                };
+            });
+        }
+        
+        if (includes.Contains("total"))
+        {
+            var totalSql = $"SELECT COUNT(*) FROM {table}" + sql;
+            total = await db.SqlScalarAsync<long>(totalSql, dbParams);
+        }
         
         return new AdminDatabaseResponse
         {
+            Total = total,
+            Columns = columns,
             Results = results,
         };
     }

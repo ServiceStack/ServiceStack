@@ -1,15 +1,51 @@
 <script minify>
-import { $1, flatMap } from '@servicestack/client'
+import { ApiResult, createUrl, flatMap, uniqueKeys, mapGet, humanify } from '@servicestack/client'
 import { keydown } from '../js/stores'
 import { hasItems } from '../../shared/js/core'
+import { AdminDatabase, AdminDatabaseResponse } from '../../lib/types'
 
 App.components({
-    Database: ({store, routes, client, Forms}) => {
-        
+    Database: ({store, routes, client, settings, Forms}) => {
+
+        let refreshPrefs = () => settings.table(routes.dbTable())
         let schemaKey = (db,schema) => `${db}.${schema}`
+        let refreshFilters = columns =>
+            columns.map(column => ({ column, ...settings.tableProp(routes.dbTable(), column.name)}))
+        let d = (name,value,opt) => (Object.assign({ name, value }, opt))
+        let definitions = [
+            d("=","%"),
+            d("!=","%!"),
+            d("<","<%"),
+            d("<=","%<"),
+            d(">","%>"),
+            d(">=",">%"),
+            d("In","%In"),
+            d("Starts With","%StartsWith", { types: "string" }),
+            d("Contains","%Contains", { types: "string" }),
+            d("Ends With","%EndsWith", { types: "string" }),
+            d("Exists","%IsNotNull", { valueType: "none" }),
+            d("Not Exists","%IsNull", { valueType: "none" }),
+        ]
+        let filterConverters = {
+            "%In": (k,v) => [k + '[]', v],
+            /** convert from AutoQuery conventions to AdminDatabase filters (nicer syntax but doesn't support multi column filters)
+            "%StartsWith": (k,v) => [k, v + '%'],
+            "%Contains": (k,v) => [k, '%' + v + '%'],
+            "%EndsWith": (k,v) => [k, '%' + v],
+            "%IsNotNull": (k,v) => [k + '!', 'null'],
+            "%IsNull": (k,v) => [k, 'null'],
+            */
+        }
         
         return {
             $template: '#database-template',
+            /** @type {ApiResult<AdminDatabaseResponse>} */
+            api: null,
+            skip: 0,
+            settings,
+            apiLoading: false,
+            get refreshFilters() { return refreshFilters(this.columns) },
+            
             collapsed: {},
             get plugin() { return Forms.Server.plugins.adminDatabase },
             get databases() { return this.plugin.databases },
@@ -31,7 +67,172 @@ App.components({
                 return map(this.databases.find(x => x.name === db), x => map(x.schemas.find(s => s.name === schema), s => s.alias)) || schema
             },
             
+            get results() { return this.api && map(this.api.response, x => x.results) || [] },
+            get total() { return this.api && map(this.api.response, x => x.total) || 0 },
+            get errorSummary() { return this.api && this.api.summaryMessage() },
+
+            definitions,
+            prefs: refreshPrefs(),
+            hasPrefs: settings.hasPrefs(routes.dbTable()),
+            get take() { return parseInt(this.prefs && this.prefs.take || 25) },
+            open: null,
+            filter: null,
+            filters: [],
+            filtersCount: 0,
+            get canFirst() { return this.skip > 0 },
+            get canPrev() { return this.skip > 0 },
+            get canNext() { return this.results.length >= this.take },
+            get canLast() { return this.results.length >= this.take },
+            min(num1,num2) { return Math.min(num1, num2) },
+            nextSkip(skip) {
+                skip += this.skip
+                if (typeof this.total == 'number') {
+                    const lastPage = Math.floor(this.total / this.take) * this.take
+                    if (skip > lastPage) return lastPage
+                }
+                if (skip < 0) return 0
+                return skip
+            },
+
+
+            lastState: null,
+            columnsMap:{},
+            get viewModelColumns() {
+                return this.columnsMap[routes.dbTable()] || []
+            },
+            set viewModelColumns(value) {
+                this.columnsMap[routes.dbTable()] = value || []
+            },
+            get columns() {
+                let only = this.prefs.selectedColumns.length > 0 ? this.prefs.selectedColumns : null
+                let opColumns = only 
+                    ? only.map(name => this.viewModelColumns.find(x => x.name === name))
+                    : this.viewModelColumns
+                return opColumns.filter(x => !!x)
+            },
+            /** @param {*} row
+             *  @param {MetadataPropertyType} column */
+            format(row, column) {
+                return Forms.format(mapGet(row,column.name), column)
+            },
+            fieldName(name) { return humanify(name) },
+            /** @param {MetadataPropertyType} prop */
+            complexProp(column) {
+                return Forms.complexProp(column)
+            },
+            refInfo(row, column) {
+                let val = mapGet(row,column.name)
+                if (val == null || Array.isArray(val) && val.length === 0) return null
+                return Forms.refInfo(row,column,this.columns)
+            },
+            selectColumn(column,e) {
+                let dialogWidth = 318
+                let tableRect = this.$refs.results.getBoundingClientRect()
+                let div = e.target.tagName === 'DIV' ? e.target : e.target.closest('DIV')
+                let rect = div.getBoundingClientRect()
+                let minLeft = tableRect.x + dialogWidth + 25
+                let args = { column, topLeft:{ x:Math.max(Math.floor(rect.x + rect.width), minLeft), y:Math.floor(rect.y + rect.height + 1) } }
+                this.filter = args
+            },
+
+            copy,
+            copied:false,
+            copyApiUrl() {
+                let args = this.createRequestArgs()
+                let apiUrl = createUrl(resolveApiUrl('AdminDatabase'), { ...args, jsconfig:'edv' })
+                this.copy(apiUrl)
+            },
+            downloadCsv() {
+                let args = this.createRequestArgs()
+                let csvUrl = createUrl(resolveApiUrl('AdminDatabase'), { ...args, format:'csv', jsconfig:'edv' })
+                window.open(csvUrl)
+            },
+            save() {
+                this.lastState = null
+                this.update()
+            },
+            updatePrefs(prefs) {
+                this.lastState = null
+                settings.saveTable(routes.dbTable(), x => Object.assign(x, prefs))
+                this.update()
+            },
+            clearPrefs() {
+                this.lastState = null
+                settings.clearPrefs(routes.dbTable())
+                this.update()
+            },
+            createRequestArgs() {
+                let args = {
+                    db: routes.db,
+                    schema: routes.schema,
+                    table: routes.table,
+                    skip: this.skip,
+                    take: this.take,
+                    include: "total",
+                }
+                let selectedColumns = this.prefs.selectedColumns
+                if (selectedColumns.length > 0) {
+                    args.fields = selectedColumns.join(',')
+                }
+                let orderBy = []
+                this.filters.forEach(f => {
+                    if (f.sort) orderBy.push((f.sort === 'DESC' ? '-' : '') + f.column.name)
+                    f.filters.forEach(filter => {
+                        let converter = filterConverters[filter.key]
+                        if (converter) {
+                            let [k,v] = converter(f.column.name, filter.value)
+                            args[k] = v
+                        } else {
+                            let k = filter.key.replace('%', f.column.name)
+                            args[k] = filter.value
+                        }
+                    })
+                })
+                let qs = queryString(location.search)
+                Object.keys(qs).forEach(k => {
+                    let field = this.viewModelColumns.find(x => x.name === k)
+                    if (field) args[k] = qs[k]
+                })
+                if (orderBy.length > 0) {
+                    args.orderBy = orderBy.join(',')
+                }
+                return args
+            },
+            
             update() {
+                this.skip = parseInt(routes.skip) || 0
+                if (routes.table) {
+                    this.prefs = refreshPrefs()
+                    this.hasPrefs = settings.hasPrefs(routes.dbTable())
+                    if (this.viewModelColumns.length === 0) {
+                        apiSend(createClient, new AdminDatabase({ db:routes.db, schema:routes.schema, table:routes.table, take:1, include:'columns' }))
+                            .then(r => {
+                                if (r.api.error) {
+                                    this.api = r.api
+                                } else {
+                                    this.viewModelColumns = r.api.response.columns
+                                    this.update()
+                                }
+                            })
+                        return
+                    }
+
+                    this.apiLoading = true
+                    
+                    this.filters = refreshFilters(this.columns)
+                    this.filtersCount = this.filters.reduce((acc,x) => acc + x.filters.length,0)
+
+                    let newState = `${routes.dbTable()}:${routes.skip}>${this.results.length}`
+                    let skipRefresh = newState === this.lastState
+                    if (skipRefresh) return
+                    this.lastState = newState
+                    
+                    let args = this.createRequestArgs()
+                    apiSend(createClient, new AdminDatabase(args)).then(r => {
+                        this.apiLoading = false
+                        this.api = r.api
+                    })
+                }
             },
 
             sub: null,
@@ -51,15 +252,14 @@ App.components({
 <!--minify-->
 <template id="database-template">
     <section class="" @vue:mounted="mounted" @vue:unmounted="unmounted">
-        
         <div v-if="!routes.table" class="flex flex-wrap">
             <nav v-for="db in databases" class="flex-1 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Tables">
                 <div class="">
 
-                <span class="text-2xl text-gray-900 group flex items-center pr-2 py-2 text-sm font-medium rounded-md">
-                    <svg class="text-gray-500 mr-3 h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6a8 3 0 0 0 16 0V6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></g></svg>
-                    {{db.alias || db.name}}
-                </span>
+                    <span class="text-2xl text-gray-900 group flex items-center pr-2 py-2 text-sm font-medium rounded-md">
+                        <svg class="text-gray-500 mr-3 h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6a8 3 0 0 0 16 0V6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></g></svg>
+                        {{db.alias || db.name}}
+                    </span>
 
                     <div v-for="schema in db.schemas" class="space-y-1">
                         <button type="button" @click.prevent="toggle(db.name,schema.name)"
@@ -124,9 +324,168 @@ App.components({
                     </li>
                 </ol>
             </nav>
+
+            <div class="mt-4">
+                <div v-scope="QueryPrefs({ id:'query-prefs', routes, store, maxLimit: plugin.queryLimit, columns:() => viewModelColumns, prefs:() => settings.table(routes.dbTable()), save:updatePrefs })"></div>
+                <div class="flex flex-wrap">
+                    <div class="flex pb-1 sm:pb-0">
+                        <button type="button" class="text-gray-700 hover:text-indigo-600" :title="`${routes.table} Preferences`" @click="Modal.show('query-prefs')">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor"/></g></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canFirst ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="First page" :disabled="!canFirst" v-href="{ skip:nextSkip(-total) }">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" :class="['pl-2', canLast ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400']"
+                                title="Last page" :disabled="!canLast" v-href="{ skip:nextSkip(total) }">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor"/></svg>
+                        </button>
+                    </div>
+                    <div class="flex pb-1 sm:pb-0">
+                        <div class="px-4 text-lg">
+                            <span v-if="apiLoading">Querying...</span>
+                            <span v-else-if="results.length"><span class="hidden xl:inline">Showing Results</span> {{skip+1}} - {{min(skip + results.length,total)}} <span v-if="total!=null">of {{total}}</span></span>
+                            <span v-else-if="api">No Results</span>
+                        </div>
+                    </div>
+                    <div class="flex pb-1 sm:pb-0">
+                        <div class="pl-2">
+                            <button type="button" @click="downloadCsv" title="Download CSV"
+                                    class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd"/><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z"/><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z"/><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z"/></svg>
+                                <span class="text-green-900">Excel</span>
+                            </button>
+                        </div>
+                        <div class="pl-2">
+                            <button type="button" @click="copyApiUrl" title="Copy API URL"
+                                    class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg v-if="copied" class="w-5 h-5 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+                                <span>Copy URL</span>
+                            </button>
+                        </div>
+                        <div v-if="hasPrefs" class="pl-2">
+                            <button type="button" @click="clearPrefs" title="Reset Preferences &amp; Filters"
+                                    class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/></svg>
+                            </button>
+                        </div>
+                        <div v-if="filtersCount" class="pl-2">
+                            <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
+                                    class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                                <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="mr-1">
+                                        {{filtersCount}} {{ filtersCount === 1 ? 'Filter' : 'Filters' }}
+                                    </span>
+                                <svg v-if="open!=='filters'"
+                                     class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                </svg>
+                                <svg v-else
+                                     class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
+            <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, definitions, 
+                    prefs:name => settings.tableProp(routes.dbTable(), name), 
+                    saveProp:(name,prefs) => settings.saveTableProp(routes.dbTable(), name, x => Object.assign(x, prefs)),
+                    saveFilters: (f,filters) => settings.saveTableProp(routes.dbTable(), f.column.name, x => x.filters=filters),
+                    filters:() => filters, save, done:() => open='' })"></div>
+            <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+            <div v-if="apiLoading" v-scope="Loading()"></div>
+            <div v-else-if="results.length" class="mt-2">
+                <div v-if="filter" v-scope="FilterColumn({ store, routes, definitions, 
+                    prefs:() => settings.tableProp(routes.dbTable(), filter && filter.column.name), 
+                    saveProp:(name,prefs) => settings.saveTableProp(routes.dbTable(), name, x => Object.assign(x, prefs)),
+                    filter:() => filter, save, done:() => filter=null })" class="relative"></div>
+                <div ref="results" v-if="results.length" class="sm:-ml-2 lg:-ml-4 flex flex-col">
+                    <div class="overflow-x-auto pb-4">
+                        <div class="py-2 align-middle inline-block min-w-full sm:px-2 lg:px-4">
+                            <div class="md:shadow overflow-hidden border-b border-gray-200 md:rounded-lg">
+                                <table class="table-array min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                    <tr>
+                                        <th v-for="c in columns" :key="c.name" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                            <div v-if="complexProp(c)" class="flex justify-between items-center text-sm">
+                                                <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
+                                            </div>
+                                            <div v-else @click="selectColumn(c,$event)" class="flex justify-between items-center text-sm cursor-pointer hover:text-gray-900">
+                                                <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
+                                                <div v-scope="SettingsIcons({ routes, settings, name:() => c.name })"></div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="(row,index) in results" :class="`${index % 2 == 0 ? 'bg-white' : 'bg-gray-50'}`">
+                                        <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <div v-if="refInfo(row,c)" class="text-blue-700 flex cursor-pointer" v-href="refInfo(row,c).href">
+                                                <span class="mr-1" v-scope="Image(refInfo(row,c).icon, { cls:'w-5 h-5' })"></span>
+                                                <div v-html="map(refInfo(row,c),x => x.html)"></div>
+                                            </div>
+                                            <div v-else v-html="format(row,c)"></div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
             
         </div>
 
     </section>
 </template>
+
+<script>
+App.components({
+    SettingsIcons({routes, settings, name}) {
+        let refresh = () => settings.tableProp(routes.dbTable(), name())
+        return {
+            $template: `#settings-icons-template`,
+            prefs: null,
+            get sort() {
+                return map(this.prefs, x => x.sort)
+            },
+            get filters() {
+                return map(this.prefs, x => x.filters || [])
+            },
+            sub: null,
+            unmounted: App.unsubscribe,
+            mounted() {
+                this.prefs = refresh()
+                this.sub = App.events.subscribe(settings.events.tableProp(routes.dbTable(), name()), () => this.prefs = refresh())
+            },
+        }
+    },
+})
+</script>
+<!--minify-->
+<template id="settings-icons-template">
+    <div class="flex" @vue:mounted="mounted" @vue:unmounted="unmounted">
+        <svg class="w-4 h-4" v-if="filters && filters.length" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.586a1 1 0 0 1-.293.707l-6.414 6.414a1 1 0 0 0-.293.707V17l-4 4v-6.586a1 1 0 0 0-.293-.707L3.293 7.293A1 1 0 0 1 3 6.586V4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+        <svg class="w-4 h-4" v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path d="M505.5 658.7c3.2 4.4 9.7 4.4 12.9 0l178-246c3.8-5.3 0-12.7-6.5-12.7H643c-10.2 0-19.9 4.9-25.9 13.2L512 558.6L406.8 413.2c-6-8.3-15.6-13.2-25.9-13.2H334c-6.5 0-10.3 7.4-6.5 12.7l178 246z" fill="currentColor"/><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z" fill="currentColor"/></svg>
+        <svg class="w-4 h-4" v-if="sort==='ASC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor"/></g></svg>
+        <svg class="w-4 h-4" v-else-if="sort==='DESC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor"/></g></svg>
+    </div>
+</template>
+<!--/minify-->

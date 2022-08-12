@@ -371,6 +371,24 @@ function createForms(Meta, css, ui) {
         }
         return propState
     }
+    let typeofNet = o =>
+        typeof o == 'string'
+            ? 'String'
+            :  typeof o == 'boolean'
+                ? "Boolean"
+                : typeof o === 'number'
+                    ? isFinite(o) && Math.floor(o) === o
+                        ? 'Int64'
+                        : 'Double'
+                    : isDate(o)
+                        ? 'DateTime'
+                        : Array.isArray(o)
+                            ? 'List<object>'
+                            : o.constructor && o.constructor.name === 'Object'
+                                ? 'Dictionary<String,Object>'
+                                : 'Object'
+    let ValueTypes = 'String,Boolean,Int64,Double,DateTime'.split(',')
+    let isValueType = o => ValueTypes.indexOf(typeofNet(o)) >= 0
     /** @param {*} o
      *  @param {MetadataPropertyType} prop */
     function format(o, prop) {
@@ -624,6 +642,8 @@ function createForms(Meta, css, ui) {
             return o
         },
         format,
+        typeofNet,
+        isValueType,
     }
 }
 /**

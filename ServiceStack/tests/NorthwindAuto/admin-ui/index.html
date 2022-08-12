@@ -49,7 +49,7 @@ DEBUG = true /*debug*/
                             <div v-else-if="routes.admin === 'logging'" v-scope="Logging({ store, routes, client, Forms })"></div>
                             <div v-else-if="routes.admin === 'profiling'" v-scope="Profiling({ store, routes, client, Forms })"></div>
                             <div v-else-if="routes.admin === 'redis'" v-scope="Redis({ store, routes, client, Forms })"></div>
-                            <div v-else-if="routes.admin === 'database'" v-scope="Database({ store, routes, client, Forms })"></div>
+                            <div v-else-if="routes.admin === 'database'" v-scope="Database({ store, routes, client, settings, Forms })"></div>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@ let App = createApp(PetiteVue)
 /*files:js/*.js */
 </script>
 
-<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject,CopyIcon,ApiSelector-->
+<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject,CopyIcon,ApiSelector,ModalDialog,QueryPrefs,FilterColumn-->
 <!--files:components/*.html-->
 <!--file:custom.html-->
 

@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-08-11 01:45:29
+Date: 2022-08-12 17:57:36
 Version: 6.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1177,6 +1177,16 @@ export class AdminRedisResponse
     public constructor(init?: Partial<AdminRedisResponse>) { (Object as any).assign(this, init); }
 }
 
+export class AdminDatabaseResponse
+{
+    public total?: number;
+    public columns: MetadataPropertyType[];
+    public results: { [index:string]: Object; }[];
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminDatabaseResponse>) { (Object as any).assign(this, init); }
+}
+
 // @Route("/metadata/app")
 // @DataContract
 export class MetadataApp implements IReturn<AppMetadata>
@@ -1580,6 +1590,23 @@ export class AdminRedis implements IReturn<AdminRedisResponse>, IPost
     public getTypeName() { return 'AdminRedis'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new AdminRedisResponse(); }
+}
+
+export class AdminDatabase implements IReturn<AdminDatabaseResponse>, IGet
+{
+    public db: string;
+    public schema: string;
+    public table: string;
+    public fields: string[];
+    public take?: number;
+    public skip?: number;
+    public orderBy: string;
+    public include: string;
+
+    public constructor(init?: Partial<AdminDatabase>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminDatabase'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminDatabaseResponse(); }
 }
 
 

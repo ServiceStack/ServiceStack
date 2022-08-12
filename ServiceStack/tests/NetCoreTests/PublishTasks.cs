@@ -139,6 +139,7 @@ public class PublishTasks
                 typeof(AdminDashboard),
                 typeof(AdminProfiling),
                 typeof(AdminRedis),
+                typeof(AdminDatabase),
             };
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
@@ -161,6 +162,7 @@ public class PublishTasks
             Plugins.Add(new RequestLogsFeature());
             Plugins.Add(new ProfilingFeature());
             Plugins.Add(new AdminRedisFeature());
+            Plugins.Add(new AdminDatabaseFeature());
         }
     }
 

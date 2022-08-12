@@ -99,7 +99,7 @@ namespace ServiceStack
 
         public Action<List<TableSchema>> TableSchemasFilter { get; set; }
 
-        public Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
+        public static Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
         {
             var dataType = column.DataType;
             if (dataType == null)

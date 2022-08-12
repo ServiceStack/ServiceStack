@@ -1,4 +1,4 @@
-import { JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
+import { combinePaths, JsonServiceClient, lastLeftPart, trimEnd } from "@servicestack/client"
 import { Server } from "../../lib/types"
 import { createForms, createMeta } from "../../shared/js/createForms"
 
@@ -20,6 +20,13 @@ function createClient(fn) {
             c.basePath = apiFmt.replace('/{Request}', '')
         if (fn) fn(c)
     })
+}
+
+/** Resolve Absolute URL for API Name
+ * @param {string} op
+ * @return {string} */
+export function resolveApiUrl(op) {
+    return combinePaths(client.replyBaseUrl,op)
 }
 
 /** App's pre-configured `JsonServiceClient` instance for making typed API requests */

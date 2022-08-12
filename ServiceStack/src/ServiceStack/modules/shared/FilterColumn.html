@@ -1,15 +1,11 @@
 <script minify>
-import { inputClass } from "../../shared/js/core"
-import { Types } from "../../shared/js/Types"
-import { Meta } from "../js/init"
-
-function filterRules(type) {
-    let c = Server.plugins.autoQuery.viewerConventions
+function filterRules(definitions,type) {
+    let c = definitions
     if (!Types.isString(type)) c = c.filter(x => x.types !== 'string')
     return c
 }
-function filterRule(type, value) {
-    return filterRules(type).find(x => x.value === value)
+function filterRule(definitions,type, value) {
+    return filterRules(definitions,type).find(x => x.value === value)
 }
 function filterValue(rule,type,filter) {
     return rule && rule.valueType === 'none'
@@ -18,16 +14,13 @@ function filterValue(rule,type,filter) {
             ? `(${filter.value})`
             : Types.formatValue(type, filter.value)
 }
-
 App.components({
-    FilterColumn({ store, routes, settings, filter, save, done }) {
-        let refresh = () => settings.opProp(routes.op, map(filter(), x => x.column.name))
-        let refreshEnums = () => map(refresh(), x => x.filters[0] && x.filters[0].value.split(',') || [])
-
+    FilterColumn({ store, routes, definitions, prefs, saveProp, filter, save, done }) {
+        let refreshEnums = () => map(prefs(), x => x.filters[0] && x.filters[0].value.split(',') || [])
         return {
             $template: '#filter-column-template',
-            store, routes, settings,
-            prefs: refresh(),
+            store, routes,
+            prefs: prefs(),
             selectedEnums: refreshEnums(),
             newQuery: '',
             newValue: '',
@@ -37,16 +30,16 @@ App.components({
             get topLeft() { return map(filter(), x => x.topLeft) },
             get topLeftX() { return map(this.topLeft, x => x.x) },
             get topLeftY() { return map(this.topLeft, x => x.y) },
-            get filterRules() { return filterRules(this.columnType) },
+            get filterRules() { return filterRules(definitions,this.columnType) },
             done,
             inputClass(cls) { return cls + ' ' + inputClass() },
-            get valueType() { return map(filterRule(this.columnType, this.newQuery), x => x.valueType) },
+            get valueType() { return map(filterRule(definitions,this.columnType, this.newQuery), x => x.valueType) },
             get isEnum() { return Meta.isEnum(this.columnType) },
             get enumValues() { return Meta.enumValues(this.columnType) },
             get enumProps() {  },
             addFilter() {
                 if (!this.newQuery) return
-                let name = map(filterRule(this.columnType, this.newQuery), x => x.name)
+                let name = map(filterRule(definitions,this.columnType, this.newQuery), x => x.name)
                 this.prefs.filters.push({ key:this.newQuery, name, value:this.newValue })
                 this.newQuery = this.newValue = ''
             },
@@ -54,12 +47,12 @@ App.components({
                 this.prefs.filters.splice(index,1)
             },
             filterValue(filter) {
-                return filterValue(filterRule(this.columnType, filter.key), this.columnType, filter)
+                return filterValue(filterRule(definitions,this.columnType, filter.key), this.columnType, filter)
             },
             updated() {
                 this.newQuery = '%'
                 map(this.$refs.txtFilter, x => x.focus())
-                this.prefs = refresh()
+                this.prefs = prefs()
                 if (this.isEnum) {
                     this.selectedEnums = refreshEnums()
                 }
@@ -75,21 +68,21 @@ App.components({
                 if (this.isEnum) {
                     this.prefs.filters = [{ key:'%In', name:'In', value:this.selectedEnums.join(',')}]
                 }
-                settings.saveOpProp(routes.op, this.columnName, x => Object.assign(x, this.prefs))
+                saveProp(this.columnName, this.prefs)
                 save()
                 done()
             },
         }
     },
-    FilterViews({ store, routes, settings, filters, save, done }) {
+    FilterViews({ store, routes, definitions, prefs, saveProp, saveFilters, filters, save, done }) {
         return {
             $template: '#filter-views-template',
-            store, routes, settings,
+            store, routes,
             get filters() { return filters().filter(f => f.filters.length > 0) },
             get columnType() { return map(this.filters, x => x.column && x.column.type) },
             done,
             filterValue(column,filter) {
-                return filterValue(filterRule(column.type, filter.key), column.type, filter)
+                return filterValue(filterRule(definitions,column.type, filter.key), column.type, filter)
             },
             save() {
                 save()
@@ -97,15 +90,15 @@ App.components({
                 if (filtersCount === 0) done()
             },
             removeFilters(column) {
-                let prefs = settings.opProp(routes.op, column.name)
-                prefs.filters = []
-                settings.saveOpProp(routes.op, column.name, x => Object.assign(x,prefs))
+                let p = prefs(column.name)
+                p.filters = []
+                saveProp(column.name, p)
                 this.save()
             },
             removeFilter(column,index) {
-                let prefs = settings.opProp(routes.op, column.name)
-                prefs.filters.splice(index,1)
-                settings.saveOpProp(routes.op, column.name, x => Object.assign(x,prefs))
+                let p = prefs(column.name)
+                p.filters.splice(index,1)
+                saveProp(column.name, p)
                 this.save()
             },
             isEnum: Meta.isEnum,
@@ -113,8 +106,7 @@ App.components({
                 return (filters && filters[0] && filters[0].value || '').split(',')
             },
             clearAll() {
-                filters().forEach(f =>
-                    settings.saveOpProp(routes.op, f.column.name, x => x.filters=[]))
+                filters().forEach(f => saveFilters(f, []))
                 save()
                 done()
             }
