@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHost.cs" />
+    <Compile Include="MiniProfilerTests.cs" />
     <Compile Include="OpenIdApplicationStore.cs" />
     <Compile Include="Services.cs" />
     <Compile Include="Startup.cs" />
