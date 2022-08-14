@@ -248,8 +248,7 @@ App.components({
             </div>
         </div>
     </div>
-
-
+    
     <div v-if="selected" class="relative z-20" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
         <div class="fixed overflow-hidden">
             <div class="absolute overflow-hidden">
@@ -324,7 +323,7 @@ App.components({
                                             </div>
                                         </div>
                                         <div class="flex h-7 items-center">
-                                            <div v-scope="CloseButton({ onclick:() => toggle(selected) })"></div>
+                                            <div title="Close" v-scope="CloseButton({ onclick:() => toggle(selected) })"></div>
                                         </div>
                                     </div>
                                 </div>

@@ -45,6 +45,14 @@ App.components({
             get schemas() { return flatMap(x => x.schemas, this.databases) },
             show: null,
             get selected() { return routes.show && this.results.find(x => x.id === routes.show) },
+            get selectedClean() {
+                let row = this.selected
+                if (!row) return
+                if (row.id && row.Id) {
+                    return omit(row, ['id'])
+                }
+                return row
+            },
             toggle(row) { routes.to({ show: routes.show === row.id ? '' : row.id }) },
             expanded(id) { return routes.show === id },
             // required to avoid JS errors, as v-if guards not honoured in petite-vue
@@ -160,6 +168,9 @@ App.components({
                 this.lastState = null
                 settings.clearPrefs(routes.dbTable())
                 this.update()
+            },
+            clearFilters() {
+                routes.to({ show:'' })
             },
             createRequestArgs() {
                 let args = {
@@ -452,7 +463,7 @@ App.components({
                 <div class="absolute overflow-hidden">
                     <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
                         <div class="pointer-events-auto w-screen max-w-2xl">
-                            <form v-if="selected" class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+                            <form v-if="selected" class="flex h-full flex-col overflow-y-auto bg-white shadow-xl">
                                 <div class="flex-1">
                                     <!-- Header -->
                                     <div class="bg-gray-50 px-4 py-6 sm:px-6">
@@ -463,6 +474,9 @@ App.components({
                                                         {{routes.table}} {{selected.id}}
                                                     </div>
                                                 </h2>
+                                            </div>
+                                            <div class="flex h-7 items-center">
+                                                <div title="Close" v-scope="CloseButton({ onclick:() => toggle(selected) })"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -483,7 +497,7 @@ App.components({
                                                     <textarea class="flex-1" rows="10" v-html="JSON.stringify(selected)"></textarea>
                                                 </div>
                                                 <div v-else-if="routes.body == 'preview'" class="body-preview flex pt-2 overflow-x-auto">
-                                                    <div v-scope="PreviewObject({ val:() => selected })"></div>
+                                                    <div v-scope="PreviewObject({ val:() => selectedClean })"></div>
                                                 </div>
                                             </div>
                                         </div>
