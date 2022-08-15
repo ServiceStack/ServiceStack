@@ -25,7 +25,8 @@ public class ModifySchemaTests : OrmLiteTestBase
         public string? ToCreate { get; set; }
     }
 
-    public ModifySchemaTests() => OrmLiteUtils.PrintSql();
+    // public ModifySchemaTests() => OrmLiteUtils.PrintSql();
+    private static HashSet<string> GetTableColumnNames(IDbConnection db) => db.GetTableColumns<BookingV1>().Select(x => x.ColumnName).ToSet();
 
     [Test]
     public void Can_create_column()
@@ -59,10 +60,5 @@ public class ModifySchemaTests : OrmLiteTestBase
         db.RenameColumn<BookingV2>(nameof(BookingV1.ToRemove), nameof(BookingV2.ToCreate));
         Assert.That(GetTableColumnNames(db), Does.Not.Contain(toRenameName));
         Assert.That(GetTableColumnNames(db), Does.Contain(db.GetNamingStrategy().GetColumnName(nameof(BookingV2.ToCreate))));
-    }
-
-    private static HashSet<string> GetTableColumnNames(IDbConnection db)
-    {
-        return db.GetTableColumns<BookingV1>().Select(x => x.ColumnName).ToSet();
     }
 }
