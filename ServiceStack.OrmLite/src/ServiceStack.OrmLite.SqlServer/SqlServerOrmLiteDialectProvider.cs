@@ -278,6 +278,14 @@ namespace ServiceStack.OrmLite.SqlServer
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedValue(fieldDef.FieldName)}, {GetQuotedValue("COLUMN")};";
         }
 
+        public override string ToRenameColumnStatement(Type modelType, string oldColumnName, string newColumnName)
+        {
+            var modelName = NamingStrategy.GetTableName(GetModel(modelType));
+            var objectName = $"{modelName}.{GetQuotedColumnName(oldColumnName)}";
+
+            return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedColumnName(newColumnName)}, 'COLUMN';";
+        }
+
         protected virtual string GetAutoIncrementDefinition(FieldDefinition fieldDef)
         {
             return AutoIncrementDefinition;

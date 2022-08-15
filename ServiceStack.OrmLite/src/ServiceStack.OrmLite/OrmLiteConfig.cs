@@ -59,6 +59,9 @@ namespace ServiceStack.OrmLite
                 ? hasDialectProvider.DialectProvider
                 : DialectProvider;
 
+        public static INamingStrategy GetNamingStrategy(this IDbConnection db) =>
+            db.GetDialectProvider().NamingStrategy;
+
         public static IOrmLiteDialectProvider Dialect(this IDbConnection db) =>
             db is IHasDialectProvider hasDialectProvider
                 ? hasDialectProvider.DialectProvider

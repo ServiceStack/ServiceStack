@@ -82,6 +82,26 @@ namespace ServiceStack.OrmLite
             dbConn.ExecuteSql(command);
         }
 
+        public static void RenameColumn<T>(this IDbConnection dbConn,
+            Expression<Func<T, object>> field,
+            string oldColumnName)
+        {
+            var modelDef = ModelDefinition<T>.Definition;
+            var fieldDef = modelDef.GetFieldDefinition(field);
+            dbConn.RenameColumn(typeof(T), dbConn.GetNamingStrategy().GetColumnName(fieldDef.FieldName), oldColumnName);
+        }
+
+        public static void RenameColumn<T>(this IDbConnection dbConn, string oldColumnName, string newColumnName) =>
+            dbConn.RenameColumn(typeof(T), oldColumnName, newColumnName);
+        public static void RenameColumn(this IDbConnection dbConn, Type modelType, string oldColumnName, string newColumnName)
+        {
+            var dialect = dbConn.Dialect();
+            var command = dialect.ToRenameColumnStatement(modelType, 
+                dialect.NamingStrategy.GetColumnName(oldColumnName), 
+                dialect.NamingStrategy.GetColumnName(newColumnName));
+            dbConn.ExecuteSql(command);
+        }
+
         public static void DropColumn<T>(this IDbConnection dbConn, Expression<Func<T, object>> field)
         {
             var modelDef = ModelDefinition<T>.Definition;

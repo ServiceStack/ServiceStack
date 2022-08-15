@@ -1610,6 +1610,11 @@ namespace ServiceStack.OrmLite
             return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} CHANGE COLUMN {GetQuotedColumnName(oldColumnName)} {column};";
         }
 
+        public virtual string ToRenameColumnStatement(Type modelType, string oldColumnName, string newColumnName)
+        {
+            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} RENAME COLUMN {GetQuotedColumnName(oldColumnName)} TO {GetQuotedColumnName(newColumnName)};";
+        }
+
         public virtual string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
             Expression<Func<TForeign, object>> foreignField,
             OnFkOption onUpdate,

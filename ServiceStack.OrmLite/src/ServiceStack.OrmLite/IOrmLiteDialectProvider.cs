@@ -233,6 +233,7 @@ namespace ServiceStack.OrmLite
         string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef);
         string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef);
         string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName);
+        string ToRenameColumnStatement(Type modelType, string oldColumnName, string newColumnName);
         string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
                                                      Expression<Func<TForeign, object>> foreignField,
                                                      OnFkOption onUpdate,

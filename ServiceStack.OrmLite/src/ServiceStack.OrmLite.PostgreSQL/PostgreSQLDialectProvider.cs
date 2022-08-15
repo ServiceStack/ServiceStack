@@ -747,6 +747,20 @@ namespace ServiceStack.OrmLite.PostgreSQL
             SetParameterValues<T>(cmd, obj);
         }
 
+        public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
+        {
+            //var column = GetColumnDefinition(fieldDef);
+            var columnType = GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
+            var newColumnName = NamingStrategy.GetColumnName(fieldDef.FieldName);
+
+            var sql = $"ALTER TABLE {GetQuotedTableName(modelType.GetModelMetadata())} " +
+                      $"ALTER COLUMN {GetQuotedColumnName(oldColumnName)} TYPE {columnType}";
+            sql += newColumnName != oldColumnName
+                ? $", RENAME COLUMN {GetQuotedColumnName(oldColumnName)} TO {GetQuotedColumnName(newColumnName)};"
+                : ";";
+            return sql;
+        }
+
         public override string SqlConflict(string sql, string conflictResolution)
         {
             //https://www.postgresql.org/docs/current/static/sql-insert.html
