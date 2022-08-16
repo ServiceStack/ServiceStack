@@ -25,7 +25,7 @@ public class ModifySchemaTests : OrmLiteTestBase
         public string? ToCreate { get; set; }
     }
 
-    // public ModifySchemaTests() => OrmLiteUtils.PrintSql();
+    public ModifySchemaTests() => OrmLiteUtils.PrintSql();
     private static HashSet<string> GetTableColumnNames(IDbConnection db) => db.GetTableColumns<BookingV1>().Select(x => x.ColumnName).ToSet();
 
     [Test]
