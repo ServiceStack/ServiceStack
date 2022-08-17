@@ -1302,8 +1302,9 @@ namespace ServiceStack.NativeTypes
 
             if (typesToExpand.Count != 0 || namespacedTypes.Count != 0)
             {
+                var allMetadataTypes = metadata.GetAllMetadataTypes();
                 var includeTypesInNamespace = namespacedTypes.Count > 0
-                    ? metadata.GetAllMetadataTypes()
+                    ? allMetadataTypes
                         .Where(x => namespacedTypes.Any(ns => x.Namespace?.StartsWith(ns) == true))
                         .Select(x => x.Name)
                         .ToSet()
@@ -1347,7 +1348,12 @@ namespace ServiceStack.NativeTypes
 
                 var returnTypesForInclude = metadata.Operations
                     .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
-                    .Map(x => x.Response);
+                    .SelectMany(x => {
+                        var ret = new List<MetadataType> { x.Response };
+                        if (x.ReturnType?.GenericArgs?.Length > 0)
+                            ret.AddRange(metadata.Types.Where(t => x.ReturnType.GenericArgs.Contains(t.Name)));
+                        return ret;
+                    }).ToList();
 
                 var crudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames().ToSet();
                 var crudTypeNamesForInclude = metadata.Operations
