@@ -33,7 +33,7 @@ public enum RoomType
 }
 
 [Tag("bookings"), Description("Find Bookings")]
-[Notes("Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/nhc4MZufkcM'>C# Bookings App from Scratch</a>")]
+[Notes("Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/rSFiikDjGos'>C# Bookings App from Scratch</a>")]
 [Route("/bookings", "GET")]
 [Route("/bookings/{Id}", "GET")]
 [AutoApply(Behavior.AuditQuery)]
