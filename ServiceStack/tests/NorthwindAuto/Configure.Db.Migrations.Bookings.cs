@@ -1,3 +1,4 @@
+using System.Data;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
@@ -61,13 +62,29 @@ public class Migration1000 : MigrationBase
         CreateBooking("Booking the 3rd", RoomType.Suite, 13, 130, "employee@email.com");
     }
 
+    // Need to repeat due to different types
+    static int bookingId = 0;
+    public void CreateBooking(string name, RoomType type, int roomNo, decimal cost, string by) =>
+        Db.Insert(new Booking {
+            Id = ++bookingId,
+            Name = name,
+            RoomType = type,
+            RoomNumber = roomNo,
+            Cost = cost,
+            BookingStartDate = DateTime.UtcNow.AddDays(bookingId),
+            BookingEndDate = DateTime.UtcNow.AddDays(bookingId + 7),
+        }.WithAudit(by));
+
     public override void Down()
     {
         Db.DropTable<Booking>();
     }
+}
 
+public static class BookingUtils
+{
     static int bookingId = 0;
-    public void CreateBooking(string name, RoomType type, int roomNo, decimal cost, string by) =>
+    public static void CreateBooking(this IDbConnection Db, string name, RoomType type, int roomNo, decimal cost, string by) =>
         Db.Insert(new Booking {
             Id = ++bookingId,
             Name = name,
