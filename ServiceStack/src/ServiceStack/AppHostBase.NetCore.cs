@@ -333,7 +333,12 @@ namespace ServiceStack
                     var appTasks = appTasksStr.Split(';');
                     for (var i = 0; i < appTasks.Length; i++)
                     {
-                        var appTask = appTasks[i];
+                        var appTaskWithArgs = appTasks[i];
+                        var appTask = appTaskWithArgs.LeftPart(':');
+                        var args = appTaskWithArgs.IndexOf(':') >= 0
+                            ? appTaskWithArgs.RightPart(':').Split(',')
+                            : Array.Empty<string>();
+                        
                         if (!AppTasks.TryGetValue(appTask, out var taskFn))
                         {
                             Log.Warn($"Unknown AppTask '{appTask}' was not registered with this App, ignoring...");
@@ -344,7 +349,7 @@ namespace ServiceStack
                         try
                         {
                             Log.Info($"Running AppTask '{appTask}'...");
-                            taskFn();
+                            taskFn(args);
                         }
                         catch (Exception e)
                         {
