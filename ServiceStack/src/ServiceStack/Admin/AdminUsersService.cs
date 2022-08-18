@@ -56,7 +56,7 @@ public partial class AdminUsersService : Service
         await AssertRequiredRole();
 
         // Do exact search by Username/Email if Auth Repo doesn't support querying
-        if (!(AuthRepositoryAsync is IQueryUserAuthAsync) && !(AuthRepository is IQueryUserAuth))
+        if (AuthRepositoryAsync is not IQueryUserAuthAsync && AuthRepository is not IQueryUserAuth)
         {
             var user = await AuthRepositoryAsync.GetUserAuthByUserNameAsync(request.Query);
             return new AdminUsersResponse {

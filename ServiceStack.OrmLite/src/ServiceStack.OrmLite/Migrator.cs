@@ -40,6 +40,22 @@ public abstract class MigrationBase
     public virtual void Down(){}
 }
 
+public class MigrationResult
+{
+    public MigrationResult(Exception? error) => Error = error;
+    public MigrationResult(List<Type> tasksRun) => TasksRun = tasksRun;
+
+    public MigrationResult(List<Type> tasksRun, Exception? error)
+    {
+        TasksRun = tasksRun;
+        Error = error;
+    }
+
+    public Exception? Error { get; }
+    public List<Type> TasksRun { get; }
+    public bool Succeeded => Error == null;
+}
+
 public class Migrator
 {
     public IDbConnectionFactory DbFactory { get; }
@@ -112,7 +128,8 @@ public class Migrator
         return migrationTypes.FirstOrDefault();
     }
 
-    public List<Type> Run()
+    public MigrationResult Run() => Run(throwIfError:true);
+    public MigrationResult Run(bool throwIfError)
     {
         using var db = DbFactory.Open();
         Init(db);
@@ -142,7 +159,9 @@ public class Migrator
             catch (Exception e)
             {
                 Log.Error(e.Message);
-                return migrationsRun;
+                if (throwIfError)
+                    throw;
+                return new MigrationResult(migrationsRun, e);
             }
             
             var migrationStartAt = DateTime.UtcNow;
@@ -202,7 +221,7 @@ public class Migrator
 
                 instance?.BeforeRollback();
                 trans?.Rollback();
-                trans.Dispose();
+                trans?.Dispose();
 
                 // Save Error in DB
                 db.UpdateOnly(() => new Migration
@@ -211,6 +230,10 @@ public class Migrator
                     ErrorMessage = e.Message,
                     ErrorStackTrace = e.StackTrace,
                 }, where: x => x.Id == id);
+
+                if (throwIfError)
+                    throw;
+                return new MigrationResult(migrationsRun, e);
             }
             finally
             {
@@ -227,7 +250,7 @@ public class Migrator
             var migration = migrationsRun.Count > 1 ? "migrations" : "migration";
             Log.Info($"{Environment.NewLine}Ran {migrationsRun.Count} {migration} in {(DateTime.UtcNow - startAt).TotalSeconds:N3}s");
         }
-        return migrationsRun;
+        return new MigrationResult(migrationsRun);
     }
 
     public static void Init(IDbConnection db)
@@ -246,5 +269,11 @@ public class Migrator
             db.DeleteAll<Migration>();
         else
             Init(db);
+    }
+
+    public void Revert(string migrationName) => Revert(migrationName, throwIfError:true);
+    public void Revert(string migrationName, bool throwIfError)
+    {
+        throw new NotImplementedException();
     }
 }

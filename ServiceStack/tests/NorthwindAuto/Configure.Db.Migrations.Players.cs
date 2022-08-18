@@ -1,27 +1,23 @@
-using System.Data;
 using MyApp.ServiceModel;
 using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Tests.Migrations;
 
 namespace MyApp;
 
-public static class ConfigureDbPlayers
+public class Migration1001 : MigrationBase
 {
-    public static void SeedPlayers(this IDbConnection db, string by="admin@email.com")
+    private string by = "admin@email.com";
+    
+    public override void Up()
     {
-        if (db.TableExists<Level>())
-            db.DeleteAll<Level>();  // Delete ForeignKey data if exists
+        //CREATE ForeignKey Tables in dependent order
+        Db.CreateTable<Level>();
+        Db.CreateTable<Player>();
 
-        //DROP and CREATE ForeignKey Tables in dependent order
-        db.DropTable<PlayerGameItem>();
-        db.DropTable<Player>();
-        db.DropTable<Level>();
-        db.CreateTable<Level>();
-        db.CreateTable<Player>();
-
-        //DROP and CREATE tables without Foreign Keys in any order
-        db.DropAndCreateTable<Profile>();
-        db.DropAndCreateTable<GameItem>();
-        db.CreateTable<PlayerGameItem>();
+        //CREATE tables without Foreign Keys in any order
+        Db.CreateTable<Profile>();
+        Db.CreateTable<GameItem>();
+        Db.CreateTable<PlayerGameItem>();
 
         var savedLevel1 = new Level
         {
@@ -33,12 +29,12 @@ public static class ConfigureDbPlayers
             Id = Guid.NewGuid(),
             Data = new byte[]{ 6, 7, 8, 9, 10 },
         };
-        db.Insert(savedLevel1, savedLevel2);
+        Db.Insert(savedLevel1, savedLevel2);
 
         var gameItem1 = new GameItem { Name = "WAND",  Description = "Golden Wand of Odyssey" }.WithAudit(by);
         var gameItem2 = new GameItem { Name = "STAFF", Description = "Staff of the Magi" }.WithAudit(by);
         var gameItem3 = new GameItem { Name = "SWORD", Description = "Sword of Damocles" }.WithAudit(by);
-        db.Insert(gameItem1, gameItem2, gameItem3);
+        Db.Insert(gameItem1, gameItem2, gameItem3);
             
         var player1 = new Player
         {
@@ -72,7 +68,7 @@ public static class ConfigureDbPlayers
             }.WithAudit(by),
             SavedLevelId = savedLevel1.Id,
         }.WithAudit(by);
-        db.Save(player1, references: true);
+        Db.Save(player1, references: true);
             
         var player2 = new Player
         {
@@ -106,6 +102,21 @@ public static class ConfigureDbPlayers
             }.WithAudit(by),
             SavedLevelId = savedLevel2.Id,
         }.WithAudit(by);
-        db.Save(player2, references: true);
+        Db.Save(player2, references: true);
+    }
+
+    public override void Down()
+    {
+        // Clear FK Data
+        Db.DeleteAll<Level>();
+
+        // DROP ForeignKey Tables in dependent order
+        Db.DropTable<Level>();
+        Db.DropTable<Player>();
+
+        // DROP tables without Foreign Keys in any order
+        Db.DropTable<Profile>();
+        Db.DropTable<GameItem>();
+        Db.DropTable<PlayerGameItem>();
     }
 }

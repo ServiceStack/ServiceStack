@@ -1,5 +1,4 @@
 using ServiceStack;
-using ServiceStack.Admin;
 using ServiceStack.Redis;
 
 [assembly: HostingStartup(typeof(NorthwindAuto.ConfigureRedis))]

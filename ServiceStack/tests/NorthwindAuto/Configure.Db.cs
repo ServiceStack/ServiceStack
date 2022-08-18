@@ -30,8 +30,6 @@ public class ConfigureDb : IHostingStartup
         {
             // Create non-existing Table and add Seed Data Example
             using var db = appHost.Resolve<IDbConnectionFactory>().Open();
-            db.SeedBookings();
-            db.SeedPlayers();
 
             appHost.AddVirtualFileSources.Add(new FileSystemMapping("profiles", AppHost.ProfilesDir));
             db.DropTable<Contact>();

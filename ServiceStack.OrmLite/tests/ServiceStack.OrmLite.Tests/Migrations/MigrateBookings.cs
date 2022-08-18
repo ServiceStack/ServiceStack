@@ -85,7 +85,9 @@ public class MigrateBookings : OrmLiteTestBase
         using var db = Create();
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        Assert.That(migrator.Run(), Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001) }));
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TasksRun, Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001) }));
     }
 
     [Test]
@@ -100,7 +102,9 @@ public class MigrateBookings : OrmLiteTestBase
         });
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        Assert.That(migrator.Run(), Is.EquivalentTo(new[]{ typeof(Migration1001) }));
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TasksRun, Is.EquivalentTo(new[]{ typeof(Migration1001) }));
     }
 
     [Test]
@@ -115,7 +119,9 @@ public class MigrateBookings : OrmLiteTestBase
         });
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        Assert.That(migrator.Run(), Is.Empty);
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TasksRun, Is.Empty);
     }
 
     [Test]
@@ -129,7 +135,23 @@ public class MigrateBookings : OrmLiteTestBase
         });
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        Assert.That(migrator.Run(), Is.Empty);
+        var result = migrator.Run();
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.TasksRun, Is.Empty);
+    }
+
+    [Test]
+    public void Runs_no_migrations_if_last_migration_has_not_completed_within_timeout_throwIfError()
+    {
+        using var db = Create();
+
+        db.Insert(new Migration {
+            Name = nameof(Migration1001), 
+            CreatedDate = DateTime.UtcNow, 
+        });
+
+        var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
+        Assert.Throws<Exception>(() => migrator.Run(throwIfError:true));
     }
 
     [Test]
@@ -145,6 +167,8 @@ public class MigrateBookings : OrmLiteTestBase
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly) {
             Timeout = TimeSpan.FromMinutes(10)
         };
-        Assert.That(migrator.Run(), Is.EquivalentTo(new[]{ typeof(Migration1001) }));
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TasksRun, Is.EquivalentTo(new[]{ typeof(Migration1001) }));
     }
 }

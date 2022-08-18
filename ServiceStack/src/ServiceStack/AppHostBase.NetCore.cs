@@ -321,6 +321,49 @@ namespace ServiceStack
             return null;
         }
 
+        public void RunAppTasks()
+        {
+            if (AppTasks.Count > 0)
+            {
+                var argsMap = Environment.GetCommandLineArgs().Select(a => a.Split('='))
+                    .ToDictionary(a => a[0], a => a.Length == 2 ? a[1] : null);
+
+                if (argsMap.TryGetValue(nameof(AppTasks), out var appTasksStr))
+                {
+                    var appTasks = appTasksStr.Split(';');
+                    for (var i = 0; i < appTasks.Length; i++)
+                    {
+                        var appTask = appTasks[i];
+                        if (!AppTasks.TryGetValue(appTask, out var taskFn))
+                        {
+                            Log.Warn($"Unknown AppTask '{appTask}' was not registered with this App, ignoring...");
+                            continue;
+                        }
+
+                        var exitCode = 0;
+                        try
+                        {
+                            Log.Info($"Running AppTask '{appTask}'...");
+                            taskFn();
+                        }
+                        catch (Exception e)
+                        {
+                            exitCode = i + 1; // return 1-based index of AppTask that failed
+                            Log.Error($"Failed to run AppTask '{appTask}'", e);
+                        }
+                        finally
+                        {
+                            var appLifetime = ApplicationServices.Resolve<IHostApplicationLifetime>();
+                            Environment.ExitCode = exitCode;
+                            appLifetime.StopApplication();
+                        }
+                    }
+                }
+            }
+        }
+
+        protected override void OnReady() => RunAppTasks();
+
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
@@ -344,6 +387,7 @@ namespace ServiceStack
 #else
         IWebHostEnvironment HostingEnvironment { get; }
 #endif
+
     }
 
     public static class NetCoreAppHostExtensions
