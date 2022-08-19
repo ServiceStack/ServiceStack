@@ -1,8 +1,11 @@
 using Chinook.ServiceModel;
+using MyApp.Migrations;
 using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using Booking = MyApp.Migrations.Booking;
+using RoomType = MyApp.Migrations.RoomType;
 
 namespace MyApp.ServiceInterface;
 

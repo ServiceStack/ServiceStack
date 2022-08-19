@@ -10,23 +10,14 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using TalentBlazor.ServiceModel;
 
-[assembly: HostingStartup(typeof(MyApp.AppHost))]
-
 namespace MyApp;
 
-public class AppHost : AppHostBase, IHostingStartup
+public class AppHost : AppHostBase
 {
     public static string TalentBlazorDir = "C:\\src\\netcore\\TalentBlazor\\TalentBlazor";
     public static string TalentBlazorAppDataDir = TalentBlazorDir + "\\App_Data";
     public static string TalentBlazorWwwRootDir = TalentBlazorDir + "\\wwwroot";
     public static string ProfilesDir = $"{TalentBlazorWwwRootDir}\\profiles";
-
-    public void Configure(IWebHostBuilder builder) => builder
-        .ConfigureServices(services => services.AddHttpUtilsClient())
-        .Configure(app => {
-            if (!HasInit) 
-                app.UseServiceStack(new AppHost());
-        });
         
     public AppHost() : base("My App", typeof(MyServices).Assembly) { }
 

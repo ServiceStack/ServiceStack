@@ -4,7 +4,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Tests.Migrations;
 
-namespace MyApp;
+namespace MyApp.Migrations;
 
 // Current App Version
 public class Booking : AuditBase
@@ -45,35 +45,14 @@ public class Migration1000 : MigrationBase
         public string? Notes { get; set; }
         public bool? Cancelled { get; set; }
     }
-    public enum RoomType
-    {
-        Single,
-        Double,
-        Queen,
-        Twin,
-        Suite,
-    }
 
     public override void Up()
     {
         Db.CreateTable<Booking>();
-        CreateBooking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
-        CreateBooking("Booking 2", RoomType.Double, 12, 120, "manager@email.com");
-        CreateBooking("Booking the 3rd", RoomType.Suite, 13, 130, "employee@email.com");
+        Db.CreateBooking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
+        Db.CreateBooking("Booking 2", RoomType.Double, 12, 120, "manager@email.com");
+        Db.CreateBooking("Booking the 3rd", RoomType.Suite, 13, 130, "employee@email.com");
     }
-
-    // Need to repeat due to different types
-    static int bookingId = 0;
-    public void CreateBooking(string name, RoomType type, int roomNo, decimal cost, string by) =>
-        Db.Insert(new Booking {
-            Id = ++bookingId,
-            Name = name,
-            RoomType = type,
-            RoomNumber = roomNo,
-            Cost = cost,
-            BookingStartDate = DateTime.UtcNow.AddDays(bookingId),
-            BookingEndDate = DateTime.UtcNow.AddDays(bookingId + 7),
-        }.WithAudit(by));
 
     public override void Down()
     {
