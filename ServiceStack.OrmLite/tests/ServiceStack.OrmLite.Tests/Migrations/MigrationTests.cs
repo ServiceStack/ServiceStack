@@ -2,80 +2,19 @@
 using System;
 using System.Data;
 using NUnit.Framework;
-using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests.Migrations;
 
-public class Booking
-{
-    [AutoIncrement]
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public RoomType RoomType { get; set; }
-    public int RoomNumber { get; set; }
-    public DateTime BookingStartDate { get; set; }
-    public DateTime? BookingEndDate { get; set; }
-    public decimal Cost { get; set; }
-    public string? Notes { get; set; }
-    public bool? Cancelled { get; set; }
-}
-
-public enum RoomType
-{
-    Single,
-    Double,
-    Queen,
-    Twin,
-    Suite,
-}
-
-[Notes("Create initial Database")]
-public class Migration1000 : MigrationBase
-{
-    public class Booking
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string? OldName { get; set; }
-        public double ToDelete { get; set; }
-    }
-
-    public override void Up()
-    {
-        Db.CreateTable<Booking>();
-    }
-}
-
-[Notes("Update Bookings Columns")]
-public class Migration1001 : MigrationBase
-{
-    public class Booking
-    {
-        [RenameColumn(nameof(Migration1000.Booking.OldName))]
-        public string? Name { get; set; }
-        
-        public RoomType RoomType { get; set; }
-        
-        [RemoveColumn]
-        public double ToDelete { get; set; }
-    }
-
-    public override void Up()
-    {
-        Db.Migrate<Booking>();
-    }
-}
-
-
-public class MigrateBookings : OrmLiteTestBase
+public class MigrationTests : OrmLiteTestBase
 {
     // public MigrateBookings() => OrmLiteUtils.PrintSql();
 
     IDbConnection Create()
     {
         var db = DbFactory.Open();
-        Migrator.Clean(db);
-        db.DropAndCreateTable<Migration1000.Booking>();
+        Migrator.Clear(db);
+        Migrator.Down(DbFactory, new[]{ typeof(Migration1000), typeof(Migration1002) });
         return db;
     }
 
@@ -87,13 +26,14 @@ public class MigrateBookings : OrmLiteTestBase
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
         var result = migrator.Run();
         Assert.That(result.Succeeded);
-        Assert.That(result.TasksRun, Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001) }));
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001), typeof(Migration1002) }));
     }
 
     [Test]
     public void Runs_only_remaining_migrations()
     {
         using var db = Create();
+        Migrator.Up(DbFactory, typeof(Migration1000));
 
         db.Insert(new Migration {
             Name = nameof(Migration1000), 
@@ -104,7 +44,7 @@ public class MigrateBookings : OrmLiteTestBase
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
         var result = migrator.Run();
         Assert.That(result.Succeeded);
-        Assert.That(result.TasksRun, Is.EquivalentTo(new[]{ typeof(Migration1001) }));
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1001), typeof(Migration1002) }));
     }
 
     [Test]
@@ -113,7 +53,7 @@ public class MigrateBookings : OrmLiteTestBase
         using var db = Create();
 
         db.Insert(new Migration {
-            Name = nameof(Migration1001), 
+            Name = nameof(Migration1002), 
             CreatedDate = DateTime.UtcNow, 
             CompletedDate = DateTime.UtcNow
         });
@@ -121,7 +61,7 @@ public class MigrateBookings : OrmLiteTestBase
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
         var result = migrator.Run();
         Assert.That(result.Succeeded);
-        Assert.That(result.TasksRun, Is.Empty);
+        Assert.That(result.TypesCompleted, Is.Empty);
     }
 
     [Test]
@@ -130,14 +70,14 @@ public class MigrateBookings : OrmLiteTestBase
         using var db = Create();
 
         db.Insert(new Migration {
-            Name = nameof(Migration1001), 
+            Name = nameof(Migration1002), 
             CreatedDate = DateTime.UtcNow, 
         });
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        var result = migrator.Run();
+        var result = migrator.Run(throwIfError:false);
         Assert.That(result.Succeeded, Is.False);
-        Assert.That(result.TasksRun, Is.Empty);
+        Assert.That(result.TypesCompleted, Is.Empty);
     }
 
     [Test]
@@ -151,16 +91,17 @@ public class MigrateBookings : OrmLiteTestBase
         });
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        Assert.Throws<Exception>(() => migrator.Run(throwIfError:true));
+        Assert.Throws<InfoException>(() => migrator.Run(throwIfError:true));
     }
 
     [Test]
     public void Runs_migration_if_has_not_completed_after_timeout()
     {
         using var db = Create();
+        Migrator.Up(DbFactory, new[] { typeof(Migration1000), typeof(Migration1001) });
 
         db.Insert(new Migration {
-            Name = nameof(Migration1001), 
+            Name = nameof(Migration1002), 
             CreatedDate = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(11)),
         });
 
@@ -169,6 +110,36 @@ public class MigrateBookings : OrmLiteTestBase
         };
         var result = migrator.Run();
         Assert.That(result.Succeeded);
-        Assert.That(result.TasksRun, Is.EquivalentTo(new[]{ typeof(Migration1001) }));
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1002) }));
     }
+
+    [Test]
+    public void Can_run_and_revert_all_migrations()
+    {
+        using var db = Create();
+
+        var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001), typeof(Migration1002) }));
+        
+        result = migrator.Revert(Migrator.All);
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1002), typeof(Migration1001), typeof(Migration1000) }));
+    }    
+
+    [Test]
+    public void Can_run_and_revert_last_migration()
+    {
+        using var db = Create();
+
+        var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001), typeof(Migration1002) }));
+        
+        result = migrator.Revert(Migrator.Last);
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1002) }));
+    }    
 }

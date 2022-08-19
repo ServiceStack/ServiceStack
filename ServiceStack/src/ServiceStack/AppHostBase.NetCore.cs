@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 using ServiceStack.Logging;
@@ -326,7 +327,7 @@ namespace ServiceStack
             if (AppTasks.Count > 0)
             {
                 var argsMap = Environment.GetCommandLineArgs().Select(a => a.Split('='))
-                    .ToDictionary(a => a[0], a => a.Length == 2 ? a[1] : null);
+                    .ToDictionary(a => a[0].TrimPrefixes("/","--"), a => a.Length == 2 ? a[1] : null);
 
                 if (argsMap.TryGetValue(nameof(AppTasks), out var appTasksStr))
                 {
@@ -358,9 +359,13 @@ namespace ServiceStack
                         }
                         finally
                         {
-                            var appLifetime = ApplicationServices.Resolve<IHostApplicationLifetime>();
-                            Environment.ExitCode = exitCode;
-                            appLifetime.StopApplication();
+                            Dispose();
+                            Environment.Exit(exitCode);
+                            
+                            // Trying to Stop Application before app.Run() throws Unhandled exception. System.OperationCanceledException
+                            // var appLifetime = ApplicationServices.Resolve<IHostApplicationLifetime>();
+                            // Environment.ExitCode = exitCode;
+                            // appLifetime.StopApplication();
                         }
                     }
                 }

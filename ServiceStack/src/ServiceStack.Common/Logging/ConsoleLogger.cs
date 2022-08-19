@@ -13,7 +13,6 @@ namespace ServiceStack.Logging
         const string DEBUG = "DEBUG: ";
         const string ERROR = "ERROR: ";
         const string FATAL = "FATAL: ";
-        const string INFO = "INFO: ";
         const string WARN = "WARN: ";
 
         /// <summary>
@@ -110,17 +109,17 @@ namespace ServiceStack.Logging
 
         public void Info(object message, Exception exception)
         {
-            Log(INFO + message, exception);
+            Log(message, exception);
         }
 
         public void Info(object message)
         {
-            Log(INFO + message);
+            Log(message);
         }
 
         public void InfoFormat(string format, params object[] args)
         {
-            LogFormat(INFO + format, args);
+            LogFormat(format, args);
         }
 
         public void Warn(object message, Exception exception)

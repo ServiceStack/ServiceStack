@@ -190,6 +190,36 @@ namespace ServiceStack.OrmLite
                     throw new Exception($"Unsupported AlterColumnAttribute '{attr.GetType().Name}' on {modelType.Name}.{fieldDef.Name}");
             }
         }
+                
+        /// <summary>
+        /// Apply schema changes by Migrate in reverse to revert changes
+        /// </summary>
+        public static void Revert(this IDbConnection dbConn, Type modelType)
+        {
+            var modelDef = modelType.GetModelDefinition();
+            foreach (var fieldDef in modelDef.FieldDefinitions)
+            {
+                var attrs = fieldDef.PropertyInfo.AllAttributes().Where(x => x is AlterColumnAttribute).ToList();
+                if (attrs.Count > 1)
+                    throw new Exception($"Only 1 AlterColumnAttribute allowed on {modelType.Name}.{fieldDef.Name}");
+                
+                var attr = attrs.FirstOrDefault();
+                if (attr is AddColumnAttribute or null)
+                {
+                    dbConn.DropColumn(modelType, fieldDef.FieldName);
+                }
+                else if (attr is RenameColumnAttribute renameAttr)
+                {
+                    dbConn.RenameColumn(modelType, fieldDef.FieldName, renameAttr.From);
+                }
+                else if (attr is RemoveColumnAttribute)
+                {
+                    dbConn.AddColumn(modelType, fieldDef);
+                }
+                else
+                    throw new Exception($"Unsupported AlterColumnAttribute '{attr.GetType().Name}' on {modelType.Name}.{fieldDef.Name}");
+            }
+        }
 
     }
 }
