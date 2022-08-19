@@ -1142,7 +1142,7 @@ namespace ServiceStack
         public static bool CanReadRequestBody(this IRequest req)
         {
             if (req is IHasBufferedStream hasStream)
-                return hasStream.BufferedStream.CanRead;
+                return hasStream.BufferedStream?.CanRead == true;
             return true;
         }
     }
