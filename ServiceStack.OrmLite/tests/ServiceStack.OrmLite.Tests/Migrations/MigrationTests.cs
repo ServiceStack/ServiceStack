@@ -142,4 +142,19 @@ public class MigrationTests : OrmLiteTestBase
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1002) }));
     }    
+
+    [Test]
+    public void Can_run_and_revert_migration_by_name()
+    {
+        using var db = Create();
+
+        var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001), typeof(Migration1002) }));
+        
+        result = migrator.Revert(nameof(Migration1001));
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1001), typeof(Migration1002) }));
+    }    
 }

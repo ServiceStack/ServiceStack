@@ -16,7 +16,7 @@ public class Migration1001 : MigrationBase
         [RemoveColumn]
         public double ToDelete { get; set; }
     }
-    public enum RoomType {} // Enum is saved as string by default, values aren't necessary
+    public enum RoomType {} // Values not necessary (Enum's saved as string by default)
 
     public override void Up() => Db.Migrate<Booking>();
 
