@@ -16,17 +16,9 @@ public class Migration1001 : MigrationBase
         [RemoveColumn]
         public double ToDelete { get; set; }
     }
-    public enum RoomType
-    {
-        Single,
-        Double,
-        Queen,
-        Twin,
-        Suite,
-    }
+    public enum RoomType {} // Enum is saved as string by default, values aren't necessary
 
-    public override void Up()
-    {
-        Db.Migrate<Booking>();
-    }
+    public override void Up() => Db.Migrate<Booking>();
+
+    public override void Down() => Db.Revert<Booking>();
 }
