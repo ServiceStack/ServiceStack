@@ -25,7 +25,7 @@ namespace ServiceStack
 
     /// <summary>
     /// Useful .NET Encryption Utils from:
-    /// https://msdn.microsoft.com/en-us/library/system.security.cryptography.rsacryptoserviceprovider(v=vs.110).aspx
+    /// https://andrewlocatelliwoodcock.wordpress.com/2011/08/01/implementing-rsa-asymmetric-public-private-key-encryption-in-c-encrypting-under-the-public-key/
     /// </summary>
     public static class RsaUtils
     {
