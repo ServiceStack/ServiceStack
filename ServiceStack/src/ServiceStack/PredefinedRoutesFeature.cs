@@ -15,10 +15,16 @@ namespace ServiceStack
         public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new();
 
         public string JsonApiRoute { get; set; } = "/api/{Request}";
+
+        public bool DisableApiRoute
+        {
+            get => JsonApiRoute == null;
+            set => JsonApiRoute = value ? null : JsonApiRoute;
+        }
         
         public void Register(IAppHost appHost)
         {
-            if (appHost.PathBase == null && JsonApiRoute != null)
+            if (appHost.PathBase == null && JsonApiRoute != null && !appHost.VirtualFileSources.DirectoryExists("api"))
             {
                 appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
                 appHost.AddToAppMetadata(metadata => metadata.HttpHandlers["ApiHandlers.Json"] = JsonApiRoute);
