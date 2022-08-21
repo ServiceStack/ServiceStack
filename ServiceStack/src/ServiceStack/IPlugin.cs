@@ -48,6 +48,7 @@ namespace ServiceStack
         public const string Ui = "ui";
         public const string FileUpload = "filesupload";
         public const string Profiling = "profiling";
+        public const string RunAsAdmin = "runasadmin";
 
         public static void AddToAppMetadata(this IAppHost appHost, Action<AppMetadata> fn)
         {
