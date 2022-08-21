@@ -956,34 +956,32 @@ Plugins:
                 else
                 {
                     // Buffering improves perf when running behind a reverse proxy (recommended for .NET Core) 
-                    using (var ms = MemoryStreamFactory.GetStream())
+                    using var ms = MemoryStreamFactory.GetStream();
+                    await pageResult.WriteToAsync(ms);
+
+                    if (pageResult.ReturnValue != null)
                     {
-                        await pageResult.WriteToAsync(ms);
+                        var response = pageResult.ReturnValue?.Result; 
+                        if (response is Task<object> responseTask)
+                            response = await responseTask;
+                        if (response is IRawString raw)
+                            response = raw.ToRawString();
 
-                        if (pageResult.ReturnValue != null)
+                        if (response != null)
                         {
-                            var response = pageResult.ReturnValue?.Result; 
-                            if (response is Task<object> responseTask)
-                                response = await responseTask;
-                            if (response is IRawString raw)
-                                response = raw.ToRawString();
-
-                            if (response != null)
+                            var httpResult = SharpApiService.ToHttpResult(pageResult, response);
+                            if (httpReq.ResponseContentType == MimeTypes.Csv)
                             {
-                                var httpResult = SharpApiService.ToHttpResult(pageResult, response);
-                                if (httpReq.ResponseContentType == MimeTypes.Csv)
-                                {
-                                    var fileName = httpReq.OperationName + ".csv";
-                                    httpRes.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
-                                }
-                                await httpRes.WriteToResponse(httpReq, httpResult);
+                                var fileName = httpReq.OperationName + ".csv";
+                                httpRes.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
                             }
-                            return;
+                            await httpRes.WriteToResponse(httpReq, httpResult);
                         }
-
-                        ms.Position = 0;
-                        await ms.WriteToAsync(httpRes.OutputStream);
+                        return;
                     }
+
+                    ms.Position = 0;
+                    await ms.WriteToAsync(httpRes.OutputStream);
                 }
             }
             catch (Exception ex)
