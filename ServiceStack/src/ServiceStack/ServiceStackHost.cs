@@ -1522,18 +1522,22 @@ namespace ServiceStack
         /// <summary>
         /// Looks for first plugin of this type in Plugins.
         /// </summary>
-        public T GetPlugin<T>() where T : class, IPlugin
-        {
-            return Plugins.FirstOrDefault(x => x is T) as T;
-        }
+        public T GetPlugin<T>() where T : class, IPlugin => Plugins.FirstOrDefault(x => x is T) as T;
 
         /// <summary>
         /// Returns true if App has this plugin registered 
         /// </summary>
-        public bool HasPlugin<T>() where T : class, IPlugin
-        {
-            return Plugins.FirstOrDefault(x => x is T) != null;
-        }
+        public bool HasPlugin<T>() where T : class, IPlugin => Plugins.FirstOrDefault(x => x is T) != null;
+
+        /// <summary>
+        /// Looks for first plugin of this type in Plugins.
+        /// </summary>
+        public IPlugin GetPlugin(Type pluginType) => Plugins.FirstOrDefault(x => x.GetType() == pluginType);
+
+        /// <summary>
+        /// Returns true if App has this plugin registered 
+        /// </summary>
+        public bool HasPlugin(Type pluginType) => Plugins.FirstOrDefault(x => x.GetType() == pluginType) != null;
 
         /// <summary>
         /// Override to use a Custom ServiceRunner to execute this Request DTO
