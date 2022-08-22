@@ -2,7 +2,6 @@ using System.Data;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.Tests.Migrations;
 
 namespace MyApp.Migrations;
 

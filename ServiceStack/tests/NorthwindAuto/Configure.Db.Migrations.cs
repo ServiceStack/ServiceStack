@@ -1,7 +1,7 @@
 using MyApp.Migrations;
 using ServiceStack;
 using ServiceStack.Data;
-using ServiceStack.OrmLite.Tests.Migrations;
+using ServiceStack.OrmLite;
 
 [assembly: HostingStartup(typeof(NorthwindAuto.ConfigureDbMigrations))]
 

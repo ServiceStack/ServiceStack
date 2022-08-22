@@ -10,7 +10,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests.Migrations;
+namespace ServiceStack.OrmLite;
 
 public class Migration : IMeta
 {
