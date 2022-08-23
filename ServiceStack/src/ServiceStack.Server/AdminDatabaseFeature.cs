@@ -129,6 +129,7 @@ public class AdminDatabaseService : Service
                 nameof(AdminDatabase.Take),
                 nameof(AdminDatabase.OrderBy),
                 nameof(AdminDatabase.Include),
+                nameof(AdminDatabase.Fields)
             };
         }
     }
