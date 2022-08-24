@@ -322,58 +322,6 @@ namespace ServiceStack
             return null;
         }
 
-        public void RunAppTasks()
-        {
-            if (AppTasks.Count > 0)
-            {
-                var argsMap = Environment.GetCommandLineArgs().Select(a => a.Split('='))
-                    .ToDictionary(a => a[0].TrimPrefixes("/","--"), a => a.Length == 2 ? a[1] : null);
-
-                if (argsMap.TryGetValue(nameof(AppTasks), out var appTasksStr))
-                {
-                    var appTasks = appTasksStr.Split(';');
-                    for (var i = 0; i < appTasks.Length; i++)
-                    {
-                        var appTaskWithArgs = appTasks[i];
-                        var appTask = appTaskWithArgs.LeftPart(':');
-                        var args = appTaskWithArgs.IndexOf(':') >= 0
-                            ? appTaskWithArgs.RightPart(':').Split(',')
-                            : Array.Empty<string>();
-                        
-                        if (!AppTasks.TryGetValue(appTask, out var taskFn))
-                        {
-                            Log.Warn($"Unknown AppTask '{appTask}' was not registered with this App, ignoring...");
-                            continue;
-                        }
-
-                        var exitCode = 0;
-                        try
-                        {
-                            Log.Info($"Running AppTask '{appTask}'...");
-                            taskFn(args);
-                        }
-                        catch (Exception e)
-                        {
-                            exitCode = i + 1; // return 1-based index of AppTask that failed
-                            Log.Error($"Failed to run AppTask '{appTask}'", e);
-                        }
-                        finally
-                        {
-                            Dispose();
-                            Environment.Exit(exitCode);
-                            
-                            // Trying to Stop Application before app.Run() throws Unhandled exception. System.OperationCanceledException
-                            // var appLifetime = ApplicationServices.Resolve<IHostApplicationLifetime>();
-                            // Environment.ExitCode = exitCode;
-                            // appLifetime.StopApplication();
-                        }
-                    }
-                }
-            }
-        }
-
-        protected override void OnReady() => RunAppTasks();
-
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);

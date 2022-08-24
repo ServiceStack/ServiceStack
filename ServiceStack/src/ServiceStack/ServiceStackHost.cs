@@ -391,16 +391,7 @@ namespace ServiceStack
             return this;
         }
         
-        protected Dictionary<string, Action<string[]>> AppTasks { get; } = new();
 
-        /// <summary>
-        /// Register Task to run in APP_TASKS=task1;task2
-        /// </summary>
-        public void RegisterAppTask(string taskName, Action<string[]> appTask)
-        {
-            AppTasks[taskName] = appTask;
-        }
-        
         protected virtual void OnReady() {}
 
         public virtual void ConfigureLogging()

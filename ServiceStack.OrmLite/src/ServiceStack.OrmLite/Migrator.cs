@@ -29,7 +29,7 @@ public class Migration : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-public abstract class MigrationBase
+public abstract class MigrationBase : IAppTask
 {
     public IDbConnectionFactory? DbFactory { get; set; }
     public IDbConnection? Db { get; set; }
@@ -45,34 +45,6 @@ public abstract class MigrationBase
     public virtual void BeforeRollback() {}
     public virtual void Up(){}
     public virtual void Down(){}
-}
-
-public class MigrationResult
-{
-    public MigrationResult(List<MigrationBase> migrationsRun)
-    {
-        MigrationsRun = migrationsRun;
-        TypesCompleted = migrationsRun.Where(x => x.Error == null).Map(x => x.GetType());
-    }
-
-    public string GetLogs()
-    {
-        var sb = StringBuilderCache.Allocate();
-        foreach (var instance in MigrationsRun)
-        {
-            var migrationType = instance.GetType();
-            var descFmt = Migrator.GetDescFmt(migrationType);
-            sb.AppendLine($"# {migrationType.Name}{descFmt}");
-            sb.AppendLine(instance.Log);
-            sb.AppendLine();
-        }
-        return StringBuilderCache.ReturnAndFree(sb);
-    }
-
-    public Exception? Error { get; set; }
-    public List<Type> TypesCompleted { get; }
-    public List<MigrationBase> MigrationsRun { get; }
-    public bool Succeeded => Error == null && MigrationsRun.All(x => x.Error == null);
 }
 
 public class Migrator
@@ -153,8 +125,8 @@ public class Migrator
         return migrationTypes.FirstOrDefault();
     }
 
-    public MigrationResult Run() => Run(throwIfError:true);
-    public MigrationResult Run(bool throwIfError)
+    public AppTaskResult Run() => Run(throwIfError:true);
+    public AppTaskResult Run(bool throwIfError)
     {
         using var db = DbFactory.Open();
         Init(db);
@@ -165,7 +137,7 @@ public class Migrator
         LogMigrationsFound(remainingMigrations);
 
         var startAt = DateTime.UtcNow;
-        var migrationsRun = new List<MigrationBase>();
+        var migrationsRun = new List<IAppTask>();
 
         while (true)
         {
@@ -181,18 +153,18 @@ public class Migrator
                 Log.Error(e.Message);
                 if (throwIfError)
                     throw;
-                return new MigrationResult(migrationsRun) { Error = e };
+                return new AppTaskResult(migrationsRun) { Error = e };
             }
             
             var migrationStartAt = DateTime.UtcNow;
 
-            var descFmt = GetDescFmt(nextRun);
+            var descFmt = AppTasks.GetDescFmt(nextRun);
             Log.Info($"Running {nextRun.Name}{descFmt}...");
             
             var migration = new Migration
             {
                 Name = nextRun.Name,
-                Description = GetDesc(nextRun),
+                Description = AppTasks.GetDesc(nextRun),
                 CreatedDate = DateTime.UtcNow,
                 ConnectionString = ((OrmLiteConnectionFactory)DbFactory).ConnectionString,
                 NamedConnection = nextRun.FirstAttribute<NamedConnectionAttribute>()?.Name,
@@ -232,7 +204,7 @@ public class Migrator
 
                 if (throwIfError)
                     throw instance.Error;
-                return new MigrationResult(migrationsRun);
+                return new AppTaskResult(migrationsRun);
             }
         }
 
@@ -246,7 +218,7 @@ public class Migrator
             var migration = migrationsCompleted > 1 ? "migrations" : "migration";
             Log.Info($"{Environment.NewLine}Ran {migrationsCompleted} {migration} in {(DateTime.UtcNow - startAt).TotalSeconds:N3}s");
         }
-        return new MigrationResult(migrationsRun);
+        return new AppTaskResult(migrationsRun);
     }
 
     private void LogMigrationsFound(List<Type> remainingMigrations)
@@ -316,8 +288,8 @@ public class Migrator
         }
     }
     
-    public MigrationResult Revert(string? migrationName) => Revert(migrationName, throwIfError:true);
-    public MigrationResult Revert(string? migrationName, bool throwIfError)
+    public AppTaskResult Revert(string? migrationName) => Revert(migrationName, throwIfError:true);
+    public AppTaskResult Revert(string? migrationName, bool throwIfError)
     {
         using var db = DbFactory.Open();
         Init(db);
@@ -328,7 +300,7 @@ public class Migrator
         LogMigrationsFound(allMigrationTypes);
 
         var startAt = DateTime.UtcNow;
-        var migrationsRun = new List<MigrationBase>();
+        var migrationsRun = new List<IAppTask>();
 
         Log.Info($"Reverting {migrationName}...");
 
@@ -354,15 +326,15 @@ public class Migrator
                     Log.Error(e.Message);
                     if (throwIfError)
                         throw;
-                    return new MigrationResult(migrationsRun) { Error = e };
+                    return new AppTaskResult(migrationsRun) { Error = e };
                 }
             
                 var migrationStartAt = DateTime.UtcNow;
 
-                var descFmt = GetDescFmt(nextRun);
+                var descFmt = AppTasks.GetDescFmt(nextRun);
                 Log.Info($"Reverting {nextRun.Name}{descFmt}...");
 
-                var instance = Run(DbFactory, nextRun, (MigrationBase x) => x.Down());
+                var instance = Run(DbFactory, nextRun, x => x.Down());
                 migrationsRun.Add(instance);
                 Log.Info(instance.Log);
 
@@ -380,7 +352,7 @@ public class Migrator
                     if (throwIfError)
                         throw instance.Error;
                     
-                    return new MigrationResult(migrationsRun);
+                    return new AppTaskResult(migrationsRun);
                 }
 
                 if (migrationName == nextRun.Name)
@@ -398,14 +370,14 @@ public class Migrator
             var migration = migrationsCompleted > 1 ? "migrations" : "migration";
             Log.Info($"{Environment.NewLine}Reverted {migrationsCompleted} {migration} in {(DateTime.UtcNow - startAt).TotalSeconds:N3}s");
         }
-        return new MigrationResult(migrationsRun);
+        return new AppTaskResult(migrationsRun);
     }
 
-    public static MigrationResult Down(IDbConnectionFactory dbFactory, Type migrationType) => Down(dbFactory, new[] { migrationType });
-    public static MigrationResult Down(IDbConnectionFactory dbFactory, Type[] migrationTypes) =>
+    public static AppTaskResult Down(IDbConnectionFactory dbFactory, Type migrationType) => Down(dbFactory, new[] { migrationType });
+    public static AppTaskResult Down(IDbConnectionFactory dbFactory, Type[] migrationTypes) =>
         RunAll(dbFactory, migrationTypes, x => x.Down());
-    public static MigrationResult Up(IDbConnectionFactory dbFactory, Type migrationType) => Up(dbFactory, new[] { migrationType });
-    public static MigrationResult Up(IDbConnectionFactory dbFactory, Type[] migrationTypes) =>
+    public static AppTaskResult Up(IDbConnectionFactory dbFactory, Type migrationType) => Up(dbFactory, new[] { migrationType });
+    public static AppTaskResult Up(IDbConnectionFactory dbFactory, Type[] migrationTypes) =>
         RunAll(dbFactory, migrationTypes, x => x.Up());
 
     public static MigrationBase Run(IDbConnectionFactory dbFactory, Type nextRun, Action<MigrationBase> migrateAction)
@@ -465,21 +437,9 @@ public class Migrator
         return instance;        
     }
 
-    internal static string GetDescFmt(Type nextRun)
+    public static AppTaskResult RunAll(IDbConnectionFactory dbFactory, IEnumerable<Type> migrationTypes, Action<MigrationBase> migrateAction)
     {
-        var desc = GetDesc(nextRun);
-        return desc != null ? " '" + desc + "'" : "";
-    }
-
-    private static string? GetDesc(Type nextRun)
-    {
-        var desc = nextRun.GetDescription() ?? nextRun.FirstAttribute<NotesAttribute>()?.Notes;
-        return desc;
-    }
-
-    public static MigrationResult RunAll(IDbConnectionFactory dbFactory, IEnumerable<Type> migrationTypes, Action<MigrationBase> migrateAction)
-    {
-        var migrationsRun = new List<MigrationBase>();
+        var migrationsRun = new List<IAppTask>();
         foreach (var nextRun in migrationTypes)
         {
             var instance = Run(dbFactory, nextRun, migrateAction);
@@ -487,7 +447,7 @@ public class Migrator
             if (instance.Error != null)
                 break;
         }
-        return new MigrationResult(migrationsRun);
+        return new AppTaskResult(migrationsRun);
     }
     
 }
