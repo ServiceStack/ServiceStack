@@ -939,25 +939,23 @@ namespace ServiceStack.OrmLite.Oracle
             return _factory.CreateParameter();
         }
         
-        public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
+        public override bool DoesSchemaExist(IDbCommand dbCmd, string schema)
         {
-            dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = {schemaName.Quoted()}";
+            dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = {schema.Quoted()}";
             var query = dbCmd.ExecuteNonQuery();
             return query == 1;
         }
 
-        public override string ToCreateSchemaStatement(string schemaName)
+        public override string ToCreateSchemaStatement(string schema)
         {
-            var sql = $"CREATE SCHEMA {GetSchemaName(schemaName)}";
+            var sql = $"CREATE SCHEMA {GetSchemaName(schema)}";
             return sql;
         }
 
-        public override string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public override string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef)
         {
-            var command = base.ToAddColumnStatement(modelType, fieldDef);
-
+            var command = base.ToAddColumnStatement(schema, table, fieldDef);
             command = RemoveTerminatingSemicolon(command);
-
             return command.Replace("ADD COLUMN", "ADD");
         }
 
@@ -970,10 +968,9 @@ namespace ServiceStack.OrmLite.Oracle
             return command;
         }
 
-        protected override string ToDropColumnStatement(Type modelType, string columnName, IOrmLiteDialectProvider provider)
+        public override string ToDropColumnStatement(string schema, string table, string column)
         {
-            var command = base.ToDropColumnStatement(modelType, columnName, provider);
-
+            var command = base.ToDropColumnStatement(schema, table, column);
             return RemoveTerminatingSemicolon(command);
         }
 
@@ -999,40 +996,41 @@ namespace ServiceStack.OrmLite.Oracle
             return indexOfPeriod < 0 ? tableName : tableName.Substring(indexOfPeriod + 1);
         }
 
-        public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null)
+        public override bool DoesColumnExist(IDbConnection db, string column, string tableName, string schema = null)
         {
             if (!WillQuote(tableName))
                 tableName = tableName.ToUpper();
 
-            columnName = columnName.ToUpper();
+            column = column.ToUpper();
             tableName = RemoveSchemaName(tableName);
             var sql = "SELECT count(*) from all_tab_cols"
                     + " WHERE table_name = :tableName"
-                    + "   AND upper(column_name) = :columnName";
+                    + "   AND upper(column_name) = :column";
 
             if (schema != null)
                 sql += " AND OWNER = :schema";
 
-            var result = db.SqlScalar<long>(sql, new { tableName, columnName, schema });
+            var result = db.SqlScalar<long>(sql, new { tableName, column, schema });
 
             return result > 0;
         }
 
-        public override bool DoesSequenceExist(IDbCommand dbCmd, string sequenceName)
+        public override bool DoesSequenceExist(IDbCommand dbCmd, string sequence)
         {
-            if (!WillQuote(sequenceName)) sequenceName = sequenceName.ToUpper();
+            if (!WillQuote(sequence)) 
+                sequence = sequence.ToUpper();
 
-            var sql = "SELECT count(*) FROM USER_SEQUENCES WHERE SEQUENCE_NAME = {0}".SqlFmt(sequenceName);
+            var sql = "SELECT count(*) FROM USER_SEQUENCES WHERE SEQUENCE_NAME = {0}".SqlFmt(sequence);
             dbCmd.CommandText = sql;
             var result = dbCmd.LongScalar();
             return result == 1;
         }
 
         public override string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
-                                                                    Expression<Func<TForeign, object>> foreignField,
-                                                                    OnFkOption onUpdate,
-                                                                    OnFkOption onDelete,
-                                                                    string foreignKeyName = null)
+            Expression<Func<TForeign, object>> foreignField,
+            OnFkOption onUpdate,
+            OnFkOption onDelete,
+            string foreignKeyName = null)
         {
             var sourceMd = ModelDefinition<T>.Definition;
             var fieldName = sourceMd.GetFieldDefinition(field).FieldName;
@@ -1041,16 +1039,16 @@ namespace ServiceStack.OrmLite.Oracle
             var referenceFieldName = referenceMd.GetFieldDefinition(foreignField).FieldName;
 
             var name = GetQuotedName(foreignKeyName.IsNullOrEmpty()
-                                     ? "fk_" + sourceMd.ModelName + "_" + fieldName + "_" + referenceFieldName
-                                     : foreignKeyName);
+                 ? "fk_" + sourceMd.ModelName + "_" + fieldName + "_" + referenceFieldName
+                 : foreignKeyName);
 
             return string.Format("ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4}){5}",
-                                 GetQuotedTableName(sourceMd.ModelName),
-                                 name,
-                                 GetQuotedColumnName(fieldName),
-                                 GetQuotedTableName(referenceMd.ModelName),
-                                 GetQuotedColumnName(referenceFieldName),
-                                 GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof(T), FkOptionToString(onDelete))));
+                 GetQuotedTableName(sourceMd.ModelName),
+                 name,
+                 GetQuotedColumnName(fieldName),
+                 GetQuotedTableName(referenceMd.ModelName),
+                 GetQuotedColumnName(referenceFieldName),
+                 GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof(T), FkOptionToString(onDelete))));
         }
 
         public override string EscapeWildcards(string value)

@@ -47,10 +47,15 @@ namespace ServiceStack.OrmLite
         public static void AddColumn(this IDbConnection dbConn, Type modelType, FieldDefinition fieldDef)
         {
             InitUserFieldDefinition(modelType, fieldDef);
-
             var command = dbConn.GetDialectProvider().ToAddColumnStatement(modelType, fieldDef);
             dbConn.ExecuteSql(command);
         }
+        
+        public static void AddColumn(this IDbConnection dbConn, string table, FieldDefinition fieldDef) => 
+            dbConn.ExecuteSql(dbConn.GetDialectProvider().ToAddColumnStatement(null, table, fieldDef));
+        
+        public static void AddColumn(this IDbConnection dbConn, string schema, string table, FieldDefinition fieldDef) => 
+            dbConn.ExecuteSql(dbConn.GetDialectProvider().ToAddColumnStatement(schema, table, fieldDef));
 
         public static void AlterColumn<T>(this IDbConnection dbConn, Expression<Func<T, object>> field)
         {
@@ -62,48 +67,52 @@ namespace ServiceStack.OrmLite
         public static void AlterColumn(this IDbConnection dbConn, Type modelType, FieldDefinition fieldDef)
         {
             InitUserFieldDefinition(modelType, fieldDef);
-
-            var command = dbConn.GetDialectProvider().ToAlterColumnStatement(modelType, fieldDef);
-            dbConn.ExecuteSql(command);
+            dbConn.ExecuteSql(dbConn.GetDialectProvider().ToAlterColumnStatement(modelType, fieldDef));
         }
+
+        public static void AlterColumn(this IDbConnection dbConn, string table, FieldDefinition fieldDef) => 
+            dbConn.ExecuteSql(dbConn.GetDialectProvider().ToAlterColumnStatement(null, table, fieldDef));
+        public static void AlterColumn(this IDbConnection dbConn, string schema, string table, FieldDefinition fieldDef) => 
+            dbConn.ExecuteSql(dbConn.GetDialectProvider().ToAlterColumnStatement(schema, table, fieldDef));
 
         public static void ChangeColumnName<T>(this IDbConnection dbConn,
             Expression<Func<T, object>> field,
-            string oldColumnName)
+            string oldColumn)
         {
             var modelDef = ModelDefinition<T>.Definition;
             var fieldDef = modelDef.GetFieldDefinition<T>(field);
-            dbConn.ChangeColumnName(typeof(T), fieldDef, oldColumnName);
+            dbConn.ChangeColumnName(typeof(T), fieldDef, oldColumn);
         }
 
         public static void ChangeColumnName(this IDbConnection dbConn,
             Type modelType,
             FieldDefinition fieldDef,
-            string oldColumnName)
+            string oldColumn)
         {
-            var command = dbConn.GetDialectProvider().ToChangeColumnNameStatement(modelType, fieldDef, oldColumnName);
+            var command = dbConn.GetDialectProvider().ToChangeColumnNameStatement(modelType, fieldDef, oldColumn);
             dbConn.ExecuteSql(command);
         }
 
         public static void RenameColumn<T>(this IDbConnection dbConn,
             Expression<Func<T, object>> field,
-            string oldColumnName)
+            string oldColumn)
         {
             var modelDef = ModelDefinition<T>.Definition;
             var fieldDef = modelDef.GetFieldDefinition(field);
-            dbConn.RenameColumn(typeof(T), dbConn.GetNamingStrategy().GetColumnName(fieldDef.FieldName), oldColumnName);
+            dbConn.RenameColumn(typeof(T), dbConn.GetNamingStrategy().GetColumnName(fieldDef.FieldName), oldColumn);
         }
 
-        public static void RenameColumn<T>(this IDbConnection dbConn, string oldColumnName, string newColumnName) =>
-            dbConn.RenameColumn(typeof(T), oldColumnName, newColumnName);
-        public static void RenameColumn(this IDbConnection dbConn, Type modelType, string oldColumnName, string newColumnName)
-        {
-            var dialect = dbConn.Dialect();
-            var command = dialect.ToRenameColumnStatement(modelType, 
-                dialect.NamingStrategy.GetColumnName(oldColumnName), 
-                dialect.NamingStrategy.GetColumnName(newColumnName));
-            dbConn.ExecuteSql(command);
-        }
+        public static void RenameColumn<T>(this IDbConnection dbConn, string oldColumn, string newColumn) =>
+            dbConn.RenameColumn(typeof(T), oldColumn, newColumn);
+        public static void RenameColumn(this IDbConnection dbConn, Type modelType, string oldColumn, string newColumn) =>
+            dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToRenameColumnStatement(modelType, 
+                d.NamingStrategy.GetColumnName(oldColumn), d.NamingStrategy.GetColumnName(newColumn))));
+        public static void RenameColumn(this IDbConnection dbConn, string table, string oldColumn, string newColumn) =>
+            dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToRenameColumnStatement(null, table, 
+                d.NamingStrategy.GetColumnName(oldColumn), d.NamingStrategy.GetColumnName(newColumn))));
+        public static void RenameColumn(this IDbConnection dbConn, string schema, string table, string oldColumn, string newColumn) =>
+            dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToRenameColumnStatement(schema, table, 
+                d.NamingStrategy.GetColumnName(oldColumn), d.NamingStrategy.GetColumnName(newColumn))));
 
         public static void DropColumn<T>(this IDbConnection dbConn, Expression<Func<T, object>> field)
         {
@@ -112,15 +121,15 @@ namespace ServiceStack.OrmLite
             dbConn.DropColumn(typeof(T), fieldDef.FieldName);
         }
 
-        public static void DropColumn<T>(this IDbConnection dbConn, string columnName)
-        {
-            dbConn.DropColumn(typeof(T), columnName);
-        }
+        public static void DropColumn<T>(this IDbConnection dbConn, string column) => 
+            dbConn.DropColumn(typeof(T), column);
 
-        public static void DropColumn(this IDbConnection dbConn, Type modelType, string columnName)
-        {
-            dbConn.GetDialectProvider().DropColumn(dbConn, modelType, columnName);
-        }
+        public static void DropColumn(this IDbConnection dbConn, Type modelType, string column) => 
+            dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToDropColumnStatement(modelType, column)));
+        public static void DropColumn(this IDbConnection dbConn, string table, string column) => 
+            dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToDropColumnStatement(null, table, column)));
+        public static void DropColumn(this IDbConnection dbConn, string schema, string table, string column) => 
+            dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToDropColumnStatement(schema, table, column)));
 
         public static void AddForeignKey<T, TForeign>(this IDbConnection dbConn,
             Expression<Func<T, object>> field,

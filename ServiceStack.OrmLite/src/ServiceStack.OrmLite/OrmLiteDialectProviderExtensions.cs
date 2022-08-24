@@ -133,5 +133,18 @@ namespace ServiceStack.OrmLite
         public static string SqlSpread<T>(this IOrmLiteDialectProvider dialect, params T[] values) =>
             OrmLiteUtils.SqlJoin(values, dialect);
 
+        public static string ToAddColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, FieldDefinition fieldDef) =>
+            X.Map(modelType.GetModelDefinition(), x => dialect.ToAddColumnStatement(x.Schema, x.ModelName, fieldDef));
+
+        public static string ToAlterColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, FieldDefinition fieldDef) =>
+            X.Map(modelType.GetModelDefinition(), x => dialect.ToAlterColumnStatement(x.Schema, x.ModelName, fieldDef));
+
+        public static string ToChangeColumnNameStatement(this IOrmLiteDialectProvider dialect, Type modelType, FieldDefinition fieldDef, string oldColumnName) =>
+            X.Map(modelType.GetModelDefinition(), x => dialect.ToChangeColumnNameStatement(x.Schema, x.ModelName, fieldDef, oldColumnName));
+
+        public static string ToRenameColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, string oldColumnName, string newColumnName) => 
+            X.Map(modelType.GetModelDefinition(), x => dialect.ToRenameColumnStatement(x.Schema, x.ModelName, oldColumnName, newColumnName));
+        public static string ToDropColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, string columnName) =>
+            X.Map(modelType.GetModelDefinition(), x => dialect.ToDropColumnStatement(x.Schema, x.ModelName, columnName));
     }
 }

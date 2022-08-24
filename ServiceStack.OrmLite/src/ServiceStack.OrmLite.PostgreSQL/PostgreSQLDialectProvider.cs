@@ -558,10 +558,10 @@ namespace ServiceStack.OrmLite.PostgreSQL
             return sql;
         }
 
-        public override string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public override string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef)
         {
             var columnDefinition = GetColumnDefinition(fieldDef);
-            var modelName = GetQuotedTableName(GetModel(modelType));
+            var modelName = GetQuotedTableName(table, schema);
 
             var parts = columnDefinition.SplitOnFirst(' ');
             var columnName = parts[0];
@@ -747,16 +747,16 @@ namespace ServiceStack.OrmLite.PostgreSQL
             SetParameterValues<T>(cmd, obj);
         }
 
-        public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
+        public override string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn)
         {
             //var column = GetColumnDefinition(fieldDef);
             var columnType = GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
             var newColumnName = NamingStrategy.GetColumnName(fieldDef.FieldName);
 
-            var sql = $"ALTER TABLE {GetQuotedTableName(modelType.GetModelMetadata())} " +
-                      $"ALTER COLUMN {GetQuotedColumnName(oldColumnName)} TYPE {columnType}";
-            sql += newColumnName != oldColumnName
-                ? $", RENAME COLUMN {GetQuotedColumnName(oldColumnName)} TO {GetQuotedColumnName(newColumnName)};"
+            var sql = $"ALTER TABLE {GetQuotedTableName(table, schema)} " +
+                      $"ALTER COLUMN {GetQuotedColumnName(oldColumn)} TYPE {columnType}";
+            sql += newColumnName != oldColumn
+                ? $", RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumnName)};"
                 : ";";
             return sql;
         }

@@ -15,7 +15,6 @@ using System.Data;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.OrmLite.Converters;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite
@@ -210,10 +209,8 @@ namespace ServiceStack.OrmLite
         Task<bool> DoesTableExistAsync(IDbCommand dbCmd, string tableName, string schema = null, CancellationToken token=default);
         bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null);
         Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, string tableName, string schema = null, CancellationToken token=default);
-        bool DoesSequenceExist(IDbCommand dbCmd, string sequenceName);
+        bool DoesSequenceExist(IDbCommand dbCmd, string sequence);
         Task<bool> DoesSequenceExistAsync(IDbCommand dbCmd, string sequenceName, CancellationToken token=default);
-
-        void DropColumn(IDbConnection db, Type modelType, string columnName);
 
         object FromDbRowVersion(Type fieldType,  object value);
 
@@ -230,17 +227,19 @@ namespace ServiceStack.OrmLite
         //DDL
         string GetDropForeignKeyConstraints(ModelDefinition modelDef);
 
-        string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef);
-        string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef);
-        string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName);
-        string ToRenameColumnStatement(Type modelType, string oldColumnName, string newColumnName);
+        string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef);
+        string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef);
+        string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn);
+        string ToRenameColumnStatement(string schema, string table, string oldColumn, string newColumn);
+        string ToDropColumnStatement(string schema, string table, string column);
+        
         string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
-                                                     Expression<Func<TForeign, object>> foreignField,
-                                                     OnFkOption onUpdate,
-                                                     OnFkOption onDelete,
-                                                     string foreignKeyName = null);
-        string ToCreateIndexStatement<T>(Expression<Func<T, object>> field,
-                                         string indexName = null, bool unique = false);
+             Expression<Func<TForeign, object>> foreignField,
+             OnFkOption onUpdate,
+             OnFkOption onDelete,
+             string foreignKeyName = null);
+        
+        string ToCreateIndexStatement<T>(Expression<Func<T,object>> field, string indexName=null, bool unique=false);
 
         //Async
         Task OpenAsync(IDbConnection db, CancellationToken token = default);

@@ -14,10 +14,10 @@ namespace ServiceStack.OrmLite.SqlServer
     {
         public new static SqlServer2012OrmLiteDialectProvider Instance = new();
 
-        public override bool DoesSequenceExist(IDbCommand dbCmd, string sequenceName)
+        public override bool DoesSequenceExist(IDbCommand dbCmd, string sequence)
         {
             var sql = "SELECT CASE WHEN EXISTS (SELECT 1 FROM sys.sequences WHERE object_id=object_id({0})) THEN 1 ELSE 0 END"
-                .SqlFmt(this, sequenceName);
+                .SqlFmt(this, sequence);
 
             var result = dbCmd.ExecLongScalar(sql);
 

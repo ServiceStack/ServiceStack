@@ -254,36 +254,24 @@ namespace ServiceStack.OrmLite.SqlServer
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public override string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public override string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} ADD {GetColumnDefinition(fieldDef)};";
+
+        public override string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} ALTER COLUMN {GetColumnDefinition(fieldDef)};";
+
+        public override string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn)
         {
-            var column = GetColumnDefinition(fieldDef);
-            var modelName = GetQuotedTableName(GetModel(modelType));
-
-            return $"ALTER TABLE {modelName} ADD {column};";
-        }
-
-        public override string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef)
-        {
-            var column = GetColumnDefinition(fieldDef);
-            var modelName = GetQuotedTableName(GetModel(modelType));
-
-            return $"ALTER TABLE {modelName} ALTER COLUMN {column};";
-        }
-
-        public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
-        {
-            var modelName = NamingStrategy.GetTableName(GetModel(modelType));
-            var objectName = $"{modelName}.{oldColumnName}";
-
+            var modelName = NamingStrategy.GetTableName(table);
+            var objectName = $"{modelName}.{oldColumn}";
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedValue(fieldDef.FieldName)}, {GetQuotedValue("COLUMN")};";
         }
 
-        public override string ToRenameColumnStatement(Type modelType, string oldColumnName, string newColumnName)
+        public override string ToRenameColumnStatement(string schema, string table, string oldColumn, string newColumn)
         {
-            var modelName = NamingStrategy.GetTableName(GetModel(modelType));
-            var objectName = $"{modelName}.{GetQuotedColumnName(oldColumnName)}";
-
-            return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedColumnName(newColumnName)}, 'COLUMN';";
+            var modelName = NamingStrategy.GetTableName(table);
+            var objectName = $"{modelName}.{GetQuotedColumnName(oldColumn)}";
+            return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedColumnName(newColumn)}, 'COLUMN';";
         }
 
         protected virtual string GetAutoIncrementDefinition(FieldDefinition fieldDef)

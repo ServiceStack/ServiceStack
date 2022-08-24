@@ -5,7 +5,7 @@
 //   Demis Bellot (demis.bellot@gmail.com)
 //   Tomasz Kubacki (tomasz.kubacki@gmail.com)
 //
-// Copyright 2012 Liquidbit Ltd.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //
 // Licensed under the same terms of ServiceStack.
 //

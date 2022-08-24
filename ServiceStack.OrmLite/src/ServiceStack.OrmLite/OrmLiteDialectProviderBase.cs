@@ -1493,7 +1493,7 @@ namespace ServiceStack.OrmLite
             return DoesColumnExist(db, columnName, tableName, schema).InTask();
         }
 
-        public virtual bool DoesSequenceExist(IDbCommand dbCmd, string sequenceName)
+        public virtual bool DoesSequenceExist(IDbCommand dbCmd, string sequence)
         {
             throw new NotImplementedException();
         }
@@ -1567,15 +1567,9 @@ namespace ServiceStack.OrmLite
         }
 
         // TODO : make abstract  ??
-        public virtual string ToExecuteProcedureStatement(object objWithProperties)
-        {
-            return null;
-        }
+        public virtual string ToExecuteProcedureStatement(object objWithProperties) => null;
 
-        protected static ModelDefinition GetModel(Type modelType)
-        {
-            return modelType.GetModelDefinition();
-        }
+        protected static ModelDefinition GetModel(Type modelType) => modelType.GetModelDefinition();
 
         public virtual SqlExpression<T> SqlExpression<T>()
         {
@@ -1587,33 +1581,19 @@ namespace ServiceStack.OrmLite
             throw new NotImplementedException();
         }
 
-        public virtual string GetDropForeignKeyConstraints(ModelDefinition modelDef)
-        {
-            return null;
-        }
+        public virtual string GetDropForeignKeyConstraints(ModelDefinition modelDef) => null;
 
-        public virtual string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef)
-        {
-            var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} ADD COLUMN {column};";
-        }
+        public virtual string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
 
-        public virtual string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef)
-        {
-            var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} MODIFY COLUMN {column};";
-        }
+        public virtual string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} MODIFY COLUMN {GetColumnDefinition(fieldDef)};";
+        
+        public virtual string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} CHANGE COLUMN {GetQuotedColumnName(oldColumn)} {GetColumnDefinition(fieldDef)};";
 
-        public virtual string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
-        {
-            var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} CHANGE COLUMN {GetQuotedColumnName(oldColumnName)} {column};";
-        }
-
-        public virtual string ToRenameColumnStatement(Type modelType, string oldColumnName, string newColumnName)
-        {
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} RENAME COLUMN {GetQuotedColumnName(oldColumnName)} TO {GetQuotedColumnName(newColumnName)};";
-        }
+        public virtual string ToRenameColumnStatement(string schema, string table, string oldColumn, string newColumn) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumn)};";
 
         public virtual string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
             Expression<Func<TForeign, object>> foreignField,
@@ -1713,25 +1693,12 @@ namespace ServiceStack.OrmLite
             return subSql;
         }
 
-        public virtual string ToRowCountStatement(string innerSql)
-        {
-            return $"SELECT COUNT(*) FROM ({innerSql}) AS COUNT";
-        }
+        public virtual string ToRowCountStatement(string innerSql) => 
+            $"SELECT COUNT(*) FROM ({innerSql}) AS COUNT";
 
-        public virtual void DropColumn(IDbConnection db, Type modelType, string columnName)
-        {
-            var provider = db.GetDialectProvider();
-            var command = ToDropColumnStatement(modelType, columnName, provider);
+        public virtual string ToDropColumnStatement(string schema, string table, string column) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP COLUMN {GetQuotedColumnName(column)};";
 
-            db.ExecuteSql(command);
-        }
-
-        protected virtual string ToDropColumnStatement(Type modelType, string columnName, IOrmLiteDialectProvider provider)
-        {
-            return $"ALTER TABLE {provider.GetQuotedTableName(modelType.GetModelDefinition())} " +
-                   $"DROP COLUMN {provider.GetQuotedColumnName(columnName)};";
-        }
-        
         public virtual string ToTableNamesStatement(string schema) => throw new NotSupportedException();
 
         public virtual string ToTableNamesWithRowCountsStatement(bool live, string schema) => null; //returning null Fallsback to slow UNION N+1 COUNT(*) op

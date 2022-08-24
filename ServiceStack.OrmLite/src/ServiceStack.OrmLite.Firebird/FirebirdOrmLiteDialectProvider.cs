@@ -767,25 +767,14 @@ namespace ServiceStack.OrmLite.Firebird
         }
 
         #region DDL
-        public override string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef)
-        {
-            var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(GetModel(modelType))} ADD {column} ;";
-        }
+        public override string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} ADD {GetColumnDefinition(fieldDef)};";
 
-        public override string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef)
-        {
-            var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(GetModel(modelType))} ALTER {column} ;";
-        }
+        public override string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} ALTER {GetColumnDefinition(fieldDef)};";
 
-        public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
-        {
-            return string.Format("ALTER TABLE {0} ALTER {1} TO {2};",
-                GetQuotedTableName(GetModel(modelType)),
-                GetQuotedColumnName(oldColumnName),
-                GetQuotedColumnName(fieldDef.FieldName));
-        }
+        public override string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn) => 
+            $"ALTER TABLE {GetQuotedTableName(GetQuotedTableName(table, schema))} ALTER {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(fieldDef.FieldName)};";
         #endregion DDL
 
         public override string ToSelectStatement(QueryType queryType, ModelDefinition modelDef,
@@ -820,14 +809,8 @@ namespace ServiceStack.OrmLite.Firebird
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public override void DropColumn(IDbConnection db, Type modelType, string columnName)
-        {
-            var provider = db.GetDialectProvider();
-            var command =
-                $"ALTER TABLE {provider.GetQuotedTableName(modelType.GetModelMetadata().ModelName)} DROP {provider.GetQuotedColumnName(columnName)};";
-
-            db.ExecuteSql(command);
-        }
+        public override string ToDropColumnStatement(string schema, string table, string column) =>
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP {GetQuotedColumnName(column)};";
 
         public override string SqlConcat(IEnumerable<object> args) => string.Join(" || ", args);
     }
