@@ -10,12 +10,10 @@ namespace NorthwindAuto;
 public class ConfigureDbMigrations : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
-        .ConfigureServices(services => {
-            services.AddSingleton(c => new Migrator(c.Resolve<IDbConnectionFactory>(), typeof(Migration1000).Assembly));
-        })
         .ConfigureAppHost(afterAppHostInit:appHost => {
-            AppTasks.Register("migrate", _ => appHost.Resolve<Migrator>().Run());
-            AppTasks.Register("migrate.revert", args => appHost.Resolve<Migrator>().Revert(args[0]));
+            var migrator = new Migrator(appHost.Resolve<IDbConnectionFactory>(), typeof(Migration1000).Assembly);
+            AppTasks.Register("migrate", _ => migrator.Run());
+            AppTasks.Register("migrate.revert", args => migrator.Revert(args[0]));
             AppTasks.Run();
         });
 }
