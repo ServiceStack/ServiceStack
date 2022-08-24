@@ -205,12 +205,14 @@ namespace ServiceStack.OrmLite.Tests
         [Test]
         public void CanAddForeignKey()
         {
-            using (var dbConnection = OpenDbConnection())
-            {
-                dbConnection.DropAndCreateTable<TypeWithNoForeignKeyInitially>();
-                dbConnection.AddForeignKey<TypeWithNoForeignKeyInitially, ReferencedType>(
-                    t => t.RefId, tr => tr.Id, OnFkOption.NoAction, OnFkOption.Cascade, "FK_ADDED");
-            }
+            using var dbConnection = OpenDbConnection();
+            dbConnection.DropAndCreateTable<TypeWithNoForeignKeyInitially>();
+            dbConnection.AddForeignKey<TypeWithNoForeignKeyInitially, ReferencedType>(
+                field: t => t.RefId, 
+                foreignField: tr => tr.Id,
+                onUpdate: OnFkOption.NoAction, 
+                onDelete: OnFkOption.Cascade, 
+                "FK_ADDED");
         }
     }
 
