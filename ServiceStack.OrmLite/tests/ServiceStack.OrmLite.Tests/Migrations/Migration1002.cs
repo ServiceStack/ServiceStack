@@ -139,27 +139,23 @@ public class Migration1002 : MigrationBase
             FirstName = "North",
             LastName = "West",
             Email = "north@west.com",
-            PhoneNumbers = new List<Phone>
-            {
+            PhoneNumbers = new List<Phone> {
                 new() { Kind = PhoneKind.Mobile, Number = "123-555-5555" },
                 new() { Kind = PhoneKind.Home,   Number = "555-555-5555", Ext = "123" },
             },
-            GameItems = new List<GameItem>
-            {
+            GameItems = new List<GameItem> {
                 new() { Name = "WAND", Description = "Golden Wand of Odyssey"},
                 new() { Name = "STAFF", Description = "Staff of the Magi"},
             },
-            Profile = new Profile
-            {
+            Profile = new Profile {
                 Username = "north",
                 Role = PlayerRole.Leader,
                 Region = Region.Australasia,
                 HighScore = 100,
                 GamesPlayed = 10,
-                ProfileUrl = "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80",
-                Meta = new Dictionary<string, string>
-                {
-                    {"Quote", "I am gamer"}
+                ProfileUrl = "https://images.unsplash.com/photo-1463453091185-61582044d556?w=1024&h=1024",
+                Meta = new() {
+                    { "Quote", "I am gamer" }
                 },
             }.WithAudit(by),
             SavedLevelId = savedLevel1.Id,
