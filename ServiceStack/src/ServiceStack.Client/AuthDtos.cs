@@ -561,6 +561,7 @@ public class CrudEvent : IMeta
     /// Serialized Request Body
     /// </summary>
     [DataMember(Order = 8)]
+    [StringLength(StringLengthAttribute.MaxText)]
     public string RequestBody { get; set; }
     /// <summary>
     /// UserAuthId if Authenticated
