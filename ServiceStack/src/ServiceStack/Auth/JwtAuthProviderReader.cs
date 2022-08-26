@@ -1056,13 +1056,14 @@ namespace ServiceStack.Auth
         public object AuthenticateResponseDecorator(AuthFilterContext ctx)
         {
             var req = ctx.Request;
-            if (req.IsInProcessRequest())
-                return ctx.AuthResponse;
 
             if (ctx.AuthResponse.BearerToken == null || UseTokenCookie != true)
                 return ctx.AuthResponse;
 
-            req.RemoveSession(req.GetSessionId());
+            if (!req.IsInProcessRequest()) // Don't invalidate cookies for In Process requests
+            {
+                req.RemoveSession(req.GetSessionId());
+            }
 
             var httpResult = ctx.AuthResponse.ToTokenCookiesHttpResult(req,
                 Keywords.TokenCookie,
