@@ -230,7 +230,7 @@ App.components({
 
             /** @param {string} s */
             isComplexJson(s) {
-                return map(s.trim(), x => x.startsWith('{') || x.startsWith('['))
+                return typeof s == 'string' && map(s.trim(), x => x.startsWith('{') || x.startsWith('['))
             },
             call(args, opt, f) {
                 let request = this.createRequest({ args })
@@ -722,9 +722,9 @@ App.components({
                                         <span v-else>{{c.request}}</span>
                                         <span v-if="c.error"><b>error:</b> {{ c.error && c.error.message }}</span>
                                         <div v-else-if="c.value" class="mt-2 whitespace-nowrap truncate">
-                                            <span v-if="typeof c.value == 'string'" :title="c.value">{{ c.value }}</span>
+                                            <span v-if="typeof c.value == 'string' && !isComplexJson(c.value)" :title="c.value">{{ c.value }}</span>
                                             <span v-else-if="arrayValue(c.value)" :title="arrayValue(c.value)">{{ arrayValue(c.value) }}</span>
-                                            <div v-else v-scope="PreviewObject({ val:() => c.value })" :title="c.result && c.result.text || ''"></div>
+                                            <div v-else v-scope="PreviewObject({ val:() => isComplexJson(c.value) ? tryJsonParse(c.value) : c.value })" :title="c.result && c.result.text || ''"></div>
                                         </div>
                                     </div>
                                 </td>
