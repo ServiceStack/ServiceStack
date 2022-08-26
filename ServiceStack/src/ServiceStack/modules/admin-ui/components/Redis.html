@@ -86,7 +86,6 @@ App.components({
             tryJsonParse,
             redisTypes,
             searchResultKeys,
-            isArray: Array.isArray,
             db: 0,
             query:'',
             command:'',
@@ -112,6 +111,7 @@ App.components({
             },
             get itemType() { return map(this.item, x => x.type) || '' },
             get itemValue() { return map(this.item, x => x.value) || '' },
+            arrayValue(value) { return value && value.join && value.join(', ') || '' },
             expanded(id) { return map(this.selected, x => x.id === id) },
             toggle(row) {
                 routes.to({ show: routes.show === row.id ? '' : row.id })
@@ -302,6 +302,8 @@ App.components({
                         this.api = r.api
                         if (r.api.response && r.api.response.db != null)
                             this.db = r.api.response.db
+                        if (!r.api.error)
+                            this.command = ''
                     })
             },
             /** @param {AdminRedis} request
@@ -316,7 +318,7 @@ App.components({
                         let result = map(r.api.response, x => x.result)
                         let error = r.api.error || null
                         let value = null
-                        if (hasItems(r.api.response.searchResults))
+                        if (r.api.response && hasItems(r.api.response.searchResults))
                         {
                             value = r.api.response.searchResults.map(x => x.id)
                         }
@@ -659,12 +661,13 @@ App.components({
                                 <td class="px-6 py-4 text-sm text-gray-900 align-top truncate">
                                     <div class="grid">
                                         <span v-if="c.request.query" :title="c.request.query">{{c.request.query}}</span>
-                                        <span v-else-if="hasItems(c.request.args)" :title="join(c.request.args)" class="whitespace-nowrap truncate">{{join(c.request.args)}}</span>
+                                        <span v-else-if="hasItems(c.request.args)" :title="join(c.request.args)" @click="command=join(c.request.args)" 
+                                              class="whitespace-nowrap truncate cursor-pointer">{{join(c.request.args)}}</span>
                                         <span v-else>{{c.request}}</span>
                                         <span v-if="c.error"><b>error:</b> {{ c.error && c.error.message }}</span>
                                         <div v-else-if="c.value" class="mt-2 whitespace-nowrap truncate">
                                             <span v-if="typeof c.value == 'string'" :title="c.value">{{ c.value }}</span>
-                                            <span v-else-if="isArray(c.value)" :title="c.value.join(', ')">{{ c.value.join(', ') }}</span>
+                                            <span v-else-if="arrayValue(c.value)" :title="arrayValue(c.value)">{{ arrayValue(c.value) }}</span>
                                             <div v-else v-scope="PreviewObject({ val:() => c.value })" :title="c.result && c.result.text || ''"></div>
                                         </div>
                                     </div>
