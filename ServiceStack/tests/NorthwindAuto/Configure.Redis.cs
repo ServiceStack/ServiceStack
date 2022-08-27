@@ -13,6 +13,8 @@ public class ConfigureRedis : IHostingStartup
                 new RedisManagerPool(context.Configuration.GetConnectionString("Redis") ?? "localhost:6379"));
         })
         .ConfigureAppHost(appHost => {
-            appHost.Plugins.Add(new AdminRedisFeature());
+            appHost.Plugins.Add(new AdminRedisFeature {
+                ModifiableConnection = true
+            });
         });
 }

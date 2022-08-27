@@ -339,7 +339,19 @@ namespace ServiceStack
     {
         public int QueryLimit { get; set; }
         public List<int> Databases { get; set; }
+        public bool? ModifiableConnection { get; set; }
         public Dictionary<string, string> Meta { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class RedisEndpointInfo
+    {
+        public string Host { get; set; }
+        public int Port { get; set; }
+        public bool? Ssl { get; set; }
+        public long Db { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 
     [Exclude(Feature.Soap)]

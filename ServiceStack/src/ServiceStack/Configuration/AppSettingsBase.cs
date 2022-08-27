@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using ServiceStack.Text;
 
@@ -205,6 +206,25 @@ namespace ServiceStack.Configuration
 #endif
         }
 
-        
+        public static void SaveAppSetting(string appSettingsPath, string name, string value)
+        {
+            if (appSettingsPath == null)
+                throw new ArgumentNullException(nameof(appSettingsPath));
+            if (!File.Exists(appSettingsPath))
+                throw new FileNotFoundException("app.settings not found", Path.GetFileName(appSettingsPath));
+
+            var sb = StringBuilderCache.Allocate();
+            var lines = File.ReadAllLines(appSettingsPath);
+            foreach (var line in lines)
+            {
+                var useLine = line.StartsWith(name)
+                    ? $"{name} {value}"
+                    : line;
+                sb.AppendLine(useLine);
+            }
+
+            var contents = StringBuilderCache.ReturnAndFree(sb);
+            File.WriteAllText(appSettingsPath, contents);
+        }
     }
 }

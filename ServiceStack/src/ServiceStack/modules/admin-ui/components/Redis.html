@@ -77,11 +77,13 @@ App.components({
         let searchResultKeys = ['id','type','ttl','size']
         let linkFields = 'id,skip'.split(',')
         let redisTypes = { string:'String', list:'List', set:'Set', zset:'Sorted Set', hash:'Hash' }
+        let plugin = Forms.Server.plugins.adminRedis
+        let cloneEndpoint = endpoint => Object.assign({}, { host:'',port:0,ssl:false,username:'',password:'' }, endpoint)
         return {
             $template: '#redis-template',
             store, routes,
             tabs: { 'Info':'', 'Search':'search', 'Command':'command' },
-            get plugin() { return Forms.Server.plugins.adminRedis },
+            plugin,
             join,
             tryJsonParse,
             redisTypes,
@@ -100,6 +102,9 @@ App.components({
             item: null,
             success: false,
             callLog: [],
+            endpoint: cloneEndpoint(null),
+            editEndpoint: cloneEndpoint(null),
+            get formClass() { return Forms.formClass },
             get gridClass() { return Forms.gridClass },
             get rowClass() { return 'col-span-12 sm:col-span-6' },
             get response() { return this.api && this.api.response },
@@ -109,6 +114,8 @@ App.components({
             get selected() {
                 return routes.show && this.results.find(x => x.id === routes.show)
             },
+            get connectionString() { return this.endpoint.host ? `${this.endpoint.host}:${this.endpoint.port}` : '' },
+            get modifiableConnection() { return plugin.modifiableConnection },
             get itemType() { return map(this.item, x => x.type) || '' },
             get itemValue() { return map(this.item, x => x.value) || '' },
             arrayValue(value) { return value && value.join && value.join(', ') || '' },
@@ -241,7 +248,6 @@ App.components({
               return new AdminRedis(Object.assign({ db: parseInt(this.db) }, args))
             },
             reset() {
-                console.log('reset')
                 this.success = false
                 this.apiSave = null
                 this.setItemEdit('')
@@ -261,6 +267,24 @@ App.components({
                     return this.call(['ZRANGE', id, '0', '-1', 'WITHSCORES'], { id, type }, r => asKeyValues(r))
                 } else if (type === 'hash') {
                     return this.call(['HGETALL', id], { id, type }, r => asKeyValues(r))
+                }
+            },
+            reconnect() {
+                let request = new AdminRedis({ reconnect: this.editEndpoint })
+                return this.send(request)
+                    .then(r => {
+                        this.apiSave = r.api
+                        let success = this.apiSave.error == null
+                        if (success) {
+                            this.setEndpoint(r.api.response.endpoint)
+                            routes.to({ edit:'' })
+                        }
+                    })
+            },
+            setEndpoint(endpoint) {
+                if (endpoint) {
+                    this.endpoint = endpoint
+                    this.editEndpoint = cloneEndpoint(endpoint)
                 }
             },
             update() {
@@ -288,8 +312,13 @@ App.components({
                 this.send(request)
                     .then(r => {
                         this.api = r.api
-                        if (r.api.response && r.api.response.db != null)
-                            this.db = r.api.response.db
+                        let res = r.api.response 
+                        if (res) {
+                            if (res.db != null) {
+                                this.db = res.db
+                            }
+                            this.setEndpoint(res.endpoint)
+                        }
                     })
             },
             exec() {
@@ -398,12 +427,53 @@ App.components({
     <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
     <div v-if="routes.tab == ''">
         <div class="p-4 flex">
-            <h4 class="mr-12 font-medium text-3xl">Redis Database</h4>
-            <div>
-                <select v-model="db">
+            <h4 v-if="modifiableConnection" v-href="{ edit: routes.edit == 'connection' ? '' : 'connection' }" title="Change Redis Connection"
+                class="pr-4 font-medium text-3xl text-blue-600 hover:text-blue-800 cursor-pointer select-none">{{ connectionString }}</h4>
+            <h4 v-else class="pr-4 font-medium text-3xl">{{ connectionString }}</h4>
+            <div v-if="connectionString">
+                <select v-model="db" title="Redis Database"
+                    class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option v-for="db in plugin.databases" :selected="response && response.db == db" :value="db">{{db}}</option>
                 </select>
             </div>
+        </div>
+        <div v-if="modifiableConnection && routes.edit === 'connection'" class="mb-8">
+            <form ref="form" @submit.prevent="reconnect" autocomplete="off" :class="formClass">
+                <div class="relative px-4 py-5 bg-white sm:p-6">
+                    <div v-scope="CloseButton({ onclick:() => routes.to({ edit:'' }) })" title="Close"></div>
+                    <div class="text-xl text-gray-900 text-center mb-4">Change Connection</div>
+                    <div v-if="apiSave && apiSave.error" v-scope="ErrorSummary({ errorSummary: () => apiSave.error && apiSave.summaryMessage() })"></div>
+                    <div class="flex flex-wrap sm:flex-nowrap">
+                        <div class="flex-grow mb-3 sm:mb-0">
+                            <fieldset :class="gridClass">
+                                <div :class="rowClass">
+                                    <div v-scope="Input({ input:{ id:'host' }, model:() => editEndpoint, api:() => apiSave })"></div>
+                                </div>
+                                <div :class="rowClass">
+                                    <div v-scope="Input({ input:{ id:'port', type:'number' }, model:() => editEndpoint, api:() => apiSave })"></div>
+                                </div>
+                                <div :class="rowClass">
+                                    <div v-scope="Input({ input:{ id:'username', placeholder:'ACL Username' }, model:() => editEndpoint, api:() => apiSave })"></div>
+                                </div>
+                                <div :class="rowClass">
+                                    <div v-scope="Input({ input:{ id:'password', type:'password', placeholder:'AUTH Password' }, model:() => editEndpoint, api:() => apiSave })"></div>
+                                </div>
+                                <div :class="rowClass">
+                                    <div v-scope="Input({ input:{ id:'ssl', type:'checkbox', label:'Use SSL?' }, model:() => editEndpoint, api:() => apiSave })"></div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6">
+                    <div class="flex justify-end">
+                        <button type="button" v-href="{ edit:'' }" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                        <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Change
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
         <div v-scope="PreviewObject({ val:() => response && response.info })"></div>
     </div>
