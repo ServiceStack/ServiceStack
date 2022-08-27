@@ -99,6 +99,11 @@ namespace ServiceStack
         /// </summary>
         public static bool IsReady() => Instance?.ReadyAt != null;
 
+        /// <summary>
+        /// Path to Sharp App app.settings
+        /// </summary>
+        public string AppSettingsPath { get; set; }
+
         protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
         {
             this.StartedAt = DateTime.UtcNow;
