@@ -118,7 +118,7 @@ public class AdminRedisService : Service
         var connectionString = ToConnectionString(endpoint);
         var redisManager = TryResolve<IRedisClientsManager>();
 
-        var testClient = redisManager.RedisResolver.CreateClient(connectionString);
+        var testClient = redisManager.RedisResolver.CreateClient(connectionString.AddQueryParam("RetryTimeout","1000"));
         try
         {
             var role = testClient.GetServerRole();

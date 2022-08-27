@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-08-27 16:11:22
+Date: 2022-08-27 18:34:20
 Version: 6.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -680,6 +680,7 @@ export class AdminRedisInfo
     public queryLimit: number;
     public databases: number[];
     public modifiableConnection?: boolean;
+    public endpoint: RedisEndpointInfo;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<AdminRedisInfo>) { (Object as any).assign(this, init); }

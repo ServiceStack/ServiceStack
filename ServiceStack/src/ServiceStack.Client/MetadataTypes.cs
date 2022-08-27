@@ -340,6 +340,7 @@ namespace ServiceStack
         public int QueryLimit { get; set; }
         public List<int> Databases { get; set; }
         public bool? ModifiableConnection { get; set; }
+        public RedisEndpointInfo Endpoint { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

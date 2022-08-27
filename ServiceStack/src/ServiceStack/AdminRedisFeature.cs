@@ -37,7 +37,6 @@ public class AdminRedisFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     public void Register(IAppHost appHost)
     {
         appHost.RegisterService(typeof(AdminRedisService));
-        ModifiableConnection ??= ((ServiceStackHost)appHost).AppSettingsPath != null;
 
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.AdminRedis = new AdminRedisInfo
@@ -45,6 +44,14 @@ public class AdminRedisFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
                 QueryLimit = QueryLimit,
                 Databases = Databases,
                 ModifiableConnection = ModifiableConnection == true ? true : null,
+                Endpoint = X.Map(appHost.TryResolve<IRedisClientsManager>()?.RedisResolver.PrimaryEndpoint, 
+                    x => new RedisEndpointInfo {
+                        Host = x.Host,
+                        Port = x.Port,
+                        Ssl = x.Ssl ? true : null,
+                        Db = x.Db,
+                        Username = x.Username,
+                    })
             };
         });
     }

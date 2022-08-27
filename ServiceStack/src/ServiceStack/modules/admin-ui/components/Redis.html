@@ -78,7 +78,7 @@ App.components({
         let linkFields = 'id,skip'.split(',')
         let redisTypes = { string:'String', list:'List', set:'Set', zset:'Sorted Set', hash:'Hash' }
         let plugin = Forms.Server.plugins.adminRedis
-        let cloneEndpoint = endpoint => Object.assign({}, { host:'',port:0,ssl:false,username:'',password:'' }, endpoint)
+        let cloneEndpoint = endpoint => Object.assign({}, { host:'localhost',port:6379,ssl:false,username:'',password:'' }, endpoint)
         return {
             $template: '#redis-template',
             store, routes,
@@ -102,8 +102,8 @@ App.components({
             item: null,
             success: false,
             callLog: [],
-            endpoint: cloneEndpoint(null),
-            editEndpoint: cloneEndpoint(null),
+            endpoint: cloneEndpoint(plugin.endpoint),
+            editEndpoint: cloneEndpoint(plugin.endpoint),
             get formClass() { return Forms.formClass },
             get gridClass() { return Forms.gridClass },
             get rowClass() { return 'col-span-12 sm:col-span-6' },
@@ -269,10 +269,13 @@ App.components({
                     return this.call(['HGETALL', id], { id, type }, r => asKeyValues(r))
                 }
             },
+            apiCall: 0,
+            reconnectedAt: 0,
             reconnect() {
                 let request = new AdminRedis({ reconnect: this.editEndpoint })
                 return this.send(request)
                     .then(r => {
+                        this.reconnectedAt = ++this.apiCall
                         this.apiSave = r.api
                         let success = this.apiSave.error == null
                         if (success) {
@@ -309,8 +312,11 @@ App.components({
                     request.query = toQuery(this.query)
                 else
                     return
+                let apiCall = ++this.apiCall
                 this.send(request)
                     .then(r => {
+                        /** If reconnected since failed request ignore error */ 
+                        if (r.api.error && this.reconnectedAt > apiCall) return
                         this.api = r.api
                         let res = r.api.response 
                         if (res) {
@@ -347,18 +353,14 @@ App.components({
                         let result = map(r.api.response, x => x.result)
                         let error = r.api.error || null
                         let value = null
-                        if (r.api.response && hasItems(r.api.response.searchResults))
-                        {
+                        if (r.api.response && hasItems(r.api.response.searchResults)) {
                             value = r.api.response.searchResults.map(x => x.id)
                         }
-                        else if (result)
-                        {
-                            if (!hasItems(result.children))
-                            {
+                        else if (result) {
+                            if (!hasItems(result.children)) {
                                 value = result.text
                             }
-                            else
-                            {
+                            else {
                                 value = result.children.some(x => hasItems(x.children))
                                     ? asObject(result)
                                     : asList(result)
@@ -438,7 +440,7 @@ App.components({
             </div>
         </div>
         <div v-if="modifiableConnection && routes.edit === 'connection'" class="mb-8">
-            <form ref="form" @submit.prevent="reconnect" autocomplete="off" :class="formClass">
+            <form ref="form" @submit.prevent="reconnect" autocomplete="off" class="shadow overflow-hidden sm:rounded-md bg-white max-w-screen-md">
                 <div class="relative px-4 py-5 bg-white sm:p-6">
                     <div v-scope="CloseButton({ onclick:() => routes.to({ edit:'' }) })" title="Close"></div>
                     <div class="text-xl text-gray-900 text-center mb-4">Change Connection</div>
