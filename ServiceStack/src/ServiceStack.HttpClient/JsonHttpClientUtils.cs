@@ -46,6 +46,13 @@ public static class JsonApiClientUtils
             : null;
     }
 
+    public static void AddBasicAuth(this HttpRequestMessage request, string basicAuthKey)
+    {
+        if (string.IsNullOrEmpty(basicAuthKey))
+            return;
+        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", basicAuthKey);
+    }
+
     public static void AddBasicAuth(this HttpRequestMessage request, string userName, string password)
     {
         if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))

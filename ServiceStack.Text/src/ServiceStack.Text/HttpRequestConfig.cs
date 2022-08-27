@@ -22,6 +22,7 @@ public class HttpRequestConfig
     public void SetAuthBearer(string value) => Authorization = new("Bearer", value);
     public void SetAuthBasic(string name, string value) => 
         Authorization = new("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(name + ":" + value)));
+    public void SetAuthBasicRaw(string value) => Authorization = new("Basic", value);
     public void SetRange(long from, long? to = null) => Range = new(from, to);
 
     public void AddHeader(string name, string value) => Headers.Add(new(name, value));
