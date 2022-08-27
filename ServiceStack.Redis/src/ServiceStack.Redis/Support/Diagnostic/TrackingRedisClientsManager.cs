@@ -38,6 +38,8 @@ namespace ServiceStack.Redis.Support.Diagnostic
             this.redisClientsManager.Dispose();
         }
 
+        public IRedisResolver RedisResolver => redisClientsManager.RedisResolver;
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         public IRedisClient GetClient()
         {

@@ -33,7 +33,7 @@ namespace ServiceStack.Redis.Support.Queue.Implementation
             clientManager = new PooledRedisClientManager(new[] { host + ":" + port }, 
                 TypeConstants.EmptyStringArray, 
                 poolConfig) {
-                RedisResolver = { ClientFactory = config => new SerializingRedisClient(config) }
+                RedisResolver = new RedisResolver { ClientFactory = config => new SerializingRedisClient(config) }
             };
         }
 

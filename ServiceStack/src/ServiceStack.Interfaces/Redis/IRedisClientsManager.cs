@@ -18,6 +18,11 @@ namespace ServiceStack.Redis
     public interface IRedisClientsManager : IDisposable
     {
         /// <summary>
+        /// Resolver strategy for resolving hosts and creating clients
+        /// </summary>
+        IRedisResolver RedisResolver { get; }
+        
+        /// <summary>
         /// Returns a Read/Write client (The default) using the hosts defined in ReadWriteHosts
         /// </summary>
         /// <returns></returns>

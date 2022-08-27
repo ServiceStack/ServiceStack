@@ -19,12 +19,20 @@ namespace ServiceStack.Redis
 
         public RedisEndpoint[] Masters => masters;
         public RedisEndpoint[] Replicas => replicas;
+        public IRedisEndpoint PrimaryEndpoint => masters.FirstOrDefault();
 
         public BasicRedisResolver(IEnumerable<RedisEndpoint> masters, IEnumerable<RedisEndpoint> replicas)
         {
             ResetMasters(masters.ToList());
             ResetSlaves(replicas.ToList());
             ClientFactory = RedisConfig.ClientFactory;
+        }
+        
+        public IRedisClient CreateClient(string host)
+        {
+            var redis = ClientFactory(host.ToRedisEndpoint());
+            redis.ConnectTimeout = RedisConfig.HostLookupTimeoutMs;
+            return redis;
         }
 
         public virtual void ResetMasters(IEnumerable<string> hosts)

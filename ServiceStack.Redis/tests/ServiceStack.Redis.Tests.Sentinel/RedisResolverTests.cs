@@ -149,6 +149,13 @@ namespace ServiceStack.Redis.Tests.Sentinel
 
             public int ReadWriteHostsCount => 1;
             public int ReadOnlyHostsCount => 1;
+            public IRedisEndpoint PrimaryEndpoint => master;
+            public IRedisClient CreateClient(string host)
+            {
+                var redis = ClientFactory(host.ToRedisEndpoint());
+                redis.ConnectTimeout = RedisConfig.HostLookupTimeoutMs;
+                return redis;
+            }
 
             public void ResetMasters(IEnumerable<string> hosts) { }
             public void ResetSlaves(IEnumerable<string> hosts) { }

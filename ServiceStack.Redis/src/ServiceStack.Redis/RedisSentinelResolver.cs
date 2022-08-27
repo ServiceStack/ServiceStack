@@ -18,7 +18,7 @@ namespace ServiceStack.Redis
         public int ReadWriteHostsCount { get; private set; }
         public int ReadOnlyHostsCount { get; private set; }
 
-        HashSet<RedisEndpoint> allHosts = new HashSet<RedisEndpoint>();
+        HashSet<RedisEndpoint> allHosts = new();
 
         private RedisSentinel sentinel;
 
@@ -27,6 +27,7 @@ namespace ServiceStack.Redis
 
         public RedisEndpoint[] Masters => masters;
         public RedisEndpoint[] Slaves => replicas;
+        public IRedisEndpoint PrimaryEndpoint => masters.FirstOrDefault();
 
         public RedisSentinelResolver(RedisSentinel sentinel)
             : this(sentinel, TypeConstants<RedisEndpoint>.EmptyArray, TypeConstants<RedisEndpoint>.EmptyArray) { }
@@ -40,6 +41,13 @@ namespace ServiceStack.Redis
             ResetMasters(masters.ToList());
             ResetSlaves(replicas.ToList());
             ClientFactory = RedisConfig.ClientFactory;
+        }
+        
+        public IRedisClient CreateClient(string host)
+        {
+            var redis = ClientFactory(host.ToRedisEndpoint());
+            redis.ConnectTimeout = RedisConfig.HostLookupTimeoutMs;
+            return redis;
         }
 
         public virtual void ResetMasters(IEnumerable<string> hosts)
