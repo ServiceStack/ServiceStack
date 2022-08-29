@@ -273,6 +273,9 @@ public class AdminDatabaseService : Service
         List<MetadataPropertyType>? columns = null;
         var includes = request.Include?.Split(',') ?? Array.Empty<string>();
         if (includes.Contains("columns"))
+
+        // Change CSV download filename
+        Request.Items[Keywords.FileName] = request.Table + ".csv";
         {
             var columnSchemas = db.GetTableColumns($"SELECT * FROM {table}" + Environment.NewLine + dialect.SqlLimit(0,1));
             columns = columnSchemas.Map(x =>

@@ -68,6 +68,7 @@ namespace ServiceStack
         public const string RequestDuration = "__timestamp";
         public const string RequestActivity = "__activity";
         public const string TraceId = nameof(TraceId);
+        public const string FileName = nameof(FileName);
         
         public const string Allows = "allows";
         public const string Embed = "embed";
