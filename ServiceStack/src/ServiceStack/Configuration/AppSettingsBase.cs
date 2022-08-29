@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using ServiceStack.IO;
 using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
@@ -152,9 +153,7 @@ namespace ServiceStack.Configuration
 
         public virtual void Set<T>(string key, T value)
         {
-            if (settingsWriter == null)
-                settingsWriter = new DictionarySettings();
-
+            settingsWriter ??= new DictionarySettings();
             settingsWriter.Set(key, value);
         }
     }
@@ -206,21 +205,49 @@ namespace ServiceStack.Configuration
 #endif
         }
 
+        
+        /// <summary>
+        /// User app.settings for Sharp App
+        /// </summary>
+        public static string GetUserAppSettingsPath(string appName)
+        {
+            if (appName == null)
+                return null;
+            var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var appSettingsPath = Path.Combine(homeDir, ".servicestack", "desktop", appName, "app.settings");
+            return appSettingsPath;
+        }
+
         public static void SaveAppSetting(string appSettingsPath, string name, string value)
         {
             if (appSettingsPath == null)
                 throw new ArgumentNullException(nameof(appSettingsPath));
+
             if (!File.Exists(appSettingsPath))
-                throw new FileNotFoundException("app.settings not found", Path.GetFileName(appSettingsPath));
+            {
+                var dirPath = Path.GetDirectoryName(appSettingsPath);
+                FileSystemVirtualFiles.AssertDirectory(dirPath);
+                File.WriteAllText(appSettingsPath, $"{name} {value}{Environment.NewLine}");
+                return;
+            }
 
             var sb = StringBuilderCache.Allocate();
             var lines = File.ReadAllLines(appSettingsPath);
+            var found = false;
             foreach (var line in lines)
             {
-                var useLine = line.StartsWith(name)
+                var match = line.StartsWith(name);
+                if (match)
+                    found = true;
+                var useLine = match
                     ? $"{name} {value}"
                     : line;
                 sb.AppendLine(useLine);
+            }
+
+            if (!found)
+            {
+                sb.AppendLine($"{name} {value}");
             }
 
             var contents = StringBuilderCache.ReturnAndFree(sb);
