@@ -1,7 +1,9 @@
 #nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
@@ -134,8 +136,10 @@ public class AdminDatabaseService : Service
         }
     }
 
-    private static char[] Delims = { '=', '!', '<', '>', '[', ']' }; 
-    
+    private static char[] Delims = { '=', '!', '<', '>', '[', ']' };
+
+    private static ConcurrentDictionary<string, List<MetadataPropertyType>> ColumnCache = new();
+
     private async Task<AdminDatabaseFeature> AssertRequiredRole()
     {
         var feature = AssertPlugin<AdminDatabaseFeature>();
@@ -146,7 +150,7 @@ public class AdminDatabaseService : Service
     public async Task<object> Any(AdminDatabase request)
     {
         var feature = await AssertRequiredRole();
-        
+
         using var db = HostContext.AppHost.GetDbConnection(request.Db is null or "main" ? null : request.Db);
         var dialect = db.GetDialectProvider();
 
@@ -161,6 +165,7 @@ public class AdminDatabaseService : Service
         
         var filters = new List<string>();
         var dbParams = new Dictionary<string, object>();
+        var columns = GetColumns(db, request.Db ?? "main", table);
 
         var i = 0;
         foreach (var entry in qs)
@@ -223,6 +228,8 @@ public class AdminDatabaseService : Service
             }
 
             name = name.SafeVarName();
+            var columnType = columns.FirstOrDefault(x => x.Name.EqualsIgnoreCase(name))?.PropertyType ?? typeof(string);
+            //var isNumber = DynamicNumber.IsNumber(columnType);
             var quotedName = dialect.GetQuotedColumnName(name);
             var paramName = $"@p{i++}";
             if (value == "null")
@@ -231,7 +238,7 @@ public class AdminDatabaseService : Service
                     ? $"{quotedName} IS NOT NULL"
                     : $"{quotedName} IS NULL");
             }
-            if (op != null)
+            else if (op != null)
             {
                 if (op == "[]")
                 {
@@ -241,13 +248,15 @@ public class AdminDatabaseService : Service
                 }
                 else
                 {
-                    dbParams[paramName] = value;
-                    filters.Add($"{dialect.SqlCast(quotedName, "VARCHAR")} {op} {paramName}");
+                    dbParams[paramName] = value.ConvertTo(columnType);
+                    filters.Add(columnType == typeof(string) 
+                        ? $"{dialect.SqlCast(quotedName, "VARCHAR")} {op} {paramName}"
+                        : $"{quotedName} {op} {paramName}");
                 }
             }
             else
             {
-                dbParams[paramName] = value;
+                dbParams[paramName] = value.ConvertTo(columnType);
                 filters.Add(value?.IndexOf('%') >= 0
                     ? $"{dialect.SqlCast(quotedName, "VARCHAR")} LIKE {paramName}"
                     : $"{quotedName} = {paramName}");
@@ -270,21 +279,39 @@ public class AdminDatabaseService : Service
         var results = await db.SqlListAsync<Dictionary<string, object?>>(resultsSql, dbParams);
         long? total = null;
 
-        List<MetadataPropertyType>? columns = null;
         var includes = request.Include?.Split(',') ?? Array.Empty<string>();
-        if (includes.Contains("columns"))
+        if (includes.Contains("total"))
+        {
+            var totalSql = $"SELECT COUNT(*) FROM {table}" + sql;
+            total = await db.SqlScalarAsync<long>(totalSql, dbParams);
+        }
 
         // Change CSV download filename
         Request.Items[Keywords.FileName] = request.Table + ".csv";
+        
+        return new AdminDatabaseResponse
         {
-            var columnSchemas = db.GetTableColumns($"SELECT * FROM {table}" + Environment.NewLine + dialect.SqlLimit(0,1));
-            columns = columnSchemas.Map(x =>
+            Total = total,
+            Columns = includes.Contains("columns") ? columns : null,
+            Results = results,
+        };
+    }
+
+    static List<MetadataPropertyType> GetColumns(IDbConnection db, string dbName, string table)
+    {
+        var key = $"{dbName}.{table}";
+        return ColumnCache.GetOrAdd(key, k =>
+        {
+            var dialect = db.GetDialectProvider();
+            var columnSchemas = db.GetTableColumns($"SELECT * FROM {table}" + Environment.NewLine + dialect.SqlLimit(0, 1));
+            var columns = columnSchemas.Map(x =>
             {
                 var type = GenerateCrudServices.DefaultResolveColumnType(x, dialect);
                 var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
                 return new MetadataPropertyType
                 {
                     Name = x.ColumnName,
+                    PropertyType = type,
                     Type = type.GetMetadataPropertyType(),
                     IsValueType = underlyingType.IsValueType ? true : null,
                     IsEnum = underlyingType.IsEnum ? true : null,
@@ -292,19 +319,7 @@ public class AdminDatabaseService : Service
                     IsPrimaryKey = x.IsKey ? true : null,
                 };
             });
-        }
-        
-        if (includes.Contains("total"))
-        {
-            var totalSql = $"SELECT COUNT(*) FROM {table}" + sql;
-            total = await db.SqlScalarAsync<long>(totalSql, dbParams);
-        }
-        
-        return new AdminDatabaseResponse
-        {
-            Total = total,
-            Columns = columns,
-            Results = results,
-        };
+            return columns;
+        });
     }
 }
