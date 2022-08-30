@@ -96,7 +96,7 @@ namespace ServiceStack.Host
                 var requestContentType = ContentFormat.GetEndpointAttributes(httpReq.ResponseContentType);
                 httpReq.RequestAttributes |= HandlerAttributes | requestContentType;
 
-                var rawResponse = await GetResponseAsync(httpReq, request);
+                var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
                 if (httpRes.IsClosed)
                     return;
 

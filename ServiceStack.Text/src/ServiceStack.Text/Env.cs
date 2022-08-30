@@ -308,8 +308,30 @@ namespace ServiceStack.Text
             task.ConfigureAwait(ContinueOnCapturedContext);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConfiguredTaskAwaitable<T> ConfigAwait<T>(this Task<T> task) => 
+        public static ConfiguredTaskAwaitable<T> ConfigAwait<T>(this Task<T> task) =>
             task.ConfigureAwait(ContinueOnCapturedContext);
+
+        /// <summary>
+        /// Only .ConfigAwait(false) in .NET Core as loses HttpContext.Current in NETFX/ASP.NET
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ConfiguredTaskAwaitable ConfigAwaitNetCore(this Task task) =>
+#if NETCORE
+            task.ConfigureAwait(false);
+#else
+            task.ConfigureAwait(true);
+#endif
+
+        /// <summary>
+        /// Only .ConfigAwait(false) in .NET Core as loses HttpContext.Current in NETFX/ASP.NET
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ConfiguredTaskAwaitable<T> ConfigAwaitNetCore<T>(this Task<T> task) =>
+#if NETCORE
+            task.ConfigureAwait(false);
+#else
+            task.ConfigureAwait(true);
+#endif
 
 #if NETCORE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

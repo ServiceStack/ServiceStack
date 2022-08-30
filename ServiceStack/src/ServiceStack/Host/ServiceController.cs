@@ -671,7 +671,7 @@ namespace ServiceStack.Host
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
 
             var handlerFn = GetService(requestType);
-            var responseTask = await handlerFn(req, requestDto).ConfigAwait();
+            var responseTask = await handlerFn(req, requestDto).ConfigAwaitNetCore();
             var response = responseTask;
 
             response = appHost.OnAfterExecute(req, requestDto, response);
