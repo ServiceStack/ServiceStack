@@ -122,7 +122,16 @@ namespace ServiceStack
             }
 
             var appLifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
+            appLifetime?.ApplicationStarted.Register(appHost.OnApplicationStarted);
             appLifetime?.ApplicationStopping.Register(appHost.OnApplicationStopping);
+        }
+
+        public override void OnApplicationStarted()
+        {
+            AppTasks.Run(onExit: () => {
+                var appLifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
+                appLifetime.StopApplication();
+            });
         }
 
         /// <summary>

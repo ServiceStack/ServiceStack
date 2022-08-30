@@ -1966,6 +1966,8 @@ namespace ServiceStack
             return null;
         }
 
+        public virtual void OnApplicationStarted() {}
+
         public virtual void OnApplicationStopping()
         {
             Dispose();
