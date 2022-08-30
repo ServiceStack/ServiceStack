@@ -49,8 +49,10 @@ public class ConfigureDb : IHostingStartup
             appHost.Resolve<IValidationSource>().InitSchema();
             
             appHost.Plugins.Add(new AdminDatabaseFeature {
+                QueryLimit = 100,
                 DatabasesFilter = dbs => {
-                    dbs.Each(db => {
+                    foreach (var db in dbs) 
+                    {
                         if (db.Name == "main")
                         {
                             db.Alias = "Northwind";
@@ -61,7 +63,7 @@ public class ConfigureDb : IHostingStartup
                             db.Alias = "Chinook";
                             db.Schemas[0].Alias = "Music";
                         }
-                    });
+                    }
                 },
                 // SchemasFilter = schemas => {
                 //     schemas.Add(new SchemaInfo {

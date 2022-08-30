@@ -5,6 +5,7 @@ using ServiceStack.OrmLite;
 
 namespace MyApp.Migrations;
 
+[Description("Add Player Feature")]
 public class Migration1001 : MigrationBase
 {
     private string by = "admin@email.com";
