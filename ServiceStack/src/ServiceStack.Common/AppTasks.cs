@@ -96,6 +96,10 @@ public class AppTasks
                     return exitCode;
                 }
             }
+            else
+            {
+                Instance.Log.Info("No AppTasks to run, exiting...");
+            }
             return 0;
         }
         return null;
