@@ -104,7 +104,7 @@ namespace ServiceStack.Host
             {
                 BeforeEachRequest(req, requestDto, instance);
                 if (instance is IServiceBeforeFilterAsync beforeAsync)
-                    await beforeAsync.OnBeforeExecuteAsync(requestDto);
+                    await beforeAsync.OnBeforeExecuteAsync(requestDto).ConfigAwait();
 
                 var res = req.Response;
                 var appHost = HostContext.AssertAppHost();
@@ -130,7 +130,7 @@ namespace ServiceStack.Host
 
                 var response = AfterEachRequest(req, requestDto, ServiceAction(instance, requestDto), instance);
                 if (instance is IServiceAfterFilterAsync afterAsync)
-                    response = await afterAsync.OnAfterExecuteAsync(response);
+                    response = await afterAsync.OnAfterExecuteAsync(response).ConfigAwait();
 
                 if (appHost.Config.StrictMode == true)
                 {

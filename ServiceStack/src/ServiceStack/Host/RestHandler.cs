@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -86,9 +87,9 @@ namespace ServiceStack.Host
 
                 appHost.AssertContentType(httpReq.ResponseContentType);
 
-                var request = httpReq.Dto = await CreateRequestAsync(httpReq, restPath);
+                var request = httpReq.Dto = await CreateRequestAsync(httpReq, restPath).ConfigAwait();
 
-                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request);
+                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
                 if (httpRes.IsClosed)
                     return;
 
@@ -99,7 +100,7 @@ namespace ServiceStack.Host
                 if (httpRes.IsClosed)
                     return;
 
-                await HandleResponse(httpReq, httpRes, rawResponse);
+                await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwait();
             }
             //sync with GenericHandler
             catch (TaskCanceledException)
@@ -111,12 +112,12 @@ namespace ServiceStack.Host
             {
                 if (!appHost.Config.WriteErrorsToResponse)
                 {
-                    await appHost.ApplyResponseConvertersAsync(httpReq, ex);
+                    await appHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait();
                 }
                 else
                 {
                     await HandleException(httpReq, httpRes, operationName,
-                        await appHost.ApplyResponseConvertersAsync(httpReq, ex) as Exception ?? ex);
+                        await appHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception ?? ex).ConfigAwait();
                 }
             }
         }
@@ -127,14 +128,14 @@ namespace ServiceStack.Host
             {
                 var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
                 if (dtoFromBinder != null)
-                    return await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder);
+                    return await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder).ConfigAwait();
 
                 var requestParams = httpReq.GetFlattenedRequestParams();
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat("CreateRequestAsync/requestParams:" + string.Join(",", requestParams.Keys));
 
                 var ret = await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq,
-                    await CreateRequestAsync(httpReq, restPath, requestParams));
+                    await CreateRequestAsync(httpReq, restPath, requestParams).ConfigAwait()).ConfigAwait();
 
                 return ret;
             }
@@ -142,7 +143,7 @@ namespace ServiceStack.Host
 
         public static async Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
         {
-            var requestDto = await CreateContentTypeRequestAsync(httpReq, restPath.RequestType, httpReq.ContentType);
+            var requestDto = await CreateContentTypeRequestAsync(httpReq, restPath.RequestType, httpReq.ContentType).ConfigAwait();
 
             return CreateRequest(httpReq, restPath, requestParams, requestDto);
         }
