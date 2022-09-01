@@ -15,7 +15,7 @@ using RouteAttribute = Microsoft.AspNetCore.Components.RouteAttribute;
 
 namespace MyApp.Tests;
 
-[TestFixture, Category("prerender")]
+[TestFixture, Category("prerender"), Explicit]
 public class PrerenderTasks
 {
     Bunit.TestContext Context;

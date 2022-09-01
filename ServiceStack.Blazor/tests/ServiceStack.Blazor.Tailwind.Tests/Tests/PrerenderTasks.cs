@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ServiceStack;
 using ServiceStack.IO;
-using ServiceStack.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
@@ -15,7 +14,7 @@ using RouteAttribute = Microsoft.AspNetCore.Components.RouteAttribute;
 
 namespace MyApp.Tests;
 
-[TestFixture, Category("prerender")]
+[TestFixture, Category("prerender"), Explicit]
 public class PrerenderTasks
 {
     Bunit.TestContext Context;

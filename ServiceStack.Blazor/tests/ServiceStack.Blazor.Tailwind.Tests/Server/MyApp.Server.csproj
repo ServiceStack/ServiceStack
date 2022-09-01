@@ -24,6 +24,10 @@
         <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="App_Data" />
+    </ItemGroup>
+
     <PropertyGroup>
         <ClientDir>$(MSBuildProjectDirectory)/../Client</ClientDir>
         <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
