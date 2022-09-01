@@ -156,5 +156,16 @@ public class MigrationTests : OrmLiteTestBase
         result = migrator.Revert(nameof(Migration1001));
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1001), typeof(Migration1002) }));
-    }    
+    }
+
+    [Test]
+    public void Can_add_single_int_column()
+    {
+        using var db = Create();
+
+        var migrator = new Migrator(DbFactory, typeof(Migration1003).Assembly);
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ typeof(Migration1000), typeof(Migration1001), typeof(Migration1002), typeof(Migration1003) }));
+    }
 }
