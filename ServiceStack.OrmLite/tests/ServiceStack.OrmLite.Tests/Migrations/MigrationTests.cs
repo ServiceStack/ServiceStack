@@ -171,4 +171,20 @@ public class MigrationTests : OrmLiteTestBase
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations));
     }
+
+    [Test]
+    public void Can_mask_connection_string()
+    {
+        Assert.That(OrmLiteUtils.MaskPassword("Server=host;User Id=u;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
+            Is.EqualTo("Server=host;User Id=u;Password=***;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"));
+        Assert.That(OrmLiteUtils.MaskPassword("Server=host;Database=test;User Id=u;Password=test;MultipleActiveResultSets=True;"),
+            Is.EqualTo("Server=host;Database=test;User Id=u;Password=***;MultipleActiveResultSets=True;"));
+        Assert.That(OrmLiteUtils.MaskPassword("Server=host;Database=test;UID=u;Password=test;SslMode=none"),
+            Is.EqualTo("Server=host;Database=test;UID=u;Password=***;SslMode=none"));
+        Assert.That(OrmLiteUtils.MaskPassword("Server=host;Database=test;UID=u;Pwd=test"),
+            Is.EqualTo("Server=host;Database=test;UID=u;Pwd=***"));
+        Assert.That(OrmLiteUtils.MaskPassword("Server=host;Database=test;UID=u;pwd=test"),
+            Is.EqualTo("Server=host;Database=test;UID=u;pwd=***"));
+    }
+
 }

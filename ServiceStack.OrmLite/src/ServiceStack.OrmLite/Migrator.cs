@@ -166,7 +166,7 @@ public class Migrator
                 Name = nextRun.Name,
                 Description = AppTasks.GetDesc(nextRun),
                 CreatedDate = DateTime.UtcNow,
-                ConnectionString = ((OrmLiteConnectionFactory)DbFactory).ConnectionString,
+                ConnectionString = OrmLiteUtils.MaskPassword(((OrmLiteConnectionFactory)DbFactory).ConnectionString),
                 NamedConnection = nextRun.FirstAttribute<NamedConnectionAttribute>()?.Name,
             };
             var id = db.Insert(migration, selectIdentity:true);
