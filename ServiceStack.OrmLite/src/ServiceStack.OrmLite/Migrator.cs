@@ -229,7 +229,7 @@ public class Migrator
         Log.Info(StringBuilderCache.ReturnAndFree(sb));
     }
 
-    public static List<Type> GetAllMigrationTypes(Assembly[] migrationAssemblies)
+    public static List<Type> GetAllMigrationTypes(params Assembly[] migrationAssemblies)
     {
         var remainingMigrations = migrationAssemblies
             .SelectMany(x => x.GetTypes().Where(x => x.IsInstanceOf(typeof(MigrationBase)) && !x.IsAbstract))
