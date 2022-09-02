@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "postinstall": "dotnet run --AppTasks=migrate",
-    "migrate": "dotnet run --AppTasks=migrate",
-    "revert:last": "dotnet run --AppTasks=migrate.revert:last",
-    "revert:all": "dotnet run --AppTasks=migrate.revert:all"
-  }
-}
