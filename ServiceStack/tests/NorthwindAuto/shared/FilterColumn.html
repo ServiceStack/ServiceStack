@@ -72,7 +72,9 @@ App.components({
                     this.addFilter()
                 }
                 if (this.isEnum) {
-                    this.prefs.filters = [{ key:'%In', name:'In', value:this.selectedEnums.join(',')}]
+                    /**: selectedEnums = {0:'', 1:'Value'} */
+                    let selectedEnums = Object.values(this.selectedEnums).filter(x => x)
+                    this.prefs.filters = [{ key:'%In', name:'In', value:selectedEnums.join(',')}]
                 }
                 saveProp(this.columnName, this.prefs)
                 save()

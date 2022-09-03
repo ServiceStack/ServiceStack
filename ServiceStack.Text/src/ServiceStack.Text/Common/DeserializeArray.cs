@@ -19,8 +19,7 @@ namespace ServiceStack.Text.Common
     public static class DeserializeArrayWithElements<TSerializer>
         where TSerializer : ITypeSerializer
     {
-        private static Dictionary<Type, ParseArrayOfElementsDelegate> ParseDelegateCache
-            = new Dictionary<Type, ParseArrayOfElementsDelegate>();
+        private static Dictionary<Type, ParseArrayOfElementsDelegate> ParseDelegateCache = new();
 
         public delegate object ParseArrayOfElementsDelegate(ReadOnlySpan<char> value, ParseStringSpanDelegate parseFn);
 
@@ -44,11 +43,11 @@ namespace ServiceStack.Text.Common
             do
             {
                 snapshot = ParseDelegateCache;
-                newCache = new Dictionary<Type, ParseArrayOfElementsDelegate>(ParseDelegateCache);
-                newCache[type] = parseFn;
-
+                newCache = new Dictionary<Type, ParseArrayOfElementsDelegate>(ParseDelegateCache) {
+                    [type] = parseFn
+                };
             } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref ParseDelegateCache, newCache, snapshot), snapshot));
+                         Interlocked.CompareExchange(ref ParseDelegateCache, newCache, snapshot), snapshot));
 
             return parseFn.Invoke;
         }
@@ -65,7 +64,7 @@ namespace ServiceStack.Text.Common
         public static T[] ParseGenericArray(ReadOnlySpan<char> value, ParseStringSpanDelegate elementParseFn)
         {
             if ((value = DeserializeListWithElements<TSerializer>.StripList(value)).IsNullOrEmpty()) 
-                return value.IsEmpty ? null : new T[0];
+                return value.IsEmpty ? null : Array.Empty<T>();
 
             if (value[0] == JsWriter.MapStartChar)
             {
@@ -96,7 +95,7 @@ namespace ServiceStack.Text.Common
                     {
                         // If we ate a separator and we are at the end of the value, 
                         // it means the last element is empty => add default
-                        to.Add(default(T));
+                        to.Add(default);
                     }
                 }
 
@@ -108,7 +107,7 @@ namespace ServiceStack.Text.Common
     internal static class DeserializeArray<TSerializer>
         where TSerializer : ITypeSerializer
     {
-        private static Dictionary<Type, ParseStringSpanDelegate> ParseDelegateCache = new Dictionary<Type, ParseStringSpanDelegate>();
+        private static Dictionary<Type, ParseStringSpanDelegate> ParseDelegateCache = new();
 
         public static ParseStringDelegate GetParseFn(Type type) => v => GetParseStringSpanFn(type)(v.AsSpan());
 
