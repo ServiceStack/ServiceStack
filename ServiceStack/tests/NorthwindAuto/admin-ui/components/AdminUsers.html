@@ -282,10 +282,10 @@ import { Forms } from "../js/init";
                         })
                 },
                 changePassword() {
-                    this.send(new AdminUpdateUser({ id:this.id }), respose => {
+                    this.send(new AdminUpdateUser({ id:this.id, password:this.model.password }), response => {
                         this.model.password = ''
                         this.success = 'Password was changed'
-                        this.bind(respose)
+                        this.bind(response)
                     })
                 },
                 deleteUser() {
