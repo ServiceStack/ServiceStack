@@ -94,11 +94,12 @@ function createForms(Meta, css, ui) {
      * @return {MetadataPropertyType|null} */
     function getPrimaryKey(type) {
         if (!type) return null
-        return getPrimaryKeyByProps(typeProperties(type)) 
+        return getPrimaryKeyByProps(type, typeProperties(type)) 
     }
-    /** @param {MetadataPropertyType[]} type
+    /** @param {MetadataType} type 
+     * @param {MetadataPropertyType[]} props
      * @return {MetadataPropertyType|null} */
-    function getPrimaryKeyByProps(props) {
+    function getPrimaryKeyByProps(type,props) {
         let id = props.find(x => x.name.toLowerCase() === 'id')
         if (id && id.isPrimaryKey) return id
         let pk = props.find(x => x.isPrimaryKey)

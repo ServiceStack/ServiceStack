@@ -106,6 +106,9 @@ App.components({
             },
             lastState: null,
             columnsMap:{},
+            get type() {
+                return { name:routes.dbTable(), properties:this.viewModelColumns }
+            },
             get viewModelColumns() {
                 return this.columnsMap[routes.dbTable()] || []
             },
@@ -241,7 +244,7 @@ App.components({
                         map(r.api.response, r => {
                             r.results.filter(x => x.id == null).forEach(x => {
                                 x.id = x.Id 
-                                    || map(Forms.getPrimaryKeyByProps(this.viewModelColumns), pk => mapGet(x, pk.name)) 
+                                    || map(Forms.getPrimaryKeyByProps(this.type, this.viewModelColumns), pk => mapGet(x, pk.name)) 
                                     || unknownIdSeq++
                             })
                         })
