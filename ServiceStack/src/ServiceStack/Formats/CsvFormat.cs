@@ -19,7 +19,7 @@ namespace ServiceStack.Formats
             {
                 if (req.ResponseContentType == MimeTypes.Csv && dto is not IHttpResult) //avoid double Content-Disposition headers
                 {
-                    var fileName = req.OperationName + ".csv";
+                    var fileName = req.GetItem(Keywords.FileName) as string ?? req.OperationName + ".csv";
                     res.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
                 }
             });
@@ -27,25 +27,23 @@ namespace ServiceStack.Formats
 
         public void SerializeToStream(IRequest req, object request, Stream stream)
         {
-            if (request is string str)
+            switch (request)
             {
-                stream.Write(str);
-            }
-            else if (request is byte[] bytes)
-            {
-                stream.Write(bytes, 0, bytes.Length);
-            }
-            else if (request is Stream s)
-            {
-                s.WriteTo(stream);
-            }
-            else if (request is ReadOnlyMemory<char> roms)
-            {
-                MemoryProvider.Instance.Write(stream, roms);
-            }
-            else
-            {
-                CsvSerializer.SerializeToStream(request, stream);
+                case string str:
+                    stream.Write(str);
+                    break;
+                case byte[] bytes:
+                    stream.Write(bytes, 0, bytes.Length);
+                    break;
+                case Stream s:
+                    s.WriteTo(stream);
+                    break;
+                case ReadOnlyMemory<char> roms:
+                    MemoryProvider.Instance.Write(stream, roms);
+                    break;
+                default:
+                    CsvSerializer.SerializeToStream(request, stream);
+                    break;
             }
         }
     }

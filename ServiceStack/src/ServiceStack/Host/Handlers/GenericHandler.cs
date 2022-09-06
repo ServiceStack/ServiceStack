@@ -59,7 +59,7 @@ namespace ServiceStack.Host.Handlers
 
                 httpReq.RequestAttributes |= HandlerAttributes;
 
-                var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwait();
+                var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
                 if (httpRes.IsClosed)
                     return;
 

@@ -60,13 +60,12 @@ public class AppTasks
 
     public static int? RanAsTask()
     {
-        var tasks = Instance.Tasks;
-        if (tasks.Count > 0)
+        var argsMap = Environment.GetCommandLineArgs().Select(a => a.Split('='))
+            .ToDictionary(a => a[0].TrimPrefixes("/","--"), a => a.Length == 2 ? a[1] : null);
+        if (argsMap.TryGetValue(nameof(AppTasks), out var appTasksStr))
         {
-            var argsMap = Environment.GetCommandLineArgs().Select(a => a.Split('='))
-                .ToDictionary(a => a[0].TrimPrefixes("/","--"), a => a.Length == 2 ? a[1] : null);
-
-            if (argsMap.TryGetValue(nameof(AppTasks), out var appTasksStr))
+            var tasks = Instance.Tasks;
+            if (tasks.Count > 0)
             {
                 var appTasks = appTasksStr.Split(';');
                 for (var i = 0; i < appTasks.Length; i++)
@@ -97,6 +96,11 @@ public class AppTasks
                     return exitCode;
                 }
             }
+            else
+            {
+                Instance.Log.Info("No AppTasks to run, exiting...");
+            }
+            return 0;
         }
         return null;
     }

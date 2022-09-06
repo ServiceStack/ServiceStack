@@ -940,15 +940,13 @@ namespace ServiceStack
         }
 
 #if !NETCORE
-        public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
-        {
-            return aspnetHttpReq.RequestContext.HttpContext;
-        }
+        public static System.Web.Routing.RequestContext ToRequestContext(this IRequest req) => 
+            (req.OriginalRequest as HttpRequestBase)?.RequestContext;
+        public static HttpContextBase ToHttpContextBase(this IRequest req) => req.ToRequestContext()?.HttpContext;
+        public static HttpResponseBase ToHttpResponseBase(this IResponse res) => res.OriginalResponse as HttpResponseBase;
+        public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq) => aspnetHttpReq.RequestContext.HttpContext;
 
-        public static HttpContextBase ToHttpContextBase(this HttpContext httpContext)
-        {
-            return httpContext.Request.RequestContext.HttpContext;
-        }
+        public static HttpContextBase ToHttpContextBase(this HttpContext httpContext) => httpContext.Request.RequestContext.HttpContext;
 
         public static IHttpRequest ToRequest(this HttpContext httpCtx, string operationName = null)
         {
@@ -958,35 +956,18 @@ namespace ServiceStack
             return new AspNetRequest(httpCtx.ToHttpContextBase(), operationName);
         }
 
-        public static IHttpRequest ToRequest(this HttpContextBase httpCtx, string operationName = null)
-        {
-            return new AspNetRequest(httpCtx, operationName);
-        }
+        public static IHttpRequest ToRequest(this HttpContextBase httpCtx, string operationName = null) => new AspNetRequest(httpCtx, operationName);
 
-        public static IHttpRequest ToRequest(this HttpRequestBase httpCtx, string operationName = null)
-        {
-            return new AspNetRequest(httpCtx.ToHttpContextBase(), operationName);
-        }
+        public static IHttpRequest ToRequest(this HttpRequestBase httpCtx, string operationName = null) => new AspNetRequest(httpCtx.ToHttpContextBase(), operationName);
 
-        public static IHttpRequest ToRequest(this HttpListenerContext httpCtxReq, string operationName = null)
-        {
-            return ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(httpCtxReq, operationName);
-        }
+        public static IHttpRequest ToRequest(this HttpListenerContext httpCtxReq, string operationName = null) => 
+            ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(httpCtxReq, operationName);
 
-        public static IHttpResponse ToResponse(this HttpContext httpCtx)
-        {
-            return httpCtx.ToRequest().HttpResponse;
-        }
+        public static IHttpResponse ToResponse(this HttpContext httpCtx) => httpCtx.ToRequest().HttpResponse;
 
-        public static IHttpResponse ToResponse(this HttpRequestBase aspReq)
-        {
-            return aspReq.ToRequest().HttpResponse;
-        }
+        public static IHttpResponse ToResponse(this HttpRequestBase aspReq) => aspReq.ToRequest().HttpResponse;
 
-        public static IHttpResponse ToResponse(this HttpListenerContext httpCtx)
-        {
-            return httpCtx.ToRequest().HttpResponse;
-        }
+        public static IHttpResponse ToResponse(this HttpListenerContext httpCtx) => httpCtx.ToRequest().HttpResponse;
 
         public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
         {

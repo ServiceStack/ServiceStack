@@ -8,10 +8,10 @@ namespace ServiceStack.Desktop
 {
     public class DesktopConfig
     {
-        public static DesktopConfig Instance { get; } = new DesktopConfig();
-        public List<ProxyConfig> ProxyConfigs { get; set; } = new List<ProxyConfig>();
+        public static DesktopConfig Instance { get; } = new();
+        public List<ProxyConfig> ProxyConfigs { get; set; } = new();
         public string AppName { get; set; }
-        public List<string> ImportParams { get; set; } = new List<string>();
+        public List<string> ImportParams { get; set; } = new();
         public string MinToolVersion { get; set; }
         public Action OnExit { get; set; }
         public Action<Exception> OnError { get; set; }

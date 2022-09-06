@@ -28,6 +28,7 @@ public enum RoomType
     Suite,
 }
 
+[Description("Create initial Database")]
 public class Migration1000 : MigrationBase
 {
     // Initial Version

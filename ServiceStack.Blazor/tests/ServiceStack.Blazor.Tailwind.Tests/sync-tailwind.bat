@@ -17,5 +17,8 @@ REM XCOPY /Y /E /H /C /I Server\modules ..\..\..\..\NetCoreTemplates\vue-vite\ui
 XCOPY /Y /E /H /C /I Server\modules ..\..\..\..\NetCoreTemplates\blazor-tailwind\MyApp\wwwroot\modules\
 
 COPY Server\*.cs ..\..\..\..\NetCoreTemplates\blazor-tailwind\MyApp\
+COPY Server\Migrations\*.cs ..\..\..\..\NetCoreTemplates\blazor-tailwind\MyApp\Migrations\
 COPY ServiceModel\*.cs ..\..\..\..\NetCoreTemplates\blazor-tailwind\MyApp.ServiceModel\
 COPY Tests\*.cs ..\..\..\..\NetCoreTemplates\blazor-tailwind\MyApp.Tests\
+
+powershell -Command "(Get-Content %TO%\package.json) -replace 'Server', 'MyApp' | Out-File -encoding ASCII %TO%\package.json"

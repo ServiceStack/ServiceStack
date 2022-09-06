@@ -11,12 +11,13 @@ namespace ServiceStack;
 public static class X
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static To? Map<From, To>(From from, Func<From, To> fn) => from == null ? default : fn(from);
+    public static To? Map<From, To>(From? from, Func<From, To> fn) => from == null ? default : fn(from);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Apply<T>(T obj, Action<T> fn)
+    public static T Apply<T>(T obj, Action<T>? fn = null)
     {
-        fn(obj);
+        if (fn != null)
+            fn(obj);
         return obj;
     }
 }

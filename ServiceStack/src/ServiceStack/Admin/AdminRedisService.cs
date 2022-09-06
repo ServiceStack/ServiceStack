@@ -130,9 +130,9 @@ public class AdminRedisService : Service
             throw new InfoException($"Could not connect to Redis master server: {e.Message}");
         }
 
-        var appSettingsPath = HostContext.AppHost.AppSettingsPath;
-        if (appSettingsPath != null)
-            AppSettingsUtils.SaveAppSetting(appSettingsPath, "redis.connection", connectionString);
+        var userAppSettingsPath = AppSettingsUtils.GetUserAppSettingsPath(HostContext.AppHost.AppName);
+        if (userAppSettingsPath != null)
+            AppSettingsUtils.SaveAppSetting(userAppSettingsPath, "redis.connection", connectionString);
         
         redisManager.RedisResolver.ResetMasters(new[] { connectionString });
     }

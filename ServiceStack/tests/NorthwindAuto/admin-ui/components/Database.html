@@ -121,6 +121,9 @@ App.components({
 
             lastState: null,
             columnsMap:{},
+            get type() {
+                return { name:routes.dbTable(), properties:this.viewModelColumns }
+            },
             get viewModelColumns() {
                 return this.columnsMap[routes.dbTable()] || []
             },
@@ -261,7 +264,7 @@ App.components({
                         map(r.api.response, r => {
                             r.results.filter(x => x.id == null).forEach(x => {
                                 x.id = x.Id 
-                                    || map(Forms.getPrimaryKeyByProps(this.viewModelColumns), pk => mapGet(x, pk.name)) 
+                                    || map(Forms.getPrimaryKeyByProps(this.type, this.viewModelColumns), pk => mapGet(x, pk.name)) 
                                     || unknownIdSeq++
                             })
                         })
@@ -437,7 +440,7 @@ App.components({
                 </div>
             </div>
             
-            <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, definitions, 
+            <div v-if="open==='filters'" class="border-b border-gray-200 py-4 mb-2" v-scope="FilterViews({ routes, definitions, 
                     prefs:name => settings.tableProp(routes.dbTable(), name), 
                     saveProp:(name,prefs) => settings.saveTableProp(routes.dbTable(), name, x => Object.assign(x, prefs)),
                     saveFilters: (f,filters) => settings.saveTableProp(routes.dbTable(), f.column.name, x => x.filters=filters),
