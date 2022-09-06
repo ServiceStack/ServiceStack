@@ -41,6 +41,8 @@ namespace ServiceStack.OrmLite
         {
             var modelDef = ModelDefinition<T>.Definition;
             var fieldDef = modelDef.GetFieldDefinition(field);
+            if(fieldDef.Name != OrmLiteConfig.IdField)
+                fieldDef.IsPrimaryKey = false;
             dbConn.AddColumn(typeof(T), fieldDef);
         }
 
