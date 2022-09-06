@@ -29,8 +29,17 @@ public static class CssUtils
             => status?.FieldError(fieldName) == null
                 ? valid ?? "focus-within:ring-indigo-600 border-gray-300 focus-within:border-indigo-600"
                 : invalid ?? "border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+        
+        public static string Input(string cls) => Input(false, cls);
+        public static string Input(bool invalid, string cls)
+        {
+            return string.Join(" ", new string[] {
+                "block w-full sm:text-sm rounded-md disabled:bg-gray-100 disabled:shadow-none", !invalid
+                    ? "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
+                    : "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500", cls });
+        }
     }
-    
+
     public static string Selected(bool condition) => condition ? "selected" : "";
     public static string Active(bool condition) => condition ? "active" : "";
     

@@ -123,8 +123,11 @@ public static class Input
     static FieldInfo GetEnumMember(Type type, string name) => 
         (FieldInfo) type.GetMember(name, BindingFlags.Public | BindingFlags.Static)[0];
 
-    public static KeyValuePair<string, string>[] GetEnumEntries(Type enumType) => 
-        GetEnumEntries(enumType, out var entries) ? entries : Array.Empty<KeyValuePair<string, string>>();
+    public static KeyValuePair<string, string>[] GetEnumEntries(Type enumType)
+    {
+        GetEnumEntries(enumType, out var entries);
+        return entries;
+    }
 
     public static bool GetEnumEntries(Type enumType, out KeyValuePair<string, string>[] entries)
     {
