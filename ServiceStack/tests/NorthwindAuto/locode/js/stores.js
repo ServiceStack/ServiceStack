@@ -198,7 +198,7 @@ export let store = App.reactive({
     get opViewModel() { return this.op && this.op.viewModel && this.op.viewModel.name },
 
     /** @return {boolean} */
-    get isServiceStackType() { return this.op && this.op.request.namespace.startsWith("ServiceStack") },
+    get isServiceStackType() { return this.op && this.(op.request.namespace ?? "").startsWith("ServiceStack") },
 
     /** @param {string} url
      *  @returns {Promise<string>} */
