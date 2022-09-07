@@ -4,7 +4,7 @@ using MyApp.Migrations;
 
 namespace MyApp.Tests;
 
-[TestFixture, Category(nameof(MigrationTasks)), Explicit]
+[TestFixture, Explicit, Category(nameof(MigrationTasks))]
 public class MigrationTasks
 {
     OrmLiteConnectionFactory ResolveDbFactory() => new ConfigureDb().ResolveDbFactory();
