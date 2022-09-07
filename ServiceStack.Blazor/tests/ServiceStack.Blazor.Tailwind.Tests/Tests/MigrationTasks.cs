@@ -1,13 +1,15 @@
 ﻿using NUnit.Framework;
 using ServiceStack.OrmLite;
 using MyApp.Migrations;
+using ServiceStack;
+using ServiceStack.Data;
 
 namespace MyApp.Tests;
 
 [TestFixture, Explicit, Category(nameof(MigrationTasks))]
 public class MigrationTasks
 {
-    OrmLiteConnectionFactory ResolveDbFactory() => new ConfigureDb().ResolveDbFactory();
+    IDbConnectionFactory ResolveDbFactory() => new ConfigureDb().ConfigureAndResolve<IDbConnectionFactory>();
     Migrator CreateMigrator() => new(ResolveDbFactory(), typeof(Migration1000).Assembly); 
     
     [Test]

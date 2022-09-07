@@ -445,6 +445,29 @@ namespace ServiceStack
             ((IServiceProvider)req).GetServices(type);
 
         public static IEnumerable<T> GetServices<T>(this IRequest req) => ((IServiceProvider)req).GetServices<T>();
+
+        
+#if NET6_0_OR_GREATER
+    public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null)
+    {
+        var host = new HostBuilder()
+            .ConfigureHostConfiguration(hostConfig => {
+                hostDir ??= Path.GetDirectoryName(config.GetType().Assembly.Location);
+                if (!Directory.Exists(hostDir)) return;
+                hostConfig.SetBasePath(hostDir);
+                var devAppSettingsPath = Path.Combine(hostDir, "appsettings.Development.json");
+                hostConfig.AddJsonFile(devAppSettingsPath, optional:true, reloadOnChange:false);
+                var appSettingsPath = Path.Combine(hostDir, "appsettings.json");
+                hostConfig.AddJsonFile(appSettingsPath, optional:true, reloadOnChange:false);
+            })
+            .ConfigureWebHost(builder => {
+                config.Configure(builder);
+            }).Build();
+        var service = host.Services.GetRequiredService<T>();
+        return service;
+    }
+#endif
+        
     }
 }
 
