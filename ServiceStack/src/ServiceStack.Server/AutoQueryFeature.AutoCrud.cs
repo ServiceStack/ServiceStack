@@ -1073,15 +1073,6 @@ namespace ServiceStack
                 }
             }
 
-            foreach (var populateAttr in meta.PopulateAttrs)
-            {
-                dtoValues[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, req);
-            }
-
-            var populatorFn = AutoMappingUtils.GetPopulator(
-                typeof(Dictionary<string, object>), meta.DtoType);
-            populatorFn?.Invoke(dtoValues, dto);
-
             var resetField = meta.ModelDef.GetFieldDefinition(Keywords.Reset);
             var reset = resetField == null 
                 ? (dtoValues.TryRemove(Keywords.Reset, out var oReset)
@@ -1112,6 +1103,13 @@ namespace ServiceStack
                     dtoValues[field.Name] = field.FieldTypeDefaultValue;
                 }
             }
+
+            foreach (var populateAttr in meta.PopulateAttrs)
+            {
+                dtoValues[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, req);
+            }
+            var populatorFn = AutoMappingUtils.GetPopulator(typeof(Dictionary<string, object>), meta.DtoType);
+            populatorFn?.Invoke(dtoValues, dto);
 
             // Ensure RowVersion is always populated if defined on Request DTO
             if (meta.RowVersionGetter != null && !dtoValues.ContainsKey(Keywords.RowVersion))
