@@ -1,6 +1,8 @@
-﻿using Funq;
-using ServiceStack;
+﻿using Microsoft.AspNetCore.Hosting;
 using NUnit.Framework;
+using Funq;
+using ServiceStack;
+using ServiceStack.OrmLite;
 using MyApp.ServiceInterface;
 using MyApp.ServiceModel;
 
@@ -40,5 +42,13 @@ public class IntegrationTest
         var response = client.Get(new Hello { Name = "World" });
 
         Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+    }
+}
+
+public static class MigrationUtils
+{
+    public static OrmLiteConnectionFactory ResolveDbFactory(this IHostingStartup host)
+    {
+        return new OrmLiteConnectionFactory("../../../../Server/App_Data/db.sqlite", SqliteDialect.Provider);
     }
 }
