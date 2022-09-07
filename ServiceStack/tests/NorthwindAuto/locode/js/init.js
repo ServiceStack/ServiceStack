@@ -49,7 +49,7 @@ Server.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
 
-let appOps = Server.api.operations.filter(op => !(op.request.namespace ?? "").startsWith('ServiceStack') && Crud.isQuery(op))
+let appOps = Server.api.operations.filter(op => !(op.request.namespace || "").startsWith('ServiceStack') && Crud.isQuery(op))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
 /** Organized data structure to render Sidebar
  * @remarks
@@ -60,7 +60,7 @@ export let sideNav = appTags.map(tag => ({
     operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
 }))
 
-let ssOps = Server.api.operations.filter(op => (op.request.namespace ?? "").startsWith('ServiceStack') && Crud.isQuery(op))
+let ssOps = Server.api.operations.filter(op => (op.request.namespace || "").startsWith('ServiceStack') && Crud.isQuery(op))
 let ssTags = Array.from(new Set(ssOps.flatMap(op => op.tags))).sort()
 ssTags.map(tag => ({
     tag,

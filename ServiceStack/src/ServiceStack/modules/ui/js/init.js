@@ -18,7 +18,7 @@ let client = createClient()
 Server.api.operations.forEach(op => {
     if (!op.tags) op.tags = []
 })
-let appOps = Server.api.operations.filter(op => !(op.request.namespace ?? "").startsWith('ServiceStack'))
+let appOps = Server.api.operations.filter(op => !(op.request.namespace || "").startsWith('ServiceStack'))
 let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
 /** @type {{expanded: boolean, operations: MetadataOperationType[], tag: string}[]} */
 let sideNav = appTags.map(tag => ({
@@ -26,7 +26,7 @@ let sideNav = appTags.map(tag => ({
     expanded: true,
     operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
 }))
-let ssOps = Server.api.operations.filter(op => (op.request.namespace ?? "").startsWith('ServiceStack'))
+let ssOps = Server.api.operations.filter(op => (op.request.namespace || "").startsWith('ServiceStack'))
 let ssTags = Array.from(new Set(ssOps.flatMap(op => op.tags))).sort()
 ssTags.map(tag => ({
     tag,

@@ -105,7 +105,7 @@ App.components({
             </dt>
             <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
                 <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{Server.api.operations.filter(op => (op.request.namespace ?? "").startsWith('ServiceStack')).length}}
+                    {{Server.api.operations.filter(op => (op.request.namespace || "").startsWith('ServiceStack')).length}}
                 </div>
             </dd>
         </div>

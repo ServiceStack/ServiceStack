@@ -203,7 +203,7 @@ export let store = App.reactive({
 
     /** @return {boolean} */
     get isServiceStackType() {
-        return this.op && this.(op.request.namespace ?? "").startsWith("ServiceStack")
+        return this.op && (this.op.request.namespace || "").startsWith("ServiceStack")
     },
 
     /** @return {{op:string,lang:string,url:string}} */
