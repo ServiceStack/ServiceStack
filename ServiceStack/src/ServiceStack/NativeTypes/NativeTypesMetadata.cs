@@ -147,7 +147,7 @@ namespace ServiceStack.NativeTypes
                     Actions = operation.Actions,
                     Method = operation.Method,
                     Request = ToType(operation.RequestType),
-                    Response = ToType(operation.ResponseType),
+                    Response = ToExactType(operation.ResponseType),
                     DataModel = ToTypeName(operation.DataModelType),
                     ViewModel = ToTypeName(operation.ViewModelType),
                     RequiresAuth = operation.RequiresAuthentication.NullIfFalse(),
@@ -441,9 +441,16 @@ namespace ServiceStack.NativeTypes
         {
             if (type == null) 
                 return null;
+            
+            return type.IsGenericType
+                ? ToExactType(type.GetGenericTypeDefinition())
+                : ToExactType(type);
+        }
 
-            if (type.IsGenericType)
-                type = type.GetGenericTypeDefinition();
+        public MetadataType ToExactType(Type type)
+        {
+            if (type == null) 
+                return null;
 
             var metaType = new MetadataType
             {
@@ -583,21 +590,24 @@ namespace ServiceStack.NativeTypes
                     metaType.EnumMemberValues = null;
             }
 
-            var innerTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
-            foreach (var innerType in innerTypes)
+            if (type.IsUserType())
             {
-                if (metaType.InnerTypes == null)
-                    metaType.InnerTypes = new List<MetadataTypeName>();
-
-                metaType.InnerTypes.Add(new MetadataTypeName    
+                var innerTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (var innerType in innerTypes)
                 {
-                    Type = innerType,
-                    Name = innerType.GetOperationName(),
-                    Namespace = innerType.Namespace,
-                    GenericArgs = innerType.IsGenericType
-                        ? innerType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
-                        : null,
-                });
+                    if (metaType.InnerTypes == null)
+                        metaType.InnerTypes = new List<MetadataTypeName>();
+
+                    metaType.InnerTypes.Add(new MetadataTypeName    
+                    {
+                        Type = innerType,
+                        Name = innerType.GetOperationName(),
+                        Namespace = innerType.Namespace,
+                        GenericArgs = innerType.IsGenericType
+                            ? innerType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
+                            : null,
+                    });
+                }
             }
 
             foreach (var configure in HostContext.AppHost.Metadata.ConfigureMetadataTypes)

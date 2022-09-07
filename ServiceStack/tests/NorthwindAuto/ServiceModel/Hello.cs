@@ -51,3 +51,9 @@ public class HelloResponse
     public string Result { get; set; } = string.Empty;
     public ResponseStatus? ResponseStatus { get; set; }
 }
+
+
+public class HelloBookingList : IReturn<List<Booking>>
+{
+    public string Name { get; set; }
+}

@@ -23,4 +23,6 @@ public class MyServices : Service
 
     public object Any(HelloSecure request) => 
         new HelloResponse { Result = $"Hello, {AssertName(request.Name)}!" };
+
+    public object Any(HelloBookingList request) => new List<Booking>();
 }

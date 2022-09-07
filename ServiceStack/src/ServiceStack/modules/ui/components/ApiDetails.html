@@ -52,17 +52,29 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
 function addReferencedTypes(allTypesMap, type) {
     if (!type) return
     if (allTypesMap[type.name]) return
-    allTypesMap[type.name] = type
+    let genericDef = type.name.indexOf('`') >= 0 
+    if (!genericDef) {
+        allTypesMap[type.name] = type
+    }
+    if (type.genericArgs) {
+        type.genericArgs.forEach(argType => {
+            addReferencedTypes(allTypesMap, Meta.TypesMap[argType])
+        })
+    }
     if (type.inherits) {
         addReferencedTypes(allTypesMap, Meta.TypesMap[type.inherits.name])
         if (type.inherits.genericArgs) {
-            type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, Meta.TypesMap[argType]))
+            type.inherits.genericArgs.forEach(argType => {
+                addReferencedTypes(allTypesMap, Meta.TypesMap[argType])
+            })
         }
     }
     Forms.typeProperties(type).forEach(prop => {
         addReferencedTypes(allTypesMap, Meta.TypesMap[prop.type])
         if (type.genericArgs) {
-            type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, Meta.TypesMap[argType]))
+            type.genericArgs.forEach(argType => {
+                addReferencedTypes(allTypesMap, Meta.TypesMap[argType])
+            })
         }
     })
     return allTypesMap
