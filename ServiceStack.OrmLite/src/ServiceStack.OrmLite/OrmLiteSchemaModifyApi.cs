@@ -99,7 +99,7 @@ namespace ServiceStack.OrmLite
         {
             var modelDef = ModelDefinition<T>.Definition;
             var fieldDef = modelDef.GetFieldDefinition(field);
-            dbConn.RenameColumn(typeof(T), dbConn.GetNamingStrategy().GetColumnName(fieldDef.FieldName), oldColumn);
+            dbConn.RenameColumn(typeof(T), oldColumn, dbConn.GetNamingStrategy().GetColumnName(fieldDef.FieldName));
         }
 
         public static void RenameColumn<T>(this IDbConnection dbConn, string oldColumn, string newColumn) =>
