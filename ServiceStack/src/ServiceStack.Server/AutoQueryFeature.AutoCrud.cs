@@ -257,9 +257,10 @@ namespace ServiceStack
         public List<AutoFilterAttribute> AutoFilters { get; set; } = new();
         public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; } = new();
         public List<AutoApplyAttribute> AutoApplyAttrs { get; set; } = new();
-        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new();
-        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new();
-        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new();
+        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, ValidateAttribute> ValidateAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, InputInfo> MapInputs { get; set; } = new();
         public HashSet<string> NullableProps { get; set; } = new();
         public List<string> RemoveDtoProps { get; set; } = new();
@@ -323,10 +324,15 @@ namespace ServiceStack
                 {
                     to.Set(propName, inputAttr);
                 }
+                if (allAttrs.FirstOrDefault(x => x is ValidateAttribute) is ValidateAttribute validateAttr)
+                {
+                    to.Set(propName, validateAttr);
+                }
                 
                 // Deny resetting all properties with [Validate*] attrs without an explicit [AllowReset] attr  
                 var allowReset = allAttrs.FirstOrDefault(x => x is AllowResetAttribute);
-                var denyReset = allowReset == null && allAttrs.Any(x => x is ValidateAttribute);
+                var denyReset = allAttrs.FirstOrDefault(x => x is DenyResetAttribute) != null ||
+                                (allowReset == null && allAttrs.Any(x => x is ValidateAttribute));
                 if (denyReset)
                 {
                     to.DenyReset.Add(propName);
@@ -396,6 +402,11 @@ namespace ServiceStack
         public void Set(string propName, InputAttribute inputAttr)
         {
             MapInputs[propName] = inputAttr.ToInput();
+        }
+
+        public void Set(string propName, ValidateAttribute validateAttr)
+        {
+            ValidateAttrs[propName] = validateAttr;
         }
 
         public void Add(AutoPopulateAttribute populateAttr)
@@ -1080,7 +1091,7 @@ namespace ServiceStack
                     : dtoValues.TryRemove(Keywords.reset, out oReset)
                         ? ValidationFilters.GetResetFields(oReset)
                         : null) 
-                  ?? ValidationFilters.GetResetFields(req.GetParam(Keywords.reset))
+                  ?? req.GetResetFields()
                 : null;
             
             if (reset != null)
@@ -1096,8 +1107,11 @@ namespace ServiceStack
                     //Note: validation rules for omitted PATCH values that aren't reset ignored in ValidationFilters.RequestFilterAsync
                     if (meta.DenyReset.Contains(field.Name))
                     {
-                        log ??= LogManager.GetLogger(GetType());
-                        log.Warn($"Reset of {field.Name} property containing validators is denied. Use [AllowReset] to override.");
+                        if (meta.ValidateAttrs.ContainsKey(fieldName))
+                        {
+                            log ??= LogManager.GetLogger(GetType());
+                            log.Warn($"Reset of {field.Name} property containing validators is denied. Use [AllowReset] to override.");
+                        }
                         continue;
                     }
                     dtoValues[field.Name] = field.FieldTypeDefaultValue;

@@ -206,6 +206,12 @@ namespace ServiceStack
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AllowResetAttribute : AttributeBase {}
+
+    /// <summary>
+    /// Don't allow property to be reset
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class DenyResetAttribute : AttributeBase {}
     
     //Default IPropertyValidator defined in ValidateScripts
     public class ValidateNullAttribute : ValidateAttribute
