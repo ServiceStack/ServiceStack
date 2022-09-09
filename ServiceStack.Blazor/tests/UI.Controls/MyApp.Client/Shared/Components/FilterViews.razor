@@ -1,0 +1,88 @@
+﻿@typeparam Model
+@inherits UiComponentBase
+
+<div class=@Class>
+    <div class="px-4 sm:px-6 lg:px-8 text-sm">
+        <div class="flex flex-wrap">
+            @foreach (var c in Columns.Where(c => c.Filters.Count > 0))
+            {
+                <fieldset class="group pr-4 sm:pr-6 lg:pr-8">
+                    <legend class="block font-medium flex justify-between w-full">
+                        <span>@c.Label</span>
+                        <span class="block w-6 flex justify-end">
+                            <span class="hidden group-hover:inline">
+                                <button @onclick="_ => removeFilters(c)" title=@($"Clear all {c.Title} filters")
+                                    class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-red-600 hover:bg-red-200 hover:text-red-500 focus:outline-none focus:bg-red-500 focus:text-white">
+                                    <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                                        <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+                                    </svg>
+                                </button>
+                            </span>
+                        </span>
+                    </legend>
+                    @if (c.FieldType.IsEnum)
+                    {
+                        <div class="pt-2">
+                            @foreach (var x in c.EnumEntries)
+                            {
+                                <div key=@x.Value class="flex items-center">
+                                    <label class="ml-2">@x.Value</label>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            @foreach (var f in c.Filters)
+                            {
+                                <div class="pt-2">
+                                    <span class="inline-flex rounded-full items-center py-0.5 pl-2.5 pr-1 text-sm font-medium bg-indigo-100 text-indigo-700">
+                                        @c.Name @f.Name @c.GetFilterValue(f)
+                                        <button type="button" @onclick="_ => removeFilter(c, f)"
+                                                class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:outline-none focus:bg-indigo-500 focus:text-white">
+                                            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                                                <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+                                            </svg>
+                                        </button>
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </fieldset>
+            }
+        </div>
+        <div class="flex justify-center pt-4">
+            <button type="button" @onclick="clearAll"
+                    class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <span>Clear All</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<Column<Model>> Columns { get; set; } = new();
+
+    [Parameter] public EventCallback Save { get; set; }
+
+    async Task removeFilters(Column<Model> column) {
+        column.Filters.Clear();
+        await column.SaveSettingsAsync();
+    }
+
+    async Task removeFilter(Column<Model> column, Filter filter) {
+        column.Settings.Filters.Remove(filter);
+        await column.SaveSettingsAsync();
+    }
+
+    async Task clearAll() {
+        foreach (var c in Columns)
+        {
+            c.Settings.Filters.Clear();
+            await c.SaveSettingsAsync();
+        }
+        await Save.InvokeAsync();
+    }
+}

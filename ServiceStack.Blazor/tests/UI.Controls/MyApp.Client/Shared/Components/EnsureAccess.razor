@@ -1,0 +1,24 @@
+﻿@inherits AppAuthComponentBase
+
+<div class="md:p-4">
+    <div class="mb-3" v-scope="Alert({ message })"></div>
+    <div v-if="!store.auth" class="mb-3" v-scope="store.SignIn({ $on })"></div>
+    <div v-else>
+        <button type="button" @onclick="_ => logout()"
+                class="flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Sign Out
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Message { get; set; }
+
+    async Task signIn() {
+
+    }
+
+    async Task logout() {
+
+    }
+}

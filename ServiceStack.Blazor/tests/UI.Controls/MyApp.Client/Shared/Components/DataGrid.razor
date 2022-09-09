@@ -1,0 +1,68 @@
+﻿@typeparam Model
+@inherits DataGridBase<Model>
+
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+@if (Items.Count > 0)
+{
+    @if (ShowFilters != null)
+    {
+        <div class="relative">
+            <FilterColumn Column=@ShowFilters TopLeft=@ShowFiltersTopLeft Done="OnFilterDone" Saved="OnFilterSave" />
+        </div>
+    }
+
+    <div @ref="refResults" class=@ClassNames(GridClass, @class)>
+        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr class="select-none">
+
+                                @foreach (var column in columns)
+                                {
+                                    var allowFiltering = AllowFiltering && !column.FieldType.IsComplexType();
+                                    var isOpen = column == ShowFilters;
+                                    <td class=@ClassNames(column.VisibleFrom != null ? $"hidden {column.VisibleFrom.Value.ToBreakpointCellClass()}" : null,
+                                        column.HeaderClass ?? ClassNames("px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap2",
+                                        isOpen ? "text-gray-900" : "text-gray-500", column.@class))>
+
+                                        @if (!allowFiltering)
+                                        {
+                                            <div class="flex justify-between items-center">
+                                                @column.HeaderTemplate
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div @onclick="e => OnHeaderSelected(e, column)" class="flex justify-between items-center cursor-pointer hover:text-gray-900">
+                                                @column.HeaderTemplate
+                                                <SettingsIcons Column=@column IsOpen=isOpen />
+                                            </div>
+                                        }
+                                    </td>
+                                }
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var i = 0; }
+                            @foreach (var item in Items)
+                            {
+                                <tr @key="item.GetHashCode()"
+                                    class=@ClassNames(RowSelectionClass(item), RowClass?.Invoke(item, i++) ?? (++i % 2 == 0 ? "bg-gray-50" : "bg-white"))
+                                    @onclick="e => OnRowSelected(e, item)">
+                                    @foreach (var column in columns)
+                                    {
+                                        @column.CellTemplate(item)
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

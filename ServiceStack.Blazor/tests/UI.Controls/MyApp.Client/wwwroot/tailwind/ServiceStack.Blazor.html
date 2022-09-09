@@ -1,0 +1,238 @@
+﻿@inherits AlertSuccessBase
+@if (!string.IsNullOrEmpty(Message))
+{
+<div class=@(ClassNames("rounded-md bg-green-50 p-4", CssClass())) role="alert">
+<div class="flex">
+<div class="flex-shrink-0">
+<!-- Heroicon name: solid/x-check -->
+<svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+</div>
+<div class="ml-3">
+<h3 class="text-sm font-medium text-green-800">
+@Message
+</h3>
+</div>
+</div>
+</div>
+}
+@typeparam TValue
+@inherits CheckboxInputBase<TValue>
+<div class=@ClassNames("relative flex items-start", CssClass())>
+<div class="flex items-center h-5">
+<input type="checkbox"
+class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+id=@Id
+name=@Id
+@bind="CurrentValueAsBool"
+@attributes="IncludeAttributes">
+</div>
+<div class="ml-3 text-sm">
+<label class=@ClassNames("font-medium text-gray-700") for=@Id>
+@UseLabel
+</label>
+@if (HasErrorField)
+{
+<p class=@ClassNames("text-gray-500")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+</div>
+@typeparam TValue
+@inherits DateTimeInputBase<TValue>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+}
+<div class="mt-1 relative rounded-md shadow-sm">
+<input type="date" class=@ClassNames("block w-full sm:text-sm rounded-md",
+CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
+id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<!-- Heroicon name: solid/exclamation-circle -->
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@inherits DynamicInputBase
+@if (IsSelect)
+{
+<SelectInput Id=@UseId Status=@Status TValue="string"
+@bind-Value="Value" @attributes="AllAttributes" Help=@TextUtils.Humanize(UseId)>
+@if (Input?.AllowableEntries != null)
+{
+foreach (var entry in Input!.AllowableEntries)
+{
+<option value=@entry.Key>@entry.Value</option>
+}
+}
+else if (Input?.AllowableValues != null)
+{
+foreach (var item in Input!.AllowableValues)
+{
+<option value=@item>@item</option>
+}
+}
+</SelectInput>
+}
+else if (IsCheckbox)
+{
+<CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+}
+else
+{
+<TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+}
+@inherits ErrorSummaryBase
+@if (UseStatus.ShowSummary(UseExcept))
+{
+<div class=@(ClassNames("bg-red-50 border-l-4 border-red-400 p-4", CssClass())) role="alert">
+<div class="flex">
+<div class="flex-shrink-0">
+<!-- Heroicon name: solid/x-circle -->
+<svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+</svg>
+</div>
+<div class="ml-3">
+<p class="text-sm text-red-700">@UseStatus.SummaryMessage(UseExcept)</p>
+</div>
+</div>
+</div>
+}
+@typeparam TValue
+@inherits SelectInputBase<TValue>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+}
+<select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md",
+CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
+invalid:"text-red-900 focus:ring-red-500 focus:border-red-500"))
+@bind="CurrentValue" @attributes="IncludeAttributes">
+@ChildContent
+@foreach (var kvp in KvpValues())
+{
+<option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
+}
+</select>
+@if (HasErrorField)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+</div>
+@typeparam TValue
+@inherits TextInputBase<TValue>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+}
+<div class="mt-1 relative rounded-md shadow-sm">
+<textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
+class=@ClassNames("shadow-sm block w-full sm:text-sm rounded-md",
+CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
+/>
+@if (HasErrorField)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+</div>
+@typeparam TValue
+@inherits TextInputBase<TValue>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+}
+<div class="mt-1 relative rounded-md shadow-sm">
+<input type=@UseType class=@ClassNames("block w-full sm:text-sm rounded-md",
+CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
+id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<!-- Heroicon name: solid/exclamation-circle -->
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@using System.IO
+@using Microsoft.AspNetCore.Components.Forms
+@inherits UiComponentBase
+@inject JsonApiClient jsonApiClient
+@typeparam TReq
+
+<div class="max-w-xl m-2 mt-4" @ref="fileDropContainer">
+    <label for="blazor-input-file"
+           class="@ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none")">
+    <span class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        @if (!uploading)
+        {
+            <span class="font-medium text-gray-600">
+                Drop files to Attach, or <span class="text-blue-600 underline">browse</span>
+            </span>
+        }
+        else
+        {
+            <span class="font-medium text-gray-600">
+                @progress
+            </span>
+        }
+
+
+    </span>
+    @if (toggleInputClear)
+    {
+    <InputFile id="blazor-input-file" OnChange="@OnChange" class="w-auto absolute opacity-0 h-32"/>
+    }
+    else
+    {
+    <InputFile id="blazor-input-file" OnChange="@OnChange" class="w-auto absolute opacity-0 h-32"/>
+    }
+    </label>
+</div>
+<CascadingValue Value="errorStatus">
+    <ErrorSummary/>
+</CascadingValue>

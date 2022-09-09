@@ -13,6 +13,7 @@ public abstract class UiComponentBase : ComponentBase
     /// Optional user defined classes for this component
     /// </summary>
     [Parameter] public string? @class { get; set; }
+    public string? Class => @class;
 
     /// <summary>
     /// Return any user-defined classes along with optional classes for when component is in a `valid` or `invalid` state
