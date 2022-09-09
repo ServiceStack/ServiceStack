@@ -61,24 +61,9 @@
     [Parameter] public EventCallback Done { get; set; }
     [Parameter] public EventCallback<ApiPrefs> Save { get; set; }
 
-    List<CheckboxValue> columnValues = new();
-
-    void update() {
-        columnValues = Columns.Select(x => new CheckboxValue {
-            Name = x.Name,
-            Checked = Prefs.SelectedColumns.Contains(x.Name),
-        }).ToList();
-    }
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-        update();
-    }
 
     async Task save() 
     {
-        //Prefs.SelectedColumns = columnValues.Where(x => x.Checked).Select(x => x.Name).ToList();
         await Save.InvokeAsync(Prefs);
     }
 
