@@ -32,7 +32,7 @@ export function useTransitions(App, transitions) {
                 let prevTransition = rule[enter ? 'leaving' : 'entering']
                 let nextTransition = rule[enter ? 'entering' : 'leaving']
                 if (prevTransition.cls) {
-                    if (el.className.indexOf(prevTransition.cls) < 0) el.className.replace(prevTransition,'').trim()
+                    if (el.className.indexOf(prevTransition.cls) < 0) el.className.replace(prevTransition.cls,'').trim()
                 }
                 if (nextTransition.cls) {
                     if (el.className.indexOf(nextTransition.cls) < 0) el.className += ` ${nextTransition.cls}`

@@ -294,7 +294,7 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
                 </div>
                 <div v-if="filtersCount" class="pl-2">
                     <button type="button" @click="open = open === 'filters' ? '' : 'filters'"
-                            class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                            class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-expanded="false">
                         <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
                         </svg>
@@ -313,7 +313,7 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
                 </div>
             </div>
         </div>
-        <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, definitions, 
+        <div v-if="open==='filters'" class="border-y border-gray-200 py-8 my-2" v-scope="FilterViews({ routes, definitions, 
             prefs:name => settings.opProp(routes.op, name), 
             saveProp:(name,prefs) => settings.saveOpProp(routes.op, name, x => Object.assign(x, prefs)),
             saveFilters: (f,filters) => settings.saveOpProp(routes.op, f.column.name, x => x.filters=filters),
