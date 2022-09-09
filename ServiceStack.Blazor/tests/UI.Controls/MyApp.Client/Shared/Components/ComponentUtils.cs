@@ -190,6 +190,8 @@ public class DataTransition
 
     public static async Task TransitionAllAsync(bool show, Action? onChange, params DataTransition[] transitions)
     {
+        if (!transitions.All(x => x.EnteringState != show))
+            return;
         if (!transitions.All(x => x.CanAcquireLock())) 
             return;
 

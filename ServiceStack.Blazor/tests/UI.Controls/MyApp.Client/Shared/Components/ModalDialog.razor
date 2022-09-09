@@ -1,6 +1,6 @@
 ﻿@inherits UiComponentBase
 
-<div id=@Id @onclick="Close" aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
+<div @onclick="Close" id=@Id aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
     <div class=@ClassNames("fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity", DialogTransition.Class)></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -8,10 +8,10 @@
             <!-- This element is to trick the browser into centering the modal contents. -->
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div @onclick:stopPropagation="true"
+            <div
                  class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg",
                  ContentTransition.DisplayClass)>
-                <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+                <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4"@onclick="Close" >
                     <button type="button" @onclick="Close"
                             class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <span class="sr-only">Close</span>
@@ -21,7 +21,9 @@
                         </svg>
                     </button>
                 </div>
-                @ChildContent
+                <div @onclick:stopPropagation="true">
+                    @ChildContent
+                </div>
             </div>
         </div>
     </div>

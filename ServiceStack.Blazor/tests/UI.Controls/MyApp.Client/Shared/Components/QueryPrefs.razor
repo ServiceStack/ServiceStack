@@ -5,12 +5,12 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900">Query Preferences</h3>
 
                 <div class="mt-4">
-                    <label for=@($"{Id}-allColumns") class="block text-sm font-medium text-gray-700">Results per page</label>
-                    <select id=@($"{Id}-allColumns") @bind="Prefs.Take"
+                    <label for=@($"{Id}-take") class="block text-sm font-medium text-gray-700">Results per page</label>
+                    <select id=@($"{Id}-take") @bind="Prefs.Take"
                             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                         @foreach (var take in allTakes)
                         {
-                            <option value=@take selected=@(take == Prefs.Take ? "selected" : "")>@take</option>
+                            <option value=@take selected=@(take == Prefs.Take)>@take</option>
                         }
                     </select>
                 </div>
@@ -27,7 +27,7 @@
                             @foreach (var c in Columns)
                             {
                                 <div key=@c.Name class="flex items-center">
-                                    <input type="checkbox" id=@c.Name checked=@Prefs.SelectedColumns.Contains(c.Name)
+                                    <input type="checkbox" id=@c.Name checked=@Prefs.SelectedColumns.Contains(c.Name) @oninput="x => columnSelected(c, x.Value)"
                                        class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
                                     <label for=@c.Name class="ml-3">@c.Name</label>
                                 </div>
@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-        <button type="button" @onclick="async _ => await Save.InvokeAsync(Prefs)"
+        <button type="button" @onclick="save"
                 class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
             Save
         </button>
@@ -60,4 +60,37 @@
     [Parameter, EditorRequired] public bool Show { get; set; }
     [Parameter] public EventCallback Done { get; set; }
     [Parameter] public EventCallback<ApiPrefs> Save { get; set; }
+
+    List<CheckboxValue> columnValues = new();
+
+    void update() {
+        columnValues = Columns.Select(x => new CheckboxValue {
+            Name = x.Name,
+            Checked = Prefs.SelectedColumns.Contains(x.Name),
+        }).ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        update();
+    }
+
+    async Task save() 
+    {
+        //Prefs.SelectedColumns = columnValues.Where(x => x.Checked).Select(x => x.Name).ToList();
+        await Save.InvokeAsync(Prefs);
+    }
+
+    void columnSelected(MetadataPropertyType column, object? value)
+    {
+        if (value is bool b && b)
+        {
+            Prefs.SelectedColumns.Add(column.Name);
+        }
+        else
+        {
+            Prefs.SelectedColumns.Remove(column.Name);
+        }
+    }
 }

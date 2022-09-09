@@ -11,6 +11,7 @@ namespace MyApp.Client.Components;
 public class AutoQueryGridBase<Model> : AppAuthComponentBase
 {
     public DataGridBase<Model>? DataGrid = default!;
+    public string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
     [Inject] public LocalStorage LocalStorage { get; set; }
 
     [Parameter] public string Id { get; set; } = "AutoQueryGrid";
@@ -95,7 +96,8 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
     protected bool canPrev => true;
     protected bool canNext => true;
     protected bool canLast => true;
-    protected bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null);
+    protected bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
+        || ApiPrefs.SelectedColumns.Count > 0;
 
     //protected override async Task OnParametersSetAsync()
     //{
@@ -133,7 +135,4 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
 
         await UpdateAsync();
     }
-
-    public string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
-
 }
