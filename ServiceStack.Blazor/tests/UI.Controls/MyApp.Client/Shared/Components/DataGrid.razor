@@ -19,7 +19,7 @@
                         <thead class="bg-gray-50">
                             <tr class="select-none">
 
-                                @foreach (var column in columns)
+                                @foreach (var column in VisibleColumns)
                                 {
                                     var allowFiltering = AllowFiltering && !column.FieldType.IsComplexType();
                                     var isOpen = column == ShowFilters;
@@ -52,7 +52,7 @@
                                 <tr @key="item.GetHashCode()"
                                     class=@ClassNames(RowSelectionClass(item), RowClass?.Invoke(item, i++) ?? (++i % 2 == 0 ? "bg-gray-50" : "bg-white"))
                                     @onclick="e => OnRowSelected(e, item)">
-                                    @foreach (var column in columns)
+                                    @foreach (var column in VisibleColumns)
                                     {
                                         @column.CellTemplate(item)
                                     }
@@ -65,4 +65,3 @@
         </div>
     </div>
 }
-

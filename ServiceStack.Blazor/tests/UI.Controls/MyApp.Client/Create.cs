@@ -1,7 +1,5 @@
-﻿using Microsoft.JSInterop;
-using MyApp.ServiceModel;
+﻿using MyApp.ServiceModel;
 using ServiceStack;
-using ServiceStack.Text;
 using System.Xml.Linq;
 
 namespace MyApp.Client;
@@ -28,19 +26,5 @@ public static class Create
         row.ModifiedBy = by;
         row.ModifiedDate = useDate;
         return row;
-    }
-}
-
-public static class JSUtils
-{
-    public static async Task Log(this IJSRuntime js, params object[] args)
-    {
-        args.Each(x => Console.WriteLine(x.Dump()));
-        await js.ConsoleLog(args);
-    }
-
-    public static async Task ConsoleLog(this IJSRuntime js, params object[] args)
-    {
-        await js.InvokeVoidAsync("console.log", args);
     }
 }

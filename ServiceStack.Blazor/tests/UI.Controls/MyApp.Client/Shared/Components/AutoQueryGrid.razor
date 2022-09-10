@@ -26,19 +26,19 @@ else
                  @if (ShowPagingNav)
                 {
                 <button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
-                    title="First page" disabled=@(!canFirst) v-href="{ skip:nextSkip(-total) }">
+                    title="First page" disabled=@(!canFirst) @onclick="_ => skipTo(-Total)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor" /></svg>
                 </button>
                 <button type="button" class=@ClassNames("pl-2", canPrev ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
-                    title="Previous page" disabled=@(!canPrev) v-href="{ skip:nextSkip(-take) }">
+                    title="Previous page" disabled=@(!canPrev) @onclick="_ => skipTo(-ApiPrefs.Take)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor" /></svg>
                 </button>
                 <button type="button" class=@ClassNames("pl-2", canNext ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
-                    title="Next page" disabled=@(!canNext) v-href="{ skip:nextSkip(take) }">
+                    title="Next page" disabled=@(!canNext)  @onclick="_ => skipTo(ApiPrefs.Take)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" /></svg>
                 </button>
                 <button type="button" class=@ClassNames("pl-2", canLast ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
-                    title="Last page" disabled=@(!canLast) v-href="{ skip:nextSkip(total) }">
+                    title="Last page" disabled=@(!canLast) @onclick="_ => skipTo(Total)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor" /></svg>
                 </button>
                 }
@@ -57,11 +57,7 @@ else
                             <span class="hidden xl:inline">
                                 Showing Results
                             </span> 
-                            @(Skip + 1) - @Math.Min(Skip + Results.Count, Total ?? int.MaxValue)
-                            @if (Total != null)
-                            {
-                                <span> of @Total</span>
-                            }
+                            @(Skip + 1) - @Math.Min(Skip + Results.Count, Total) <span> of @Total</span>
                         </span>
                     }
                     else if (Api != null)
@@ -158,7 +154,8 @@ else
                     <div>
                         <CascadingValue IsFixed="true" Value="this">
                             <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" PropertyChanged="_ => StateHasChanged()"
-                                      AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions">
+                                      AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
+                                      SelectedColumns="ApiPrefs.SelectedColumns">
                                 <CascadingValue IsFixed="true" Value="DataGrid">
                                     @Columns
                                 </CascadingValue>

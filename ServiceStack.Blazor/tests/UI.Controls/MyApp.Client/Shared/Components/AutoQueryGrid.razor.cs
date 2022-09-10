@@ -5,6 +5,7 @@ using ServiceStack.Text;
 using ServiceStack.Blazor;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+using System.Linq;
 
 namespace MyApp.Client.Components;
 
@@ -13,9 +14,9 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
     public DataGridBase<Model>? DataGrid = default!;
     public string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
     [Inject] public LocalStorage LocalStorage { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; }
 
     [Parameter] public string Id { get; set; } = "AutoQueryGrid";
-    //[Parameter] public RenderFragment<Column<Model>> Columns { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public RenderFragment Columns { get; set; }
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
@@ -35,7 +36,7 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
     [Parameter] public bool ShowFiltersView { get; set; } = true;
     [Parameter] public List<Model> Items { get; set; } = new();
     public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
-    public int? Total => Api?.Response?.Total;
+    public int Total => Api?.Response?.Total ?? Results.Count;
 
     public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
 
@@ -67,8 +68,9 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
 
     protected int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
 
-    public List<MetadataPropertyType> ViewModelColumns => appMetadataApi.Response?.Api.Types
+    public List<MetadataPropertyType> Properties => appMetadataApi.Response?.Api.Types
         .FirstOrDefault(x => x.Name == typeof(Model).Name)?.Properties ?? new();
+    public List<MetadataPropertyType> ViewModelColumns => Properties.Where(x => GetColumns().Any(c => c.Name == x.Name)).ToList();
 
     public Column<Model>? Filter { get; set; }
     public ApiPrefs ApiPrefs { get; set; } = new();
@@ -77,6 +79,7 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
         ShowQueryPrefs = false;
         ApiPrefs = prefs;
         await LocalStorage.SetItemAsync(CacheKey, ApiPrefs);
+        await UpdateAsync();
     }
 
     ApiResult<AppMetadata> appMetadataApi = new();
@@ -90,25 +93,64 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
     protected string? invalidCreateAccess => null;
     protected string? invalidUpdateAccess => null;
 
-    protected int Skip { get; set; } = 0;
+    [Parameter]
+    [SupplyParameterFromQuery] public int Skip { get; set; } = 0;
+    public int Take => ApiPrefs.Take;
 
-    protected bool canFirst => true;
-    protected bool canPrev => true;
-    protected bool canNext => true;
-    protected bool canLast => true;
+    protected bool canFirst => Skip > 0;
+    protected bool canPrev => Skip > 0;
+    protected bool canNext => Results.Count >= Take;
+    protected bool canLast => Results.Count >= Take;
+
+    protected async Task skipTo(int value)
+    {
+        Skip += value;
+        if (Skip < 0)
+            Skip = 0;
+
+        var lastPage = Math.Floor(Total / (double) Take) * Take;
+        if (Skip > lastPage)
+            Skip = (int)lastPage;
+
+        string uri = NavigationManager.Uri.SetQueryParam("skip", Skip > 0 ? $"{Skip}" : null);
+        log($"skipTo ({value}) {uri}");
+        
+        NavigationManager.NavigateTo(uri);
+    }
+
     protected bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
         || ApiPrefs.SelectedColumns.Count > 0;
 
-    //protected override async Task OnParametersSetAsync()
-    //{
-    //    await base.OnParametersSetAsync();
-    //}
+    string? lastQuery = null;
+
+    string? primaryKeyField;
+    protected string PrimaryKeyField => primaryKeyField ??= Properties.First(c => c.IsPrimaryKey == true).Name;
 
     protected async Task UpdateAsync()
     {
+        // PK always needed
+        var selectFields = ApiPrefs.SelectedColumns.Count > 0 && !ApiPrefs.SelectedColumns.Contains(PrimaryKeyField)
+            ? new List<string>(ApiPrefs.SelectedColumns) { PrimaryKeyField }
+            : ApiPrefs.SelectedColumns;
+
+        var fields = string.Join(',', selectFields);
+        var newQuery = $"?skip={Skip}&take={Take}&fields={fields}";
+        if (lastQuery == newQuery)
+            return;
+        lastQuery = newQuery;
+        
         var request = Apis!.QueryRequest<Model>();
+        request.Skip = Skip;
+        request.Take = Take;
+        request.Include = "Total";
+        if (!string.IsNullOrEmpty(fields))
+        {
+            request.Fields = fields;
+        }
+
         var requestWithReturn = (IReturn<QueryResponse<Model>>)request;
         Api = await ApiAsync(requestWithReturn);
+
         //Console.WriteLine("UpdateAsync: " + request.GetType().Name);
         //Console.WriteLine("Api.Succeeded: " + Api.Succeeded);
         //Console.WriteLine("Api: " + Api.ErrorSummary ?? Api.Error?.ErrorCode ?? $"{Api.Response?.Results?.Count ?? 0}");
@@ -117,6 +159,12 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
         //    Console.WriteLine("Api.Body: " + Api.Response.Dump());
         //}
         StateHasChanged();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await UpdateAsync();
     }
 
     protected override async Task OnInitializedAsync()

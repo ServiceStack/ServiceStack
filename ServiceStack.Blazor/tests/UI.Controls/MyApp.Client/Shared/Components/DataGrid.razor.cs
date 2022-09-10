@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServiceStack;
+using ServiceStack.Blazor;
 using ServiceStack.Blazor.Components;
 
 namespace MyApp.Client.Components;
@@ -35,6 +36,7 @@ public class DataGridBase<Model> : UiComponentBase
     [Parameter] public string GridClass { get; set; } = "mt-4 flex flex-col";
     [Parameter] public string HoverSelectionClass { get; set; } = "cursor-pointer hover:bg-yellow-50";
     [Parameter] public string SelectedClass { get; set; } = "cursor-pointer bg-indigo-100";
+    [Parameter] public List<string>? SelectedColumns { get; set; }
 
     DOMRect? tableRect;
     [Inject] public IJSRuntime JS { get; set; }
@@ -99,6 +101,10 @@ public class DataGridBase<Model> : UiComponentBase
 
 
     protected readonly List<Column<Model>> columns = new();
+    public IEnumerable<Column<Model>> VisibleColumns => SelectedColumns?.Count > 0
+        ? columns.Where(c => SelectedColumns.Contains(c.Name))
+        : columns;
+
     public List<Column<Model>> GetColumns() => columns;
 
     internal void AddColumn(Column<Model> column)

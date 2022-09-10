@@ -22,8 +22,10 @@ public class Migration1000 : MigrationBase
 
     public enum RoomType
     {
-        Queen,
+        Single,
         Double,
+        Queen,
+        Twin,
         Suite,
     }
 
@@ -34,6 +36,10 @@ public class Migration1000 : MigrationBase
         CreateBooking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
         CreateBooking("Booking 2", RoomType.Double, 12, 120, "manager@email.com");
         CreateBooking("Booking the 3rd", RoomType.Suite, 13, 130, "employee@email.com");
+        for (var i=0; i<100; i++)
+        {
+            CreateBooking("Booking " + i, (RoomType)(i % 5), i, i * 50, $"employee{i}@email.com");
+        }
     }
     
     public void CreateBooking(string name, RoomType type, int roomNo, decimal cost, string by) =>
