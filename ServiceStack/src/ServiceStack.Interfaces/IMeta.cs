@@ -11,6 +11,11 @@ namespace ServiceStack
         Dictionary<string, string> Meta { get; set; }
     }
 
+    public interface IHasQueryParams
+    {
+        Dictionary<string, string> QueryParams { get; set; }
+    }
+
     public interface IHasSessionId
     {
         string SessionId { get; set; }
