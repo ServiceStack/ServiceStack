@@ -10,4 +10,9 @@ public class ApiPrefs
         SelectedColumns.Clear();
         Take = DefaultTake;
     }
+    public ApiPrefs Clone() => new ApiPrefs
+    {
+        Take = Take, 
+        SelectedColumns = SelectedColumns.ToList(),
+    };
 }

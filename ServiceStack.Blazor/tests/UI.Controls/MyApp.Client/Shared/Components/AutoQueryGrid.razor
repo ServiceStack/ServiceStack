@@ -13,8 +13,7 @@ else
     <div class="pt-1">
         @if (ShowToolbar)
         {
-        <QueryPrefs Show=@ShowQueryPrefs MaxLimit="Plugin?.MaxLimit ?? 50" Columns="ViewModelColumns" Prefs="ApiPrefs"
-                    Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
+        <QueryPrefs Show=@ShowQueryPrefs Columns="ViewModelColumns" Prefs="ApiPrefs" Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
         <div class="pl-1 pt-1 flex flex-wrap">
             <div class="flex pb-1 sm:pb-0">
                 @if (ShowPreferences)
@@ -126,7 +125,7 @@ else
         }
         @if (open == Features.Filters)
         {
-            <FilterViews class="border-y border-gray-200 py-8 my-2" Columns="GetColumns()" Save="_ => open = null" />
+            <FilterViews class="border-y border-gray-200 py-8 my-2" Columns="GetColumns()" Done="() => open = null" FiltersChanged="UpdateAsync" />
         }
         @if (errorSummary != null)
         {
@@ -153,7 +152,8 @@ else
                 {
                     <div>
                         <CascadingValue IsFixed="true" Value="this">
-                            <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" PropertyChanged="_ => StateHasChanged()"
+                            <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" 
+                                      PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync"
                                       AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
                                       SelectedColumns="ApiPrefs.SelectedColumns">
                                 <CascadingValue IsFixed="true" Value="DataGrid">

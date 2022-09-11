@@ -6,17 +6,17 @@
 
                 <div class="mt-4">
                     <label for=@($"{Id}-take") class="block text-sm font-medium text-gray-700">Results per page</label>
-                    <select id=@($"{Id}-take") @bind="Prefs.Take"
+                    <select id=@($"{Id}-take") @bind="Model.Take"
                             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                         @foreach (var take in allTakes)
                         {
-                            <option value=@take selected=@(take == Prefs.Take)>@take</option>
+                            <option value=@take>@take</option>
                         }
                     </select>
                 </div>
 
                 <div class="mt-4 flex items-center py-4 border-b border-gray-200">
-                    <input type="radio" id=@($"{Id}-allColumns") @onclick=@(_ => Prefs.SelectedColumns.Clear()) checked=@(Prefs.SelectedColumns.Count == 0)
+                    <input type="radio" id=@($"{Id}-allColumns") @onclick=@(_ => Model.SelectedColumns.Clear()) checked=@(Model.SelectedColumns.Count == 0)
                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
                     <label class="ml-3 block text-gray-700" for=@($"{Id}-allColumns")>View all columns</label>
                 </div>
@@ -27,7 +27,7 @@
                             @foreach (var c in Columns)
                             {
                                 <div key=@c.Name class="flex items-center">
-                                    <input type="checkbox" id=@c.Name checked=@Prefs.SelectedColumns.Contains(c.Name) @oninput="x => columnSelected(c, x.Value)"
+                                    <input type="checkbox" id=@c.Name checked=@Model.SelectedColumns.Contains(c.Name) @oninput="x => columnSelected(c, x.Value)"
                                        class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
                                     <label for=@c.Name class="ml-3">@c.Name</label>
                                 </div>
@@ -54,28 +54,33 @@
 @code {
     int[] allTakes = new[] { 10, 25, 50, 100, 250, 500, 1000 };
     [Parameter] public string Id { get; set; } = "query-prefs";
-    [Parameter] public int MaxLimit { get; set; } = 50;
-    [Parameter, EditorRequired] public List<MetadataPropertyType> Columns { get; set; } = new();
     [Parameter, EditorRequired] public ApiPrefs Prefs { get; set; } = new();
+    [Parameter, EditorRequired] public List<MetadataPropertyType> Columns { get; set; } = new();
     [Parameter, EditorRequired] public bool Show { get; set; }
     [Parameter] public EventCallback Done { get; set; }
     [Parameter] public EventCallback<ApiPrefs> Save { get; set; }
-
+    ApiPrefs Model { get; set; } = new();
 
     async Task save() 
     {
-        await Save.InvokeAsync(Prefs);
+        await Save.InvokeAsync(Model);
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        Model = Prefs.Clone();
     }
 
     void columnSelected(MetadataPropertyType column, object? value)
     {
         if (value is bool b && b)
         {
-            Prefs.SelectedColumns.Add(column.Name);
+            Model.SelectedColumns.Add(column.Name);
         }
         else
         {
-            Prefs.SelectedColumns.Remove(column.Name);
+            Model.SelectedColumns.Remove(column.Name);
         }
     }
 }

@@ -60,11 +60,13 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
         }
         ApiPrefs.Clear();
         await LocalStorage.RemoveItemAsync(CacheKey);
+        await UpdateAsync();
     }
 
     protected Features? open { get; set; }
 
     public List<Column<Model>> GetColumns() => DataGrid?.GetColumns() ?? TypeConstants<Column<Model>>.EmptyList;
+    public Dictionary<string, Column<Model>> ColumnsMap => DataGrid?.ColumnsMap ?? new();
 
     protected int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
 
@@ -133,8 +135,32 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
             ? new List<string>(ApiPrefs.SelectedColumns) { PrimaryKeyField }
             : ApiPrefs.SelectedColumns;
 
+        var selectedColumns = ApiPrefs.SelectedColumns.Count == 0
+            ? GetColumns()
+            : ApiPrefs.SelectedColumns.Select(x => ColumnsMap.TryGetValue(x, out var v) == true ? v : null)
+                .Where(x => x != null).Select(x => x!).ToList();
+
+        var orderBy = string.Join(",", selectedColumns.Where(x => x.Settings.SortOrder != null)
+            .Select(x => x.Settings.SortOrder == SortOrder.Descending ? $"-{x.Name}" : x.Name));
+
         var fields = string.Join(',', selectFields);
-        var newQuery = $"?skip={Skip}&take={Take}&fields={fields}";
+
+        var filters = new Dictionary<string, string>();
+        var sb = StringBuilderCache.Allocate();
+        foreach (var column in GetColumns().Where(x => x.Settings.Filters.Count > 0))
+        {
+            foreach (var filter in column.Filters)
+            {
+                var key = filter.Key.Replace("%", column.Name);
+                var value = filter.Value ?? (filter.Values != null ? string.Join(",", filter.Values) : "");
+                filters[key] = value;
+                sb.AppendQueryParam(key, value);
+            }
+        }
+        var strFilters = StringBuilderCache.ReturnAndFree(sb);
+        strFilters.TrimEnd('&');
+
+        var newQuery = $"?skip={Skip}&take={Take}&fields={fields}&orderBy={orderBy}&{strFilters}";
         if (lastQuery == newQuery)
             return;
         lastQuery = newQuery;
@@ -143,21 +169,21 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
         request.Skip = Skip;
         request.Take = Take;
         request.Include = "Total";
+
+        if (filters.Count > 0)
+            request.QueryParams = filters;
         if (!string.IsNullOrEmpty(fields))
-        {
             request.Fields = fields;
-        }
+        if (!string.IsNullOrEmpty(orderBy))
+            request.OrderBy = orderBy;
 
         var requestWithReturn = (IReturn<QueryResponse<Model>>)request;
         Api = await ApiAsync(requestWithReturn);
 
-        //Console.WriteLine("UpdateAsync: " + request.GetType().Name);
-        //Console.WriteLine("Api.Succeeded: " + Api.Succeeded);
-        //Console.WriteLine("Api: " + Api.ErrorSummary ?? Api.Error?.ErrorCode ?? $"{Api.Response?.Results?.Count ?? 0}");
-        //if (Api.Succeeded)
-        //{
-        //    Console.WriteLine("Api.Body: " + Api.Response.Dump());
-        //}
+        log($"UpdateAsync: {request.GetType().Name}{newQuery}, Succeeded: {Api.Succeeded}, Results: {Api.Response?.Results?.Count ?? 0}");
+        if (!Api.Succeeded)
+            log("Api: " + Api.ErrorSummary ?? Api.Error?.ErrorCode);
+
         StateHasChanged();
     }
 

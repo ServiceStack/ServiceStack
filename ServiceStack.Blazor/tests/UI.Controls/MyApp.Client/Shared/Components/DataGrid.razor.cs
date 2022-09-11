@@ -59,6 +59,8 @@ public class DataGridBase<Model> : UiComponentBase
 
 
     [Parameter] public EventCallback<string> PropertyChanged { get; set; }
+    [Parameter] public EventCallback<List<Filter>> FiltersChanged { get; set; }
+
     internal async Task NotifyPropertyChanged(string propertyName)
     {
         await PropertyChanged.InvokeAsync(propertyName);
@@ -89,6 +91,7 @@ public class DataGridBase<Model> : UiComponentBase
     {
         ShowFilters!.Settings.Filters = filters;
         await ShowFilters.SaveSettingsAsync();
+        await FiltersChanged.InvokeAsync();
     }
 
     internal async Task OnRowSelected(MouseEventArgs e, Model model)
@@ -106,6 +109,9 @@ public class DataGridBase<Model> : UiComponentBase
         : columns;
 
     public List<Column<Model>> GetColumns() => columns;
+
+    Dictionary<string, Column<Model>> columnsMap;
+    public Dictionary<string, Column<Model>> ColumnsMap => columnsMap ??= GetColumns().ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
 
     internal void AddColumn(Column<Model> column)
     {

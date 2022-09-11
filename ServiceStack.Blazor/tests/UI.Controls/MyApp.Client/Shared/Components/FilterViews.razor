@@ -23,10 +23,10 @@
                     @if (c.FieldType.IsEnum)
                     {
                         <div class="pt-2">
-                            @foreach (var x in c.EnumEntries)
+                            @foreach (var value in c.Filters.FirstOrDefault()?.Values.Safe())
                             {
-                                <div key=@x.Value class="flex items-center">
-                                    <label class="ml-2">@x.Value</label>
+                                <div key=@value class="flex items-center">
+                                    <label class="ml-2">@value</label>
                                 </div>
                             }
                         </div>
@@ -65,16 +65,19 @@
 @code {
     [Parameter, EditorRequired] public List<Column<Model>> Columns { get; set; } = new();
 
-    [Parameter] public EventCallback Save { get; set; }
+    [Parameter] public EventCallback Done { get; set; }
+    [Parameter] public EventCallback FiltersChanged { get; set; }
 
     async Task removeFilters(Column<Model> column) {
         column.Filters.Clear();
         await column.SaveSettingsAsync();
+        await FiltersChanged.InvokeAsync();
     }
 
     async Task removeFilter(Column<Model> column, Filter filter) {
         column.Settings.Filters.Remove(filter);
         await column.SaveSettingsAsync();
+        await FiltersChanged.InvokeAsync();
     }
 
     async Task clearAll() {
@@ -83,6 +86,7 @@
             c.Settings.Filters.Clear();
             await c.SaveSettingsAsync();
         }
-        await Save.InvokeAsync();
+        await FiltersChanged.InvokeAsync();
+        await Done.InvokeAsync();
     }
 }
