@@ -602,7 +602,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                     sb.Emit(prop, Lang.TypeScript);
                     PrePropertyFilter?.Invoke(sb, prop, type);
-                    sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, GetPropertyName(prop.Name), optional));
+                    sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, GetPropertyName(prop), optional));
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
@@ -993,7 +993,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             return jsKeyType;
         }
 
-        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle(); 
+        public string GetPropertyName(MetadataPropertyType prop) => 
+            prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
     }
 
     public static class TypeScriptGeneratorExtensions

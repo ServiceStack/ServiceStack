@@ -616,7 +616,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.Append(typeNameWithoutGenericArgs + "({");
                             else
                                 sbBody.Append(",");
-                            sbBody.Append($"this.{GetPropertyName(prop.Name)}");
+                            sbBody.Append($"this.{GetPropertyName(prop)}");
                             if (!string.IsNullOrEmpty(prop.Value))
                             {
                                 sbBody.Append("=" + prop.Value);
@@ -654,7 +654,7 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         var propType = GetPropertyType(prop);
                         var jsonName = prop.Name.PropertyStyle();
-                        var propName = GetPropertyName(prop.Name);
+                        var propName = GetPropertyName(prop);
                         if (UseTypeConversion(prop))
                         {
                             bool registerType = true;
@@ -715,8 +715,8 @@ namespace ServiceStack.NativeTypes.Dart
                             }
     
                             var propType = GetPropertyType(prop);
-                            var jsonName = prop.Name.PropertyStyle();
-                            var propName = GetPropertyName(prop.Name);
+                            var propName = GetPropertyName(prop);
+                            var jsonName = propName.PropertyStyle();
                             if (UseTypeConversion(prop))
                             {
                                 sbBody.Append($"        '{jsonName}': JsonConverters.toJson({propName},'{propType}',context!)");
@@ -921,7 +921,7 @@ namespace ServiceStack.NativeTypes.Dart
 
                     sb.Emit(prop, Lang.Dart);
                     PrePropertyFilter?.Invoke(sb, prop, type);
-                    sb.AppendLine($"{propType}? {GetPropertyName(prop.Name)};");
+                    sb.AppendLine($"{propType}? {GetPropertyName(prop)};");
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
@@ -1301,7 +1301,9 @@ namespace ServiceStack.NativeTypes.Dart
             return sb.ToString();
         }
 
-        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle().PropertyName();
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle(); 
+        public string GetPropertyName(MetadataPropertyType prop) => 
+            prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
     }
     
     public static class DartGeneratorExtensions

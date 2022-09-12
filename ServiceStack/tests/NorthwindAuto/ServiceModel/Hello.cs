@@ -1,4 +1,5 @@
-﻿using ServiceStack;
+﻿using System.Runtime.Serialization;
+using ServiceStack;
 
 namespace MyApp.ServiceModel;
 
@@ -52,8 +53,9 @@ public class HelloResponse
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
-
+[DataContract]
 public class HelloBookingList : IReturn<List<Booking>>
 {
+    [DataMember(Order = 1, Name = "Alias")]
     public string Name { get; set; }
 }

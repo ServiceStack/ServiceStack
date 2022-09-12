@@ -1312,5 +1312,8 @@ namespace ServiceStack
         public static bool IsSystemType(this MetadataPropertyType prop) =>
             prop.PropertyType?.Namespace?.StartsWith("System") == true ||
             prop.Namespace?.StartsWith("System") == true;
+
+        public static string GetSerializedAlias(this MetadataPropertyType prop) =>
+            prop.DataMember?.Name?.SafeVarName();
     }
 }
