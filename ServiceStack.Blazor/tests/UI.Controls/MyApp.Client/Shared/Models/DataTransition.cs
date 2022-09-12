@@ -26,6 +26,8 @@ public class DataTransition
     bool transitioning = false;
     static void log(string? message = null) => BlazorUtils.Log(message);
 
+    public int DelayMs { get; set; } = 60;
+
     public async Task TransitionAsync(bool show, Action? onChange)
     {
         if (!CanAcquireLock())
@@ -38,7 +40,7 @@ public class DataTransition
             TransitionStep(show, onChange, step);
             log($"Step {step}. ({show}): {Class}");
             onChange?.Invoke();
-            await Task.Delay(100);
+            await Task.Delay(DelayMs);
         }
 
         log();
@@ -76,6 +78,9 @@ public class DataTransition
 
     public static async Task TransitionAllAsync(bool show, Action? onChange, params DataTransition[] transitions)
     {
+        if (transitions.Length == 0)
+            return;
+
         if (!transitions.All(x => x.EnteringState != show))
             return;
         if (!transitions.All(x => x.CanAcquireLock()))
@@ -96,7 +101,8 @@ public class DataTransition
                 log($"Step {step}. ({show}): {transition.Class}");
             }
             onChange?.Invoke();
-            await Task.Delay(60);
+            var delayMs = transitions.Select(x => x.DelayMs).OrderByDescending(x => x).First();
+            await Task.Delay(delayMs);
         }
 
         if (!show)

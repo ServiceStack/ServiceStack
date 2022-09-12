@@ -1315,5 +1315,25 @@ namespace ServiceStack
 
         public static string GetSerializedAlias(this MetadataPropertyType prop) =>
             prop.DataMember?.Name?.SafeVarName();
+
+        public static MetadataPropertyType GetPrimaryKey(this List<MetadataPropertyType> props) =>
+            props.FirstOrDefault(c => c.IsPrimaryKey == true);
+
+        public static object GetId<T>(this MetadataType type, T model) => type.Properties.GetId<T>(model);
+        public static object GetId<T>(this List<MetadataPropertyType> props, T model)
+        {
+            var pk = props.GetPrimaryKey();
+            if (pk == null)
+                return null;
+            return pk.GetValue<T>(model);
+        }
+
+        public static object GetValue<T>(this MetadataPropertyType prop, T model)
+        {
+            var pi = TypeConfig<T>.Properties.FirstOrDefault(x => x.Name.EqualsIgnoreCase(prop.Name));
+            var value = pi!.GetValue(model);
+            return value;
+        }
+
     }
 }

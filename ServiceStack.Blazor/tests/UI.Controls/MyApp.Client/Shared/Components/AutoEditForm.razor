@@ -1,0 +1,224 @@
+﻿@typeparam Model
+@inherits AppAuthComponentBase
+
+<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <!-- Background backdrop, show/hide based on slide-over state. -->
+    @*<div class="fixed inset-0"></div>*@
+
+    <div class="">
+        <div class="">
+            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+                <div class=@ClassNames("pointer-events-auto w-screen max-w-2xl", SlideOverTransition.Class)>
+                    <form class="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl">
+                        <!-- Header -->
+                        <div class="h-0 flex-1 overflow-y-auto">
+
+                            <div class="bg-gray-50 px-4 py-6 sm:px-6">
+                                <div class="flex items-start justify-between space-x-3">
+                                    <div class="space-y-1">
+                                        <h2 class="text-lg font-medium text-gray-900" id="slide-over-title">@Title</h2>
+                                        @if (SubHeading != null)
+                                        {
+                                            <div class="mt-1">
+                                                <p class="text-sm text-gray-500">@(SubHeading)</p>
+                                            </div>
+                                        }
+                                        else if (Notes != null)
+                                        {
+                                            <div class="mt-1">
+                                                <p class="notes text-sm text-gray-500">@((MarkupString)Notes)</p>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex h-7 items-center">
+                                        <button type="button" @onclick="OnDone" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <span class="sr-only">Close panel</span>
+                                            <!-- Heroicon name: outline/x-mark -->
+                                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="flex flex-1 flex-col justify-between">
+                                <div class="divide-y divide-gray-200 px-4 sm:px-6">
+                                    <div class="space-y-6 pt-6 pb-5">
+                                        <div>
+                                            <label for="project-name" class="block text-sm font-medium text-gray-900">Project name</label>
+                                            <div class="mt-1">
+                                                <input type="text" name="project-name" id="project-name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label for="description" class="block text-sm font-medium text-gray-900">Description</label>
+                                            <div class="mt-1">
+                                                <textarea id="description" name="description" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-sm font-medium text-gray-900">Team Members</h3>
+                                            <div class="mt-2">
+                                                <div class="flex space-x-2">
+                                                    <a href="#" class="rounded-full hover:opacity-75">
+                                                        <img class="inline-block h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Tom Cook">
+                                                    </a>
+
+                                                    <a href="#" class="rounded-full hover:opacity-75">
+                                                        <img class="inline-block h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Whitney Francis">
+                                                    </a>
+
+                                                    <a href="#" class="rounded-full hover:opacity-75">
+                                                        <img class="inline-block h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Leonard Krasner">
+                                                    </a>
+
+                                                    <a href="#" class="rounded-full hover:opacity-75">
+                                                        <img class="inline-block h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Floyd Miles">
+                                                    </a>
+
+                                                    <a href="#" class="rounded-full hover:opacity-75">
+                                                        <img class="inline-block h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Emily Selman">
+                                                    </a>
+
+                                                    <button type="button" class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                                        <span class="sr-only">Add team member</span>
+                                                        <!-- Heroicon name: mini/plus -->
+                                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <fieldset>
+                                            <legend class="text-sm font-medium text-gray-900">Privacy</legend>
+                                            <div class="mt-2 space-y-5">
+                                                <div class="relative flex items-start">
+                                                    <div class="absolute flex h-5 items-center">
+                                                        <input id="privacy-public" name="privacy" aria-describedby="privacy-public-description" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>
+                                                    </div>
+                                                    <div class="pl-7 text-sm">
+                                                        <label for="privacy-public" class="font-medium text-gray-900">Public access</label>
+                                                        <p id="privacy-public-description" class="text-gray-500">Everyone with the link will see this project.</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="relative flex items-start">
+                                                        <div class="absolute flex h-5 items-center">
+                                                            <input id="privacy-private-to-project" name="privacy" aria-describedby="privacy-private-to-project-description" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                                        </div>
+                                                        <div class="pl-7 text-sm">
+                                                            <label for="privacy-private-to-project" class="font-medium text-gray-900">Private to project members</label>
+                                                            <p id="privacy-private-to-project-description" class="text-gray-500">Only members of this project would be able to access.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="relative flex items-start">
+                                                        <div class="absolute flex h-5 items-center">
+                                                            <input id="privacy-private" name="privacy" aria-describedby="privacy-private-to-project-description" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                                        </div>
+                                                        <div class="pl-7 text-sm">
+                                                            <label for="privacy-private" class="font-medium text-gray-900">Private to you</label>
+                                                            <p id="privacy-private-description" class="text-gray-500">You are the only one able to access this project.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+                                                <div>
+                                                    <div class="relative flex items-start">
+                                                        <pre>@ServiceStack.Text.TypeSerializer.Dump(Edit)</pre>
+                                                    </div>
+                                                </div>
+
+
+
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="pt-4 pb-6">
+                                        <div class="flex text-sm">
+                                            <a href="#" class="group inline-flex items-center font-medium text-indigo-600 hover:text-indigo-900">
+                                                <!-- Heroicon name: mini/link -->
+                                                <svg class="h-5 w-5 text-indigo-500 group-hover:text-indigo-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z" />
+                                                    <path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 105.656 5.656l3-3a4 4 0 00-.225-5.865z" />
+                                                </svg>
+                                                <span class="ml-2">Copy link</span>
+                                            </a>
+                                        </div>
+                                        <div class="mt-4 flex text-sm">
+                                            <a href="#" class="group inline-flex items-center text-gray-500 hover:text-gray-900">
+                                                <!-- Heroicon name: mini/question-mark-circle -->
+                                                <svg class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a.75.75 0 11-1.061-1.061 3 3 0 112.871 5.026v.345a.75.75 0 01-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 108.94 6.94zM10 15a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                                </svg>
+                                                <span class="ml-2">Learn more about sharing</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-shrink-0 justify-end px-4 py-4">
+                            <button type="button" @onclick="OnDone" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Cancel</button>
+                            <button type="submit" @onclick="OnSave" class="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Model Edit { get; set; }
+    [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
+
+    [Parameter] public string? Heading { get; set; }
+    [Parameter] public string? SubHeading { get; set; }
+
+    [Parameter] public EventCallback Done { get; set; }
+    [Parameter] public EventCallback<Model> Save { get; set; }
+    
+    [Parameter] public Type? ApiType { get; set; }
+
+    protected DataTransition SlideOverTransition = new DataTransition(
+        entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
+        leaving: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-0", to: "translate-x-full"),
+        visible: false);
+
+    string Title => Heading ?? ApiType?.GetDescription() ?? $"Edit {typeof(Model).Name} {MetadataType?.GetId(Edit)}";
+    string? Notes => ApiType?.FirstAttribute<NotesAttribute>()?.Notes;
+
+    public MetadataType? MetadataType => AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name);
+
+    protected async Task OnDone()
+    {
+        await DataTransition.TransitionAllAsync(
+            show: false,
+            onChange: StateHasChanged,
+            SlideOverTransition
+        );
+        await Task.Delay(500 - SlideOverTransition.DelayMs);
+        await Done.InvokeAsync();
+    }
+
+    public async Task OnSave()
+    {
+        await Save.InvokeAsync(Edit);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await DataTransition.TransitionAllAsync(
+            show: true,
+            onChange: StateHasChanged,
+            SlideOverTransition
+        );
+    }
+}

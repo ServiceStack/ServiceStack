@@ -17,7 +17,7 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
     public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => JsonApiClientUtils.ApiAppMetadataAsync(this);
 
-    protected bool EnableLogging { get; set; } = BlazorConfig.EnableLogging;
+    protected bool EnableLogging { get; set; } = BlazorConfig.EnableVerboseLogging;
     protected void log(string? message = null)
     {
         if (EnableLogging)
@@ -32,7 +32,7 @@ public static class BlazorUtils
 {
     public static void Log(string? message = null)
     {
-        if (BlazorConfig.EnableLogging)
+        if (BlazorConfig.EnableVerboseLogging)
             Console.WriteLine(message ?? "");
     }
 }

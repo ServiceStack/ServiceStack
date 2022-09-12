@@ -23,12 +23,12 @@
                     @if (c.FieldType.IsEnum)
                     {
                         <div class="pt-2">
-                            @foreach (var value in c.Filters.FirstOrDefault()?.Values.Safe())
-                            {
-                                <div key=@value class="flex items-center">
-                                    <label class="ml-2">@value</label>
-                                </div>
-                            }
+                        @foreach (var value in c.Filters.FirstOrDefault()!.Values!.Safe())
+                        {
+                            <div key=@value class="flex items-center">
+                                <label class="ml-2">@value</label>
+                            </div>
+                        }
                         </div>
                     }
                     else
