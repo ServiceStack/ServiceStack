@@ -18,8 +18,7 @@ namespace ServiceStack
     /// </summary>
     public static class UrlExtensions
     {
-        private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache =
-            new ConcurrentDictionary<Type, List<RestRoute>>();
+        private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache = new();
 
         public static string ToRelativeUri(this IReturn requestDto, string httpMethod, string formatFallbackToPredefinedRoute = null)
         {
