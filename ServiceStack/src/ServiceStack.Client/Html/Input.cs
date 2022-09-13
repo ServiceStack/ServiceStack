@@ -93,31 +93,37 @@ public static class Input
     {
         var pi = InspectUtils.PropertyFromExpression(expr) 
             ?? throw new Exception($"Could not resolve property expression from {expr}");
-        var css = pi.FirstAttribute<FieldCssAttribute>().ToCss();
+        return Create(pi);
+    }
+
+    public static InputInfo Create(PropertyInfo pi)
+    {
+        InputInfo create(string id, string? type = null)
+        {
+            var inputAttr = pi.FirstAttribute<InputAttribute>();
+            var input = inputAttr?.ToInput(c => { c.Id ??= id; c.Type ??= type; }) ?? new InputInfo(id, type);
+            input.Css = pi.FirstAttribute<FieldCssAttribute>().ToCss();
+            return input;
+        }
+
         var useType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
         if (useType.IsNumericType())
-            return new InputInfo(pi.Name, Types.Number) { Css = css };
+            return create(pi.Name, Types.Number);
         if (useType == typeof(bool))
-            return new InputInfo(pi.Name, Types.Checkbox) { Css = css };
+            return create(pi.Name, Types.Checkbox);
         if (useType == typeof(DateTime) || useType == typeof(DateTimeOffset) || useType.Name == "DateOnly")
-            return new InputInfo(pi.Name, Types.Date) { Css = css };
+            return create(pi.Name, Types.Date);
         if (useType == typeof(TimeSpan) || useType.Name == "TimeOnly")
-            return new InputInfo(pi.Name, Types.Time) { Css = css };
+            return create(pi.Name, Types.Time);
 
         if (useType.IsEnum)
         {
             return GetEnumEntries(useType, out var entries)
-                ? new InputInfo(pi.Name, Types.Select) {
-                    Css = css,
-                    AllowableEntries = entries
-                }
-                : new InputInfo(pi.Name, Types.Select) {
-                    Css = css,
-                    AllowableValues = entries.Select(x => x.Value).ToArray()
-                };
+                ? X.Apply(create(pi.Name, Types.Select), x => x.AllowableEntries = entries)
+                : X.Apply(create(pi.Name, Types.Select), x => x.AllowableValues = entries.Select(x => x.Value).ToArray());
         }
-        
-        return new InputInfo(pi.Name) { Css = css };
+
+        return create(pi.Name);
     }
 
     static FieldInfo GetEnumMember(Type type, string name) => 

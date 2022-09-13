@@ -647,19 +647,8 @@ namespace ServiceStack.NativeTypes
                 : ToAttributes(type.AllAttributes());
         }
 
-        public List<MetadataPropertyType> ToProperties(Type type)
-        {
-            var props = (!type.IsUserType() && 
-                         !type.IsInterface && 
-                         !type.IsTuple() &&
-                         !(config.ExportTypes.ContainsMatch(type) && JsConfig.TreatValueAsRefTypes.ContainsMatch(type))) 
-                || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
-                ? null
-                : GetInstancePublicProperties(type).Select(x => ToProperty(x))
-                    .ToList().PopulatePrimaryKey();
-
-            return props == null || props.Count == 0 ? null : props;
-        }
+        public List<MetadataPropertyType> ToProperties(Type type) => 
+            AppMetadataUtils.ToProperties(type, toProperty: x => ToProperty(x), exportTypes: config.ExportTypes);
 
         public HashSet<string> GetNamespacesUsed(Type type)
         {
@@ -667,7 +656,7 @@ namespace ServiceStack.NativeTypes
 
             if (type.IsUserType() || type.IsInterface || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)))
             {
-                foreach (var pi in GetInstancePublicProperties(type))
+                foreach (var pi in type.GetInstancePublicProperties())
                 {
                     if (pi.PropertyType.Namespace != null)
                     {
@@ -742,7 +731,7 @@ namespace ServiceStack.NativeTypes
                     MetadataPropertyType metaProp(KeyValuePair<PropertyInfo, object> entry)
                     {
                         var to = ToProperty(entry.Key);
-                        to.Value = PropertyStringValue(entry.Key, entry.Value);
+                        to.Value = entry.Key.PropertyStringValue(entry.Value);
                         return to;
                     }
                     
@@ -780,7 +769,7 @@ namespace ServiceStack.NativeTypes
 
             //Populate ctor Arg values from matching properties
             var argValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            attrProps.Each(x => argValues[x.Name] = PropertyValue(x, attr));
+            attrProps.Each(x => argValues[x.Name] = x.PropertyStringValue(attr));
 
             if (metaAttr.ConstructorArgs != null)
             {
@@ -834,147 +823,28 @@ namespace ServiceStack.NativeTypes
 
         public MetadataPropertyType ToProperty(PropertyInfo pi, object instance = null, Dictionary<string, object> ignoreValues = null)
         {
-            var propType = pi.PropertyType;
-            var underlyingType = Nullable.GetUnderlyingType(propType) ?? propType;
-            var property = new MetadataPropertyType
-            {
-                PropertyInfo = pi,
-                PropertyType = propType,
-                Name = pi.Name,
-                Attributes = ToAttributes(pi.GetCustomAttributes(false)),
-                Type = propType.GetMetadataPropertyType(),
-                IsValueType = underlyingType.IsValueType.NullIfFalse(),
-                IsEnum = underlyingType.IsEnum.NullIfFalse(),
-                Namespace = propType.Namespace,
-                DataMember = ToDataMember(pi.GetDataMember()),
-                GenericArgs = ToGenericArgs(propType),
-                Description = pi.GetDescription(),
-            };
+            var property = pi.ToMetadataPropertyType(instance, ignoreValues,
+                treatNonNullableRefTypesAsRequired: HostContext.AppHost.Config.TreatNonNullableRefTypesAsRequired);
 
-            property.Format ??= pi.FirstAttribute<Intl>().ToFormat();
-            property.Format ??= pi.FirstAttribute<FormatAttribute>().ToFormat();
-
-            var apiMember = pi.FirstAttribute<ApiMemberAttribute>();
-            if (apiMember != null)
-            {
-                if (apiMember.IsRequired)
-                    property.IsRequired = true;
-
-                property.ParamType = apiMember.ParameterType;
-                property.DisplayType = apiMember.DataType;
-                property.Format ??= new FormatInfo { Method = apiMember.Format };
-            }
+            property.Attributes = ToAttributes(pi.GetCustomAttributes(false));
 
             var validateProp = pi.AllAttributes<ValidateAttribute>();
             if (validateProp.Any(x => x.Validator != null && ValidateScripts.RequiredValidators.Contains(x.Validator)))
                 property.IsRequired = true;
 
-            var requiredProp = pi.FirstAttribute<RequiredAttribute>();
-            if (requiredProp != null)
-                property.IsRequired = true;
-
-            if (HostContext.AppHost.Config.TreatNonNullableRefTypesAsRequired)
+            var uploadTo = pi.FirstAttribute<UploadToAttribute>();
+            if (property.Input != null && property.Input.Accept == null && uploadTo != null)
             {
-                var notNullRefType = pi.IsNotNullable();
-                if (notNullRefType == true)
-                    property.IsRequired = true;
-            }
-
-            var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
-            if (apiAllowableValues != null)
-            {
-                property.AllowableValues = apiAllowableValues.Values;
-                property.AllowableMin = apiAllowableValues.Min;
-                property.AllowableMax = apiAllowableValues.Max;
-            }
-            
-            var inputProp = pi.FirstAttribute<InputAttribute>();
-            if (inputProp != null)
-            {
-                property.Input = inputProp.ToInput(c => {
-                    c.Required ??= property.IsRequired;
-                    c.MinLength ??= property.AllowableMin;
-                    c.MaxLength ??= property.AllowableMax;
-                });
-                var uploadTo = pi.FirstAttribute<UploadToAttribute>();
-                if (property.Input.Accept == null && uploadTo != null)
+                var feature = HostContext.GetPlugin<FilesUploadFeature>();
+                var location = feature?.Locations.FirstOrDefault(x => x.Name == uploadTo.Location);
+                if (location is { AllowExtensions.Count: > 0 })
                 {
-                    var feature = HostContext.GetPlugin<FilesUploadFeature>();
-                    var location = feature?.Locations.FirstOrDefault(x => x.Name == uploadTo.Location);
-                    if (location is { AllowExtensions.Count: > 0 })
-                    {
-                        property.Input.Accept = string.Join(",", location.AllowExtensions.Map(x => $".{x}"));
-                    }
+                    property.Input.Accept = string.Join(",", location.AllowExtensions.Map(x => $".{x}"));
                 }
-                if (pi.PropertyType.IsEnum && property.Input.AllowableValues == null) 
-                {
-                    property.Input.Type ??= Html.Input.Types.Select;
-                    if (Html.Input.GetEnumEntries(pi.PropertyType, out var entries))
-                        property.Input.AllowableEntries = entries;
-                    else
-                        property.Input.AllowableValues = entries.Select(x => x.Value).ToArray();
-                }
-            }
-            var css = pi.FirstAttribute<FieldCssAttribute>().ToCss();
-            if (css != null)
-            {
-                property.Input ??= new InputInfo();
-                property.Input.Css = css;
-            }
-
-            if (instance != null)
-            {
-                var ignoreValue = ignoreValues != null && ignoreValues.TryGetValue(pi.Name, out var oValue)
-                    ? oValue
-                    : propType.GetDefaultValue();
-                property.Value = PropertyValue(pi, instance, ignoreValue);
-
-                if (pi.GetSetMethod() == null) //ReadOnly is bool? to minimize serialization
-                    property.ReadOnly = true;
             }
             return property;
         }
 
-        public static string[] ToGenericArgs(Type propType)
-        {
-            var genericArgs = propType.IsGenericType
-                ? propType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
-                : null;
-            return genericArgs;
-        }
-
-        public static string PropertyValue(PropertyInfo pi, object instance, object ignoreIfValue=null)
-        {
-            try
-            {
-                var value = pi.GetValue(instance, null);
-                if (value != null && !value.Equals(ignoreIfValue))
-                {
-                    return PropertyStringValue(pi, value);
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Warn($"Could not get value for property '{pi.PropertyType}.{pi.Name}'", ex);
-            }
-
-            return null;
-        }
-
-        public static string PropertyStringValue(PropertyInfo pi, object value)
-        {
-            if (pi.PropertyType.IsEnum)
-                return pi.PropertyType.Name + "." + value;
-
-            if (pi.PropertyType == typeof(Type))
-            {
-                var type = (Type) value;
-                return $"typeof({type.FullName})";
-            }
-
-            var strValue = value as string;
-            return strValue ?? value.ToJson();
-        }
 
         public MetadataPropertyType ToProperty(ParameterInfo pi)
         {
@@ -995,31 +865,6 @@ namespace ServiceStack.NativeTypes
 
             return property;
         }
-
-        public static MetadataDataMember ToDataMember(DataMemberAttribute attr)
-        {
-            if (attr == null) return null;
-
-            var metaAttr = new MetadataDataMember
-            {
-                Name = attr.Name,
-                EmitDefaultValue = attr.EmitDefaultValue == false ? false : (bool?)null, //true by default
-                Order = attr.Order >= 0 ? attr.Order : (int?)null,
-                IsRequired = attr.IsRequired.NullIfFalse(),
-            };
-
-            return metaAttr;
-        }
-
-        public static PropertyInfo[] GetInstancePublicProperties(Type type)
-        {
-            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .OnlySerializableProperties(type)
-                .Where(t => 
-                    t.GetIndexParameters().Length == 0 && // ignore indexed properties
-                    !t.HasAttribute<ExcludeMetadataAttribute>())
-                .ToArray();
-        }
     }
 
     public class CreateTypeOptions
@@ -1035,22 +880,6 @@ namespace ServiceStack.NativeTypes
 
     public static class MetadataExtensions
     {
-        public static List<MetadataPropertyType> PopulatePrimaryKey(this List<MetadataPropertyType> props)
-        {
-            var hasPkAttr = 
-                props.FirstOrDefault(p => p.PropertyInfo?.HasAttributeCached<PrimaryKeyAttribute>() == true) ??
-                props.FirstOrDefault(p => p.Name.Equals(Keywords.Id, StringComparison.OrdinalIgnoreCase)) ??
-                props.FirstOrDefault(p => p.PropertyInfo?.HasAttributeCached<AutoIncrementAttribute>() == true) ??
-                props.FirstOrDefault(p => p.PropertyInfo?.HasAttributeCached<AutoIdAttribute>() == true);
-
-            if (hasPkAttr != null)
-            {
-                hasPkAttr.IsPrimaryKey = true;
-            }
-
-            return props;
-        }
-
         public static MetadataTypeName ToMetadataTypeName(this MetadataType type)
         {
             if (type == null) return null;

@@ -315,7 +315,7 @@ public class AdminDatabaseService : Service
                     Type = type.GetMetadataPropertyType(),
                     IsValueType = underlyingType.IsValueType ? true : null,
                     IsEnum = underlyingType.IsEnum ? true : null,
-                    GenericArgs = MetadataTypesGenerator.ToGenericArgs(type),
+                    GenericArgs = type.ToGenericArgs(),
                     IsPrimaryKey = x.IsKey ? true : null,
                 };
             });

@@ -413,56 +413,6 @@ namespace ServiceStack
         {
             return value;
         }
-        
-        /// <summary>
-        /// Check if #nullable enabled reference type is non nullable
-        /// </summary>
-        /// <param name="property"></param>
-        /// <returns>true if #nullable enabled reference type, false if optional, null if value Type or #nullable not enabled</returns>
-        public static bool? IsNotNullable(this PropertyInfo property) =>
-            IsNotNullable(property.PropertyType, property.DeclaringType, property.CustomAttributes);
-
-        /// <summary>
-        /// Check if #nullable enabled reference type is non nullable
-        /// </summary>
-        /// <returns>true if #nullable enabled reference type, false if optional, null if value Type or #nullable not enabled</returns>
-        public static bool? IsNotNullable(Type memberType, MemberInfo declaringType, IEnumerable<CustomAttributeData> customAttributes)
-        {
-            if (!memberType.IsValueType)
-            {
-                var nullable = customAttributes
-                    .FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
-                if (nullable != null && nullable.ConstructorArguments.Count == 1)
-                {
-                    var attributeArgument = nullable.ConstructorArguments[0];
-                    if (attributeArgument.ArgumentType == typeof(byte[]))
-                    {
-                        var args = (ReadOnlyCollection<CustomAttributeTypedArgument>)attributeArgument.Value;
-                        if (args.Count > 0 && args[0].ArgumentType == typeof(byte))
-                        {
-                            return (byte)args[0].Value == 1;
-                        }
-                    }
-                    else if (attributeArgument.ArgumentType == typeof(byte))
-                    {
-                        return (byte)attributeArgument.Value == 1;
-                    }
-                }
-
-                for (var type = declaringType; type != null; type = type.DeclaringType)
-                {
-                    var context = type.CustomAttributes
-                        .FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute");
-                    if (context != null &&
-                        context.ConstructorArguments.Count == 1 &&
-                        context.ConstructorArguments[0].ArgumentType == typeof(byte))
-                    {
-                        return (byte)context.ConstructorArguments[0].Value == 1;
-                    }
-                }
-            }
-            return null;
-        }
 
         public static Func<object,object> GetPropertyAccessor(this Type type, PropertyInfo forProperty)
         {
