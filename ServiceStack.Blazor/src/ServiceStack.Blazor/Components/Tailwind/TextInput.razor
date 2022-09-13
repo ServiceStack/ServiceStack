@@ -7,10 +7,19 @@
     <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
-        <input type=@UseType class=@ClassNames("block w-full sm:text-sm rounded-md", 
-            CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300", 
-                     "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500")) 
-                id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
+        @{
+            var cls = @ClassNames("block w-full sm:text-sm rounded-md",
+            CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+            "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
+        }
+        @if (UseType == Html.Input.Types.Textarea)
+        {
+            <textarea type=@UseType class=@cls id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes"></textarea>
+        }
+        else
+        {
+            <input type=@UseType class=@cls id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
+        }
     @if (HasErrorField)
     {
         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

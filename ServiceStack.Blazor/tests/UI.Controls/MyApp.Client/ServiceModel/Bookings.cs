@@ -82,7 +82,7 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public decimal? Cost { get; set; }
     public DateTime? BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
-    // [Input(Type = "textarea")]
+    [Input(Type = "textarea")]
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
 }
