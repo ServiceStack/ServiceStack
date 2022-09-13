@@ -1511,7 +1511,17 @@ public static class AppMetadataUtils
             var value = pi.GetValue(instance, null);
             if (value != null && !value.Equals(ignoreIfValue))
             {
-                return PropertyStringValue(pi, value);
+                if (pi.PropertyType.IsEnum)
+                    return pi.PropertyType.Name + "." + value;
+
+                if (pi.PropertyType == typeof(Type))
+                {
+                    var type = (Type)value;
+                    return $"typeof({type.FullName})";
+                }
+
+                var strValue = value as string;
+                return strValue ?? value.ToJson();
             }
         }
         catch (Exception ex)
@@ -1521,21 +1531,6 @@ public static class AppMetadataUtils
         }
 
         return null;
-    }
-
-    public static string PropertyStringValue(this PropertyInfo pi, object value)
-    {
-        if (pi.PropertyType.IsEnum)
-            return pi.PropertyType.Name + "." + value;
-
-        if (pi.PropertyType == typeof(Type))
-        {
-            var type = (Type)value;
-            return $"typeof({type.FullName})";
-        }
-
-        var strValue = value as string;
-        return strValue ?? value.ToJson();
     }
 
     public static MetadataDataMember ToDataMember(this DataMemberAttribute attr)
