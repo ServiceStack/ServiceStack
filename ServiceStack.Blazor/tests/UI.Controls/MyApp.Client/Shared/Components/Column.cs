@@ -68,6 +68,7 @@ public class Column<Model> : UiComponentBase
         await base.OnInitializedAsync();
         Settings = await LocalStorage.GetItemAsync<ColumnSettings>(CacheKey) ?? new();
         await DataGrid!.NotifyPropertyChanged(nameof(Settings));
+        await DataGrid!.FiltersChanged.InvokeAsync();
         //Console.WriteLine($"LOAD {CacheKey}: {Settings.Filters.Count}");
     }
 

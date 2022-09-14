@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Security.Claims;
 
 namespace ServiceStack.Blazor;
 
@@ -14,6 +16,8 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
     public virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) => JsonApiClientUtils.ApiAsync(this, request);
     public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) => JsonApiClientUtils.SendAsync(this, request);
 
+    public virtual Task<IHasErrorStatus> ApiAsync<Model>(object request) => JsonApiClientUtils.ApiAsync<Model>(this, request);
+
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
     public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => JsonApiClientUtils.ApiAppMetadataAsync(this);
 
@@ -22,6 +26,28 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
     {
         if (EnableLogging)
             BlazorUtils.Log(message);
+    }
+}
+
+/// <summary>
+/// For Pages and Components requiring Authentication
+/// </summary>
+public abstract class AuthBlazorComponentBase : BlazorComponentBase
+{
+    [CascadingParameter]
+    protected Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    protected bool HasInit { get; set; }
+
+    protected bool IsAuthenticated => User?.Identity?.IsAuthenticated ?? false;
+
+    protected ClaimsPrincipal? User { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var state = await AuthenticationStateTask!;
+        User = state.User;
+        HasInit = true;
     }
 }
 

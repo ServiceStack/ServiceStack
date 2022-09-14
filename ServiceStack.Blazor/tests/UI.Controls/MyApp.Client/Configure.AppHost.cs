@@ -24,7 +24,7 @@ public class AppHost : AppHostBase, IHostingStartup
             "https://" + Environment.GetEnvironmentVariable("DEPLOY_CDN")
         }, allowCredentials: true));
 
-        Plugins.Add(new RunAsAdminFeature());
+        //Plugins.Add(new RunAsAdminFeature());
         Plugins.Add(new RequestLogsFeature
         {
             EnableResponseTracking = true,

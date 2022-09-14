@@ -21,6 +21,7 @@ else
         <div v-else-if="hasEditComponent" v-scope="EditComponent({ store, routes, settings, state:() => state, save, done:() => routes.to({ edit:null }) })"></div>
         <div v-else v-scope="EditForm({ store, routes, settings, state:() => state, save, done:() => routes.to({ edit:null }) })"></div>
     </div-->
+    <CascadingValue Value="AppMetadata">
     @if (New == true)
     {
         if (CreateForm != null)
@@ -42,6 +43,7 @@ else
             <AutoEditForm Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" Done="OnEditDone" Save="OnEditSave" />
         }
     }
+    </CascadingValue>
 
     @if (ShowToolbar)
     {

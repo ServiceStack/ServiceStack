@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using MyApp.Client.Shared.Components;
 using ServiceStack;
 using ServiceStack.Blazor;
 using ServiceStack.Blazor.Components;

@@ -1,15 +1,12 @@
 ﻿@typeparam Model
-@inherits AppAuthComponentBase
+@inherits BlazorComponentBase
 
 <div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-    <!-- Background backdrop, show/hide based on slide-over state. -->
-    @*<div class="fixed inset-0"></div>*@
-
     <div class="">
         <div class="">
             <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
                 <div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
-                    <form class=@FormClass>
+                    <form class=@FormClass @onsubmit="OnSave">
                         <!-- Header -->
                         <div class="h-0 flex-1 overflow-y-auto">
                             <div class=@TitlebarClass>
@@ -41,9 +38,11 @@
                                 </div>
                             </div>
 
+                            <ErrorSummary ExplicitStatus=@(updateApi?.Error ?? deleteApi?.Error) Except=@VisibleFields />
                             <div class="flex flex-1 flex-col justify-between">
                                 <div class="divide-y divide-gray-200 px-4 sm:px-6">
                                     <div class="space-y-6 pt-6 pb-5">
+
 
                                     <fieldset class="grid grid-cols-12 gap-6">
                                     @foreach (var f in FormLayout.Safe())
@@ -85,15 +84,20 @@
     [Parameter] public string TitlebarClass { get; set; } = "bg-gray-50 px-4 py-6 sm:px-6";
     [Parameter] public string HeadingClass { get; set; } = "text-lg font-medium text-gray-900";
 
+    [Parameter] public bool AutoSave { get; set; } = true;
+
     [Parameter] public EventCallback Done { get; set; }
     [Parameter] public EventCallback<Model> Save { get; set; }
+    [Parameter] public EventCallback<ResponseStatus> Error { get; set; }
 
 
     [Parameter] public List<InputInfo>? FormLayout { get; set; }
 
-    ApiResult<IdResponse> updateApi = new();
-    Dictionary<string, object> ModelDictionary { get; set; } = new();
+    IHasErrorStatus? updateApi;
+    IHasErrorStatus? deleteApi;
 
+    string[] VisibleFields => ModelDictionary?.Keys.ToArray() ?? Array.Empty<string>();
+    Dictionary<string, object> ModelDictionary { get; set; } = new();
 
     protected DataTransition SlideOverTransition = new DataTransition(
         entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
@@ -104,7 +108,8 @@
     string? Notes => ApiType.FirstAttribute<NotesAttribute>()?.Notes;
 
     MetadataType? metadataType;
-    public MetadataType? MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name);
+    public MetadataType? MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name)
+        ?? typeof(Model).ToMetadataType();
 
     protected async Task OnDone()
     {
@@ -117,14 +122,29 @@
         await Done.InvokeAsync();
     }
 
+    public object CreateRequest() => ModelDictionary.FromObjectDictionary(ApiType);
+
     public async Task OnSave()
     {
+        updateApi = deleteApi = null;
+        if (AutoSave)
+        {
+            var request = CreateRequest();
+            updateApi = await ApiAsync<Model>(request);
+            if (updateApi.Error != null)
+            {
+                await Error.InvokeAsync(updateApi.Error);
+                return;
+            }
+        }
+
         await Save.InvokeAsync(Edit);
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        updateApi = deleteApi = null;
         await DataTransition.TransitionAllAsync(
             show: true,
             onChange: StateHasChanged,
@@ -139,6 +159,9 @@
             metadataType ??= ApiType.ToMetadataType();
             foreach (var prop in metadataType.Properties)
             {
+                if (prop.IsPrimaryKey == true)
+                    continue;
+
                 if (prop.Input == null)
                     prop.PopulateInput(Input.Create(prop.PropertyInfo));
 

@@ -1,0 +1,101 @@
+@page "/signin"
+@inherits AppAuthComponentBase
+@inject ServiceStackStateProvider provider
+@inject NavigationManager NavigationManager
+
+@if (IsAuthenticated)
+{
+    NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+    return;
+}
+
+<h1 class="mb-4 text-2xl font-semibold text-gray-900">
+    Sign In
+</h1>
+
+<div class="max-w-screen-md">
+
+<form @onsubmit="submit" class="max-w-xl">
+<CascadingValue Value=@api.Error>
+    <div class="shadow overflow-hidden sm:rounded-md">
+        <ErrorSummary Except=@VisibleFields />
+
+        <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
+            <div class="flex flex-col gap-y-4">
+                <TextInput @bind-Value="request.UserName" spellcheck="false" Help="Email address" />
+                <TextInput type="password" @bind-Value="request.Password" spellcheck="false" />
+                <CheckboxInput @bind-Value="request.RememberMe" />
+            </div>
+        </div>
+
+        <div class="pt-5 px-4 py-3 bg-gray-50 text-right sm:px-6">
+            <div class="flex justify-end">
+                <FormLoading class="flex-1" Loading=@api.IsLoading />
+                <NavLink href="/signup" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Register New User
+                </NavLink>
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Login
+                </button>
+            </div>
+        </div>
+    </div>
+</CascadingValue>
+</form>
+
+<div class="flex mt-8">
+    <h3 class="hidden xs:block mr-4 leading-8 text-gray-500">Quick Links</h3>
+    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+        <button @onclick='_ => SetUser("admin@email.com", "p@55wOrd")'
+            class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+            admin@email.com</button>
+        <button @onclick='_ => SetUser("manager@email.com", "p@55wOrd")'
+            class="-ml-px relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+            manager@email.com</button>
+        <button @onclick='_ => SetUser("employee@email.com", "p@55wOrd")'
+            class="-ml-px relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+            employee@email.com</button>
+        <button @onclick='_ => SetUser("new@user.com", "p@55wOrd")'
+            class="-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+            new@user.com</button>
+    </span>
+</div>
+    
+<div class="mt-4">
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/SignIn.razor" IconSrc="/img/blazor.svg" />
+</div>
+
+</div>
+
+@code {
+    string[] VisibleFields => new[]{ nameof(Authenticate.UserName), nameof(Authenticate.Password) };
+
+    ApiResult<AuthenticateResponse> api = new();
+
+    Authenticate request = new();
+
+    void SetUser(string email, string password)
+    {
+        request.UserName = email;
+        request.Password = password;
+    }
+
+    async Task submit()
+    {
+        api.ClearErrors();
+
+        if (request.UserName.IsNullOrEmpty())
+            api.AddFieldError(nameof(request.UserName), "Email is required");
+
+        if (request.Password.IsNullOrEmpty())
+            api.AddFieldError(nameof(request.Password), "Password is required");
+
+        if (api.Failed) return;
+
+        api.IsLoading = true;
+        api = await provider.LoginAsync(request.UserName, request.Password);
+
+        if (api.Succeeded)
+            NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+    }
+}

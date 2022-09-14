@@ -1,20 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components;
 using ServiceStack;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 using ServiceStack.Blazor;
-using System.Runtime.Serialization;
-using System.Xml.Linq;
-using System.Linq;
 using Microsoft.JSInterop;
-using MyApp.Client.Shared.Components;
-using System.ComponentModel;
-using System;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace MyApp.Client.Components;
 
-public class AutoQueryGridBase<Model> : AppAuthComponentBase
+public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
 {
     public DataGridBase<Model>? DataGrid = default!;
     public string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
@@ -188,6 +180,7 @@ public class AutoQueryGridBase<Model> : AppAuthComponentBase
 
     protected async Task OnEditSave(Model model)
     {
+        lastQuery = null;
         OnEditDone();
     }
 
