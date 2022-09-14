@@ -769,7 +769,7 @@ namespace ServiceStack.NativeTypes
 
             //Populate ctor Arg values from matching properties
             var argValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            attrProps.Each(x => argValues[x.Name] = x.PropertyValueAsString(attr));
+            attrProps.Each(x => argValues[x.Name] = x.PropertyStringValue(attr));
 
             if (metaAttr.ConstructorArgs != null)
             {
