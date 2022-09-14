@@ -731,7 +731,7 @@ namespace ServiceStack.NativeTypes
                     MetadataPropertyType metaProp(KeyValuePair<PropertyInfo, object> entry)
                     {
                         var to = ToProperty(entry.Key);
-                        to.Value = entry.Key.PropertyStringValue(entry.Value);
+                        to.Value = entry.Key.PropertyValueAsString(entry.Value);
                         return to;
                     }
                     
@@ -769,7 +769,7 @@ namespace ServiceStack.NativeTypes
 
             //Populate ctor Arg values from matching properties
             var argValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            attrProps.Each(x => argValues[x.Name] = x.PropertyStringValue(attr));
+            attrProps.Each(x => argValues[x.Name] = x.PropertyValueAsString(attr));
 
             if (metaAttr.ConstructorArgs != null)
             {
