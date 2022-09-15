@@ -1,24 +1,27 @@
-﻿@inherits AppAuthComponentBase
+﻿@inherits AuthBlazorComponentBase
+@inject NavigationManager NavigationManager
 
-<div class="md:p-4">
-    <div class="mb-3" v-scope="Alert({ message })"></div>
-    <div v-if="!store.auth" class="mb-3" v-scope="store.SignIn({ $on })"></div>
-    <div v-else>
-        <button type="button" @onclick="_ => logout()"
+@if (!IsAuthenticated)
+{
+    <SlideOver Title=@Title SubHeading=@SubHeading Done="Done">
+        <Alert HtmlMessage=@HtmlMessage />
+        <div class="md:p-4">
+            <button type="button" @onclick="signIn"
                 class="flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-            Sign Out
-        </button>
-    </div>
-</div>
+                Sign In
+            </button>
+        </div>
+    </SlideOver>
+}
 
 @code {
-    [Parameter] public string? Message { get; set; }
+    [Parameter, EditorRequired] public string HtmlMessage { get; set; } = "";
+    [Parameter] public EventCallback Done { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? SubHeading { get; set; }
 
-    async Task signIn() {
-
-    }
-
-    async Task logout() {
-
+    async Task signIn()
+    {
+        NavigationManager.NavigateTo(NavigationManager.GetLoginUrl());
     }
 }

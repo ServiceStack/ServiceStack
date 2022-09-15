@@ -42,6 +42,8 @@ app.MapFallbackToPage("/_Host");
 
 app.UseServiceStack(new AppHost());
 
-BlazorConfig.EnableVerboseLogging = true;
+BlazorConfig.Set(new() {
+    EnableVerboseLogging = true
+});
 
 app.Run();

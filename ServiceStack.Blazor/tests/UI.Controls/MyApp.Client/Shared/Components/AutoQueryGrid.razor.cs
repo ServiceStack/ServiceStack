@@ -20,6 +20,11 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     [Parameter] public bool AllowSelection { get; set; }
     [Parameter] public bool AllowFiltering { get; set; }
+
+    [Parameter] public bool AllowCreate { get; set; }
+    [Parameter] public bool AllowUpdate { get; set; }
+    [Parameter] public bool AllowDelete { get; set; }
+
     public List<AutoQueryConvention> FilterDefinitions { get; set; } = ComponentConfig.DefaultFilters;
     [Parameter] public Apis? Apis { get; set; }
 
@@ -123,9 +128,21 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
 
     protected bool ShowQueryPrefs;
 
-    protected string? invalidAccess => null;
-    protected string? invalidCreateAccess => null;
-    protected string? invalidUpdateAccess => null;
+    protected MetadataOperationType? FindOp(string name) => X.Map(name, name =>
+        appMetadataApi.Response?.Api.Operations.FirstOrDefault(x => x.Request.Name == name));
+
+    protected MetadataOperationType QueryOp => X.Map(Apis!.Query ?? Apis.QueryInto, type => FindOp(type.Name))!;
+    protected MetadataOperationType? CreateOp => X.Map(Apis!.Create, type => FindOp(type.Name))!;
+    protected MetadataOperationType? UpdateOp => X.Map(Apis!.Patch ?? Apis.Update, type => FindOp(type.Name))!;
+    protected MetadataOperationType? DeleteOp => X.Map(Apis!.Delete, type => FindOp(type.Name))!;
+
+    protected string? invalidAccess => QueryOp != null ? base.InvalidAccessMessage(QueryOp) : null;
+    protected string? invalidCreateAccess => CreateOp != null ? base.InvalidAccessMessage(CreateOp) : null;
+    protected string? invalidUpdateAccess => UpdateOp != null ? base.InvalidAccessMessage(UpdateOp) : null;
+
+    protected bool CanCreate => AllowCreate && CreateOp != null && CanAccess(CreateOp);
+    protected bool CanUpdate => AllowUpdate && UpdateOp != null && CanAccess(UpdateOp);
+    protected bool CanDelete => AllowDelete && DeleteOp != null && CanAccess(DeleteOp);
 
     [Parameter, SupplyParameterFromQuery] public int Skip { get; set; } = 0;
     [Parameter, SupplyParameterFromQuery] public bool? New { get; set; }
@@ -353,7 +370,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
             await skipTo(Take);
             return;
         }
-        var selectedItem = DataGrid!.SelectedItem;
+        Model? selectedItem = DataGrid != null ? DataGrid.SelectedItem : default;
         var activeIndex = selectedItem != null 
             ? Results.FindIndex(x => selectedItem.Equals(x))
             : -1;

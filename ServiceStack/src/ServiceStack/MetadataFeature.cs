@@ -211,18 +211,33 @@ namespace ServiceStack
         public static AppMetadata ToAppMetadata(this INativeTypesMetadata nativeTypesMetadata, IRequest req)
         {
             var feature = HostContext.AssertPlugin<MetadataFeature>();
-            var typesConfig = nativeTypesMetadata.GetConfig(new TypesMetadata());
-            var includeTypes = req.QueryString["IncludeTypes"];
-            if (includeTypes != null)
-                typesConfig.IncludeTypes = includeTypes.FromJsv<List<string>>();
-            
-            feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
-            var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, nativeTypesMetadata, req);
-            
-            if (includeTypes != null)
-                metadataTypes.RemoveIgnoredTypes(typesConfig);
+            var view = req.Dto is MetadataApp dto ? dto.View?.ToLower() : null;
 
-            metadataTypes.Config = null;
+            var pluginsOnly = view?.StartsWith("plugins") == true; 
+            MetadataTypes metadataTypes = new MetadataTypes
+            {
+                Namespaces = new(),
+                Operations = new(),
+                Config = new(),
+                Types = new(),
+            };
+            
+            if (!pluginsOnly)
+            {
+                var typesConfig = nativeTypesMetadata.GetConfig(new TypesMetadata());
+                var includeTypes = req.QueryString["IncludeTypes"];
+                if (includeTypes != null)
+                    typesConfig.IncludeTypes = includeTypes.FromJsv<List<string>>();
+            
+                feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
+                metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, nativeTypesMetadata, req);
+            
+                if (includeTypes != null)
+                    metadataTypes.RemoveIgnoredTypes(typesConfig);
+
+                metadataTypes.Config = null;
+            }
+            
             var uiFeature = HostContext.GetPlugin<UiFeature>();
 
             var appHost = HostContext.AssertAppHost();
@@ -244,14 +259,10 @@ namespace ServiceStack
                 Api = metadataTypes,
             };
 
-            if (response.App.BaseUrl == null)
-                response.App.BaseUrl = req.GetBaseUrl();
-            if (response.App.ServiceName == null)
-                response.App.ServiceName = appHost.ServiceName;
-            if (response.App.JsTextCase == null)
-                response.App.JsTextCase = $"{Text.JsConfig.TextCase}";
+            response.App.BaseUrl ??= req.GetBaseUrl();
+            response.App.ServiceName ??= appHost.ServiceName;
+            response.App.JsTextCase ??= $"{Text.JsConfig.TextCase}";
 
-            var view = req.Dto is MetadataApp dto ? dto.View?.ToLower() : null;
             if (uiFeature?.PreserveAttributesNamed != null && view is "locode" or "explorer" or "admin-ui")
             {
                 var preserveAttrs = uiFeature.PreserveAttributesNamed.Map(x => x.LastLeftPart("Attribute"));
@@ -289,6 +300,29 @@ namespace ServiceStack
             foreach (var fn in feature.AfterAppMetadataFilters)
             {
                 fn(req,response);
+            }
+
+            if (pluginsOnly)
+            {
+                response.App = null;
+                response.Ui = null;
+                response.Config = null;
+                response.ContentTypeFormats = null;
+                response.HttpHandlers = null;
+
+                var plugins = view.IndexOf(':') >= 0 ? view.RightPart(':').Split(',').ToSet(StringComparer.OrdinalIgnoreCase) : null;
+                if (plugins != null)
+                {
+                    var obj = response.Plugins.ToObjectDictionary();
+                    var to = new Dictionary<string, object>();
+                    foreach (var entry in obj)
+                    {
+                        if (!plugins.Contains(entry.Key))
+                            continue;
+                        to[entry.Key] = entry.Value;
+                    }
+                    response.Plugins = to.FromObjectDictionary<PluginInfo>();
+                }
             }
 
             return response;

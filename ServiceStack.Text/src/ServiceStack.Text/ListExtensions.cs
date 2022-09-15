@@ -53,6 +53,15 @@ public static class ListExtensions
             list.Add(item);
     }
 
+    public static void AddDistinctRange<T>(this List<T> list, IEnumerable<T> items)
+    {
+        foreach (var item in items)
+        {
+            if (!list.Contains(item))
+                list.Add(item);
+        }
+    }
+
     public static T[] NewArray<T>(this T[] array, T with = null, T without = null) where T : class
     {
         var to = new List<T>(array);

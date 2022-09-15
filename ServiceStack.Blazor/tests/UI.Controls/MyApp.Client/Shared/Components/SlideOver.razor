@@ -1,0 +1,87 @@
+﻿@inherits BlazorComponentBase
+
+<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div class="">
+        <div class="">
+            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+                <div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
+
+                    <form class=@FormClass @onsubmit="CloseAsync">
+                        <!-- Header -->
+                        <div class="h-0 flex-1 overflow-y-auto">
+                            <div class=@TitlebarClass>
+                                <div class="flex items-start justify-between space-x-3">
+                                    <div class="space-y-1">
+                                        <h2 class=@HeadingClass id="slide-over-title">@Title</h2>
+                                        @if (SubHeading != null)
+                                        {
+                                            <div class="mt-1">
+                                                <p class="notes text-sm text-gray-500">@((MarkupString)SubHeading)</p>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex h-7 items-center">
+                                        <button type="button" @onclick="CloseAsync" class="rounded-md bg-gray-50 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <span class="sr-only">Close panel</span>
+                                            <!-- Heroicon name: outline/x-mark -->
+                                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            @ChildContent
+                        </div>
+
+                        <div class="flex flex-shrink-0 justify-end px-4 py-4">
+                            <button type="button" @onclick="CloseAsync" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                Close
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string PanelClass { get; set; } = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
+    [Parameter] public string FormClass { get; set; } = "flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl";
+    [Parameter] public string TitlebarClass { get; set; } = "bg-gray-50 px-4 py-6 sm:px-6";
+    [Parameter] public string HeadingClass { get; set; } = "text-lg font-medium text-gray-900";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? SubHeading { get; set; }
+
+    [Parameter] public EventCallback Done { get; set; }
+
+    protected DataTransition SlideOverTransition = new DataTransition(
+        entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
+        leaving: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-0", to: "translate-x-full"),
+        visible: false);
+
+    public async Task CloseAsync()
+    {
+        await DataTransition.TransitionAllAsync(
+            show: false,
+            onChange: StateHasChanged,
+            SlideOverTransition
+        );
+        await Task.Delay(500 - SlideOverTransition.DelayMs);
+        await Done.InvokeAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await DataTransition.TransitionAllAsync(
+            show: true,
+            onChange: StateHasChanged,
+            SlideOverTransition
+        );
+    }
+}

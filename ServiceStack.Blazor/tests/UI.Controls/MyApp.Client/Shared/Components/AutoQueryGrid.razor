@@ -1,30 +1,23 @@
 ﻿@typeparam Model
 @inherits Client.Components.AutoQueryGridBase<Model>
 
-
 @if (invalidAccess != null)
 {
     <div class="w-body md:w-body overflow-auto">
-        <EnsureAccess Message=@invalidAccess />
+        <EnsureAccess Title=@($"View {typeof(Model).Name}") HtmlMessage=@invalidAccess />
     </div>
 }
 else
 {
     <div class="pt-1">
-    <!--div v-if="routes.new" class="p-4">
-        <div v-if="!canCreate" v-scope="EnsureAccess({ store, message:() => invalidCreateAccess, $on:updated })"></div>
-        <div v-else-if="hasNewComponent" v-scope="NewComponent({ store, routes, settings, state:() => state, save, done:() => routes.to({ new:null }) })"></div>
-        <div v-else v-scope="CreateForm({ store, routes, settings, state:() => state, save, done:() => routes.to({ new:null }) })"></div>
-    </div>
-    <div-- v-else-if="routes.edit" class="p-4">
-        <div v-if="!canUpdate" v-scope="EnsureAccess({ store, message:() => invalidUpdateAccess, $on:updated })"></div>
-        <div v-else-if="hasEditComponent" v-scope="EditComponent({ store, routes, settings, state:() => state, save, done:() => routes.to({ edit:null }) })"></div>
-        <div v-else v-scope="EditForm({ store, routes, settings, state:() => state, save, done:() => routes.to({ edit:null }) })"></div>
-    </div-->
     <CascadingValue Value="AppMetadata">
     @if (New == true)
     {
-        if (CreateForm != null)
+        if (invalidCreateAccess != null)
+        {
+            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnEditDone" />
+        }
+        else if (CreateForm != null)
         {
             @CreateForm
         }
@@ -34,7 +27,11 @@ else
     }
     else if (EditModel != null)
     {
-        if (EditForm != null)
+        if (invalidUpdateAccess != null)
+        {
+            <EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDone" />
+        }
+        else if (EditForm != null)
         {
             @EditForm
         }
