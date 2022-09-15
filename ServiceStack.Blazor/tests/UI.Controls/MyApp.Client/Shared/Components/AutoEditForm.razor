@@ -108,8 +108,8 @@
     string? Notes => ApiType.FirstAttribute<NotesAttribute>()?.Notes;
 
     MetadataType? metadataType;
-    public MetadataType? MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name)
-        ?? typeof(Model).ToMetadataType();
+    public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == ApiType.Name)
+        ?? ApiType.ToMetadataType();
 
     protected async Task OnDone()
     {
@@ -151,13 +151,12 @@
             SlideOverTransition
         );
 
-        ModelDictionary = Edit.ToObjectDictionary();
+        ModelDictionary = Edit.ToModelDictionary();
 
         if (FormLayout == null)
         {
             FormLayout = new();
-            metadataType ??= ApiType.ToMetadataType();
-            foreach (var prop in metadataType.Properties)
+            foreach (var prop in MetadataType.Properties)
             {
                 if (prop.IsPrimaryKey == true)
                     continue;

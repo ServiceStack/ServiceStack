@@ -348,6 +348,14 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     }
     public void Dispose() => dotnetRef?.Dispose();
 
+    protected virtual void CloseDialogs()
+    {
+        if (Edit != null)
+            OnEditDone();
+        ShowQueryPrefs = false;
+        StateHasChanged();
+    }
+
     [JSInvokable]
     public async Task OnKeyNav(string key)
     {
@@ -356,8 +364,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
 
         if (key == KeyCodes.Escape)
         {
-            if (Edit != null)
-                OnEditDone();
+            CloseDialogs();
             return;
         }
         if (key == KeyCodes.ArrowLeft && canPrev)
@@ -377,7 +384,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         if (activeIndex == -1)
         {
             var firstRow = Results.FirstOrDefault();
-            if (firstRow != null)
+            if (firstRow != null && DataGrid != null)
             {
                 await DataGrid!.SetSelectedItem(firstRow);
             }

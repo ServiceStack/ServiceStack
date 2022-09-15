@@ -197,7 +197,7 @@ public static class TextUtils
             }
             else if (item.GetType().IsValueType)
             {
-                var v = item.ToString() ?? "";
+                var v = ToModelString(item);
                 to.Add(KeyValuePair.Create(v, v));
             }
             else
@@ -629,5 +629,29 @@ public static class TextUtils
     {
         list.Add(item);
         return list;
+    }
+
+    public static string ToModelString(this object? from)
+    {
+        if (from == null)
+            return "";
+
+        if (from is DateTime dt)
+            return dt.ToString("yyyy-MM-dd");
+        if (from is DateTimeOffset dto)
+            return dto.ToString("yyyy-MM-dd");
+        if (from is DateOnly dtonly)
+            return dtonly.ToString("yyyy-MM-dd");
+
+        return from.ConvertTo<string>();
+    }
+
+    /// <summary>
+    /// Used to convert Typed model into an object dictionary for usage in DynamicInput
+    /// </summary>
+    public static Dictionary<string, object> ToModelDictionary(this object from)
+    {
+        var obj = from.ToObjectDictionary();
+        return obj;
     }
 }

@@ -10,7 +10,7 @@ public class DynamicInputBase : TextInputBase
 
     protected string Value
     {
-        get => Model.TryGetValue(Input!.Id, out var value) ? value?.ToString() ?? "" : "";
+        get => Model.TryGetValue(Input!.Id, out var value) ? TextUtils.ToModelString(value) ?? "" : "";
         set => Model[Input!.Id] = value ?? "";
     }
 
