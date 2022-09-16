@@ -831,7 +831,7 @@ else
 bool confirmDelete;
 [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
 [Parameter] public string ConfirmLabel { get; set; } = "confirm";
-[Parameter] public RenderFragment? ChildContent { get; set; }
+public RenderFragment? ChildContent { get; set; }
 }
 @typeparam Model
 @inherits DataGridBase<Model>
@@ -1138,6 +1138,8 @@ else
 @code {
 [Parameter]
 public string Message { get; set; } = "Loading...";
+[Parameter]
+public string @class { get; set; } = "";
 public string prerenderedHtml { get; set; } = "";
 protected override async Task OnInitializedAsync()
 {

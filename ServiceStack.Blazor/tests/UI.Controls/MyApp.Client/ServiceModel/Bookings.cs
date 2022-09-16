@@ -60,6 +60,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     public int RoomNumber { get; set; }
     [ValidateGreaterThan(0)]
     public decimal Cost { get; set; }
+    [Required]
     public DateTime BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
     [Input(Type = "textarea")]

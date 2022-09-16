@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using MyApp;
 using MyApp.Client;
-using MyApp.Client.Components;
 using MyApp.Client.Data;
 using ServiceStack;
 using ServiceStack.Blazor;

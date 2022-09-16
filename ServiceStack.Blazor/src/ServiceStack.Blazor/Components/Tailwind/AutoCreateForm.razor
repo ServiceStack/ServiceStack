@@ -1,0 +1,89 @@
+﻿@using ServiceStack.Html
+@typeparam Model
+@inherits AutoFormBase<Model>
+
+<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div class="">
+        <div class="">
+            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+                <div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
+                    <form class=@FormClass @onsubmit="OnSave" @onsubmit:preventDefault>
+                        <!-- Header -->
+                        <div class="h-0 flex-1 overflow-y-auto">
+                            <div class=@TitlebarClass>
+                                <div class="flex items-start justify-between space-x-3">
+                                    <div class="space-y-1">
+                                        <h2 class=@HeadingClass id="slide-over-title">@Title</h2>
+                                        @if (SubHeading != null)
+                                        {
+                                            <div class="mt-1">
+                                                <p class="text-sm text-gray-500">@(SubHeading)</p>
+                                            </div>
+                                        }
+                                        else if (Notes != null)
+                                        {
+                                            <div class="mt-1">
+                                                <p class="notes text-sm text-gray-500">@((MarkupString)Notes)</p>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex h-7 items-center">
+                                        <button type="button" @onclick="OnDone" class="rounded-md bg-gray-50 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <span class="sr-only">Close panel</span>
+                                            <!-- Heroicon name: outline/x-mark -->
+                                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ErrorSummary ExplicitStatus=@(api?.Error) Except=@VisibleFields />
+                            <div class="flex flex-1 flex-col justify-between">
+                                <div class="divide-y divide-gray-200 px-4 sm:px-6">
+                                    <div class="space-y-6 pt-6 pb-5">
+
+
+                                    <fieldset class="grid grid-cols-12 gap-6">
+                                    @foreach (var f in FormLayout.OrEmpty())
+                                    {
+                                        <div class=@CssUtils.ClassNames(
+                                                f.Css?.Field ?? (f.Type == Input.Types.Textarea ? "col-span-12" : "col-span-12 xl:col-span-6"),
+                                                f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
+                                            <DynamicInput Input=@f Model=@ModelDictionary Status=@api?.Error />
+                                        </div>
+                                    }
+                                    </fieldset>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="flex flex-shrink-0 justify-end px-4 py-4">
+                            <button type="button" @onclick="OnDone" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Cancel</button>
+                            <button type="submit" class="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Model? NewModel { get; set; }
+
+    protected override string Title => Heading ?? ApiType.GetDescription() ?? $"New {typeof(Model).Name}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        api = null;
+        await TransitionAsync(show: true);
+
+        ModelDictionary = NewModel.ToModelDictionary();
+        FormLayout ??= CreateFormLayout();
+    }
+}

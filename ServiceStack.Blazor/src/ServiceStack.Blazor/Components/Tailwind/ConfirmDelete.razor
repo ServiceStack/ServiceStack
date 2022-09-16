@@ -1,0 +1,22 @@
+﻿@inherits UiComponentBase
+
+<input id="confirmDelete" type="checkbox" @bind-value="confirmDelete" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+<label for="confirmDelete" class="mx-1 select-none">@ConfirmLabel</label>
+<button type="button" disabled=@(!confirmDelete) @onclick="OnDelete"
+        class=@ClassNames(confirmDelete ? "bg-red-600 hover:bg-red-700" : "bg-red-400", "inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500", Class)>
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        @("Delete")
+    }
+</button>
+
+@code {
+    bool confirmDelete;
+    [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
+    [Parameter] public string ConfirmLabel { get; set; } = "confirm";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

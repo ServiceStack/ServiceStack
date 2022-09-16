@@ -31,4 +31,9 @@ public static class JsUtils
         }
         return to;
     }
+
+    public static async Task OpenAsync(this IJSRuntime js, string url, string? target = null)
+    {
+        await js.InvokeVoidAsync("window.open", url, target);
+    }
 }

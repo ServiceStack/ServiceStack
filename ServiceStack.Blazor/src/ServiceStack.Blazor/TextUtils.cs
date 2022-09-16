@@ -658,4 +658,13 @@ public static class TextUtils
         var obj = from.ToObjectDictionary();
         return obj;
     }
+
+    /// <summary>
+    /// Used to convert DynamicInput dictionary to a Typed model
+    /// </summary>
+    public static object FromModelDictionary(this Dictionary<string, object> from, Type type)
+    {
+        var to = from.FromObjectDictionary(type);
+        return to;
+    }
 }

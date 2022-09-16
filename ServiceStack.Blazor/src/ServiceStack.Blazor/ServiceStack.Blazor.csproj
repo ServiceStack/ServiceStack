@@ -23,13 +23,18 @@
 
     <Target Name="CombineTailwind" AfterTargets="Build" Condition=" '$(OS)' == 'Windows_NT' AND '$(MYTHZ_TOKEN)' != '' ">
         <Exec Command="echo CombineTailwind..." />
-        <CreateItem Include="./Components/Tailwind/*.razor">
+        <CreateItem Include="./Components/Tailwind/**/*.razor">
             <Output TaskParameter="Include" ItemName="TailwindHtmlFiles" />
         </CreateItem>
-        <ReadLinesFromFile File="%(TailwindHtmlFiles.FullPath)">
+        <CreateItem Include="./CssDefaults.cs">
+            <Output TaskParameter="Include" ItemName="TailwindHtmlFiles" />
+        </CreateItem>
+        <ReadLinesFromFile File="%(TailwindHtmlFiles.FullPath)"> 
             <Output TaskParameter="Lines" ItemName="TailwindHtmlFilesLines" />
         </ReadLinesFromFile>
         <WriteLinesToFile File="./dist/tailwind.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
+        <WriteLinesToFile File="../../tests/ServiceStack.Blazor.Tailwind.Tests/Client/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
+        <WriteLinesToFile File="../../tests/UI.Controls/MyApp.Client/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
         <Exec Command="npx tailwindcss -o tailwind.css --content=&quot;./*.html&quot; --minify" WorkingDirectory="dist" />
     </Target>
 
