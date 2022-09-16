@@ -127,12 +127,13 @@ TOP = `
     Deployments,      /docs/deploy
 `
 SIDEBAR = `
-    Counter,          /counter,       /img/nav/counter.svg
-    Todos,            /todomvc,       /img/nav/todomvc.svg
-    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
-    Call Hello,       /hello$,        /img/nav/hello.svg
-    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
-    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
+    Counter,          /counter,                /img/nav/counter.svg
+    Todos,            /todomvc,                /img/nav/todomvc.svg
+    Bookings CRUD,    /bookings-crud,          /img/nav/bookings-crud.svg
+    Examples,         /examples/autoquerygrid, /img/nav/bookings-crud.svg
+    Call Hello,       /hello$,                 /img/nav/hello.svg
+    Call HelloSecure, /hello-secure,           /img/nav/hello-secure.svg
+    Fetch data,       /fetchdata,              /img/nav/fetchdata.svg
 `
 
 const path = location.pathname
@@ -209,40 +210,7 @@ fetch(`/prerender${pagePath}`)
 
     <script type="text/javascript" src="/js/highlight.min.js"></script>
     <script>hljs.highlightAll()</script>
-
-<script>
-/* DOM functions used in Blazor Components */
-JS = (function () {
-    return {
-        get(name) { return window[name] },
-
-        /* Loading */
-        prerenderedPage() {
-            const el = document.querySelector('#app-loading .content')
-            return el && el.innerHTML || ''
-        },
-
-        /* ShellCommand */
-        copy(target) {
-            let $el = document.createElement("input")
-            let $lbl = target.parentElement.querySelector('label')
-
-            $el.setAttribute("value", $lbl.innerText)
-            document.body.appendChild($el)
-            $el.select()
-            document.execCommand("copy")
-            document.body.removeChild($el);
-
-            if (typeof window.getSelection == "function") {
-                const range = document.createRange()
-                range.selectNodeContents($lbl)
-                window.getSelection()?.removeAllRanges()
-                window.getSelection()?.addRange(range)
-            }
-        }
-    }
-})()
-</script>
+    <script type="text/javascript" src="/js/servicestack-blazor.js"></script>
 
 </body>
 </html>

@@ -1,8 +1,8 @@
-@inject IJSRuntime JsRuntime
+@inject IJSRuntime JS
 
 <div class=@CssUtils.ClassNames("lang relative bg-gray-700 text-gray-300 pl-5 py-3 sm:rounded flex", @class)>
-    <div @ref="elCmd" class="flex ml-2 w-full justify-between cursor-pointer" @onclick="copyCommand">
-        <label>@ChildContent</label>
+    <div class="flex ml-2 w-full justify-between cursor-pointer" @onclick="copyCommand">
+        <label @ref="elCmd">@ChildContent</label>
         <small class="text-xs text-gray-400 px-3 -mt-1">sh</small>
     </div>
 @if (SuccessText != string.Empty)
@@ -30,7 +30,8 @@
     async Task copyCommand(MouseEventArgs e)
     {
         SuccessText = "copied";
-        await JsRuntime.InvokeVoidAsync("JS.copy", elCmd);
+        var text = await JS.InvokeAsync<string>("JS.invoke", elCmd, "innerText");
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
         await Task.Delay(3_000);
         SuccessText = string.Empty;
     }
