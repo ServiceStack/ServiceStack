@@ -3,6 +3,7 @@ using ServiceStack;
 using ServiceStack.Text;
 using ServiceStack.Blazor;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace MyApp.Client.Components;
 
@@ -21,14 +22,18 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     [Parameter] public bool AllowSelection { get; set; }
     [Parameter] public bool AllowFiltering { get; set; }
 
-    [Parameter] public bool AllowCreate { get; set; }
-    [Parameter] public bool AllowUpdate { get; set; }
-    [Parameter] public bool AllowDelete { get; set; }
-
     public List<AutoQueryConvention> FilterDefinitions { get; set; } = ComponentConfig.DefaultFilters;
     [Parameter] public Apis? Apis { get; set; }
 
+    /// <summary>
+    /// Replace entire Toolbar
+    /// </summary>
     [Parameter] public RenderFragment? Toolbar { get; set; }
+    /// <summary>
+    /// Add more Toolbar buttons
+    /// </summary>
+    [Parameter] public RenderFragment? ToolbarButtons { get; set; }
+
     [Parameter] public bool ShowToolbar { get; set; } = true;
     [Parameter] public bool ShowPreferences { get; set; } = true;
     [Parameter] public bool ShowPagingNav { get; set; } = true;
@@ -37,10 +42,14 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     [Parameter] public bool ShowCopyApiUrl { get; set; } = true;
     [Parameter] public bool ShowResetPreferences { get; set; } = true;
     [Parameter] public bool ShowFiltersView { get; set; } = true;
+    [Parameter] public bool ShowNewItem { get; set; } = true;
     [Parameter] public List<Model> Items { get; set; } = new();
     [Parameter] public RenderFragment? CreateForm { get; set; }
     [Parameter] public RenderFragment? EditForm { get; set; }
     [Parameter] public Predicate<string>? DisableKeyBindings { get; set; }
+
+    [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
+    [Parameter] public EventCallback<Model> RowSelected { get; set; }
 
     public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
     public int Total => Api?.Response?.Total ?? Results.Count;
@@ -140,9 +149,9 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     protected string? invalidCreateAccess => CreateOp != null ? base.InvalidAccessMessage(CreateOp) : null;
     protected string? invalidUpdateAccess => UpdateOp != null ? base.InvalidAccessMessage(UpdateOp) : null;
 
-    protected bool CanCreate => AllowCreate && CreateOp != null && CanAccess(CreateOp);
-    protected bool CanUpdate => AllowUpdate && UpdateOp != null && CanAccess(UpdateOp);
-    protected bool CanDelete => AllowDelete && DeleteOp != null && CanAccess(DeleteOp);
+    protected bool CanCreate => CreateOp != null && CanAccess(CreateOp);
+    protected bool CanUpdate => UpdateOp != null && CanAccess(UpdateOp);
+    protected bool CanDelete => DeleteOp != null && CanAccess(DeleteOp);
 
     [Parameter, SupplyParameterFromQuery] public int Skip { get; set; } = 0;
     [Parameter, SupplyParameterFromQuery] public bool? New { get; set; }
@@ -177,14 +186,33 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         NavigationManager.NavigateTo(uri);
     }
 
-    protected void OnRowSelected(Model row)
+    protected async Task OnRowSelected(Model? item)
     {
-        var id = Properties.GetId(row);
-        if (id == null) return;
-        var idStr = id.ConvertTo<string>();
-        string uri = NavigationManager.Uri.SetQueryParam(QueryParams.Edit, idStr);
+        if (item == null)
+        {
+            OnEditDone();
+            return;
+        }
+
+        if (UpdateOp != null)
+        {
+            var id = Properties.GetId(item);
+            if (id != null)
+            {
+                var idStr = id.ConvertTo<string>();
+                string uri = NavigationManager.Uri.SetQueryParam(QueryParams.New, null).SetQueryParam(QueryParams.Edit, idStr);
+                NavigationManager.NavigateTo(uri);
+            }
+        }
+        await RowSelected.InvokeAsync(item);
+    }
+
+    protected void OnShowNewItem(MouseEventArgs e)
+    {
+        string uri = NavigationManager.Uri.SetQueryParam(QueryParams.Edit, null).SetQueryParam(QueryParams.New, "true");
         NavigationManager.NavigateTo(uri);
     }
+
 
     protected Model? EditModel { get; set; }
 
@@ -195,10 +223,23 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         NavigationManager.NavigateTo(uri);
     }
 
+    protected void OnNewDone()
+    {
+        EditModel = default;
+        string uri = NavigationManager.Uri.SetQueryParam(QueryParams.New, null);
+        NavigationManager.NavigateTo(uri);
+    }
+
     protected async Task OnEditSave(Model model)
     {
         lastQuery = null;
         OnEditDone();
+    }
+
+    protected void OnNewSave(Model model)
+    {
+        lastQuery = null;
+        OnNewDone();
     }
 
     protected bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
@@ -352,6 +393,9 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     {
         if (Edit != null)
             OnEditDone();
+        if (New != null)
+            OnNewDone();
+
         ShowQueryPrefs = false;
         StateHasChanged();
     }

@@ -33,7 +33,7 @@ public class DataGridBase<Model> : UiComponentBase
     [Parameter] public bool AllowFiltering { get; set; }
 
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
-    [Parameter] public EventCallback<Model> RowSelected { get; set; }
+    [Parameter] public EventCallback<Model?> RowSelected { get; set; }
     [Parameter] public string GridClass { get; set; } = "mt-4 flex flex-col";
     [Parameter] public string HoverSelectionClass { get; set; } = "cursor-pointer hover:bg-yellow-50";
     [Parameter] public string SelectedClass { get; set; } = "cursor-pointer bg-indigo-100";
@@ -100,8 +100,7 @@ public class DataGridBase<Model> : UiComponentBase
     {
         if (!AllowSelection) return;
         selectedItem = IsSelected(model) ? default : model;
-        if (selectedItem != null)
-            await RowSelected.InvokeAsync(selectedItem);
+        await RowSelected.InvokeAsync(selectedItem);
     }
 
     internal async Task OnRowSelected(MouseEventArgs e, Model model)

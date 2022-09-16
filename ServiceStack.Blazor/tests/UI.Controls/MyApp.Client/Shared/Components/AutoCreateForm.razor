@@ -38,7 +38,7 @@
                                 </div>
                             </div>
 
-                            <ErrorSummary ExplicitStatus=@(api?.Error ?? deleteApi?.Error) Except=@VisibleFields />
+                            <ErrorSummary ExplicitStatus=@(api?.Error) Except=@VisibleFields />
                             <div class="flex flex-1 flex-col justify-between">
                                 <div class="divide-y divide-gray-200 px-4 sm:px-6">
                                     <div class="space-y-6 pt-6 pb-5">
@@ -60,18 +60,9 @@
                             </div>
 
                         </div>
-
-                        <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6 flex flex-wrap justify-between">
-                            <div>
-                                @if (DeleteApiType != null)
-                                {
-                                    <ConfirmDelete Done="OnDelete" />
-                                }
-                            </div>
-                            <div class="flex justify-end">
-                                <button type="button" @onclick="OnDone" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Cancel</button>
-                                <button type="submit" class="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save</button>
-                            </div>
+                        <div class="flex flex-shrink-0 justify-end px-4 py-4">
+                            <button type="button" @onclick="OnDone" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Cancel</button>
+                            <button type="submit" class="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save</button>
                         </div>
                     </form>
                 </div>
@@ -81,41 +72,17 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public Model Edit { get; set; }
-    [Parameter] public Type? DeleteApiType { get; set; }
+    [Parameter] public Model? NewModel { get; set; }
 
-    protected override string Title => Heading ?? ApiType.GetDescription() ?? $"Edit {typeof(Model).Name} {MetadataType?.GetId(Edit)}";
-
-    protected IHasErrorStatus? deleteApi;
-
-
-    protected virtual async Task OnDelete()
-    {
-        if (DeleteApiType == null)
-            return;
-
-        deleteApi = null;
-        var request = CreateRequest(DeleteApiType);
-        var model = request.ConvertTo<Model>();
-        if (AutoSave)
-        {
-            api = await ApiAsync<Model>(request);
-            if (api.Error != null)
-            {
-                await Error.InvokeAsync(api.Error);
-                return;
-            }
-        }
-        await Delete.InvokeAsync(model);
-    }
+    protected override string Title => Heading ?? ApiType.GetDescription() ?? $"New {typeof(Model).Name}";
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        api = deleteApi = null;
+        api = null;
         await TransitionAsync(show: true);
 
-        ModelDictionary = Edit.ToModelDictionary();
+        ModelDictionary = NewModel.ToModelDictionary();
         FormLayout ??= CreateFormLayout();
     }
 }

@@ -649,8 +649,12 @@ public static class TextUtils
     /// <summary>
     /// Used to convert Typed model into an object dictionary for usage in DynamicInput
     /// </summary>
-    public static Dictionary<string, object> ToModelDictionary(this object from)
+    public static Dictionary<string, object> ToModelDictionary<T>(this T? from)
     {
+        var isNew = from == null;
+        if (isNew)
+            return new Dictionary<string, object>();
+
         var obj = from.ToObjectDictionary();
         return obj;
     }

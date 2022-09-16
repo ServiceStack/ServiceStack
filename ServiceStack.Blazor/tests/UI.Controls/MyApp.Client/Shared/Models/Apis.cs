@@ -27,12 +27,12 @@ public class Apis
             }
             if (type.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>)))
                 Create = type;
+            else if (type.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
+                Patch = type;
             else if (type.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>)))
                 Update = type;
             else if (type.IsOrHasGenericInterfaceTypeOf(typeof(IDeleteDb<>)))
                 Delete = type;
-            else if (type.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
-                Patch = type;
             else if (type.IsOrHasGenericInterfaceTypeOf(typeof(ISaveDb<>)))
                 Save = type;
         }

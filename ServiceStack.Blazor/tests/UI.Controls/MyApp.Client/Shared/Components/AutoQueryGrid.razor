@@ -15,7 +15,7 @@ else
     {
         if (invalidCreateAccess != null)
         {
-            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnEditDone" />
+            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDone" />
         }
         else if (CreateForm != null)
         {
@@ -23,6 +23,7 @@ else
         }
         else
         {
+            <AutoCreateForm Model="Model" ApiType="Apis!.Create" Done="OnNewDone" Save="OnNewSave" />
         }
     }
     else if (EditModel != null)
@@ -37,7 +38,7 @@ else
         }
         else
         {
-            <AutoEditForm Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" Done="OnEditDone" Save="OnEditSave" />
+            <AutoEditForm Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDone" Save="OnEditSave" Delete="OnEditSave" />
         }
     }
     </CascadingValue>
@@ -156,6 +157,15 @@ else
                     </button>
                 </div>
             }
+            @if (ShowNewItem && CreateOp != null)
+            {
+                <div class="pl-2">
+                    <button type="button" @onclick="OnShowNewItem" title=@($"New {typeof(Model).Name}") class=@ToolbarButtonClass>
+                        <svg class="w-5 h-5 mr-1 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"></path></svg>
+                        <span>@($"New {typeof(Model).Name}")</span>
+                    </button>
+                </div>
+            }
             </div>
         </div>
     }
@@ -180,7 +190,8 @@ else
                 <div>
                     <CascadingValue IsFixed="true" Value="this">
                         <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
-                                    PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync" RowSelected="OnRowSelected"
+                                    PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync" 
+                                    RowSelected="OnRowSelected" HeaderSelected="HeaderSelected"
                                     AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
                                     >
                             <CascadingValue IsFixed="true" Value="DataGrid">
