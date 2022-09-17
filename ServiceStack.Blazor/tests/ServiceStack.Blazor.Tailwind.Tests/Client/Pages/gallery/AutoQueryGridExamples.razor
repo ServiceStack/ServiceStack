@@ -1,4 +1,4 @@
-﻿@page "/examples/autoquerygrid"
+﻿@page "/gallery/autoquerygrid"
 @inject IJSRuntime JS
 
 <h1 class="mb-4 text-2xl font-semibold text-gray-900">
@@ -50,24 +50,20 @@
     </Columns>
 </AutoQueryGrid>
 
-<div class="mt-5 flex justify-center">
-    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.ServiceModel/Bookings.cs" IconSrc="/img/code.svg" />
-    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/BookingsCrud/Index.razor" IconSrc="/img/blazor.svg" />
-</div>
-
 @code {
     string FormatDate(object o) => o is DateTime d ? d.ToShortDateString() : "";
 
     // Handle when table header is selected
     public async Task OnSelectedHeader(Column<Booking> item)
     {
-        //await JS.Log(item.Name);
+        await JS.Log(item.Name);
     }
 
     // Handle when table row is selected
     public async Task OnSelectedRow(Booking? x)
     {
         var wasDeselected = x == null;
-        //await JS.Log(x);
+        if (!wasDeselected) await JS.Log($"{x.Name}");
     }
 }
+

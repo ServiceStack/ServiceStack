@@ -59,7 +59,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     protected ApiResult<QueryResponse<Model>>? Api { get; set; }
     protected ApiResult<QueryResponse<Model>>? EditApi { get; set; }
 
-    protected bool apiLoading => Api?.IsLoading == true;
+    protected bool apiLoading => Api == null;
     protected string? errorSummary => Api?.Error.SummaryMessage();
 
     protected enum Features
