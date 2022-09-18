@@ -21,7 +21,7 @@ else
         {
             @CreateForm
         }
-        else
+        else if (Apis!.Create != null)
         {
             <AutoCreateForm Model="Model" ApiType="Apis!.Create" Done="OnNewDone" Save="OnNewSave" />
         }
@@ -36,7 +36,7 @@ else
         {
             @EditForm
         }
-        else
+        else if (Apis!.Patch != null || Apis!.Update != null)
         {
             <AutoEditForm Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDone" Save="OnEditSave" Delete="OnEditSave" />
         }

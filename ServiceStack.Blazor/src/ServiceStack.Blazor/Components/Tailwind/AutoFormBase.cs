@@ -8,7 +8,6 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 public abstract class AutoFormBase<Model> : BlazorComponentBase
 {
     [Parameter, EditorRequired] public Type ApiType { get; set; }
-    [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
 
     [Parameter] public string? Heading { get; set; }
     [Parameter] public string? SubHeading { get; set; }
@@ -25,8 +24,12 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
     [Parameter] public EventCallback<Model> Delete { get; set; }
     [Parameter] public EventCallback<ResponseStatus> Error { get; set; }
 
-
     [Parameter] public List<InputInfo>? FormLayout { get; set; }
+
+    [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
+    protected MetadataType? metadataType;
+    public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == ApiType.Name)
+        ?? ApiType.ToMetadataType();
 
     protected string[] VisibleFields => FormLayout?.Where(x => x.Type != Input.Types.Hidden).Select(x => x.Id).ToArray() ?? Array.Empty<string>();
     protected Dictionary<string, object> ModelDictionary { get; set; } = new();
@@ -35,10 +38,6 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
 
     protected abstract string Title { get; }
     protected virtual string? Notes => ApiType.FirstAttribute<NotesAttribute>()?.Notes;
-
-    protected MetadataType? metadataType;
-    public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == ApiType.Name) 
-        ?? ApiType.ToMetadataType();
 
     protected async Task OnDone()
     {

@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServiceStack;
+using System.Security.AccessControl;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
 public class DataGridBase<Model> : UiComponentBase
 {
     public int InstanceId = BlazorUtils.NextId();
+    [Inject] public LocalStorage LocalStorage { get; set; }
     [Parameter] public string Id { get; set; } = "DataGrid." + typeof(Model).Name;
     [Parameter] public RenderFragment<Column<Model>> Columns { get; set; }
     [Parameter] public List<AutoQueryConvention> FilterDefinitions { get; set; } = BlazorConfig.Instance.DefaultFilters;
@@ -53,6 +55,11 @@ public class DataGridBase<Model> : UiComponentBase
 
     [Parameter] public EventCallback<string> PropertyChanged { get; set; }
     [Parameter] public EventCallback<List<Filter>> FiltersChanged { get; set; }
+
+    [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
+    protected MetadataType? metadataType;
+    public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name)
+        ?? typeof(Model).ToMetadataType();
 
     internal async Task NotifyPropertyChanged(string propertyName)
     {
@@ -115,11 +122,23 @@ public class DataGridBase<Model> : UiComponentBase
     {
         columns.Add(column);
     }
-    
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
+            if (columns.Count == 0)
+            {
+                foreach (var prop in MetadataType.Properties)
+                {
+                    columns.Add(new Column<Model> {
+                        DataGrid = this,
+                        LocalStorage = LocalStorage,
+                        PropertyAccessor = TypeProperties<Model>.GetAccessor(prop.Name),
+                    });
+                }
+            }
+
             // Calling StateHasChanged() will re-render the component and populate the columns
             StateHasChanged();
         }

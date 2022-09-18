@@ -335,7 +335,7 @@ public class GetNavItemsResponse : IMeta
 }
 
 [DataContract, ExcludeMetadata]
-public partial class MetadataApp : IReturn<AppMetadata>
+public partial class MetadataApp : IGet, IReturn<AppMetadata>
 {
     [DataMember(Order = 1)]
     public string View { get; set; }

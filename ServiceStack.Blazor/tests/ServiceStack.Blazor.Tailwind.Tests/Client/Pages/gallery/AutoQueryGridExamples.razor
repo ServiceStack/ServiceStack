@@ -1,11 +1,27 @@
 ﻿@page "/gallery/autoquerygrid"
 @inject IJSRuntime JS
 
-<h1 class="mb-4 text-2xl font-semibold text-gray-900">
-    AutoQueryGrid Example
+<h1 class="mb-4 text-3xl font-semibold text-gray-900">
+    AutoQueryGrid Examples
 </h1>
 
-<AutoQueryGrid Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()"
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Default
+</h2>
+
+<AutoQueryGrid Id="Default" Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()" />
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Read Only
+</h2>
+
+<AutoQueryGrid Id="ReadOnly" Model="Booking" Apis="Apis.AutoQuery<QueryBookings>()" />
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Responsive Columns
+</h2>
+
+<AutoQueryGrid Id="Responsive" Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()"
                AllowSelection="true" AllowFiltering="true"
                HeaderSelected="OnSelectedHeader" RowSelected="OnSelectedRow">
     <Columns>

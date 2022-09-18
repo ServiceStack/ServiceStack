@@ -25,7 +25,7 @@ public class Column<Model> : UiComponentBase
     [Parameter] public ColumnSettings Settings { get; set; } = new();
 
     // Use the provided title or infer it from the expression
-    public string? Label => Title ?? (Field != null ? GetMemberName(Field).SplitCamelCase().ToTitleCase() : null);
+    public string? Label => Title ?? (Field != null ? GetMemberName(Field) : Property?.Name)?.SplitCamelCase().ToTitleCase();
 
     protected override void OnInitialized()
     {
@@ -79,11 +79,14 @@ public class Column<Model> : UiComponentBase
         await DataGrid!.NotifyPropertyChanged(nameof(Settings));
     }
 
-    public string Name => Field != null ? GetMemberName(Field) : FieldName ?? throw new Exception("Field or FieldName needs to be set");
-    public Type FieldType => (Field != null ? GetMemberType(Field) : null) ?? typeof(object);
+    public string Name => Field != null ? GetMemberName(Field) : FieldName ?? Property?.Name ?? throw new Exception("Field or FieldName needs to be set");
+    public Type FieldType => (Field != null ? GetMemberType(Field) : null) ?? Property?.PropertyType ?? typeof(object);
     public KeyValuePair<string, string>[] EnumEntries => FieldType.IsEnum
         ? Html.Input.GetEnumEntries(FieldType)
         : Array.Empty<KeyValuePair<string, string>>();
+    
+    public PropertyAccessor PropertyAccessor { get; set; }
+    public PropertyInfo? Property => PropertyAccessor?.PropertyInfo;
 
     public List<AutoQueryConvention> Definitions => DataGrid?.FilterDefinitions ?? TypeConstants<AutoQueryConvention>.EmptyList;
 
@@ -133,13 +136,23 @@ public class Column<Model> : UiComponentBase
         }
     }
 
+    string? GetFormattedValue(object? value)
+    {
+        if (value == null) return "";
+        var formattedValue = Formatter != null
+            ? Formatter(value)
+            : string.IsNullOrEmpty(Format)
+                ? value?.ToString()
+                : string.Format("{0:" + Format + "}", value);
+        return formattedValue;
+    }
+
     internal RenderFragment<Model> CellTemplate
     {
         get
         {
             return cellTemplate ??= (rowData => builder =>
             {
-                var i = 0;
                 builder.OpenElement(0, "td");
 
                 var cls = VisibleFrom != null
@@ -159,13 +172,13 @@ public class Column<Model> : UiComponentBase
                     }
                     else
                     {
-                        var formattedValue = Formatter != null
-                            ? Formatter(value)
-                            : string.IsNullOrEmpty(Format)
-                                ? value?.ToString()
-                                : string.Format("{0:" + Format + "}", value);
-                        builder.AddContent(3, formattedValue);
+                        builder.AddContent(3, GetFormattedValue(value));
                     }
+                }
+                else if (PropertyAccessor != null)
+                {
+                    var value = PropertyAccessor.PublicGetter(rowData);
+                    builder.AddContent(4, GetFormattedValue(value));
                 }
 
                 builder.CloseElement();
