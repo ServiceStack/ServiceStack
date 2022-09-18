@@ -19,8 +19,9 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public RenderFragment Columns { get; set; }
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
-    [Parameter] public bool AllowSelection { get; set; }
-    [Parameter] public bool AllowFiltering { get; set; }
+    [Parameter] public bool AllowSelection { get; set; } = true;
+    [Parameter] public bool AllowFiltering { get; set; } = true;
+    [Parameter] public bool AllowQueryFilters { get; set; } = true;
 
     public List<AutoQueryConvention> FilterDefinitions { get; set; } = BlazorConfig.Instance.DefaultFilters;
     [Parameter] public Apis? Apis { get; set; }
@@ -284,6 +285,20 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
                 sb.AppendQueryParam(key, value);
             }
         }
+        if (AllowQueryFilters)
+        {
+            var query = Pcl.HttpUtility.ParseQueryString(new Uri(NavigationManager.Uri).Query);
+            foreach (string key in query)
+            {
+                string? value = query[key];
+                var isProp = Properties.Any(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
+                if (value == null || !isProp) continue;
+
+                filters[key] = value;
+                sb.AppendQueryParam(key, query[key]);
+            }
+        }
+
         var strFilters = StringBuilderCache.ReturnAndFree(sb);
         strFilters.TrimEnd('&');
 
@@ -325,7 +340,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     {
         await base.OnParametersSetAsync();
 
-        var query = ServiceStack.Pcl.HttpUtility.ParseQueryString(new Uri(NavigationManager.Uri).Query);
+        var query = Pcl.HttpUtility.ParseQueryString(new Uri(NavigationManager.Uri).Query);
         Skip = query[QueryParams.Skip]?.ConvertTo<int>() ?? 0;
         Edit = query[QueryParams.Edit];
         New = query[QueryParams.New]?.ConvertTo<bool>();
