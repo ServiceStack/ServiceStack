@@ -12,7 +12,6 @@ public class Column<Model> : UiComponentBase
     public int InstanceId = BlazorUtils.NextId();
 
     [CascadingParameter] public DataGridBase<Model>? DataGrid { get; set; }
-    //[CascadingParameter] public AutoQueryGridBase<Model>? AutoQueryGrid { get; set; }
     [Parameter] public Expression<Func<Model, object>>? Field { get; set; }
     [Parameter] public string? FieldName { get; set; }
     [Parameter] public string? HeaderClass { get; set; }
@@ -30,10 +29,6 @@ public class Column<Model> : UiComponentBase
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        //Console.WriteLine($"DataGrid: {DataGrid != null}, AutoQueryGrid: {AutoQueryGrid != null}");
-        //DataGrid ??= AutoQueryGrid!.DataGrid;
-        //if (DataGrid == null)
-        //    throw new ArgumentNullException(nameof(DataGrid));
         DataGrid!.AddColumn(this);
     }
 
@@ -47,12 +42,19 @@ public class Column<Model> : UiComponentBase
 
     protected override void OnParametersSet()
     {
-        if (lastCompiledExpression != Field)
+        ValidateCompiledExpression();
+    }
+
+    Func<Model, object>? ValidateCompiledExpression()
+    {
+        if (Field != null && lastCompiledExpression != Field)
         {
             compiledExpression = Field?.Compile();
             lastCompiledExpression = Field;
         }
+        return compiledExpression;
     }
+
 
     public string CacheKey => $"Column/{DataGrid?.Id ?? "DataGrid"}:{typeof(Model).Name}.{Name}";
 
@@ -163,9 +165,10 @@ public class Column<Model> : UiComponentBase
 
                 builder.AddAttribute(1, "class", cls);
 
-                if (compiledExpression != null)
+                var fieldExpr = ValidateCompiledExpression();
+                if (fieldExpr != null)
                 {
-                    var value = compiledExpression(rowData);
+                    var value = fieldExpr(rowData);
                     if (Template != null)
                     {
                         builder.AddContent(2, Template, rowData);

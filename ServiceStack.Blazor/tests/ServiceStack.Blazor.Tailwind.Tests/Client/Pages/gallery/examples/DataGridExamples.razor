@@ -1,0 +1,35 @@
+﻿@page "/gallery/datagrid"
+@layout MainLayout
+@using MyApp.Client.Pages.gallery.DataGrid
+
+<h1 class="mb-4 text-3xl font-semibold text-gray-900">
+    DataGrid Examples
+</h1>
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Default
+</h2>
+
+<ExampleCode Path="/DataGrid/Default.razor" />
+
+<p class="mb-4 text-lg">
+    In its most simple usage the DataGrid component can be used to render typed collections:
+</p>
+
+<Default />
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Responsive
+</h2>
+
+<ExampleCode Path="/DataGrid/Responsive.razor" />
+
+<p class="mb-4 text-lg">
+    How each column is formatted, which columns are displayed and at which responsive breakpoints is customizable using <b>&lt;Column&gt;</b> definitions:
+</p>
+
+<Responsive />
+
+@code {
+
+}

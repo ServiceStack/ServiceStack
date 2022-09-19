@@ -116,7 +116,7 @@ public class DataGridBase<Model> : UiComponentBase
 
     public List<Column<Model>> GetColumns() => columns;
 
-    Dictionary<string, Column<Model>> columnsMap;
+    Dictionary<string, Column<Model>>? columnsMap;
     public Dictionary<string, Column<Model>> ColumnsMap => columnsMap ??= GetColumns().ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
 
     internal void AddColumn(Column<Model> column)
