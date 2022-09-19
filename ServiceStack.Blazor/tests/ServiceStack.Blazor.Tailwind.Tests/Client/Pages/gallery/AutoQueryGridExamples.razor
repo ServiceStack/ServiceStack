@@ -8,16 +8,39 @@
     Read Only
 </h2>
 
+<ExampleCode Path="/AutoQueryGrid/ReadOnly.razor" />
+
+<p class="mb-4 text-lg">
+    If only the AutoQuery DTO is provided, the AutoQueryGrid only supports <b>read-only</b> mode:
+</p>
+
 <iframe class="w-full h-96" src="/gallery/autoquerygrid/readonly" />
+
 
 <h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
     CRUD
 </h2>
 
+<ExampleCode Path="/AutoQueryGrid/Crud.razor" />
+
+<p class="mb-4 text-lg">
+    If all AutoQuery CRUD DTOs are provided the AutoQuery Grid will allow authenticated users the ability to Create, Read, Update &amp; Delete records:
+</p>
 <iframe class="w-full h-96" src="/gallery/autoquerygrid/crud" />
 
 <h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
     Custom Responsive Columns
 </h2>
+
+<p class="mb-4 text-lg">
+    The example below shows an example of a responsive Data Grid where columns and header lables are collapsed at different responsive breakpoints.
+</p>
+
+<ExampleCode Path="/AutoQueryGrid/Responsive.razor" />
+
+<p class="mb-4 text-lg">
+    By default AutoQueryGrid displays all public properties, which columns are displayed as well as how they're formatted can be customized using 
+    the <b>&lt;Column/&gt;</b> element:
+</p>
 
 <iframe class="w-full h-96" src="/gallery/autoquerygrid/responsive" />

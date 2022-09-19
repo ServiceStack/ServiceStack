@@ -15,7 +15,7 @@ else
     {
         if (invalidCreateAccess != null)
         {
-            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDone" />
+            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDoneAsync" />
         }
         else if (CreateForm != null)
         {
@@ -23,14 +23,14 @@ else
         }
         else if (Apis!.Create != null)
         {
-            <AutoCreateForm Model="Model" ApiType="Apis!.Create" Done="OnNewDone" Save="OnNewSave" />
+            <AutoCreateForm @ref="AutoCreateForm" Model="Model" ApiType="Apis!.Create" Done="OnNewDoneAsync" Save="OnNewSaveAsync" />
         }
     }
     else if (EditModel != null)
     {
         if (invalidUpdateAccess != null)
         {
-            <EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDone" />
+            <EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDoneAsync" />
         }
         else if (EditForm != null)
         {
@@ -38,7 +38,7 @@ else
         }
         else if (Apis!.Patch != null || Apis!.Update != null)
         {
-            <AutoEditForm Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDone" Save="OnEditSave" Delete="OnEditSave" />
+            <AutoEditForm @ref="AutoEditForm" Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDoneAsync" Save="OnEditSave" Delete="OnEditSave" />
         }
     }
     </CascadingValue>

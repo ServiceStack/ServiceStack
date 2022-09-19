@@ -1,0 +1,47 @@
+﻿@using ServiceStack.Text
+@inject IJSRuntime JS
+
+@if (!string.IsNullOrEmpty(contents))
+{
+    <div class="language-razor m-4 w-full">
+        <pre><code class="cshtml-razor rounded block w-full p-4">@contents</code></pre>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public string? Path { get; set; }
+
+    string contents = "";
+
+    public static string GalleryBaseUrl { get; set; } =
+        "https://raw.githubusercontent.com/ServiceStack/ServiceStack/main/ServiceStack.Blazor/tests/ServiceStack.Blazor.Tailwind.Tests/Client/Pages/gallery";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (string.IsNullOrEmpty(contents))
+        {
+            contents = await DownloadPageContentsAsync(Path!);
+            StateHasChanged();
+            await JS.InvokeVoidAsync("hljs.highlightAll");
+        }
+    }
+
+    public static async Task<string> DownloadPageContentsAsync(string relativeUrl)
+    {
+        var pageUrl = GalleryBaseUrl.CombineWith(relativeUrl);
+        var contents = await pageUrl.GetStreamFromUrlAsync(requestFilter:req => req.With(x => x.UserAgent = "ServiceStack.Blazor"));
+        var sb = StringBuilderCache.Allocate();
+        var skippedDirectives = false;
+        foreach (var line in contents.ReadLines())
+        {
+            if (!skippedDirectives && line.StartsWith("@"))
+                continue;
+            else
+                skippedDirectives = true;
+
+            sb.AppendLine(line);
+        }
+        return StringBuilderCache.ReturnAndFree(sb).Trim();
+    }
+}

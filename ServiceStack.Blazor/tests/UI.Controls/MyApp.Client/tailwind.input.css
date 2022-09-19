@@ -62,6 +62,18 @@ select{
     padding-right: 1.35rem;
 }
 
+div.language-razor {
+    margin: 28px 0;
+    border-radius: 8px;
+}
+div.language-razor {
+    position: relative;
+    margin: 28px -24px;
+    background-color: #292d3e;
+    overflow-x: auto;
+    transition: background-color .5s;
+}
+
 .youtube {
     width: 448px;
     height: 252px;

@@ -41,13 +41,18 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
 
     protected async Task OnDone()
     {
+        await CloseAsync();
+        await Done.InvokeAsync();
+    }
+
+    public async Task CloseAsync()
+    {
         await DataTransition.TransitionAllAsync(
             show: false,
             onChange: StateHasChanged,
             SlideOverTransition
         );
         await Task.Delay(500 - SlideOverTransition.DelayMs);
-        await Done.InvokeAsync();
     }
 
     public object CreateRequest(Type type) => ModelDictionary.FromModelDictionary(type);

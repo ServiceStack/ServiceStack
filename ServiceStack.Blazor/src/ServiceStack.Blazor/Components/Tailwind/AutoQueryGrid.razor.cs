@@ -52,6 +52,9 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
 
+    protected AutoCreateForm<Model>? AutoCreateForm { get; set; }
+    protected AutoEditForm<Model>? AutoEditForm { get; set; }
+
     public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
     public int Total => Api?.Response?.Total ?? Results.Count;
 
@@ -191,7 +194,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     {
         if (item == null)
         {
-            OnEditDone();
+            await OnEditDoneAsync();
             return;
         }
 
@@ -217,15 +220,19 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
 
     protected Model? EditModel { get; set; }
 
-    protected void OnEditDone()
+    protected async Task OnEditDoneAsync()
     {
+        //if (AutoEditForm != null)
+        //    await AutoEditForm.CloseAsync();
         EditModel = default;
         string uri = NavigationManager.Uri.SetQueryParam(QueryParams.Edit, null);
         NavigationManager.NavigateTo(uri);
     }
 
-    protected void OnNewDone()
+    protected async Task OnNewDoneAsync()
     {
+        //if (AutoCreateForm != null)
+        //    await AutoCreateForm.CloseAsync();
         EditModel = default;
         string uri = NavigationManager.Uri.SetQueryParam(QueryParams.New, null);
         NavigationManager.NavigateTo(uri);
@@ -234,13 +241,13 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     protected async Task OnEditSave(Model model)
     {
         lastQuery = null;
-        OnEditDone();
+        await OnEditDoneAsync();
     }
 
-    protected void OnNewSave(Model model)
+    protected async Task OnNewSaveAsync(Model model)
     {
         lastQuery = null;
-        OnNewDone();
+        await OnNewDoneAsync();
     }
 
     protected bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
@@ -404,12 +411,12 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     }
     public void Dispose() => dotnetRef?.Dispose();
 
-    protected virtual void CloseDialogs()
+    protected virtual async Task CloseDialogsAsync()
     {
         if (Edit != null)
-            OnEditDone();
+            await OnEditDoneAsync();
         if (New != null)
-            OnNewDone();
+            await OnNewDoneAsync();
 
         ShowQueryPrefs = false;
         StateHasChanged();
@@ -423,7 +430,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
 
         if (key == KeyCodes.Escape)
         {
-            CloseDialogs();
+            await CloseDialogsAsync();
             return;
         }
         if (key == KeyCodes.ArrowLeft && canPrev)
