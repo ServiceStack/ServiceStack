@@ -99,6 +99,7 @@ public class DataGridBase<Model> : UiComponentBase
     {
         if (!AllowSelection) return;
         selectedItem = IsSelected(model) ? default : model;
+        StateHasChanged();
         await RowSelected.InvokeAsync(selectedItem);
     }
 

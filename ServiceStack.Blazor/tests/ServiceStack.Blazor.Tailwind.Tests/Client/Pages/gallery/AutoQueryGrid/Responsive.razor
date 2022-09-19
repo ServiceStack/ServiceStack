@@ -1,0 +1,65 @@
+﻿@page "/gallery/autoquerygrid/responsive"
+@layout ExampleLayout
+@inject IJSRuntime JS
+
+<AutoQueryGrid Id="Responsive" Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()"
+               AllowSelection="true" AllowFiltering="true"
+               HeaderSelected="OnSelectedHeader" RowSelected="OnSelectedRow">
+    <Columns>
+        <!-- Custom class -->
+        <Column Field="(Booking x) => x.Id" class="text-gray-900" />
+        <!-- Only show from Tailwind's xl responsive Breakpoint -->
+        <Column Field="(Booking x) => x.Name" VisibleFrom="Breakpoint.ExtraLarge" />
+        <!-- Custom Header collapsing 'Room' below 'lg' responsive breakpoint -->
+        <Column Field="(Booking x) => x.RoomType">
+            <Header>
+                <span class="hidden lg:inline">Room </span>Type
+            </Header>
+        </Column>
+        <!-- Custom Header collapsing 'Room' below 'lg' responsive breakpoint -->
+        <Column Field="(Booking x) => x.RoomNumber">
+            <Header>
+                <span class="hidden lg:inline">Room </span>No
+            </Header>
+        </Column>
+        <!-- Custom string Format -->
+        <Column Field="(Booking x) => x.Cost" Format="C" />
+        <!-- Custom C# Formatter -->
+        <Column Field="(Booking x) => x.BookingStartDate" Formatter="FormatDate" VisibleFrom="Breakpoint.Small">
+            <Header>
+                Start<span class="hidden lg:inline"> Date</span>
+            </Header>
+        </Column>
+        <!-- Custom Header and Cell Value -->
+        <Column Field="(Booking x) => x.BookingEndDate" Formatter="FormatDate" VisibleFrom="Breakpoint.ExtraLarge">
+            <Header>
+                End<span class="hidden lg:inline"> Date</span>
+            </Header>
+            <Template>
+                @{
+                    var booking = context as Booking;
+                }
+                @booking.BookingEndDate?.ToString("D")
+            </Template>
+        </Column>
+        <!-- Custom Title that's only visible from Tailwind's 'md' responsive Breakpoint -->
+        <Column Title="Employee" Field="(Booking x) => x.CreatedBy" VisibleFrom="Breakpoint.Medium" />
+    </Columns>
+</AutoQueryGrid>
+
+@code {
+    string FormatDate(object o) => o is DateTime d ? d.ToShortDateString() : "";
+
+    // Handle when table header is selected
+    public async Task OnSelectedHeader(Column<Booking> item)
+    {
+        await JS.Log(item.Name);
+    }
+
+    // Handle when table row is selected
+    public async Task OnSelectedRow(Booking? x)
+    {
+        var wasDeselected = x == null;
+        if (!wasDeselected) await JS.Log($"{x.Name}");
+    }
+}

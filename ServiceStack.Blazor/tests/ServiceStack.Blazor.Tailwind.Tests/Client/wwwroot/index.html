@@ -121,6 +121,12 @@
     </div>
 
 <script>
+var hideMainLayoutFor = "/gallery/autoquerygrid/".split(',')
+if (hideMainLayoutFor.some(x => location.pathname.startsWith(x))) {
+    document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML
+    document.body.classList.add('p-1', 'overflow-hidden')
+}
+
 TOP = `
     $0.40 /mo,         /docs/hosting
     Prerendering,      /docs/prerender
