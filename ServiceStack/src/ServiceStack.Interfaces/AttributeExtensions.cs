@@ -19,6 +19,7 @@ public static class AttributeExtensions
     static object[] AllAttributes(MemberInfo memberInfo, Type attrType) => memberInfo.GetCustomAttributes(attrType, true);
     static TAttr[] AllAttributes<TAttr>(ParameterInfo pi) => pi.GetCustomAttributes(typeof(TAttr), true).Cast<TAttr>().ToArray();
 
+    public static string GetNotes(this Type type) => FirstAttribute<NotesAttribute>(type)?.Notes;
     public static string GetDescription(this Type type)
     {
         var apiAttr = FirstAttribute<ApiAttribute>(type);

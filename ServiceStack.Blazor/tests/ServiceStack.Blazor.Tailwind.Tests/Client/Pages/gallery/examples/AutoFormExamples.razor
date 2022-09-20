@@ -66,3 +66,16 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 }";
 
 }
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Form Fields
+</h2>
+
+<ExampleCode Path="/AutoForm/Fields.razor" />
+
+<p class="mb-4 text-lg">
+    For more advanced customization on a Forms appearance and behavior, you can use <b>AutoFormFields</b> to just render the Form's fields including
+    Validation binding that you can then use to populate and send a custom Request DTO, e.g:
+</p>
+
+<Fields />

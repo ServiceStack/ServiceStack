@@ -31,7 +31,6 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
     public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == ApiType.Name)
         ?? ApiType.ToMetadataType();
 
-    protected string[] VisibleFields => FormLayout?.Where(x => x.Type != Input.Types.Hidden).Select(x => x.Id).ToArray() ?? Array.Empty<string>();
     protected Dictionary<string, object> ModelDictionary { get; set; } = new();
 
     protected DataTransition SlideOverTransition = CssDefaults.Form.SlideOverTransition;
@@ -86,22 +85,6 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
             }
         }
         await Save.InvokeAsync(model);
-    }
-
-    protected List<InputInfo> CreateFormLayout()
-    {
-        var formLayout = new List<InputInfo>();
-        foreach (var prop in MetadataType.Properties)
-        {
-            if (prop.IsPrimaryKey == true)
-                continue;
-
-            if (prop.Input == null)
-                prop.PopulateInput(Input.Create(prop.PropertyInfo));
-
-            formLayout.Add(prop.Input!);
-        }
-        return formLayout;
     }
 
     protected async Task TransitionAsync(bool show)

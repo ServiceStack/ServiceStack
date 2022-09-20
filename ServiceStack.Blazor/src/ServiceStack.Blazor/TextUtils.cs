@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Text;
+using ServiceStack.Html;
 using ServiceStack.Text;
 
 namespace ServiceStack.Blazor;
@@ -662,9 +663,33 @@ public static class TextUtils
     /// <summary>
     /// Used to convert DynamicInput dictionary to a Typed model
     /// </summary>
+    public static T FromModelDictionary<T>(this Dictionary<string, object> from) => (T)FromModelDictionary(from, typeof(T));
+
+    /// <summary>
+    /// Used to convert DynamicInput dictionary to a Typed model
+    /// </summary>
     public static object FromModelDictionary(this Dictionary<string, object> from, Type type)
     {
         var to = from.FromObjectDictionary(type);
         return to;
+    }
+
+    /// <summary>
+    /// Create a Form Layout from a declarative annotated DTO definition
+    /// </summary>
+    public static List<InputInfo> CreateFormLayout(this MetadataType MetadataType)
+    {
+        var formLayout = new List<InputInfo>();
+        foreach (var prop in MetadataType.Properties)
+        {
+            if (prop.IsPrimaryKey == true)
+                continue;
+
+            if (prop.Input == null)
+                prop.PopulateInput(Input.Create(prop.PropertyInfo));
+
+            formLayout.Add(prop.Input!);
+        }
+        return formLayout;
     }
 }

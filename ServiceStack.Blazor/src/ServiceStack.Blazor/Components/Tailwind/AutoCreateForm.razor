@@ -39,31 +39,12 @@
                                 </div>
                             </div>
 
-                            <ErrorSummary ExplicitStatus=@(api?.Error) Except=@VisibleFields />
-                            <div class="flex flex-1 flex-col justify-between">
-                                <div class="divide-y divide-gray-200 px-4 sm:px-6">
-                                    <div class="space-y-6 pt-6 pb-5">
-
-
-                                    <fieldset class="grid grid-cols-12 gap-6">
-                                    @foreach (var f in FormLayout.OrEmpty())
-                                    {
-                                        <div class=@CssUtils.ClassNames(
-                                                f.Css?.Field ?? (f.Type == Input.Types.Textarea ? "col-span-12" : "col-span-12 xl:col-span-6"),
-                                                f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
-                                            <DynamicInput Input=@f Model=@ModelDictionary Status=@api?.Error />
-                                        </div>
-                                    }
-                                    </fieldset>
-
-                                    </div>
-                                </div>
-                            </div>
+                            <AutoFormFields Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
 
                         </div>
                         <div class="flex flex-shrink-0 justify-end px-4 py-4">
-                            <button type="button" @onclick="OnDone" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Cancel</button>
-                            <button type="submit" class="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save</button>
+                            <SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+                            <PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
                         </div>
                     </form>
                 </div>
@@ -84,6 +65,6 @@
         await TransitionAsync(show: true);
 
         ModelDictionary = NewModel.ToModelDictionary();
-        FormLayout ??= CreateFormLayout();
+        FormLayout ??= MetadataType.CreateFormLayout();
     }
 }
