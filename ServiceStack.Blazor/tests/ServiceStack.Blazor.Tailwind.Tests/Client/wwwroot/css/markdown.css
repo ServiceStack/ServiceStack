@@ -188,6 +188,9 @@ code.hljs {
 .hljs-meta .hljs-string {
   color: #D69D85;
 }
+.cshtml-razor .hljs-string, .cshtml-razor .hljs-meta .hljs-string {
+    color: #DCDAC8;
+}
 
 /* base0C - Support, Regular Expressions, Escape Characters, Markup Quotes */
 .hljs-built_in,
@@ -195,7 +198,10 @@ code.hljs {
 .hljs-quote,
 .hljs-keyword.hljs-atrule,
 .hljs-regexp {
-  color: #449CD6;
+    color: #449CD6;
+}
+.cshtml-razor .hljs-built_in {
+    color: #A699E6;
 }
 
 /* base0D - Functions, Methods, Attribute IDs, Headings */
