@@ -108,8 +108,8 @@ code.hljs {
 }
 */
 .hljs {
-    color: #abb2bf;
-    background: #282c34;
+    color: #DADCDC;
+    background: #1E1E1E;
 }
 
 .hljs::selection,
@@ -139,7 +139,7 @@ code.hljs {
 .hljs-subst,
 .hljs-punctuation,
 .hljs-operator {
-  color: #abb2bf;
+  color: #DCDCD8;
 }
 
 .hljs-operator {
@@ -152,18 +152,19 @@ code.hljs {
 .hljs-template-variable,
 .hljs-selector-tag,
 .hljs-name,
-.hljs-deletion {
-  color: #e06c75;
+.hljs-deletion,
+.hljs-attr,
+.hljs-tag {
+    color: #009898;
 }
 
 /* base09 - Integers, Boolean, Constants, XML Attributes, Markup Link Url */
 .hljs-symbol,
 .hljs-number,
 .hljs-link,
-.hljs-attr,
 .hljs-variable.constant_,
 .hljs-literal {
-  color: #d19a66;
+  color: #B5CE9A;
 }
 
 /* base0A - Classes, Markup Bold, Search Text Background */
@@ -185,7 +186,7 @@ code.hljs {
 .hljs-title.class_.inherited__,
 .hljs-string,
 .hljs-meta .hljs-string {
-  color: #98c379;
+  color: #D69D85;
 }
 
 /* base0C - Support, Regular Expressions, Escape Characters, Markup Quotes */
@@ -194,7 +195,7 @@ code.hljs {
 .hljs-quote,
 .hljs-keyword.hljs-atrule,
 .hljs-regexp {
-  color: #56b6c2;
+  color: #449CD6;
 }
 
 /* base0D - Functions, Methods, Attribute IDs, Headings */
@@ -203,7 +204,7 @@ code.hljs {
 .ruby .hljs-property,
 .hljs-title.function_,
 .hljs-section {
-  color: #61afef;
+  color: #DADCDC;
 }
 
 /* base0E - Keywords, Storage, Selector, Markup Italic, Diff Changed */
@@ -215,7 +216,7 @@ code.hljs {
 .hljs-template-tag,
 .diff .hljs-meta,
 .hljs-keyword {
-  color: #c678dd;
+  color: #449CD6;
 }
 .hljs-emphasis {
   color: #c678dd;
@@ -229,7 +230,7 @@ code.hljs {
   from leaking into meta by accident
 */
 .hljs-meta .hljs-keyword {
-  color: #e2e8f0;
+  color: #4EC9A0;
 }
 
 .hljs-meta .hljs-keyword,
