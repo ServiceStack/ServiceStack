@@ -1,0 +1,37 @@
+﻿@page "/gallery/autoform"
+@layout MainLayout
+@using MyApp.Client.Pages.gallery.AutoForm
+
+<h1 class="mb-4 text-3xl font-semibold text-gray-900">
+    AutoForm Examples
+</h1>
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Create Form
+</h2>
+
+<ExampleCode Path="/AutoForm/New.razor" />
+
+<p class="mb-4 text-lg">
+    <b>AutoCreateForm</b> can be used to create an automated form based from a Request DTO definition:
+</p>
+
+<iframe class="w-full" style="height:35em" src="/gallery/autoform/create" />
+
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Edit Form
+</h2>
+
+<ExampleCode Path="/AutoForm/Edit.razor" />
+
+<p class="mb-4 text-lg">
+    <b>AutoEditForm</b> can be used to render an automated form based to update and delete an 
+    <a href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</a> API:
+</p>
+
+<iframe class="w-full" style="height:35em" src="/gallery/autoform/edit" />
+
+@code {
+
+}
