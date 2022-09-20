@@ -1,9 +1,14 @@
 ﻿@page "/gallery/autoform"
 @using MyApp.Client.Pages.gallery.AutoForm
 
-<h1 class="mb-4 text-3xl font-semibold text-gray-900">
-    AutoForm Examples
-</h1>
+<Breadcrumbs>
+    <Breadcrumb href="/gallery">
+        gallery
+    </Breadcrumb>
+    <Breadcrumb>
+        AutoForm Examples
+    </Breadcrumb>
+</Breadcrumbs>
 
 <h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
     Create Form
@@ -23,7 +28,7 @@
 
 <p class="mb-4 text-lg">
     <code>AutoEditForm</code> can be used to render an automated form based to update and delete an 
-    <a href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</a> API.
+    <Link href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</Link> API.
 </p>
 
 <ExampleCode Path="/AutoForm/Edit.razor" />
@@ -32,10 +37,10 @@
 
 <p class="my-4 text-lg">
     The forms behavior and appearance is further customizable with the
-    <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#annotate-apis">API annotation</a>,
-    declarative <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#type-validation-attributes">validation</a>
+    <Link href="https://docs.servicestack.net/locode/declarative#annotate-apis">API annotation</Link>,
+    declarative <Link href="https://docs.servicestack.net/locode/declarative#type-validation-attributes">validation</Link>
     and the custom
-    <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#custom-fields-and-inputs">Field and Input</a>
+    <Link href="https://docs.servicestack.net/locode/declarative#custom-fields-and-inputs">Field and Input</Link>
     attributes, e.g:
 </p>
 

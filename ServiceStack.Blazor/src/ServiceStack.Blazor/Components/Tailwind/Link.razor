@@ -1,0 +1,10 @@
+﻿@inherits UiComponentBase
+
+<a href=@href class=@CssUtils.ClassNames("text-blue-600 hover:text-blue-800 visited:text-purple-600", Class) title=@title target=@target>@ChildContent</a>
+
+@code {
+    [Parameter] public string href { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? title { get; set; }
+    [Parameter] public string? target { get; set; }
+}

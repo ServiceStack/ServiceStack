@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
-using ServiceStack;
 using ServiceStack.Text;
-using ServiceStack.Blazor;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components.Web;
+using ServiceStack.Blazor.Components.Tailwind;
 
-namespace ServiceStack.Blazor.Components.Tailwind;
+namespace ServiceStack.Blazor.Components;
 
 public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
 {
@@ -71,7 +70,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         Filters
     }
 
-    protected async Task downloadCsv() 
+    protected async Task downloadCsv()
     {
         var apiUrl = CreateApiUrl("csv");
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", apiUrl);
@@ -94,7 +93,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
     public string CreateApiUrl(string ext = "json")
     {
         var args = CreateRequestArgs();
-        var url = args.ToUrl(ServiceStack.HttpMethods.Get, UrlExtensions.ToApiUrl);
+        var url = args.ToUrl(HttpMethods.Get, UrlExtensions.ToApiUrl);
         var absoluteUrl = Client!.BaseUri.CombineWith(url.AddQueryParam("jsconfig", "edv"));
         var formatUrl = absoluteUrl.IndexOf('?') >= 0
             ? absoluteUrl.LeftPart('?') + "." + ext + "?" + absoluteUrl.RightPart('?')
@@ -102,7 +101,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         return formatUrl;
     }
 
-    protected async Task clearPrefs() 
+    protected async Task clearPrefs()
     {
         foreach (var c in GetColumns())
         {
@@ -181,7 +180,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         if (Skip < 0)
             Skip = 0;
 
-        var lastPage = Math.Floor(Total / (double) Take) * Take;
+        var lastPage = Math.Floor(Total / (double)Take) * Take;
         if (Skip > lastPage)
             Skip = (int)lastPage;
 
@@ -262,7 +261,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
 
     public QueryBase CreateRequestArgs() => CreateRequestArgs(out _);
 
-    
+
     public QueryBase CreateRequestArgs(out string queryString)
     {
         // PK always needed
@@ -357,7 +356,8 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
             if (EditModel == null || Properties.GetId(EditModel)?.ToString() != Edit)
             {
                 var request = Apis!.QueryRequest<Model>();
-                request.QueryParams = new() {
+                request.QueryParams = new()
+                {
                     [PrimaryKeyName] = Edit
                 };
                 var requestWithReturn = (IReturn<QueryResponse<Model>>)request;
@@ -388,7 +388,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         await base.OnInitializedAsync();
         if (AppMetadata == null)
         {
-            appMetadataApi = await this.ApiAppMetadataAsync();
+            appMetadataApi = await ApiAppMetadataAsync();
             AppMetadata = appMetadataApi.Response;
         }
         var autoQueryFilters = AppMetadata?.Plugins?.AutoQuery?.ViewerConventions;
@@ -444,7 +444,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
             return;
         }
         Model? selectedItem = DataGrid != null ? DataGrid.SelectedItem : default;
-        var activeIndex = selectedItem != null 
+        var activeIndex = selectedItem != null
             ? Results.FindIndex(x => selectedItem.Equals(x))
             : -1;
         if (activeIndex == -1)
