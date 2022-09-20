@@ -22,10 +22,15 @@
     Responsive
 </h2>
 
+<p class="mb-4 text-lg">
+    How each column is formatted, which columns are displayed and at which responsive breakpoints is customizable using <b>&lt;Column&gt;</b> definitions:
+</p>
+
 <ExampleCode Path="/DataGrid/Responsive.razor" />
 
 <p class="mb-4 text-lg">
-    How each column is formatted, which columns are displayed and at which responsive breakpoints is customizable using <b>&lt;Column&gt;</b> definitions:
+    Behavior of the DataGrid can be customized with the <b>HeaderSelected</b> event to handle when column headers are selected to apply custom filtering
+    to the <b>Items</b> data source whilst the <b>RowSelected</b> event can be used to apply custom behavior when a row is selected.
 </p>
 
 <Responsive />
