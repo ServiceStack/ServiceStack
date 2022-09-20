@@ -10,30 +10,29 @@
     Create Form
 </h2>
 
-<ExampleCode Path="/AutoForm/New.razor" />
-
 <p class="mb-4 text-lg">
     <b>AutoCreateForm</b> can be used to create an automated form based from a Request DTO definition:
 </p>
 
-<iframe class="w-full" style="height:35em" src="/gallery/autoform/create" />
+<ExampleCode Path="/AutoForm/New.razor" />
 
+<iframe class="w-full" style="height:35em" src="/gallery/autoform/create" />
 
 <h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
     Edit Form
 </h2>
 
-<ExampleCode Path="/AutoForm/Edit.razor" />
-
 <p class="mb-4 text-lg">
     <b>AutoEditForm</b> can be used to render an automated form based to update and delete an 
-    <a href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</a> API:
+    <a href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</a> API.
 </p>
+
+<ExampleCode Path="/AutoForm/Edit.razor" />
 
 <iframe class="w-full" style="height:35em" src="/gallery/autoform/edit" />
 
 <p class="my-4 text-lg">
-    The forms behavior and appearance is further customizable with the 
+    The forms behavior and appearance is further customizable with the
     <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#annotate-apis">API annotation</a>,
     declarative <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#type-validation-attributes">validation</a>
     and the custom
@@ -71,11 +70,11 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     Form Fields
 </h2>
 
-<ExampleCode Path="/AutoForm/Fields.razor" />
-
 <p class="mb-4 text-lg">
     For more advanced customization on a Forms appearance and behavior, you can use <b>AutoFormFields</b> to just render the Form's fields including
     Validation binding that you can then use to populate and send a custom Request DTO, e.g:
 </p>
 
 <Fields />
+
+<ExampleCode Path="/AutoForm/Fields.razor" />
