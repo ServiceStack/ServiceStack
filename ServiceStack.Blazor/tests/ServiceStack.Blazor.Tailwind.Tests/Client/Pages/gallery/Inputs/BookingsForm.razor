@@ -1,0 +1,81 @@
+﻿@inherits UiComponentBase
+
+<form @onsubmit="submit" @onsubmit:preventDefault class=@Class>
+    <CascadingValue Value=@api.Error>
+        <div class="shadow overflow-hidden sm:rounded-md bg-white">
+            <div class="relative px-4 py-5 bg-white sm:p-6">
+                <fieldset>
+                    <legend class="text-base font-medium text-gray-900 text-center mb-4">New Booking</legend>
+
+                    <ErrorSummary Except=@VisibleFields />
+
+                    <div class="grid grid-cols-6 gap-6">
+                        <div class="col-span-6 sm:col-span-3">
+                            <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
+                        </div>
+
+                        <div class="col-span-6 sm:col-span-3">
+                            <SelectInput @bind-Value="request.RoomType" Options=@(Enum.GetValues<RoomType>()) />
+                        </div>
+
+                        <div class="col-span-6 sm:col-span-3">
+                            <TextInput type="number" @bind-Value="request.RoomNumber" min="0" required />
+                        </div>
+
+                        <div class="col-span-6 sm:col-span-3">
+                            <TextInput type="number" @bind-Value="request.Cost" min="0" required />
+                        </div>
+
+                        <div class="col-span-6 sm:col-span-3">
+                            <DateTimeInput @bind-Value="request.BookingStartDate" required />
+                        </div>
+                        <div class="col-span-6 sm:col-span-3">
+                            <DateTimeInput @bind-Value="request.BookingEndDate" />
+                        </div>
+
+                        <div class="col-span-6">
+                            <TextAreaInput class="h-20" @bind-Value="request.Notes" placeholder="Notes about this booking" />
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+                <div class="flex justify-between items-center">
+                    <SecondaryButton>Cancel</SecondaryButton>
+                    <PrimaryButton type="submit">Create Booking</PrimaryButton>
+                </div>
+            </div>
+        </div>
+    </CascadingValue>
+</form>
+
+@code {
+    [Inject] public JsonApiClient? Client { get; set; }
+
+    CreateBooking request = new() {
+        BookingStartDate = DateTime.UtcNow
+    };
+
+    // Hide Error Summary Messages for Visible Fields which displays contextual validation errors
+    string[] VisibleFields => new[] {
+        nameof(request.Name),
+        nameof(request.RoomType),
+        nameof(request.RoomNumber),
+        nameof(request.BookingStartDate),
+        nameof(request.BookingEndDate),
+        nameof(request.Cost),
+        nameof(request.Notes),
+    };
+
+    ApiResult<IdResponse> api = new();
+
+    async Task submit()
+    {
+        api = await Client!.ApiAsync(request);
+
+        if (api.Succeeded)
+        {
+            request = new();
+        }
+    }
+}

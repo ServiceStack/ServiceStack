@@ -67,6 +67,13 @@ div.example-code {
     border-radius: 8px;
 }
 
+p code {
+    color: #3b82f6;
+    background-color: #eff6ff;
+    padding: 0.25em 0.5rem;
+    border-radius: 0.25rem;
+}
+
 .youtube {
     width: 448px;
     height: 252px;
