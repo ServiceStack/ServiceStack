@@ -52,7 +52,9 @@
 @code {
     [Inject] public JsonApiClient? Client { get; set; }
 
-    CreateBooking request = new();
+    CreateBooking request = new() {
+        BookingStartDate = DateTime.UtcNow
+    };
 
     // Hide Error Summary Messages for Visible Fields which displays contextual validation errors
     string[] VisibleFields => new[] {
