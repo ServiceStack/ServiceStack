@@ -34,12 +34,35 @@
 
 <p class="my-4 text-lg">
     The forms behavior and appearance is further customizable with the 
-    <a href="https://docs.servicestack.net/locode/declarative#type-validation-attributes">declarative validation</a>
+    <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#annotate-apis">API annotation</a>,
+    declarative <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#type-validation-attributes">validation</a>
     and the custom
-    <a href="https://docs.servicestack.net/locode/declarative#custom-fields-and-inputs">Field and Input</a>
-    attributes.
+    <a class="text-blue-600 hover:text-blue-800" href="https://docs.servicestack.net/locode/declarative#custom-fields-and-inputs">Field and Input</a>
+    attributes, e.g:
 </p>
 
+<ExampleCode SourceCode=@ExampleDto Language="language-csharp" />
+
 @code {
+        string ExampleDto = @"[Description(""Update an existing Booking"")]
+[Notes(""Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/rSFiikDjGos'>C# Bookings App from Scratch</a>"")]
+[Route(""/booking/{Id}"", ""PATCH"")]
+[ValidateHasRole(""Employee"")]
+[AutoApply(Behavior.AuditModify)]
+public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public RoomType? RoomType { get; set; }
+    [ValidateGreaterThan(0)]
+    public int? RoomNumber { get; set; }
+    [ValidateGreaterThan(0)]
+    public decimal? Cost { get; set; }
+    public DateTime? BookingStartDate { get; set; }
+    public DateTime? BookingEndDate { get; set; }
+    [Input(Type = ""textarea"")]
+    public string? Notes { get; set; }
+    public bool? Cancelled { get; set; }
+}";
 
 }

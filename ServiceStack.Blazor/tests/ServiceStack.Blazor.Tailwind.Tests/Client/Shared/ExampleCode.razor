@@ -3,13 +3,16 @@
 
 @if (!string.IsNullOrEmpty(contents))
 {
-    <div class="language-razor m-4 w-full">
-        <pre><code class="cshtml-razor rounded block w-full p-4">@contents</code></pre>
+    <div class="example-code m-4 w-full">
+        <pre><code class=@CssUtils.ClassNames(Language, "rounded block w-full p-4")>@contents</code></pre>
     </div>
 }
 
 @code {
-    [Parameter, EditorRequired] public string? Path { get; set; }
+    [Parameter] public string? Path { get; set; }
+
+    [Parameter] public string? SourceCode { get; set; }
+    [Parameter] public string Language { get; set; } = "cshtml-razor";
 
     string contents = "";
 
@@ -21,7 +24,10 @@
         await base.OnParametersSetAsync();
         if (string.IsNullOrEmpty(contents))
         {
-            contents = await DownloadPageContentsAsync(Path!);
+            contents = !string.IsNullOrEmpty(SourceCode)
+                ? SourceCode
+                : await DownloadPageContentsAsync(Path!);
+
             StateHasChanged();
             await JS.InvokeVoidAsync("hljs.highlightAll");
         }

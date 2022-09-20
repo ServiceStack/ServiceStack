@@ -68,6 +68,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 }
 
 [Tag("bookings"), Description("Update an existing Booking")]
+[Notes("Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/rSFiikDjGos'>C# Bookings App from Scratch</a>")]
 [Route("/booking/{Id}", "PATCH")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditModify)]
@@ -82,7 +83,7 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public decimal? Cost { get; set; }
     public DateTime? BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
-    // [Input(Type = "textarea")]
+    [Input(Type = "textarea")]
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
 }
