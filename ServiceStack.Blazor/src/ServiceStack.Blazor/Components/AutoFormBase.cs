@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
-using ServiceStack;
 using ServiceStack.Html;
-using ServiceStack.Blazor;
+using ServiceStack.Blazor.Components.Tailwind;
 
-namespace ServiceStack.Blazor.Components.Tailwind;
+namespace ServiceStack.Blazor.Components;
 
 public abstract class AutoFormBase<Model> : BlazorComponentBase
 {

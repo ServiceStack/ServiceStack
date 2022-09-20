@@ -1,4 +1,4 @@
-﻿using ServiceStack.Blazor.Components.Tailwind;
+﻿using ServiceStack.Blazor.Components;
 
 namespace ServiceStack.Blazor;
 

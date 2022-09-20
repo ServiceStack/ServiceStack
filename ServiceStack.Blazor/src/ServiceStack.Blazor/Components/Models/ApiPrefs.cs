@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.Blazor.Components.Tailwind;
+﻿namespace ServiceStack.Blazor.Components;
 
 public class ApiPrefs
 {

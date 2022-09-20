@@ -2,9 +2,9 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using System.Collections;
-using ServiceStack.Blazor;
+using ServiceStack.Blazor.Components.Tailwind;
 
-namespace ServiceStack.Blazor.Components.Tailwind;
+namespace ServiceStack.Blazor.Components;
 
 public class Column<Model> : UiComponentBase
 {
@@ -86,7 +86,7 @@ public class Column<Model> : UiComponentBase
     public KeyValuePair<string, string>[] EnumEntries => FieldType.IsEnum
         ? Html.Input.GetEnumEntries(FieldType)
         : Array.Empty<KeyValuePair<string, string>>();
-    
+
     public PropertyAccessor PropertyAccessor { get; set; }
     public PropertyInfo? Property => PropertyAccessor?.PropertyInfo;
 

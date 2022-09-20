@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.Blazor.Components.Tailwind;
+﻿namespace ServiceStack.Blazor.Components;
 
 /// <summary>
 /// To capture Tailwind's animation rules, e.g:
