@@ -1,0 +1,116 @@
+﻿.admin-navbar .active {
+    font-weight: bold
+}
+.close, .text-close {
+    user-select: none;
+}
+.text-close {
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #999;
+}
+.text-close:hover {
+    color: #666;
+}
+.text-close::after {
+    content: '\00D7';
+}
+.results-none {
+    color: #6c757d;
+}
+.filters input {
+    min-width: 50px;
+    width: 100%;
+    font-size: 11px;
+}
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* IE/Edge */
+    user-select: none;           /* non-prefixed version, currently
+                                  not supported by any browser */
+}
+.has-auth .auth a {
+    pointer-events: auto;
+    color: #4183B8;
+}
+.svg-btn, .btn-link, .th-link {
+    cursor: pointer;
+    user-select: none;
+}
+.btn-link { 
+    text-decoration: none;
+}
+::placeholder {
+    color: #aaa !important;
+}
+.disabled.md {
+    font-size: 1rem;
+}
+.disabled.lg {
+    font-size: 1.25rem;
+}
+
+.svg-btn,.svg-btn-icon { background-repeat:no-repeat;cursor:pointer;user-select:none; }
+.svg-xs, .svg-sm, .svg-md, .svg-lg, .svg-2x, .svg-3x, .svg-4x, .svg-5x, .svg-6x, .svg-7x, .svg-8x, .svg-9x, .svg-10x, .svg-11x, .svg-12x, .svg-13x, .svg-14x, .svg-2\.5x {
+background-position:0;background-repeat:no-repeat;display: inline-block;background-size: contain;vertical-align: middle;}
+.svg-xs {width:12px;height:12px}.svg-sm {width:14px;height:14px}.svg-md {width:18px;height:18px}.svg-lg {width:24px;height:24px}.svg-2x {width:32px;height:32px}
+.svg-3x {width:48px;height:48px}.svg-4x {width:64px;height:64px}.svg-5x {width:80px;height:80px}.svg-6x {width:96px;height:96px}.svg-7x {width:112px;height:112px}
+.svg-8x {width:128px;height:128px}.svg-9x {width:144px;height:144px}.svg-10x {width:160px;height:160px}.svg-11x {width:180px;height:180px}
+.svg-12x {width:204px;height:204px}.svg-13x {width:232px;height:232px}.svg-14x {width:264px;height:264px}
+.svg-2\.5x {width:40px;height:40px}
+.svg-admin-home {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' enable-background='new 0 0 24 24' height='24px' viewBox='0 0 24 24' width='24px' fill='%23000000'%3E%3Cg%3E%3Crect fill='none' height='24' width='24'/%3E%3C/g%3E%3Cg%3E%3Cg%3E%3Cpath d='M17,11c0.34,0,0.67,0.04,1,0.09V6.27L10.5,3L3,6.27v4.91c0,4.54,3.2,8.79,7.5,9.82c0.55-0.13,1.08-0.32,1.6-0.55 C11.41,19.47,11,18.28,11,17C11,13.69,13.69,11,17,11z'/%3E%3Cpath d='M17,13c-2.21,0-4,1.79-4,4c0,2.21,1.79,4,4,4s4-1.79,4-4C21,14.79,19.21,13,17,13z M17,14.38c0.62,0,1.12,0.51,1.12,1.12 s-0.51,1.12-1.12,1.12s-1.12-0.51-1.12-1.12S16.38,14.38,17,14.38z M17,19.75c-0.93,0-1.74-0.46-2.24-1.17 c0.05-0.72,1.51-1.08,2.24-1.08s2.19,0.36,2.24,1.08C18.74,19.29,17.93,19.75,17,19.75z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.svg-admin-users {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px' fill='%23000000'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E");
+}
+
+@media (max-width: 640px) {
+    form.shadow {
+        box-shadow: none !important;
+    }
+    form.rounded {
+    }
+    .sm\:px-1 {
+        padding-left: .25rem !important;
+        padding-right: .25rem !important;
+    }
+    form.p-4, .main-container.p-2 {
+        padding: 0 !important;
+    }
+    .sm\:flex-row {
+        flex-direction: column !important;
+    }
+    .sm\:flex-col {
+        flex-direction: column !important;
+    }
+    .sm\:w-full {
+        width: 100%;
+    }
+}
+
+.show-xs-tcell {
+    display: table-cell
+}
+.show-sm-tcell, .show-md-tcell, .show-lg-tcell, .show-xl-tcell, .show-2xl-tcell {
+    display: none
+}
+@media (min-width: 640px) {
+    .show-sm-tcell {
+        display: table-cell
+    }
+}
+@media (min-width: 768px) {
+    .show-md-tcell { display: table-cell }
+}
+@media (min-width: 1024px) {
+    .show-lg-tcell { display: table-cell }
+}
+@media (min-width: 1280px) {
+    .show-xl-tcell { display: table-cell }
+}
+@media (min-width: 1536px) {
+    .show-2xl-tcell { display: table-cell }
+}

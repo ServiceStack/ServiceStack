@@ -1,0 +1,109 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace MyApp.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MyApp</title>
+    <base href="~/"/>
+    <link href="css/app.css" rel="stylesheet">
+    <link href="css/typography.css" rel="stylesheet">
+    <link href="css/markdown.css" rel="stylesheet">
+    <component type="typeof(HeadOutlet)" render-mode="Server"/>
+</head>
+<body>
+    
+<script>
+TOP = `
+    $0.40 /mo,        /docs/hosting
+    Prerendering,     /docs/prerender
+    Deployments,      /docs/deploy
+`
+SIDEBAR = `
+    Counter,          /counter,       /img/nav/counter.svg
+    Todos,            /todomvc,       /img/nav/todomvc.svg
+    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
+    Call Hello,       /hello$,        /img/nav/hello.svg
+    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
+    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
+`
+
+/*
+const path = location.pathname
+const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+$1 = s => document.querySelector(s)
+
+// Header
+$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+    `<li class="relative flex flex-wrap just-fu-start m-0">
+        <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+))
+
+// Sidebar
+const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
+    <img class="${iconCls}" src="${icon}">
+    ${label}
+</a>`
+
+$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
+    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+*/
+</script>
+
+@RenderBody()
+
+    <div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">
+        <div class="flex rounded-md bg-yellow-50 p-4 m-4">
+            <div class="flex-shrink-0">
+                <!-- Heroicon name: solid/exclamation -->
+                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <environment include="Staging,Production">
+                    <h3 class="text-sm font-medium text-yellow-800">An error has occurred. This application may no longer respond until reloaded.</h3>
+                </environment>
+                <environment include="Development">
+                    <h3 class="text-sm font-medium text-yellow-800">An unhandled exception has occurred. See browser dev tools for details.</h3>
+                </environment>
+                <div class="mt-4">
+                    <div class="-mx-2 -my-1.5 flex">
+                        <button type="button" class="reload bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">Reload</button>
+                    </div>
+                </div>
+            </div>
+            <div class="ml-auto pl-3">
+                <div class="-mx-1.5 -my-1.5">
+                    <button type="button" class="dismiss inline-flex bg-yellow-50 rounded-md p-1.5 text-yellow-500 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">
+                        <span class="sr-only">Dismiss</span>
+                        <!-- Heroicon name: solid/x -->
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script src="_framework/blazor.server.js"></script>
+<script src="js/highlight.min.js"></script>
+<script src="js/servicestack-blazor.js"></script>
+
+
+</body>
+</html>

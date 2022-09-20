@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "ui:dev": "npx tailwindcss -c tailwind.config.js -i ./tailwind.input.css -o ./wwwroot/css/app.css --watch",
+    "ui:build": "npx tailwindcss -c tailwind.config.js -i ./tailwind.input.css -o ./wwwroot/css/app.css --minify",
+    "postinstall": "cd ../MyApp2 && dotnet run --AppTasks=migrate",
+    "migrate": "cd ../MyApp2 && dotnet run MyApp2.csproj --AppTasks=migrate",
+    "revert:last": "cd ../MyApp2 && dotnet run --AppTasks=migrate.revert:last",
+    "revert:all": "cd ../MyApp2 && dotnet run --AppTasks=migrate.revert:all"
+  }
+}
