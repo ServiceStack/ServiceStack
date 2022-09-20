@@ -1,0 +1,33 @@
+﻿<a class=@CssUtils.ClassNames("no-underline", @class) href=@href>
+    <div class="bg-white px-4 py-4 mr-4 mb-4 rounded-3 shadow text-center align-items-center justify-content-center hover:shadow-2xl" style="min-width:150px">
+        <div class="text-center font-extrabold d-flex align-align-items-center justify-content-center mb-2">
+        @if (IconClass != null)
+        {
+            <span class=@CssUtils.ClassNames(IconClass, "text-base w-5 h-5 inline-flex text-purple-800 align-text-top mr-1")></span>
+        }
+        else if (IconSrc != null)
+        {
+            <img src=@IconSrc class="w-5 h-5 inline-flex text-purple-800 mr-1">
+        }
+        </div>
+        <div class="fs-5 font-bold" style="color:rgb(55,65,81)">@Label</div>
+        <div class="d-flex justify-content-center h-8"></div>
+    </div>
+</a>
+
+@code {
+    [Parameter, EditorRequired]
+    public string? href { get; set; }
+
+    [Parameter, EditorRequired]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? @class { get; set; }
+
+    [Parameter]
+    public string? IconClass { get; set; }
+
+    [Parameter]
+    public string? IconSrc { get; set; }
+}
