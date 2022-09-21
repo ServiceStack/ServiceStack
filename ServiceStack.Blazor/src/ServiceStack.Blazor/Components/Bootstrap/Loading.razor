@@ -1,4 +1,4 @@
-﻿@inject IJSRuntime JsRuntime
+﻿@inject Microsoft.JSInterop.IJSRuntime JS
 @inject NavigationManager NavigationManager
 
 @if (!string.IsNullOrEmpty(prerenderedHtml))
@@ -24,7 +24,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var html = await JsRuntime.InvokeAsync<string>("prerenderedPage") ?? "";
+        var html = await JS.InvokeAsync<string>("prerenderedPage") ?? "";
         var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
         var prerenderedContentIsForPath = html.IndexOf($"data-prerender=\"{currentPath}\"") >= 0;
         if (prerenderedContentIsForPath)
