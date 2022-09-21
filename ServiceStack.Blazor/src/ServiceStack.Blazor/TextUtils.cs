@@ -256,7 +256,7 @@ public static class TextUtils
                         {
                             row.Add(string.Empty);
                         }
-                        else if (!value.IsComplexType())
+                        else if (!IsComplexType(value?.GetType()))
                         {
                             row.Add(GetScalarText(value));
                         }
@@ -290,8 +290,9 @@ public static class TextUtils
         }
     }
 
-    public static string TextDump(object target, TextDumpOptions options)
+    public static string TextDump(object? target, TextDumpOptions options)
     {
+        if (target == null) return string.Empty;
         if (options == null)
             options = new TextDumpOptions();
 
@@ -302,7 +303,7 @@ public static class TextUtils
         {
             target = ConvertDumpType(target);
 
-            if (!target.IsComplexType())
+            if (!IsComplexType(target?.GetType()))
                 return GetScalarText(target);
 
             var headerStyle = options.HeaderStyle;
@@ -341,7 +342,7 @@ public static class TextUtils
 
                         keys.Add(StyleText(kvp.Key, headerStyle) ?? "");
 
-                        var field = !kvp.Value.IsComplexType()
+                        var field = !IsComplexType(kvp.Value?.GetType())
                             ? GetScalarText(kvp.Value)
                             : TextDump(kvp.Value, options);
 
@@ -377,7 +378,7 @@ public static class TextUtils
                 }
                 else
                 {
-                    if (!first.IsComplexType())
+                    if (!IsComplexType(first?.GetType()))
                     {
                         foreach (var o in objs)
                         {
@@ -420,7 +421,7 @@ public static class TextUtils
                         {
                             foreach (var o in objs)
                             {
-                                if (!o.IsComplexType())
+                                if (!IsComplexType(o?.GetType()))
                                 {
                                     values.Add(GetScalarText(o));
                                 }
@@ -474,37 +475,37 @@ public static class TextUtils
         }
         return len;
     }
-
-    private static string GetScalarText(object target)
+        
+    public static string GetScalarText(object? value)
     {
-        if (target == null || target.ToString() == string.Empty)
+        if (value == null || value.ToString() == string.Empty)
             return string.Empty;
 
-        if (target is string s)
+        if (value is string s)
             return FormatString(s);
 
-        if (target is decimal dec)
+        if (value is decimal dec)
         {
             var isMoney = dec == Math.Floor(dec * 100);
             if (isMoney)
                 return FormatCurrency(dec);
         }
 
-        if (target.GetType().IsNumericType() || target is bool)
-            return target.ToString() ?? "";
+        if (value.GetType().IsNumericType() || value is bool)
+            return value.ToString() ?? "";
 
-        if (target is DateTime d)
+        if (value is DateTime d)
             return FormatDate(d);
 
-        if (target is TimeSpan t)
+        if (value is TimeSpan t)
             return FormatTime(t);
 
-        return target.ToString() ?? "";
+        return value.ToString() ?? "";
     }
 
-    internal static bool IsComplexType(this object? first)
+    public static bool IsComplexType(this Type? type)
     {
-        return !(first == null || first is string || first.GetType().IsValueType);
+        return type != null && !type.IsValueType && type != typeof(string) && type != typeof(Uri);
     }
 
     internal static object ConvertDumpType(object target)
@@ -692,4 +693,23 @@ public static class TextUtils
         }
         return formLayout;
     }
+
+    public static string Truncate(string str, int maxLength)
+    {
+        return str.Length > maxLength
+            ? str.SafeSubstring(0, maxLength) + "..."
+            : str;
+    }
+
+    public static object? FirstOrDefault(IEnumerable items)
+    {
+        if (items == null)
+            return null;
+        foreach (var item in items)
+        {
+            return item;
+        }
+        return null;
+    }
+
 }

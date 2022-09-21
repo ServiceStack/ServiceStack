@@ -21,7 +21,29 @@ public class Booking : AuditBase
     public decimal Cost { get; set; }
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
+
+    [References(typeof(Coupon))]
+    public string? CouponId { get; set; }
+
+    [Reference]
+    public Coupon Coupon { get; set; }
 }
+
+public class Coupon
+{
+    public string Id { get; set; }
+    public string Description { get; set; }
+    public int Discount { get; set; }
+    public DateTime ExpiryDate { get; set; }
+}
+
+[Tag("bookings"), Description("Find Coupons")]
+[Route("/coupons", "GET")]
+public class QueryCoupons : QueryDb<Coupon>
+{
+    public string? Id { get; set; }
+}
+
 
 public enum RoomType
 {

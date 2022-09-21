@@ -141,6 +141,7 @@ public class Column<Model> : UiComponentBase
     string? GetFormattedValue(object? value)
     {
         if (value == null) return "";
+        var type = value.GetType();
         var formattedValue = Formatter != null
             ? Formatter(value)
             : string.IsNullOrEmpty(Format)
@@ -166,22 +167,29 @@ public class Column<Model> : UiComponentBase
                 builder.AddAttribute(1, "class", cls);
 
                 var fieldExpr = ValidateCompiledExpression();
-                if (fieldExpr != null)
+                object? value = fieldExpr != null
+                    ? fieldExpr(rowData)
+                    : PropertyAccessor != null
+                        ? PropertyAccessor.PublicGetter(rowData)
+                        : null;
+
+                if (Template != null)
                 {
-                    var value = fieldExpr(rowData);
-                    if (Template != null)
+                    builder.AddContent(2, Template, rowData);
+                }
+                else if (value != null)
+                {
+                    if (!TextUtils.IsComplexType(value.GetType()))
                     {
-                        builder.AddContent(2, Template, rowData);
+                        builder.AddContent(3, GetFormattedValue(value));
+
                     }
                     else
                     {
-                        builder.AddContent(3, GetFormattedValue(value));
+                        builder.OpenComponent<FormatValue>(4);
+                        builder.AddAttribute(5, "Value", value);
+                        builder.CloseComponent();
                     }
-                }
-                else if (PropertyAccessor != null)
-                {
-                    var value = PropertyAccessor.PublicGetter(rowData);
-                    builder.AddContent(4, GetFormattedValue(value));
                 }
 
                 builder.CloseElement();

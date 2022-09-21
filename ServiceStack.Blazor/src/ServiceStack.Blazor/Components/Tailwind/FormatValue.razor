@@ -1,0 +1,61 @@
+﻿@using ServiceStack.Text
+
+@if (!TextUtils.IsComplexType(Value?.GetType()))
+{
+    BlazorUtils.FormatValue(Value);
+}
+else
+{
+    @((MarkupString)HtmlValue)
+}
+
+
+@code {
+    [Parameter] public object? Value { get; set; }
+
+    public string HtmlValue
+    {
+        get
+        {
+            var sb = StringBuilderCache.Allocate();
+            if (Value is System.Collections.IEnumerable e)
+            {               
+                var first = TextUtils.FirstOrDefault(e);
+                if (first == null)
+                    return "[]";
+
+                if (TextUtils.IsComplexType(first.GetType()))
+                    return wrap(TypeSerializer.Dump(Value).HtmlEncode(), BlazorUtils.FormatValue(Value));
+
+                foreach (var item in e)
+                {
+                    if (sb.Length > 0)
+                        sb.Append(',');
+                    sb.Append(TextUtils.GetScalarText(item));
+                }
+
+            }
+            var dict = Value.ToObjectDictionary();
+            var keys = dict.Keys.ToList();
+            var len = Math.Min(BlazorConfig.Instance.MaxNestedFields, keys.Count);
+            for (var i = 0; i < len; i++)
+            {
+                var key = keys[i];
+                var val = dict[key];
+                var value = BlazorUtils.FormatValue(val);
+                var str = TextUtils.Truncate(value, BlazorConfig.Instance.MaxNestedFieldLength).HtmlEncode();
+                if (sb.Length > 0)
+                    sb.Append(", ");
+
+                sb.AppendLine($"<b class=\"font-medium\">{key}</b>: {str}");
+            }
+            if (keys.Count > len)
+                sb.AppendLine("...");
+
+            var html = StringBuilderCache.ReturnAndFree(sb);
+            return wrap(TypeSerializer.Dump(Value).HtmlEncode(), "{ " + html + " }");
+        }
+    }
+
+    string wrap(string raw, string html) => $"<span title=\"{raw.HtmlEncode()}\">" + html + "</span>";
+}

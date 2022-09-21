@@ -50,12 +50,12 @@ else
             <div class="flex pb-1 sm:pb-0">
             @if (ShowPreferences)
             {
-                <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
+                <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
                 </button>
-                }
-                 @if (ShowPagingNav)
-                {
+            }
+            @if (ShowPagingNav)
+            {
                 <button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
                     title="First page" disabled=@(!canFirst) @onclick="_ => skipTo(-Total)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor" /></svg>
@@ -169,7 +169,7 @@ else
             </div>
         </div>
     }
-        
+
     @if (open == Features.Filters)
     {
         <FilterViews class="border-y border-gray-200 py-8 my-2" Columns="GetColumns()" Done="() => open = null" FiltersChanged="UpdateAsync" />

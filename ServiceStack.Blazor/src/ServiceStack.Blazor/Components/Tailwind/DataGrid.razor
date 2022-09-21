@@ -21,7 +21,7 @@
 
                                 @foreach (var column in VisibleColumns)
                                 {
-                                    var allowFiltering = AllowFiltering && !column.FieldType.IsComplexType();
+                                    var allowFiltering = AllowFiltering && !TextUtils.IsComplexType(column.FieldType);
                                     var isOpen = column == ShowFilters;
                                     <td class=@ClassNames(column.VisibleFrom != null ? $"hidden {column.VisibleFrom.Value.ToBreakpointCellClass()}" : null,
                                         column.HeaderClass ?? ClassNames("px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap",
