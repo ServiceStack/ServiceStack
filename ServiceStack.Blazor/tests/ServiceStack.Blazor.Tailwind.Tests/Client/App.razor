@@ -33,7 +33,9 @@
 
 @code {
 
-    Type GetPageLayout(RouteData route) => route.PageType?.FirstAttribute<LayoutAttribute>()?.LayoutType ?? typeof(MainLayout);
+    Type GetPageLayout(RouteData route) => 
+    //NavigationManager.Uri.IndexOf()
+    route.PageType?.FirstAttribute<LayoutAttribute>()?.LayoutType ?? typeof(MainLayout);
 
     async Task login()
     {

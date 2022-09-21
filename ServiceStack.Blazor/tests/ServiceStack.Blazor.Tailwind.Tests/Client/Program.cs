@@ -25,7 +25,6 @@ builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredServic
 
 builder.Services.AddBlazorApiClient(builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress);
 
-builder.Services.AddScoped<LocalStorage>();
 builder.Services.AddScoped<ServiceStackStateProvider>();
 
 await builder.Build().RunAsync();
