@@ -1,4 +1,5 @@
-﻿@inject Microsoft.JSInterop.IJSRuntime JS
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 
 @if (!string.IsNullOrEmpty(prerenderedHtml))
