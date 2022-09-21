@@ -1,7 +1,7 @@
 ﻿@page "/gallery/autoquerygrid/responsive"
 @inject IJSRuntime JS
 
-<AutoQueryGrid Id="Responsive" Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()"
+<AutoQueryGrid Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()"
                AllowSelection="true" AllowFiltering="true"
                HeaderSelected="OnSelectedHeader" RowSelected="OnSelectedRow">
     <Columns>
