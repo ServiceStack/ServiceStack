@@ -974,7 +974,10 @@ namespace ServiceStack.OrmLite
         {
             var modelDef = typeof(T).GetModelDefinition();
             var id = modelDef.GetPrimaryKey(obj);
-            var existingRow = id != null ? dbCmd.SingleById<T>(id) : default(T);
+            var defaultIdValue = id?.GetType().GetDefaultValue();
+            var existingRow = id != defaultIdValue 
+                ? dbCmd.SingleById<T>(id) 
+                : default;
 
             if (Equals(existingRow, default(T)))
             {
@@ -1027,8 +1030,7 @@ namespace ServiceStack.OrmLite
 
             IDbTransaction dbTrans = null;
 
-            if (dbCmd.Transaction == null)
-                dbCmd.Transaction = dbTrans = dbCmd.Connection.BeginTransaction();
+            dbCmd.Transaction ??= dbTrans = dbCmd.Connection!.BeginTransaction();
 
             try
             {
