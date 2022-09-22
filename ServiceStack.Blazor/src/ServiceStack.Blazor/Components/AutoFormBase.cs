@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using ServiceStack.Html;
-using ServiceStack.Blazor.Components.Tailwind;
 
 namespace ServiceStack.Blazor.Components;
 

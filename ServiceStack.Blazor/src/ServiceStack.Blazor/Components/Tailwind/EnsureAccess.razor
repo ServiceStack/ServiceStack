@@ -1,5 +1,4 @@
 ﻿@inherits AuthBlazorComponentBase
-@inject NavigationManager NavigationManager
 
 @if (!IsAuthenticated)
 {
@@ -12,16 +11,4 @@
             </button>
         </div>
     </SlideOver>
-}
-
-@code {
-    [Parameter, EditorRequired] public string HtmlMessage { get; set; } = "";
-    [Parameter] public EventCallback Done { get; set; }
-    [Parameter] public string? Title { get; set; }
-    [Parameter] public string? SubHeading { get; set; }
-
-    async Task signIn()
-    {
-        NavigationManager.NavigateTo(NavigationManager.GetLoginUrl());
-    }
 }

@@ -1,8 +1,4 @@
-﻿@using Microsoft.JSInterop
-@inherits UiComponentBase
-
-@inject IJSRuntime JsRuntime
-@inject NavigationManager NavigationManager
+﻿@inherits UiComponentBase
 
 @if (!string.IsNullOrEmpty(prerenderedHtml))
 {
@@ -20,25 +16,4 @@ else
             <span>@Message</span>
         </h1>
     </div>
-}
-
-@code {
-    [Parameter]
-    public string Message { get; set; } = "Loading...";
-
-    public string prerenderedHtml { get; set; } = "";
-
-    [Parameter]
-    public string ImageClass { get; set; } = "w-6 h-6";
-
-    protected override async Task OnInitializedAsync()
-    {
-        var html = await JsRuntime.InvokeAsync<string>("JS.prerenderedPage") ?? "";
-        var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
-        var prerenderedContentIsForPath = html.IndexOf($"data-prerender=\"{currentPath}\"") >= 0;
-        if (prerenderedContentIsForPath)
-        {
-            prerenderedHtml = html;
-        }
-    }
 }

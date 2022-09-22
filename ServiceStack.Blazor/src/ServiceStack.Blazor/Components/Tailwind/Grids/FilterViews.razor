@@ -1,6 +1,6 @@
-﻿@typeparam Model
+﻿@namespace ServiceStack.Blazor.Components.Tailwind
+@typeparam Model
 @inherits UiComponentBase
-@namespace ServiceStack.Blazor.Components.Tailwind
 
 <div class=@Class>
     <div class="px-4 sm:px-6 lg:px-8 text-sm">
@@ -62,32 +62,3 @@
         </div>
     </div>
 </div>
-
-@code {
-    [Parameter, EditorRequired] public List<Column<Model>> Columns { get; set; } = new();
-
-    [Parameter] public EventCallback Done { get; set; }
-    [Parameter] public EventCallback FiltersChanged { get; set; }
-
-    async Task removeFilters(Column<Model> column) {
-        column.Filters.Clear();
-        await column.SaveSettingsAsync();
-        await FiltersChanged.InvokeAsync();
-    }
-
-    async Task removeFilter(Column<Model> column, Filter filter) {
-        column.Settings.Filters.Remove(filter);
-        await column.SaveSettingsAsync();
-        await FiltersChanged.InvokeAsync();
-    }
-
-    async Task clearAll() {
-        foreach (var c in Columns)
-        {
-            c.Settings.Filters.Clear();
-            await c.SaveSettingsAsync();
-        }
-        await FiltersChanged.InvokeAsync();
-        await Done.InvokeAsync();
-    }
-}

@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using ServiceStack;
 
-namespace ServiceStack.Blazor.Components;
+namespace ServiceStack.Blazor.Components.Tailwind;
 
-public class DataGridBase<Model> : UiComponentBase
+public partial class DataGrid<Model> : UiComponentBase
 {
     public int InstanceId = BlazorUtils.NextId();
     [Inject] public LocalStorage LocalStorage { get; set; }
@@ -18,7 +17,7 @@ public class DataGridBase<Model> : UiComponentBase
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
-    
+
     [Parameter]
     public Func<Model, int, string> RowClass { get; set; }
 
@@ -71,7 +70,8 @@ public class DataGridBase<Model> : UiComponentBase
         if (!AllowFiltering) return;
         ShowFilters = column;
         tableRect ??= await JS.InvokeAsync<DOMRect>("JS.invoke", new object[] { refResults!, "getBoundingClientRect" });
-        ShowFiltersTopLeft = new DOMRect {
+        ShowFiltersTopLeft = new DOMRect
+        {
             X = Math.Floor(e.ClientX + filterDialogWidth / 2),
             Y = tableRect.Value.Y + 45,
         };
@@ -131,7 +131,8 @@ public class DataGridBase<Model> : UiComponentBase
             {
                 foreach (var prop in MetadataType.Properties)
                 {
-                    columns.Add(new Column<Model> {
+                    columns.Add(new Column<Model>
+                    {
                         DataGrid = this,
                         LocalStorage = LocalStorage,
                         PropertyAccessor = TypeProperties<Model>.GetAccessor(prop.Name),

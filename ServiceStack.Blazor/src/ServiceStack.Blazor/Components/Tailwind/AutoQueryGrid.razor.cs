@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
-using ServiceStack.Text;
-using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components.Web;
-using ServiceStack.Blazor.Components.Tailwind;
+using Microsoft.JSInterop;
+using ServiceStack.Text;
 
-namespace ServiceStack.Blazor.Components;
+namespace ServiceStack.Blazor.Components.Tailwind;
 
-public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
+public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
 {
-    public DataGridBase<Model>? DataGrid = default!;
+    public DataGrid<Model>? DataGrid = default!;
     public string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
     [Inject] public LocalStorage LocalStorage { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
@@ -400,7 +399,7 @@ public class AutoQueryGridBase<Model> : AuthBlazorComponentBase
         await UpdateAsync();
     }
 
-    private DotNetObjectReference<AutoQueryGridBase<Model>>? dotnetRef;
+    private DotNetObjectReference<AutoQueryGrid<Model>>? dotnetRef;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

@@ -11,7 +11,7 @@ public class Column<Model> : UiComponentBase
     [Inject] public LocalStorage LocalStorage { get; set; }
     public int InstanceId = BlazorUtils.NextId();
 
-    [CascadingParameter] public DataGridBase<Model>? DataGrid { get; set; }
+    [CascadingParameter] public DataGrid<Model>? DataGrid { get; set; }
     [Parameter] public Expression<Func<Model, object>>? Field { get; set; }
     [Parameter] public string? FieldName { get; set; }
     [Parameter] public string? HeaderClass { get; set; }

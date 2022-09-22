@@ -1,4 +1,5 @@
 ﻿@using ServiceStack.Html
+@inherits UiComponentBase
 
 <ErrorSummary ExplicitStatus=@(Api?.Error) Except=@VisibleFields />
 <div class="flex flex-1 flex-col justify-between">
@@ -20,10 +21,3 @@
         </div>
     </div>
 </div>
-
-@code {
-    protected string[] VisibleFields => FormLayout?.Where(x => x.Type != Input.Types.Hidden).Select(x => x.Id).ToArray() ?? Array.Empty<string>();
-    [Parameter, EditorRequired] public IHasErrorStatus? Api { get; set; }
-    [Parameter, EditorRequired] public List<InputInfo>? FormLayout { get; set; }
-    [Parameter, EditorRequired] public Dictionary<string, object> ModelDictionary { get; set; } = new();
-}

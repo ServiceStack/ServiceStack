@@ -29,22 +29,6 @@ public class Booking : AuditBase
     public Coupon Coupon { get; set; }
 }
 
-public class Coupon
-{
-    public string Id { get; set; }
-    public string Description { get; set; }
-    public int Discount { get; set; }
-    public DateTime ExpiryDate { get; set; }
-}
-
-[Tag("bookings"), Description("Find Coupons")]
-[Route("/coupons", "GET")]
-public class QueryCoupons : QueryDb<Coupon>
-{
-    public string? Id { get; set; }
-}
-
-
 public enum RoomType
 {
     Single,
@@ -87,6 +71,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     public DateTime? BookingEndDate { get; set; }
     [Input(Type = "textarea")]
     public string? Notes { get; set; }
+    public string? CouponId { get; set; }
 }
 
 [Tag("bookings"), Description("Update an existing Booking")]
@@ -117,4 +102,33 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
 {
     public int Id { get; set; }
+}
+
+
+[Description("Discount Coupons")]
+public class Coupon
+{
+    public string Id { get; set; }
+    public string Description { get; set; }
+    public int Discount { get; set; }
+    public DateTime ExpiryDate { get; set; }
+}
+
+[Tag("bookings"), Description("Find Coupons")]
+[Route("/coupons", "GET")]
+public class QueryCoupons : QueryDb<Coupon>
+{
+    public string? Id { get; set; }
+}
+
+[Tag("bookings")]
+[Route("/coupons/{Id}", "PATCH")]
+[ValidateHasRole("Employee")]
+[AutoApply(Behavior.AuditModify)]
+public class UpdateCoupon : IPatchDb<Coupon>, IReturn<IdResponse>
+{
+    public string Id { get; set; }
+    public string Description { get; set; }
+    public int Discount { get; set; }
+    public DateTime ExpiryDate { get; set; }
 }

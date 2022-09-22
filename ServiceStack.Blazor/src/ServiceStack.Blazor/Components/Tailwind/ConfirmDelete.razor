@@ -13,10 +13,3 @@
         @("Delete")
     }
 </button>
-
-@code {
-    bool confirmDelete;
-    [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
-    [Parameter] public string ConfirmLabel { get; set; } = "confirm";
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-}

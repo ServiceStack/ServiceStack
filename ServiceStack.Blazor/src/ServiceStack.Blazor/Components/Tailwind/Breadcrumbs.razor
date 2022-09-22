@@ -1,4 +1,6 @@
-﻿<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+﻿@inherits UiComponentBase
+
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
 
 <nav class="flex" aria-label="Breadcrumb">
     <ol role="list" class="flex items-center space-x-4">
@@ -35,22 +37,3 @@
         }
     </ol>
 </nav>
-
-@code {
-    [Parameter] public string HomeHref { get; set; } = "/";
-    [Parameter] public string HomeLabel { get; set; } = "Home";
-    [Parameter] public RenderFragment ChildContent { get; set; }
-
-    public List<Breadcrumb> Links { get; set; } = new();
-
-    public void AddBreadcrumb(Breadcrumb breadcrumb)
-    {
-        Links.Add(breadcrumb);
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-        if (firstRender) StateHasChanged();
-    }
-}
