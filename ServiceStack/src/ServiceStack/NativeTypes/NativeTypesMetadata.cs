@@ -525,8 +525,7 @@ namespace ServiceStack.NativeTypes
 
             metaType.Description = type.GetDescription();
             metaType.Notes = type.FirstAttribute<NotesAttribute>()?.Notes;
-            metaType.Icon = X.Map(type.FirstAttribute<IconAttribute>(),
-                x => new ImageInfo { Svg = x.Svg, Uri = x.Uri, Cls = x.Cls, Alt = x.Alt });
+            metaType.Icon = type.ToIcon();
 
             var dcAttr = type.GetDataContract();
             if (dcAttr != null)
