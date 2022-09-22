@@ -1,0 +1,6 @@
+﻿@((MarkupString) HtmlUtils.HtmlDump(Value ?? ""))
+
+@code {
+    [Parameter, EditorRequired]
+    public object? Value { get; set; }
+}

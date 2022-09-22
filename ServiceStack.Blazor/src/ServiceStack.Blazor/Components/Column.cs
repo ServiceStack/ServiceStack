@@ -186,7 +186,7 @@ public class Column<Model> : UiComponentBase
                     }
                     else
                     {
-                        builder.OpenComponent<FormatValue>(4);
+                        builder.OpenComponent<PreviewFormat>(4);
                         builder.AddAttribute(5, "Value", value);
                         builder.CloseComponent();
                     }

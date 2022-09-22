@@ -30,19 +30,28 @@
             </Header>
         </Column>
         <!-- Custom Header and Cell Value -->
-        <Column Field="(Booking x) => x.BookingEndDate" Formatter="FormatDate" VisibleFrom="Breakpoint.ExtraLarge">
+        <Column Field="(Booking x) => x.BookingEndDate" VisibleFrom="Breakpoint.ExtraLarge">
             <Header>
                 End<span class="hidden lg:inline"> Date</span>
             </Header>
             <Template>
-                @{
-                    var booking = context as Booking;
-                }
+                @{ var booking = context; }
                 @booking.BookingEndDate?.ToString("D")
             </Template>
         </Column>
-        <!-- Custom Title that's only visible from Tailwind's 'md' responsive Breakpoint -->
-        <Column Title="Employee" Field="(Booking x) => x.CreatedBy" VisibleFrom="Breakpoint.Medium" />
+        <!-- Custom Title and Complex Type Cell with Reference Link -->
+        <Column Title="Voucher" Field="(Booking x) => x.Coupon" VisibleFrom="Breakpoint.ExtraLarge">
+            <Template>
+            @if (context.Coupon != null)
+            {
+                <a class="flex text-blue-600 hover:text-blue-800 items-end" 
+                    href=@($"/gallery/autoquerygrid/coupons?Id={context.Coupon.Id}") @onclick:stopPropagation>
+                    <img class="w-4 h-4 mr-1" src="/img/gallery/coupon.svg" />
+                    <PreviewFormat Value=@context.Coupon />
+                </a>
+            }
+        </Template>
+        </Column>
     </Columns>
 </AutoQueryGrid>
 

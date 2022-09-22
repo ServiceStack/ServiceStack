@@ -2,11 +2,11 @@
 
 @if (!TextUtils.IsComplexType(Value?.GetType()))
 {
-    BlazorUtils.FormatValue(Value, MaxFieldLength);
+    @Format(Value);
 }
 else
 {
-    if (Value is System.Collections.IEnumerable e)
+    if (Value is System.Collections.IEnumerable e && Value is not System.Collections.IDictionary)
     {
         var first = TextUtils.FirstOrDefault(e);
         if (first == null)
@@ -62,7 +62,6 @@ else
         } </span>
     }
 }
-
 
 @code {
     [Parameter] public object? Value { get; set; }
