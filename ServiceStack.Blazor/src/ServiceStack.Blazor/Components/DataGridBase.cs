@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServiceStack;
-using System.Security.AccessControl;
 
-namespace ServiceStack.Blazor.Components.Tailwind;
+namespace ServiceStack.Blazor.Components;
 
 public class DataGridBase<Model> : UiComponentBase
 {
