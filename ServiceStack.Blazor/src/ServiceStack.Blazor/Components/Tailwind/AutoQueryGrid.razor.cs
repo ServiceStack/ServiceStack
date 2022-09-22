@@ -21,7 +21,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     [Parameter] public bool AllowFiltering { get; set; } = true;
     [Parameter] public bool AllowQueryFilters { get; set; } = true;
 
-    public List<AutoQueryConvention> FilterDefinitions { get; set; } = BlazorConfig.Instance.DefaultFilters;
+    [Parameter] public List<AutoQueryConvention> FilterDefinitions { get; set; } = BlazorConfig.Instance.DefaultFilters;
     [Parameter] public Apis? Apis { get; set; }
 
     /// <summary>
@@ -50,35 +50,35 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
 
-    protected AutoCreateForm<Model>? AutoCreateForm { get; set; }
-    protected AutoEditForm<Model>? AutoEditForm { get; set; }
+    AutoCreateForm<Model>? AutoCreateForm { get; set; }
+    AutoEditForm<Model>? AutoEditForm { get; set; }
 
-    public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
-    public int Total => Api?.Response?.Total ?? Results.Count;
+    List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
+    int Total => Api?.Response?.Total ?? Results.Count;
 
-    public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
+    [Parameter] public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
 
-    protected ApiResult<QueryResponse<Model>>? Api { get; set; }
-    protected ApiResult<QueryResponse<Model>>? EditApi { get; set; }
+    ApiResult<QueryResponse<Model>>? Api { get; set; }
+    ApiResult<QueryResponse<Model>>? EditApi { get; set; }
 
-    protected bool apiLoading => Api == null;
-    protected string? errorSummary => Api?.Error.SummaryMessage();
+    bool apiLoading => Api == null;
+    string? errorSummary => Api?.Error.SummaryMessage();
 
-    protected enum Features
+    enum Features
     {
         Filters
     }
 
-    protected async Task downloadCsv()
+    async Task downloadCsv()
     {
         var apiUrl = CreateApiUrl("csv");
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", apiUrl);
         await JS.OpenAsync(apiUrl);
     }
 
-    protected bool copiedApiUrl;
+    bool copiedApiUrl;
 
-    protected async Task copyApiUrl()
+    async Task copyApiUrl()
     {
         var apiUrl = CreateApiUrl("json");
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", apiUrl);
@@ -100,7 +100,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         return formatUrl;
     }
 
-    protected async Task clearPrefs()
+    async Task clearPrefs()
     {
         foreach (var c in GetColumns())
         {
@@ -111,20 +111,20 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         await UpdateAsync();
     }
 
-    protected Features? open { get; set; }
+    Features? open { get; set; }
 
     public List<Column<Model>> GetColumns() => DataGrid?.GetColumns() ?? TypeConstants<Column<Model>>.EmptyList;
-    public Dictionary<string, Column<Model>> ColumnsMap => DataGrid?.ColumnsMap ?? new();
+    Dictionary<string, Column<Model>> ColumnsMap => DataGrid?.ColumnsMap ?? new();
 
-    protected int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
+    int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
 
-    public List<MetadataPropertyType> Properties => appMetadataApi.Response?.Api.Types
+    List<MetadataPropertyType> Properties => appMetadataApi.Response?.Api.Types
         .FirstOrDefault(x => x.Name == typeof(Model).Name)?.Properties ?? new();
-    public List<MetadataPropertyType> ViewModelColumns => Properties.Where(x => GetColumns().Any(c => c.Name == x.Name)).ToList();
+    List<MetadataPropertyType> ViewModelColumns => Properties.Where(x => GetColumns().Any(c => c.Name == x.Name)).ToList();
 
-    public Column<Model>? Filter { get; set; }
-    public ApiPrefs ApiPrefs { get; set; } = new();
-    protected async Task saveApiPrefs(ApiPrefs prefs)
+    Column<Model>? Filter { get; set; }
+    ApiPrefs ApiPrefs { get; set; } = new();
+    async Task saveApiPrefs(ApiPrefs prefs)
     {
         ShowQueryPrefs = false;
         ApiPrefs = prefs;
@@ -133,38 +133,38 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     }
 
     ApiResult<AppMetadata> appMetadataApi = new();
-    protected PluginInfo? Plugins => AppMetadata?.Plugins;
+    PluginInfo? Plugins => AppMetadata?.Plugins;
 
-    protected AutoQueryInfo? Plugin => Plugins?.AutoQuery;
+    AutoQueryInfo? Plugin => Plugins?.AutoQuery;
 
-    protected bool ShowQueryPrefs;
+    bool ShowQueryPrefs;
 
-    protected MetadataOperationType? FindOp(string name) => X.Map(name, name =>
+    MetadataOperationType? FindOp(string name) => X.Map(name, name =>
         appMetadataApi.Response?.Api.Operations.FirstOrDefault(x => x.Request.Name == name));
 
-    protected MetadataOperationType QueryOp => X.Map(Apis!.Query ?? Apis.QueryInto, type => FindOp(type.Name))!;
-    protected MetadataOperationType? CreateOp => X.Map(Apis!.Create, type => FindOp(type.Name))!;
-    protected MetadataOperationType? UpdateOp => X.Map(Apis!.Patch ?? Apis.Update, type => FindOp(type.Name))!;
-    protected MetadataOperationType? DeleteOp => X.Map(Apis!.Delete, type => FindOp(type.Name))!;
+    MetadataOperationType QueryOp => X.Map(Apis!.Query ?? Apis.QueryInto, type => FindOp(type.Name))!;
+    MetadataOperationType? CreateOp => X.Map(Apis!.Create, type => FindOp(type.Name))!;
+    MetadataOperationType? UpdateOp => X.Map(Apis!.Patch ?? Apis.Update, type => FindOp(type.Name))!;
+    MetadataOperationType? DeleteOp => X.Map(Apis!.Delete, type => FindOp(type.Name))!;
 
-    protected string? invalidAccess => QueryOp != null ? base.InvalidAccessMessage(QueryOp) : null;
-    protected string? invalidCreateAccess => CreateOp != null ? base.InvalidAccessMessage(CreateOp) : null;
-    protected string? invalidUpdateAccess => UpdateOp != null ? base.InvalidAccessMessage(UpdateOp) : null;
+    string? invalidAccess => QueryOp != null ? base.InvalidAccessMessage(QueryOp) : null;
+    string? invalidCreateAccess => CreateOp != null ? base.InvalidAccessMessage(CreateOp) : null;
+    string? invalidUpdateAccess => UpdateOp != null ? base.InvalidAccessMessage(UpdateOp) : null;
 
-    protected bool CanCreate => CreateOp != null && CanAccess(CreateOp);
-    protected bool CanUpdate => UpdateOp != null && CanAccess(UpdateOp);
-    protected bool CanDelete => DeleteOp != null && CanAccess(DeleteOp);
+    bool CanCreate => CreateOp != null && CanAccess(CreateOp);
+    bool CanUpdate => UpdateOp != null && CanAccess(UpdateOp);
+    bool CanDelete => DeleteOp != null && CanAccess(DeleteOp);
 
     [Parameter, SupplyParameterFromQuery] public int Skip { get; set; } = 0;
     [Parameter, SupplyParameterFromQuery] public bool? New { get; set; }
     [Parameter, SupplyParameterFromQuery] public string? Edit { get; set; }
 
-    public int Take => ApiPrefs.Take;
+    int Take => ApiPrefs.Take;
 
-    protected bool canFirst => Skip > 0;
-    protected bool canPrev => Skip > 0;
-    protected bool canNext => Results.Count >= Take;
-    protected bool canLast => Results.Count >= Take;
+    bool canFirst => Skip > 0;
+    bool canPrev => Skip > 0;
+    bool canNext => Results.Count >= Take;
+    bool canLast => Results.Count >= Take;
 
     class QueryParams
     {
@@ -173,7 +173,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         public const string New = "new";
     }
 
-    protected async Task skipTo(int value)
+    async Task skipTo(int value)
     {
         Skip += value;
         if (Skip < 0)
@@ -188,7 +188,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         NavigationManager.NavigateTo(uri);
     }
 
-    protected async Task OnRowSelected(Model? item)
+    async Task OnRowSelected(Model? item)
     {
         if (item == null)
         {
@@ -209,16 +209,16 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         await RowSelected.InvokeAsync(item);
     }
 
-    protected void OnShowNewItem(MouseEventArgs e)
+    void OnShowNewItem(MouseEventArgs e)
     {
         string uri = NavigationManager.Uri.SetQueryParam(QueryParams.Edit, null).SetQueryParam(QueryParams.New, "true");
         NavigationManager.NavigateTo(uri);
     }
 
 
-    protected Model? EditModel { get; set; }
+    Model? EditModel { get; set; }
 
-    protected async Task OnEditDoneAsync()
+    async Task OnEditDoneAsync()
     {
         //if (AutoEditForm != null)
         //    await AutoEditForm.CloseAsync();
@@ -227,7 +227,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         NavigationManager.NavigateTo(uri);
     }
 
-    protected async Task OnNewDoneAsync()
+    async Task OnNewDoneAsync()
     {
         //if (AutoCreateForm != null)
         //    await AutoCreateForm.CloseAsync();
@@ -236,19 +236,19 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         NavigationManager.NavigateTo(uri);
     }
 
-    protected async Task OnEditSave(Model model)
+    async Task OnEditSave(Model model)
     {
         lastQuery = null;
         await OnEditDoneAsync();
     }
 
-    protected async Task OnNewSaveAsync(Model model)
+    async Task OnNewSaveAsync(Model model)
     {
         lastQuery = null;
         await OnNewDoneAsync();
     }
 
-    protected bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
+    bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
         || ApiPrefs.SelectedColumns.Count > 0;
 
     string? lastQuery = null;
@@ -256,7 +256,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     MetadataPropertyType PrimaryKey => Properties.GetPrimaryKey()!;
 
     string? primaryKeyName;
-    protected string PrimaryKeyName => primaryKeyName ??= PrimaryKey.Name;
+    string PrimaryKeyName => primaryKeyName ??= PrimaryKey.Name;
 
     public QueryBase CreateRequestArgs() => CreateRequestArgs(out _);
 
@@ -324,7 +324,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         return request;
     }
 
-    protected async Task UpdateAsync()
+    async Task UpdateAsync()
     {
         var request = CreateRequestArgs(out var newQuery);
         if (lastQuery == newQuery)

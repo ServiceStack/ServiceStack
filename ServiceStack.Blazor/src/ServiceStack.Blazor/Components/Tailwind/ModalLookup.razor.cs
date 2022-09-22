@@ -18,20 +18,20 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public RenderFragment Columns { get; set; }
 
-    public string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
+    string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
 
-    public DataGrid<Model>? DataGrid = default!;
-    public List<Column<Model>> GetColumns() => DataGrid?.GetColumns() ?? TypeConstants<Column<Model>>.EmptyList;
-    public Dictionary<string, Column<Model>> ColumnsMap => DataGrid?.ColumnsMap ?? new();
-    public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
+    DataGrid<Model>? DataGrid = default!;
+    List<Column<Model>> GetColumns() => DataGrid?.GetColumns() ?? TypeConstants<Column<Model>>.EmptyList;
+    Dictionary<string, Column<Model>> ColumnsMap => DataGrid?.ColumnsMap ?? new();
+    [Parameter] public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
 
-    public int Skip { get; set; } = 0;
-    public int Take => ApiPrefs.Take;
+    int Skip { get; set; } = 0;
+    int Take => ApiPrefs.Take;
 
-    protected bool canFirst => Skip > 0;
-    protected bool canPrev => Skip > 0;
-    protected bool canNext => Results.Count >= Take;
-    protected bool canLast => Results.Count >= Take;
+    bool canFirst => Skip > 0;
+    bool canPrev => Skip > 0;
+    bool canNext => Results.Count >= Take;
+    bool canLast => Results.Count >= Take;
 
     class QueryParams
     {
@@ -42,21 +42,21 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
 
     public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
     public int Total => Api?.Response?.Total ?? Results.Count;
-    protected ApiResult<QueryResponse<Model>>? Api { get; set; }
+    ApiResult<QueryResponse<Model>>? Api { get; set; }
     public ApiPrefs ApiPrefs { get; set; } = new();
-    protected bool ShowQueryPrefs;
-    protected bool apiLoading => Api == null;
-    protected string? errorSummary => Api?.Error.SummaryMessage();
-    protected int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
+    bool ShowQueryPrefs;
+    bool apiLoading => Api == null;
+    string? errorSummary => Api?.Error.SummaryMessage();
+    int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
     public List<AutoQueryConvention> FilterDefinitions { get; set; } = BlazorConfig.Instance.DefaultFilters;
 
-    protected Features? open { get; set; }
-    protected enum Features
+    Features? open { get; set; }
+    enum Features
     {
         Filters
     }
 
-    protected async Task skipTo(int value)
+    async Task skipTo(int value)
     {
         Skip += value;
         if (Skip < 0)
@@ -71,13 +71,13 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
         NavigationManager.NavigateTo(uri);
     }
 
-    protected async Task OnRowSelected(Model? item)
+    async Task OnRowSelected(Model? item)
     {
         await RowSelected.InvokeAsync(item);
     }
 
     string? lastQuery = null;
-    protected async Task UpdateAsync()
+    async Task UpdateAsync()
     {
         var request = CreateRequestArgs(out var newQuery);
         if (lastQuery == newQuery)
@@ -99,7 +99,7 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
         .FirstOrDefault(x => x.Name == typeof(Model).Name)?.Properties ?? new();
     MetadataPropertyType PrimaryKey => Properties.GetPrimaryKey()!;
     string? primaryKeyName;
-    protected string PrimaryKeyName => primaryKeyName ??= PrimaryKey.Name;
+    string PrimaryKeyName => primaryKeyName ??= PrimaryKey.Name;
 
     public QueryBase CreateRequestArgs() => CreateRequestArgs(out _);
 

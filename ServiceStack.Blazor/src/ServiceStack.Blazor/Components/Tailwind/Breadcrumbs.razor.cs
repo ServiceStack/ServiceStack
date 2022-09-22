@@ -8,7 +8,7 @@ public partial class Breadcrumbs : UiComponentBase
     [Parameter] public string HomeLabel { get; set; } = "Home";
     [Parameter] public RenderFragment ChildContent { get; set; }
 
-    public List<Breadcrumb> Links { get; set; } = new();
+    List<Breadcrumb> Links { get; set; } = new();
 
     public void AddBreadcrumb(Breadcrumb breadcrumb)
     {

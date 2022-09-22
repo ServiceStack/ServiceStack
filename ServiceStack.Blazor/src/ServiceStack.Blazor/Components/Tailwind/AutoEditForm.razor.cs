@@ -10,10 +10,10 @@ public partial class AutoEditForm<Model> : AutoFormBase<Model>
 
     protected override string Title => Heading ?? ApiType.GetDescription() ?? $"Edit {typeof(Model).Name} {MetadataType?.GetId(Edit)}";
 
-    protected IHasErrorStatus? deleteApi;
+    IHasErrorStatus? deleteApi;
 
 
-    protected virtual async Task OnDelete()
+    async Task OnDelete()
     {
         if (DeleteApiType == null)
             return;

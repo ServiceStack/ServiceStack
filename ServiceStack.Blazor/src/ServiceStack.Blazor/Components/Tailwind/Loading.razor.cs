@@ -10,7 +10,7 @@ public partial class Loading : UiComponentBase
     [Inject] IJSRuntime JS { get; set; }
     [Inject] NavigationManager NavigationManager { get; set; }
 
-    public string prerenderedHtml { get; set; } = "";
+    string prerenderedHtml { get; set; } = "";
 
     [Parameter]
     public string ImageClass { get; set; } = "w-6 h-6";

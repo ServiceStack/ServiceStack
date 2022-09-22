@@ -6,7 +6,6 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 public partial class DataGrid<Model> : UiComponentBase
 {
-    public int InstanceId = BlazorUtils.NextId();
     [Inject] public LocalStorage LocalStorage { get; set; }
     [Parameter] public string Id { get; set; } = "DataGrid." + typeof(Model).Name;
     [Parameter] public RenderFragment<Column<Model>> Columns { get; set; }
@@ -35,16 +34,16 @@ public partial class DataGrid<Model> : UiComponentBase
     [Inject] public IJSRuntime JS { get; set; }
 
     public List<Action> StateChangedHandlers { get; set; } = new();
-    public async Task OnStateChanged() => await StateChanged.InvokeAsync();
+    async Task OnStateChanged() => await StateChanged.InvokeAsync();
     [Parameter] public EventCallback StateChanged { get; set; }
 
-    protected Column<Model>? ShowFilters { get; set; }
+    Column<Model>? ShowFilters { get; set; }
     public DOMRect? ShowFiltersTopLeft { get; set; }
-    protected ElementReference? refResults;
+    ElementReference? refResults;
 
-    protected Model? selectedItem;
-    protected bool IsSelected(Model item) => selectedItem?.Equals(item) == true;
-    protected string RowSelectionClass(Model item) => AllowSelection
+    Model? selectedItem;
+    bool IsSelected(Model item) => selectedItem?.Equals(item) == true;
+    string RowSelectionClass(Model item) => AllowSelection
         ? IsSelected(item) ? SelectedClass : HoverSelectionClass
         : "";
 
@@ -55,7 +54,7 @@ public partial class DataGrid<Model> : UiComponentBase
     [Parameter] public EventCallback<List<Filter>> FiltersChanged { get; set; }
 
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
-    protected MetadataType? metadataType;
+    MetadataType? metadataType;
     public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name)
         ?? typeof(Model).ToMetadataType();
 
@@ -80,13 +79,13 @@ public partial class DataGrid<Model> : UiComponentBase
         await HeaderSelected.InvokeAsync(column);
     }
 
-    protected async Task OnFilterDone()
+    async Task OnFilterDone()
     {
         ShowFilters = null;
         ShowFiltersTopLeft = null;
     }
 
-    protected async Task OnFilterSave(List<Filter> filters)
+    async Task OnFilterSave(List<Filter> filters)
     {
         ShowFilters!.Settings.Filters = filters;
         await ShowFilters.SaveSettingsAsync();
@@ -108,7 +107,7 @@ public partial class DataGrid<Model> : UiComponentBase
     }
 
 
-    protected readonly List<Column<Model>> columns = new();
+    readonly List<Column<Model>> columns = new();
     public IEnumerable<Column<Model>> VisibleColumns => SelectedColumns?.Count > 0
         ? columns.Where(c => SelectedColumns.Contains(c.Name))
         : columns;
