@@ -74,6 +74,14 @@ p code {
     border-radius: 0.25rem;
 }
 
+.example ::-webkit-scrollbar {
+    width: 8px;
+    height: 6px
+}
+.example ::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+}
+
 .youtube {
     width: 448px;
     height: 252px;

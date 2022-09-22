@@ -2,60 +2,73 @@
 
 @if (!TextUtils.IsComplexType(Value?.GetType()))
 {
-    BlazorUtils.FormatValue(Value);
+    BlazorUtils.FormatValue(Value, MaxFieldLength);
 }
 else
 {
-    @((MarkupString)HtmlValue)
+    if (Value is System.Collections.IEnumerable e)
+    {
+        var first = TextUtils.FirstOrDefault(e);
+        if (first == null)
+        {
+            @("[]")
+        }
+        else
+        {
+            if (TextUtils.IsComplexType(first.GetType()))
+            {
+                <span title=@TypeSerializer.Dump(Value)>@Format(Value)</span>
+            }
+            else
+            {
+                var i = 0;
+                foreach (var item in e)
+                {
+                    if (i++ > 0)
+                    {
+                        @(',')
+                    }
+                    @TextUtils.GetScalarText(item)
+                }
+            }
+        }
+    }
+    else
+    {
+        <span title=@TypeSerializer.Dump(Value)> {
+        @{
+            var dict = Value.ToObjectDictionary();
+            var keys = dict.Keys.ToList();
+            var len = Math.Min(MaxNestedFields, keys.Count);
+            for (var i = 0; i < len; i++)
+            {
+                var key = keys[i];
+                var val = dict[key];
+                var value = Format(val);
+                var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+                if (i > 0)
+                {
+                    @(", ")
+                }
+                {
+                    <b class="font-medium">@key</b>@($": {str}")
+                }
+            }
+            if (keys.Count > len)
+            {
+                @("...")
+            }
+        }
+        } </span>
+    }
 }
 
 
 @code {
     [Parameter] public object? Value { get; set; }
+    [Parameter] public int MaxFieldLength { get; set; } = BlazorConfig.Instance.MaxFieldLength;
+    [Parameter] public int MaxNestedFields { get; set; } = BlazorConfig.Instance.MaxNestedFields;
+    [Parameter] public int MaxNestedFieldLength { get; set; } = BlazorConfig.Instance.MaxNestedFieldLength;
 
-    public string HtmlValue
-    {
-        get
-        {
-            var sb = StringBuilderCache.Allocate();
-            if (Value is System.Collections.IEnumerable e)
-            {               
-                var first = TextUtils.FirstOrDefault(e);
-                if (first == null)
-                    return "[]";
-
-                if (TextUtils.IsComplexType(first.GetType()))
-                    return wrap(TypeSerializer.Dump(Value).HtmlEncode(), BlazorUtils.FormatValue(Value));
-
-                foreach (var item in e)
-                {
-                    if (sb.Length > 0)
-                        sb.Append(',');
-                    sb.Append(TextUtils.GetScalarText(item));
-                }
-
-            }
-            var dict = Value.ToObjectDictionary();
-            var keys = dict.Keys.ToList();
-            var len = Math.Min(BlazorConfig.Instance.MaxNestedFields, keys.Count);
-            for (var i = 0; i < len; i++)
-            {
-                var key = keys[i];
-                var val = dict[key];
-                var value = BlazorUtils.FormatValue(val);
-                var str = TextUtils.Truncate(value, BlazorConfig.Instance.MaxNestedFieldLength).HtmlEncode();
-                if (sb.Length > 0)
-                    sb.Append(", ");
-
-                sb.AppendLine($"<b class=\"font-medium\">{key}</b>: {str}");
-            }
-            if (keys.Count > len)
-                sb.AppendLine("...");
-
-            var html = StringBuilderCache.ReturnAndFree(sb);
-            return wrap(TypeSerializer.Dump(Value).HtmlEncode(), "{ " + html + " }");
-        }
-    }
-
-    string wrap(string raw, string html) => $"<span title=\"{raw.HtmlEncode()}\">" + html + "</span>";
+    string Format(object? value) => BlazorUtils.FormatValue(value, MaxFieldLength);
 }
