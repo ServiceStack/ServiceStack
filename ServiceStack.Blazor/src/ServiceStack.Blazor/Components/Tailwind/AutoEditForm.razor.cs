@@ -5,7 +5,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Auto UI for generating a Edit Form from a Request DTO in a Slide Over component
-/// <img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoEditForm.png" />
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoEditForm.png)
 /// </summary>
 /// <typeparam name="Model"></typeparam>
 public partial class AutoEditForm<Model> : AutoFormBase<Model>

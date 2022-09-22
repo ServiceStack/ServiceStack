@@ -5,7 +5,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Auto UI for generating a Create Form from a Request DTO in a Slide Over component
-/// <img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoCreateForm.png" />
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoCreateForm.png)
 /// </summary>
 /// <typeparam name="Model"></typeparam>
 public partial class AutoCreateForm<Model> : AutoFormBase<Model>

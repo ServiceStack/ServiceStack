@@ -5,7 +5,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Auto UI for generating a chromelss Form from a Request DTO that can be embedded in custom Form UIs
-/// <img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoCreateForm.png" />
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoCreateForm.png)
 /// </summary>
 public partial class AutoFormFields : UiComponentBase
 {
