@@ -8,7 +8,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
 {
     public DataGrid<Model>? DataGrid = default!;
-    public string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
+    string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
     [Inject] public LocalStorage LocalStorage { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
     [Inject] public IJSRuntime JS { get; set; }
