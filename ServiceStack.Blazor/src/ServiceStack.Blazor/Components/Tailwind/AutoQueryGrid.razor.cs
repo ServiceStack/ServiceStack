@@ -5,6 +5,11 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Auto UI for managing AutoQuery CRUD APIs
+/// <img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoQueryGrid.png" />
+/// </summary>
+/// <typeparam name="Model"></typeparam>
 public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
 {
     public DataGrid<Model>? DataGrid = default!;

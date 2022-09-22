@@ -93,8 +93,8 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public DateTime? BookingEndDate { get; set; }
     [Input(Type = "textarea")]
     public string? Notes { get; set; }
-    public bool? Cancelled { get; set; }
     public string? CouponId { get; set; }
+    public bool? Cancelled { get; set; }
 }
 
 [Tag("bookings"), Description("Delete a Booking")]
