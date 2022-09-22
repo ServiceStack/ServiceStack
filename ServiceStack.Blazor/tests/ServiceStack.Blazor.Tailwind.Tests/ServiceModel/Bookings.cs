@@ -122,13 +122,39 @@ public class QueryCoupons : QueryDb<Coupon>
 }
 
 [Tag("bookings")]
+[Route("/coupons", "POST")]
+[ValidateHasRole("Employee")]
+[AutoApply(Behavior.AuditModify)]
+public class CreateCoupon : ICreateDb<Coupon>, IReturn<IdResponse>
+{
+    [ValidateNotEmpty]
+    public string Description { get; set; }
+    [ValidateGreaterThan(0)]
+    public int Discount { get; set; }
+    [Required]
+    public DateTime ExpiryDate { get; set; }
+}
+
+[Tag("bookings")]
 [Route("/coupons/{Id}", "PATCH")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateCoupon : IPatchDb<Coupon>, IReturn<IdResponse>
 {
     public string Id { get; set; }
+    [ValidateNotEmpty]
     public string Description { get; set; }
+    [ValidateGreaterThan(0)]
     public int Discount { get; set; }
+    [Required]
     public DateTime ExpiryDate { get; set; }
+}
+
+
+[Tag("bookings"), Description("Delete a Coupon")]
+[Route("/coupons/{Id}", "DELETE")]
+[ValidateHasRole("Manager")]
+public class DeleteCoupon : IDeleteDb<Coupon>, IReturnVoid
+{
+    public string Id { get; set; }
 }

@@ -35,8 +35,7 @@
                 End<span class="hidden lg:inline"> Date</span>
             </Header>
             <Template>
-                @{ var booking = context; }
-                @booking.BookingEndDate?.ToString("D")
+                @context.BookingEndDate?.ToString("D")
             </Template>
         </Column>
         <!-- Custom Title and Complex Type Cell with Reference Link -->
@@ -44,11 +43,11 @@
             <Template>
             @if (context.Coupon != null)
             {
-                <a class="flex text-blue-600 hover:text-blue-800 items-end" 
-                    href=@($"/gallery/autoquerygrid/coupons?Id={context.Coupon.Id}") @onclick:stopPropagation>
+                <TextLink class="flex items-end" 
+                    href=@($"/gallery/autoquerygrid/coupons?Id={context.Coupon.Id}")>
                     <img class="w-4 h-4 mr-1" src="/img/gallery/coupon.svg" />
                     <PreviewFormat Value=@context.Coupon />
-                </a>
+                </TextLink>
             }
         </Template>
         </Column>
