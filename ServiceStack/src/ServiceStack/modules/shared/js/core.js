@@ -287,7 +287,7 @@ function iconHtml(icon, opt) {
             `onerror="iconOnError(this,'img')"`
         ].filter(x => !!x)
         if (attrs.length > 0) {
-            svg = `<svg ${attrs.join(' ')}' ${svg.substring(4)}`
+            svg = `<svg ${attrs.join(' ')} ${svg.substring(4)}`
         }
         return svg
     }
