@@ -4,6 +4,6 @@ namespace ServiceStack.Blazor.Components;
 
 public class AlertSuccessBase : ApiComponentBase
 {
-    [Parameter, EditorRequired]
-    public string Message { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 }

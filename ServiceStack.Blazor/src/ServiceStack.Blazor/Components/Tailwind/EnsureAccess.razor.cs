@@ -2,6 +2,9 @@
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Redirect to Sign In page if not authenticated or show access denied message if unauthorized
+/// </summary>
 public partial class EnsureAccess : AuthBlazorComponentBase
 {
     [Inject] NavigationManager NavigationManager { get; set; }

@@ -1,0 +1,45 @@
+﻿@page "/gallery/alerts"
+@using MyApp.Client.Pages.gallery.Alerts
+
+<Breadcrumbs>
+    <Breadcrumb href="/gallery">
+        gallery
+    </Breadcrumb>
+    <Breadcrumb>
+        Alert Examples
+    </Breadcrumb>
+</Breadcrumbs>
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Alert
+</h2>
+
+<p class="mb-4 text-lg">
+    Show basic alert message:
+</p>
+
+
+<ExampleCode Path="/Alerts/AlertChildContent.razor" />
+
+<AlertChildContent />
+
+<p class="my-4 text-lg">
+    Show alert message from dynamic HTML string:
+</p>
+
+<ExampleCode Path="/Alerts/AlertHtmlMessage.razor" />
+
+<AlertHtmlMessage />
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Alert Success
+</h2>
+
+<p class="mb-4 text-lg">
+    Show success alert message:
+</p>
+
+
+<ExampleCode Path="/Alerts/AlertSuccessMessage.razor" />
+
+<AlertSuccessMessage />
