@@ -267,10 +267,10 @@ public class AdminDatabaseService : Service
         {
             sb.AppendLine($"WHERE {string.Join(" AND ", filters)}");
         }
-        if (!string.IsNullOrEmpty(request.OrderBy))
-        {
-            sb.AppendLine($"ORDER BY {OrmLiteUtils.OrderByFields(dialect, request.OrderBy)}");
-        }
+
+        // OrderBy always required when paging
+        var orderBy = request.OrderBy ?? (columns.FirstOrDefault(x => x.IsPrimaryKey == true) ?? columns[0]).Name;
+        sb.AppendLine($"ORDER BY {OrmLiteUtils.OrderByFields(dialect, orderBy)}");
 
         var take = Math.Min(request.Take.GetValueOrDefault(feature.QueryLimit), feature.QueryLimit);
 
