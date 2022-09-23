@@ -10,9 +10,9 @@
     </Breadcrumb>
 </Breadcrumbs>
 
-<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+<ApiReference Component="AutoCreateForm<Model>">
     Create Form
-</h2>
+</ApiReference>
 
 <p class="mb-4 text-lg">
     <code>AutoCreateForm</code> can be used to create an automated form based from a Request DTO definition:
@@ -22,9 +22,9 @@
 
 <iframe class="w-full" style="height:35em" src="/gallery/autoform/create" />
 
-<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+<ApiReference Component="AutoEditForm<Model>">
     Edit Form
-</h2>
+</ApiReference>
 
 <p class="mb-4 text-lg">
     <code>AutoEditForm</code> can be used to render an automated form based to update and delete an 
@@ -70,9 +70,9 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 
 }
 
-<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+<ApiReference Component="AutoFormFields">
     Form Fields
-</h2>
+</ApiReference>
 
 <p class="mb-4 text-lg">
     For more advanced customization on a Forms appearance and behavior, you can use <code>AutoFormFields</code> to just render the Form's fields including

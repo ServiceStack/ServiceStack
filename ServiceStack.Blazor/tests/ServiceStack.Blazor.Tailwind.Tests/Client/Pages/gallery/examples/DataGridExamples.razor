@@ -1,6 +1,8 @@
 ﻿@page "/gallery/datagrid"
 @using MyApp.Client.Pages.gallery.DataGrid
 
+<div class="example">
+
 <Breadcrumbs>
     <Breadcrumb href="/gallery">
         gallery
@@ -10,9 +12,9 @@
     </Breadcrumb>
 </Breadcrumbs>
 
-<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+<ApiReference Component="DataGrid<Model>">
     Default
-</h2>
+</ApiReference>
 
 <p class="mb-4 text-lg">
     In its most simple usage the DataGrid component can be used to render typed collections:
@@ -43,6 +45,4 @@
 
 <Responsive />
 
-@code {
-
-}
+</div>
