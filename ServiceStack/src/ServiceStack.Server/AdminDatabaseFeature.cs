@@ -303,7 +303,7 @@ public class AdminDatabaseService : Service
         return ColumnCache.GetOrAdd(key, k =>
         {
             var dialect = db.GetDialectProvider();
-            var columnSchemas = db.GetTableColumns($"SELECT * FROM {table}" + Environment.NewLine + dialect.SqlLimit(0, 1));
+            var columnSchemas = db.GetTableColumns($"SELECT * FROM {table} ORDER BY 1 {dialect.SqlLimit(0, 1)}");
             var columns = columnSchemas.Map(x =>
             {
                 var type = GenerateCrudServices.DefaultResolveColumnType(x, dialect);
