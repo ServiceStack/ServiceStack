@@ -28,6 +28,11 @@ public static class CssDefaults
             visible: false); 
     }
 
+    public static class Modal
+    {
+        public const string SizeClass = "sm:max-w-prose lg:max-w-screen-md xl:max-w-screen-lg 2xl:max-w-screen-xl sm:w-full";
+    }
+
     public static string ToBreakpointCellClass(this Breakpoint breakpoint) => breakpoint switch
     {
         // Use full class names so tailwindcss can find it

@@ -8,6 +8,7 @@ public partial class ModalDialog : UiComponentBase
     [Parameter, EditorRequired] public bool Show { get; set; }
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }
     [Parameter] public EventCallback Close { get; set; }
+    [Parameter] public string SizeClass { get; set; } = CssDefaults.Modal.SizeClass;
 
     DataTransition DialogTransition = new DataTransition(
         entering: new(@class: "ease-out duration-300", from: "opacity-0", to: "opacity-100"),

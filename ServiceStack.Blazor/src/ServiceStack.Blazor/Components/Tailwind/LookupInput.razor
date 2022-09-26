@@ -2,12 +2,12 @@
 @implements IHasJsonApiClient
 
 <div class="lookup-field">
-    <input type="hidden" name=@Input.Id value=@(Model[Property.Name]) />
+    <input type="hidden" name=@Input.Id value=@Value />
     @if (!string.IsNullOrEmpty(UseLabel))
     {
         <div class="flex justify-between">
             <label for=@Input.Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
-            <span class="text-sm text-gray-500 pr-3">@(Model[Property.Name])</span>
+            <span class="text-sm text-gray-500 pr-3">@Value</span>
         </div>
     }
     @if (Property.Ref != null)

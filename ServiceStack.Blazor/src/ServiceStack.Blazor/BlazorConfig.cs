@@ -3,6 +3,7 @@ public class BlazorConfig
 {
     public static BlazorConfig Instance { get; private set; } = new();
     public static void Set(BlazorConfig config) => Instance = config;
+    public bool EnableErrorLogging { get; init; } = true;
     public bool EnableVerboseLogging { get; init; } = false;
     public bool EnableLogging { get; init; } = false;
     public int MaxFieldLength { get; init; } = 150;

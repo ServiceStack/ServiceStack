@@ -35,6 +35,7 @@ public partial class DataGrid<Model> : UiComponentBase
     [Parameter] public string SelectedClass { get; set; } = CssDefaults.Grid.SelectedClass;
     [Parameter] public string OutlineClass { get; set; } = CssDefaults.Grid.OutlineClass;
     [Parameter] public List<string>? SelectedColumns { get; set; }
+    [Parameter] public Func<MouseEventArgs, DOMRect>? FiltersTopLeftResolver { get; set; }
 
     DOMRect? tableRect;
     [Inject] public IJSRuntime JS { get; set; }
@@ -48,7 +49,7 @@ public partial class DataGrid<Model> : UiComponentBase
     ElementReference? refResults;
 
     Model? selectedItem;
-    bool IsSelected(Model item) => selectedItem?.Equals(item) == true;
+    bool IsSelected(Model? item) => selectedItem?.Equals(item) == true;
     string RowSelectionClass(Model item) => AllowSelection
         ? IsSelected(item) ? SelectedClass : HoverSelectionClass
         : "";
@@ -74,8 +75,8 @@ public partial class DataGrid<Model> : UiComponentBase
     {
         if (!AllowFiltering) return;
         ShowFilters = column;
-        tableRect ??= await JS.InvokeAsync<DOMRect>("JS.invoke", new object[] { refResults!, "getBoundingClientRect" });
-        ShowFiltersTopLeft = new DOMRect
+        tableRect = await JS.InvokeAsync<DOMRect>("JS.invoke", new object[] { refResults!, "getBoundingClientRect" });
+        ShowFiltersTopLeft = FiltersTopLeftResolver?.Invoke(e) ?? new DOMRect
         {
             X = Math.Floor(e.ClientX + filterDialogWidth / 2),
             Y = tableRect.Value.Y + 45,
@@ -99,7 +100,7 @@ public partial class DataGrid<Model> : UiComponentBase
     }
 
     public Model? SelectedItem => selectedItem;
-    public async Task SetSelectedItem(Model model)
+    public async Task SetSelectedItem(Model? model)
     {
         if (!AllowSelection) return;
         selectedItem = IsSelected(model) ? default : model;

@@ -17,7 +17,7 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
     [Parameter, EditorRequired] public MetadataType? MetadataType { get; set; }
     MetadataPropertyType? property;
     MetadataPropertyType Property => property ??= MetadataType!.Properties.First(x => x.Name == Input.Id);
-    [Parameter, EditorRequired] public Dictionary<string, object> Model { get; set; }
+    [Parameter, EditorRequired] public Dictionary<string, object?> Model { get; set; }
     [Parameter] public string? LabelClass { get; set; }
 
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
@@ -54,12 +54,13 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
         if (row != null)
         {
             var refInfo = Property.Ref;
-            //BlazorUtils.Log($"OnLookupSelected: {row.Dump()}, {refInfo.Dump()}; {MetadataType.Name}");
             var refModel = row.ToObjectDictionary();
-            Model[Property.Name] = refModel.GetIgnoreCase(refInfo.RefId) ?? "";
+            Model[Property.Name] = refModel.GetIgnoreCase(refInfo.RefId);
             refInfoValue = LookupValues.SetValue(refInfo, refModel);
+
+            BlazorUtils.Log($"OnLookupSelected: {row.Dump()}, {refInfo.Dump()}; {MetadataType.Name} -> {Model.Dump()} :: {Value} -> {refInfoValue}");
+            StateHasChanged();
         }
-        StateHasChanged();
         return Task.CompletedTask;
     }
 
@@ -71,7 +72,7 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
         Model ??= new();
         if (!Model.ContainsKey(Property.Name))
         {
-            Model[Property.Name] = "";
+            Model[Property.Name] = null;
         }
 
         refInfoValue = null;

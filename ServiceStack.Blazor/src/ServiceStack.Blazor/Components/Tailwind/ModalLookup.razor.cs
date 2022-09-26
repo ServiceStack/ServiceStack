@@ -13,20 +13,44 @@ public partial class DynamicModalLookup : UiComponentBase
     public bool Show { get; set; }
     public EventCallback<object> RowSelected { get; set; }
     public EventCallback Close { get; set; }
+    public EventCallback<ModalLookup> Initialized { get; set; }
+    public ModalLookup? ModalLookup { get; set; }
 
-    void close() => Show = false;
-    public Task OpenAsync(RefInfo? refInfo, Func<object, Task> callback)
+    void close()
     {
-        BlazorUtils.Log($"OpenAsync {refInfo.Dump()}");
-        Show = true;
-        RefInfo = refInfo;
+        Show = false;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
         Close = EventCallback.Factory.Create(this, close);
+        Initialized = EventCallback.Factory.Create<ModalLookup>(this, x => ModalLookup = x);
         RowSelected = EventCallback.Factory.Create<object>(this, async model => {
             close();
-            await callback(model);
+            if (Callback != null)
+                await Callback(model);
         });
+    }
+
+    Func<object, Task>? Callback;
+
+    public async Task OpenAsync(RefInfo? refInfo, Func<object, Task> callback)
+    {
+        BlazorUtils.Log($"OpenAsync {refInfo.Dump()}, Initialized: {ModalLookup != null}");
+        ModalLookup?.Reset();
+
+        Show = true;
+        RefInfo = refInfo;
+        Callback = callback;
+
+        if (ModalLookup != null)
+        {
+            await ModalLookup.UpdateAsync();
+        }
+
         StateHasChanged();
-        return Task.CompletedTask;
     }
 
     string? CacheKey => RefInfo == null ? null : $"{RefInfo.Model}.{RefInfo.SelfId}.{RefInfo.RefId}.{RefInfo.RefLabel}.";
@@ -66,20 +90,20 @@ public partial class DynamicModalLookup : UiComponentBase
         var metadataType = AppMetadata.GetType(RefInfo!.Model);
         if (metadataType == null)
         {
-            BlazorUtils.Log($"Could not find Type {RefInfo!.Model}");
+            BlazorUtils.LogError($"Could not find Type {RefInfo!.Model}");
             return null;
         }
         var queryOp = AppMetadata?.Api.Operations.FirstOrDefault(x => x.DataModel?.Name == RefInfo.Model);
         if (queryOp == null)
         {
-            BlazorUtils.Log($"Could not find Api Type for {RefInfo!.Model}");
+            BlazorUtils.LogError($"Could not find Api Type for {RefInfo!.Model}");
             return null;
         }
 
         var requestType = queryOp.Request.Type ??= Apis.Find(queryOp.Request.Name);
         if (requestType == null)
         {
-            BlazorUtils.Log($"Could not find Query Api Type for {queryOp.Request.Name}");
+            BlazorUtils.LogError($"Could not find Query Api Type for {queryOp.Request.Name}");
             return null;
         }
 
@@ -104,14 +128,21 @@ public partial class DynamicModalLookup : UiComponentBase
         builder.AddAttribute(3, nameof(Show), Show);
         builder.AddAttribute(4, nameof(ctx.Apis), ctx.Apis);
         builder.AddAttribute(5, nameof(Close), Close);
+        builder.AddAttribute(6, nameof(Initialized), Initialized);
 
-        ctx.RowSelectedBuilder.AddAttribute(builder, 6, nameof(RowSelected));
+        ctx.RowSelectedBuilder.AddAttribute(builder, 7, nameof(RowSelected));
 
         builder.CloseComponent();
     }
 }
 
-public partial class ModalLookup<Model> : AuthBlazorComponentBase
+public abstract class ModalLookup : AuthBlazorComponentBase
+{
+    abstract public void Reset();
+    abstract public Task UpdateAsync();
+}
+
+public partial class ModalLookup<Model> : ModalLookup
 {
     [Inject] public LocalStorage? LocalStorage { get; set; }
     [Inject] public NavigationManager? NavigationManager { get; set; }
@@ -126,10 +157,12 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public RenderFragment Columns { get; set; }
     [Parameter] public EventCallback Close { get; set; }
+    [Parameter] public EventCallback<ModalLookup> Initialized { get; set; }
 
     string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
 
-    DataGrid<Model>? DataGrid = default!;
+    public ModalDialog? ModalDialog { get; set; }
+    public DataGrid<Model>? DataGrid { get; set; } = default!;
     List<Column<Model>> GetColumns() => DataGrid?.GetColumns() ?? TypeConstants<Column<Model>>.EmptyList;
     Dictionary<string, Column<Model>> ColumnsMap => DataGrid?.ColumnsMap ?? new();
     [Parameter] public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
@@ -152,12 +185,36 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
     public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
     public int Total => Api?.Response?.Total ?? Results.Count;
     ApiResult<QueryResponse<Model>>? Api { get; set; }
-    public ApiPrefs ApiPrefs { get; set; } = new();
     bool ShowQueryPrefs;
     bool apiLoading => Api == null;
     string? errorSummary => Api?.Error.SummaryMessage();
     int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
     public List<AutoQueryConvention> FilterDefinitions { get; set; } = BlazorConfig.Instance.DefaultFilters;
+    List<MetadataPropertyType> ViewModelColumns => Properties.Where(x => GetColumns().Any(c => c.Name == x.Name)).ToList();
+    Column<Model>? Filter { get; set; }
+    ApiPrefs ApiPrefs { get; set; } = new();
+    
+    async Task saveApiPrefs(ApiPrefs prefs)
+    {
+        ShowQueryPrefs = false;
+        ApiPrefs = prefs;
+        await LocalStorage!.SetItemAsync(CacheKey, ApiPrefs);
+        await UpdateAsync();
+    }
+
+    bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
+        || ApiPrefs.SelectedColumns.Count > 0;
+    async Task clearPrefs()
+    {
+        foreach (var c in GetColumns())
+        {
+            await c.RemoveSettingsAsync();
+        }
+        ApiPrefs.Clear();
+        await LocalStorage!.RemoveItemAsync(CacheKey);
+        await UpdateAsync();
+    }
+
 
     Features? open { get; set; }
     enum Features
@@ -175,9 +232,7 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
         if (Skip > lastPage)
             Skip = (int)lastPage;
 
-        string uri = NavigationManager!.Uri.SetQueryParam(QueryParams.Skip, Skip > 0 ? $"{Skip}" : null);
-        log($"skipTo ({value}) {uri}");
-        NavigationManager.NavigateTo(uri);
+        await UpdateAsync();
     }
 
     async Task OnRowSelected(Model? item)
@@ -185,8 +240,17 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
         await RowSelected.InvokeAsync(item);
     }
 
+    public override void Reset()
+    {
+        Api = null;
+        open = null;
+        Skip = 0;
+        lastQuery = null;
+        DataGrid?.SetSelectedItem(default);
+    }
+
     string? lastQuery = null;
-    async Task UpdateAsync()
+    public override async Task UpdateAsync()
     {
         var request = CreateRequestArgs(out var newQuery);
         if (lastQuery == newQuery)
@@ -277,7 +341,18 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
 
         ApiPrefs = await LocalStorage!.GetItemAsync<ApiPrefs>(CacheKey) ?? new();
 
+        await Initialized.InvokeAsync(this);
+
         await UpdateAsync();
     }
 
+    const int filterDialogWidth = 318;
+    DOMRect FiltersTopLeftResolver(MouseEventArgs e)
+    {
+        return new DOMRect
+        {
+            X = Math.Max(Math.Floor(e.ClientX), filterDialogWidth),
+            Y = 110,
+        };
+    }
 }
