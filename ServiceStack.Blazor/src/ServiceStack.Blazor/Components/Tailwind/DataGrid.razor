@@ -12,20 +12,19 @@
     }
 
     <div @ref="refResults" class=@ClassNames(GridClass, @class)>
-        <div class="-my-2 overflow-x-auto">
-            <div class="py-2 align-middle inline-block min-w-full">
-                <div class=@OutlineClass>
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr class="select-none">
+        <div class=@Grid2Class>
+            <div class=@Grid3Class>
+                <div class=@Grid4Class>
+                    <table class=@TableClass>
+                        <thead class=@TableHeadClass>
+                            <tr class=@TableHeaderRowClass>
 
                                 @foreach (var column in VisibleColumns)
                                 {
                                     var allowFiltering = AllowFiltering && !TextUtils.IsComplexType(column.FieldType);
                                     var isOpen = column == ShowFilters;
                                     <td class=@ClassNames(column.VisibleFrom != null ? $"hidden {column.VisibleFrom.Value.ToBreakpointCellClass()}" : null,
-                                        column.HeaderClass ?? ClassNames("px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap",
-                                        isOpen ? "text-gray-900" : "text-gray-500", column.@class))>
+                                        column.HeaderClass ?? ClassNames(TableHeaderCellClass, isOpen ? "text-gray-900" : "text-gray-500", column.@class))>
 
                                         @if (!allowFiltering)
                                         {
@@ -45,12 +44,12 @@
 
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class=@TableBodyClass>
                             @{ var i = 0; }
                             @foreach (var item in Items)
                             {
                                 <tr @key="item.GetHashCode()"
-                                    class=@ClassNames(RowSelectionClass(item), RowClass?.Invoke(item, i++) ?? (++i % 2 == 0 ? "bg-gray-50" : "bg-white"))
+                                    class=@ClassNames(RowSelectionClass(item), RowClass?.Invoke(item, i++) ?? CssDefaults.Grid.GetTableRowClass(TableStyle, i++))
                                     @onclick="e => OnRowSelected(e, item)">
                                     @foreach (var column in VisibleColumns)
                                     {

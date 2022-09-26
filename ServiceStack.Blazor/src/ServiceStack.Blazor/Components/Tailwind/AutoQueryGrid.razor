@@ -192,7 +192,7 @@ else
                 <div>
                     <CascadingValue IsFixed="true" Value="this">
                         <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
-                                    PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync" 
+                                    PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync" TableStyle="TableStyle"
                                     RowSelected="OnRowSelected" HeaderSelected="HeaderSelected"
                                     AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
                                     >

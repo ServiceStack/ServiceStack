@@ -9,10 +9,65 @@ public static class CssDefaults
 {
     public static class Grid
     {
+        public const TableStyle DefaultTableStyle = TableStyle.StripedRows;
+
         public const string GridClass = "mt-4 flex flex-col";
+        public const string Grid2Class = "-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8";
+        public const string Grid3Class = "inline-block min-w-full py-2 align-middle md:px-6 lg:px-8";
+        public const string Grid4Class = "overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg";
+                                         
+        public const string TableClass = "min-w-full divide-y divide-gray-200";
+
+        public const string TableHeadClass = "bg-gray-50";
+        
+        public const string TableHeaderRowClass = "select-none";
+        public const string TableHeaderCellClass = "px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap";
+        
+        public const string TableBodyClass = "";
+
         public const string HoverSelectionClass = "cursor-pointer hover:bg-yellow-50";
         public const string SelectedClass = "cursor-pointer bg-indigo-100";
-        public const string OutlineClass = "shadow overflow-hidden border-b border-gray-200 sm:rounded-lg";
+
+        public static string GetGridClass(TableStyle style = DefaultTableStyle) => GridClass;
+        public static string GetGrid2Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
+            ? "overflow-x-auto"
+            : Grid2Class;
+        
+        public static string GetGrid3Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
+            ? "inline-block min-w-full py-2 align-middle"
+            : Grid3Class;
+
+        public static string GetGrid4Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
+            ? ""
+            : style.HasFlag(TableStyle.FullWidth)
+                ? "overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5"
+                : Grid4Class;
+
+        public static string GetTableClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth) || style.HasFlag(TableStyle.VerticalLines)
+            ? "min-w-full divide-y divide-gray-300"
+            : TableClass;
+
+        public static string GetTableHeadClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
+            ? ""
+            : TableHeadClass;
+
+        public static string GetTableHeaderRowClass(TableStyle style = DefaultTableStyle) =>
+            TableHeaderRowClass + (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
+
+        public static string GetTableHeaderCellClass(TableStyle style = DefaultTableStyle) =>
+            TableHeaderCellClass + (style.HasFlag(TableStyle.UppercaseHeadings) ? " uppercase" : "");
+
+        public static string GetTableBodyClass(TableStyle style = DefaultTableStyle) => 
+            (style.HasFlag(TableStyle.WhiteBackground) || style.HasFlag(TableStyle.VerticalLines)
+            ? "divide-y divide-gray-200"
+            : "")
+            + (style.HasFlag(TableStyle.VerticalLines)
+            ? " bg-white"
+            : "");
+
+        public static string GetTableRowClass(TableStyle style, int i) => (style.HasFlag(TableStyle.StripedRows)
+            ? (i % 2 == 0 ? "bg-white" : "bg-gray-50")
+            : "bg-white") + (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
     }
 
     public static class Form

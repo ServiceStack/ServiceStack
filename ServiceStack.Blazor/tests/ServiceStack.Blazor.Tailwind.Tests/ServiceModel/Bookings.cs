@@ -20,8 +20,6 @@ public class Booking : AuditBase
     public DateTime BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
     public decimal Cost { get; set; }
-    public string? Notes { get; set; }
-    public bool? Cancelled { get; set; }
 
     [Ref(Model=nameof(Coupon), RefId=nameof(Coupon.Id), RefLabel=nameof(Coupon.Description))]
     [References(typeof(Coupon))]
@@ -29,6 +27,8 @@ public class Booking : AuditBase
 
     [Reference]
     public Coupon Discount { get; set; }
+    public string? Notes { get; set; }
+    public bool? Cancelled { get; set; }
 }
 
 public enum RoomType

@@ -30,10 +30,37 @@ public partial class DataGrid<Model> : UiComponentBase
 
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model?> RowSelected { get; set; }
-    [Parameter] public string GridClass { get; set; } = CssDefaults.Grid.GridClass;
+
+
+    TableStyle tableStyle = CssDefaults.Grid.DefaultTableStyle;
+    [Parameter] public TableStyle TableStyle 
+    {
+        get => tableStyle;
+        set
+        {
+            tableStyle = value;
+            GridClass = CssDefaults.Grid.GetGridClass(tableStyle);
+            Grid2Class = CssDefaults.Grid.GetGrid2Class(tableStyle);
+            Grid3Class = CssDefaults.Grid.GetGrid3Class(tableStyle);
+            Grid4Class = CssDefaults.Grid.GetGrid4Class(tableStyle);
+            TableHeadClass = CssDefaults.Grid.GetTableHeadClass(tableStyle);
+            TableBodyClass = CssDefaults.Grid.GetTableBodyClass(tableStyle);
+            TableHeaderRowClass = CssDefaults.Grid.GetTableHeaderRowClass(tableStyle);
+            TableHeaderCellClass = CssDefaults.Grid.GetTableHeaderCellClass(tableStyle);
+        }
+    }
+
+    [Parameter] public string GridClass { get; set; } = CssDefaults.Grid.GetGridClass();
+    [Parameter] public string Grid2Class { get; set; } = CssDefaults.Grid.GetGrid2Class();
+    [Parameter] public string Grid3Class { get; set; } = CssDefaults.Grid.GetGrid3Class();
+    [Parameter] public string Grid4Class { get; set; } = CssDefaults.Grid.GetGrid4Class();
+    [Parameter] public string TableClass { get; set; } = CssDefaults.Grid.GetTableClass();
+    [Parameter] public string TableHeadClass { get; set; } = CssDefaults.Grid.GetTableHeadClass();
+    [Parameter] public string TableHeaderRowClass { get; set; } = CssDefaults.Grid.GetTableHeaderRowClass();
+    [Parameter] public string TableHeaderCellClass { get; set; } = CssDefaults.Grid.GetTableHeaderCellClass();
+    [Parameter] public string TableBodyClass { get; set; } = CssDefaults.Grid.GetTableBodyClass();
     [Parameter] public string HoverSelectionClass { get; set; } = CssDefaults.Grid.HoverSelectionClass;
     [Parameter] public string SelectedClass { get; set; } = CssDefaults.Grid.SelectedClass;
-    [Parameter] public string OutlineClass { get; set; } = CssDefaults.Grid.OutlineClass;
     [Parameter] public List<string>? SelectedColumns { get; set; }
     [Parameter] public Func<MouseEventArgs, DOMRect>? FiltersTopLeftResolver { get; set; }
 

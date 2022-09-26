@@ -1,0 +1,26 @@
+﻿@page "/gallery/datagrid/styles"
+@using gallery.examples
+
+<h3 class="my-4 text-lg font-semibold">Default (Striped Rows)</h3>
+
+<DataGrid Model="Track" Items=@Track.Results />
+
+<h3 class="my-4 text-lg font-semibold">Simple</h3>
+
+<DataGrid Model="Track" Items=@Track.Results TableStyle="TableStyle.Simple" />
+
+<h3 class="my-4 text-lg font-semibold">Uppercase Headings</h3>
+
+<DataGrid Model="Track" Items=@Track.Results TableStyle="TableStyle.UppercaseHeadings" />
+
+<h3 class="my-4 text-lg font-semibold">Vertical Lines</h3>
+
+<DataGrid Model="Track" Items=@Track.Results TableStyle="TableStyle.VerticalLines" />
+
+<h3 class="my-4 text-lg font-semibold">White Background</h3>
+
+<DataGrid Model="Track" Items=@Track.Results TableStyle="TableStyle.WhiteBackground" />
+
+<h3 class="my-4 text-lg font-semibold">Full Width</h3>
+
+<DataGrid Model="Track" Items=@Track.Results TableStyle="TableStyle.FullWidth" />

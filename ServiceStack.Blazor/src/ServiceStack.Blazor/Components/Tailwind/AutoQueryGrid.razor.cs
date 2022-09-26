@@ -52,7 +52,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     [Parameter] public RenderFragment? CreateForm { get; set; }
     [Parameter] public RenderFragment? EditForm { get; set; }
     [Parameter] public Predicate<string>? DisableKeyBindings { get; set; }
-
+    [Parameter] public TableStyle TableStyle { get; set; } = CssDefaults.Grid.DefaultTableStyle;
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
 
