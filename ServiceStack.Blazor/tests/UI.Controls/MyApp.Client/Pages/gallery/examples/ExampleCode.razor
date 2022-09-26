@@ -1,0 +1,56 @@
+﻿@using ServiceStack.Text
+@inject IJSRuntime JS
+
+@if (!string.IsNullOrEmpty(contents))
+{
+    <div class="example-code m-4 w-full">
+        <pre><code class=@CssUtils.ClassNames(Language, "rounded block w-full p-4")>@contents</code></pre>
+    </div>
+}
+
+@code {
+    [Parameter] public string? Path { get; set; }
+
+    [Parameter] public string? SourceCode { get; set; }
+    [Parameter] public string Language { get; set; } = "cshtml-razor";
+
+    string contents = "";
+
+    public static string GalleryBaseUrl { get; set; } =
+        "https://raw.githubusercontent.com/ServiceStack/ServiceStack/main/ServiceStack.Blazor/tests/ServiceStack.Blazor.Tailwind.Tests/Client/Pages/gallery";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            if (string.IsNullOrEmpty(contents))
+            {
+                contents = !string.IsNullOrEmpty(SourceCode)
+                    ? SourceCode
+                    : await DownloadPageContentsAsync(Path!);
+
+                StateHasChanged();
+            }
+            await JS.InvokeVoidAsync("hljs.highlightAll");
+        }
+    }
+
+    public static async Task<string> DownloadPageContentsAsync(string relativeUrl)
+    {
+        var pageUrl = GalleryBaseUrl.CombineWith(relativeUrl);
+        var contents = await pageUrl.GetStreamFromUrlAsync(requestFilter: req => req.With(x => x.UserAgent = "ServiceStack.Blazor"));
+        var sb = StringBuilderCache.Allocate();
+        var skippedDirectives = false;
+        foreach (var line in contents.ReadLines())
+        {
+            if (!skippedDirectives && line.StartsWith("@"))
+                continue;
+            else
+                skippedDirectives = true;
+
+            sb.AppendLine(line);
+        }
+        return StringBuilderCache.ReturnAndFree(sb).Trim();
+    }
+}

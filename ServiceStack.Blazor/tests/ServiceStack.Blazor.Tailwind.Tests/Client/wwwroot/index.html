@@ -120,7 +120,7 @@
     </div>
 
 <script>
-    var hideMainLayoutFor = "/gallery/[a-z]*/[a-z]*".split(',')
+var hideMainLayoutFor = "/gallery/[a-z]*/[a-z]*".split(',')
 let customLayout = hideMainLayoutFor.some(x => new RegExp(x).test(location.pathname))
     if (customLayout) {
     document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML

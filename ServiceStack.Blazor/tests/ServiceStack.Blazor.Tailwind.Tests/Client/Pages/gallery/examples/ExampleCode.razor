@@ -19,16 +19,19 @@
     public static string GalleryBaseUrl { get; set; } =
         "https://raw.githubusercontent.com/ServiceStack/ServiceStack/main/ServiceStack.Blazor/tests/ServiceStack.Blazor.Tailwind.Tests/Client/Pages/gallery";
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnParametersSetAsync();
-        if (string.IsNullOrEmpty(contents))
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
         {
-            contents = !string.IsNullOrEmpty(SourceCode)
-                ? SourceCode
-                : await DownloadPageContentsAsync(Path!);
+            if (string.IsNullOrEmpty(contents))
+            {
+                contents = !string.IsNullOrEmpty(SourceCode)
+                    ? SourceCode
+                    : await DownloadPageContentsAsync(Path!);
 
-            StateHasChanged();
+                StateHasChanged();
+            }
             await JS.InvokeVoidAsync("hljs.highlightAll");
         }
     }
@@ -36,7 +39,7 @@
     public static async Task<string> DownloadPageContentsAsync(string relativeUrl)
     {
         var pageUrl = GalleryBaseUrl.CombineWith(relativeUrl);
-        var contents = await pageUrl.GetStreamFromUrlAsync(requestFilter:req => req.With(x => x.UserAgent = "ServiceStack.Blazor"));
+        var contents = await pageUrl.GetStreamFromUrlAsync(requestFilter: req => req.With(x => x.UserAgent = "ServiceStack.Blazor"));
         var sb = StringBuilderCache.Allocate();
         var skippedDirectives = false;
         foreach (var line in contents.ReadLines())

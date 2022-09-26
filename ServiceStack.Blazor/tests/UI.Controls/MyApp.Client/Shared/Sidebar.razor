@@ -82,10 +82,17 @@
 
     List<NavItem> NavItems { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (NavItems.Count == 0)
-            NavItems = await JS.GetNavItemsAsync("SIDEBAR");
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            if (NavItems.Count == 0)
+            {
+                NavItems = await JS.GetNavItemsAsync("SIDEBAR");
+                StateHasChanged();
+            }
+        }
     }
 
     protected override Task OnParametersSetAsync()

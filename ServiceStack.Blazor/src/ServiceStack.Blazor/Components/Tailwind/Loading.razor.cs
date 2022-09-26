@@ -15,14 +15,19 @@ public partial class Loading : UiComponentBase
     [Parameter]
     public string ImageClass { get; set; } = "w-6 h-6";
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var html = await JS.InvokeAsync<string>("JS.prerenderedPage") ?? "";
-        var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
-        var prerenderedContentIsForPath = html.IndexOf($"data-prerender=\"{currentPath}\"") >= 0;
-        if (prerenderedContentIsForPath)
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
         {
-            prerenderedHtml = html;
+            var html = await JS.InvokeAsync<string>("JS.prerenderedPage") ?? "";
+            var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
+            var prerenderedContentIsForPath = html.IndexOf($"data-prerender=\"{currentPath}\"") >= 0;
+            if (prerenderedContentIsForPath)
+            {
+                prerenderedHtml = html;
+            }
         }
     }
 }

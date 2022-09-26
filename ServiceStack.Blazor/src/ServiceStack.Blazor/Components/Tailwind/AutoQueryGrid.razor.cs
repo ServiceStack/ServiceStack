@@ -400,10 +400,6 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
         var autoQueryFilters = AppMetadata?.Plugins?.AutoQuery?.ViewerConventions;
         if (autoQueryFilters != null)
             FilterDefinitions = autoQueryFilters;
-
-        ApiPrefs = await LocalStorage.GetItemAsync<ApiPrefs>(CacheKey) ?? new();
-
-        await UpdateAsync();
     }
 
     private DotNetObjectReference<AutoQueryGrid<Model>>? dotnetRef;
@@ -411,8 +407,10 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     {
         if (firstRender)
         {
+            ApiPrefs = await LocalStorage.GetItemAsync<ApiPrefs>(CacheKey) ?? new();
             dotnetRef = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("JS.registerKeyNav", dotnetRef);
+            await UpdateAsync();
         }
     }
     public void Dispose() => dotnetRef?.Dispose();

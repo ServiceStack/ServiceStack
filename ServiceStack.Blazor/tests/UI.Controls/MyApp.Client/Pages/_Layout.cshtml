@@ -1,6 +1,9 @@
-﻿@using Microsoft.AspNetCore.Components.Web
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using System.Text.RegularExpressions
 @namespace MyApp.Client.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject NavigationManager NavigationManager
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,25 +12,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <base href="~/"/>
     <link rel="stylesheet" href="css/app.css"/>
-    <link href="MyApp.Client.styles.css" rel="stylesheet"/>
+    <link href="css/typography.css" rel="stylesheet">
+    <link href="css/markdown.css" rel="stylesheet">
+    <link href="MyApp.Client.styles.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="Server"/>
 </head>
-<body>
+<body class=@(new Regex("/gallery/[a-z]*/[a-z]*").IsMatch(new Uri(NavigationManager.Uri).LocalPath) ? "p-1 overflow-hidden" : "")>
     
 <script>
 TOP = `
-    $0.40 /mo,        /docs/hosting
-    Prerendering,     /docs/prerender
-    Deployments,      /docs/deploy
+    API Reference,    https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/
 `
 SIDEBAR = `
-    Counter,          /counter,       /img/nav/counter.svg
-    Todos,            /todomvc,       /img/nav/todomvc.svg
-    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
-    Call Hello,       /hello$,        /img/nav/hello.svg
-    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
-    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
-    Test,             /test/alltypes, /img/nav/fetchdata.svg
+    Counter,           /counter,                /img/nav/counter.svg
+    Todos,             /todomvc,                /img/nav/todomvc.svg
+    Bookings CRUD,     /bookings-crud,          /img/nav/bookings-crud.svg
+    Component Gallery, /gallery,                /img/nav/examples.svg
+    Call Hello,        /hello$,                 /img/nav/hello.svg
+    Call HelloSecure,  /hello-secure,           /img/nav/hello-secure.svg
+    Fetch data,        /fetchdata,              /img/nav/fetchdata.svg
+    Test,              /test/alltypes,          /img/nav/fetchdata.svg
 `
 
 /*
@@ -100,7 +104,11 @@ $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, ic
 
 
 <script src="_framework/blazor.server.js"></script>
-<script src="js/servicestack-blazor.js"></script>
+
+<script type="text/javascript" src="/js/highlight.min.js"></script>
+<script type="text/javascript" src="/js/highlight.cshtml-razor.min.js"></script>
+<script>hljs.highlightAll()</script>
+<script type="text/javascript" src="/js/servicestack-blazor.js"></script>
 
 </body>
 </html>

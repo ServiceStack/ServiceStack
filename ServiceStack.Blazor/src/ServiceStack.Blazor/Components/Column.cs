@@ -58,20 +58,21 @@ public class Column<Model> : UiComponentBase
 
     public string CacheKey => $"Column/{DataGrid?.Id ?? "DataGrid"}:{typeof(Model).Name}.{Name}";
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnInitializedAsync();
-        Settings = await LocalStorage.GetItemAsync<ColumnSettings>(CacheKey) ?? new();
-        await DataGrid!.NotifyPropertyChanged(nameof(Settings));
-        await DataGrid!.FiltersChanged.InvokeAsync();
-        //Console.WriteLine($"LOAD {CacheKey}: {Settings.Filters.Count}");
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            Settings = await LocalStorage.GetItemAsync<ColumnSettings>(CacheKey) ?? new();
+            await DataGrid!.NotifyPropertyChanged(nameof(Settings));
+            await DataGrid!.FiltersChanged.InvokeAsync();
+        }
     }
 
     public async Task SaveSettingsAsync()
     {
         await LocalStorage.SetItemAsync(CacheKey, Settings);
         await DataGrid!.NotifyPropertyChanged(nameof(Settings));
-        //Console.WriteLine($"SAVE {CacheKey}: {Settings.Filters.Count}");
     }
 
     public async Task RemoveSettingsAsync()

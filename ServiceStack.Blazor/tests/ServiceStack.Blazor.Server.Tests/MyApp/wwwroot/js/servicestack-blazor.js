@@ -13,6 +13,7 @@ JS = (function () {
             dotnetRef.invokeMethodAsync('OnKeyNav', e.key)
         })
     }
+    let el = sel => typeof sel == "string" ? document.querySelector(sel) : sel
 
     return {
         get(name) { return window[name] },
@@ -27,7 +28,13 @@ JS = (function () {
                 let ret = f.apply(target, args || [])
                 return ret
             }
-            return null
+            return f
+        },
+        addClass(sel, ...classes) {
+            el(sel).classList.add(...classes)
+        },
+        removeClass(sel, ...classes) {
+            el(sel).classList.remove(...classes)
         },
         registerKeyNav(dotnetRef) {
             dotnetRefs.push(dotnetRef)
