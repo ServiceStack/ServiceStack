@@ -220,8 +220,7 @@ public static class ApiResultUtils
     /// Annotate Request DTOs with IGet, IPost, etc HTTP Verb markers to specify which HTTP Method is used:
     /// https://docs.servicestack.net/csharp-client.html#http-verb-interface-markers
     /// </summary>
-    public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IServiceClient client,
-        IReturn<TResponse> request)
+    public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IServiceClient client, IReturn<TResponse> request)
     {
         try
         {

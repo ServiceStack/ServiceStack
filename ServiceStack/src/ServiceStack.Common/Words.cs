@@ -23,9 +23,9 @@ namespace ServiceStack
 	/// </summary>
 	public static class Words
 	{
-		private static readonly ArrayList plurals = new ArrayList();
-		private static readonly ArrayList singulars = new ArrayList();
-		private static readonly ArrayList uncountables = new ArrayList();
+		private static readonly ArrayList plurals = new();
+		private static readonly ArrayList singulars = new();
+		private static readonly ArrayList uncountables = new();
 
 		#region Default Rules
 

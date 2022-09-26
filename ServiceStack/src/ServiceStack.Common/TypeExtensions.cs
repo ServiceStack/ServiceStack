@@ -136,8 +136,7 @@ namespace ServiceStack
             return ctorFn;
         }
 
-        static Dictionary<ConstructorInfo, ObjectActivator> activatorCache =
-            new Dictionary<ConstructorInfo, ObjectActivator>();
+        static Dictionary<ConstructorInfo, ObjectActivator> activatorCache = new();
 
         public static ObjectActivator GetActivator(this ConstructorInfo ctor)
         {

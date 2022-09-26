@@ -122,8 +122,7 @@ namespace ServiceStack.ExpressionUtil
 
             private static Func<TIn, TOut> CompileFromConstLookup(Expression<Func<TIn, TOut>> expr)
             {
-                ConstantExpression constExpr = expr.Body as ConstantExpression;
-                if (constExpr != null)
+                if (expr.Body is ConstantExpression constExpr)
                 {
                     // model => {const}
 
@@ -154,8 +153,7 @@ namespace ServiceStack.ExpressionUtil
 
             private static Func<TIn, TOut> CompileFromFingerprint(Expression<Func<TIn, TOut>> expr)
             {
-                List<object> capturedConstants;
-                ExpressionFingerprintChain fingerprint = FingerprintingExpressionVisitor.GetFingerprintChain(expr, out capturedConstants);
+                ExpressionFingerprintChain fingerprint = FingerprintingExpressionVisitor.GetFingerprintChain(expr, out var capturedConstants);
 
                 if (fingerprint != null)
                 {
@@ -182,8 +180,7 @@ namespace ServiceStack.ExpressionUtil
                 // by around one microsecond, so it's not worth it to complicate the logic here with
                 // an architecture check.
 
-                MemberExpression memberExpr = expr.Body as MemberExpression;
-                if (memberExpr != null)
+                if (expr.Body is MemberExpression memberExpr)
                 {
                     if (memberExpr.Expression == expr.Parameters[0] || memberExpr.Expression == null)
                     {
@@ -191,8 +188,7 @@ namespace ServiceStack.ExpressionUtil
                         return _simpleMemberAccessDict.GetOrAdd(memberExpr.Member, _ => expr.Compile());
                     }
 
-                    ConstantExpression constExpr = memberExpr.Expression as ConstantExpression;
-                    if (constExpr != null)
+                    if (memberExpr.Expression is ConstantExpression constExpr)
                     {
                         // model => {const}.Member (captured local variable)
                         var del = _constMemberAccessDict.GetOrAdd(memberExpr.Member, _ =>
@@ -373,9 +369,9 @@ namespace ServiceStack.ExpressionUtil
 
     internal sealed class FingerprintingExpressionVisitor : ExpressionVisitor
     {
-        private readonly List<object> _seenConstants = new List<object>();
-        private readonly List<ParameterExpression> _seenParameters = new List<ParameterExpression>();
-        private readonly ExpressionFingerprintChain _currentChain = new ExpressionFingerprintChain();
+        private readonly List<object> _seenConstants = new();
+        private readonly List<ParameterExpression> _seenParameters = new();
+        private readonly ExpressionFingerprintChain _currentChain = new();
         private bool _gaveUp;
 
         private FingerprintingExpressionVisitor()
