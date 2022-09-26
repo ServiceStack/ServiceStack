@@ -39,7 +39,7 @@ namespace ServiceStack
         public Func<string, string> IpMask { get; set; } = CrudEventsUtils.Identity;
         public Func<T, CrudContext, T> EventFilter { get; set; }
         
-        public T ToEvent(CrudContext context)
+        public virtual T ToEvent(CrudContext context)
         {
             var urnValue = context.Id?.ToString() ?? context.Operation;
             if (urnValue.IndexOf(':') >= 0)
@@ -202,7 +202,7 @@ namespace ServiceStack
         /// <summary>
         /// Record an CrudEvent Sync
         /// </summary>
-        public void Record(CrudContext context)
+        public virtual void Record(CrudContext context)
         {
             if (!ShouldRecord(context))
                 return;
@@ -220,7 +220,7 @@ namespace ServiceStack
         /// <summary>
         /// Record an CrudEvent Async
         /// </summary>
-        public Task RecordAsync(CrudContext context)
+        public virtual Task RecordAsync(CrudContext context)
         {
             if (!ShouldRecord(context))
                 return Task.CompletedTask;
@@ -238,7 +238,7 @@ namespace ServiceStack
         /// <summary>
         /// Returns all rows in CrudEvent Table, lazily paging in batches of OrmLiteCrudEvents.BatchSize
         /// </summary>
-        public IEnumerable<T> GetEvents(IDbConnection db)
+        public virtual IEnumerable<T> GetEvents(IDbConnection db)
         {
             List<T> results;
             long lastId = 0;
@@ -260,7 +260,7 @@ namespace ServiceStack
             } while (results.Count > 0);
         }
 
-        public IEnumerable<T> GetEvents(IDbConnection db, string table, string id=null)
+        public virtual IEnumerable<T> GetEvents(IDbConnection db, string table, string id=null)
         {
             var q = db.From<T>()
                 .Where(x => x.Model == table);
@@ -275,7 +275,7 @@ namespace ServiceStack
         /// <summary>
         /// Create CrudEvent if it doesn't already exist
         /// </summary>
-        public void InitSchema()
+        public virtual void InitSchema()
         {
             if (!ExcludePrimaryDb)
             {
@@ -292,7 +292,7 @@ namespace ServiceStack
         /// <summary>
         /// Delete all entries in CrudEvent Table
         /// </summary>
-        public void Clear()
+        public virtual void Clear()
         {
             if (!ExcludePrimaryDb)
             {
@@ -310,7 +310,7 @@ namespace ServiceStack
         /// WARNING: DROP and RE-CREATE CrudEvent
         /// </summary>
         /// <returns></returns>
-        public OrmLiteCrudEvents<T> Reset()
+        public virtual OrmLiteCrudEvents<T> Reset()
         {
             if (!ExcludePrimaryDb)
             {
