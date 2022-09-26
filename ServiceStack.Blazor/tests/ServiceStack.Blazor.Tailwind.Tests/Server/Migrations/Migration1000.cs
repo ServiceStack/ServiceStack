@@ -43,8 +43,9 @@ public class Migration1000 : MigrationBase
         Db.CreateTable<Coupon>();
         Db.CreateTable<Booking>();
 
-        Db.Insert(new Coupon { Id = "BOOK10", Description = "10% off", Discount = 10, ExpiryDate = DateTime.UtcNow.AddDays(30) });
-        Db.Insert(new Coupon { Id = "BOOK25", Description = "25% off", Discount = 25, ExpiryDate = DateTime.UtcNow.AddDays(30) });
+        new[] { 5, 10, 15, 20, 25, 30, 40, 50 }.Each(percent => {
+            Db.Insert(new Coupon { Id = $"BOOK{percent}", Description = $"{percent}% off", Discount = 10, ExpiryDate = DateTime.UtcNow.AddDays(30) });
+        });
 
         CreateBooking("First Booking!",  RoomType.Queen,  10, 100, "BOOK10", "employee@email.com");
         CreateBooking("Booking 2",       RoomType.Double, 12, 120, "BOOK25", "manager@email.com");

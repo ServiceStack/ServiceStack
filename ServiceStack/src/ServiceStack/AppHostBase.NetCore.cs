@@ -448,10 +448,29 @@ namespace ServiceStack
 
         
 #if NET6_0_OR_GREATER
-    public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null)
+    public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null, bool setHostDir = true)
     {
+        var holdCurrentDir = Environment.CurrentDirectory;
         var host = new HostBuilder()
             .ConfigureHostConfiguration(hostConfig => {
+                if (hostDir == null)
+                {
+                    // Allow local appsettings.json to override HostDir 
+                    var localConfigPath = Path.GetFullPath("appsettings.json");
+                    if (File.Exists(localConfigPath))
+                    {
+                        var appSettings = JSON.parse(File.ReadAllText(localConfigPath));
+                        if (appSettings is Dictionary<string, object> map &&
+                            map.TryGetValue("HostDir", out var oHostDir) && oHostDir is string s)
+                        {
+                            hostDir = Path.GetFullPath(s);
+                            // File based connection to relative App_Data/db.sqlite requires cd
+                            if (setHostDir)
+                                Directory.SetCurrentDirectory(hostDir);
+                        }
+                    }
+                }
+                
                 hostDir ??= Path.GetDirectoryName(config.GetType().Assembly.Location);
                 if (!Directory.Exists(hostDir)) return;
                 hostConfig.SetBasePath(hostDir);
@@ -463,6 +482,7 @@ namespace ServiceStack
             .ConfigureWebHost(builder => {
                 config.Configure(builder);
             }).Build();
+
         var service = host.Services.GetRequiredService<T>();
         return service;
     }
