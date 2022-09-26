@@ -268,21 +268,25 @@ public class AdminDatabaseService : Service
             sb.AppendLine($"WHERE {string.Join(" AND ", filters)}");
         }
 
-        // OrderBy always required when paging
-        var orderBy = request.OrderBy ?? (columns.FirstOrDefault(x => x.IsPrimaryKey == true) ?? columns[0]).Name;
-        sb.AppendLine($"ORDER BY {OrmLiteUtils.OrderByFields(dialect, orderBy)}");
+        var sqlWhere = StringBuilderCache.ReturnAndFree(sb);
 
         var take = Math.Min(request.Take.GetValueOrDefault(feature.QueryLimit), feature.QueryLimit);
 
-        var sql = StringBuilderCache.ReturnAndFree(sb);
-        var resultsSql = $"SELECT {fields} FROM {table}" + sql + Environment.NewLine + dialect.SqlLimit(request.Skip, take);
+        // OrderBy always required when paging
+        var n = Environment.NewLine;
+        var orderBy = request.OrderBy ?? (columns.FirstOrDefault(x => x.IsPrimaryKey == true) ?? columns[0]).Name;
+        var resultsSql = $"SELECT {fields} FROM {table}" + n 
+             + sqlWhere + n
+             + "ORDER BY " + OrmLiteUtils.OrderByFields(dialect, orderBy) + n 
+             + dialect.SqlLimit(request.Skip, take);
+        
         var results = await db.SqlListAsync<Dictionary<string, object?>>(resultsSql, dbParams);
         long? total = null;
 
         var includes = request.Include?.Split(',') ?? Array.Empty<string>();
         if (includes.Contains("total"))
         {
-            var totalSql = $"SELECT COUNT(*) FROM {table}" + sql;
+            var totalSql = $"SELECT COUNT(*) FROM {table}" + n + sqlWhere;
             total = await db.SqlScalarAsync<long>(totalSql, dbParams);
         }
 
