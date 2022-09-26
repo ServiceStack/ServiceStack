@@ -1,6 +1,5 @@
 ﻿@page "/gallery/autoform/fields"
 
-
 <form @onsubmit="submit" @onsubmit:preventDefault>
     <div class="shadow sm:overflow-hidden sm:rounded-md max-w-screen-lg">
         <div class="space-y-6 bg-white py-6 px-4 sm:p-6">
@@ -11,7 +10,7 @@
                 </p>
             </div>
 
-            <AutoFormFields Api="Api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+            <AutoFormFields Model="Booking" Api="Api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
 
         </div>
         <div class="bg-gray-50 px-4 py-3 text-right sm:px-12">
@@ -37,7 +36,7 @@
         Api = null;
 
         ModelDictionary = Edit.ToModelDictionary();
-        FormLayout ??= MetadataType.CreateFormLayout();
+        FormLayout ??= MetadataType.CreateFormLayout<Booking>();
     }
 
     async Task submit()

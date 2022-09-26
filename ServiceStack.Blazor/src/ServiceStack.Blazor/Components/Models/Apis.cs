@@ -1,4 +1,5 @@
 ﻿using ServiceStack;
+using System.Reflection;
 
 namespace ServiceStack.Blazor.Components;
 
@@ -12,10 +13,30 @@ public class Apis
     public Type? Delete { get; set; }
     public Type? Save { get; set; }
 
+    static Dictionary<string, Type> ApiTyesMap { get; set; } = new();
+    static HashSet<Assembly> loadedAssemblies = new();
+    public static void Load(Assembly assembly)
+    {
+        if (loadedAssemblies.Contains(assembly))
+            return;
+        loadedAssemblies.Add(assembly);
+
+        var apiTypes = assembly.GetTypes().Where(x => x.HasInterface(typeof(IReturnVoid)) || x.IsOrHasGenericInterfaceTypeOf(typeof(IReturn<>)));
+        foreach (var apiType in apiTypes)
+        {
+            ApiTyesMap[apiType.Name] = apiType;
+        }
+    }
+    public static Type? Find(string typeName) => ApiTyesMap.TryGetValue(typeName, out var type) ? type : null;
+
     public Apis(Type[] types)
     {
         foreach (var type in types)
         {
+            if (!ApiTyesMap.ContainsKey(type.Name))
+            {
+                Load(type.Assembly);
+            }
 
             if (typeof(IQuery).IsAssignableFrom(type))
             {

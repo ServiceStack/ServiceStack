@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using ServiceStack.Html;
+using ServiceStack.Blazor.Components.Tailwind;
 
 namespace ServiceStack.Blazor.Components;
 
@@ -23,6 +23,9 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
     [Parameter] public EventCallback<ResponseStatus> Error { get; set; }
 
     [Parameter] public List<InputInfo>? FormLayout { get; set; }
+
+    // needs to be outside Form to use full screen width
+    protected DynamicModalLookup? ModalLookup { get; set; }
 
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     protected MetadataType? metadataType;

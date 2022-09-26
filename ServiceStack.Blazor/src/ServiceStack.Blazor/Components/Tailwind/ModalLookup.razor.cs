@@ -1,7 +1,115 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using ServiceStack.Text;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
+
+public partial class DynamicModalLookup : UiComponentBase
+{
+    [Parameter] public string Id { get; set; } = "DynamicModalLookup";
+    [Parameter, EditorRequired] public AppMetadata? AppMetadata { get; set; }
+    public RefInfo? RefInfo { get; set; }
+    public bool Show { get; set; }
+    public EventCallback<object> RowSelected { get; set; }
+    public EventCallback Close { get; set; }
+
+    void close() => Show = false;
+    public Task OpenAsync(RefInfo? refInfo, Func<object, Task> callback)
+    {
+        BlazorUtils.Log($"OpenAsync {refInfo.Dump()}");
+        Show = true;
+        RefInfo = refInfo;
+        Close = EventCallback.Factory.Create(this, close);
+        RowSelected = EventCallback.Factory.Create<object>(this, async model => {
+            close();
+            await callback(model);
+        });
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    string? CacheKey => RefInfo == null ? null : $"{RefInfo.Model}.{RefInfo.SelfId}.{RefInfo.RefId}.{RefInfo.RefLabel}.";
+
+    class Context
+    {
+        public Type ModelType { get; }
+        public Type RequestType { get; }
+        public Type ComponentType { get; }
+        public MetadataType MetadataType { get; }
+        public MetadataOperationType QueryApi { get; }
+        public Apis Apis { get; }
+        public AttributeBuilder RowSelectedBuilder { get; }
+        public Context(Type modelType, Type requestType, Type componentType, MetadataType metadataType, MetadataOperationType queryApi, Apis apis, AttributeBuilder rowSelectedBuilder)
+        {
+            ModelType = modelType;
+            RequestType = requestType;
+            ComponentType = componentType;
+            MetadataType = metadataType;
+            QueryApi = queryApi;
+            Apis = apis;
+            RowSelectedBuilder = rowSelectedBuilder;
+        }
+    }
+
+    Dictionary<string, Context> cache = new();
+
+    Context? Create()
+    {
+        var cacheKey = CacheKey;
+        if (cacheKey == null)
+            return null;
+
+        if (cache.TryGetValue(cacheKey, out var context))
+            return context;
+
+        var metadataType = AppMetadata.GetType(RefInfo!.Model);
+        if (metadataType == null)
+        {
+            BlazorUtils.Log($"Could not find Type {RefInfo!.Model}");
+            return null;
+        }
+        var queryOp = AppMetadata?.Api.Operations.FirstOrDefault(x => x.DataModel?.Name == RefInfo.Model);
+        if (queryOp == null)
+        {
+            BlazorUtils.Log($"Could not find Api Type for {RefInfo!.Model}");
+            return null;
+        }
+
+        var requestType = queryOp.Request.Type ??= Apis.Find(queryOp.Request.Name);
+        if (requestType == null)
+        {
+            BlazorUtils.Log($"Could not find Query Api Type for {queryOp.Request.Name}");
+            return null;
+        }
+
+        var genericDef = requestType.GetTypeWithGenericTypeDefinitionOfAny(typeof(QueryDb<>), typeof(QueryDb<,>));
+        var modelType = genericDef.FirstGenericArg();
+        var componentType = typeof(ModalLookup<>).MakeGenericType(modelType);
+        var apis = new Apis(new[] { requestType });
+
+        var genericEventDef = typeof(EventCallbackBuilder<>).MakeGenericType(modelType);
+        var rowSelectedBuilder = (AttributeBuilder)genericEventDef.GetConstructors().First().Invoke(new object[] { this.RowSelected });
+        return cache[cacheKey] = new Context(modelType, requestType, componentType, metadataType, queryOp, apis, rowSelectedBuilder);
+    }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var ctx = Create();
+        if (ctx == null)
+            return;
+
+        builder.OpenComponent(1, ctx.ComponentType);
+        builder.AddAttribute(2, nameof(Id), Id);
+        builder.AddAttribute(3, nameof(Show), Show);
+        builder.AddAttribute(4, nameof(ctx.Apis), ctx.Apis);
+        builder.AddAttribute(5, nameof(Close), Close);
+
+        ctx.RowSelectedBuilder.AddAttribute(builder, 6, nameof(RowSelected));
+
+        builder.CloseComponent();
+    }
+}
 
 public partial class ModalLookup<Model> : AuthBlazorComponentBase
 {
@@ -17,6 +125,7 @@ public partial class ModalLookup<Model> : AuthBlazorComponentBase
     [Parameter] public Apis? Apis { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public RenderFragment Columns { get; set; }
+    [Parameter] public EventCallback Close { get; set; }
 
     string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
 

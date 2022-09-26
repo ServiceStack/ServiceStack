@@ -12,6 +12,7 @@ public static class CssDefaults
         public const string GridClass = "mt-4 flex flex-col";
         public const string HoverSelectionClass = "cursor-pointer hover:bg-yellow-50";
         public const string SelectedClass = "cursor-pointer bg-indigo-100";
+        public const string OutlineClass = "shadow overflow-hidden border-b border-gray-200 sm:rounded-lg";
     }
 
     public static class Form

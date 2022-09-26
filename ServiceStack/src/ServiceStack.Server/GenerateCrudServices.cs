@@ -1005,7 +1005,7 @@ namespace ServiceStack
                 typesToGenerateSet.Contains(StringUtils.SnakeCaseToPascalCase(name));
             
             var includeCrudServices = request.IncludeCrudOperations ?? genServices.IncludeCrudOperations;
-            var includeCrudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames(includeCrudServices);
+            var includeCrudInterfaces = Crud.CrudInterfaceMetadataNames(includeCrudServices);
             
             var existingTypes = new HashSet<string>();
             var operations = new List<MetadataOperationType>();

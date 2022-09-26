@@ -33,6 +33,7 @@ public partial class DataGrid<Model> : UiComponentBase
     [Parameter] public string GridClass { get; set; } = CssDefaults.Grid.GridClass;
     [Parameter] public string HoverSelectionClass { get; set; } = CssDefaults.Grid.HoverSelectionClass;
     [Parameter] public string SelectedClass { get; set; } = CssDefaults.Grid.SelectedClass;
+    [Parameter] public string OutlineClass { get; set; } = CssDefaults.Grid.OutlineClass;
     [Parameter] public List<string>? SelectedColumns { get; set; }
 
     DOMRect? tableRect;

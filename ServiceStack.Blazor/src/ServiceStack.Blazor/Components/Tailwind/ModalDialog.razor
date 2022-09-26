@@ -8,10 +8,9 @@
             <!-- This element is to trick the browser into centering the modal contents. -->
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div
-                 class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg",
+            <div class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:max-w-prose lg:max-w-screen-md xl:max-w-screen-lg 2xl:max-w-screen-xl sm:w-full",
                  ContentTransition.DisplayClass)>
-                <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4"@onclick="Close" >
+                <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4" @onclick="Close">
                     <button type="button" @onclick="Close"
                             class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <span class="sr-only">Close</span>

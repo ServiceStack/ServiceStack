@@ -45,6 +45,6 @@ public partial class AutoEditForm<Model> : AutoFormBase<Model>
         await TransitionAsync(show: true);
 
         ModelDictionary = Edit.ToModelDictionary();
-        FormLayout ??= MetadataType.CreateFormLayout();
+        FormLayout ??= MetadataType.CreateFormLayout<Model>();
     }
 }

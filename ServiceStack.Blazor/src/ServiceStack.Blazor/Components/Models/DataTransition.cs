@@ -21,7 +21,7 @@ public class DataTransition
     public string OpacityClass => EnteringState ? "opacity-100" : "opacity-0";
 
     bool transitioning = false;
-    static void log(string? message = null) => BlazorUtils.Log(message);
+    static void log(string? message = null) => BlazorUtils.LogDebug(message);
 
     public int DelayMs { get; set; } = 60;
 

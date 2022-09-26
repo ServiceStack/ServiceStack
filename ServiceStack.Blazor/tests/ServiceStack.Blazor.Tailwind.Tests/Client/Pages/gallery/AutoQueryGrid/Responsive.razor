@@ -39,14 +39,14 @@
             </Template>
         </Column>
         <!-- Custom Title and Complex Type Cell with Reference Link -->
-        <Column Title="Voucher" Field="(Booking x) => x.Coupon" VisibleFrom="Breakpoint.ExtraLarge">
+        <Column Title="Voucher" Field="(Booking x) => x.Discount" VisibleFrom="Breakpoint.ExtraLarge">
             <Template>
-            @if (context.Coupon != null)
+            @if (context.Discount != null)
             {
                 <TextLink class="flex items-end" 
-                    href=@($"/gallery/autoquerygrid/coupons?Id={context.Coupon.Id}")>
+                    href=@($"/gallery/autoquerygrid/coupons?Id={context.Discount.Id}")>
                     <Icon class="mr-1 w-5 h-5" Image=@typeof(Coupon).ToIcon() />
-                    <PreviewFormat Value=@context.Coupon />
+                    <PreviewFormat Value=@context.Discount />
                 </TextLink>
             }
             </Template>

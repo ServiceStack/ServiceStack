@@ -23,11 +23,12 @@ public class Booking : AuditBase
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
 
+    [Ref(Model=nameof(Coupon), RefId=nameof(Coupon.Id), RefLabel=nameof(Coupon.Description))]
     [References(typeof(Coupon))]
     public string? CouponId { get; set; }
 
     [Reference]
-    public Coupon Coupon { get; set; }
+    public Coupon Discount { get; set; }
 }
 
 public enum RoomType

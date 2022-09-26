@@ -1193,7 +1193,7 @@ namespace ServiceStack.NativeTypes
                         return ret;
                     }).ToList();
 
-                var crudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames().ToSet();
+                var crudInterfaces = Crud.WriteInterfaces;
                 var crudTypeNamesForInclude = metadata.Operations
                     .Where(t => typesToExpand.Contains(t.Request.Name))
                     .SelectMany(x => x.Request.Implements)

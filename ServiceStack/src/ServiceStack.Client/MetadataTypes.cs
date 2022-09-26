@@ -1336,6 +1336,12 @@ public static class AppMetadataUtils
         return value;
     }
 
+    public static Type GetResponseType(this Type requestType)
+    {
+        var returnMarker = requestType.GetTypeWithGenericInterfaceOf(typeof(IReturn<>));
+        return returnMarker?.FirstGenericArg();
+    }
+
     public static MetadataType ToMetadataType(this Type type)
     {
         var ret = new MetadataType

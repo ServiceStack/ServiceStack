@@ -36,7 +36,7 @@ namespace ServiceStack
         /// <summary>
         /// Which CRUD operations to implement AutoBatch implementations for 
         /// </summary>
-        public List<string> GenerateAutoBatchImplementationsFor { get; set; } = AutoCrudOperation.Write;
+        public List<string> GenerateAutoBatchImplementationsFor { get; set; } = Crud.Write.ToList();
 
         public Action<CrudContext> OnBeforeCreate { get; set; }
         public Func<CrudContext,Task> OnBeforeCreateAsync { get; set; }

@@ -76,4 +76,36 @@ public static class EnumerableUtils
         }
         return typeof(string);
     }
+
+    public static T? GetIgnoreCase<T>(this IDictionary<string,T> map, string? name)
+    {
+        if (map == null || name == null) 
+            return default;
+
+        if (map.TryGetValue(name, out var value))
+            return value;
+        var altName = char.IsUpper(name[0])
+            ? char.ToLower(name[0]) + name[1..]
+            : char.ToUpper(name[0]) + name[1..];
+        if (map.TryGetValue(altName, out value))
+            return value;
+
+        foreach (var entry in map)
+        {
+            if (string.Equals(entry.Key, name, StringComparison.OrdinalIgnoreCase))
+                return entry.Value;
+        }
+        return default;
+    }
+
+    public static object Count(IEnumerable? e)
+    {
+        if (e == null)
+            return 0;
+
+        var i = 0;
+        foreach (var _ in e)
+            i++;
+        return i;
+    }
 }
