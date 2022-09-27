@@ -58,7 +58,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Tests", "..\tests\Ser
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI.Controls", "UI.Controls", "{9F3A7376-C9F4-4D7C-B621-908C129088B4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Client", "..\tests\UI.Controls\MyApp.Client\MyApp.Client.csproj", "{6A0985BA-E053-40EA-8BB7-84A9279D2D9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gallery.Server", "..\tests\UI.Controls\MyApp.Client\Gallery.Server.csproj", "{6A0985BA-E053-40EA-8BB7-84A9279D2D9A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.Sqlite", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj", "{41039EE7-A31C-4A2B-8A6F-E6580E0E36BB}"
 EndProject
