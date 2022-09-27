@@ -9,7 +9,7 @@ namespace MyApp;
 
 public class AppHost : AppHostBase, IHostingStartup
 {
-    public AppHost() : base("MyApp", typeof(MyServices).Assembly) { }
+    public AppHost() : base("Blazor Gallery", typeof(MyServices).Assembly) { }
 
     public override void Configure(Container container)
     {

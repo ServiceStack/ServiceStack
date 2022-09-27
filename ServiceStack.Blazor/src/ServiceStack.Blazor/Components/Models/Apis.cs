@@ -1,4 +1,5 @@
 ﻿using ServiceStack;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace ServiceStack.Blazor.Components;
@@ -13,7 +14,7 @@ public class Apis
     public Type? Delete { get; set; }
     public Type? Save { get; set; }
 
-    static Dictionary<string, Type> ApiTyesMap { get; set; } = new();
+    static ConcurrentDictionary<string, Type> ApiTyesMap { get; set; } = new();
     static HashSet<Assembly> loadedAssemblies = new();
     public static void Load(Assembly assembly)
     {

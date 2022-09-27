@@ -1,0 +1,38 @@
+@page "/hello"
+@inherits AppComponentBase
+
+<h1 class="mb-4 text-2xl font-semibold text-gray-900">
+    Call Hello
+</h1>
+
+<form @onsubmit="submit" class="max-w-xl flex items-center">
+<CascadingValue Value=@api.Error>
+    <TextInput placeholder="What's your name?" Label="" @bind-Value="request.Name" spellcheck="false" />
+    <button @onclick="submit" type="button" class="ml-2 inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 16 16">
+          <path fill="currentColor" d="M6.235 2.192A1.5 1.5 0 0 0 4 3.499v9a1.5 1.5 0 0 0 2.235 1.308l8-4.5a1.5 1.5 0 0 0 0-2.615l-8-4.5Z"/>
+    </svg>
+    </button>
+</CascadingValue>
+</form>
+
+@if (api.Succeeded) {
+    <h3 class="text-2xl text-green-600 mt-4">@api.Response!.Result</h3>
+}
+
+<div class="mt-4">
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/CallHello.razor" IconSrc="/img/blazor.svg" />
+</div>
+
+@code {
+    Hello request = new()
+    {
+        Name = "Blazor WASM"
+    };
+
+    ApiResult<HelloResponse> api = new();
+
+    protected override async Task OnInitializedAsync() => await submit();
+
+    async Task submit() => api = await ApiAsync(request);
+}

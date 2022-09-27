@@ -7,7 +7,7 @@
         <!--<UseRazorSourceGenerator>false</UseRazorSourceGenerator>-->
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Markdig" Version="0.26.0" />
+        <PackageReference Include="Markdig" Version="0.30.4" />
         <PackageReference Include="Blazor.Extensions.Logging" Version="2.0.4" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0" />

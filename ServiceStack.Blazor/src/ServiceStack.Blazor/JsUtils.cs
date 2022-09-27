@@ -28,6 +28,9 @@ public static class JsUtils
     
     public static List<NavItem> ParseNavItemsCsv(string csv)
     {
+        if (csv == null) 
+            return new();
+
         csv = csv.Trim();
         var to = new List<NavItem>();
         var lines = csv.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);

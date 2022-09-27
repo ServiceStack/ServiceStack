@@ -4,14 +4,11 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp.Client</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Remove="wwwroot\tailwind\ServiceStack.Blazor.html" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Include="wwwroot\tailwind\ServiceStack.Blazor.html" />
+        <PackageReference Include="Markdig" Version="0.30.4" />
     </ItemGroup>
     
     <ItemGroup>

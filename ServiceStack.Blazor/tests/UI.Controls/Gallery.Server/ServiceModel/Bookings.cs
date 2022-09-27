@@ -21,7 +21,7 @@ public class Booking : AuditBase
     public DateTime? BookingEndDate { get; set; }
     public decimal Cost { get; set; }
 
-    [Ref(Model = nameof(Coupon), RefId = nameof(Coupon.Id), RefLabel = nameof(Coupon.Description))]
+    [Ref(Model=nameof(Coupon), RefId=nameof(Coupon.Id), RefLabel=nameof(Coupon.Description))]
     [References(typeof(Coupon))]
     public string? CouponId { get; set; }
 
@@ -45,7 +45,7 @@ public enum RoomType
 [Route("/bookings", "GET")]
 [Route("/bookings/{Id}", "GET")]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryBookings : QueryDb<Booking>
+public class QueryBookings : QueryDb<Booking> 
 {
     public int? Id { get; set; }
 }

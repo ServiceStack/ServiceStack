@@ -33,36 +33,6 @@ SIDEBAR = `
     Fetch data,        /fetchdata,              /img/nav/fetchdata.svg
     Test,              /test/alltypes,          /img/nav/fetchdata.svg
 `
-
-/*
-const path = location.pathname
-const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
-$1 = s => document.querySelector(s)
-
-// Header
-$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
-    `<li class="relative flex flex-wrap just-fu-start m-0">
-        <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
-))
-
-// Sidebar
-const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
-    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
-    <img class="${iconCls}" src="${icon}">
-    ${label}
-</a>`
-
-$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
-    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
-    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-}))
-$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
-    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
-    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-}))
-*/
 </script>
 
 @RenderBody()
