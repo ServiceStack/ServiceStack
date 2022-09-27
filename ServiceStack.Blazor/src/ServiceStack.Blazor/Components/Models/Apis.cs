@@ -15,12 +15,12 @@ public class Apis
     public Type? Save { get; set; }
 
     static ConcurrentDictionary<string, Type> ApiTyesMap { get; set; } = new();
-    static HashSet<Assembly> loadedAssemblies = new();
+    static ConcurrentDictionary<Assembly, bool> loadedAssemblies = new();
     public static void Load(Assembly assembly)
     {
-        if (loadedAssemblies.Contains(assembly))
+        if (loadedAssemblies.ContainsKey(assembly))
             return;
-        loadedAssemblies.Add(assembly);
+        loadedAssemblies[assembly] = true;
 
         var apiTypes = assembly.GetTypes().Where(x => x.HasInterface(typeof(IReturnVoid)) || x.IsOrHasGenericInterfaceTypeOf(typeof(IReturn<>)));
         foreach (var apiType in apiTypes)
