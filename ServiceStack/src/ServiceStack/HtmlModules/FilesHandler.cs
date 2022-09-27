@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.IO;
 using ServiceStack.Text;
@@ -24,7 +25,15 @@ public class FilesHandler : IHtmlModulesHandler
             var usePath = paths.StartsWith("/")
                 ? paths
                 : ctx.Module.DirPath.CombineWith(paths);
-            var sortedFiles = useVfs.GetAllMatchingFiles(usePath)
+
+            var allFiles = useVfs.GetAllMatchingFiles(usePath);
+            // Remove duplicates (from overriding), last file wins
+            var allFilesMap = new Dictionary<string, IVirtualFile>();
+            foreach (var file in allFiles)
+            {
+                allFilesMap[file.VirtualPath] = file;
+            }
+            var sortedFiles = allFilesMap.Values
                 .OrderBy(file => file.VirtualPath).ToList();
             foreach (var file in sortedFiles)
             {
