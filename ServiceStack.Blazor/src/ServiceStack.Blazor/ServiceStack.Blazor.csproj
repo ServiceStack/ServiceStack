@@ -34,7 +34,7 @@
         </ReadLinesFromFile>
         <WriteLinesToFile File="./dist/tailwind.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
         <WriteLinesToFile File="../../tests/ServiceStack.Blazor.Tailwind.Tests/Client/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
-        <WriteLinesToFile File="../../tests/UI.Controls/Gallery.Server/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
+        <WriteLinesToFile File="../../tests/UI.Gallery/Gallery.Server/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
         <Exec Command="npx tailwindcss -o tailwind.css --content=&quot;./*.html&quot; --minify" WorkingDirectory="dist" />
     </Target>
 
