@@ -38,7 +38,7 @@ namespace ServiceStack.Text.Common
 
         static WriteType()
         {
-            if (typeof(T) == typeof(Object))
+            if (typeof(T) == typeof(object))
             {
                 CacheFn = WriteObjectType;
             }
@@ -118,7 +118,8 @@ namespace ServiceStack.Text.Common
 
         private static bool Init()
         {
-            if (!typeof(T).IsClass && !typeof(T).IsInterface && !JsConfig.TreatAsRefType(typeof(T))) return false;
+            if (!typeof(T).IsClass && !typeof(T).IsInterface && !JsConfig.TreatAsRefType(typeof(T))) 
+                return false;
 
             var propertyInfos = TypeConfig<T>.Properties;
             var fieldInfos = TypeConfig<T>.Fields;
@@ -134,8 +135,8 @@ namespace ServiceStack.Text.Common
             var shouldSerializeDynamic = ShouldSerialize(typeof(T));
 
             // NOTE: very limited support for DataContractSerialization (DCS)
-            //	NOT supporting Serializable
-            //	support for DCS is intended for (re)Name of properties and Ignore by NOT having a DataMember present
+            // NOT supporting Serializable
+            // support for DCS is intended for (re)Name of properties and Ignore by NOT having a DataMember present
             var isDataContract = typeof(T).IsDto();
             for (var i = 0; i < propertyNamesLength; i++)
             {
@@ -405,6 +406,8 @@ namespace ServiceStack.Text.Common
                 for (int index = 0; index < len; index++)
                 {
                     var propertyWriter = PropertyWriters[index];
+                    if (JsConfig.ShouldExcludePropertyType(propertyWriter.PropertyType))
+                        continue;
 
                     if (propertyWriter.shouldSerialize?.Invoke(typedInstance) == false)
                         continue;

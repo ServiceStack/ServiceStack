@@ -645,6 +645,9 @@ namespace ServiceStack.Text
             set => Config.AssertNotInit().ModelFactory = value;
         }
 
+        public static bool ShouldExcludePropertyType(Type propType) =>
+            ExcludeTypes.Contains(propType) || ExcludeTypeNames.Contains(propType.FullName);
+
         public static HashSet<Type> ExcludeTypes
         {
             get => JsConfigScope.Current != null ? JsConfigScope.Current.ExcludeTypes : Config.Instance.ExcludeTypes;

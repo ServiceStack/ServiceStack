@@ -1057,7 +1057,7 @@ namespace ServiceStack
                 Type = type,
             };
 
-            foreach (var pi in type.GetSerializableProperties())
+            foreach (var pi in type.GetAllSerializableProperties())
             {
                 def.Add(pi.Name, new ObjectDictionaryFieldDefinition
                 {
