@@ -12,8 +12,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
+var baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7142/";
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseUrl) });
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddBlazorApiClient(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7142/"); // builder.HostEnvironment.BaseAddress);
+builder.Services.AddBlazorApiClient(baseUrl);
 
 builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ServiceStackStateProvider>());
 builder.Services.AddScoped<ServiceStackStateProvider>();

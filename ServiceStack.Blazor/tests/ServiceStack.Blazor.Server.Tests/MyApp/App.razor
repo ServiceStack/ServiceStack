@@ -27,19 +27,19 @@
         </AuthorizeRouteView>
     </Found>
     <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Sorry, there's nothing at this address.</p>
-        </LayoutView>
+        <CascadingAuthenticationState>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </CascadingAuthenticationState>
     </NotFound>
 </Router>
 
 @code {
-
     async Task login()
     {
         var loginUrl = NavigationManager.GetLoginUrl();
         await AuthStateProvider.LogoutIfAuthenticatedAsync();
         NavigationManager.NavigateTo(loginUrl, true);
     }
-
 }

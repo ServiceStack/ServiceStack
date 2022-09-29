@@ -21,6 +21,9 @@ public abstract class AuthBlazorComponentBase : BlazorComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
+        if (AuthenticationStateTask == null) 
+            return;
+
         var state = await AuthenticationStateTask!;
         User = state.User;
         HasInit = true;

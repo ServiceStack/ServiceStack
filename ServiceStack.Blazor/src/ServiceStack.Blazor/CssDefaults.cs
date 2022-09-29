@@ -25,9 +25,6 @@ public static class CssDefaults
         
         public const string TableBodyClass = "";
 
-        public const string HoverSelectionClass = "cursor-pointer hover:bg-yellow-50";
-        public const string SelectedClass = "cursor-pointer bg-indigo-100";
-
         public static string GetGridClass(TableStyle style = DefaultTableStyle) => GridClass;
         public static string GetGrid2Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
             ? "overflow-x-auto"
@@ -65,9 +62,11 @@ public static class CssDefaults
             ? " bg-white"
             : "");
 
-        public static string GetTableRowClass(TableStyle style, int i) => (style.HasFlag(TableStyle.StripedRows)
-            ? (i % 2 == 0 ? "bg-white" : "bg-gray-50")
-            : "bg-white") + (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
+        public static string GetTableRowClass(TableStyle style, int i, bool selected) =>
+            "cursor-pointer " + (selected ? "bg-indigo-100" : "hover:bg-yellow-50 " + (style.HasFlag(TableStyle.StripedRows)
+                    ? (i % 2 == 0 ? "bg-white" : "bg-gray-50")
+                    : "bg-white")) + 
+                 (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
     }
 
     public static class Form

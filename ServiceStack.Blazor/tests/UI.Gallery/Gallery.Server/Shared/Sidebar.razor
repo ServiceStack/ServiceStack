@@ -24,14 +24,14 @@
                 <NavLink href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
                     <img class="h-8 w-auto"
                          src="/img/blazor.svg"
-                         alt="My App">
-                    <div class="ml-2">My App</div>
+                         alt="Blazor Logo">
+                    <div class="ml-2">Gallery</div>
                 </NavLink>
                 <nav class="mt-5 px-2 space-y-1">
                     @foreach (var item in NavItems)
                     {
                          <NavLink href=@item.Href Match=@item.LinkMatch()
-                            ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md">
+                            ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                             <img class="mr-4 flex-shrink-0 h-6 w-6" src=@item.IconSrc>
                             @item.Label
                         </NavLink>
@@ -55,13 +55,13 @@
                 <img class="h-8 w-auto"
                      src="/img/blazor.svg"
                      alt="My App">
-                <div class="ml-2">My App</div>
+                <div class="ml-2">Gallery</div>
             </NavLink>
             <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
                 @foreach (var item in NavItems!)
                 {
                     <NavLink href=@item.Href Match=@item.LinkMatch()
-                        ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                        ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 font-medium rounded-md">
                         <img class="mr-3 flex-shrink-0 h-6 w-6" src=@item.IconSrc>
                         @item.Label
                     </NavLink>

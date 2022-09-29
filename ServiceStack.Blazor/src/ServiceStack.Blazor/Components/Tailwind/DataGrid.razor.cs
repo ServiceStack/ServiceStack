@@ -59,8 +59,6 @@ public partial class DataGrid<Model> : UiComponentBase
     [Parameter] public string TableHeaderRowClass { get; set; } = CssDefaults.Grid.GetTableHeaderRowClass();
     [Parameter] public string TableHeaderCellClass { get; set; } = CssDefaults.Grid.GetTableHeaderCellClass();
     [Parameter] public string TableBodyClass { get; set; } = CssDefaults.Grid.GetTableBodyClass();
-    [Parameter] public string HoverSelectionClass { get; set; } = CssDefaults.Grid.HoverSelectionClass;
-    [Parameter] public string SelectedClass { get; set; } = CssDefaults.Grid.SelectedClass;
     [Parameter] public List<string>? SelectedColumns { get; set; }
     [Parameter] public Func<MouseEventArgs, DOMRect>? FiltersTopLeftResolver { get; set; }
 
@@ -77,10 +75,6 @@ public partial class DataGrid<Model> : UiComponentBase
 
     Model? selectedItem;
     bool IsSelected(Model? item) => selectedItem?.Equals(item) == true;
-    string RowSelectionClass(Model item) => AllowSelection
-        ? IsSelected(item) ? SelectedClass : HoverSelectionClass
-        : "";
-
     const int filterDialogWidth = 318;
 
 

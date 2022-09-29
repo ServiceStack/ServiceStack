@@ -30,20 +30,5 @@
 </div>
 
 @code {
-    [CascadingParameter] protected Task<AuthenticationState>? AuthenticationStateTask { get; set; }
-
     bool CollapseSidebar = true;
-
-    string LoginUrl { get; set; } = "/signin";
-
-    protected override Task OnParametersSetAsync()
-    {
-        LoginUrl = NavigationManager.GetLoginUrl();
-        return Task.CompletedTask;
-    }
-
-    async Task logout()
-    {
-        NavigationManager.NavigateTo(LoginUrl, true);
-    }
 }

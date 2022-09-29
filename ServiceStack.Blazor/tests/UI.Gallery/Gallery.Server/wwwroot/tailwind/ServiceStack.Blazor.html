@@ -674,7 +674,7 @@ AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinition
 }
 @inherits UiComponentBase
 <CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
-<nav class="flex" aria-label="Breadcrumb">
+<nav class=@ClassNames("flex", Class) aria-label="Breadcrumb">
 <ol role="list" class="flex items-center space-x-4">
 <li>
 <div>
@@ -793,7 +793,7 @@ else
 @foreach (var item in Items)
 {
 <tr @key="item.GetHashCode()"
-class=@ClassNames(RowSelectionClass(item), RowClass?.Invoke(item, i++) ?? CssDefaults.Grid.GetTableRowClass(TableStyle, i++))
+class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(item)), RowClass?.Invoke(item, i++))
 @onclick="e => OnRowSelected(e, item)">
 @foreach (var column in VisibleColumns)
 {
@@ -1364,8 +1364,6 @@ public const string TableHeadClass = "bg-gray-50";
 public const string TableHeaderRowClass = "select-none";
 public const string TableHeaderCellClass = "px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap";
 public const string TableBodyClass = "";
-public const string HoverSelectionClass = "cursor-pointer hover:bg-yellow-50";
-public const string SelectedClass = "cursor-pointer bg-indigo-100";
 public static string GetGridClass(TableStyle style = DefaultTableStyle) => GridClass;
 public static string GetGrid2Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
 ? "overflow-x-auto"
@@ -1395,9 +1393,11 @@ public static string GetTableBodyClass(TableStyle style = DefaultTableStyle) =>
 + (style.HasFlag(TableStyle.VerticalLines)
 ? " bg-white"
 : "");
-public static string GetTableRowClass(TableStyle style, int i) => (style.HasFlag(TableStyle.StripedRows)
+public static string GetTableRowClass(TableStyle style, int i, bool selected) =>
+"cursor-pointer " + (selected ? "bg-indigo-100" : "hover:bg-yellow-50 " + (style.HasFlag(TableStyle.StripedRows)
 ? (i % 2 == 0 ? "bg-white" : "bg-gray-50")
-: "bg-white") + (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
+: "bg-white")) +
+(style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
 }
 public static class Form
 {
