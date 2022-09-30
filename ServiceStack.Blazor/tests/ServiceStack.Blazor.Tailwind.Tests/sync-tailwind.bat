@@ -1,5 +1,7 @@
 set TO=%NetCoreTemplates%\blazor-tailwind\MyApp.Client
 
+COPY Client\wwwroot\js\servicestack-blazor.js ..\..\..\ServiceStack\src\ServiceStack\js\
+
 COPY %TO%\MyApp.Client.csproj .
 RD /q /s %TO%\MyApp.Client
 MD %TO%\MyApp.Client
