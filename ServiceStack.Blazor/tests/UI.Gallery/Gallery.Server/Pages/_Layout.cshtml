@@ -18,22 +18,6 @@
     <component type="typeof(HeadOutlet)" render-mode="Server"/>
 </head>
 <body class=@(new Regex("/gallery/[a-z]*/[a-z]*").IsMatch(new Uri(NavigationManager.Uri).LocalPath) ? "p-1 overflow-hidden" : "")>
-    
-<script>
-TOP = `
-`
-SIDEBAR = `
-    Component Gallery, /gallery,                /img/nav/examples.svg
-    AutoQuery Grids,   /grid,                   /img/nav/grid.svg
-    Bookings CRUD,     /bookings-crud,          /img/nav/bookings-crud.svg
-    Todos,             /todomvc,                /img/nav/todomvc.svg
-    Counter,           /counter,                /img/nav/counter.svg
-    Call Hello,        /hello$,                 /img/nav/hello.svg
-    Call HelloSecure,  /hello-secure,           /img/nav/hello-secure.svg
-    Fetch data,        /fetchdata,              /img/nav/fetchdata.svg
-    Test,              /test/alltypes,          /img/nav/fetchdata.svg
-`
-</script>
 
 @RenderBody()
 

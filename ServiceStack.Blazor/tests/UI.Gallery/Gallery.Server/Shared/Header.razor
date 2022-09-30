@@ -73,22 +73,11 @@
 @code {
     bool ShowAuthMenu = false;
 
-    string LoginUrl { get; set; } = "/signin";
+    string LoginUrl { get; set; } = BlazorConfig.Instance.RedirectSignIn;
 
-    List<NavItem> NavItems { get; set; } = new();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-        if (firstRender)
-        {
-            if (NavItems.Count == 0)
-            {
-                NavItems = await JS.GetNavItemsAsync("TOP");
-                StateHasChanged();
-            }
-        }
-    }
+        List<NavItem> NavItems { get; set; } = new() {
+        new NavItem { Label = "API Reference", Href = "https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/", IconSrc = "/img/nav/examples.svg" },
+    };
 
     protected override Task OnParametersSetAsync()
     {
