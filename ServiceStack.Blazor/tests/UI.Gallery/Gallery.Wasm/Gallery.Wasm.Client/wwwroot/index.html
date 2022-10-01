@@ -122,10 +122,17 @@
 
 <script>
 var hideMainLayoutFor = "/gallery/[a-z]*/[a-z]*".split(',')
-let customLayout = hideMainLayoutFor.some(x => new RegExp(x).test(location.pathname))
-    if (customLayout) {
-    document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML
-    document.body.classList.add('p-1', 'overflow-hidden')
+let customLayout = location.pathname == "/" || hideMainLayoutFor.some(x => new RegExp(x).test(location.pathname))
+if (customLayout) {
+    if (location.pathname == "/") {
+        document.querySelector('#app-loading').innerHTML = `
+            <div class='bg-violet-900' style='height:100vh;width:100%;background:url(/img/bg-header.jpg) no-repeat;'>
+            </div>
+        `
+    } else {
+        document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML
+        document.body.classList.add('p-1', 'overflow-hidden')
+    }
 }
 
 TOP = `

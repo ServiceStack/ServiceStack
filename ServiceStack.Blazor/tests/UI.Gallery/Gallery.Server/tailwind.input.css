@@ -45,6 +45,25 @@ select{
 [type='file']{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}
 [type='file']:focus{outline:1px auto -webkit-focus-ring-color;}
 
+/* @tailwindcss/aspect css */
+.aspect-h-9 {
+    --tw-aspect-h: 9;
+}
+.aspect-w-16 {
+    position: relative;
+    padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
+    --tw-aspect-w: 16;
+}
+.aspect-w-16 > * {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
 .animate-spin {
     -webkit-animation: spin 1s linear infinite;
     animation: spin 1s linear infinite;
