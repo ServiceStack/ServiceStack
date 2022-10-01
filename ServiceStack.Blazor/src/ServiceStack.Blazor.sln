@@ -67,9 +67,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gallery.Server", "..\tests\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI.Server", "UI.Server", "{E7C0ABE1-2F94-4480-9DB2-DBDE2D1A43DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery.Wasm", "..\tests\UI.Gallery\Gallery.Wasm\Gallery.Wasm\Gallery.Wasm.csproj", "{23FB9AC8-B90B-4813-8F61-698D4BFA61B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery.Wasm.Client", "..\tests\UI.Gallery\Gallery.Wasm\Gallery.Wasm.Client\Gallery.Wasm.Client.csproj", "{23FB9AC8-B90B-4813-8F61-698D4BFA61B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery.Wasm.Server", "..\tests\UI.Gallery\Gallery.Wasm\Gallery.Wasm.Server\Gallery.Wasm.Server.csproj", "{BFAAC34F-A46E-478E-A06F-22BF2B0367C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery.Wasm", "..\tests\UI.Gallery\Gallery.Wasm\Gallery.Wasm\Gallery.Wasm.csproj", "{BFAAC34F-A46E-478E-A06F-22BF2B0367C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

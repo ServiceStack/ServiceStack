@@ -1,34 +1,37 @@
-using System;
-using System.Net.Http;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
-using Blazor.Extensions.Logging;
-using ServiceStack.Blazor;
-using MyApp.Client;
+﻿using ServiceStack;
+using MyApp;
 
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
-builder.Services.AddLogging(c => c
-    .AddBrowserConsole()
-    .SetMinimumLevel(LogLevel.Trace)
-);
-builder.RootComponents.Add<App>("#app");
-builder.RootComponents.Add<HeadOutlet>("head::after");
-builder.Services.AddOptions();
-builder.Services.AddAuthorizationCore();
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
-// Use / for local or CDN resources
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ServiceStackStateProvider>());
+var app = builder.Build();
 
-builder.Services.AddBlazorApiClient(builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress);
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+else
+{
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+app.UseHttpsRedirection();
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
 
-builder.Services.AddScoped<ServiceStackStateProvider>();
+app.UseRouting();
 
-BlazorConfig.Set(new BlazorConfig {
-    EnableLogging = true
+app.UseServiceStack(new AppHost());
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapRazorPages();
+    endpoints.MapControllers();
+    endpoints.MapFallbackToFile("index.html");
 });
 
-await builder.Build().RunAsync();
+
+app.Run();
