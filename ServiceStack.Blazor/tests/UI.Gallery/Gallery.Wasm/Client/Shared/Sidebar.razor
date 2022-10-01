@@ -1,0 +1,102 @@
+﻿@inject ServiceStackStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+<div class=@CssUtils.ClassNames("mobile relative z-40 md:hidden", Collapse ? "hidden" : "") role="dialog" aria-modal="true">
+    <div class=@CssUtils.ClassNames("fixed inset-0 bg-gray-600 bg-opacity-75", Collapse ? "opacity-0" : "opacity-100")></div>
+    <div class="fixed inset-0 flex z-40">
+        <div class=@CssUtils.ClassNames("relative flex-1 flex flex-col max-w-xs w-full bg-white", Collapse ? "-translate-x-full" : "translate-x-0")>
+            <div class=@CssUtils.ClassNames("absolute top-0 right-0 -mr-12 pt-2", Collapse ? "opacity-0" : "opacity-100")>
+                <button type="button"
+                        class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        @onclick=@(() => Toggle.InvokeAsync(true))>
+                    <span class="sr-only">Close sidebar</span>
+                    <!-- Heroicon name: outline/x -->
+                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                <NavLink href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                    <img class="h-8 w-auto"
+                         src="/img/blazor.svg"
+                         alt="Blazor Gallery">
+                    <div class="ml-2">Blazor Gallery</div>
+                </NavLink>
+                <nav class="mt-5 px-2 space-y-1">
+                    @foreach (var item in NavItems)
+                    {
+                         <NavLink href=@item.Href Match=@item.LinkMatch()
+                            ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md">
+                            <img class="mr-4 flex-shrink-0 h-6 w-6" src=@item.IconSrc>
+                            @item.Label
+                        </NavLink>
+                    }
+                </nav>
+            </div>
+        </div>
+
+        <div class="flex-shrink-0 w-14">
+            <!-- Force sidebar to shrink to fit close icon -->
+        </div>
+    </div>
+</div>
+
+<!-- Static sidebar for desktop -->
+<div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+    <!-- Sidebar component, swap this element with another sidebar if you like -->
+    <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
+        <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+            <NavLink href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                <img class="h-8 w-auto"
+                     src="/img/blazor.svg"
+                     alt="Blazor Gallery">
+                <div class="ml-2">Blazor Gallery</div>
+            </NavLink>
+            <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
+                @foreach (var item in NavItems!)
+                {
+                    <NavLink href=@item.Href Match=@item.LinkMatch()
+                        ActiveClass="bg-gray-100 text-gray-900" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                        <img class="mr-3 flex-shrink-0 h-6 w-6" src=@item.IconSrc>
+                        @item.Label
+                    </NavLink>
+                }
+            </nav>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public bool Collapse { get; set; } = true;
+
+    [Parameter, EditorRequired]
+    public EventCallback<bool> Toggle { get; set; }
+
+    string? LoginUrl { get; set; }
+
+    List<NavItem> NavItems { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (NavItems.Count == 0)
+            NavItems = await JS.GetNavItemsAsync("SIDEBAR");
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        LoginUrl = NavigationManager.GetLoginUrl();
+        return Task.CompletedTask;
+    }
+
+    async Task logout()
+    {
+        await AuthStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo(LoginUrl ?? "/", true);
+    }
+}

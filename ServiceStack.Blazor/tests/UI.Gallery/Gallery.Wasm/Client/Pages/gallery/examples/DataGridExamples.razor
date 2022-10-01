@@ -1,0 +1,61 @@
+﻿@page "/gallery/datagrid"
+@using MyApp.Client.Pages.gallery.DataGrid
+
+<div class="example">
+
+<Breadcrumbs>
+    <Breadcrumb href="/gallery">
+        gallery
+    </Breadcrumb>
+    <Breadcrumb>
+        DataGrid Examples
+    </Breadcrumb>
+</Breadcrumbs>
+
+<ApiReference Component="DataGrid<Model>">
+    Default
+</ApiReference>
+
+<p class="mb-4 text-lg">
+    In its most simple usage the DataGrid component can be used to render typed collections:
+</p>
+
+<ExampleCode Path="/gallery/DataGrid/Default.razor" />
+
+<p class="mb-4 text-lg">
+    Which by default will display all public serializable properties:
+</p>
+
+<Default />
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Responsive
+</h2>
+
+<p class="mb-4 text-lg">
+    How each column is formatted, which columns are displayed and at which responsive breakpoints is customizable using <code>&lt;Column&gt;</code> definitions:
+</p>
+
+<ExampleCode Path="/gallery/DataGrid/Responsive.razor" />
+
+<Responsive />
+
+<h2 id="table-styles" class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Table Styles
+</h2>
+
+<p class="mb-4 text-lg">
+    Behavior of the DataGrid can be customized with the <code>HeaderSelected</code> event to handle when column headers are selected to apply custom filtering
+    to the <code>Items</code> data source whilst the <code>RowSelected</code> event can be used to apply custom behavior when a row is selected.
+</p>
+
+<ExampleCode Path="/gallery/DataGrid/TableStyles.razor" />
+
+<p class="mb-4 text-lg">
+    The appearance of DataGrids can use <code>TableStyles</code> to change to different
+    <TextLink href="https://tailwindui.com/components/application-ui/lists/tables">Tailwind Table Styles</TextLink>.
+</p>
+
+<TableStyles />
+
+</div>

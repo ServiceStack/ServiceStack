@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Blazor Gallery</title>
+    <base href="/">
+    <link href="css/app.css" rel="stylesheet">
+    <link href="css/typography.css" rel="stylesheet">
+    <link href="css/markdown.css" rel="stylesheet">
+    <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
+</head>
+
+<body>
+    <div id="app">
+        <!-- loading: render temp static app chrome to improve perceived performance -->
+        <div id="app-loading">
+
+            <!-- <Header/> -->
+            <header class="border-b border-gray-200 pr-3">
+                <div class="flex flex-wrap items-center">
+                    <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
+                        <nav class="relative flex flex-grow">
+                            <ul class="flex flex-wrap items-center justify-end w-full m-0">
+                                <li class="relative flex flex-wrap just-fu-start m-0">
+                                    <a href="/signup" class="m-2">
+                                        <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Sign In
+                                        </button>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+
+            <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+            <div class="mobile relative z-40 hidden" role="dialog" aria-modal="true">
+                <div class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
+                <div class="fixed inset-0 flex z-40">
+                    <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+
+                        <div class="absolute top-0 right-0 -mr-12 pt-2">
+                            <button type="button"
+                                    class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                                <span class="sr-only">Close sidebar</span>
+                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                            <a href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                                <img class="h-8 w-auto"
+                                     src="/img/blazor.svg"
+                                     alt="Blazor Gallery">
+                                <div class="ml-2">Blazor Gallery</div>
+                            </a>
+                            <nav class="mt-5 px-2 space-y-1">
+                            </nav>
+                        </div>
+
+                    </div>
+
+                    <div class="flex-shrink-0 w-14">
+                        <!-- Force sidebar to shrink to fit close icon -->
+                    </div>
+                </div>
+            </div>
+            <!-- Static sidebar for desktop -->
+            <div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+                <!-- Sidebar component, swap this element with another sidebar if you like -->
+                <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
+                    <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+                        <a href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                            <img class="h-8 w-auto"
+                                 src="/img/blazor.svg"
+                                 alt="Blazor Gallery">
+                            <div class="ml-2">Blazor Gallery</div>
+                        </a>
+                        <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <MainLayout/> -->
+            <div class="md:pl-64 flex flex-col flex-1">
+                <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
+                    <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <span class="sr-only">Open sidebar</span>
+                        <!-- Heroicon name: outline/menu -->
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+                <main class="flex-1">
+                    <div class="py-6">
+                        <div class="content px-4 sm:px-6 md:px-8">
+                            <!--PAGE-->
+                            <div class="mb-4">
+                                <h1 class="text-2xl font-semibold text-gray-900 flex">
+                                    <svg role="status" class="self-center inline w-6 h-6 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
+                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
+                                    </svg>
+                                    <span>Loading...</span>
+                                </h1>
+                            </div>
+                            <!--/PAGE-->
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+var hideMainLayoutFor = "/gallery/[a-z]*/[a-z]*".split(',')
+let customLayout = hideMainLayoutFor.some(x => new RegExp(x).test(location.pathname))
+    if (customLayout) {
+    document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML
+    document.body.classList.add('p-1', 'overflow-hidden')
+}
+
+TOP = `
+    API Reference,     https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/
+`
+SIDEBAR = `
+    Component Gallery, /gallery,                /img/nav/examples.svg
+    AutoQuery Grids,   /grid,                   /img/nav/grid.svg
+    Bookings CRUD,     /bookings-crud,          /img/nav/bookings-crud.svg
+    Todos,             /todomvc,                /img/nav/todomvc.svg
+    Counter,           /counter,                /img/nav/counter.svg
+    Call Hello,        /hello$,                 /img/nav/hello.svg
+    Call HelloSecure,  /hello-secure,           /img/nav/hello-secure.svg
+    Fetch data,        /fetchdata,              /img/nav/fetchdata.svg
+`
+
+const path = location.pathname
+const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+$1 = s => document.querySelector(s)
+
+if (!customLayout) {
+    /* Header */
+    $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+        `<li class="relative flex flex-wrap just-fu-start m-0">
+        <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+    ))
+
+    /* Sidebar */
+    const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+        class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
+        <img class="${iconCls}" src="${icon}">
+        ${label}
+    </a>`
+
+    $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+        label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
+        iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+        icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+    }))
+    $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+        label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+        iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+        icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+    }))
+
+    /* Prerender */
+    const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+    fetch(`/prerender${pagePath}`)
+        .then(r => r.text())
+        .then(html => {
+            if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+            const pageBody = $1('#app-loading .content')
+            if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+        })
+        .catch(/* no prerendered content found for this path */)
+}
+</script>
+
+    <div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">
+        <div class="flex rounded-md bg-yellow-50 p-4 m-4">
+            <div class="flex-shrink-0">
+                <!-- Heroicon name: solid/exclamation -->
+                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">An unhandled error has occurred.</h3>
+                <div class="mt-4">
+                    <div class="-mx-2 -my-1.5 flex">
+                        <button type="button" class="reload bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">Reload</button>
+                    </div>
+                </div>
+            </div>
+            <div class="ml-auto pl-3">
+                <div class="-mx-1.5 -my-1.5">
+                    <button type="button" class="dismiss inline-flex bg-yellow-50 rounded-md p-1.5 text-yellow-500 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">
+                        <span class="sr-only">Dismiss</span>
+                        <!-- Heroicon name: solid/x -->
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+
+    <script type="text/javascript" src="/js/highlight.min.js"></script>
+    <script type="text/javascript" src="/js/highlight.cshtml-razor.min.js"></script>
+    <script>hljs.highlightAll()</script>
+    <script type="text/javascript" src="/js/servicestack-blazor.js"></script>
+
+</body>
+</html>

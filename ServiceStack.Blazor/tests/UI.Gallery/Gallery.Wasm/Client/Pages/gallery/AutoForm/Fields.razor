@@ -1,0 +1,47 @@
+﻿@page "/gallery/autoform/fields"
+
+<form @onsubmit="submit" @onsubmit:preventDefault>
+    <div class="shadow sm:overflow-hidden sm:rounded-md max-w-screen-lg">
+        <div class="space-y-6 bg-white py-6 px-4 sm:p-6">
+            <div>
+                <h3 class="text-lg font-medium leading-6 text-gray-900">@(ApiType.GetDescription())</h3>
+                <p class="notes mt-1 text-sm text-gray-500">
+                    @((MarkupString)ApiType.GetNotes())
+                </p>
+            </div>
+
+            <AutoFormFields Model="Booking" Api="Api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+
+        </div>
+        <div class="bg-gray-50 px-4 py-3 text-right sm:px-12">
+            <PrimaryButton type="submit" onclick="submit">Save</PrimaryButton>
+        </div>
+    </div>
+</form>
+
+
+@code {
+    [Inject] public JsonApiClient? Client { get; set; }
+    IHasErrorStatus? Api { get; set; }
+    Type ApiType = typeof(UpdateBooking);
+    List<InputInfo>? FormLayout { get; set; }
+    Dictionary<string, object> ModelDictionary { get; set; } = new();
+    MetadataType MetadataType => ApiType.ToMetadataType();
+
+    Booking Edit = Create.Booking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        Api = null;
+
+        ModelDictionary = Edit.ToModelDictionary();
+        FormLayout ??= MetadataType.CreateFormLayout<Booking>();
+    }
+
+    async Task submit()
+    {
+        var request = ModelDictionary.FromModelDictionary<UpdateBooking>();
+        Api = await Client!.ApiAsync(request);
+    }
+}

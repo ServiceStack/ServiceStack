@@ -10,12 +10,13 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <base href="~/"/>
+    <title>Blazor Gallery</title>
+    <base href="~/" />
     <link rel="stylesheet" href="css/app.css"/>
     <link href="css/typography.css" rel="stylesheet">
     <link href="css/markdown.css" rel="stylesheet">
-    <link href="MyApp.Client.styles.css" rel="stylesheet" />
-    <component type="typeof(HeadOutlet)" render-mode="Server"/>
+    <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
+    <component type="typeof(HeadOutlet)" render-mode="Server" />
 </head>
 <body class=@(new Regex("/gallery/[a-z]*/[a-z]*").IsMatch(new Uri(NavigationManager.Uri).LocalPath) ? "p-1 overflow-hidden" : "")>
 

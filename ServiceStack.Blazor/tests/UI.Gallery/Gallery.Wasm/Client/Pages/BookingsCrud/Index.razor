@@ -1,0 +1,147 @@
+@page "/bookings-crud"
+@attribute [Authorize(Roles="Employee")]
+@inherits AppAuthComponentBase
+
+<h1 class="mb-4 text-2xl font-semibold text-gray-900">
+    Bookings CRUD
+</h1>
+
+<div class="max-w-screen-lg">
+@if (newBooking)
+{
+    <Create done="onDone" class="max-w-screen-sm" />
+}
+else if (editBookingId != null)
+{
+    <Edit Id="editBookingId" done="onDone" class="max-w-screen-sm" />
+}
+else
+{
+    <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+            @onclick=@(_ => reset(newBooking:true))>
+        New Booking
+    </button>
+}
+
+@if (api.Succeeded && api.Response!.Results?.Count > 0)
+{
+    <div class="mt-4 flex flex-col">
+        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr class="select-none">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" width="1.2em" height="1.2em" class="w-6 h-6 cursor-pointer" title="New Booking"
+                                         @onclick="_ => reset(newBooking:true)">
+                                        <path fill="currentColor" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2Zm0 1.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 0 0 0-17ZM12 7a.75.75 0 0 1 .75.75v3.5h3.5a.75.75 0 0 1 0 1.5h-3.5v3.5a.75.75 0 0 1-1.5 0v-3.5h-3.5a.75.75 0 0 1 0-1.5h3.5v-3.5A.75.75 0 0 1 12 7Z"></path>
+                                    </svg>
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Id</th>
+                                <th class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><span class="hidden sm:inline">Room </span>Type</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><span class="hidden sm:inline">Room </span>No</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                                <th class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                                <th class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @{ var i = 0; }
+                        @foreach (var booking in api.Response.Results)
+                        {
+                            <tr class=@(++i % 2 == 0 ? "bg-gray-50" : "bg-white") @key=@booking.Id>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" width="1.2em" height="1.2em" class="w-6 h-6 cursor-pointer" title="Edit Booking"
+                                         @onclick="_ => reset(editBookingId:booking.Id)">
+                                        <path fill="currentColor" d="M5 3c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7H5V5h7V3H5m12.78 1a.69.69 0 0 0-.48.2l-1.22 1.21l2.5 2.5L19.8 6.7c.26-.26.26-.7 0-.95L18.25 4.2c-.13-.13-.3-.2-.47-.2m-2.41 2.12L8 13.5V16h2.5l7.37-7.38l-2.5-2.5Z"></path>
+                                    </svg>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@booking.Id</td>
+                                <td class="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">@booking.Name</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@booking.RoomType</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@booking.RoomNumber</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@($"{booking.Cost:C}")</td>
+                                <td class="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">@TextUtils.FormatDate(booking.BookingStartDate)</td>
+                                <td class="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">@booking.CreatedBy</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (!api.Completed)
+{
+    <Loading class="mt-2 text-gray-400 text-base font-normal" Message="Retrieving Bookings..." />
+}
+
+<div class="mt-5 flex justify-center">
+
+    <a href="#" @onclick="_ => expandAbout = !expandAbout" @onclick:preventDefault 
+        class="mr-3 flex text-gray-400 hover:text-gray-600 text-decoration-none">
+        @if (!expandAbout)
+        {
+            <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" width="1.2em" height="1.2em" class="h-6 w-6" aria-hidden="true">
+                <path fill="currentColor" d="M8.59 16.58L13.17 12L8.59 7.41L10 6l6 6l-6 6l-1.41-1.42Z"></path>
+            </svg>
+        }
+        else
+        {
+            <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" width="1.2em" height="1.2em" class="h-6 w-6" aria-hidden="true">
+                <path fill="currentColor" d="M7.41 8.58L12 13.17l4.59-4.59L18 10l-6 6l-6-6l1.41-1.42Z"></path>
+            </svg>
+        }
+        About</a>
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.ServiceModel/Bookings.cs" IconSrc="/img/code.svg" />
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/BookingsCrud/Index.razor" IconSrc="/img/blazor.svg" />
+</div>
+@if (expandAbout)
+{
+    <div class="mt-3 text-gray-500 max-w-screen-md">
+        <h2 class="font-medium text-2xl mb-2">Creating a multi-user .NET Core Booking system in minutes</h2>
+
+        <blockquote class="mb-4">
+          The Bookings service implementation is built using
+          <a href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</a>
+          which enables rapid development of typed CRUD Services using only declarative POCO DTOs, allowing for
+          developing entire
+          <a href="https://docs.servicestack.net/autoquery-crud#advanced-crud-example">audited</a>
+          and <a href="https://docs.servicestack.net/autoquery-audit-log">verifiably logged</a>
+          data-driven systems in a fraction of time
+          <a href="https://docs.servicestack.net/autoquery-crud-bookings">more...</a>
+        </blockquote>
+
+        <iframe class="youtube" src="https://www.youtube.com/embed/rSFiikDjGos" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+}
+</div>
+
+@code {
+    bool newBooking { get; set; }
+
+    int? editBookingId { get; set; }
+
+    bool expandAbout { get; set; }
+
+    ApiResult<QueryResponse<Booking>> api = new();
+
+    async Task refresh() => api = await ApiAsync(new QueryBookings());
+
+    protected override async Task OnInitializedAsync() => await refresh();
+
+    void reset(bool newBooking = false, int? editBookingId = null)
+    {
+        this.newBooking = newBooking;
+        this.editBookingId = editBookingId;
+    }
+
+    async Task onDone(IdResponse result)
+    {
+        reset();
+        await refresh();
+    }
+}

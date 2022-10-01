@@ -1,0 +1,68 @@
+﻿@page "/gallery/autoquerygrid"
+@layout MainLayout
+
+<Breadcrumbs>
+    <Breadcrumb href="/gallery">
+        gallery
+    </Breadcrumb>
+    <Breadcrumb>
+        AutoQueryGrid Examples
+    </Breadcrumb>
+</Breadcrumbs>
+
+
+<ApiReference Component="AutoQueryGrid<Model>">
+    Read Only
+</ApiReference>
+
+<p class="mb-4 text-lg">
+    If only the AutoQuery DTO is provided, the AutoQueryGrid will only be browsable in <b>read-only</b> mode:
+</p>
+
+<ExampleCode Path="/gallery/AutoQueryGrid/ReadOnly.razor" />
+
+<iframe class="w-full h-96" src="/gallery/autoquerygrid/readonly" />
+
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Table Styles
+</h2>
+
+<p class="mb-4 text-lg">
+    The same <TextLink href="/gallery/datagrid#table-styles">DataGrid Table Styles</TextLink> can also be used to style AutoQueryGrid, e.g:
+</p>
+
+<ExampleCode Path="/gallery/AutoQueryGrid/TableStyles.razor" />
+
+<iframe class="w-full h-96" src="/gallery/autoquerygrid/table-styles" />
+
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Default CRUD
+</h2>
+
+<p class="mb-4 text-lg">
+    If all AutoQuery CRUD DTOs are provided the AutoQuery Grid allows authorized users the ability to Create, Read, Update &amp; Delete records:
+</p>
+
+<ExampleCode Path="/gallery/AutoQueryGrid/Crud.razor" />
+
+<iframe class="w-full" style="height:42em" src="/gallery/autoquerygrid/crud" />
+
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Custom Responsive Columns
+</h2>
+
+<p class="mb-4 text-lg">
+    By default AutoQueryGrid displays all public properties, which columns are displayed as well as how they're formatted can be customized using
+    the <code>&lt;Column/&gt;</code> element:
+</p>
+
+<ExampleCode Path="/gallery/AutoQueryGrid/Responsive.razor" />
+
+<p class="mb-4 text-lg">
+    This example shows how to customize Data Grid to enable a responsive layout where columns and header labels are collapsed at different responsive breakpoints.
+</p>
+
+<iframe class="w-full" style="height:42em" src="/gallery/autoquerygrid/responsive" />

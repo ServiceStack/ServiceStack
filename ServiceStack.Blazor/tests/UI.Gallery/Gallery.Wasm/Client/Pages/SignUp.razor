@@ -1,0 +1,106 @@
+@page "/signup"
+@inherits AppAuthComponentBase
+@inject ServiceStackStateProvider authProvider
+@inject NavigationManager NavigationManager
+
+@if (IsAuthenticated)
+{
+    NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+    return;
+}
+
+<div class="mb-4">
+    <h1 class="text-2xl font-semibold text-gray-900">Sign Up</h1>
+</div>
+
+<div class="max-w-screen-md">
+
+<form @onsubmit="submit" class="max-w-xl">
+<CascadingValue Value=@api.Error>
+    <div class="shadow overflow-hidden sm:rounded-md">
+        <ErrorSummary Except=@VisibleFields />
+        <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
+          <div class="flex flex-col gap-y-4">
+            <TextInput @bind-Value="request.DisplayName" spellcheck="false" Help="Your first and last name" required />
+            <TextInput type="email" @bind-Value="request.Email" spellcheck="false" required />
+            <TextInput type="password" @bind-Value="request.Password" Help="Password, 6 characters or more" required />
+            <TextInput type="password" @bind-Value="request.ConfirmPassword" />
+            <CheckboxInput @bind-Value="request.AutoLogin" />
+          </div>
+        </div>
+        <div class="pt-5 px-4 py-3 bg-gray-50 text-right sm:px-6">
+          <div class="flex justify-end">
+            <FormLoading class="flex-1" Loading=@api.IsLoading />
+            <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Sign Up
+            </button>
+            <FormLoading class="flex-1"/>
+          </div>
+        </div>
+    </div>
+</CascadingValue>
+</form>
+
+<div class="flex mt-8 ml-8">
+    <h3 class="mr-4 leading-8 text-gray-500">Quick Links</h3>
+    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+        <button type="button" @onclick='_ => SetUser()'
+                class="-ml-px relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+            new@user.com
+        </button>
+    </span>
+</div>
+
+<div class="mt-4">
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/SignUp.razor" IconSrc="/img/blazor.svg" />
+</div>
+
+</div>
+
+@code {
+    string[] VisibleFields => new[]{ 
+        nameof(request.DisplayName), nameof(request.Email), nameof(request.Password), nameof(request.ConfirmPassword) };
+
+    Register request = new();
+
+    ApiResult<RegisterResponse> api = new();
+
+    void SetUser()
+    {
+        request.DisplayName = "New User";
+        request.Email = "new@user.com";
+        request.Password = request.ConfirmPassword = "p@55wOrd";
+        request.AutoLogin = true;
+    }
+
+    async Task submit()
+    {
+        api.ClearErrors();
+
+        if (request.Email.IsNullOrEmpty())
+            api.AddFieldError(nameof(Register.Email), "Email is required");
+
+        if (request.Password.IsNullOrEmpty())
+            api.AddFieldError(nameof(Register.Password), "Password is required");
+        else if (request.ConfirmPassword != request.Password)
+            api.AddFieldError(nameof(Register.ConfirmPassword), "Passwords do not match");
+
+        if (api.Failed) return;
+
+        api.IsLoading = true;
+        api = await ApiAsync(request);
+
+        if (api.Succeeded)
+        {
+            if (request.AutoLogin == true)
+            {
+                await authProvider.SignInAsync(api.Response!);
+                NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/signin?return=" + NavigationManager.GetReturnUrl(), true);
+            }
+        }
+    }
+} 

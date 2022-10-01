@@ -1,0 +1,21 @@
+@page "/counter"
+@inherits AppComponentBase
+
+<h1 class="mb-4 text-2xl font-semibold text-gray-900">
+    Counter
+</h1>
+
+<p class="mb-4">Current count: <span class="font-medium">@currentCount</span></p>
+
+<button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+    @onclick="IncrementCount">Click me</button>
+
+<div class="mt-4">
+    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/Counter.razor" IconSrc="/img/blazor.svg" />
+</div>
+
+@code {
+    int currentCount = 0;
+
+    void IncrementCount() => currentCount++;
+}

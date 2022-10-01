@@ -1,0 +1,11 @@
+﻿@page "/gallery/datagrid/default"
+
+<DataGrid Model="Booking" Items=@Items />
+
+@code {
+    public List<Booking> Items { get; set; } = new() {
+        Create.Booking("First Booking!",  RoomType.Queen,  10, 100, "employee@email.com", "BOOK10"),
+        Create.Booking("Booking 2",       RoomType.Double, 12, 120, "manager@email.com",  "BOOK25"),
+        Create.Booking("Booking the 3rd", RoomType.Suite,  13, 130, "employee@email.com", "BOOK50"),
+    };
+}

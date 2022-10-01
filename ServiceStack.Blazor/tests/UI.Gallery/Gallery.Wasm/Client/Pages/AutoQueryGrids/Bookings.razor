@@ -1,0 +1,84 @@
+@page "/grid/bookings"
+@attribute [Authorize(Roles = "Employee")]
+@inject IJSRuntime JS
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Bookings
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()"
+               AllowSelection="true" AllowFiltering="true"
+               HeaderSelected="OnSelectedHeader" RowSelected="OnSelectedRow">
+    <Columns>
+        <!-- Custom class -->
+        <Column Field="(Booking x) => x.Id" class="text-gray-900" />
+        <!-- Only show from Tailwind's xl responsive Breakpoint -->
+        <Column Field="(Booking x) => x.Name" VisibleFrom="Breakpoint.ExtraLarge" />
+        <!-- Custom Header collapsing 'Room' below 'lg' responsive breakpoint -->
+        <Column Field="(Booking x) => x.RoomType">
+            <Header>
+                <span class="hidden lg:inline">Room </span>Type
+            </Header>
+        </Column>
+        <!-- Custom Header collapsing 'Room' below 'lg' responsive breakpoint -->
+        <Column Field="(Booking x) => x.RoomNumber">
+            <Header>
+                <span class="hidden lg:inline">Room </span>No
+            </Header>
+        </Column>
+        <!-- Custom string Format -->
+        <Column Field="(Booking x) => x.Cost" Format="C" />
+        <!-- Custom C# Formatter -->
+        <Column Field="(Booking x) => x.BookingStartDate" Formatter="FormatDate" VisibleFrom="Breakpoint.Small">
+            <Header>
+                Start<span class="hidden lg:inline"> Date</span>
+            </Header>
+        </Column>
+        <!-- Custom Header and Cell Value -->
+        <Column Field="(Booking x) => x.BookingEndDate" VisibleFrom="Breakpoint.ExtraLarge">
+            <Header>
+                End<span class="hidden lg:inline"> Date</span>
+            </Header>
+            <Template>
+                @context.BookingEndDate?.ToString("D")
+            </Template>
+        </Column>
+        <!-- Custom Title and Complex Type Cell with Reference Link -->
+        <Column Title="Voucher" Field="(Booking x) => x.Discount" VisibleFrom="Breakpoint.ExtraLarge">
+            <Template>
+            @if (context.Discount != null)
+            {
+                <TextLink class="flex items-end" 
+                    href=@($"/grid/coupons?Id={context.Discount.Id}")>
+                    <Icon class="mr-1 w-5 h-5" Image=@typeof(Coupon).GetIcon() />
+                    <PreviewFormat Value=@context.Discount />
+                </TextLink>
+            }
+            </Template>
+        </Column>
+    </Columns>
+</AutoQueryGrid>
+
+<ExampleCode Title="Source Code" Path="/AutoQueryGrids/Bookings.razor" />
+
+@code {
+    string FormatDate(object o) => o is DateTime d ? d.ToShortDateString() : "";
+
+    // Handle when table header is selected
+    public async Task OnSelectedHeader(Column<Booking> item)
+    {
+        await JS.Log(item.Name);
+    }
+
+    // Handle when table row is selected
+    public async Task OnSelectedRow(Booking? x)
+    {
+        var wasDeselected = x == null;
+        if (!wasDeselected) await JS.Log($"{x.Name}");
+    }
+}

@@ -1,0 +1,34 @@
+﻿@page "/gallery/navigation"
+@using MyApp.Client.Pages.gallery.Navigation
+
+<Breadcrumbs>
+    <Breadcrumb href="/gallery">
+        gallery
+    </Breadcrumb>
+    <Breadcrumb>
+        Navigation Examples
+    </Breadcrumb>
+</Breadcrumbs>
+
+<ApiReference Component="Breadcrumbs">
+    Breadcrumbs
+</ApiReference>
+
+
+<p class="mb-4 text-lg">
+    Breadcrumb example:
+</p>
+
+<ExampleCode Path="/gallery/Navigation/BreadcrumbExamples.razor" IncludeBreadcrumbs=true />
+
+<BreadcrumbExamples />
+
+<ApiReference Component="TextLink" />
+
+<p class="mb-4 text-lg">
+    Tailwind <code>&lt;a&gt;</code> hyper links, e.g:
+</p>
+
+<ExampleCode Path="/gallery/Navigation/LinkExamples.razor" />
+
+<LinkExamples />

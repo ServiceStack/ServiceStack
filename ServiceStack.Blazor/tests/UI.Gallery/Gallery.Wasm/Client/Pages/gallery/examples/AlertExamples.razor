@@ -1,0 +1,42 @@
+﻿@page "/gallery/alerts"
+@using MyApp.Client.Pages.gallery.Alerts
+
+<Breadcrumbs>
+    <Breadcrumb href="/gallery">
+        gallery
+    </Breadcrumb>
+    <Breadcrumb>
+        Alert Examples
+    </Breadcrumb>
+</Breadcrumbs>
+
+<ApiReference Component="Alert" />
+
+<p class="mb-4 text-lg">
+    Show basic alert message:
+</p>
+
+
+<ExampleCode Path="/gallery/Alerts/AlertChildContent.razor" />
+
+<AlertChildContent />
+
+<p class="my-4 text-lg">
+    Show alert message from dynamic HTML string:
+</p>
+
+<ExampleCode Path="/gallery/Alerts/AlertHtmlMessage.razor" />
+
+<AlertHtmlMessage />
+
+<ApiReference Component="AlertSuccess">
+    Alert Success
+</ApiReference>
+
+<p class="mb-4 text-lg">
+    Show success alert message:
+</p>
+
+<ExampleCode Path="/gallery/Alerts/AlertSuccessMessage.razor" />
+
+<AlertSuccessMessage />

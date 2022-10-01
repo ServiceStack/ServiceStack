@@ -6,6 +6,7 @@ using MyApp.Client;
 using MyApp.Client.Data;
 using ServiceStack;
 using ServiceStack.Blazor;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-var baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7142/";
+var baseUrl = builder.Configuration["ApiBaseUrl"] ?? 
+    (builder.Environment.IsDevelopment() ? "https://localhost:7142" : "http://" + IPAddress.Loopback);
+
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseUrl) });
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddBlazorApiClient(baseUrl);

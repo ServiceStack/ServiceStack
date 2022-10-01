@@ -76,7 +76,7 @@
     string LoginUrl { get; set; } = BlazorConfig.Instance.RedirectSignIn;
 
         List<NavItem> NavItems { get; set; } = new() {
-        new NavItem { Label = "API Reference", Href = "https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/", IconSrc = "/img/nav/examples.svg" },
+        new NavItem { Label = "API Reference", Href = "https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/" },
     };
 
     protected override Task OnParametersSetAsync()

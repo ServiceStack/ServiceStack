@@ -1,0 +1,38 @@
+@inject IJSRuntime JS
+
+<div class=@CssUtils.ClassNames("lang relative bg-gray-700 text-gray-300 pl-5 py-3 sm:rounded flex", @class)>
+    <div class="flex ml-2 w-full justify-between cursor-pointer" @onclick="copyCommand">
+        <label @ref="elCmd">@ChildContent</label>
+        <small class="text-xs text-gray-400 px-3 -mt-1">sh</small>
+    </div>
+@if (SuccessText != string.Empty)
+{
+    <div class="-mr-24 right-0 absolute text-md text-gray-200 bg-green-700 px-1 rounded">
+        <div class="flex pr-1">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#fff"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            @SuccessText
+        </div>
+    </div>
+}
+</div>
+
+@code {
+    [Parameter]
+    public string? @class { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    string SuccessText { get; set; } = string.Empty;
+
+    private ElementReference elCmd;
+
+    async Task copyCommand(MouseEventArgs e)
+    {
+        SuccessText = "copied";
+        var text = await JS.InvokeAsync<string>("JS.invoke", elCmd, "innerText");
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        await Task.Delay(3_000);
+        SuccessText = string.Empty;
+    }
+}
