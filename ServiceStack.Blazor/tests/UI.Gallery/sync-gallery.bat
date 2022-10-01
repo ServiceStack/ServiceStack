@@ -42,18 +42,18 @@ MOVE Gallery.Server.csproj %TO%\Gallery.Server\
 REM Update blazor-gallery.jamstacks.net
 SET TO=C:\src\netcore\BlazorGalleryWasm
 
-MOVE %TO%\Gallery.Wasm.Client\Gallery.Wasm.csproj .
+MOVE %TO%\Gallery.Wasm.Client\Gallery.Wasm.Client.csproj .
+
+RD /q /s %TO%\Gallery.Wasm.Client
+
+XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client %TO%\Gallery.Wasm.Client
+
+MOVE Gallery.Wasm.Client.csproj %TO%\Gallery.Wasm.Client\
+
+MOVE %TO%\Gallery.Wasm\Gallery.Wasm.csproj .
 
 RD /q /s %TO%\Gallery.Wasm
 
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm %TO%\Gallery.Wasm
 
-MOVE Gallery.Wasm.csproj %TO%\Gallery.Wasm.Client\
-
-MOVE %TO%\Gallery.Wasm\Gallery.Wasm.Server.csproj .
-
-RD /q /s %TO%\Gallery.Wasm.Server
-
-XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Server %TO%\Gallery.Wasm.Server
-
-MOVE Gallery.Wasm.Server.csproj %TO%\Gallery.Wasm\
+MOVE Gallery.Wasm.csproj %TO%\Gallery.Wasm\
