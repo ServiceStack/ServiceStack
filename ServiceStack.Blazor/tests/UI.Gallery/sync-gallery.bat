@@ -57,3 +57,11 @@ RD /q /s %TO%\Gallery.Wasm
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm %TO%\Gallery.Wasm
 
 MOVE Gallery.Wasm.csproj %TO%\Gallery.Wasm\
+
+MOVE %TO%\Gallery.Wasm.Tests\Gallery.Wasm.Tests.csproj .
+
+RD /q /s %TO%\Gallery.Wasm.Tests
+
+XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Tests %TO%\Gallery.Wasm.Tests
+
+MOVE Gallery.Wasm.Tests.csproj %TO%\Gallery.Wasm.Tests\

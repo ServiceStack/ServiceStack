@@ -84,15 +84,12 @@
     List<NavItem> NavItems { get; set; } = new() {
         new NavItem { Label = "Component Gallery", Href = "/gallery",       IconSrc = "/img/nav/examples.svg" },
         new NavItem { Label = "AutoQuery Grids",   Href = "/grid",          IconSrc = "/img/nav/grid.svg" },
-        new NavItem { Label = "Bookings CRUD",     Href = "/bookings-crud", IconSrc = "/img/nav/bookings-crud.svg" },
+        new NavItem { Label = "Custom Forms",      Href = "/bookings-crud", IconSrc = "/img/nav/bookings-crud.svg" },
         new NavItem { Label = "Todos",             Href = "/todomvc",       IconSrc = "/img/nav/todomvc.svg" },
+        new NavItem { Label = "Call Simple API",   Href = "/hello",         IconSrc = "/img/nav/hello.svg", Exact = true },
+        new NavItem { Label = "Call Secure API",   Href = "/hello-secure",  IconSrc = "/img/nav/hello-secure.svg" },
+        new NavItem { Label = "HttpClient Fetch",  Href = "/fetchdata",     IconSrc = "/img/nav/fetchdata.svg" },
         new NavItem { Label = "Counter",           Href = "/counter",       IconSrc = "/img/nav/counter.svg" },
-        new NavItem { Label = "Call Hello",        Href = "/hello",         IconSrc = "/img/nav/hello.svg", Exact = true },
-        new NavItem { Label = "Call HelloSecure",  Href = "/hello-secure",  IconSrc = "/img/nav/hello-secure.svg" },
-        new NavItem { Label = "Fetch data",        Href = "/fetchdata",     IconSrc = "/img/nav/fetchdata.svg" },
-#if DEBUG
-        new NavItem { Label = "Test",              Href = "/test/alltypes", IconSrc = "/img/nav/fetchdata.svg" },
-#endif
     };
 
     protected override Task OnParametersSetAsync()

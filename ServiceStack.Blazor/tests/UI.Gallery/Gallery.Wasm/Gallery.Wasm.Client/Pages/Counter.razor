@@ -11,8 +11,10 @@
     @onclick="IncrementCount">Click me</button>
 
 <div class="mt-4">
-    <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/Counter.razor" IconSrc="/img/blazor.svg" />
+    <SrcLink href=@ExampleCode.GalleryCodeBaseUrl.CombineWith("/Counter.razor") IconSrc="/img/blazor.svg" />
 </div>
+
+<ExampleCode Title="Source Code" Path="/Counter.razor" />
 
 @code {
     int currentCount = 0;

@@ -19,8 +19,8 @@
         </h2>
     }
 
-    <div class="example-code m-4 w-full">
-        <pre><code class=@CssUtils.ClassNames(Language, "rounded block w-full p-4")>@contents</code></pre>
+    <div class="example-code m-4 w-full" style="background-color:#1E1E1E">
+        <pre class="w-full overflow-x-auto"><code class=@CssUtils.ClassNames(Language, "rounded block w-full p-4")>@contents</code></pre>
     </div>
 }
 
@@ -37,11 +37,9 @@
 
     string? contents = "";
 
-    public static string GalleryCodeBaseUrl { get; set; } =
-    "https://github.com/ServiceStack/ServiceStack/blob/main/ServiceStack.Blazor/tests/UI.Gallery/Gallery.Server/Pages";
+    public static string GalleryCodeBaseUrl { get; set; } = "https://github.com/NetCoreApps/BlazorGallery/tree/main/Gallery.Server/Pages";
 
-    public static string GalleryPreviewBaseUrl { get; set; } =
-    "https://raw.githubusercontent.com/ServiceStack/ServiceStack/main/ServiceStack.Blazor/tests/UI.Gallery/Gallery.Server/Pages";
+    public static string GalleryPreviewBaseUrl { get; set; } = "https://raw.githubusercontent.com/NetCoreApps/BlazorGallery/main/Gallery.Server/Pages";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
