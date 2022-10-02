@@ -65,6 +65,7 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
     }
 
 
+    string? refPropertyName;
     string? refInfoValue;
     protected override async Task OnParametersSetAsync()
     {
@@ -92,7 +93,12 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
         var queryOp = AppMetadata?.Api.Operations.FirstOrDefault(x => x.DataModel?.Name == refInfo.Model);
         if (queryOp != null)
         {
-            refInfoValue = Model.GetIgnoreCase(Property.Name).ConvertTo<string>();
+            var propValue = Model.GetIgnoreCase(Property.Name);
+            if (TextUtils.IsComplexType(propValue?.GetType()))
+                return;
+
+            refInfoValue = propValue.ConvertTo<string>();
+            refPropertyName = Property.Name;
             if (refInfo.RefLabel != null)
             {
                 var colModel = MetadataType!.Properties.First(x => x.Type == refInfo.Model);

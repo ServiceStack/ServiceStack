@@ -39,6 +39,44 @@ public static class Input
         public const string Textarea = "textarea";
     }
 
+    public static Dictionary<Type, string> TypesMap { get; set; } = new()
+    {
+        [typeof(bool)] = Types.Checkbox,
+        [typeof(DateTime)] = Types.Date,
+        [typeof(DateTimeOffset)] = Types.Date,
+        [typeof(TimeSpan)] = Types.Time,
+        [typeof(byte)] = Types.Number,
+        [typeof(short)] = Types.Number,
+        [typeof(int)] = Types.Number,
+        [typeof(long)] = Types.Number,
+        [typeof(ushort)] = Types.Number,
+        [typeof(uint)] = Types.Number,
+        [typeof(ulong)] = Types.Number,
+        [typeof(float)] = Types.Number,
+        [typeof(double)] = Types.Number,
+        [typeof(decimal)] = Types.Number,
+        [typeof(string)] = Types.Text,
+        [typeof(Guid)] = Types.Text,
+        [typeof(Uri)] = Types.Text,
+#if NET6_0_OR_GREATER
+        [typeof(DateOnly)] = Types.Date,
+        [typeof(TimeOnly)] = Types.Time,
+#endif
+    };
+
+    static Dictionary<string, string>? typeNameMap;
+    public static Dictionary<string, string> TypeNameMap => typeNameMap ??= CreateInputTypes(TypesMap);
+    static Dictionary<string, string> CreateInputTypes(Dictionary<Type, string> inputTypesMap)
+    {
+        var to = new Dictionary<string, string>();
+        foreach (var entry in inputTypesMap)
+        {
+            to[entry.Key.Name] = entry.Value;
+        }
+        return to;
+    }
+
+
     public class ConfigureCss
     {
         public ConfigureCss(InputInfo input)

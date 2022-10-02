@@ -10,12 +10,18 @@
             <fieldset class="grid grid-cols-12 gap-6">
                 @foreach (var f in FormLayout.OrEmpty())
                 {
+                    var propType = MetadataType.Properties.FirstOrDefault(x => x.Name == f.Id);
+                    if (f.Ignore == true || !BlazorUtils.SupportsProperty(propType))
+                    {
+                        continue;
+                    }
+
                     <div class=@CssUtils.ClassNames(
                          f.Css?.Field ?? (f.Type == Input.Types.Textarea 
                             ? "col-span-12"
-                            : "col-span-12 xl:col-span-6" + (f.Type == Input.Types.Checkbox ? " flex items-center" : ""))) style="width:100%">
+                            : "col-span-12 xl:col-span-6" + (f.Type == Input.Types.Checkbox ? " flex items-center" : "")),
+                            f.Type == Input.Types.Hidden ? "hidden" : "") style="width:100%">
 
-                         @{ var propType = MetadataType.Properties.FirstOrDefault(x => x.Name == f.Id); }
                          @if (propType?.Ref != null)
                          {
                             <LookupInput MetadataType=@MetadataType Input=@f Model=@ModelDictionary Status=@Api?.Error />

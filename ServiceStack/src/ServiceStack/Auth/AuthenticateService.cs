@@ -340,7 +340,7 @@ namespace ServiceStack.Auth
                                 ? (await manageRoles.GetPermissionsAsync(session.UserAuthId).ConfigAwait())?.ToList()
                                 : session.Permissions);
 
-                            if (session.Roles?.Contains(RoleNames.Admin) == true)
+                            if (authResponse.Roles?.Contains(RoleNames.Admin) == true)
                                 authResponse.Roles.AddDistinctRange(HostContext.Metadata.GetAllRoles());
                         }
                         if (authFeature.IncludeOAuthTokensInAuthenticateResponse && AuthRepositoryAsync != null)

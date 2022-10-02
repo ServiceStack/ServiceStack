@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using ServiceStack.Html;
-using System.Security.AccessControl;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
@@ -14,7 +13,7 @@ public partial class AutoFormFields<Model> : UiComponentBase
     [Parameter, EditorRequired] public IHasErrorStatus? Api { get; set; }
     [Parameter] public List<InputInfo>? FormLayout { get; set; }
     [Parameter, EditorRequired] public Dictionary<string, object> ModelDictionary { get; set; } = new();
-    
+
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     protected MetadataType? metadataType;
     public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name)

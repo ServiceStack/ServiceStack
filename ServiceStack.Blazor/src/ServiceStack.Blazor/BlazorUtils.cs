@@ -95,4 +95,17 @@ public static class BlazorUtils
         return wrap(TypeSerializer.Dump(Value).HtmlEncode(), "{ " + html + " }");
     }
 
+    public static bool SupportsProperty(MetadataPropertyType? prop)
+    {
+        if (prop?.Type == null) 
+            return false;
+        if (prop.IsValueType == true || prop.IsEnum == true)
+            return true;
+
+        var unwrapType = prop.Type.EndsWith('?')
+            ? prop.Type[..^1]
+            : prop.Type;
+
+        return Html.Input.TypeNameMap.ContainsKey(unwrapType);
+    }
 }
