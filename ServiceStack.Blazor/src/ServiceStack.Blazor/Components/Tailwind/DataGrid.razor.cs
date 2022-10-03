@@ -61,6 +61,7 @@ public partial class DataGrid<Model> : UiComponentBase
     [Parameter] public string TableBodyClass { get; set; } = CssDefaults.Grid.GetTableBodyClass();
     [Parameter] public List<string>? SelectedColumns { get; set; }
     [Parameter] public Func<MouseEventArgs, DOMRect>? FiltersTopLeftResolver { get; set; }
+    [Parameter] public int MaxFieldLength { get; set; } = BlazorConfig.Instance.MaxFieldLength;
 
     DOMRect? tableRect;
     [Inject] public IJSRuntime JS { get; set; }

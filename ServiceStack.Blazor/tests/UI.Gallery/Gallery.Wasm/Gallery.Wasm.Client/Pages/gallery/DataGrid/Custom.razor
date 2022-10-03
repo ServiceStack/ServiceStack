@@ -1,0 +1,18 @@
+﻿@page "/gallery/datagrid/custom"
+@inject HttpClient Http
+
+<DataGrid Items=@forecasts class="max-w-screen-md" TableStyle="TableStyle.StripedRows | TableStyle.UppercaseHeadings">
+    <Column Field="(WeatherForecast x) => x.Date" Format="dd/MM/yyyy" />
+    <Column Title="Temp. (C)" Field="(WeatherForecast x) => x.TemperatureC" />
+    <Column Title="Temp. (F)" Field="(WeatherForecast x) => x.TemperatureF" />
+    <Column Field="(WeatherForecast x) => x.Summary" />
+</DataGrid>
+
+@code {
+    List<WeatherForecast> forecasts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<List<WeatherForecast>>("data/weather.json") ?? new();
+    }
+}

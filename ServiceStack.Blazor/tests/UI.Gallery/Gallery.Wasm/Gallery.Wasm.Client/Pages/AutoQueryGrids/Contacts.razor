@@ -1,0 +1,45 @@
+﻿@page "/grid/contacts"
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Contacts
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="Contact" Apis="Apis.AutoQuery<QueryContacts,CreateContact,UpdateContact,DeleteContact>()">
+    <Columns>
+        <Column Field="(Contact x) => x.Id" />
+        <Column Field="(Contact x) => x.DisplayName" />
+        <Column Field="(Contact x) => x.ProfileUrl">
+            <Template>
+                <Icon class="w-8 h-8 rounded-full" src=@context.ProfileUrl />
+            </Template>
+        </Column>
+        <Column Field="(Contact x) => x.SalaryExpectation" Format="C" />
+        <Column Field="(Contact x) => x.JobType" />
+        <Column Field="(Contact x) => x.Email">
+            <Template>
+                <TextLink href=@($"mailto:{context.Email}")>@context.Email</TextLink>
+            </Template>
+        </Column>
+        <Column Field="(Contact x) => x.Phone">
+            <Template>
+                <TextLink href=@($"tel:{context.Phone}")>@context.Phone</TextLink>
+            </Template>
+        </Column>
+        <Column Field="(Contact x) => x.About" />
+        <Column Field="(Contact x) => x.Applications">
+            <Template>
+                <TextLink class="flex" href=@($"/grid/job-applications?ContactId={context.Id}")>
+                    <Icon class="mr-1 w-6 h-6" Image=@typeof(JobApplication).GetIcon() />
+                    <PreviewFormat Value=@context.Applications />
+                </TextLink>
+            </Template>
+        </Column>
+    </Columns>
+</AutoQueryGrid>
+
+@*<ExampleCode Title="Source Code" Path="/AutoQueryGrids/Contacts.razor" />*@

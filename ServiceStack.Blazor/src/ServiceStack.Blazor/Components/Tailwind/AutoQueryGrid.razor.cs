@@ -55,6 +55,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     [Parameter] public TableStyle TableStyle { get; set; } = CssDefaults.Grid.DefaultTableStyle;
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
+    [Parameter] public int MaxFieldLength { get; set; } = BlazorConfig.Instance.MaxFieldLength;
 
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
     AutoEditForm<Model>? AutoEditForm { get; set; }

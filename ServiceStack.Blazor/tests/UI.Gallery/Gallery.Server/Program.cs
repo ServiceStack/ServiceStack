@@ -8,6 +8,8 @@ using ServiceStack;
 using ServiceStack.Blazor;
 using System.Net;
 
+Licensing.RegisterLicense("OSS BSD-3-Clause 2022 https://github.com/NetCoreApps/BlazorGallery aG/bfnbSOwyw1RnIF/FDKGNNOGGxQIU6EUpTRRi+T+5xwitylq/eECYb1auMpMYavN5HsY6zgphgNy9xq94a9GP5/OJzhnNS9WJPf0sXKt/iBk6Fdd4TzaZxyD57fPEKzTYtYof/Z6xtJmP8avbAvivfr19HaGkNcyD02KlTs4s=");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

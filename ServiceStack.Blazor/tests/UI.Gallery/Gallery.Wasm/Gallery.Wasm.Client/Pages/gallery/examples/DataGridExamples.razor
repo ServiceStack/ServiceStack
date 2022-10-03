@@ -29,11 +29,24 @@
 <Default />
 
 <h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
+    Simple Customizations
+</h2>
+
+<p class="mb-4 text-lg">
+    Which columns are displayed and how they're formatted is customizable using <code>&lt;Column&gt;</code> definitions:
+</p>
+
+<ExampleCode Path="/gallery/DataGrid/Custom.razor" />
+
+<Custom />
+
+<h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900">
     Responsive
 </h2>
 
 <p class="mb-4 text-lg">
-    How each column is formatted, which columns are displayed and at which responsive breakpoints is customizable using <code>&lt;Column&gt;</code> definitions:
+    A more advanced example showing how to implement a responsive datagrid defining what columns and Headers
+    are visible at different responsive breakpoints and using <code>&lt;Template&gt;</code> to render a custom cell:
 </p>
 
 <ExampleCode Path="/gallery/DataGrid/Responsive.razor" />

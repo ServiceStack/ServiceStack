@@ -1,6 +1,8 @@
 ﻿using ServiceStack;
 using MyApp;
 
+Licensing.RegisterLicense("OSS BSD-3-Clause 2022 https://github.com/NetCoreApps/BlazorGalleryWasm Jkk6ELaIZcg1lgFFzn5XmYeazEeVDZeS2jytwjIWOM3Z00vmnZ3BDyZx0tyPX1tcI5T6yH4mbbI9ndC262D/qHFaTMb5eVv4KrSOdYPvgsjINN8JSZqxvMT4Xwemw4QOnSrSFyhil/H1G6+WnjTtcFPRl9x5h/ZIaQBpfXeFOR4=");
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -32,6 +34,5 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
     endpoints.MapFallbackToFile("index.html");
 });
-
 
 app.Run();

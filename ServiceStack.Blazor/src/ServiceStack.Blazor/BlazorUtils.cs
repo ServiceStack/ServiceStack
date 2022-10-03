@@ -28,8 +28,9 @@ public static class BlazorUtils
             Console.WriteLine(message ?? "");
     }
 
-    public static string FormatValue(object? value) => FormatValue(value, BlazorConfig.Instance.MaxFieldLength);
-    public static string FormatValue(object? value, int maxFieldLength)
+    public static string FormatValue(object? value) => 
+        FormatValue(value, BlazorConfig.Instance.MaxFieldLength, BlazorConfig.Instance.MaxNestedFieldLength);
+    public static string FormatValue(object? value, int maxFieldLength, int maxNestedFieldLength)
     {
         if (value == null)
             return string.Empty;
@@ -37,19 +38,17 @@ public static class BlazorUtils
         if (TextUtils.IsComplexType(value?.GetType()))
         {
             var str = TypeSerializer.Dump(value).TrimStart();
-            if (str.Length < maxFieldLength)
+            if (str.Length < maxNestedFieldLength)
                 return str;
-            var to = TextUtils.Truncate(str, maxFieldLength);
+            var to = TextUtils.Truncate(str, maxNestedFieldLength);
             if (to.StartsWith("{"))
                 return to + "... }";
             else if (to.StartsWith("["))
                 return to + "... ]";
             return to;
         }
-        {
-            var str = TextUtils.GetScalarText(value);
-            return TextUtils.Truncate(str, maxFieldLength);
-        }
+        var s = TextUtils.GetScalarText(value);
+        return TextUtils.Truncate(s, maxFieldLength);
     }
 
     public static string FormatValueAsHtml(object? Value)
@@ -81,7 +80,7 @@ public static class BlazorUtils
         {
             var key = keys[i];
             var val = dict[key];
-            var value = FormatValue(val, BlazorConfig.Instance.MaxFieldLength);
+            var value = FormatValue(val, BlazorConfig.Instance.MaxFieldLength, BlazorConfig.Instance.MaxNestedFieldLength);
             var str = TextUtils.Truncate(value, BlazorConfig.Instance.MaxNestedFieldLength).HtmlEncode();
             if (sb.Length > 0)
                 sb.Append(", ");
