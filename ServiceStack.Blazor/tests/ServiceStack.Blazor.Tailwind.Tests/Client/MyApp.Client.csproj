@@ -30,6 +30,12 @@
     <ItemGroup>
       <None Include="wwwroot\tailwind\ServiceStack.Blazor.html" />
     </ItemGroup>
+    <ItemGroup>
+      <Content Update="wwwroot\favicon.ico">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
     <Target Name="Tailwind" BeforeTargets="Build">
         <Exec Command="npm run ui:build" />
     </Target>

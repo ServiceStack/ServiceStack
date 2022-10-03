@@ -1,5 +1,0 @@
-@page "/bookings-crud"
-@attribute [Authorize(Roles="Employee")]
-@inherits AppAuthComponentBase
-
-<AutoQueryGrid Id="Default" Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()" />
