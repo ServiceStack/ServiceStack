@@ -1,0 +1,14 @@
+﻿@page "/grid/job-applications"
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Job Applications
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="JobApplication" Apis="Apis.AutoQuery<QueryJobApplication,CreateJobApplication,UpdateJobApplication,DeleteJobApplication>()" />
+
+@*<ExampleCode Title="Source Code" Path="/AutoQueryGrids/JobApplication.razor" />*@
