@@ -24,6 +24,10 @@ else if (IsCheckbox)
 {
     <CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
 }
+else if (UseType == "file")
+{
+    <FileInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+}
 else
 {
     <TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
