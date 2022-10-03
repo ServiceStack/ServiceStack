@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Bogus" Version="34.0.1" />
         <PackageReference Include="Markdig" Version="0.30.4" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0" />
     </ItemGroup>

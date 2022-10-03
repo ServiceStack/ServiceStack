@@ -3,7 +3,8 @@ REM Copies from Gallery.Server -> Gallery.Wasm -> blazor-gallery.servicestack.ne
 REM Update Gallery.Wasm
 SET TO=Gallery.Wasm
 
-RD /q /s %TO%\Gallery.Wasm.Client\Pages
+RD /q /s %TO%\Gallery.Wasm\App_Data
+XCOPY /Y /E /H /C /I Gallery.Server\App_Data %TO%\Gallery.Wasm\App_Data
 
 RD /q /s %TO%\Gallery.Wasm\Migrations
 XCOPY /Y /E /H /C /I Gallery.Server\Migrations %TO%\Gallery.Wasm\Migrations
@@ -13,6 +14,8 @@ XCOPY /Y /E /H /C /I Gallery.Server\ServiceInterface %TO%\Gallery.Wasm\ServiceIn
 
 RD /q /s %TO%\Gallery.Wasm.Client\ServiceModel
 XCOPY /Y /E /H /C /I Gallery.Server\ServiceModel %TO%\Gallery.Wasm.Client\ServiceModel
+
+RD /q /s %TO%\Gallery.Wasm.Client\Pages
 
 XCOPY /Y /E /H /C /I Gallery.Server\Pages %TO%\Gallery.Wasm.Client\Pages
 DEL %TO%\Gallery.Wasm.Client\Pages\*.cshtml
