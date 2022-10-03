@@ -53,9 +53,7 @@
             <Template>
             @if (context.Discount != null)
             {
-                <TextLink class="flex items-end" 
-                    href=@($"/grid/coupons?Id={context.Discount.Id}")>
-                    <Icon class="mr-1 w-5 h-5" Image=@typeof(Coupon).GetIcon() />
+                <TextLink class="flex items-end" href=@($"/grid/coupons?Id={context.Discount.Id}")>
                     <PreviewFormat Value=@context.Discount />
                 </TextLink>
             }

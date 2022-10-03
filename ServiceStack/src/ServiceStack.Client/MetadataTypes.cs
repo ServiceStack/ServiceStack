@@ -1567,8 +1567,9 @@ public static class AppMetadataUtils
         return genericArgs;
     }
 
-    public static ImageInfo GetIcon(this Type type) => X.Map(type.FirstAttribute<IconAttribute>(),
-        x => new ImageInfo { Svg = x.Svg, Uri = x.Uri, Cls = x.Cls, Alt = x.Alt });
+    public static ImageInfo GetIcon(this Type type) => 
+        X.Map(type.FirstAttribute<IconAttribute>() ?? type.GetCollectionType()?.FirstAttribute<IconAttribute>(),
+            x => new ImageInfo { Svg = x.Svg, Uri = x.Uri, Cls = x.Cls, Alt = x.Alt });
 
     public static ImageInfo GetIcon(this MetadataType type) => type.Icon;
 }

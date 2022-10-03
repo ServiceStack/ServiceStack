@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Globalization;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
+using System.Text.Json;
 using ServiceStack.Html;
 using ServiceStack.Text;
 
@@ -708,6 +710,14 @@ public static class TextUtils
             : str;
     }
 
+    public static string TruncateJson(string json, int maxLength)
+    {
+        var s = Truncate(json, maxLength);
+        return s.EndsWith("...")
+            ? s + (s.StartsWith('{') ? " }" : s.StartsWith('[') ? " ]" : "")
+            : s;
+    }
+
     public static object? FirstOrDefault(IEnumerable items)
     {
         if (items == null)
@@ -719,4 +729,18 @@ public static class TextUtils
         return null;
     }
 
+    public static string FormatJson(object? o)
+    {
+        return o == null ? "" : System.Text.Json.JsonSerializer.Serialize(o, BlazorConfig.Instance.FormatJsonOptions);
+    }
+
+    public static string Dump(object? o) => TypeSerializer.Dump(o);
+
+    public static string Pluralize<T>(string word, ICollection<T>? collection) => Pluralize(word, collection?.Count ?? 0);
+    public static string Pluralize(string word, int count)
+    {
+        return count + " " + (count == 1
+            ? word
+            : Words.Pluralize(word));
+    }
 }

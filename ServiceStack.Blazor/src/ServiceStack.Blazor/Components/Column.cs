@@ -185,7 +185,6 @@ public class Column<Model> : UiComponentBase
                     if (!TextUtils.IsComplexType(value.GetType()))
                     {
                         builder.AddContent(3, GetFormattedValue(value));
-
                     }
                     else
                     {

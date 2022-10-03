@@ -120,68 +120,55 @@
     </div>
 
 <script>
-var hideMainLayoutFor = "/gallery/[a-z]*/[a-z]*".split(',')
-let customLayout = hideMainLayoutFor.some(x => new RegExp(x).test(location.pathname))
-    if (customLayout) {
-    document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML
-    document.body.classList.add('p-1', 'overflow-hidden')
-}
-
 TOP = `
     $0.40 /mo,         /docs/hosting
     Prerendering,      /docs/prerender
     Deployments,       /docs/deploy
 `
 SIDEBAR = `
-    Counter,           /counter,                /img/nav/counter.svg
-    Todos,             /todomvc,                /img/nav/todomvc.svg
-    Bookings CRUD,     /bookings-crud,          /img/nav/bookings-crud.svg
-    Component Gallery, /gallery,                /img/nav/examples.svg
-    Call Hello,        /hello$,                 /img/nav/hello.svg
-    Call HelloSecure,  /hello-secure,           /img/nav/hello-secure.svg
-    Fetch data,        /fetchdata,              /img/nav/fetchdata.svg
+    Bookings,          /secure/bookings, /img/nav/bookings.svg
+    Coupons,           /secure/coupons,  /img/nav/coupon.svg
+    Todos,             /todomvc,         /img/nav/todomvc.svg
 `
 
 const path = location.pathname
 const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
 $1 = s => document.querySelector(s)
 
-if (!customLayout) {
-    /* Header */
-    $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
-        `<li class="relative flex flex-wrap just-fu-start m-0">
-        <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
-    ))
+/* Header */
+$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+    `<li class="relative flex flex-wrap just-fu-start m-0">
+    <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+))
 
-    /* Sidebar */
-    const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
-        class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
-        <img class="${iconCls}" src="${icon}">
-        ${label}
-    </a>`
+/* Sidebar */
+const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
+    <img class="${iconCls}" src="${icon}">
+    ${label}
+</a>`
 
-    $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-        label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
-        iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
-        icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-    }))
-    $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-        label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
-        iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
-        icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-    }))
+$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
+    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
 
-    /* Prerender */
-    const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
-    fetch(`/prerender${pagePath}`)
-        .then(r => r.text())
-        .then(html => {
-            if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
-            const pageBody = $1('#app-loading .content')
-            if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
-        })
-        .catch(/* no prerendered content found for this path */)
-}
+/* Prerender */
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r => r.text())
+    .then(html => {
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+    })
+    .catch(/* no prerendered content found for this path */)
 </script>
 
     <div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">

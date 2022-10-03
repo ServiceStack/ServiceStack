@@ -1,64 +1,18 @@
 ﻿@using ServiceStack.Text
 
-@if (!TextUtils.IsComplexType(Value?.GetType()))
+@if (TextUtils.IsComplexType(Value?.GetType()))
 {
-    @Format(Value);
+    var preview = TextUtils.Dump(Value);
+    <span class=@CssUtils.ClassNames(@class) title=@TextUtils.TruncateJson(preview, MaxComplexPreviewLength)>
+        @if (IncludeIcon)
+        {
+            var icon = Value.GetType().GetIcon();
+            <Icon class=@IconClass Image=icon />
+        }
+        @TextUtils.TruncateJson(preview, MaxComplexFieldLength)
+    </span>
 }
 else
 {
-    if (Value is System.Collections.IEnumerable e && Value is not System.Collections.IDictionary)
-    {
-        var first = TextUtils.FirstOrDefault(e);
-        if (first == null)
-        {
-            @("[]")
-        }
-        else
-        {
-            if (TextUtils.IsComplexType(first.GetType()))
-            {
-                <span title=@TypeSerializer.Dump(Value)>@Format(Value)</span>
-            }
-            else
-            {
-                var i = 0;
-                foreach (var item in e)
-                {
-                    if (i++ > 0)
-                    {
-                        @(',')
-                    }
-                    @TextUtils.GetScalarText(item)
-                }
-            }
-        }
-    }
-    else
-    {
-        <span title=@TypeSerializer.Dump(Value)> {
-        @{
-            var dict = Value.ToObjectDictionary();
-            var keys = dict.Keys.ToList();
-            var len = Math.Min(MaxNestedFields, keys.Count);
-            for (var i = 0; i < len; i++)
-            {
-                var key = keys[i];
-                var val = dict[key];
-                var value = Format(val);
-                var str = TextUtils.Truncate(value, MaxNestedFieldLength);
-                if (i > 0)
-                {
-                    @(", ")
-                }
-                {
-                    <b class="font-medium">@key</b>@($": {str}")
-                }
-            }
-            if (keys.Count > len)
-            {
-                @("...")
-            }
-        }
-        } </span>
-    }
+    @Format(Value);
 }

@@ -7,7 +7,6 @@
     <title>MyApp</title>
     <base href="/">
     <link href="css/app.css" rel="stylesheet">
-    <script src="_content/Blazor.Extensions.Logging/blazor.extensions.logging.js" defer></script>
     <link href="css/typography.css" rel="stylesheet">
     <link href="css/markdown.css" rel="stylesheet">
 </head>
@@ -171,17 +170,14 @@ from multiple HTTP, MQ or gRPC endpoints.</p>
 
 <script>
 TOP = `
-    $0.40 /mo,        /docs/hosting
-    Prerendering,     /docs/prerender
-    Deployments,      /docs/deploy
+    $0.40 /mo,         /docs/hosting
+    Prerendering,      /docs/prerender
+    Deployments,       /docs/deploy
 `
 SIDEBAR = `
-    Counter,          /counter,       /img/nav/counter.svg
-    Todos,            /todomvc,       /img/nav/todomvc.svg
-    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
-    Call Hello,       /hello$,        /img/nav/hello.svg
-    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
-    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
+    Bookings,          /secure/bookings, /img/nav/bookings.svg
+    Coupons,           /secure/coupons,  /img/nav/coupon.svg
+    Todos,             /todomvc,         /img/nav/todomvc.svg
 `
 
 const path = location.pathname
@@ -191,7 +187,7 @@ $1 = s => document.querySelector(s)
 /* Header */
 $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
     `<li class="relative flex flex-wrap just-fu-start m-0">
-        <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+    <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
 ))
 
 /* Sidebar */
@@ -257,41 +253,9 @@ fetch(`/prerender${pagePath}`)
     <script src="_framework/blazor.webassembly.js"></script>
 
     <script type="text/javascript" src="/js/highlight.min.js"></script>
+    <script type="text/javascript" src="/js/highlight.cshtml-razor.min.js"></script>
     <script>hljs.highlightAll()</script>
-
-<script>
-/* DOM functions used in Blazor Components */
-JS = (function () {
-    return {
-        get(name) { return window[name] },
-
-        /* Loading */
-        prerenderedPage() {
-            const el = document.querySelector('#app-loading .content')
-            return el && el.innerHTML || ''
-        },
-
-        /* ShellCommand */
-        copy(target) {
-            let $el = document.createElement("input")
-            let $lbl = target.parentElement.querySelector('label')
-
-            $el.setAttribute("value", $lbl.innerText)
-            document.body.appendChild($el)
-            $el.select()
-            document.execCommand("copy")
-            document.body.removeChild($el);
-
-            if (typeof window.getSelection == "function") {
-                const range = document.createRange()
-                range.selectNodeContents($lbl)
-                window.getSelection()?.removeAllRanges()
-                window.getSelection()?.addRange(range)
-            }
-        }
-    }
-})()
-</script>
+    <script type="text/javascript" src="/js/servicestack-blazor.js"></script>
 
 </body>
 </html>

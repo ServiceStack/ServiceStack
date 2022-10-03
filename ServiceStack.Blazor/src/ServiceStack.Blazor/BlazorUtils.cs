@@ -29,23 +29,15 @@ public static class BlazorUtils
     }
 
     public static string FormatValue(object? value) => 
-        FormatValue(value, BlazorConfig.Instance.MaxFieldLength, BlazorConfig.Instance.MaxNestedFieldLength);
-    public static string FormatValue(object? value, int maxFieldLength, int maxNestedFieldLength)
+        FormatValue(value, BlazorConfig.Instance.MaxFieldLength);
+    public static string FormatValue(object? value, int maxFieldLength)
     {
         if (value == null)
             return string.Empty;
 
         if (TextUtils.IsComplexType(value?.GetType()))
         {
-            var str = TypeSerializer.Dump(value).TrimStart();
-            if (str.Length < maxNestedFieldLength)
-                return str;
-            var to = TextUtils.Truncate(str, maxNestedFieldLength);
-            if (to.StartsWith("{"))
-                return to + "... }";
-            else if (to.StartsWith("["))
-                return to + "... ]";
-            return to;
+            TextUtils.Dump(value);
         }
         var s = TextUtils.GetScalarText(value);
         return TextUtils.Truncate(s, maxFieldLength);
@@ -63,7 +55,7 @@ public static class BlazorUtils
                 return "[]";
 
             if (TextUtils.IsComplexType(first.GetType()))
-                return wrap(TypeSerializer.Dump(Value).HtmlEncode(), FormatValue(Value));
+                return wrap(TextUtils.FormatJson(Value).HtmlEncode(), FormatValue(Value));
 
             foreach (var item in e)
             {
@@ -80,7 +72,7 @@ public static class BlazorUtils
         {
             var key = keys[i];
             var val = dict[key];
-            var value = FormatValue(val, BlazorConfig.Instance.MaxFieldLength, BlazorConfig.Instance.MaxNestedFieldLength);
+            var value = FormatValue(val, BlazorConfig.Instance.MaxFieldLength);
             var str = TextUtils.Truncate(value, BlazorConfig.Instance.MaxNestedFieldLength).HtmlEncode();
             if (sb.Length > 0)
                 sb.Append(", ");
@@ -91,7 +83,7 @@ public static class BlazorUtils
             sb.AppendLine("...");
 
         var html = StringBuilderCache.ReturnAndFree(sb);
-        return wrap(TypeSerializer.Dump(Value).HtmlEncode(), "{ " + html + " }");
+        return wrap(TextUtils.FormatJson(Value).HtmlEncode(), "{ " + html + " }");
     }
 
     public static bool SupportsProperty(MetadataPropertyType? prop)

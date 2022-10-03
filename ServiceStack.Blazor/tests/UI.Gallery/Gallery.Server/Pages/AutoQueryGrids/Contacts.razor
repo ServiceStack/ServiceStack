@@ -34,8 +34,8 @@
         <Column Field="(Contact x) => x.Applications">
             <Template>
                 <TextLink class="flex" href=@($"/grid/job-applications?ContactId={context.Id}")>
-                    <Icon class="mr-1 w-6 h-6" Image=@typeof(JobApplication).GetIcon() />
-                    <PreviewFormat Value=@context.Applications />
+                    <Icon class="w-6 h-6 mr-1" Image=typeof(JobApplication).GetIcon() />
+                    @TextUtils.Pluralize("Application", context.Applications)
                 </TextLink>
             </Template>
         </Column>

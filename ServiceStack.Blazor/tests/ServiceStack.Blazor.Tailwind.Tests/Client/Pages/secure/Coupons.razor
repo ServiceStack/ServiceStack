@@ -1,0 +1,10 @@
+﻿@page "/secure/coupons"
+@attribute [Authorize(Roles = "Employee")]
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb>
+        Coupons
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="Coupon" Apis="Apis.AutoQuery<QueryCoupons,CreateCoupon,UpdateCoupon,DeleteCoupon>()" />
