@@ -15,11 +15,6 @@
             @((MarkupString)render.Response!.Preview)
         </div>
     </div>
-
-    <div class="my-5 flex justify-center">
-        <SrcLink href=@($"https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/wwwroot/content/{render.Response!.FileName}") IconClass="oi oi-document" />
-        <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/Docs.razor" IconSrc="/img/blazor.svg" />
-    </div>
 }
 else if (render.Error == null)
 {
