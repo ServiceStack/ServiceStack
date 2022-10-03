@@ -13,35 +13,12 @@
 }
 else
 {
-    <div class="mt-4 flex flex-col max-w-screen-md">
-        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr class="select-none">
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp. (C)</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp. (F)</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var forecast in forecasts)
-                        {
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@forecast.Date.ToShortDateString()</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@forecast.TemperatureC</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@forecast.TemperatureF</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@forecast.Summary</td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <DataGrid Items=@forecasts class="max-w-screen-md" TableStyle="TableStyle.StripedRows | TableStyle.UppercaseHeadings">
+        <Column Field="(WeatherForecast x) => x.Date" Format="dd/MM/yyyy" />
+        <Column Title="Temp. (C)" Field="(WeatherForecast x) => x.TemperatureC" />
+        <Column Title="Temp. (F)" Field="(WeatherForecast x) => x.TemperatureF" />
+        <Column Field="(WeatherForecast x) => x.Summary" />
+    </DataGrid>
 }
 
 <ExampleCode Title="Source Code" Path="/FetchData.razor" />

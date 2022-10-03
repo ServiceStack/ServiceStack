@@ -62,8 +62,9 @@ public static class CssDefaults
             ? " bg-white"
             : "");
 
-        public static string GetTableRowClass(TableStyle style, int i, bool selected) =>
-            "cursor-pointer " + (selected ? "bg-indigo-100" : "hover:bg-yellow-50 " + (style.HasFlag(TableStyle.StripedRows)
+        public static string GetTableRowClass(TableStyle style, int i, bool selected, bool allowSelection) =>
+            (allowSelection ? "cursor-pointer " : "") + 
+                (selected ? "bg-indigo-100" : (allowSelection ? "hover:bg-yellow-50 " : "") + (style.HasFlag(TableStyle.StripedRows)
                     ? (i % 2 == 0 ? "bg-white" : "bg-gray-50")
                     : "bg-white")) + 
                  (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");

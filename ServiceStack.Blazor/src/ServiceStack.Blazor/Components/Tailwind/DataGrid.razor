@@ -49,7 +49,7 @@
                             @foreach (var item in Items)
                             {
                                 <tr @key="item.GetHashCode()"
-                                    class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(item)), RowClass?.Invoke(item, i++))
+                            class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(item), AllowSelection), RowClass?.Invoke(item, i++))
                                     @onclick="e => OnRowSelected(e, item)">
                                     @foreach (var column in VisibleColumns)
                                     {
