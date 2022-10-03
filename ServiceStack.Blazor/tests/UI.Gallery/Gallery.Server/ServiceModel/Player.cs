@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using ServiceStack.OrmLite;
 
 namespace MyApp.ServiceModel;
 
@@ -262,7 +260,7 @@ public class GameItem : AuditBase
     [StringLength(StringLengthAttribute.MaxText)]   // Creates "TEXT" RDBMS Column 
     public string? Description { get; set; }
 
-    [Default(OrmLiteVariables.SystemUtc)]           // Populated with UTC Date by RDBMS
+    [Default("{SYSTEM_UTC}")]           // Populated with UTC Date by RDBMS
     public DateTime DateAdded { get; set; }
 }
 
