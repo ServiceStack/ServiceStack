@@ -260,7 +260,7 @@ public class GameItem : AuditBase
     [StringLength(StringLengthAttribute.MaxText)]   // Creates "TEXT" RDBMS Column 
     public string? Description { get; set; }
 
-    [Default("{SYSTEM_UTC}")]           // Populated with UTC Date by RDBMS
+    [Default("{SYSTEM_UTC}")]                       // Populated with UTC Date by RDBMS
     public DateTime DateAdded { get; set; }
 }
 

@@ -26,6 +26,9 @@ XCOPY /Y /E /H /C /I Gallery.Server\wwwroot\css %TO%\Gallery.Wasm.Client\wwwroot
 RD /q /s %TO%\Gallery.Wasm.Client\wwwroot\img
 XCOPY /Y /E /H /C /I Gallery.Server\wwwroot\img %TO%\Gallery.Wasm.Client\wwwroot\img
 
+RD /q /s %TO%\Gallery.Wasm.Client\wwwroot\profiles
+XCOPY /Y /E /H /C /I Gallery.Server\wwwroot\profiles %TO%\Gallery.Wasm.Client\wwwroot\profiles
+
 RD /q /s %TO%\Gallery.Wasm.Client\wwwroot\tailwind
 XCOPY /Y /E /H /C /I Gallery.Server\wwwroot\tailwind %TO%\Gallery.Wasm.Client\wwwroot\tailwind
 
