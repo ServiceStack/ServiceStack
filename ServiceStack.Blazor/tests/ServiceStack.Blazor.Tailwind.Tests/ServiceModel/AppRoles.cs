@@ -1,4 +1,4 @@
-﻿namespace MyApp.Client;
+﻿namespace MyApp;
 
 public static class AppRoles
 {

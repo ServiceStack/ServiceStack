@@ -4,7 +4,6 @@ using ServiceStack.Data;
 using ServiceStack.Html;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using MyApp.Client;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAuthRepository))]
 

@@ -1,4 +1,5 @@
 ﻿@inject NavigationManager NavigationManager
+@inject ServiceStackStateProvider AuthStateProvider
 
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
@@ -54,6 +55,7 @@
     async Task login()
     {
         var loginUrl = NavigationManager.GetLoginUrl();
+        await AuthStateProvider.LogoutIfAuthenticatedAsync();
         NavigationManager.NavigateTo(loginUrl, true);
     }
 
