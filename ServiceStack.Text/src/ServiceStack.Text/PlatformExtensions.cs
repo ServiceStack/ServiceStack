@@ -1180,12 +1180,13 @@ namespace ServiceStack
                 if (nullable != null && nullable.ConstructorArguments.Count == 1)
                 {
                     var attributeArgument = nullable.ConstructorArguments[0];
-                    if (attributeArgument.ArgumentType == typeof(byte[]))
+                    if (attributeArgument.ArgumentType == typeof(byte[]) &&                        
+                        attributeArgument.Value is ICollection<CustomAttributeTypedArgument> args)
                     {
-                        var args = (ReadOnlyCollection<CustomAttributeTypedArgument>)attributeArgument.Value;
-                        if (args.Count > 0 && args[0].ArgumentType == typeof(byte))
+                        var firstArg = args.FirstOrDefault();
+                        if (firstArg != null && firstArg.ArgumentType == typeof(byte))
                         {
-                            return (byte)args[0].Value == 1;
+                            return (byte)firstArg.Value == 1;
                         }
                     }
                     else if (attributeArgument.ArgumentType == typeof(byte))
