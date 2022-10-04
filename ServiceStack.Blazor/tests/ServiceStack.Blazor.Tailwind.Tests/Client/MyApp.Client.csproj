@@ -3,12 +3,10 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RootNamespace>MyApp.Client</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
         <!-- Uncomment to view generated *.g.cs -->
         <!--<UseRazorSourceGenerator>false</UseRazorSourceGenerator>-->
     </PropertyGroup>
-    <ItemGroup>
-      <Content Remove="wwwroot\tailwind\ServiceStack.Blazor.html" />
-    </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Markdig" Version="0.30.4" />
         <PackageReference Include="Blazor.Extensions.Logging" Version="2.0.4" />
@@ -26,15 +24,6 @@
       <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
       <ProjectReference Include="..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
       <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Include="wwwroot\tailwind\ServiceStack.Blazor.html" />
-    </ItemGroup>
-    <ItemGroup>
-      <Content Update="wwwroot\favicon.ico">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
     </ItemGroup>
     <Target Name="Tailwind" BeforeTargets="Build">
         <Exec Command="npm run ui:build" />
