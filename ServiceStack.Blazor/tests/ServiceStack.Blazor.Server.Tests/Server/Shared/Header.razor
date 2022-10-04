@@ -11,7 +11,7 @@
                     @foreach (var item in NavItems)
                     {
                         <li class="relative flex flex-wrap just-fu-start m-0">
-                            <NavLink href=@item.Href class="flex items-center justify-start mw-full p-4 hover:text-green-600">@item.Label</NavLink>
+                            <NavLink href=@item.Href class="flex items-center justify-start mw-full p-4 hover:text-green-800">@item.Label</NavLink>
                         </li>
                     }
 
@@ -46,20 +46,16 @@
                         </Authorized>
                         <Authorizing>
                             <li class="relative flex flex-wrap just-fu-start m-0">
-                                <NavLink href=@LoginUrl class="m-2">
-                                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        Sign In
-                                    </button>
-                                </NavLink>
+                                <SecondaryButton class="m-2" href=@LoginUrl>
+                                    Sign In
+                                </SecondaryButton>
                             </li>
                         </Authorizing>
                         <NotAuthorized>
                             <li class="relative flex flex-wrap just-fu-start m-0">
-                                <NavLink href=@LoginUrl class="m-2">
-                                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        Sign In
-                                    </button>
-                                </NavLink>
+                                <SecondaryButton class="m-2" href=@LoginUrl>
+                                    Sign In
+                                </SecondaryButton>
                             </li>
                         </NotAuthorized>
                     </AuthorizeView>

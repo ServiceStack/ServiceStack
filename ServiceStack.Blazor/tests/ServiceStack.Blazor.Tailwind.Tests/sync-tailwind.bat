@@ -1,4 +1,8 @@
-set TO=%NetCoreTemplates%\blazor-tailwind\MyApp.Client
+SET TO=%NetCoreTemplates%\blazor-tailwind\MyApp.Client
+
+
+
+SET TO=%NetCoreTemplates%\blazor-tailwind\MyApp.Client
 
 COPY Client\wwwroot\js\servicestack-blazor.js ..\..\..\ServiceStack\src\ServiceStack\js\
 
