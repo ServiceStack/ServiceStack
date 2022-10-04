@@ -51,10 +51,19 @@
                     Open with <a class="underline hover:text-green-600" href="https://visualstudio.microsoft.com/vs/">Visual Studio 2022</a> 
                     or <a class="underline hover:text-green-600" href="https://www.jetbrains.com/rider/">JetBrains Rider</a>
                 </div>
+
+                <h4 class="py-6 text-center text-xl">
+                    After install run 
+                    <TextLink href="https://docs.servicestack.net/ormlite/db-migrations">DB Migrations</TextLink>
+                     to create App DB
+                </h4>
+                <ShellCommand>npm run migrate</ShellCommand>
+
                 <h4 class="py-6 text-center text-xl">
                     Run Tailwind
                 </h4>
                 <ShellCommand>npm run ui:dev</ShellCommand>
+
                 <h4 class="py-6 text-center text-xl">
                     Run Blazor App 
                     <span class="text-gray-400">in /MyApp</span> 

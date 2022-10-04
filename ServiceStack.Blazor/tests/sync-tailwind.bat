@@ -38,6 +38,7 @@ COPY %TO%\MyApp\MyApp.csproj .
 RD /q /s %TO%\MyApp
 XCOPY /Y /E /H /C /I ServiceStack.Blazor.Server.Tests\Server %TO%\MyApp
 RD /q /s %TO%\MyApp\ServiceInterface\
+DEL %TO%\MyApp\MyApp.Server.*
 MOVE MyApp.csproj %TO%\MyApp\
 
 COPY %TO%\MyApp.ServiceModel\MyApp.ServiceModel.csproj .
@@ -46,9 +47,11 @@ XCOPY /Y /E /H /C /I ServiceStack.Blazor.Server.Tests\ServiceModel %TO%\MyApp.Se
 MOVE MyApp.ServiceModel.csproj %TO%\MyApp.ServiceModel\
 
 COPY %TO%\MyApp.Tests\MyApp.Tests.csproj .
+COPY %TO%\MyApp.Tests\appsettings.json .
 RD /q /s %TO%\MyApp.Tests
 XCOPY /Y /E /H /C /I ServiceStack.Blazor.Server.Tests\Tests %TO%\MyApp.Tests
 MOVE MyApp.Tests.csproj %TO%\MyApp.Tests\
+MOVE appsettings.json %TO%\MyApp.Tests\
 
 DEL %TO%\MyApp.ServiceInterface\*.cs
 COPY ServiceStack.Blazor.Server.Tests\Server\ServiceInterface\*.cs %TO%\MyApp.ServiceInterface\

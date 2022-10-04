@@ -1204,13 +1204,37 @@ else
 @Format(Value);
 }
 @inherits UiComponentBase
-<button type=@Type @onclick="onclick" class=@ClassNames("inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", Class)>
+@if (!string.IsNullOrEmpty(href))
+{
+<a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation>
+@ChildContent
+</a>
+}
+else
+{
+<button type=@type @onclick="onclick" class=@ClassNames(cls, Class)>
 @ChildContent
 </button>
+}
+@code {
+string cls = "inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
+}
 @inherits UiComponentBase
-<button type=@type @onclick="onclick" class=@ClassNames("rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", Class)>
+@if (!string.IsNullOrEmpty(href))
+{
+<a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation>
+@ChildContent
+</a>
+}
+else
+{
+<button type=@type @onclick="onclick" class=@ClassNames(cls, Class)>
 @ChildContent
 </button>
+}
+@code {
+string cls = "rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
+}
 @typeparam TValue
 @inherits SelectInputBase<TValue>
 <div>
