@@ -17,7 +17,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 var baseUrl = builder.Configuration["ApiBaseUrl"] ?? 
-    (builder.Environment.IsDevelopment() ? "https://localhost:7142" : "http://" + IPAddress.Loopback);
+    (builder.Environment.IsDevelopment() ? "https://localhost:5001" : "http://" + IPAddress.Loopback);
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseUrl) });
 builder.Services.AddSingleton<WeatherForecastService>();
