@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{3D2479BC
 		Directory.Build.props = Directory.Build.props
 		..\tests\ServiceStack.Blazor.Bootstrap.Tests\sync-bootstrap.bat = ..\tests\ServiceStack.Blazor.Bootstrap.Tests\sync-bootstrap.bat
 		..\tests\UI.Gallery\sync-gallery.bat = ..\tests\UI.Gallery\sync-gallery.bat
-		..\tests\ServiceStack.Blazor.Tailwind.Tests\sync-tailwind.bat = ..\tests\ServiceStack.Blazor.Tailwind.Tests\sync-tailwind.bat
+		..\tests\sync-tailwind.bat = ..\tests\sync-tailwind.bat
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{5EE0F35F-D9C1-46ED-ADDA-066C7D5ECA29}"
