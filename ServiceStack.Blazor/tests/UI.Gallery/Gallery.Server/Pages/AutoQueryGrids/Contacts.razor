@@ -30,11 +30,10 @@
                 <TextLink href=@($"tel:{context.Phone}")>@context.Phone</TextLink>
             </Template>
         </Column>
-        <Column Field="(Contact x) => x.About" />
         <Column Field="(Contact x) => x.Applications">
             <Template>
                 <TextLink class="flex" href=@($"/grid/job-applications?ContactId={context.Id}")>
-                    <Icon class="w-6 h-6 mr-1" Image=typeof(JobApplication).GetIcon() />
+                    <Icon class="w-5 h-5 mr-1" Image=typeof(JobApplication).GetIcon() />
                     @TextUtils.Pluralize("Application", context.Applications)
                 </TextLink>
             </Template>
