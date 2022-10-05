@@ -10,7 +10,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 /// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoQueryGrid.png)
 /// </summary>
 /// <typeparam name="Model"></typeparam>
-public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
+public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 {
     public DataGrid<Model>? DataGrid = default!;
     string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";

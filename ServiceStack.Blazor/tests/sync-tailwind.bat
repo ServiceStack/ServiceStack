@@ -1,5 +1,5 @@
 REM Update servicestack-blazor.js
-COPY ServiceStack.Blazor.Tailwind.Tests\Client\wwwroot\js\servicestack-blazor.js ..\..\..\ServiceStack\src\ServiceStack\js\
+COPY ServiceStack.Blazor.Tailwind.Tests\Client\wwwroot\js\servicestack-blazor.js ..\..\ServiceStack\src\ServiceStack\js\
 
 REM Copy local Blazor Server -> local WASM
 RD /q /s ServiceStack.Blazor.Tailwind.Tests\Client\wwwroot\img

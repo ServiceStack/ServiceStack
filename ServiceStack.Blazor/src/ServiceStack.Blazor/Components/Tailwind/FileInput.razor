@@ -1,29 +1,34 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 @typeparam TValue
 @inherits TextInputBase<TValue>
+@implements IAsyncDisposable
 
-<div>
-@if (!string.IsNullOrEmpty(UseLabel))
-{
-    <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
-}
-<div class="mt-1 relative">
-    @{
-        var cls = @ClassNames("block w-full sm:text-sm rounded-md",
-        CssClass("block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100",
-        "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
-    }
-    <InputFile class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder @attributes="IncludeAttributes" />
-    @if (HasErrorField)
+<div class=@ClassNames("flex", !IsMultiple ? "justify-between" : "flex-col")>
+
+    <div>
+    @if (!string.IsNullOrEmpty(UseLabel))
     {
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <!-- Heroicon name: solid/exclamation-circle -->
-            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-        </div>
+        <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
     }
-    </div>
+        <div class="block mt-2">
+            <span class="sr-only">UseHelp ?? UseLabel</span>
+        @{
+            var cls = @ClassNames("block w-full sm:text-sm rounded-md",
+                CssClass("block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100",
+                "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
+        }
+            <InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder @attributes="IncludeAttributes" OnChange="@OnChange" />
+        @if (HasErrorField)
+        {
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <!-- Heroicon name: solid/exclamation-circle -->
+                <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+        }
+        </div>
+
     @if (HasErrorField)
     {
         <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
@@ -32,4 +37,31 @@
     {
         <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
     }
+    </div>
+
+    @if (!IsMultiple)
+    {
+        <div class="shrink-0 cursor-pointer">
+            <img @onclick="openFile" class=@ClassNames("h-16 w-16 object-cover", imgCls(imgSrc())) src=@imgSrc() alt=@($"Current {UseLabel}") />
+        </div>
+    }
+
 </div>
+
+@code {
+    string? imgSrc()
+    {
+        var inputFile = inputFiles?.FirstOrDefault();
+        if (inputFile != null)
+            return inputFile.FilePath;
+
+        if (Value is string val && val != "")
+            return FileIcons.FilePathUri(val);
+
+        return null;
+    }
+
+    string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
+        ? ""
+        : "rounded-full";
+}
