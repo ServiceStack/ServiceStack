@@ -1,7 +1,5 @@
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using System;
-using System.Collections.Generic;
 
 namespace MyApp.ServiceModel;
 
@@ -234,7 +232,7 @@ public enum JobApplicationStatus
 }
 
 [Tag("Talent")]
-public class QueryJobApplicationAttachment : QueryDb<JobApplicationAttachment>
+public class QueryJobApplicationAttachments : QueryDb<JobApplicationAttachment>
 {
     public int? Id { get; set; }
 }
@@ -320,7 +318,7 @@ public class DeleteContact : IDeleteDb<Contact>, IReturnVoid
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryJob : QueryDb<Job>
+public class QueryJobs : QueryDb<Job>
 {
     public int? Id { get; set; }
     public List<int>? Ids { get; set; }
@@ -369,7 +367,7 @@ public class DeleteJob : IDeleteDb<Job>, IReturn<Job>
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryJobApplication : QueryDb<JobApplication>
+public class QueryJobApplications : QueryDb<JobApplication>
 {
     public int? Id { get; set; }
     public List<int>? Ids { get; set; }
@@ -414,7 +412,7 @@ public class DeleteJobApplication : IDeleteDb<JobApplication>, IReturnVoid
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryPhoneScreen : QueryDb<PhoneScreen>
+public class QueryPhoneScreens : QueryDb<PhoneScreen>
 {
     public int? Id { get; set; }
     public int? JobApplicationId { get; set; }
@@ -445,7 +443,7 @@ public class UpdatePhoneScreen : IPatchDb<PhoneScreen>, IReturn<PhoneScreen>
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryInterview : QueryDb<Interview>
+public class QueryInterviews : QueryDb<Interview>
 {
     public int? Id { get; set; }
     public int? JobApplicationId { get; set; }
@@ -481,7 +479,7 @@ public class UpdateInterview : IPatchDb<Interview>, IReturn<Interview>
 
 [Tag("Talent")]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryJobOffer : QueryDb<JobOffer>
+public class QueryJobOffers : QueryDb<JobOffer>
 {
     public int? Id { get; set; }
     public int? JobApplicationId { get; set; }
@@ -538,7 +536,7 @@ public class DeleteJobApplicationEvent : IDeleteDb<JobApplicationEvent>,
 
 [Tag("Talent")]
 [ValidateIsAuthenticated]
-public class QueryAppUser : QueryDb<AppUser>
+public class QueryAppUsers : QueryDb<AppUser>
 {
     public string? EmailContains { get; set; }
     public string? FirstNameContains { get; set; }

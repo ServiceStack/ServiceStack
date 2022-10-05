@@ -8,7 +8,7 @@
     {
         <h2 class="mt-8 mb-4 text-2xl font-semibold text-gray-900 flex justify-between items-center">
             <div>@Title</div>
-            @if (IncludeGithubLink)
+            @if (IncludeGithubLink && Path != null)
             {
                 <a class="mr-2" href=@GalleryCodeBaseUrl.CombineWith(Path) title="View on Github">
                     <svg class="w-5 h-5" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
