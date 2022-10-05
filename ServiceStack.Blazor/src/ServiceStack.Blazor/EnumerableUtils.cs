@@ -98,6 +98,16 @@ public static class EnumerableUtils
         return default;
     }
 
+    public static object? FirstOrDefault(IEnumerable? e)
+    {
+        if (e != null)
+        {
+            foreach (var item in e)
+                return item;
+        }
+        return null;
+    }
+
     public static object Count(IEnumerable? e)
     {
         if (e == null)

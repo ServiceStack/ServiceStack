@@ -51,8 +51,7 @@ public class DataTransition
     }
     void ReleaseLock() => transitioning = false;
 
-
-    const int TotalSteps = 2;
+    public static int TotalSteps { get; set; } = 2;
     void TransitionStep(bool show, Action? onChange, int step)
     {
         //var prev = show

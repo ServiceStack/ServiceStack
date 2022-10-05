@@ -1,15 +1,66 @@
-﻿@using ServiceStack.Text
+﻿@using System.Collections
+@using ServiceStack.Text
 
 @if (TextUtils.IsComplexType(Value?.GetType()))
 {
-    var preview = TextUtils.Dump(Value);
-    <span class=@CssUtils.ClassNames(@class) title=@TextUtils.TruncateJson(preview, MaxComplexPreviewLength)>
+    var isCollection = false;
+    var useValue = Value;
+
+    <span class=@CssUtils.ClassNames(@class)>
+        @if (Value is IEnumerable e && Value is not IDictionary)
+        {
+            isCollection = true;
+            useValue = EnumerableUtils.FirstOrDefault(e);
+        }
+
         @if (IncludeIcon)
         {
-            var icon = Value.GetType().GetIcon();
-            <Icon class=@IconClass Image=icon />
+            <Icon class=@IconClass Image=Value!.GetType().GetIcon() />
         }
-        @TextUtils.TruncateJson(preview, MaxComplexFieldLength)
+        <span>
+        @if (isCollection)
+        {
+            @("[ ")
+        }
+        {
+            @{
+                if (TextUtils.IsComplexType(useValue?.GetType()))
+                {
+                    var dict = useValue.ToObjectDictionary();
+                    var keys = dict.Keys.ToList();
+                    var len = Math.Min(MaxNestedFields, keys.Count);
+                    for (var i = 0; i < len; i++)
+                    {
+                        var key = keys[i];
+                        var val = dict[key];
+                        var value = Format(val);
+                        var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+                        if (i > 0)
+                        {
+                            @(", ")
+                        }
+                        {
+                            <b class="font-medium">@key</b>
+
+                            @($": {str}")
+                        }
+                    }
+                    if (keys.Count > len)
+                    {
+                        @("...")
+                    }
+                }
+                else
+                {
+                    @Format(useValue)
+                }
+            }
+        }
+        @if (isCollection)
+        {
+            @(" ]")
+        }
+        </span>
     </span>
 }
 else

@@ -28,7 +28,8 @@ builder.Services.AddBlazorApiClient(builder.Configuration["ApiBaseUrl"] ?? build
 builder.Services.AddScoped<ServiceStackStateProvider>();
 
 BlazorConfig.Set(new BlazorConfig {
-    EnableLogging = true
+    IsWasm = true,
+    EnableLogging = true,
 });
 
 await builder.Build().RunAsync();

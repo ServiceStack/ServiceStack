@@ -10,6 +10,7 @@ public class BlazorConfig
         Instance = config;
     }
 
+    public bool IsWasm { get; init; }
     public bool EnableErrorLogging { get; init; } = true;
     public bool EnableVerboseLogging { get; init; } = false;
     public bool EnableLogging { get; init; } = false;
