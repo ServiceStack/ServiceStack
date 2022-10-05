@@ -6,26 +6,26 @@
     {
         if (Format?.Method == null)
         {
-            @FormatValue(value)
+    @FormatValue(value)
         }
         else
         {
             var str = $"{value}";
             if (Format.Method == FormatMethods.IconRounded)
             {
-                <img class="w-8 h-8 rounded-full" title=@str src=@str>
+    <img class="w-8 h-8 rounded-full" title=@str src=@str>
             }
             else if (Format.Method == FormatMethods.Icon)
             {
-                <img class="w-6 h-6" title=@str src=@str>
+    <img class="w-6 h-6" title=@str src=@str>
             }
             else if (Format.Method == FormatMethods.Currency)
             {
-                @($"{value.ConvertTo<decimal>():C}")
+    @($"{value.ConvertTo<decimal>():C}")
             }
             else if (Format.Method == FormatMethods.Bytes)
             {
-                @TextUtils.FormatBytes(value.ConvertTo<long>())
+    @TextUtils.FormatBytes(value.ConvertTo<long>())
             }
             else if (Format.Method.StartsWith("link"))
             {
@@ -34,11 +34,11 @@
                     : null) ?? new();
                 if (Format.Method == FormatMethods.Link)
                 {
-                    <a class="text-blue-600 hover:text-blue-800" href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
+    <a class="text-blue-600 hover:text-blue-800" href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
                 }
                 else if (Format.Method == FormatMethods.LinkPhone)
                 {
-                    <a class="text-blue-600 hover:text-blue-800" href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
+    <a class="text-blue-600 hover:text-blue-800" href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
                 }
                 else if (Format.Method == FormatMethods.LinkEmail)
                 {
@@ -47,12 +47,12 @@
                         href = href.AddQueryParam("subject", subject.UrlEncode().Replace("+", "%20"), encode: false);
                     if (attrs.Remove("body", out var oBody) && oBody is string body)
                         href = href.AddQueryParam("body", body.UrlEncode().Replace("+","%20"), encode:false);
-                    <a class="text-blue-600 hover:text-blue-800" href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
+    <a class="text-blue-600 hover:text-blue-800" href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
                 }
             }
             else if (Format.Method != FormatMethods.Hidden)
             {
-                @FormatValue(value)
+    @FormatValue(value)
             }
         }
     }
@@ -69,9 +69,6 @@
         @if (isCollection)
         {
             useValue = EnumerableUtils.FirstOrDefault(e);
-        }
-        @if (count > 0)
-        {
             <span class="mr-2">@count</span>
         }
 
@@ -85,39 +82,42 @@
             @("[ ")
         }
 
-        @("{ ")
-
-        @if (TextUtils.IsComplexType(useValue?.GetType()))
+        @if (!isCollection || count > 0)
         {
-            var dict = useValue.ToObjectDictionary();
-            var keys = dict.Keys.ToList();
-            var len = Math.Min(MaxNestedFields, keys.Count);
-            for (var i = 0; i < len; i++)
-            {
-                var key = keys[i];
-                var val = dict[key];
-                var value = FormatValue(val);
-                var str = TextUtils.Truncate(value, MaxNestedFieldLength);
-                if (i > 0)
-                {
-                    @(", ")
-                }
-                {
-                    <b class="font-medium">@key</b>
-                    @($": {str}")
-                }
-            }
-            if (keys.Count > len)
-            {
-                    @("...")
-                }
-            }
-            else
-            {
-                RenderValue(useValue);
-            }
+            @("{ ")
 
-        @(" }")
+            @if (TextUtils.IsComplexType(useValue?.GetType()))
+            {
+                var dict = useValue.ToObjectDictionary();
+                var keys = dict.Keys.ToList();
+                var len = Math.Min(MaxNestedFields, keys.Count);
+                for (var i = 0; i < len; i++)
+                {
+                    var key = keys[i];
+                    var val = dict[key];
+                    var value = FormatValue(val);
+                    var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+                    if (i > 0)
+                    {
+                        @(", ")
+                    }
+                    {
+                        <b class="font-medium">@key</b>
+                        @($": {str}")
+                    }
+                }
+                if (keys.Count > len)
+                {
+                        @("...")
+                    }
+                }
+                else
+                {
+                    RenderValue(useValue);
+                }
+
+            @(" }")
+        }
 
         @if (isCollection)
         {
