@@ -159,11 +159,13 @@ public partial class DataGrid<Model> : UiComponentBase
             {
                 foreach (var prop in MetadataType.Properties)
                 {
+                    var propAccessor = TypeProperties<Model>.GetAccessor(prop.Name);
                     columns.Add(new Column<Model>
                     {
                         DataGrid = this,
                         LocalStorage = LocalStorage,
-                        PropertyAccessor = TypeProperties<Model>.GetAccessor(prop.Name),
+                        PropertyAccessor = propAccessor,
+                        MetadataProperty = propAccessor.PropertyInfo.ToMetadataPropertyType(),
                     });
                 }
             }

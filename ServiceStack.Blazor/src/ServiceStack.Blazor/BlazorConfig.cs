@@ -34,6 +34,29 @@ public class BlazorConfig
 
     public ImageInfo DefaultTableIcon { get; set; } = new ImageInfo { Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='currentColor' stroke-width='1.5'><path d='M5 12v6s0 3 7 3s7-3 7-3v-6'/><path d='M5 6v6s0 3 7 3s7-3 7-3V6'/><path d='M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z'/></g></svg>" };
 
+    public Func<string, Dictionary<string, object>> JSParseObject { get; set; } = DefaultJSObjectParser;
+
+    public static Dictionary<string,object> DefaultJSObjectParser(string js)
+    {
+        // Hack till we port the proper JS.eval() Object literal parser to ServiceStack.Text
+        // Blazor Server can set JSParseObject = JS.ParseObject
+        var to = new Dictionary<string, object>();
+        try
+        {
+            var toJsv = js.Replace('\'', '"');
+            var strAttrs = toJsv.FromJsv<Dictionary<string, string>>() ?? new();
+            foreach (var entry in strAttrs)
+            {
+                to[entry.Key.Trim()] = entry.Value;
+            }
+        }
+        catch (Exception e)
+        {
+            Instance.GetLog()?.LogError(e, "Could not parse JS {0}", js);
+        }
+        return to;
+    }
+
     public System.Text.Json.JsonSerializerOptions FormatJsonOptions { get; set; } = new() {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,

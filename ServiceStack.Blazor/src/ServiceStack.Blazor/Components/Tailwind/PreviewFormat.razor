@@ -1,6 +1,63 @@
 ﻿@using System.Collections
 @using ServiceStack.Text
 
+@{
+    void RenderValue(object? value)
+    {
+        if (Format?.Method == null)
+        {
+            @FormatValue(value)
+        }
+        else
+        {
+            var str = $"{value}";
+            if (Format.Method == FormatMethods.IconRounded)
+            {
+                <img class="w-8 h-8 rounded-full" title=@str src=@str>
+            }
+            else if (Format.Method == FormatMethods.Icon)
+            {
+                <img class="w-6 h-6" title=@str src=@str>
+            }
+            else if (Format.Method == FormatMethods.Currency)
+            {
+                @($"{value.ConvertTo<decimal>():C}")
+            }
+            else if (Format.Method == FormatMethods.Bytes)
+            {
+                @TextUtils.FormatBytes(value.ConvertTo<long>())
+            }
+            else if (Format.Method.StartsWith("link"))
+            {
+                var attrs = (Format.Options != null
+                    ? BlazorConfig.Instance.JSParseObject(Format.Options)
+                    : null) ?? new();
+                if (Format.Method == FormatMethods.Link)
+                {
+                    <a class="text-blue-600 hover:text-blue-800" href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
+                }
+                else if (Format.Method == FormatMethods.LinkPhone)
+                {
+                    <a class="text-blue-600 hover:text-blue-800" href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
+                }
+                else if (Format.Method == FormatMethods.LinkEmail)
+                {
+                    var href = str;
+                    if (attrs.Remove("subject", out var oSubject) && oSubject is string subject)
+                        href = href.AddQueryParam("subject", subject.UrlEncode().Replace("+", "%20"), encode: false);
+                    if (attrs.Remove("body", out var oBody) && oBody is string body)
+                        href = href.AddQueryParam("body", body.UrlEncode().Replace("+","%20"), encode:false);
+                    <a class="text-blue-600 hover:text-blue-800" href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
+                }
+            }
+            else if (Format.Method != FormatMethods.Hidden)
+            {
+                @FormatValue(value)
+            }
+        }
+    }
+}
+
 @if (TextUtils.IsComplexType(Value?.GetType()))
 {
     var useValue = Value;
@@ -39,7 +96,7 @@
             {
                 var key = keys[i];
                 var val = dict[key];
-                var value = Format(val);
+                var value = FormatValue(val);
                 var str = TextUtils.Truncate(value, MaxNestedFieldLength);
                 if (i > 0)
                 {
@@ -52,13 +109,13 @@
             }
             if (keys.Count > len)
             {
-                @("...")
+                    @("...")
+                }
             }
-        }
-        else
-        {
-            @Format(useValue)
-        }
+            else
+            {
+                RenderValue(useValue);
+            }
 
         @(" }")
 
@@ -71,5 +128,5 @@
 }
 else
 {
-    @Format(Value)
+    RenderValue(Value);
 }

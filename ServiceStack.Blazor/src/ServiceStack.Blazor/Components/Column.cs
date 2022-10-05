@@ -55,7 +55,6 @@ public class Column<Model> : UiComponentBase
         return compiledExpression;
     }
 
-
     public string CacheKey => $"Column/{DataGrid?.Id ?? "DataGrid"}:{typeof(Model).Name}.{Name}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -90,6 +89,8 @@ public class Column<Model> : UiComponentBase
 
     public PropertyAccessor PropertyAccessor { get; set; }
     public PropertyInfo? Property => PropertyAccessor?.PropertyInfo;
+
+    public MetadataPropertyType? MetadataProperty { get; set; }
 
     public List<AutoQueryConvention> Definitions => DataGrid?.FilterDefinitions ?? TypeConstants<AutoQueryConvention>.EmptyList;
 
@@ -182,7 +183,8 @@ public class Column<Model> : UiComponentBase
                 }
                 else if (value != null)
                 {
-                    if (!TextUtils.IsComplexType(value.GetType()))
+                    var format = MetadataProperty?.Format;
+                    if (!TextUtils.IsComplexType(value.GetType()) && format == null)
                     {
                         builder.AddContent(3, GetFormattedValue(value));
                     }
@@ -190,6 +192,8 @@ public class Column<Model> : UiComponentBase
                     {
                         builder.OpenComponent<PreviewFormat>(4);
                         builder.AddAttribute(5, "Value", value);
+                        if (format != null)
+                            builder.AddAttribute(6, "Format", format);
                         builder.CloseComponent();
                     }
                 }

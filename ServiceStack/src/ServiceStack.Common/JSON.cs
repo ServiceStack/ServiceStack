@@ -145,5 +145,10 @@ namespace ServiceStack
                 key => eval(context, expr.AsSpan()));
             return evalValue;
         }
+
+        public static Dictionary<string, object> ParseObject(string js)
+        {
+            return eval(js) as Dictionary<string,object>;
+        }
     }
 }

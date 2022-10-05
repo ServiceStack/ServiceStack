@@ -743,4 +743,17 @@ public static class TextUtils
             ? word
             : Words.Pluralize(word));
     }
+
+    const int k = 1024;
+    public static string[] ByteSizes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
+
+    public static string FormatBytes(long bytes, int decimals = 2)
+    {
+        if (bytes == 0)
+            return "0 bytes";
+        
+        var dm = decimals < 0 ? 0 : decimals;
+        var i = (int) Math.Floor(Math.Log(bytes) / Math.Log(k));
+        return (bytes / Math.Pow(k, i)).ToString("N" + dm) + ' ' + ByteSizes[i % ByteSizes.Length];
+    }
 }

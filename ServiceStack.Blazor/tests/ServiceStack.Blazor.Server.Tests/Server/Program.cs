@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using ServiceStack;
 using ServiceStack.Blazor;
 using MyApp;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        const int durationInSeconds = 60 * 60 * 24;
+        ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + durationInSeconds;
+    }
+});
 
 app.UseRouting();
 
@@ -43,6 +51,7 @@ app.UseServiceStack(new AppHost());
 
 BlazorConfig.Set(new()
 {
+    JSParseObject = JS.ParseObject,
     EnableLogging = app.Environment.IsDevelopment(),
     EnableVerboseLogging = app.Environment.IsDevelopment(),
 });
