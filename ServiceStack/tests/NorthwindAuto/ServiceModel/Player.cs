@@ -50,7 +50,7 @@ public class UpdatePlayer : IPatchDb<Player>, IReturn<IdResponse>
 
     public Guid? SavedLevelId { get; set; }
     
-    public string CAPITAL { get; set; }
+    public string Capital { get; set; }
 }
 
 [Tag("Game")]
@@ -91,7 +91,8 @@ public class Player : AuditBase
 
     public ulong RowVersion { get; set; }           // Optimistic Concurrency Updates
     
-    public string CAPITAL { get; set; }             // All capital column name
+    [Alias("CAPITAL")]
+    public string Capital { get; set; }             // All capital column name
 }
 
 public class Phone                                  // Blobbed Type only
