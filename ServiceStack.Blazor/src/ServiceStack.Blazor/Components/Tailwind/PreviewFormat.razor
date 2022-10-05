@@ -6,39 +6,41 @@
     {
         if (Format?.Method == null)
         {
-    @FormatValue(value)
+            @FormatValue(value)
         }
         else
         {
             var str = $"{value}";
+            var attrs = (Format.Options != null
+                ? BlazorConfig.Instance.JSParseObject(Format.Options)
+                : null) ?? new();
+            var cls = attrs.Remove("cls", out var oClass) ? oClass as string : null;
+
             if (Format.Method == FormatMethods.IconRounded)
             {
-    <img class="w-8 h-8 rounded-full" title=@str src=@str>
+                <img class=@(cls ?? "w-8 h-8 rounded-full") title=@str src=@str>
             }
             else if (Format.Method == FormatMethods.Icon)
             {
-    <img class="w-6 h-6" title=@str src=@str>
+                <img class=@(cls ?? "w-6 h-6") title=@str src=@str>
             }
             else if (Format.Method == FormatMethods.Currency)
             {
-    @($"{value.ConvertTo<decimal>():C}")
+                <span class=@cls>@($"{value.ConvertTo<decimal>():C}")</span>
             }
             else if (Format.Method == FormatMethods.Bytes)
             {
-    @TextUtils.FormatBytes(value.ConvertTo<long>())
+                <span class=@cls>@TextUtils.FormatBytes(value.ConvertTo<long>())</span>
             }
             else if (Format.Method.StartsWith("link"))
             {
-                var attrs = (Format.Options != null
-                    ? BlazorConfig.Instance.JSParseObject(Format.Options)
-                    : null) ?? new();
                 if (Format.Method == FormatMethods.Link)
                 {
-    <a class="text-blue-600 hover:text-blue-800" href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
+                    <a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
                 }
                 else if (Format.Method == FormatMethods.LinkPhone)
                 {
-    <a class="text-blue-600 hover:text-blue-800" href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
+                    <a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
                 }
                 else if (Format.Method == FormatMethods.LinkEmail)
                 {
@@ -47,12 +49,12 @@
                         href = href.AddQueryParam("subject", subject.UrlEncode().Replace("+", "%20"), encode: false);
                     if (attrs.Remove("body", out var oBody) && oBody is string body)
                         href = href.AddQueryParam("body", body.UrlEncode().Replace("+","%20"), encode:false);
-    <a class="text-blue-600 hover:text-blue-800" href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
+                    <a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
                 }
             }
             else if (Format.Method != FormatMethods.Hidden)
             {
-    @FormatValue(value)
+                <span class=@cls>@FormatValue(value)</span>
             }
         }
     }

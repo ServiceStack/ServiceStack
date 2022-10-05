@@ -1,6 +1,5 @@
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using TalentBlazor.ServiceModel;
 
 namespace MyApp.ServiceModel;
 

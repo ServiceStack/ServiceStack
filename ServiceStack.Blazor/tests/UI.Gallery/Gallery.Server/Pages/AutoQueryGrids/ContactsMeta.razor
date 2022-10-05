@@ -1,0 +1,16 @@
+﻿@page "/grid/contacts-meta"
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Contacts customized with Metadata
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="Contact" Apis="Apis.AutoQuery<QueryContacts,CreateContact,UpdateContact,DeleteContact>()" />
+
+<ExampleCode Title="Source Code" Path="/AutoQueryGrids/ContactsMeta.razor" />
+
+<ExampleCode Title="Contacts Model" SourceCode=@SourceCode />

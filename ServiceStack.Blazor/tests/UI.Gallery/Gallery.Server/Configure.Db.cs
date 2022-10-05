@@ -1,10 +1,6 @@
 using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.VirtualPath;
-using TalentBlazor;
-using TalentBlazor.ServiceModel;
-using MyApp.ServiceModel;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureDb))]
 
