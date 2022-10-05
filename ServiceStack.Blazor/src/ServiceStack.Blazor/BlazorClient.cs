@@ -20,7 +20,11 @@ namespace ServiceStack.Blazor
         public static IHttpClientBuilder AddBlazorApiClient(this IServiceCollection services, string baseUrl)
         {
             if (BlazorConfig.Instance.UseLocalStorage)
+            {
+                services.TryAddScoped<ILocalStorage,LocalStorage>();
                 services.TryAddScoped<LocalStorage>();
+                services.TryAddScoped<CachedLocalStorage>();
+            }
 
             services.AddTransient<EnableCorsMessageHandler>();
             return services.AddHttpClient<JsonApiClient>(client => client.BaseAddress = new Uri(baseUrl))

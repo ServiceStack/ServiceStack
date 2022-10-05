@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ServiceStack.Blazor;
@@ -8,22 +10,107 @@ namespace ServiceStack.Blazor;
 /// </summary>
 public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 {
+    [Inject] ILogger<BlazorComponentBase> Log { get; set; }
+
     [Inject] public JsonApiClient? Client { get; set; }
 
-    public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) => JsonApiClientUtils.ApiAsync(this, request);
-    public virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) => JsonApiClientUtils.ApiAsync(this, request);
-    public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) => JsonApiClientUtils.SendAsync(this, request);
+    public async virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request)
+    {
+        Stopwatch? sw = null;
+        if (EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log("API {0}", request.GetType().Name);
+        }
 
-    public virtual Task<IHasErrorStatus> ApiAsync<Model>(object request) => JsonApiClientUtils.ApiAsync<Model>(this, request);
+        var ret = await JsonApiClientUtils.ApiAsync(this, request);
+
+        if (EnableLogging)
+        {
+            log("END {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public async virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request)
+    {
+        Stopwatch? sw = null;
+        if (EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log("API void {0}", request.GetType().Name);
+        }
+
+        var ret = await JsonApiClientUtils.ApiAsync(this, request);
+
+        if (EnableLogging)
+        {
+            log("END void {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public async virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request)
+    {
+        Stopwatch? sw = null;
+        if (EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log("API SendAsync {0}", request.GetType().Name);
+        }
+
+        var ret = await JsonApiClientUtils.SendAsync(this, request);
+
+        if (EnableLogging)
+        {
+            log("END SendAsync {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public async virtual Task<IHasErrorStatus> ApiAsync<Model>(object request)
+    {
+        Stopwatch? sw = null;
+        if (EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log("API object {0}", request.GetType().Name);
+        }
+
+        var ret = await JsonApiClientUtils.ApiAsync<Model>(this, request);
+
+        if (EnableLogging)
+        {
+            log("END object {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
 
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
-    public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => JsonApiClientUtils.ApiAppMetadataAsync(this);
+    public async virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync()
+    {
+        Stopwatch? sw = null;
+        if (EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log("API ApiAppMetadataAsync");
+        }
 
-    protected bool EnableLogging { get; set; } = BlazorConfig.Instance.EnableVerboseLogging;
-    protected void log(string? message = null)
+        var ret = await JsonApiClientUtils.ApiAppMetadataAsync(this);
+
+        if (EnableLogging)
+        {
+            log("END ApiAppMetadataAsync took {0}ms", sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    bool? enableLogging;
+    protected virtual bool EnableLogging => enableLogging ??= BlazorConfig.Instance.EnableVerboseLogging;
+    protected virtual void log(string? message, params object?[] args)
     {
         if (EnableLogging)
-            BlazorUtils.Log(message);
+            Log.LogDebug(message, args);
     }
 }
 

@@ -3,14 +3,19 @@
 
 @if (TextUtils.IsComplexType(Value?.GetType()))
 {
-    var isCollection = false;
     var useValue = Value;
+    var e = Value as IEnumerable;
+    var isCollection = e != null && Value is not IDictionary;
+    var count = e != null && isCollection && IncludeCount ? EnumerableUtils.Count(e) : 0;
 
     <span class=@CssUtils.ClassNames(@class)>
-        @if (Value is IEnumerable e && Value is not IDictionary)
+        @if (isCollection)
         {
-            isCollection = true;
             useValue = EnumerableUtils.FirstOrDefault(e);
+        }
+        @if (count > 0)
+        {
+            <span class="mr-2">@count</span>
         }
 
         @if (IncludeIcon)
@@ -22,40 +27,41 @@
         {
             @("[ ")
         }
-        {
-            @{
-                if (TextUtils.IsComplexType(useValue?.GetType()))
-                {
-                    var dict = useValue.ToObjectDictionary();
-                    var keys = dict.Keys.ToList();
-                    var len = Math.Min(MaxNestedFields, keys.Count);
-                    for (var i = 0; i < len; i++)
-                    {
-                        var key = keys[i];
-                        var val = dict[key];
-                        var value = Format(val);
-                        var str = TextUtils.Truncate(value, MaxNestedFieldLength);
-                        if (i > 0)
-                        {
-                            @(", ")
-                        }
-                        {
-                            <b class="font-medium">@key</b>
 
-                            @($": {str}")
-                        }
-                    }
-                    if (keys.Count > len)
-                    {
-                        @("...")
-                    }
-                }
-                else
+        @("{ ")
+
+        @if (TextUtils.IsComplexType(useValue?.GetType()))
+        {
+            var dict = useValue.ToObjectDictionary();
+            var keys = dict.Keys.ToList();
+            var len = Math.Min(MaxNestedFields, keys.Count);
+            for (var i = 0; i < len; i++)
+            {
+                var key = keys[i];
+                var val = dict[key];
+                var value = Format(val);
+                var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+                if (i > 0)
                 {
-                    @Format(useValue)
+                    @(", ")
+                }
+                {
+                    <b class="font-medium">@key</b>
+                    @($": {str}")
                 }
             }
+            if (keys.Count > len)
+            {
+                @("...")
+            }
         }
+        else
+        {
+            @Format(useValue)
+        }
+
+        @(" }")
+
         @if (isCollection)
         {
             @(" ]")
@@ -65,5 +71,5 @@
 }
 else
 {
-    @Format(Value);
+    @Format(Value)
 }

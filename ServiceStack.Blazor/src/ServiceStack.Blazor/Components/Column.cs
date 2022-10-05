@@ -78,7 +78,7 @@ public class Column<Model> : UiComponentBase
     public async Task RemoveSettingsAsync()
     {
         Settings.Clear();
-        await LocalStorage.RemoveItemAsync(CacheKey);
+        await LocalStorage.RemoveAsync(CacheKey);
         await DataGrid!.NotifyPropertyChanged(nameof(Settings));
     }
 

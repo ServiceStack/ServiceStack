@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 
 namespace ServiceStack.Blazor;
 
@@ -8,6 +10,13 @@ public class BlazorConfig
     public static void Set(BlazorConfig config)
     {
         Instance = config;
+    }
+
+    public IServiceProvider? Services { get; set; }
+    public ILogger? Log { get; set; }
+    public ILogger? GetLog()
+    {
+        return Log ??= Services?.GetService<ILoggerFactory>()?.CreateLogger<BlazorConfig>();
     }
 
     public bool IsWasm { get; init; }

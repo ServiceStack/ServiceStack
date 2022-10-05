@@ -1,4 +1,5 @@
-﻿using ServiceStack.Text;
+﻿using Microsoft.Extensions.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.Blazor;
 
@@ -13,19 +14,19 @@ public static class BlazorUtils
     public static void LogError(string? message = null)
     {
         if (BlazorConfig.Instance.EnableErrorLogging)
-            Console.WriteLine("ERROR: " + message ?? "");
+            BlazorConfig.Instance.GetLog()?.LogError(message);
     }
 
     public static void Log(string? message = null)
     {
         if (BlazorConfig.Instance.EnableLogging)
-            Console.WriteLine(message ?? "");
+            BlazorConfig.Instance.GetLog()?.LogInformation(message);
     }
 
     public static void LogDebug(string? message = null)
     {
         if (BlazorConfig.Instance.EnableVerboseLogging)
-            Console.WriteLine(message ?? "");
+            BlazorConfig.Instance.GetLog()?.LogDebug(message);
     }
 
     public static string FormatValue(object? value) => 

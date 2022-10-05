@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using ServiceStack.Text;
 
@@ -8,9 +9,13 @@ public static class JsUtils
 {
     public static async Task Log(this IJSRuntime js, params object[] args)
     {
-        foreach (var arg in args)
+        var log = BlazorConfig.Instance.GetLog();
+        if (log != null)
         {
-            Console.WriteLine(arg.Dump());
+            foreach (var arg in args)
+            {
+                log.LogInformation(arg.Dump());
+            }
         }
         await js.ConsoleLog(args);
     }

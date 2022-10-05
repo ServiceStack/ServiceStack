@@ -13,6 +13,7 @@ Licensing.RegisterLicense("OSS BSD-3-Clause 2022 https://github.com/NetCoreApps/
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddLogging();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
@@ -49,6 +50,7 @@ app.MapFallbackToPage("/_Host");
 app.UseServiceStack(new AppHost());
 
 BlazorConfig.Set(new() {
+    Services = app.Services,
     EnableLogging = app.Environment.IsDevelopment(),
     EnableVerboseLogging = app.Environment.IsDevelopment(),
 });

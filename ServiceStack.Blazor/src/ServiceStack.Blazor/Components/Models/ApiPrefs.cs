@@ -2,7 +2,7 @@
 
 public class ApiPrefs
 {
-    public static int DefaultTake = 50;
+    public static int DefaultTake = 25;
     public int Take { get; set; } = DefaultTake;
     public List<string> SelectedColumns { get; set; } = new();
     public void Clear()

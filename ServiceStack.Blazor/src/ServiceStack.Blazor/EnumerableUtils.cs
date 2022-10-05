@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Concurrent;
 
 namespace ServiceStack.Blazor;
 
@@ -108,7 +109,7 @@ public static class EnumerableUtils
         return null;
     }
 
-    public static object Count(IEnumerable? e)
+    public static int Count(IEnumerable? e)
     {
         if (e == null)
             return 0;
@@ -118,4 +119,5 @@ public static class EnumerableUtils
             i++;
         return i;
     }
+
 }

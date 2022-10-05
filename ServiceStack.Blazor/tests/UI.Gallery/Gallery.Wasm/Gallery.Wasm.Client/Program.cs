@@ -1,8 +1,4 @@
-using System;
-using System.Net.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Blazor.Extensions.Logging;
@@ -27,9 +23,14 @@ builder.Services.AddBlazorApiClient(builder.Configuration["ApiBaseUrl"] ?? build
 
 builder.Services.AddScoped<ServiceStackStateProvider>();
 
-BlazorConfig.Set(new BlazorConfig {
+var app = builder.Build();
+
+BlazorConfig.Set(new BlazorConfig
+{
+    Services = app.Services,
     IsWasm = true,
     EnableLogging = true,
+    EnableVerboseLogging = builder.HostEnvironment.IsDevelopment(),
 });
 
-await builder.Build().RunAsync();
+await app.RunAsync();

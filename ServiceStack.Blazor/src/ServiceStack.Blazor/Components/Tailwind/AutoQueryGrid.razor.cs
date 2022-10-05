@@ -14,7 +14,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
 {
     public DataGrid<Model>? DataGrid = default!;
     string CacheKey => $"{Id}/{nameof(ApiPrefs)}/{typeof(Model).Name}";
-    [Inject] public LocalStorage LocalStorage { get; set; }
+    [Inject] public CachedLocalStorage LocalStorage { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
     [Inject] public IJSRuntime JS { get; set; }
 
@@ -115,7 +115,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
             await c.RemoveSettingsAsync();
         }
         ApiPrefs.Clear();
-        await LocalStorage.RemoveItemAsync(CacheKey);
+        await LocalStorage.RemoveAsync(CacheKey);
         await UpdateAsync();
     }
 
@@ -352,6 +352,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        ApiPrefs = LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
 
         var query = Pcl.HttpUtility.ParseQueryString(new Uri(NavigationManager.Uri).Query);
         Skip = query[QueryParams.Skip]?.ConvertTo<int>() ?? 0;

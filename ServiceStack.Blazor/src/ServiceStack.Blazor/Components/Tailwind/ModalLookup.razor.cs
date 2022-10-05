@@ -211,7 +211,7 @@ public partial class ModalLookup<Model> : ModalLookup
             await c.RemoveSettingsAsync();
         }
         ApiPrefs.Clear();
-        await LocalStorage!.RemoveItemAsync(CacheKey);
+        await LocalStorage!.RemoveAsync(CacheKey);
         await UpdateAsync();
     }
 
