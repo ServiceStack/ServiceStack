@@ -19,7 +19,7 @@ public class LocalStorage : ILocalStorage
 
     public async Task SetStringAsync(string name, string value)
     {
-        await js.InvokeVoidAsync("localStorage.setItem", name, value.ToJson());
+        await js.InvokeVoidAsync("localStorage.setItem", name, value);
     }
 
     public Task SetItemAsync<T>(string name, T value) => SetStringAsync(name, value.ToJson());
