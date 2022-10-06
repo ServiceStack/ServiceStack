@@ -4,7 +4,7 @@ using ServiceStack.DataAnnotations;
 namespace MyApp.ServiceModel;
 
 [Icon(Svg = Icons.Contact)]
-public class Contact : AuditBase
+public class Contact
 {
     [AutoIncrement]
     public int Id { get; set; }
@@ -255,21 +255,19 @@ public class JobApplicationAttachment
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditQuery)]
 public class QueryContacts : QueryDb<Contact>
 {
     public int? Id { get; set; }
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditCreate)]
 public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
 {
     [ValidateNotEmpty]
     public string FirstName { get; set; } = string.Empty;
     [ValidateNotEmpty]
     public string LastName { get; set; } = string.Empty;
-    [Input(Type = "file"), UploadTo("profiles")]
+    [Input(Type = "file", Accept = ".png,.jpg,.jpeg,.gif,.svg,.webp"), UploadTo("profiles")]
     public string? ProfileUrl { get; set; }
     public int? SalaryExpectation { get; set; }
     [ValidateNotEmpty]
@@ -286,7 +284,6 @@ public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditModify)]
 public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
 {
     public int Id { get; set; }
@@ -294,7 +291,7 @@ public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
     public string? FirstName { get; set; }
     [ValidateNotEmpty]
     public string? LastName { get; set; }
-    [Input(Type = "file"), UploadTo("profiles")]
+    [Input(Type = "file", Accept = ".png,.jpg,.jpeg,.gif,.svg,.webp"), UploadTo("profiles")]
     public string? ProfileUrl { get; set; }
     public int? SalaryExpectation { get; set; }
     [ValidateNotEmpty]
@@ -310,7 +307,6 @@ public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteContact : IDeleteDb<Contact>, IReturnVoid
 {
     public int Id { get; set; }

@@ -10,7 +10,7 @@ namespace MyApp.Migrations;
 [Description("Add Talent Blazor")]
 public class Migration1002 : MigrationBase
 {
-    public class Contact : AuditBase
+    public class Contact
     {
         [AutoIncrement]
         public int Id { get; set; }
@@ -299,11 +299,7 @@ public class Migration1002 : MigrationBase
                 var empType = rand < 8 ? EmploymentType.FullTime : rand < 10 ? EmploymentType.Contract : rand < 11 ? EmploymentType.PartTime : EmploymentType.Casual;
                 return empType;
             })
-            .RuleFor(c => c.SalaryExpectation, (faker, contact1) => faker.Random.Int(92, 245) * 1000)
-            .RuleFor(c => c.CreatedDate, () => now)
-            .RuleFor(c => c.ModifiedDate, () => now)
-            .RuleFor(c => c.CreatedBy, () => "SYSTEM")
-            .RuleFor(c => c.ModifiedBy, () => "SYSTEM");
+            .RuleFor(c => c.SalaryExpectation, (faker, contact1) => faker.Random.Int(92, 245) * 1000);
 
         var jobAppFaker = new Faker<JobApplication>()
             .RuleFor(j => j.ApplicationStatus,
