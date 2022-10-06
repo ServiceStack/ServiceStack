@@ -3,6 +3,8 @@ REM Copies from Gallery.Server -> Gallery.Wasm -> blazor-gallery.servicestack.ne
 REM Update Gallery.Wasm
 SET TO=Gallery.Wasm
 
+COPY ..\ServiceStack.Blazor.Tailwind.Tests\Client\wwwroot\js\servicestack-blazor.js %TO%\Gallery.Wasm.Client\wwwroot\js\
+
 RD /q /s %TO%\Gallery.Wasm\App_Data
 XCOPY /Y /E /H /C /I Gallery.Server\App_Data %TO%\Gallery.Wasm\App_Data
 
