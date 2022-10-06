@@ -183,7 +183,8 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
         nextSkip(skip) {
             skip += this.skip
             if (typeof this.total == 'number') {
-                const lastPage = Math.floor(this.total / this.take) * this.take
+                const fullLastPage = this.total % this.take === 0
+                const lastPage = fullLastPage ? this.total - this.take : Math.floor(this.total / this.take) * this.take
                 if (skip > lastPage) return lastPage
             } 
             if (skip < 0) return 0
