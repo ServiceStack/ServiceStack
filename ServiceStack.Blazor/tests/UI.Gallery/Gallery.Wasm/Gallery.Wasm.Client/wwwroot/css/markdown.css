@@ -15,6 +15,7 @@
     overflow-x: auto;
     min-width: fit-content;
     max-width: calc(100vw - 350px);
+    background: #1E1E1E;
 }
 .prose code {
     color: #3b82f6;
@@ -127,7 +128,7 @@ code.hljs {
 
 /* base03 - #545862 -  Comments, Invisibles, Line Highlighting */
 .hljs-comment {
-  color: rgb(5 150 105);
+    color: #4CA64A;
 }
 
 /* base04 - #565c64 -  Dark Foreground (Used for status bars) */
@@ -170,9 +171,8 @@ code.hljs {
 /* base0A - Classes, Markup Bold, Search Text Background */
 .hljs-title,
 .hljs-class .hljs-title,
-.hljs-title.class_
-{
-  color: #e5c07b;
+.hljs-title.class_ {
+    color: #4EC9A0;
 }
 
 .hljs-strong {
@@ -188,7 +188,7 @@ code.hljs {
 .hljs-meta .hljs-string {
   color: #D69D85;
 }
-.cshtml-razor .hljs-string, .cshtml-razor .hljs-meta .hljs-string {
+.cshtml-razor .hljs-string, .cshtml-razor .hljs-meta .hljs-string, .language-xml .hljs-string {
     color: #DCDAC8;
 }
 
