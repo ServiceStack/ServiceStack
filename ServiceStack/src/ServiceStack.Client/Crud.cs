@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -159,6 +160,12 @@ public static class Crud
         type.Inherits is { Name: "QueryDb`1" or "QueryDb`2" }
             ? type.Inherits.FirstGenericArg()
             : type.Implements?.FirstOrDefault(iface => WriteInterfaces.Contains(iface.Name)).FirstGenericArg();
+
+    public static bool IsCrudCreate(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>));
+    public static bool IsCrudUpdate(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>));
+    public static bool IsCrudPatch(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>));
+    public static bool IsCrudDelete(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IDeleteDb<>));
+
 
     public static string FirstGenericArg(this MetadataTypeName type) => type.GenericArgs?.Length > 0 ? type.GenericArgs[0] : null;
     public static string[] ApiMarkerInterfaces { get; } = {

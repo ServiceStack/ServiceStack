@@ -86,6 +86,42 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         return ret;
     }
 
+    public async virtual Task<IHasErrorStatus> ApiFormAsync<Model>(string method, string relativeUrl, MultipartFormDataContent request)
+    {
+        Stopwatch? sw = null;
+        if (EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log("API Form {0}", request.GetType().Name);
+        }
+
+        var ret = await JsonApiClientUtils.ApiFormAsync<Model>(this, method, relativeUrl, request);
+
+        if (EnableLogging)
+        {
+            log("END Form {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public async virtual Task<IHasErrorStatus> ApiFormAsync<Model>(string relativeUrl, MultipartFormDataContent request)
+    {
+        Stopwatch? sw = null;
+        if (EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log("API Form {0}", request.GetType().Name);
+        }
+
+        var ret = await JsonApiClientUtils.ApiFormAsync<Model>(this, relativeUrl, request);
+
+        if (EnableLogging)
+        {
+            log("END Form {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
     public async virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync()
     {

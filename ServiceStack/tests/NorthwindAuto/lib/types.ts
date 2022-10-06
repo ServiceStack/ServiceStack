@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-08-27 18:34:20
+Date: 2022-10-06 13:53:59
 Version: 6.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -38,11 +38,11 @@ export interface IHasBearerToken
     bearerToken: string;
 }
 
-export interface IPost
+export interface IGet
 {
 }
 
-export interface IGet
+export interface IPost
 {
 }
 
@@ -1134,7 +1134,7 @@ export class AdminDeleteUserResponse
 }
 
 // @DataContract
-export class QueryResponse<T>
+export class QueryResponse<CrudEvent>
 {
     // @DataMember(Order=1)
     public offset: number;
@@ -1143,7 +1143,7 @@ export class QueryResponse<T>
     public total: number;
 
     // @DataMember(Order=3)
-    public results: T[];
+    public results: CrudEvent[];
 
     // @DataMember(Order=4)
     public meta: { [index: string]: string; };
@@ -1151,7 +1151,7 @@ export class QueryResponse<T>
     // @DataMember(Order=5)
     public responseStatus: ResponseStatus;
 
-    public constructor(init?: Partial<QueryResponse<T>>) { (Object as any).assign(this, init); }
+    public constructor(init?: Partial<QueryResponse<CrudEvent>>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -1205,7 +1205,7 @@ export class AdminDatabaseResponse
 
 // @Route("/metadata/app")
 // @DataContract
-export class MetadataApp implements IReturn<AppMetadata>
+export class MetadataApp implements IReturn<AppMetadata>, IGet
 {
     // @DataMember(Order=1)
     public view: string;
@@ -1215,7 +1215,7 @@ export class MetadataApp implements IReturn<AppMetadata>
 
     public constructor(init?: Partial<MetadataApp>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'MetadataApp'; }
-    public getMethod() { return 'POST'; }
+    public getMethod() { return 'GET'; }
     public createResponse() { return new AppMetadata(); }
 }
 
@@ -1765,7 +1765,6 @@ export type Forms = {
     isRequired(input: any): boolean;
     resolveFormLayout(op: MetadataOperationType): InputInfo[];
     formValues(form: any): Record<string,any>;
-    formData(form: any, op: MetadataOperationType): FormData;
     groupTypes(allTypes: any): any[];
     complexProp(prop: any): boolean;
     supportsProp(prop: any): boolean;

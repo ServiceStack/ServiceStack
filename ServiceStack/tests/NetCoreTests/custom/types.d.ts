@@ -139,7 +139,6 @@ export type Forms = {
     isRequired(input: any): boolean;
     resolveFormLayout(op: MetadataOperationType): InputInfo[];
     formValues(form: any): Record<string,any>;
-    formData(form: any, op: MetadataOperationType): FormData;
     groupTypes(allTypes: any): any[];
     complexProp(prop: any): boolean;
     supportsProp(prop: any): boolean;

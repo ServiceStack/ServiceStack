@@ -1,6 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
-@typeparam TValue
-@inherits TextInputBase<TValue>
+@inherits TextInputBase
 @implements IAsyncDisposable
 
 <div class=@ClassNames("flex", !IsMultiple ? "justify-between" : "flex-col")>
@@ -41,9 +40,13 @@
 
     @if (!IsMultiple)
     {
-        <div class="shrink-0 cursor-pointer">
-            <img @onclick="openFile" class=@ClassNames("h-16 w-16 object-cover", imgCls(imgSrc())) src=@imgSrc() alt=@($"Current {UseLabel}") />
-        </div>
+        var src = imgSrc();
+        if (!string.IsNullOrEmpty(src))
+        {
+            <div class="shrink-0 cursor-pointer">
+                <img @onclick="openFile" class=@ClassNames("h-16 w-16 object-cover", imgCls(src)) src=@src alt=@($"Current {UseLabel}") />
+            </div>
+        }
     }
 
 </div>
@@ -55,8 +58,9 @@
         if (inputFile != null)
             return inputFile.FilePath;
 
-        if (Value is string val && val != "")
-            return FileIcons.FilePathUri(val);
+        var filePath = Value ?? Values?.FirstOrDefault() ?? File?.FilePath ?? Files?.FirstOrDefault()?.FilePath;
+        if (filePath != null)
+            return FileIcons.FilePathUri(filePath);
 
         return null;
     }

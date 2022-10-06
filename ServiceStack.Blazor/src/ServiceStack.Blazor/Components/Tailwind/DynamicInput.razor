@@ -26,7 +26,10 @@ else if (IsCheckbox)
 }
 else if (UseType == "file")
 {
-    <FileInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+    <FileInput type=@UseType Id=@UseId Status=@Status @attributes="AllAttributes" Help=@UseHelp 
+               Value=@(ValueObject as string)      Values=@(ValueObject as List<string>) 
+               File=@(ValueObject as UploadedFile) Files=@(ValueObject as List<UploadedFile>)
+               OnInput="e => Model[Input!.Id] = e" />
 }
 else
 {

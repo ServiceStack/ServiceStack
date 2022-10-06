@@ -837,6 +837,7 @@ public class MetadataPropertyType
 
     public List<MetadataAttribute> Attributes { get; set; }
     
+    public string UploadTo { get; set; }
     public InputInfo Input { get; set; }
     public FormatInfo Format { get; set; }
     public RefInfo Ref { get; set; }
@@ -1477,6 +1478,7 @@ public static class AppMetadataUtils
             property.Input ??= new InputInfo();
             property.Input.Css = css;
         }
+        property.UploadTo = pi.FirstAttribute<UploadToAttribute>()?.Location;
 
         if (instance != null)
         {

@@ -20,6 +20,7 @@ public partial class AutoCreateForm<Model> : AutoFormBase<Model>
         await TransitionAsync(show: true);
 
         ModelDictionary = NewModel.ToModelDictionary();
+        OriginalModelDictionary = new(ModelDictionary);
         FormLayout ??= MetadataType.CreateFormLayout<Model>();
     }
 }

@@ -1589,8 +1589,21 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                 Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
         }
     }
-    
-    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token=default)
+
+    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(string method, string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token = default)
+    {
+        try
+        {
+            var result = await SendFormAsync<TResponse>(method, relativeOrAbsoluteUrl, request, token).ConfigAwait();
+            return ApiResult.Create(result);
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult<TResponse>();
+        }
+    }
+
+    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token = default)
     {
         try
         {
@@ -1602,7 +1615,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return ex.ToApiResult<TResponse>();
         }
     }
-    
+
     public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(IReturn<TResponse> request, MultipartFormDataContent body, CancellationToken token=default)
     {
         try

@@ -4,20 +4,24 @@ using Microsoft.JSInterop;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
-public partial class FileInput<TValue> : TextInputBase<TValue>, IAsyncDisposable
+public partial class FileInput : TextInputBase, IAsyncDisposable
 {
     [Inject] public IJSRuntime JS { get; set; }
     [Parameter] public bool IsMultiple { get; set; }
-    InputFile? InputFile { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public ICollection<string>? Values { get; set; }
+    [Parameter] public UploadedFile? File { get; set; }
+    [Parameter] public ICollection<UploadedFile>? Files { get; set; }
+    [Parameter] public EventCallback<InputFileChangeEventArgs> OnInput { get; set; }
 
-    IReadOnlyList<IBrowserFile>? browserFiles;
+    InputFile? InputFile { get; set; }
 
     List<UploadedFile>? inputFiles;
 
     protected virtual async Task OnChange(InputFileChangeEventArgs e)
     {
-        browserFiles = e.GetMultipleFiles(int.MaxValue);
         inputFiles = await JS.InvokeAsync<List<UploadedFile>>("Files.inputFiles", InputFile!.Element);
+        await OnInput.InvokeAsync(e);
     }
 
     async Task openFile()

@@ -1,7 +1,9 @@
 using Funq;
 using ServiceStack;
+using ServiceStack.IO;
+using ServiceStack.Configuration;
+using MyApp.ServiceModel;
 using MyApp.ServiceInterface;
-using ServiceStack.Admin;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
 
@@ -24,13 +26,28 @@ public class AppHost : AppHostBase, IHostingStartup
             "https://" + Environment.GetEnvironmentVariable("DEPLOY_CDN")
         }, allowCredentials: true));
 
-        //Plugins.Add(new RunAsAdminFeature());
+
+        var wwwrootVfs = GetVirtualFileSource<FileSystemVirtualFiles>();
+        var appDataVfs = new FileSystemVirtualFiles(ContentRootDirectory.RealPath.CombineWith("App_Data").AssertDir());
+        Plugins.Add(new FilesUploadFeature(
+            new UploadLocation("profiles", wwwrootVfs, allowExtensions: FileExt.WebImages,
+                resolvePath: ctx => $"/profiles/{ctx.FileName}", 
+                readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon),
+            new UploadLocation("users", wwwrootVfs, allowExtensions: FileExt.WebImages,
+                resolvePath: ctx => $"/profiles/users/{ctx.UserAuthId}.{ctx.FileExtension}"),
+            new UploadLocation("applications", appDataVfs, maxFileCount: 3, maxFileBytes: 10_000_000,
+                    resolvePath: ctx => ctx.GetLocationPath((ctx.Dto is CreateJobApplication create
+                        ? $"jobapp/{create.JobId}/{create.ContactId}/{ctx.FileName}"
+                        : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
+                    readAccessRole: RoleNames.AllowAnon, writeAccessRole: RoleNames.AllowAnon)
+        ));
+
         Plugins.Add(new RequestLogsFeature
         {
             EnableResponseTracking = true,
             EnableRequestBodyTracking = true,
-        }); ;
-        Plugins.Add(new ProfilingFeature());
+        });
+        Plugins.AddIfDebug(new ProfilingFeature());
     }
 
     public void Configure(IWebHostBuilder builder) => builder

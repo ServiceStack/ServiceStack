@@ -6,13 +6,20 @@ namespace ServiceStack.Blazor.Components;
 public class DynamicInputBase : TextInputBase
 {
     [Parameter, EditorRequired]
-    public Dictionary<string, object> Model { get; set; } = new();
+    public Dictionary<string, object?> Model { get; set; } = new();
 
     protected string Value
     {
         get => Model.TryGetValue(Input!.Id, out var value) ? TextUtils.ToModelString(value) ?? "" : "";
         set => Model[Input!.Id] = value ?? "";
     }
+
+    protected object? ValueObject
+    {
+        get => Model.TryGetValue(Input!.Id, out var value) ? value : null;
+        set => Model[Input!.Id] = value;
+    }
+
 
     [Parameter, EditorRequired]
     public InputInfo? Input { get; set; }
@@ -44,6 +51,7 @@ public class DynamicInputBase : TextInputBase
                 ["type"] = input.Type,
                 ["placeholder"] = input.Placeholder,
                 ["pattern"] = input.Pattern,
+                ["accept"] = input.Accept,
                 ["readonly"] = input.ReadOnly ?? false,
                 ["required"] = input.Required ?? false,
                 ["min"] = input.Min,
