@@ -93,7 +93,7 @@ public partial class DynamicModalLookup : UiComponentBase
             BlazorUtils.LogError($"Could not find Type {RefInfo!.Model}");
             return null;
         }
-        var queryOp = AppMetadata?.Api.Operations.FirstOrDefault(x => x.DataModel?.Name == RefInfo.Model);
+        var queryOp = AppMetadata?.Api.Operations.FirstOrDefault(x => x.DataModel?.Name == RefInfo.Model && Crud.IsAutoQuery(x.Request));
         if (queryOp == null)
         {
             BlazorUtils.LogError($"Could not find Api Type for {RefInfo!.Model}");
@@ -108,6 +108,12 @@ public partial class DynamicModalLookup : UiComponentBase
         }
 
         var genericDef = requestType.GetTypeWithGenericTypeDefinitionOfAny(typeof(QueryDb<>), typeof(QueryDb<,>));
+        if (genericDef == null)
+        {
+            BlazorUtils.LogError($"Could not find generic QueryDb<> Type for {requestType?.Name} from {queryOp.Request.Type} [{RefInfo.Model}]");
+            return null;
+        }
+
         var modelType = genericDef.FirstGenericArg();
         var componentType = typeof(ModalLookup<>).MakeGenericType(modelType);
         var apis = new Apis(new[] { requestType });
