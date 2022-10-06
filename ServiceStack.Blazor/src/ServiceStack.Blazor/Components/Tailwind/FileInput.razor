@@ -60,7 +60,10 @@
 
         var filePath = Value ?? Values?.FirstOrDefault() ?? File?.FilePath ?? Files?.FirstOrDefault()?.FilePath;
         if (filePath != null)
-            return FileIcons.FilePathUri(filePath);
+        {
+            var resolvedFilePath = BlazorConfig.Instance.UploadsPathResolver(filePath);
+            return FileIcons.FilePathUri(resolvedFilePath);
+        }
 
         return null;
     }

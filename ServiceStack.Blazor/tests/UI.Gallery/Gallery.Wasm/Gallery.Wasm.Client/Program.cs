@@ -19,7 +19,8 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ServiceStackStateProvider>());
 
-builder.Services.AddBlazorApiClient(builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress);
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
+builder.Services.AddBlazorApiClient(apiBaseUrl);
 
 builder.Services.AddScoped<ServiceStackStateProvider>();
 
@@ -27,8 +28,9 @@ var app = builder.Build();
 
 BlazorConfig.Set(new BlazorConfig
 {
-    Services = app.Services,
     IsWasm = true,
+    Services = app.Services,
+    UploadsBasePath = apiBaseUrl,
     EnableLogging = true,
     EnableVerboseLogging = builder.HostEnvironment.IsDevelopment(),
 });
