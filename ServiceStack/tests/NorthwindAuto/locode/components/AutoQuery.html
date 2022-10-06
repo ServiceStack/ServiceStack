@@ -37,8 +37,8 @@ App.component('AutoQuery', ({ store, routes, settings, Forms }) => {
 
         get canFirst() { return this.skip > 0 },
         get canPrev() { return this.skip > 0 },
-        get canNext() { return this.results.length >= this.take && (this.total > this.take + this.skip) },
-        get canLast() { return this.results.length >= this.take && (this.total > this.take + this.skip) },
+        get canNext() { return this.results.length >= this.take },
+        get canLast() { return this.results.length >= this.take },
         min(num1,num2) { return Math.min(num1, num2) },
 
         get dataModel() { return Meta.getType(dataModelRef()) },
