@@ -68,14 +68,7 @@ To also enable deploying static assets to a CDN:
 
 These secrets can use the [GitHub CLI](https://cli.github.com/manual/gh_secret_set) for ease of creation. Eg, using the GitHub CLI the following can be set.
 
-```bash
-gh secret set CR_PAT -b"<CR_PAT>"
-gh secret set DEPLOY_API -b"<DEPLOY_API>"
-gh secret set DEPLOY_USERNAME -b"<DEPLOY_USERNAME>"
-gh secret set DEPLOY_KEY < key.pem # DEPLOY_KEY
-gh secret set LETSENCRYPT_EMAIL -b"<LETSENCRYPT_EMAIL>"
-gh secret set DEPLOY_CDN -b"<DEPLOY_CDN>"
-```
+<img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/actions/gh-secrets.png" style="min-width:700px">
 
 These secrets are used to populate variables within GitHub Actions and other configuration files.
 
@@ -90,37 +83,7 @@ The Host Server `.csproj` includes post build instructions populated by GitHub A
 by first copying the generated `index.html` home page into `404.html` in order to enable full page reloads to use Blazor's App 
 client routing:
 
-```xml
-<PropertyGroup>
-    <ClientDir>$(MSBuildProjectDirectory)/../MyApp.Client</ClientDir>
-    <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
-</PropertyGroup>
-
-<!-- Populated in release.yml with GitHub Actions secrets -->
-<Target Name="DeployApi" AfterTargets="Build" Condition="$(DEPLOY_API) != ''">
-    <Exec Command="echo DEPLOY_API=$(DEPLOY_API)" />
-
-    <!-- Update Production settings with DEPLOY_API Blazor UI should use  -->
-    <WriteLinesToFile File="$(WwwRoot)/appsettings.Production.json" 
-        Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))" 
-        Overwrite="true" Encoding="UTF-8" />
-
-    <!-- 404.html SPA fallback (supported by GitHub Pages, Cloudflare & Netlify CDNs) -->
-    <Copy SourceFiles="$(WwwRoot)/index.html" 
-        DestinationFiles="$(WwwRoot)/wwwroot/404.html" />
-
-    <!-- define /api proxy routes (supported by Cloudflare or Netlify CDNs)  -->
-    <WriteLinesToFile File="$(WwwRoot)/_redirects" 
-        Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))" 
-        Overwrite="true" Encoding="UTF-8" />
-</Target>
-<Target Name="DeployCdn" AfterTargets="Build" Condition="$(DEPLOY_CDN) != ''">
-    <Exec Command="echo DEPLOY_CDN=$(DEPLOY_CDN)" />
-
-    <!-- Define custom domain name that CDN should use -->
-    <Exec Condition="$(DEPLOY_CDN) != ''" Command="echo $(DEPLOY_CDN) &gt; $(WwwRoot)/CNAME" />
-</Target>
-```
+<img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/actions/msbuild-deploy.png" style="min-width:938px">
 
 Whilst the `_redirects` file is a convention supported by many [popular Jamstack CDNs](https://jamstack.wtf/#deployment)
 that sets up a new rule that proxies `/api*` requests to where the production .NET App is deployed to in order 
