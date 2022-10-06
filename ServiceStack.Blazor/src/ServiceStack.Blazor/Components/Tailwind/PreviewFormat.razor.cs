@@ -15,4 +15,6 @@ public partial class PreviewFormat
     [Parameter] public int MaxNestedFields { get; set; } = BlazorConfig.Instance.MaxNestedFields;
     [Parameter] public int MaxNestedFieldLength { get; set; } = BlazorConfig.Instance.MaxNestedFieldLength;
     string FormatValue(object? value) => BlazorUtils.FormatValue(value, MaxFieldLength);
+
+    string? UseImageSrc { get; set; }
 }

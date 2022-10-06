@@ -40,8 +40,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var cacheFileExts = new[] { ".png", ".svg" };
 app.UseStaticFiles();
 
 app.UseRouting();

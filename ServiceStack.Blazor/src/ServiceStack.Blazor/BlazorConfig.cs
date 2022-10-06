@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace ServiceStack.Blazor;
@@ -34,14 +35,22 @@ public class BlazorConfig
 
     public ImageInfo DefaultTableIcon { get; set; } = new ImageInfo { Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='currentColor' stroke-width='1.5'><path d='M5 12v6s0 3 7 3s7-3 7-3v-6'/><path d='M5 6v6s0 3 7 3s7-3 7-3V6'/><path d='M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z'/></g></svg>" };
 
-    public string? UploadsBasePath { get; init; }
-    public Func<string, string> UploadsPathResolver { get; set; } = DefaultUploadsPathResolver;
-    public static string DefaultUploadsPathResolver(string path)
+    public string? AssetsBasePath { get; init; }
+    public string? FallbackAssetsBasePath { get; init; }
+    public Func<string, string> AssetsPathResolver { get; set; } = DefaultAssetsPathResolver;
+    public Func<string, string> FallbackPathResolver { get; set; } = DefaultFallbackPathResolver;
+    static bool IsRelative(string path) => path.IndexOf("://") == -1 && !path.StartsWith("//") && !path.StartsWith("data:") && !path.StartsWith("blob:");
+    public static string DefaultAssetsPathResolver(string path)
     {
-        var isRelative = path.IndexOf("://") == -1 && !path.StartsWith("//") && !path.StartsWith("data:") && !path.StartsWith("blob:");
-        return isRelative && Instance.UploadsBasePath != null
-            ? Instance.UploadsBasePath.CombineWith(path)
+        return IsRelative(path) && Instance.AssetsBasePath != null
+            ? Instance.AssetsBasePath.CombineWith(path)
             : path;
+    }
+    public static string DefaultFallbackPathResolver(string path)
+    {
+        return IsRelative(path) && Instance.FallbackAssetsBasePath != null
+            ? Instance.FallbackAssetsBasePath.CombineWith(path)
+            : FileIcons.SvgToDataUri(FileIcons.Icons["img"]);
     }
 
     public Func<string, Dictionary<string, object>> JSParseObject { get; set; } = DefaultJSObjectParser;

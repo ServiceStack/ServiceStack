@@ -40,11 +40,13 @@
 
     @if (!IsMultiple)
     {
-        var src = imgSrc();
+        var src = UseImageSrc ?? imgSrc();
         if (!string.IsNullOrEmpty(src))
         {
             <div class="shrink-0 cursor-pointer">
-                <img @onclick="openFile" class=@ClassNames("h-16 w-16 object-cover", imgCls(src)) src=@src alt=@($"Current {UseLabel}") />
+                <img @onclick="openFile" class=@ClassNames("h-16 w-16 object-cover", imgCls(src)) alt=@($"Current {UseLabel}")
+                     src=@BlazorConfig.Instance.AssetsPathResolver(src)
+                     @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             </div>
         }
     }
@@ -61,7 +63,7 @@
         var filePath = Value ?? Values?.FirstOrDefault() ?? File?.FilePath ?? Files?.FirstOrDefault()?.FilePath;
         if (filePath != null)
         {
-            var resolvedFilePath = BlazorConfig.Instance.UploadsPathResolver(filePath);
+            var resolvedFilePath = BlazorConfig.Instance.AssetsPathResolver(filePath);
             return FileIcons.FilePathUri(resolvedFilePath);
         }
 

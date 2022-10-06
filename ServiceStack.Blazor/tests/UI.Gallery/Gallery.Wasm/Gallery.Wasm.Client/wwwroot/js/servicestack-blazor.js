@@ -187,6 +187,18 @@ Files = (function () {
             .map(f => ({ fileName: f.name, contentLength: f.size, filePath: fileImageUri(f) }))
     }
 
+    function iconOnError(img, fallbackSrc) {
+        img.onerror = null
+        img.src = iconFallbackSrc(img.src, fallbackSrc)
+    }
+    function iconFallbackSrc(src, fallbackSrc) {
+        return extSrc(lastRightPart(src, '.').toLowerCase())
+            || (fallbackSrc
+                ? extSrc(fallbackSrc) || fallbackSrc
+                : null)
+            || extSrc('doc')
+    }
+
     return {
         extSvg,
         extSrc,
@@ -200,5 +212,7 @@ Files = (function () {
         fileImageUri,
         flush,
         inputFiles,
+        iconOnError,
+        iconFallbackSrc,
     }
 })()

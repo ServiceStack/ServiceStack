@@ -37,7 +37,7 @@ public partial class Icon : UiComponentBase
             Alt != null ? $"alt=\"{Alt.HtmlEncode()}\"" : null
         }.Where(x => x != null);
 
-        var ret = $"<img src=\"{src}\" {string.Join(' ', attrs)}>";
+        var ret = $"<img src=\"{BlazorConfig.Instance.AssetsPathResolver(src)}\" {string.Join(' ', attrs)} onerror=\"Files.iconOnError(this)\">";
         return ret;
     }
 

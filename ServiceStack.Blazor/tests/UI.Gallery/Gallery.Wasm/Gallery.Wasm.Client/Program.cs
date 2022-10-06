@@ -30,7 +30,7 @@ BlazorConfig.Set(new BlazorConfig
 {
     IsWasm = true,
     Services = app.Services,
-    UploadsBasePath = apiBaseUrl,
+    FallbackAssetsBasePath = apiBaseUrl,
     EnableLogging = true,
     EnableVerboseLogging = builder.HostEnvironment.IsDevelopment(),
 });

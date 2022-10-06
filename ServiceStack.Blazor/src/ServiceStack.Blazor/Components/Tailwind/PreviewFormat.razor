@@ -18,11 +18,15 @@
 
             if (Format.Method == FormatMethods.IconRounded)
             {
-                <img class=@(cls ?? "w-8 h-8 rounded-full") title=@str src=@str>
+                var src = str;
+                <img class=@(cls ?? "w-8 h-8 rounded-full") title=@str
+                     src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             }
             else if (Format.Method == FormatMethods.Icon)
             {
-                <img class=@(cls ?? "w-6 h-6") title=@str src=@str>
+                var src = str;
+                <img class=@(cls ?? "w-6 h-6") title=@str 
+                     src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             }
             else if (Format.Method == FormatMethods.Currency)
             {

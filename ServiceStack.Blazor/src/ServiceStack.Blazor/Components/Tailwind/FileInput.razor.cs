@@ -14,12 +14,15 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
     [Parameter] public ICollection<UploadedFile>? Files { get; set; }
     [Parameter] public EventCallback<InputFileChangeEventArgs> OnInput { get; set; }
 
+    string? UseImageSrc { get; set; }
+
     InputFile? InputFile { get; set; }
 
     List<UploadedFile>? inputFiles;
 
     protected virtual async Task OnChange(InputFileChangeEventArgs e)
     {
+        UseImageSrc = null;
         inputFiles = await JS.InvokeAsync<List<UploadedFile>>("Files.inputFiles", InputFile!.Element);
         await OnInput.InvokeAsync(e);
     }
@@ -27,6 +30,12 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
     async Task openFile()
     {
         await JS.InvokeVoidAsync("JS.invoke", InputFile!.Element, "click");
+    }
+
+    protected override void OnParametersSet()
+    {
+        UseImageSrc = null;
+        base.OnParametersSet();
     }
 
     public async ValueTask DisposeAsync()
