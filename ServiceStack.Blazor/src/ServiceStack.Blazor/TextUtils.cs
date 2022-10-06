@@ -680,10 +680,11 @@ public static class TextUtils
     /// <summary>
     /// Create a Form Layout from a declarative annotated DTO definition
     /// </summary>
-    public static List<InputInfo> CreateFormLayout<T>(this MetadataType metadataType)
+    public static List<InputInfo> CreateFormLayout<T>(this MetadataType metadataType) => CreateFormLayout(metadataType, typeof(T));
+    public static List<InputInfo> CreateFormLayout(this MetadataType metadataType, Type type)
     {
-        var typeProps = TypeProperties<T>.Instance.PropertyMap;
-        metadataType.Type ??= typeof(T);
+        var typeProps = TypeProperties.Get(type).PropertyMap;
+        metadataType.Type ??= type;
 
         var formLayout = new List<InputInfo>();
         foreach (var prop in metadataType.Properties)

@@ -46,6 +46,6 @@ public partial class AutoEditForm<Model> : AutoFormBase<Model>
 
         ModelDictionary = Edit.ToModelDictionary();
         OriginalModelDictionary = new(ModelDictionary);
-        FormLayout ??= MetadataType.CreateFormLayout<Model>();
+        FormLayout ??= MetadataType.CreateFormLayout(ApiType);
     }
 }

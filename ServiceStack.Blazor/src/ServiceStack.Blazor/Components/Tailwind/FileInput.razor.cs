@@ -7,12 +7,30 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 public partial class FileInput : TextInputBase, IAsyncDisposable
 {
     [Inject] public IJSRuntime JS { get; set; }
-    [Parameter] public bool IsMultiple { get; set; }
+    [Parameter] public bool Multiple { get; set; }
+    [Parameter] public string? Accept { get; set; }
     [Parameter] public string? Value { get; set; }
     [Parameter] public ICollection<string>? Values { get; set; }
     [Parameter] public UploadedFile? File { get; set; }
     [Parameter] public ICollection<UploadedFile>? Files { get; set; }
     [Parameter] public EventCallback<InputFileChangeEventArgs> OnInput { get; set; }
+
+    public List<UploadedFile> FileList
+    {
+        get
+        {
+            var to = new List<UploadedFile>();
+            foreach (var value in Values.OrEmpty())
+            {
+                to.Add(new UploadedFile { FileName = value, ContentType = MimeTypes.GetMimeType(value) });
+            }
+            foreach (var item in Files.OrEmpty())
+            {
+                to.Add(item);
+            }
+            return to;
+        }
+    }
 
     string? UseImageSrc { get; set; }
 

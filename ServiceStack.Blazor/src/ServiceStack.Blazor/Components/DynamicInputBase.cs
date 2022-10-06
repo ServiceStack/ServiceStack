@@ -52,6 +52,7 @@ public class DynamicInputBase : TextInputBase
                 ["placeholder"] = input.Placeholder,
                 ["pattern"] = input.Pattern,
                 ["accept"] = input.Accept,
+                ["multiple"] = input.Multiple ?? false,
                 ["readonly"] = input.ReadOnly ?? false,
                 ["required"] = input.Required ?? false,
                 ["min"] = input.Min,

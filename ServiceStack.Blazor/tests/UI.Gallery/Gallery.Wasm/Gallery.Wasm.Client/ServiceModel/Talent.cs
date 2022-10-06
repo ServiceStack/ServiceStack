@@ -267,7 +267,7 @@ public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
     public string FirstName { get; set; } = string.Empty;
     [ValidateNotEmpty]
     public string LastName { get; set; } = string.Empty;
-    [Input(Type = "file", Accept = ".png,.jpg,.jpeg,.gif,.svg,.webp"), UploadTo("profiles")]
+    [Input(Type = "file"), UploadTo("profiles")]
     public string? ProfileUrl { get; set; }
     public int? SalaryExpectation { get; set; }
     [ValidateNotEmpty]
@@ -291,7 +291,7 @@ public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
     public string? FirstName { get; set; }
     [ValidateNotEmpty]
     public string? LastName { get; set; }
-    [Input(Type = "file", Accept = ".png,.jpg,.jpeg,.gif,.svg,.webp"), UploadTo("profiles")]
+    [Input(Type = "file"), UploadTo("profiles")]
     public string? ProfileUrl { get; set; }
     public int? SalaryExpectation { get; set; }
     [ValidateNotEmpty]

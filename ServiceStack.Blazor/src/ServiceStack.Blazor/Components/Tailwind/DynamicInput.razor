@@ -26,10 +26,35 @@ else if (IsCheckbox)
 }
 else if (UseType == "file")
 {
-    <FileInput type=@UseType Id=@UseId Status=@Status @attributes="AllAttributes" Help=@UseHelp 
-               Value=@(ValueObject as string)      Values=@(ValueObject as List<string>) 
-               File=@(ValueObject as UploadedFile) Files=@(ValueObject as List<UploadedFile>)
-               OnInput="e => Model[Input!.Id] = e" />
+    string? value = null;
+    ICollection<string>? values = null;
+    UploadedFile? file = null;
+    List<UploadedFile>? files = null;
+
+    if (ValueObject != null)
+    {
+        value = ValueObject as string;
+        if (value == null)
+        {
+            values = ValueObject as ICollection<string>;
+            if (values == null)
+            {
+                if (ValueObject is System.Collections.IEnumerable)
+                {
+                    files = ValueObject.ConvertTo<List<UploadedFile>>();
+                }
+                else
+                {
+                    file = ValueObject.ConvertTo<UploadedFile>();
+                }
+            }
+        }
+    }
+
+    <FileInput type=@UseType Id=@UseId Status=@Status @attributes="AllAttributes" Help=@UseHelp
+        Multiple=@(Input?.Multiple ?? false) Accept=@(Input?.Accept)
+        Value=@value Values=@values File=@file Files=@files
+        OnInput="e => Model[Input!.Id] = e" />
 }
 else
 {

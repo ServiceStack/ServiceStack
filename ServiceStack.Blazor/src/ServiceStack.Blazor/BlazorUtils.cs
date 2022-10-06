@@ -93,6 +93,8 @@ public static class BlazorUtils
             return false;
         if (prop.IsValueType == true || prop.IsEnum == true)
             return true;
+        if (prop.Input?.Type == Html.Input.Types.File)
+            return true;
 
         var unwrapType = prop.Type.EndsWith('?')
             ? prop.Type[..^1]

@@ -2,7 +2,7 @@
 @inherits TextInputBase
 @implements IAsyncDisposable
 
-<div class=@ClassNames("flex", !IsMultiple ? "justify-between" : "flex-col")>
+<div class=@ClassNames("flex", !Multiple ? "justify-between" : "flex-col")>
 
     <div>
     @if (!string.IsNullOrEmpty(UseLabel))
@@ -16,7 +16,7 @@
                 CssClass("block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100",
                 "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
         }
-            <InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder @attributes="IncludeAttributes" OnChange="@OnChange" />
+            <InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder multiple=@Multiple accept=@Accept @attributes="IncludeAttributes" OnChange="@OnChange" />
         @if (HasErrorField)
         {
             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -38,7 +38,7 @@
     }
     </div>
 
-    @if (!IsMultiple)
+    @if (!Multiple)
     {
         var src = UseImageSrc ?? imgSrc();
         if (!string.IsNullOrEmpty(src))
@@ -49,6 +49,43 @@
                      @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             </div>
         }
+    }
+    else if (FileList.Count > 0)
+    {
+        <div class="mt-3">
+            <table>
+            @foreach (var file in FileList)
+            {
+                <tr>
+                    <td class="pr-6 align-bottom pb-2">
+                        <div class="flex w-full">
+                            <img src=@BlazorConfig.Instance.AssetsPathResolver(FileIcons.FilePathUri(file.FilePath)!) class=@ClassNames("mr-2 h-8 w-8 object-cover", imgCls(file.FilePath))
+                                 @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(FileIcons.FilePathUri(file.FilePath)!)">
+
+                            @if (file.FilePath != null && !file.FilePath.StartsWith("data:") && !file.FilePath.StartsWith("blob:"))
+                            {
+                                <a href=@BlazorConfig.Instance.AssetsPathResolver(file.FilePath) title=@file.FilePath target="_blank" class="overflow-hidden">
+                                    @file.FileName
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="overflow-hidden">@file.FileName</span>
+                            }
+                        </div>
+                    </td>
+                    <td class="align-top pb-2 whitespace-nowrap">
+                        @if (file.ContentLength > 0)
+                        {
+                            <span class="text-gray-500 text-sm bg-white">
+                                @TextUtils.FormatBytes(file.ContentLength)
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+            </table>
+        </div>
     }
 
 </div>

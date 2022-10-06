@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -1479,6 +1480,11 @@ public static class AppMetadataUtils
             property.Input.Css = css;
         }
         property.UploadTo = pi.FirstAttribute<UploadToAttribute>()?.Location;
+
+        if (property.Input?.Type == Input.Types.File)
+        {
+            property.Input.Multiple = (propType != typeof(string) && propType.HasInterface(typeof(IEnumerable))).NullIfFalse();
+        }
 
         if (instance != null)
         {

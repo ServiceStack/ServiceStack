@@ -21,6 +21,6 @@ public partial class AutoCreateForm<Model> : AutoFormBase<Model>
 
         ModelDictionary = NewModel.ToModelDictionary();
         OriginalModelDictionary = new(ModelDictionary);
-        FormLayout ??= MetadataType.CreateFormLayout<Model>();
+        FormLayout ??= MetadataType.CreateFormLayout(ApiType);
     }
 }
