@@ -19,6 +19,8 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
     {
         get
         {
+            if (inputFiles != null)
+                return inputFiles;
             var to = new List<UploadedFile>();
             foreach (var value in Values.OrEmpty())
             {
