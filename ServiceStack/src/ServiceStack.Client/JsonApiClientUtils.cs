@@ -73,6 +73,15 @@ public static class JsonApiClientUtils
         return services.AddHttpClient<JsonApiClient>(client => client.BaseAddress = new Uri(baseUrl));
     }
     
+    public static IHttpClientBuilder AddJsonApiClient(this IServiceCollection services, string baseUrl, Action<HttpClient> configureClient)
+    {
+        return services.AddHttpClient<JsonApiClient>(client =>
+        {
+            client.BaseAddress = new Uri(baseUrl);
+            configureClient(client);
+        });
+    }
+    
     public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IHasJsonApiClient instance, IReturn<TResponse> request) =>
         await instance.Client!.ApiAsync(request);
 
