@@ -24,7 +24,13 @@
       <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
       <ProjectReference Include="..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <Content Include="App_Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
     <Target Name="Tailwind" BeforeTargets="Build">
         <Exec Command="npm run ui:build" />
     </Target>

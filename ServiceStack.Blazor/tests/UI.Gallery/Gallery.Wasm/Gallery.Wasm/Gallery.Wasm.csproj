@@ -24,7 +24,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="App_Data" />
+        <Content Include="App_Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <PropertyGroup>
