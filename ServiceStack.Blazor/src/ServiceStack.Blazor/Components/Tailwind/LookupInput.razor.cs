@@ -57,8 +57,6 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
             var refModel = row.ToObjectDictionary();
             Model[Property.Name] = refModel.GetIgnoreCase(refInfo.RefId);
             refInfoValue = LookupValues.SetValue(refInfo, refModel);
-
-            BlazorUtils.Log($"OnLookupSelected: {row.Dump()}, {refInfo.Dump()}; {MetadataType.Name} -> {Model.Dump()} :: {Value} -> {refInfoValue}");
             StateHasChanged();
         }
         return Task.CompletedTask;

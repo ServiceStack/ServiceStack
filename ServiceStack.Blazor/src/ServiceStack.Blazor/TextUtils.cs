@@ -687,6 +687,16 @@ public static class TextUtils
         var typeProps = TypeProperties.Get(type).PropertyMap;
         metadataType.Type ??= type;
 
+        MetadataType? dataModel = null;
+        if (appMetadata != null)
+        {
+            var op = appMetadata.Api.Operations.FirstOrDefault(x => x.Request.Name == metadataType.Name);
+            if (op != null)
+            {
+                dataModel = appMetadata.GetType(op.DataModel);
+            }
+        }
+
         var formLayout = new List<InputInfo>();
         foreach (var prop in metadataType.Properties)
         {
@@ -710,6 +720,11 @@ public static class TextUtils
                     {
                         input.Accept ??= string.Join(',', uploadLocation.AllowExtensions.Map(x => x.StartsWith('.') ? x : $".{x}"));
                     }
+                }
+                if (dataModel != null)
+                {
+                    var dataModelProp = dataModel.Property(prop.Name);
+                    prop.Ref ??= dataModelProp?.Ref;
                 }
             }
 

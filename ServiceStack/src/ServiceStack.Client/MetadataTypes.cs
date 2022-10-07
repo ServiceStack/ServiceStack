@@ -976,6 +976,9 @@ public static class AppMetadataUtils
     public static MetadataType GetType(this AppMetadata app, string name) => 
         app.GetCache().TypesMap.TryGetValue(name, out var type) ? type : null;
 
+    public static MetadataType GetType(this AppMetadata app, MetadataTypeName typeRef) =>
+        typeRef == null ? null : app.GetType(typeRef.Namespace, typeRef.Name);
+
     public static MetadataType GetType(this AppMetadata app, string @namespace, string name) => 
         X.Map(app.GetCache().TypesMap, x => x.TryGetValue(@namespace + "." + name, out var type) 
             ? type 

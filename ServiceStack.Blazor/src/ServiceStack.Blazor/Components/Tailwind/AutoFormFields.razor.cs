@@ -20,6 +20,9 @@ public partial class AutoFormFields : UiComponentBase
     public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == Type.Name)
         ?? Type.ToMetadataType();
 
+    MetadataType? dataModelType = null;
+    public MetadataType? DataModelType => dataModelType ??= AppMetadata.GetType(AppMetadata?.GetOperation(Type.Name)?.DataModel) ?? MetadataType;
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
