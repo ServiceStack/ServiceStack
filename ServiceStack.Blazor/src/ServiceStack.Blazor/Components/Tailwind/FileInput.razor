@@ -40,13 +40,13 @@
 
     @if (!Multiple)
     {
-        var src = UseImageSrc ?? imgSrc();
+        var src = imgSrc();
         if (!string.IsNullOrEmpty(src))
         {
             <div class="shrink-0 cursor-pointer" title=@(!isDataUri(src) ? src : "")>
                 <img @onclick="openFile" class=@ClassNames("h-16 w-16", imgCls(src)) alt=@($"Current {UseLabel}")
-                     src=@BlazorConfig.Instance.AssetsPathResolver(src)
-                     @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+                     src=@(FallbackSrc ?? BlazorConfig.Instance.AssetsPathResolver(src))
+                     @onerror="() => FallbackSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             </div>
         }
     }
@@ -62,13 +62,10 @@
                         <div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
                             @{
                                 var src = FileIcons.FilePathUri(filePath)!;
-                                string? fallbackUrl = null;
-
-                                <img src=@(fallbackUrl ?? BlazorConfig.Instance.AssetsPathResolver(src))
+                                <img src=@((FallbackSrcMap.TryGetValue(src, out var fallback) ? fallback : null) ?? BlazorConfig.Instance.AssetsPathResolver(src))
                                      class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
-                                     @onerror="() => fallbackUrl = BlazorConfig.Instance.FallbackPathResolver(src)">
+                                     @onerror="() => FallbackSrcMap[src] = BlazorConfig.Instance.FallbackPathResolver(src)">
                             }
-
                             @if (!isDataUri(filePath))
                             {
                                 <a href=@BlazorConfig.Instance.AssetsPathResolver(filePath) target="_blank" class="overflow-hidden">

@@ -34,7 +34,8 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
         }
     }
 
-    string? UseImageSrc { get; set; }
+    string? FallbackSrc { get; set; }
+    Dictionary<string, string> FallbackSrcMap = new();
 
     InputFile? InputFile { get; set; }
 
@@ -42,7 +43,9 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
 
     protected virtual async Task OnChange(InputFileChangeEventArgs e)
     {
-        UseImageSrc = null;
+        FallbackSrc = null;
+        FallbackSrcMap.Clear();
+
         inputFiles = await JS.InvokeAsync<List<UploadedFile>>("Files.inputFiles", InputFile!.Element);
         await OnInput.InvokeAsync(e);
     }
@@ -54,7 +57,9 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
 
     protected override void OnParametersSet()
     {
-        UseImageSrc = null;
+        FallbackSrc = null;
+        FallbackSrcMap.Clear();
+
         base.OnParametersSet();
     }
 
