@@ -3,11 +3,11 @@
 @if (IsSelect)
 {
     <SelectInput Id=@UseId Status=@Status TValue="string" Input=@Input
-             @bind-Value="Value" @attributes="AllAttributes" Help=@TextUtils.Humanize(UseId) />
+             @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@TextUtils.Humanize(UseId) @attributes="AllAttributes" />
 }
 else if (IsCheckbox)
 {
-    <CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+    <CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }
 else if (UseType == "file")
 {
@@ -36,12 +36,12 @@ else if (UseType == "file")
         }
     }
 
-    <FileInput type=@UseType Id=@UseId Status=@Status @attributes="AllAttributes" Help=@UseHelp
+    <FileInput type=@UseType Id=@UseId Status=@Status class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes"
         Multiple=@(Input?.Multiple ?? false) Accept=@(Input?.Accept)
         Value=@value Values=@values File=@file Files=@files
         OnInput="e => Model[Input!.Id] = e" />
 }
 else
 {
-    <TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+    <TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }

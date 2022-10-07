@@ -279,7 +279,8 @@ public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
     [ValidateNotEmpty]
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
-    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    [Input(Type = "textarea")]
+    [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label = "text-xl text-indigo-800")]
     public string? About { get; set; }
 }
 
@@ -302,7 +303,8 @@ public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
     [ValidateNotEmpty]
     public string? Email { get; set; }
     public string? Phone { get; set; }
-    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    [Input(Type = "textarea")]
+    [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label= "text-xl text-indigo-800")]
     public string? About { get; set; }
 }
 
@@ -331,7 +333,7 @@ public class CreateJob : ICreateDb<Job>, IReturn<Job>
     public int SalaryRangeLower { get; set; }
     [ValidateGreaterThan(0)]
     public int SalaryRangeUpper { get; set; }
-    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center", Input = "h-48")]
     public string Description { get; set; }
 
     public EmploymentType EmploymentType { get; set; }
@@ -349,7 +351,7 @@ public class UpdateJob : IPatchDb<Job>, IReturn<Job>
     public string? Title { get; set; }
     public int? SalaryRangeLower { get; set; }
     public int? SalaryRangeUpper { get; set; }
-    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center", Input = "h-48")]
     public string? Description { get; set; }
 }
 

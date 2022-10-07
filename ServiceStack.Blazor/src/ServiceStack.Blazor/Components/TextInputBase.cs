@@ -47,6 +47,7 @@ public abstract class TextInputBase : ApiComponentBase
     /// </summary>
     [Parameter]
     public string? Label { get; set; }
+    [Parameter] public string? LabelClass { get; set; }
 
     [Parameter] public string? type { get; set; }
     protected virtual string UseType => type ?? "text";

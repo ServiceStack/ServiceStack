@@ -4,7 +4,7 @@
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+    <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
         <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"

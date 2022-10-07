@@ -7,7 +7,7 @@
     <div>
     @if (!string.IsNullOrEmpty(UseLabel))
     {
-        <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+         <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
     }
         <div class="block mt-2">
             <span class="sr-only">UseHelp ?? UseLabel</span>
@@ -57,15 +57,13 @@
             @foreach (var file in FileList)
             {
                 var filePath = file.FilePath ?? "";
+                var src = FileIcons.FilePathUri(filePath)!;
                 <tr>
                     <td class="pr-6 align-bottom pb-2">
                         <div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
-                            @{
-                                var src = FileIcons.FilePathUri(filePath)!;
-                                <img src=@((FallbackSrcMap.TryGetValue(src, out var fallback) ? fallback : null) ?? BlazorConfig.Instance.AssetsPathResolver(src))
-                                     class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
-                                     @onerror="() => FallbackSrcMap[src] = BlazorConfig.Instance.FallbackPathResolver(src)">
-                            }
+                            <img src=@((FallbackSrcMap.TryGetValue(src, out var fallback) ? fallback : null) ?? BlazorConfig.Instance.AssetsPathResolver(src))
+                                 class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
+                                 @onerror="() => FallbackSrcMap[src] = BlazorConfig.Instance.FallbackPathResolver(src)">
                             @if (!isDataUri(filePath))
                             {
                                 <a href=@BlazorConfig.Instance.AssetsPathResolver(filePath) target="_blank" class="overflow-hidden">

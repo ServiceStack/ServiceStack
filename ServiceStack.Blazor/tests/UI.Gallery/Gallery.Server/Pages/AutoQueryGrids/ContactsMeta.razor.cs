@@ -34,7 +34,40 @@ public class Contact : AuditBase
 
     [Reference]
     public List<JobApplication> Applications { get; set; }
-}";
+}
+
+// Customize Edit Forms with [Input] and [FieldCss] attributes 
+public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
+{
+    public int Id { get; set; }
+
+    [ValidateNotEmpty]
+    public string? FirstName { get; set; }
+
+    [ValidateNotEmpty]
+    public string? LastName { get; set; }
+
+    [Input(Type = ""file""), UploadTo(""profiles"")]
+    public string? ProfileUrl { get; set; }
+    
+    public int? SalaryExpectation { get; set; }
+
+    [ValidateNotEmpty]
+    public string? JobType { get; set; }
+
+    public int? AvailabilityWeeks { get; set; }
+    public EmploymentType? PreferredWorkType { get; set; }
+    public string? PreferredLocation { get; set; }
+
+    [ValidateNotEmpty]
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+ 
+    [Input(Type=""textarea"")]
+    [FieldCss(Field=""col-span-12 text-center"", Input=""h-48"", Label=""text-xl text-indigo-800"")]
+    public string? About { get; set; }
+}
+";
 
     }
 }
