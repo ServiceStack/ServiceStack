@@ -1,0 +1,15 @@
+﻿@page "/grid/interviews"
+@attribute [Authorize]
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Interviews
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="Interview" Apis="Apis.AutoQuery<QueryInterviews,CreateInterview,UpdateInterview>()" />
+
+<ExampleCode Title="Source Code" Path="/AutoQueryGrids/Interviews.razor" />

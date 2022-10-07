@@ -18,8 +18,6 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
     MetadataPropertyType? property;
     MetadataPropertyType Property => property ??= MetadataType!.Properties.First(x => x.Name == Input.Id);
     [Parameter, EditorRequired] public Dictionary<string, object?> Model { get; set; }
-    [Parameter] public string? LabelClass { get; set; }
-
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     ApiResult<AppMetadata> appMetadataApi = new();
 
