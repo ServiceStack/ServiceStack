@@ -367,7 +367,6 @@ public class DeleteJob : IDeleteDb<Job>, IReturn<Job>
 
 [Tag("Talent")]
 [ValidateIsAuthenticated]
-[AutoApply(Behavior.AuditQuery)]
 public class QueryJobApplications : QueryDb<JobApplication>
 {
     public int? Id { get; set; }
