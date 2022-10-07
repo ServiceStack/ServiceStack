@@ -393,7 +393,7 @@ public class UpdateJobApplication : IPatchDb<JobApplication>, IReturn<JobApplica
     public int? JobId { get; set; }
     public int? ContactId { get; set; }
     public DateTime? AppliedDate { get; set; }
-    public JobApplicationStatus ApplicationStatus { get; set; }
+    public JobApplicationStatus? ApplicationStatus { get; set; }
     [Input(Type = "file"), UploadTo("applications")]
     public List<JobApplicationAttachment>? Attachments { get; set; }
 }

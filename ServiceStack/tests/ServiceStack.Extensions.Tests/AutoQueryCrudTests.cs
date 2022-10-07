@@ -120,6 +120,7 @@ namespace ServiceStack.Extensions.Tests
                             new IAuthProvider[] {
                                 new CredentialsAuthProvider(host.AppSettings),
                                 new JwtAuthProvider(host.AppSettings) {
+                                    UseTokenCookie = false,
                                     RequireSecureConnection = false,
                                     AuthKey = AuthKey,
                                     CreatePayloadFilter = (obj, session) => {

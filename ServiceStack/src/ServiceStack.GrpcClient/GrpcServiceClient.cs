@@ -172,8 +172,7 @@ namespace ServiceStack
             }
         }
 
-        private readonly ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate> execFnCache =
-            new ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate>();
+        private readonly ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate> execFnCache = new();
 
         ExecuteInternalDelegate ResolveExecute<TResponse>(object requestDto)
         {
@@ -189,8 +188,7 @@ namespace ServiceStack
             return fn;
         }
 
-        private readonly ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate> streamFnCache =
-            new ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate>();
+        private readonly ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate> streamFnCache = new();
 
         ExecuteInternalDelegate ResolveStream<TResponse>(object requestDto)
         {

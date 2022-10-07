@@ -589,10 +589,28 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [DataContract]
-    public class PatchRockstar : RockstarBase, IPatchDb<RockstarAuto>, IReturn<EmptyResponse>
+    public class PatchRockstar : IPatchDb<RockstarAuto>, IReturn<EmptyResponse>
     {
         [DataMember(Order = 1)]
         public int Id { get; set; }
+        
+        [DataMember(Order = 2)]
+        public string FirstName { get; set; }
+        
+        [DataMember(Order = 3)]
+        public string LastName { get; set; }
+        
+        [DataMember(Order = 4)]
+        public int? Age { get; set; }
+        
+        [DataMember(Order = 5)]
+        public DateTime? DateOfBirth { get; set; }
+        
+        [DataMember(Order = 6)]
+        public DateTime? DateDied { get; set; }
+        
+        [DataMember(Order = 7)]
+        public LivingStatus? LivingStatus { get; set; }
     }
 
     [DataContract]
@@ -620,9 +638,9 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 6)]
         public DateTime? DateDied { get; set; }
 
-        [AutoUpdate(AutoUpdateStyle.NonDefaults), AutoDefault(Value = LivingStatus.Dead)]
+        [AutoUpdate(AutoUpdateStyle.NonDefaults), AutoDefault(Value = Tests.LivingStatus.Dead)]
         [DataMember(Order = 7)]
-        public LivingStatus LivingStatus { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
     }
 
     [DataContract]
