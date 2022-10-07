@@ -43,7 +43,7 @@
         var src = UseImageSrc ?? imgSrc();
         if (!string.IsNullOrEmpty(src))
         {
-            <div class="shrink-0 cursor-pointer" title=@src>
+            <div class="shrink-0 cursor-pointer" title=@(!isDataUri(src) ? src : "")>
                 <img @onclick="openFile" class=@ClassNames("h-16 w-16", imgCls(src)) alt=@($"Current {UseLabel}")
                      src=@BlazorConfig.Instance.AssetsPathResolver(src)
                      @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
@@ -56,16 +56,17 @@
             <table>
             @foreach (var file in FileList)
             {
+                var filePath = file.FilePath ?? "";
                 <tr>
                     <td class="pr-6 align-bottom pb-2">
-                        <div class="flex w-full" title=@file.FilePath>
-                            <img src=@BlazorConfig.Instance.AssetsPathResolver(FileIcons.FilePathUri(file.FilePath)!)
-                             class=@ClassNames("mr-2 h-8 w-8", imgCls(file.FilePath))
-                                 @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(FileIcons.FilePathUri(file.FilePath)!)">
+                        <div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
+                            <img src=@BlazorConfig.Instance.AssetsPathResolver(FileIcons.FilePathUri(filePath)!)
+                                 class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
+                                 @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(FileIcons.FilePathUri(filePath)!)">
 
-                            @if (file.FilePath != null && !file.FilePath.StartsWith("data:") && !file.FilePath.StartsWith("blob:"))
+                            @if (!isDataUri(filePath))
                             {
-                                <a href=@BlazorConfig.Instance.AssetsPathResolver(file.FilePath) target="_blank" class="overflow-hidden">
+                                <a href=@BlazorConfig.Instance.AssetsPathResolver(filePath) target="_blank" class="overflow-hidden">
                                     @file.FileName
                                 </a>
                             }
@@ -76,12 +77,12 @@
                         </div>
                     </td>
                     <td class="align-top pb-2 whitespace-nowrap">
-                        @if (file.ContentLength > 0)
-                        {
-                            <span class="text-gray-500 text-sm bg-white">
-                                @TextUtils.FormatBytes(file.ContentLength)
-                            </span>
-                        }
+                    @if (file.ContentLength > 0)
+                    {
+                        <span class="text-gray-500 text-sm bg-white">
+                            @TextUtils.FormatBytes(file.ContentLength)
+                        </span>
+                    }
                     </td>
                 </tr>
             }
@@ -107,6 +108,8 @@
 
         return null;
     }
+
+    bool isDataUri(string? src) => src == null ? false : src.StartsWith("data:") || src.StartsWith("blob:");
 
     string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
         ? ""
