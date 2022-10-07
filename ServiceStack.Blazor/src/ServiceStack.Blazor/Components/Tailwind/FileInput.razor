@@ -43,8 +43,8 @@
         var src = UseImageSrc ?? imgSrc();
         if (!string.IsNullOrEmpty(src))
         {
-            <div class="shrink-0 cursor-pointer">
-                <img @onclick="openFile" class=@ClassNames("h-16 w-16 object-cover", imgCls(src)) alt=@($"Current {UseLabel}")
+            <div class="shrink-0 cursor-pointer" title=@src>
+                <img @onclick="openFile" class=@ClassNames("h-16 w-16", imgCls(src)) alt=@($"Current {UseLabel}")
                      src=@BlazorConfig.Instance.AssetsPathResolver(src)
                      @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             </div>
@@ -58,13 +58,14 @@
             {
                 <tr>
                     <td class="pr-6 align-bottom pb-2">
-                        <div class="flex w-full">
-                            <img src=@BlazorConfig.Instance.AssetsPathResolver(FileIcons.FilePathUri(file.FilePath)!) class=@ClassNames("mr-2 h-8 w-8 object-cover", imgCls(file.FilePath))
+                        <div class="flex w-full" title=@file.FilePath>
+                            <img src=@BlazorConfig.Instance.AssetsPathResolver(FileIcons.FilePathUri(file.FilePath)!)
+                             class=@ClassNames("mr-2 h-8 w-8", imgCls(file.FilePath))
                                  @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(FileIcons.FilePathUri(file.FilePath)!)">
 
                             @if (file.FilePath != null && !file.FilePath.StartsWith("data:") && !file.FilePath.StartsWith("blob:"))
                             {
-                                <a href=@BlazorConfig.Instance.AssetsPathResolver(file.FilePath) title=@file.FilePath target="_blank" class="overflow-hidden">
+                                <a href=@BlazorConfig.Instance.AssetsPathResolver(file.FilePath) target="_blank" class="overflow-hidden">
                                     @file.FileName
                                 </a>
                             }
