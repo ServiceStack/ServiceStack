@@ -60,9 +60,14 @@
                 <tr>
                     <td class="pr-6 align-bottom pb-2">
                         <div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
-                            <img src=@BlazorConfig.Instance.AssetsPathResolver(FileIcons.FilePathUri(filePath)!)
-                                 class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
-                                 @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(FileIcons.FilePathUri(filePath)!)">
+                            @{
+                                var src = FileIcons.FilePathUri(filePath)!;
+                                string? fallbackUrl = null;
+
+                                <img src=@(fallbackUrl ?? BlazorConfig.Instance.AssetsPathResolver(src))
+                                     class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
+                                     @onerror="() => fallbackUrl = BlazorConfig.Instance.FallbackPathResolver(src)">
+                            }
 
                             @if (!isDataUri(filePath))
                             {
