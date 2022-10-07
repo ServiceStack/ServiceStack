@@ -82,7 +82,7 @@ public class JobApplicationComment : AuditBase
 }
 
 [Icon(Svg = Icons.Application)]
-public class JobApplication : AuditBase
+public class JobApplication
 {
     [AutoIncrement]
     public int Id { get; set; }
@@ -315,7 +315,6 @@ public class DeleteContact : IDeleteDb<Contact>, IReturnVoid
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditQuery)]
 public class QueryJobs : QueryDb<Job>
 {
     public int? Id { get; set; }
@@ -324,6 +323,7 @@ public class QueryJobs : QueryDb<Job>
 
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditCreate)]
 public class CreateJob : ICreateDb<Job>, IReturn<Job>
 {
@@ -344,6 +344,7 @@ public class CreateJob : ICreateDb<Job>, IReturn<Job>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateJob : IPatchDb<Job>, IReturn<Job>
 {
@@ -356,6 +357,7 @@ public class UpdateJob : IPatchDb<Job>, IReturn<Job>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteJob : IDeleteDb<Job>, IReturn<Job>
 {
@@ -364,6 +366,7 @@ public class DeleteJob : IDeleteDb<Job>, IReturn<Job>
 
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryJobApplications : QueryDb<JobApplication>
 {
@@ -374,7 +377,6 @@ public class QueryJobApplications : QueryDb<JobApplication>
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditCreate)]
 public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplication>
 {
     [ValidateGreaterThan(0)]
@@ -388,7 +390,6 @@ public class CreateJobApplication : ICreateDb<JobApplication>, IReturn<JobApplic
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditModify)]
 public class UpdateJobApplication : IPatchDb<JobApplication>, IReturn<JobApplication>
 {
     public int Id { get; set; }
@@ -401,7 +402,6 @@ public class UpdateJobApplication : IPatchDb<JobApplication>, IReturn<JobApplica
 }
 
 [Tag("Talent")]
-[AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteJobApplication : IDeleteDb<JobApplication>, IReturnVoid
 {
     public int Id { get; set; }
@@ -409,6 +409,7 @@ public class DeleteJobApplication : IDeleteDb<JobApplication>, IReturnVoid
 
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryPhoneScreens : QueryDb<PhoneScreen>
 {
@@ -417,6 +418,7 @@ public class QueryPhoneScreens : QueryDb<PhoneScreen>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditCreate)]
 public class CreatePhoneScreen : ICreateDb<PhoneScreen>, IReturn<PhoneScreen>
 {
@@ -429,6 +431,7 @@ public class CreatePhoneScreen : ICreateDb<PhoneScreen>, IReturn<PhoneScreen>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditModify)]
 public class UpdatePhoneScreen : IPatchDb<PhoneScreen>, IReturn<PhoneScreen>
 {
@@ -440,6 +443,7 @@ public class UpdatePhoneScreen : IPatchDb<PhoneScreen>, IReturn<PhoneScreen>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryInterviews : QueryDb<Interview>
 {
@@ -448,6 +452,7 @@ public class QueryInterviews : QueryDb<Interview>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditCreate)]
 public class CreateInterview : ICreateDb<Interview>, IReturn<Interview>
 {
@@ -462,6 +467,7 @@ public class CreateInterview : ICreateDb<Interview>, IReturn<Interview>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateInterview : IPatchDb<Interview>, IReturn<Interview>
 {
@@ -476,6 +482,7 @@ public class UpdateInterview : IPatchDb<Interview>, IReturn<Interview>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryJobOffers : QueryDb<JobOffer>
 {
@@ -484,6 +491,7 @@ public class QueryJobOffers : QueryDb<JobOffer>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditCreate)]
 public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
 {
@@ -498,13 +506,15 @@ public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditQuery)]
-public class QueryJobAppEvents : QueryDb<JobApplicationEvent>
+public class QueryJobApplicationEvents : QueryDb<JobApplicationEvent>
 {
     public int? JobApplicationId { get; set; }
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditCreate)]
 public class CreateJobApplicationEvent : ICreateDb<JobApplicationEvent>,
     IReturn<JobApplicationEvent>
@@ -512,6 +522,7 @@ public class CreateJobApplicationEvent : ICreateDb<JobApplicationEvent>,
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateJobApplicationEvent : IPatchDb<JobApplicationEvent>,
     IReturn<JobApplicationEvent>
@@ -526,6 +537,7 @@ public class UpdateJobApplicationEvent : IPatchDb<JobApplicationEvent>,
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteJobApplicationEvent : IDeleteDb<JobApplicationEvent>,
     IReturn<JobApplicationEvent>, IReturnVoid
@@ -533,7 +545,6 @@ public class DeleteJobApplicationEvent : IDeleteDb<JobApplicationEvent>,
 }
 
 [Tag("Talent")]
-[ValidateIsAuthenticated]
 public class QueryAppUsers : QueryDb<AppUser>
 {
     public string? EmailContains { get; set; }
@@ -542,6 +553,7 @@ public class QueryAppUsers : QueryDb<AppUser>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryJobApplicationComments : QueryDb<JobApplicationComment>
 {
@@ -549,6 +561,7 @@ public class QueryJobApplicationComments : QueryDb<JobApplicationComment>
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditCreate)]
 [AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
 public class CreateJobApplicationComment : ICreateDb<JobApplicationComment>, IReturn<JobApplicationComment>
@@ -562,6 +575,7 @@ public class CreateJobApplicationComment : ICreateDb<JobApplicationComment>, IRe
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditModify)]
 [AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
 public class UpdateJobApplicationComment : IPatchDb<JobApplicationComment>, IReturn<JobApplicationComment>
@@ -575,6 +589,7 @@ public class UpdateJobApplicationComment : IPatchDb<JobApplicationComment>, IRet
 }
 
 [Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditSoftDelete)]
 [AutoPopulate(nameof(JobApplicationComment.AppUserId), Eval = "userAuthId")]
 public class DeleteJobApplicationComment : IDeleteDb<JobApplicationComment>, IReturnVoid

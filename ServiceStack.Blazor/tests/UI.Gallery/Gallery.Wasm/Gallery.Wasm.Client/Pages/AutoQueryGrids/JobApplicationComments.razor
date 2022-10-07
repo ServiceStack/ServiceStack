@@ -1,0 +1,15 @@
+﻿@page "/grid/job-applications/comments"
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Job Application Comments
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="JobApplicationComment" Apis="Apis.AutoQuery<
+    QueryJobApplicationComments,CreateJobApplicationComment,UpdateJobApplicationComment,DeleteJobApplicationComment>()" />
+
+<ExampleCode Title="Source Code" Path="/AutoQueryGrids/JobApplicationComments.razor" />
