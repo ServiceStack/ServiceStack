@@ -280,7 +280,7 @@ public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
     [Input(Type = "textarea")]
-    [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label = "text-xl text-indigo-800")]
+    [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label = "text-xl text-indigo-700")]
     public string? About { get; set; }
 }
 
@@ -304,7 +304,7 @@ public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
     public string? Email { get; set; }
     public string? Phone { get; set; }
     [Input(Type = "textarea")]
-    [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label= "text-xl text-indigo-800")]
+    [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label= "text-xl text-indigo-700")]
     public string? About { get; set; }
 }
 
