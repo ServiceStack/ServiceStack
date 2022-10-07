@@ -23,7 +23,7 @@ public partial class AutoFormFields : UiComponentBase
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        FormLayout ??= MetadataType.CreateFormLayout(Type);
+        FormLayout ??= MetadataType.CreateFormLayout(Type, AppMetadata);
         Apis.Load(Type.Assembly);
     }
 }

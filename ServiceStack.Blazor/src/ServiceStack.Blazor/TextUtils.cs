@@ -681,7 +681,8 @@ public static class TextUtils
     /// Create a Form Layout from a declarative annotated DTO definition
     /// </summary>
     public static List<InputInfo> CreateFormLayout<T>(this MetadataType metadataType) => CreateFormLayout(metadataType, typeof(T));
-    public static List<InputInfo> CreateFormLayout(this MetadataType metadataType, Type type)
+    public static List<InputInfo> CreateFormLayout(this MetadataType metadataType, Type type) => CreateFormLayout(metadataType, type, null);
+    public static List<InputInfo> CreateFormLayout(this MetadataType metadataType, Type type, AppMetadata? appMetadata)
     {
         var typeProps = TypeProperties.Get(type).PropertyMap;
         metadataType.Type ??= type;
@@ -699,7 +700,20 @@ public static class TextUtils
             if (prop.Input == null)
                 prop.PopulateInput(Input.Create(prop.PropertyInfo));
 
-            formLayout.Add(prop.Input!);
+            var input = prop.Input!;
+            if (appMetadata != null)
+            {
+                if (input.Type == Input.Types.File && prop.UploadTo != null)
+                {
+                    var uploadLocation = appMetadata.Plugins.FilesUpload?.Locations.FirstOrDefault(x => x.Name == prop.UploadTo);
+                    if (uploadLocation?.AllowExtensions != null)
+                    {
+                        input.Accept ??= string.Join(',', uploadLocation.AllowExtensions.Map(x => x.StartsWith('.') ? x : $".{x}"));
+                    }
+                }
+            }
+
+            formLayout.Add(input);
         }
         return formLayout;
     }
