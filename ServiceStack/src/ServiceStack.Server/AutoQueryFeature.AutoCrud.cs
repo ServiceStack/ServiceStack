@@ -1044,7 +1044,7 @@ namespace ServiceStack
                 foreach (var entry in dtoValues)
                 {
                     var isNullable = meta.NullableProps?.Contains(entry.Key) == true;
-                    var isDefaultValue = entry.Value == null || (!isNullable && AutoMappingUtils.IsDefaultValue(entry.Value));
+                    var isDefaultValue = entry.Value == null || (!isNullable && entry.Value is not Enum && AutoMappingUtils.IsDefaultValue(entry.Value));
                     if (isDefaultValue)
                     {
                         var handled = false;

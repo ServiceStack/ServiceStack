@@ -178,22 +178,25 @@ public static class Input
         var names = Enum.GetNames(enumType);
         var to = new List<KeyValuePair<string, string>>();
 
-        var useEntries = JsConfig.TreatEnumAsInteger || enumType.IsEnumFlags();
+        var intEnum = JsConfig.TreatEnumAsInteger || enumType.IsEnumFlags();
+        var useEntries = intEnum;
         
         for (var i = 0; i < names.Length; i++)
         {
             var name = names[i];
 
             var enumMember = GetEnumMember(enumType, name);
+            var rawValue = enumMember.GetRawConstantValue();
+            var value = Convert.ToInt64(rawValue).ToString();
             var enumDesc = GetDescription(enumMember);
             if (enumDesc != null)
             {
+                if (!intEnum)
+                    value = name;
+
                 name = enumDesc;
                 useEntries = true;
             }
-
-            var rawValue = enumMember.GetRawConstantValue();
-            var value = Convert.ToInt64(rawValue).ToString();
 
             var enumAttr = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
             if (enumAttr != null)
