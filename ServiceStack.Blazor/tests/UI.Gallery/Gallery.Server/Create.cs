@@ -25,6 +25,61 @@ public static class Create
 {
     static int trackId = 0;
 
+    public static List<Player> Players
+    {
+        get
+        {
+            var by = "player@email.com";
+            var ret = new List<Player>
+            {
+                new Player
+                {
+                    Id = 1,
+                    FirstName = "North",
+                    LastName = "West",
+                    Email = "north@west.com",
+                    PhoneNumbers = new List<Phone>
+                    {
+                        new() { Kind = PhoneKind.Mobile, Number = "123-555-5555" },
+                        new() { Kind = PhoneKind.Home,   Number = "555-555-5555", Ext = "123" },
+                    },
+                    Profile = new Profile
+                    {
+                        Username = "north",
+                        Role = PlayerRole.Leader,
+                        Region = PlayerRegion.Australasia,
+                        HighScore = 100,
+                        GamesPlayed = 10,
+                        CoverUrl = "files/cover.docx",
+                    }.WithAudit(by),
+                },
+                new Player
+                {
+                    Id = 2,
+                    FirstName = "South",
+                    LastName = "East",
+                    Email = "south@east.com",
+                    PhoneNumbers = new List<Phone>
+                    {
+                        new() { Kind = PhoneKind.Mobile, Number = "456-666-6666" },
+                        new() { Kind = PhoneKind.Work,   Number = "666-666-6666", Ext = "456" },
+                    },
+                    Profile = new Profile
+                    {
+                        Username = "south",
+                        Role = PlayerRole.Player,
+                        Region = PlayerRegion.Americas,
+                        HighScore = 50,
+                        GamesPlayed = 20,
+                        CoverUrl = "files/profile.jpg",
+                    }.WithAudit(by),
+                }
+            };
+
+            return ret;
+        }
+    }
+
     public static Track Track(string name, string artist, string album, int year) =>
         new Track {
             Id = ++trackId,

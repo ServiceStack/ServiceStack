@@ -1,0 +1,37 @@
+﻿@page "/gallery/format/preview-format"
+
+<h3 class="my-4 text-lg font-semibold">Currency</h3>
+
+<PreviewFormat Value="50" Format=Formats.Currency />
+
+<h3 class="my-4 text-lg font-semibold">Bytes</h3>
+
+<PreviewFormat Value="1000000" Format=Formats.Bytes />
+
+<h3 class="my-4 text-lg font-semibold">Icon</h3>
+
+<PreviewFormat Value=@("/profiles/1.jpg") Format=Formats.Icon IconClass="w-40 h-40" />
+
+<h3 class="my-4 text-lg font-semibold">Icon Rounded</h3>
+
+<PreviewFormat Value=@("/profiles/1.jpg") Format=Formats.Icon IconClass="w-40 h-40 rounded-full" />
+
+<h3 class="my-4 text-lg font-semibold">Attachment (Image)</h3>
+
+<PreviewFormat Value=@("/profiles/1.jpg") Format=Formats.Attachment />
+
+<h3 class="my-4 text-lg font-semibold">Attachment (Document)</h3>
+
+<PreviewFormat Value=@("/content/hosting.md") Format=Formats.Attachment />
+
+<h3 class="my-4 text-lg font-semibold">Link</h3>
+
+<PreviewFormat Value=@("https://servicestack.net/blazor") Format=Formats.Link />
+
+<h3 class="my-4 text-lg font-semibold">Link Email</h3>
+
+<PreviewFormat Value=@("user@email.com") Format=Formats.LinkEmail />
+
+<h3 class="my-4 text-lg font-semibold">Link Phone</h3>
+
+<PreviewFormat Value=@("555 123 4567") Format=Formats.LinkPhone />

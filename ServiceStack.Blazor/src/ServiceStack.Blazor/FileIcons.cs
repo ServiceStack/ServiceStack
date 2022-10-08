@@ -168,5 +168,13 @@ public static class FileIcons
         return null;
     }
 
+    public static string IconFallbackSrc(string src, string? fallbackSrc = null)
+    {
+        return ExtSrc(src.LastRightPart('.').ToLower())
+            ?? (fallbackSrc != null
+                ? ExtSrc(fallbackSrc) ?? fallbackSrc
+                : null)
+            ?? ExtSrc("doc")!;
+    }
 
 }

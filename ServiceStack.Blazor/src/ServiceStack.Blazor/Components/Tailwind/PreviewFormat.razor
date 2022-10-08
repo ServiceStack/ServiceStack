@@ -19,13 +19,13 @@
             if (Format.Method == FormatMethods.IconRounded)
             {
                 var src = str;
-                <img class=@(cls ?? "w-8 h-8 rounded-full") title=@str
+                <img class=@(cls ?? IconRoundedClass) title=@str
                      src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             }
             else if (Format.Method == FormatMethods.Icon)
             {
                 var src = str;
-                <img class=@(cls ?? "w-6 h-6") title=@str 
+                <img class=@(cls ?? IconClass) title=@str 
                      src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
             }
             else if (Format.Method == FormatMethods.Currency)
@@ -56,6 +56,20 @@
                     <a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
                 }
             }
+            else if (Format.Method == FormatMethods.Attachment)
+            {
+                var url = str;
+                var fileName = FileIcons.GetFileName(url)!;
+                var ext = FileIcons.GetExt(fileName);
+                var imgSrc = ext == null || FileIcons.CanPreview(url)
+                    ? BlazorConfig.Instance.AssetsPathResolver(url)
+                    : FileIcons.IconFallbackSrc(url);
+
+                <a class=@(cls ?? "flex") href=@BlazorConfig.Instance.AssetsPathResolver(url) title=@url target="_blank">
+                    <img class=@IconClass src=@imgSrc @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(imgSrc)">
+                    <span class="pl-1">@fileName</span>
+                </a>
+            }
             else if (Format.Method != FormatMethods.Hidden)
             {
                 <span class=@cls>@FormatValue(value)</span>
@@ -80,7 +94,7 @@
 
         @if (IncludeIcon)
         {
-            <Icon class=@IconClass Image=Value!.GetType().GetIcon() />
+            <Icon class=@IconRoundedClass Image=Value!.GetType().GetIcon() />
         }
         <span>
         @if (isCollection)

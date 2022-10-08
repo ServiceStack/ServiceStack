@@ -40,6 +40,9 @@
 .prose blockquote {
     border-left-style: solid;
 }
+.html-format {
+    max-width: unset;
+}
 
 @media (min-width: 1024px) {
     .lg\:prose-xl {

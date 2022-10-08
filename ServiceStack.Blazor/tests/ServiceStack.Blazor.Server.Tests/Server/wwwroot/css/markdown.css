@@ -65,3 +65,7 @@
 .prose pre::-webkit-scrollbar-thumb {
     background-color: rgb(100 116 139);
 }
+
+.html-format {
+    max-width: unset;
+}

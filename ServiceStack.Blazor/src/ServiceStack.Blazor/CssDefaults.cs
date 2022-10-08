@@ -88,6 +88,18 @@ public static class CssDefaults
         public const string SizeClass = "sm:max-w-prose lg:max-w-screen-md xl:max-w-screen-lg 2xl:max-w-screen-xl sm:w-full";
     }
 
+    public static class HtmlFormat
+    {
+        public const string Class = "prose html-format";
+    }
+
+    public static class PreviewFormat
+    {
+        public const string Class = "flex items-center";
+        public const string IconClass = "w-6 h-6";
+        public const string IconRoundedClass = "w-8 h-8 rounded-full";
+    }
+
     public static string ToBreakpointCellClass(this Breakpoint breakpoint) => breakpoint switch
     {
         // Use full class names so tailwindcss can find it
