@@ -98,6 +98,7 @@ public static class CssDefaults
         public const string Class = "flex items-center";
         public const string IconClass = "w-6 h-6";
         public const string IconRoundedClass = "w-8 h-8 rounded-full";
+        public const string ValueIconClass = "w-5 h-5 mr-1";
     }
 
     public static string ToBreakpointCellClass(this Breakpoint breakpoint) => breakpoint switch

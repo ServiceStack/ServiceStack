@@ -13,6 +13,7 @@ public partial class PreviewFormat
     [Parameter] public string? @class { get; set; } = CssDefaults.PreviewFormat.Class;
     [Parameter] public string? IconClass { get; set; } = CssDefaults.PreviewFormat.IconClass;
     [Parameter] public string? IconRoundedClass { get; set; } = CssDefaults.PreviewFormat.IconRoundedClass;
+    [Parameter] public string? ValueIconClass { get; set; } = CssDefaults.PreviewFormat.ValueIconClass;
     [Parameter] public FormatInfo? Format { get; set; }
     [Parameter] public bool IncludeIcon { get; set; } = true;
     [Parameter] public bool IncludeCount { get; set; } = true;
