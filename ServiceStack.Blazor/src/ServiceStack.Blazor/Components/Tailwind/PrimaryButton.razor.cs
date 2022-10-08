@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Render a Primary Tailwlind Link or Button
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/PrimaryButton.png)
+/// </summary>
 public partial class PrimaryButton : UiComponentBase
 {
     [Parameter] public string type { get; set; } = "button";

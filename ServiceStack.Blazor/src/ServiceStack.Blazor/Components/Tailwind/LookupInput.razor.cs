@@ -2,6 +2,10 @@
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// UX Friendly Input for selecting referential Data using Modal Lookup
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/LookupInput.png)
+/// </summary>
 public partial class LookupInput : TextInputBase, IHasJsonApiClient
 {
     [Inject] public JsonApiClient? Client { get; set; }

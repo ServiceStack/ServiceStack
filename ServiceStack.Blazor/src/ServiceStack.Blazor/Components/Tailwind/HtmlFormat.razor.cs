@@ -4,6 +4,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Formats any Serializable object in a human-friendly HTML Format
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/HtmlFormat.png)
 /// </summary>
 public partial class HtmlFormat
 {

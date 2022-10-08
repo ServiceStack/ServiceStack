@@ -4,6 +4,10 @@ using Microsoft.JSInterop;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// File Input Control
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/FileInput.png)
+/// </summary>
 public partial class FileInput : TextInputBase, IAsyncDisposable
 {
     [Inject] public IJSRuntime JS { get; set; }

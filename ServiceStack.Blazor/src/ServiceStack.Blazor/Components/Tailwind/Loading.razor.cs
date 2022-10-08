@@ -4,6 +4,10 @@ using Microsoft.JSInterop;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Show Loading animation whilst waiting for a long operation to complete
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/Loading.png)
+/// </summary>
 public partial class Loading : UiComponentBase
 {
     [Parameter] public string Message { get; set; } = "Loading...";

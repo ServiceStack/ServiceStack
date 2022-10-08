@@ -2,6 +2,10 @@
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Require explicit confirmation before deleting
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/ConfirmDelete.png)
+/// </summary>
 public partial class ConfirmDelete : UiComponentBase
 {
     bool confirmDelete;

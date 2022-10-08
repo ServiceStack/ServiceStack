@@ -2,6 +2,10 @@
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Display ChildContent in a Modal Dialog
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/ModalDialog.png)
+/// </summary>
 public partial class ModalDialog : UiComponentBase
 {
     [Parameter, EditorRequired] public string Id { get; set; }

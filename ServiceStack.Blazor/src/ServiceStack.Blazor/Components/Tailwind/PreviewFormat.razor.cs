@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Customize how Table Cell data are rendered into different UX-Friendly formats
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/PreviewFormat.png)
+/// </summary>
 public partial class PreviewFormat
 {
     [Parameter] public object? Value { get; set; }

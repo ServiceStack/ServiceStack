@@ -5,6 +5,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Dynamic Modal Lookup for selecting Referential Data
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/DynamicModalLookup.png)
+/// </summary>
 public partial class DynamicModalLookup : UiComponentBase
 {
     [Parameter] public string Id { get; set; } = "DynamicModalLookup";
@@ -148,6 +152,10 @@ public abstract class ModalLookup : AuthBlazorComponentBase
     abstract public Task UpdateAsync();
 }
 
+/// <summary>
+/// Modal Lookup for selecting Referential Data
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/ModalLookup.png)
+/// </summary>
 public partial class ModalLookup<Model> : ModalLookup
 {
     [Inject] public LocalStorage? LocalStorage { get; set; }

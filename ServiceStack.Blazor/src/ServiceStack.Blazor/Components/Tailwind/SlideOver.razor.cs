@@ -2,6 +2,10 @@
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
+/// <summary>
+/// Display ChildContent in a Slide Over Dialog
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/SlideOver.png)
+/// </summary>
 public partial class SlideOver : BlazorComponentBase
 {
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }
