@@ -68,6 +68,8 @@ MOVE MyApp.Client.csproj %TO%\MyApp.Client\
 COPY %TO%\MyApp\MyApp.csproj .
 RD /q /s %TO%\MyApp
 XCOPY /Y /E /H /C /I ServiceStack.Blazor.Tailwind.Tests\Server %TO%\MyApp
+RD /q /s %TO%\MyApp\ServiceInterface\
+DEL %TO%\MyApp\MyApp.Server.*
 MOVE MyApp.csproj %TO%\MyApp\
 
 COPY %TO%\MyApp.ServiceModel\MyApp.ServiceModel.csproj .
@@ -76,9 +78,11 @@ XCOPY /Y /E /H /C /I ServiceStack.Blazor.Tailwind.Tests\ServiceModel %TO%\MyApp.
 MOVE MyApp.ServiceModel.csproj %TO%\MyApp.ServiceModel\
 
 COPY %TO%\MyApp.Tests\MyApp.Tests.csproj .
+COPY %TO%\MyApp.Tests\appsettings.json .
 RD /q /s %TO%\MyApp.Tests
 XCOPY /Y /E /H /C /I ServiceStack.Blazor.Tailwind.Tests\Tests %TO%\MyApp.Tests
 MOVE MyApp.Tests.csproj %TO%\MyApp.Tests\
+MOVE appsettings.json %TO%\MyApp.Tests\
 
 COPY ServiceStack.Blazor.Tailwind.Tests\ServiceInterface\*.cs %TO%\MyApp.ServiceInterface\
 
