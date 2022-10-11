@@ -5,8 +5,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Customize how Table Cell data are rendered into different UX-Friendly formats
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/PreviewFormat.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/PreviewFormat.png)
+/// </remarks>
 public partial class PreviewFormat
 {
     [Parameter] public object? Value { get; set; }

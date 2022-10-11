@@ -5,8 +5,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Render a normal Tailwlind Link or Button
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/SecondaryButton.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/SecondaryButton.png)
+/// </remarks>
 public partial class SecondaryButton : UiComponentBase
 {
     [Parameter] public string type { get; set; } = "button";

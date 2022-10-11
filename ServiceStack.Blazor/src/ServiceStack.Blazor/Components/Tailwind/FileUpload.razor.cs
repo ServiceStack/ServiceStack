@@ -5,10 +5,13 @@ using Microsoft.AspNetCore.Components.Forms;
 namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
+/// A FileUpload UI component that integrates with the FileUploadFeature.
+/// </summary>
+/// <remarks>
 /// The File Upload UI component used in the [File Blazor Demo](https://file.locode.dev) has been extracted into a reusable Blazor component 
 /// you can utilize in your own app, e.g:
 /// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/templates/fileupload-blazor-usage-example.png)
-/// </summary>
+/// </remarks>
 /// <typeparam name="TReq"></typeparam>
 public partial class FileUpload<TReq> : UiComponentBase
 {

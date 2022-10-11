@@ -6,8 +6,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Display a typed .NET Collection
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/DataGrid.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/DataGrid.png)
+/// </remarks>
 /// <typeparam name="Model"></typeparam>
 public partial class DataGrid<Model> : UiComponentBase
 {

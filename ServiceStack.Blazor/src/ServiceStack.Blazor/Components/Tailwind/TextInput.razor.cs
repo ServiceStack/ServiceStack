@@ -4,8 +4,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Text Input Control
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/TextInput.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/TextInput.png)
+/// </remarks>
 public partial class TextInput<TValue> : TextInputBase<TValue>
 {
 }

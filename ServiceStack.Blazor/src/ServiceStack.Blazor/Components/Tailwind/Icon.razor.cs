@@ -4,8 +4,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Display Customizable Icon
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/Icon.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/Icon.png)
+/// </remarks>
 public partial class Icon : UiComponentBase
 {
     [Parameter] public string? Svg { get; set; }

@@ -4,8 +4,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Create a Tailwind Breadcrumb component
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/Breadcrumbs.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/Breadcrumbs.png)
+/// </remarks>
 public partial class Breadcrumbs : UiComponentBase
 {
     [Parameter] public string HomeHref { get; set; } = "/";

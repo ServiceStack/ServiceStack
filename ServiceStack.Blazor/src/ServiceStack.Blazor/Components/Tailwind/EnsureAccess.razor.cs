@@ -4,8 +4,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Redirect to Sign In page if not authenticated or show access denied message if unauthorized
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/EnsureAccess.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/EnsureAccess.png)
+/// </remarks>
 public partial class EnsureAccess : AuthBlazorComponentBase
 {
     [Inject] NavigationManager NavigationManager { get; set; }

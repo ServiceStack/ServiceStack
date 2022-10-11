@@ -4,8 +4,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Date Input Control
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/DateTimeInput.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/DateTimeInput.png)
+/// </remarks>
 public partial class DateTimeInput<TValue> : DateTimeInputBase<TValue>
 {
 }

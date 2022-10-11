@@ -7,8 +7,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Dynamic Modal Lookup for selecting Referential Data
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/DynamicModalLookup.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/DynamicModalLookup.png)
+/// </remarks>
 public partial class DynamicModalLookup : UiComponentBase
 {
     [Parameter] public string Id { get; set; } = "DynamicModalLookup";

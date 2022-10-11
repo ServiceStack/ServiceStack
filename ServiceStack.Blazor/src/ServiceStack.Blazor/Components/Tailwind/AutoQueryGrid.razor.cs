@@ -7,8 +7,10 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
 /// Auto UI for managing AutoQuery CRUD APIs
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoQueryGrid.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/AutoQueryGrid.png)
+/// </remarks>
 /// <typeparam name="Model"></typeparam>
 public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 {
