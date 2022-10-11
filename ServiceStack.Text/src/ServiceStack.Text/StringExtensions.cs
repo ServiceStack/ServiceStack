@@ -776,6 +776,8 @@ namespace ServiceStack
             }
             return StringBuilderThreadStatic.ReturnAndFree(sb);
         }
+        
+        public static string ToKebabCase(this string value) => value.ToLowercaseUnderscore().Replace("_","-");
 
         public static string ToLowerSafe(this string value)
         {

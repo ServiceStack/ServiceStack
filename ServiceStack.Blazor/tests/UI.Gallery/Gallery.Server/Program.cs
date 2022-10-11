@@ -51,10 +51,6 @@ BlazorConfig.Set(new() {
     JSParseObject = JS.ParseObject,
     EnableLogging = app.Environment.IsDevelopment(),
     EnableVerboseLogging = app.Environment.IsDevelopment(),
-    AutoQueryGridDefaults = new() {
-        //TableStyle = TableStyle.VerticalLines | TableStyle.UppercaseHeadings,
-        ShowCopyApiUrl = false,
-    }
 });
 
 app.Run();
