@@ -366,9 +366,9 @@ else if (Notes != null)
 </div>
 </div>
 </div>
-<AutoFormFields Model="Model" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
 </div>
-<div class="flex flex-shrink-0 justify-end px-4 py-4">
+<div class="bg-gray-50 flex flex-shrink-0 justify-end px-4 py-4">
 <SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
 <PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
 </div>
@@ -416,7 +416,7 @@ else if (Notes != null)
 </div>
 </div>
 </div>
-<AutoFormFields Model="Model" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
 </div>
 <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6 flex flex-wrap justify-between">
 <div>
@@ -437,7 +437,6 @@ else if (Notes != null)
 </div>
 </div>
 @using ServiceStack.Html
-@typeparam Model
 @inherits UiComponentBase
 <ErrorSummary ExplicitStatus=@(Api?.Error) Except=@VisibleFields />
 <div class="flex flex-1 flex-col justify-between">
@@ -447,6 +446,7 @@ else if (Notes != null)
 @foreach (var f in FormLayout.OrEmpty())
 {
 var propType = MetadataType.Properties.FirstOrDefault(x => x.Name == f.Id);
+var dataModelProp = DataModelType.Property(f.Id);
 if (f.Ignore == true || !BlazorUtils.SupportsProperty(propType))
 {
 continue;
@@ -456,9 +456,9 @@ f.Css?.Field ?? (f.Type == Input.Types.Textarea
 ? "col-span-12"
 : "col-span-12 xl:col-span-6" + (f.Type == Input.Types.Checkbox ? " flex items-center" : "")),
 f.Type == Input.Types.Hidden ? "hidden" : "") style="width:100%">
-@if (propType?.Ref != null)
+@if (dataModelProp?.Ref != null && f.Type != Input.Types.File)
 {
-<LookupInput MetadataType=@MetadataType Input=@f Model=@ModelDictionary Status=@Api?.Error />
+<LookupInput MetadataType=@DataModelType Input=@f Model=@ModelDictionary Status=@Api?.Error />
 }
 else
 {
@@ -472,6 +472,7 @@ else
 </div>
 @typeparam Model
 @inherits AuthBlazorComponentBase
+@implements IDisposable
 @if (invalidAccess != null)
 {
 <div class="w-body md:w-body overflow-auto">
@@ -725,7 +726,7 @@ name=@Id
 @attributes="IncludeAttributes">
 </div>
 <div class="ml-3 text-sm">
-<label class=@ClassNames("font-medium text-gray-700") for=@Id>
+<label class=@ClassNames("font-medium text-gray-700", LabelClass) for=@Id>
 @UseLabel
 </label>
 @if (HasErrorField)
@@ -847,35 +848,46 @@ else if (!string.IsNullOrEmpty(UseHelp))
 @inherits DynamicInputBase
 @if (IsSelect)
 {
-<SelectInput Id=@UseId Status=@Status TValue="string"
-@bind-Value="Value" @attributes="AllAttributes" Help=@TextUtils.Humanize(UseId)>
-@if (Input?.AllowableEntries != null)
-{
-foreach (var entry in Input!.AllowableEntries)
-{
-<option value=@entry.Key>@entry.Value</option>
-}
-}
-else if (Input?.AllowableValues != null)
-{
-foreach (var item in Input!.AllowableValues)
-{
-<option value=@item>@item</option>
-}
-}
-</SelectInput>
+<SelectInput Id=@UseId Status=@Status TValue="string" Input=@Input
+@bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@TextUtils.Humanize(UseId) @attributes="AllAttributes" />
 }
 else if (IsCheckbox)
 {
-<CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+<CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }
 else if (UseType == "file")
 {
-<FileInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+string? value = null;
+ICollection<string>? values = null;
+UploadedFile? file = null;
+List<UploadedFile>? files = null;
+if (ValueObject != null)
+{
+value = ValueObject as string;
+if (value == null)
+{
+values = ValueObject as ICollection<string>;
+if (values == null)
+{
+if (ValueObject is System.Collections.IEnumerable)
+{
+files = ValueObject.ConvertTo<List<UploadedFile>>();
 }
 else
 {
-<TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+file = ValueObject.ConvertTo<UploadedFile>();
+}
+}
+}
+}
+<FileInput type=@UseType Id=@UseId Status=@Status class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes"
+Multiple=@(Input?.Multiple ?? false) Accept=@(Input?.Accept)
+Value=@value Values=@values File=@file Files=@files
+OnInput="e => Model[Input!.Id] = e" />
+}
+else
+{
+<TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }
 @inherits AuthBlazorComponentBase
 @if (!IsAuthenticated)
@@ -908,20 +920,22 @@ Sign In
 </div>
 }
 @using Microsoft.AspNetCore.Components.Forms
-@typeparam TValue
-@inherits TextInputBase<TValue>
+@inherits TextInputBase
+@implements IAsyncDisposable
+<div class=@ClassNames("flex", !Multiple ? "justify-between" : "flex-col")>
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
-<div class="mt-1 relative">
+<div class="block mt-2">
+<span class="sr-only">UseHelp ?? UseLabel</span>
 @{
 var cls = @ClassNames("block w-full sm:text-sm rounded-md",
 CssClass("block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100",
 "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
 }
-<InputFile class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder @attributes="IncludeAttributes" />
+<InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder multiple=@Multiple accept=@Accept @attributes="IncludeAttributes" OnChange="@OnChange" />
 @if (HasErrorField)
 {
 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -941,6 +955,77 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
 }
 </div>
+@if (!Multiple)
+{
+var src = imgSrc();
+if (!string.IsNullOrEmpty(src))
+{
+<div class="shrink-0 cursor-pointer" title=@(!isDataUri(src) ? src : "")>
+<img @onclick="openFile" class=@ClassNames("h-16 w-16", imgCls(src)) alt=@($"Current {UseLabel}")
+src=@(FallbackSrc ?? BlazorConfig.Instance.AssetsPathResolver(src))
+@onerror="() => FallbackSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+</div>
+}
+}
+else if (FileList.Count > 0)
+{
+<div class="mt-3">
+<table class="w-full">
+@foreach (var file in FileList)
+{
+var filePath = file.FilePath ?? "";
+var src = FileIcons.FilePathUri(filePath)!;
+<tr>
+<td class="pr-6 align-bottom pb-2">
+<div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
+<img src=@((FallbackSrcMap.TryGetValue(src, out var fallback) ? fallback : null) ?? BlazorConfig.Instance.AssetsPathResolver(src))
+class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
+@onerror="() => FallbackSrcMap[src] = BlazorConfig.Instance.FallbackPathResolver(src)">
+@if (!isDataUri(filePath))
+{
+<a href=@BlazorConfig.Instance.AssetsPathResolver(filePath) target="_blank" class="overflow-hidden">
+@file.FileName
+</a>
+}
+else
+{
+<span class="overflow-hidden">@file.FileName</span>
+}
+</div>
+</td>
+<td class="align-top pb-2 whitespace-nowrap">
+@if (file.ContentLength > 0)
+{
+<span class="text-gray-500 text-sm bg-white">
+@TextUtils.FormatBytes(file.ContentLength)
+</span>
+}
+</td>
+</tr>
+}
+</table>
+</div>
+}
+</div>
+@code {
+string? imgSrc()
+{
+var inputFile = inputFiles?.FirstOrDefault();
+if (inputFile != null)
+return inputFile.FilePath;
+var filePath = Value ?? Values?.FirstOrDefault() ?? File?.FilePath ?? Files?.FirstOrDefault()?.FilePath;
+if (filePath != null)
+{
+var resolvedFilePath = BlazorConfig.Instance.AssetsPathResolver(filePath);
+return FileIcons.FilePathUri(resolvedFilePath);
+}
+return null;
+}
+bool isDataUri(string? src) => src == null ? false : src.StartsWith("data:") || src.StartsWith("blob:");
+string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
+? ""
+: "rounded-full";
+}
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam TReq
 @inherits UiComponentBase
@@ -980,7 +1065,9 @@ else
 <ErrorSummary/>
 </CascadingValue>
 }
+<div class=@(@class)>
 @((MarkupString) HtmlUtils.HtmlDump(Value ?? ""))
+</div>
 @inherits UiComponentBase
 @((MarkupString)ToHtml())
 @inherits UiComponentBase
@@ -1186,22 +1273,147 @@ TableStyle="TableStyle.FullWidth">
 </div>
 </ModalDialog>
 <QueryPrefs Show=@ShowQueryPrefs Columns="ViewModelColumns" Prefs="ApiPrefs" Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
+@using System.Collections
 @using ServiceStack.Text
+@{
+void RenderValue(object? value)
+{
+if (Format?.Method == null)
+{
+@FormatValue(value)
+}
+else
+{
+var str = $"{value}";
+var attrs = (Format.Options != null
+? BlazorConfig.Instance.JSParseObject(Format.Options)
+: null) ?? new();
+var cls = attrs.Remove("cls", out var oClass) ? oClass as string : null;
+if (Format.Method == FormatMethods.IconRounded)
+{
+var src = str;
+<img class=@(cls ?? IconRoundedClass) title=@str
+src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+}
+else if (Format.Method == FormatMethods.Icon)
+{
+var src = str;
+<img class=@(cls ?? IconClass) title=@str
+src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+}
+else if (Format.Method == FormatMethods.Currency)
+{
+<span class=@cls>@($"{value.ConvertTo<decimal>():C}")</span>
+}
+else if (Format.Method == FormatMethods.Bytes)
+{
+<span class=@cls>@TextUtils.FormatBytes(value.ConvertTo<long>())</span>
+}
+else if (Format.Method.StartsWith("link"))
+{
+if (Format.Method == FormatMethods.Link)
+{
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+else if (Format.Method == FormatMethods.LinkPhone)
+{
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+else if (Format.Method == FormatMethods.LinkEmail)
+{
+var href = str;
+if (attrs.Remove("subject", out var oSubject) && oSubject is string subject)
+href = href.AddQueryParam("subject", subject.UrlEncode().Replace("+", "%20"), encode: false);
+if (attrs.Remove("body", out var oBody) && oBody is string body)
+href = href.AddQueryParam("body", body.UrlEncode().Replace("+","%20"), encode:false);
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+}
+else if (Format.Method == FormatMethods.Attachment)
+{
+var url = str;
+var fileName = FileIcons.GetFileName(url)!;
+var ext = FileIcons.GetExt(fileName);
+var imgSrc = ext == null || FileIcons.CanPreview(url)
+? BlazorConfig.Instance.AssetsPathResolver(url)
+: FileIcons.IconFallbackSrc(url);
+<a class=@(cls ?? "flex") href=@BlazorConfig.Instance.AssetsPathResolver(url) title=@url target="_blank">
+<img class=@IconClass src=@imgSrc @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(imgSrc)">
+<span class="pl-1">@fileName</span>
+</a>
+}
+else if (Format.Method != FormatMethods.Hidden)
+{
+<span class=@cls>@FormatValue(value)</span>
+}
+}
+}
+}
 @if (TextUtils.IsComplexType(Value?.GetType()))
 {
-var preview = TextUtils.Dump(Value);
-<span class=@CssUtils.ClassNames(@class) title=@TextUtils.TruncateJson(preview, MaxComplexPreviewLength)>
+var useValue = Value;
+var e = Value as IEnumerable;
+var isCollection = e != null && Value is not IDictionary;
+var count = e != null && isCollection && IncludeCount ? EnumerableUtils.Count(e) : 0;
+<span class=@CssUtils.ClassNames(@class)>
+@if (isCollection)
+{
+useValue = EnumerableUtils.FirstOrDefault(e);
+<span class="mr-2">@count</span>
+}
 @if (IncludeIcon)
 {
-var icon = Value.GetType().GetIcon();
-<Icon class=@IconClass Image=icon />
+<Icon class=@ValueIconClass Image=Value!.GetType().GetIcon() />
 }
-@TextUtils.TruncateJson(preview, MaxComplexFieldLength)
+<span>
+@if (isCollection)
+{
+@("[ ")
+}
+@if (!isCollection || count > 0)
+{
+@("{ ")
+@if (TextUtils.IsComplexType(useValue?.GetType()))
+{
+var dict = useValue.ToObjectDictionary();
+var keys = dict.Keys.ToList();
+var len = Math.Min(MaxNestedFields, keys.Count);
+for (var i = 0; i < len; i++)
+{
+var key = keys[i];
+var val = dict[key];
+var value = FormatValue(val);
+var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+if (i > 0)
+{
+@(", ")
+}
+{
+<b class="font-medium">@key</b>
+@($": {str}")
+}
+}
+if (keys.Count > len)
+{
+@("...")
+}
+}
+else
+{
+RenderValue(useValue);
+}
+@(" }")
+}
+@if (isCollection)
+{
+@(" ]")
+}
+</span>
 </span>
 }
 else
 {
-@Format(Value);
+RenderValue(Value);
 }
 @inherits UiComponentBase
 @if (!string.IsNullOrEmpty(href))
@@ -1240,7 +1452,7 @@ string cls = "rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
 <select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md",
 CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
@@ -1306,7 +1518,7 @@ Close
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
@@ -1329,7 +1541,7 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 @{
@@ -1435,6 +1647,17 @@ visible: false);
 public static class Modal
 {
 public const string SizeClass = "sm:max-w-prose lg:max-w-screen-md xl:max-w-screen-lg 2xl:max-w-screen-xl sm:w-full";
+}
+public static class HtmlFormat
+{
+public const string Class = "prose html-format";
+}
+public static class PreviewFormat
+{
+public const string Class = "flex items-center";
+public const string IconClass = "w-6 h-6";
+public const string IconRoundedClass = "w-8 h-8 rounded-full";
+public const string ValueIconClass = "w-5 h-5 mr-1";
 }
 public static string ToBreakpointCellClass(this Breakpoint breakpoint) => breakpoint switch
 {

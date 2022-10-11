@@ -1,7 +1,7 @@
+@using Microsoft.AspNetCore.Components.Forms
+@namespace ServiceStack.Blazor.Components.Tailwind
 @typeparam Model
 @inherits UiComponentBase
-@namespace ServiceStack.Blazor.Components.Tailwind
-@using Microsoft.AspNetCore.Components.Forms
 <div class="fixed z-20 inset-0 overflow-y-auto" @onclick="onDone">
 <div class="absolute" style=@(TopLeft != null ? $"top:{TopLeft.Value.Y}px;left:{TopLeft.Value.X}px" : "") @onclick:stopPropagation="true">
 <div class="absolute top-0 right-0 bg-white border rounded normal-case text-sm shadow w-80">
@@ -91,89 +91,9 @@ Cancel
 </div>
 </div>
 </div>
-@code {
-[Parameter, EditorRequired] public Column<Model> Column { get; set; }
-[Parameter] public DOMRect? TopLeft { get; set; }
-[Parameter] public EventCallback Done { get; set; }
-[Parameter] public EventCallback<List<Filter>> Saved { get; set; }
-List<Filter> filters { get; set; } = new();
-FilterModel NewFilter = new();
-List<string> selectedEnums = new List<string>();
-string? newFilterValueType => Column.GetFilterRule(NewFilter.Value)?.ValueType;
-void selectedEnumsChanged(string enumValue, bool isChecked)
-{
-if (isChecked)
-{
-selectedEnums.Add(enumValue);
-}
-else
-{
-selectedEnums.RemoveAll(x => x == enumValue);
-}
-}
-protected override void OnParametersSet()
-{
-base.OnParametersSet();
-filters = Column!.Settings!.Filters?.ToList() ?? new();
-if (Column.FieldType.IsEnum)
-{
-selectedEnums = Column!.Settings!.Filters?.FirstOrDefault()?.Values ?? new();
-}
-}
-void addFilter()
-{
-if (string.IsNullOrEmpty(NewFilter.Query))
-return;
-var name = Column.GetFilterRule(NewFilter.Query)?.Name;
-if (name == null)
-return;
-filters.Add(new Filter { Key = NewFilter.Query, Name = name, Value = NewFilter.Value });
-NewFilter.Query = NewFilter.Value = "";
-StateHasChanged();
-}
-void removeFilter(Filter filter)
-{
-filters.Remove(filter);
-}
-async Task onDone() {
-await Done.InvokeAsync();
-}
-async Task onSave()
-{
-if (Column.FieldType.IsEnum)
-{
-filters = selectedEnums.Count > 0
-? new List<Filter> {
-new Filter { Key = "%In", Name = "In", Values = selectedEnums },
-}
-: new List<Filter>();
-}
-else
-{
-if (!string.IsNullOrEmpty(NewFilter.Value))
-{
-addFilter();
-}
-}
-await Saved.InvokeAsync(filters);
-await onDone();
-}
-async Task sort(SortOrder sortOrder)
-{
-Column.Settings.SortOrder = Column.Settings.SortOrder == sortOrder ? null : sortOrder;
-await onSave();
-}
-void handleKeyUp(KeyboardEventArgs args)
-{
-if (args.Key == "Enter")
-{
-addFilter();
-}
-}
-}
+@namespace ServiceStack.Blazor.Components.Tailwind
 @typeparam Model
 @inherits UiComponentBase
-@namespace ServiceStack.Blazor.Components.Tailwind
 <div class=@Class>
 <div class="px-4 sm:px-6 lg:px-8 text-sm">
 <div class="flex flex-wrap">
@@ -234,33 +154,9 @@ class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm t
 </div>
 </div>
 </div>
-@code {
-[Parameter, EditorRequired] public List<Column<Model>> Columns { get; set; } = new();
-[Parameter] public EventCallback Done { get; set; }
-[Parameter] public EventCallback FiltersChanged { get; set; }
-async Task removeFilters(Column<Model> column) {
-column.Filters.Clear();
-await column.SaveSettingsAsync();
-await FiltersChanged.InvokeAsync();
-}
-async Task removeFilter(Column<Model> column, Filter filter) {
-column.Settings.Filters.Remove(filter);
-await column.SaveSettingsAsync();
-await FiltersChanged.InvokeAsync();
-}
-async Task clearAll() {
-foreach (var c in Columns)
-{
-c.Settings.Filters.Clear();
-await c.SaveSettingsAsync();
-}
-await FiltersChanged.InvokeAsync();
-await Done.InvokeAsync();
-}
-}
-@inherits UiComponentBase
 @namespace ServiceStack.Blazor.Components.Tailwind
-<ModalDialog Id=@Id Show=@Show Close="Done">
+@inherits UiComponentBase
+<ModalDialog Id=@Id Show=@Show Close="Done" SizeClass="w-full sm:max-w-prose">
 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
 <div class="">
 <div class="mt-3 text-center sm:mt-0 sm:mx-4 sm:text-left">
@@ -308,38 +204,9 @@ Cancel
 </button>
 </div>
 </ModalDialog>
-@code {
-int[] allTakes = new[] { 10, 25, 50, 100, 250, 500, 1000 };
-[Parameter] public string Id { get; set; } = "query-prefs";
-[Parameter, EditorRequired] public ApiPrefs Prefs { get; set; } = new();
-[Parameter, EditorRequired] public List<MetadataPropertyType> Columns { get; set; } = new();
-[Parameter, EditorRequired] public bool Show { get; set; }
-[Parameter] public EventCallback Done { get; set; }
-[Parameter] public EventCallback<ApiPrefs> Save { get; set; }
-ApiPrefs Model { get; set; } = new();
-async Task save()
-{
-await Save.InvokeAsync(Model);
-}
-protected override void OnParametersSet()
-{
-base.OnParametersSet();
-Model = Prefs.Clone();
-}
-void columnSelected(MetadataPropertyType column, object? value)
-{
-if (value is bool b && b)
-{
-Model.SelectedColumns.Add(column.Name);
-}
-else
-{
-Model.SelectedColumns.Remove(column.Name);
-}
-}
-}
-@typeparam Model
 @namespace ServiceStack.Blazor.Components.Tailwind
+@typeparam Model
+@inherits UiComponentBase
 <div class="flex">
 @if (Column.Settings.Filters.Count > 0)
 {
@@ -358,45 +225,109 @@ else if (Column.Settings.SortOrder == SortOrder.Descending)
 <svg class="w-4 h-4" v-else-if="sort==='DESC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor" /></g></svg>
 }
 </div>
-@code {
-[Parameter, EditorRequired] public Column<Model> Column { get; set; }
-[Parameter] public bool IsOpen { get; set; }
-}
 @inherits UiComponentBase
-<div class=@ClassNames("bg-yellow-50 border-l-4 border-yellow-400 p-4", Class)>
+<div class=@ClassNames(BackgroundColor, BorderColor, "border-l-4 p-4", Class)>
 <div class="flex">
 <div class="flex-shrink-0">
-<!---: Heroicon name: solid/exclamation -->
+@if (Type == AlertType.Warning)
+{
 <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
 </svg>
+}
+else if (Type == AlertType.Error)
+{
+<svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+</svg>
+}
+else if (Type == AlertType.Information)
+{
+<svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M19 10.5a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0zM8.25 9.75A.75.75 0 019 9h.253a1.75 1.75 0 011.709 2.13l-.46 2.066a.25.25 0 00.245.304H11a.75.75 0 010 1.5h-.253a1.75 1.75 0 01-1.709-2.13l.46-2.066a.25.25 0 00-.245-.304H9a.75.75 0 01-.75-.75zM10 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+</svg>
+}
+else if (Type == AlertType.Success)
+{
+<svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+</svg>
+}
 </div>
 <div class="ml-3">
-<p class="text-sm text-yellow-700">@((MarkupString)HtmlMessage)</p>
+<p class=@ClassNames(TextColor, "text-sm")>
+@if (!string.IsNullOrEmpty(HtmlMessage))
+{
+@((MarkupString)HtmlMessage)
+}
+else
+{
+@ChildContent
+}
+</p>
 </div>
 </div>
 </div>
 @code {
-[Parameter, EditorRequired] public string HtmlMessage { get; set; } = "";
+string BackgroundColor => Type switch
+{
+AlertType.Information => "bg-blue-50",
+AlertType.Error => "bg-red-50",
+AlertType.Success => "bg-green-50",
+_ => "bg-yellow-50"
+};
+string BorderColor => Type switch
+{
+AlertType.Information => "border-blue-400",
+AlertType.Error => "border-red-400",
+AlertType.Success => "border-green-400",
+_ => "border-yellow-400"
+};
+string TextColor => Type switch
+{
+AlertType.Information => "text-blue-700",
+AlertType.Error => "text-red-700",
+AlertType.Success => "text-green-700",
+_ => "text-yellow-700"
+};
 }
 @inherits AlertSuccessBase
-@if (!string.IsNullOrEmpty(Message))
+@if (!dismissed)
 {
 <div class=@(ClassNames("rounded-md bg-green-50 p-4", CssClass())) role="alert">
 <div class="flex">
 <div class="flex-shrink-0">
-<!-- Heroicon name: solid/x-check -->
 <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
 </div>
 <div class="ml-3">
 <h3 class="text-sm font-medium text-green-800">
+@if (!string.IsNullOrEmpty(Message))
+{
 @Message
+}
+else
+{
+@ChildContent
+}
 </h3>
+</div>
+<div class="ml-auto pl-3">
+<div class="-mx-1.5 -my-1.5">
+<button type="button" class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
+@onclick="_ => dismissed = true">
+<span class="sr-only">Dismiss</span>
+<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+</svg>
+</button>
+</div>
 </div>
 </div>
 </div>
 }
-@using ServiceStack.Html
+@code {
+bool dismissed = false;
+}
 @typeparam Model
 @inherits AutoFormBase<Model>
 <div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
@@ -435,27 +366,11 @@ else if (Notes != null)
 </div>
 </div>
 </div>
-<ErrorSummary ExplicitStatus=@(api?.Error) Except=@VisibleFields />
-<div class="flex flex-1 flex-col justify-between">
-<div class="divide-y divide-gray-200 px-4 sm:px-6">
-<div class="space-y-6 pt-6 pb-5">
-<fieldset class="grid grid-cols-12 gap-6">
-@foreach (var f in FormLayout.OrEmpty())
-{
-<div class=@CssUtils.ClassNames(
-f.Css?.Field ?? (f.Type == Input.Types.Textarea ? "col-span-12" : "col-span-12 xl:col-span-6"),
-f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
-<DynamicInput Input=@f Model=@ModelDictionary Status=@api?.Error />
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
 </div>
-}
-</fieldset>
-</div>
-</div>
-</div>
-</div>
-<div class="flex flex-shrink-0 justify-end px-4 py-4">
-<button type="button" @onclick="OnDone" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Cancel</button>
-<button type="submit" class="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save</button>
+<div class="bg-gray-50 flex flex-shrink-0 justify-end px-4 py-4">
+<SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+<PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
 </div>
 </form>
 </div>
@@ -463,19 +378,6 @@ f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
 </div>
 </div>
 </div>
-@code {
-[Parameter] public Model? NewModel { get; set; }
-protected override string Title => Heading ?? ApiType.GetDescription() ?? $"New {typeof(Model).Name}";
-protected override async Task OnParametersSetAsync()
-{
-await base.OnParametersSetAsync();
-api = null;
-await TransitionAsync(show: true);
-ModelDictionary = NewModel.ToModelDictionary();
-FormLayout ??= CreateFormLayout();
-}
-}
-@using ServiceStack.Html
 @typeparam Model
 @inherits AutoFormBase<Model>
 <div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
@@ -514,23 +416,7 @@ else if (Notes != null)
 </div>
 </div>
 </div>
-<ErrorSummary ExplicitStatus=@(api?.Error ?? deleteApi?.Error) Except=@VisibleFields />
-<div class="flex flex-1 flex-col justify-between">
-<div class="divide-y divide-gray-200 px-4 sm:px-6">
-<div class="space-y-6 pt-6 pb-5">
-<fieldset class="grid grid-cols-12 gap-6">
-@foreach (var f in FormLayout.OrEmpty())
-{
-<div class=@CssUtils.ClassNames(
-f.Css?.Field ?? (f.Type == Input.Types.Textarea ? "col-span-12" : "col-span-12 xl:col-span-6"),
-f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
-<DynamicInput Input=@f Model=@ModelDictionary Status=@api?.Error />
-</div>
-}
-</fieldset>
-</div>
-</div>
-</div>
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
 </div>
 <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6 flex flex-wrap justify-between">
 <div>
@@ -550,40 +436,43 @@ f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
 </div>
 </div>
 </div>
-@code {
-[Parameter, EditorRequired] public Model Edit { get; set; }
-[Parameter] public Type? DeleteApiType { get; set; }
-protected override string Title => Heading ?? ApiType.GetDescription() ?? $"Edit {typeof(Model).Name} {MetadataType?.GetId(Edit)}";
-protected IHasErrorStatus? deleteApi;
-protected virtual async Task OnDelete()
+@using ServiceStack.Html
+@inherits UiComponentBase
+<ErrorSummary ExplicitStatus=@(Api?.Error) Except=@VisibleFields />
+<div class="flex flex-1 flex-col justify-between">
+<div class="divide-y divide-gray-200 px-4 sm:px-6">
+<div class="space-y-6 pt-6 pb-5">
+<fieldset class="grid grid-cols-12 gap-6">
+@foreach (var f in FormLayout.OrEmpty())
 {
-if (DeleteApiType == null)
-return;
-deleteApi = null;
-var request = CreateRequest(DeleteApiType);
-var model = request.ConvertTo<Model>();
-if (AutoSave)
+var propType = MetadataType.Properties.FirstOrDefault(x => x.Name == f.Id);
+var dataModelProp = DataModelType.Property(f.Id);
+if (f.Ignore == true || !BlazorUtils.SupportsProperty(propType))
 {
-api = await ApiAsync<Model>(request);
-if (api.Error != null)
+continue;
+}
+<div class=@CssUtils.ClassNames(
+f.Css?.Field ?? (f.Type == Input.Types.Textarea
+? "col-span-12"
+: "col-span-12 xl:col-span-6" + (f.Type == Input.Types.Checkbox ? " flex items-center" : "")),
+f.Type == Input.Types.Hidden ? "hidden" : "") style="width:100%">
+@if (dataModelProp?.Ref != null && f.Type != Input.Types.File)
 {
-await Error.InvokeAsync(api.Error);
-return;
+<LookupInput MetadataType=@DataModelType Input=@f Model=@ModelDictionary Status=@Api?.Error />
 }
-}
-await Delete.InvokeAsync(model);
-}
-protected override async Task OnParametersSetAsync()
+else
 {
-await base.OnParametersSetAsync();
-api = deleteApi = null;
-await TransitionAsync(show: true);
-ModelDictionary = Edit.ToModelDictionary();
-FormLayout ??= CreateFormLayout();
+<DynamicInput Input=@f Model=@ModelDictionary Status=@Api?.Error />
 }
+</div>
 }
+</fieldset>
+</div>
+</div>
+</div>
 @typeparam Model
-@inherits AutoQueryGridBase<Model>
+@inherits AuthBlazorComponentBase
+@implements IDisposable
 @if (invalidAccess != null)
 {
 <div class="w-body md:w-body overflow-auto">
@@ -592,13 +481,14 @@ FormLayout ??= CreateFormLayout();
 }
 else
 {
+<CascadingValue Value="ModalLookup">
 <div class="pt-1">
 <CascadingValue Value="AppMetadata">
 @if (New == true)
 {
 if (invalidCreateAccess != null)
 {
-<EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDone" />
+<EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDoneAsync" />
 }
 else if (CreateForm != null)
 {
@@ -606,14 +496,14 @@ else if (CreateForm != null)
 }
 else if (Apis!.Create != null)
 {
-<AutoCreateForm Model="Model" ApiType="Apis!.Create" Done="OnNewDone" Save="OnNewSave" />
+<AutoCreateForm @ref="AutoCreateForm" Model="Model" ApiType="Apis!.Create" Done="OnNewDoneAsync" Save="OnNewSaveAsync" />
 }
 }
 else if (EditModel != null)
 {
 if (invalidUpdateAccess != null)
 {
-<EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDone" />
+<EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDoneAsync" />
 }
 else if (EditForm != null)
 {
@@ -621,7 +511,7 @@ else if (EditForm != null)
 }
 else if (Apis!.Patch != null || Apis!.Update != null)
 {
-<AutoEditForm Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDone" Save="OnEditSave" Delete="OnEditSave" />
+<AutoEditForm @ref="AutoEditForm" Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDoneAsync" Save="OnEditSave" Delete="OnEditSave" />
 }
 }
 </CascadingValue>
@@ -632,7 +522,7 @@ else if (Apis!.Patch != null || Apis!.Update != null)
 <div class="flex pb-1 sm:pb-0">
 @if (ShowPreferences)
 {
-<button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" :title="`${dataModelName} Preferences`" @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
+<button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
 <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
 </button>
 }
@@ -709,7 +599,7 @@ else
 @if (hasPrefs && ShowResetPreferences)
 {
 <div class="pl-2">
-<button type="button" @onclick="_ => clearPrefs()" title="Reset Preferences & Filters" class=@ToolbarButtonClass>
+<button type="button" @onclick="clearPrefs" title="Reset Preferences & Filters" class=@ToolbarButtonClass>
 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z" /></svg>
 </button>
 </div>
@@ -771,8 +661,8 @@ else
 <div>
 <CascadingValue IsFixed="true" Value="this">
 <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
-PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync"
-RowSelected="OnRowSelected" HeaderSelected="HeaderSelected"
+PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync" TableStyle="TableStyle"
+RowSelected="OnRowSelected" HeaderSelected="HeaderSelected" MaxFieldLength="MaxFieldLength"
 AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
 >
 <CascadingValue IsFixed="true" Value="DataGrid">
@@ -785,9 +675,45 @@ AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinition
 </div>
 }
 </div>
+</CascadingValue>
+<DynamicModalLookup @ref="ModalLookup" AppMetadata=@AppMetadata />
 }
-@code {
+@inherits UiComponentBase
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+<nav class=@ClassNames("flex", Class) aria-label="Breadcrumb">
+<ol role="list" class="flex items-center space-x-4">
+<li>
+<div>
+<a href=@HomeHref class="text-gray-400 hover:text-gray-500" title=@HomeLabel>
+<!-- Heroicon name: mini/home -->
+<svg class="h-6 w-6 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+</svg>
+<span class="sr-only">@HomeLabel</span>
+</a>
+</div>
+</li>
+@foreach (var link in Links)
+{
+<li>
+<div class="flex items-center">
+<!-- Heroicon name: mini/chevron-right -->
+<svg class="h-6 w-6 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+</svg>
+@if (!string.IsNullOrEmpty(link.href))
+{
+<a href=@link.href class="ml-4 text-lg font-medium text-gray-500 hover:text-gray-700" title=@link.title>@link.ChildContent</a>
 }
+else
+{
+<span href=@link.href class="ml-4 text-lg font-medium text-gray-700" title=@link.title>@link.ChildContent</span>
+}
+</div>
+</li>
+}
+</ol>
+</nav>
 @typeparam TValue
 @inherits CheckboxInputBase<TValue>
 <div class=@ClassNames("relative flex items-start", CssClass())>
@@ -800,7 +726,7 @@ name=@Id
 @attributes="IncludeAttributes">
 </div>
 <div class="ml-3 text-sm">
-<label class=@ClassNames("font-medium text-gray-700") for=@Id>
+<label class=@ClassNames("font-medium text-gray-700", LabelClass) for=@Id>
 @UseLabel
 </label>
 @if (HasErrorField)
@@ -827,14 +753,8 @@ else
 @("Delete")
 }
 </button>
-@code {
-bool confirmDelete;
-[Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
-[Parameter] public string ConfirmLabel { get; set; } = "confirm";
-[Parameter] public RenderFragment? ChildContent { get; set; }
-}
 @typeparam Model
-@inherits DataGridBase<Model>
+@inherits UiComponentBase
 <CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
 @if (Items.Count > 0)
 {
@@ -845,19 +765,18 @@ bool confirmDelete;
 </div>
 }
 <div @ref="refResults" class=@ClassNames(GridClass, @class)>
-<div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-<div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-<div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-<table class="min-w-full divide-y divide-gray-200">
-<thead class="bg-gray-50">
-<tr class="select-none">
+<div class=@Grid2Class>
+<div class=@Grid3Class>
+<div class=@Grid4Class>
+<table class=@TableClass>
+<thead class=@TableHeadClass>
+<tr class=@TableHeaderRowClass>
 @foreach (var column in VisibleColumns)
 {
-var allowFiltering = AllowFiltering && !column.FieldType.IsComplexType();
+var allowFiltering = AllowFiltering && !TextUtils.IsComplexType(column.FieldType);
 var isOpen = column == ShowFilters;
 <td class=@ClassNames(column.VisibleFrom != null ? $"hidden {column.VisibleFrom.Value.ToBreakpointCellClass()}" : null,
-column.HeaderClass ?? ClassNames("px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap2",
-isOpen ? "text-gray-900" : "text-gray-500", column.@class))>
+column.HeaderClass ?? ClassNames(TableHeaderCellClass, isOpen ? "text-gray-900" : "text-gray-500", column.@class))>
 @if (!allowFiltering)
 {
 <div class="flex justify-between items-center">
@@ -875,12 +794,12 @@ else
 }
 </tr>
 </thead>
-<tbody>
+<tbody class=@TableBodyClass>
 @{ var i = 0; }
 @foreach (var item in Items)
 {
 <tr @key="item.GetHashCode()"
-class=@ClassNames(RowSelectionClass(item), RowClass?.Invoke(item, i++) ?? (++i % 2 == 0 ? "bg-gray-50" : "bg-white"))
+class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(item), AllowSelection), RowClass?.Invoke(item, i++))
 @onclick="e => OnRowSelected(e, item)">
 @foreach (var column in VisibleColumns)
 {
@@ -929,34 +848,48 @@ else if (!string.IsNullOrEmpty(UseHelp))
 @inherits DynamicInputBase
 @if (IsSelect)
 {
-<SelectInput Id=@UseId Status=@Status TValue="string"
-@bind-Value="Value" @attributes="AllAttributes" Help=@TextUtils.Humanize(UseId)>
-@if (Input?.AllowableEntries != null)
-{
-foreach (var entry in Input!.AllowableEntries)
-{
-<option value=@entry.Key>@entry.Value</option>
-}
-}
-else if (Input?.AllowableValues != null)
-{
-foreach (var item in Input!.AllowableValues)
-{
-<option value=@item>@item</option>
-}
-}
-</SelectInput>
+<SelectInput Id=@UseId Status=@Status TValue="string" Input=@Input
+@bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@TextUtils.Humanize(UseId) @attributes="AllAttributes" />
 }
 else if (IsCheckbox)
 {
-<CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+<CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
+}
+else if (UseType == "file")
+{
+string? value = null;
+ICollection<string>? values = null;
+UploadedFile? file = null;
+List<UploadedFile>? files = null;
+if (ValueObject != null)
+{
+value = ValueObject as string;
+if (value == null)
+{
+values = ValueObject as ICollection<string>;
+if (values == null)
+{
+if (ValueObject is System.Collections.IEnumerable)
+{
+files = ValueObject.ConvertTo<List<UploadedFile>>();
 }
 else
 {
-<TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+file = ValueObject.ConvertTo<UploadedFile>();
+}
+}
+}
+}
+<FileInput type=@UseType Id=@UseId Status=@Status class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes"
+Multiple=@(Input?.Multiple ?? false) Accept=@(Input?.Accept)
+Value=@value Values=@values File=@file Files=@files
+OnInput="e => Model[Input!.Id] = e" />
+}
+else
+{
+<TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }
 @inherits AuthBlazorComponentBase
-@inject NavigationManager NavigationManager
 @if (!IsAuthenticated)
 {
 <SlideOver Title=@Title SubHeading=@SubHeading Done="Done">
@@ -968,16 +901,6 @@ Sign In
 </button>
 </div>
 </SlideOver>
-}
-@code {
-[Parameter, EditorRequired] public string HtmlMessage { get; set; } = "";
-[Parameter] public EventCallback Done { get; set; }
-[Parameter] public string? Title { get; set; }
-[Parameter] public string? SubHeading { get; set; }
-async Task signIn()
-{
-NavigationManager.NavigateTo(NavigationManager.GetLoginUrl());
-}
 }
 @inherits ErrorSummaryBase
 @if (UseStatus.ShowSummary(UseExcept))
@@ -996,11 +919,116 @@ NavigationManager.NavigateTo(NavigationManager.GetLoginUrl());
 </div>
 </div>
 }
-@using System.IO
 @using Microsoft.AspNetCore.Components.Forms
-@inherits UiComponentBase
-@inject JsonApiClient jsonApiClient
+@inherits TextInputBase
+@implements IAsyncDisposable
+<div class=@ClassNames("flex", !Multiple ? "justify-between" : "flex-col")>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
+}
+<div class="block mt-2">
+<span class="sr-only">UseHelp ?? UseLabel</span>
+@{
+var cls = @ClassNames("block w-full sm:text-sm rounded-md",
+CssClass("block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100",
+"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
+}
+<InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder multiple=@Multiple accept=@Accept @attributes="IncludeAttributes" OnChange="@OnChange" />
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<!-- Heroicon name: solid/exclamation-circle -->
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@if (!Multiple)
+{
+var src = imgSrc();
+if (!string.IsNullOrEmpty(src))
+{
+<div class="shrink-0 cursor-pointer" title=@(!isDataUri(src) ? src : "")>
+<img @onclick="openFile" class=@ClassNames("h-16 w-16", imgCls(src)) alt=@($"Current {UseLabel}")
+src=@(FallbackSrc ?? BlazorConfig.Instance.AssetsPathResolver(src))
+@onerror="() => FallbackSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+</div>
+}
+}
+else if (FileList.Count > 0)
+{
+<div class="mt-3">
+<table class="w-full">
+@foreach (var file in FileList)
+{
+var filePath = file.FilePath ?? "";
+var src = FileIcons.FilePathUri(filePath)!;
+<tr>
+<td class="pr-6 align-bottom pb-2">
+<div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
+<img src=@((FallbackSrcMap.TryGetValue(src, out var fallback) ? fallback : null) ?? BlazorConfig.Instance.AssetsPathResolver(src))
+class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
+@onerror="() => FallbackSrcMap[src] = BlazorConfig.Instance.FallbackPathResolver(src)">
+@if (!isDataUri(filePath))
+{
+<a href=@BlazorConfig.Instance.AssetsPathResolver(filePath) target="_blank" class="overflow-hidden">
+@file.FileName
+</a>
+}
+else
+{
+<span class="overflow-hidden">@file.FileName</span>
+}
+</div>
+</td>
+<td class="align-top pb-2 whitespace-nowrap">
+@if (file.ContentLength > 0)
+{
+<span class="text-gray-500 text-sm bg-white">
+@TextUtils.FormatBytes(file.ContentLength)
+</span>
+}
+</td>
+</tr>
+}
+</table>
+</div>
+}
+</div>
+@code {
+string? imgSrc()
+{
+var inputFile = inputFiles?.FirstOrDefault();
+if (inputFile != null)
+return inputFile.FilePath;
+var filePath = Value ?? Values?.FirstOrDefault() ?? File?.FilePath ?? Files?.FirstOrDefault()?.FilePath;
+if (filePath != null)
+{
+var resolvedFilePath = BlazorConfig.Instance.AssetsPathResolver(filePath);
+return FileIcons.FilePathUri(resolvedFilePath);
+}
+return null;
+}
+bool isDataUri(string? src) => src == null ? false : src.StartsWith("data:") || src.StartsWith("blob:");
+string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
+? ""
+: "rounded-full";
+}
+@using Microsoft.AspNetCore.Components.Forms
 @typeparam TReq
+@inherits UiComponentBase
 <div class="m-2 mt-4" @ref="fileDropContainer">
 <label for="blazor-input-file"
 class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssClass()))>
@@ -1036,89 +1064,13 @@ else
 <CascadingValue Value="errorStatus">
 <ErrorSummary/>
 </CascadingValue>
-@code {
-[Parameter, EditorRequired]
-public TReq Request { get; set; }
-[Parameter]
-public string FilePropertyName { get; set; }
-ResponseStatus? errorStatus;
-private bool uploading = false;
-private string selectedFile = "";
-// Hack to clear files, avoids issues upload file with same name.
-bool toggleInputClear = false;
-ElementReference fileDropContainer;
-string progress = "Waiting";
-[Parameter]
-public EventCallback OnUploadStarted { get; set; }
-[Parameter]
-public EventCallback OnUploadComplete { get; set; }
-private async Task OnChange(InputFileChangeEventArgs e)
-{
-try
-{
-uploading = true;
-progress = "Started...";
-await UploadFile(e);
 }
-catch (Exception ex)
-{
-if (errorStatus == null)
-{
-errorStatus = new ResponseStatus
-{
-Errors = new List<ResponseError>()
-{
-new()
-{
-Message = ex.Message
-}
-}
-};
-}
-progress = $"Failed...";
-}
-finally
-{
-StateHasChanged();
-await Task.Delay(3000);
-uploading = false;
-toggleInputClear = !toggleInputClear;
-StateHasChanged();
-}
-}
-long maxFileSize = 1024 * 1024 * 15;
-async Task UploadFile(InputFileChangeEventArgs e)
-{
-await OnUploadStarted.InvokeAsync();
-using var content = new MultipartFormDataContent()
-.AddParams(Request);
-var file = e.File;
-selectedFile = file.Name;
-progress = $"Uploading {selectedFile}...";
-if (file.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-{
-throw new Exception("Invalid file name.");
-}
-using var stream = file.OpenReadStream(maxFileSize);
-using var ms = new MemoryStream();
-await stream.CopyToAsync(ms);
-ms.Position = 0;
-content.AddFile(FilePropertyName, file.Name, ms, file.ContentType);
-var api = await jsonApiClient.ApiFormAsync<TReq>(
-Request.GetType().ToApiUrl(), content
-);
-if (!api.Succeeded)
-errorStatus = api.Error;
-StateHasChanged();
-progress = "Upload complete!";
-await OnUploadComplete.InvokeAsync();
-StateHasChanged();
-}
-}
-@using Microsoft.JSInterop
+<div class=@(@class)>
+@((MarkupString) HtmlUtils.HtmlDump(Value ?? ""))
+</div>
 @inherits UiComponentBase
-@inject IJSRuntime JsRuntime
-@inject NavigationManager NavigationManager
+@((MarkupString)ToHtml())
+@inherits UiComponentBase
 @if (!string.IsNullOrEmpty(prerenderedHtml))
 {
 @((MarkupString)prerenderedHtml)
@@ -1136,22 +1088,43 @@ role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/sv
 </h1>
 </div>
 }
+@inherits TextInputBase
+@implements IHasJsonApiClient
+<div class="lookup-field">
+<input type="hidden" name=@Input.Id value=@Value />
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<div class="flex justify-between">
+<label for=@Input.Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
+<span class="text-sm text-gray-500 pr-3">@Value</span>
+</div>
+}
+@if (Property.Ref != null)
+{
+<div class="mt-1 relative">
+<button type="button" class="lookup flex relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+@onclick="lookup"
+aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+<span class="w-full inline-flex truncate">
+<span class="text-blue-700 flex cursor-pointer">
+<Icon class="mr-1 w-5 h-5" Image=@Icon />
+<span>@refInfoValue</span>
+</span>
+</span>
+<span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+<svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+</svg>
+</span>
+</button>
+</div>
+}
+else if (ErrorFieldMessage != null)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Input.Id}-error")>@ErrorFieldMessage</p>
+}
+</div>
 @code {
-[Parameter]
-public string Message { get; set; } = "Loading...";
-public string prerenderedHtml { get; set; } = "";
-[Parameter]
-public string ImageClass { get; set; } = "w-6 h-6";
-protected override async Task OnInitializedAsync()
-{
-var html = await JsRuntime.InvokeAsync<string>("JS.prerenderedPage") ?? "";
-var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
-var prerenderedContentIsForPath = html.IndexOf($"data-prerender=\"{currentPath}\"") >= 0;
-if (prerenderedContentIsForPath)
-{
-prerenderedHtml = html;
-}
-}
 }
 @inherits UiComponentBase
 <div @onclick="Close" id=@Id aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
@@ -1160,10 +1133,9 @@ prerenderedHtml = html;
 <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
 <!-- This element is to trick the browser into centering the modal contents. -->
 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-<div
-class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg",
+<div class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8", SizeClass,
 ContentTransition.DisplayClass)>
-<div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4"@onclick="Close" >
+<div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4" @onclick="Close">
 <button type="button" @onclick="Close"
 class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
 <span class="sr-only">Close</span>
@@ -1180,42 +1152,307 @@ class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none 
 </div>
 </div>
 </div>
+@typeparam Model
+@inherits ModalLookup
+<ModalDialog @ref="ModalDialog" Id=@Id Show=@Show Close="Close">
+<div class="pt-2 overflow-auto" style="min-height:620px">
+<div class="mt-3 pl-5 flex flex-wrap items-center">
+<h3 class="hidden sm:block text-xl leading-6 font-medium text-gray-900 mr-3">
+Select <span class="hidden md:inline">@TextUtils.Humanize(typeof(Model).Name)</span>
+</h3>
+<div class="flex pb-1 sm:pb-0">
+<button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+title="First page" disabled=@(!canFirst) @onclick="_ => skipTo(-Total)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canPrev ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+title="Previous page" disabled=@(!canPrev) @onclick="_ => skipTo(-ApiPrefs.Take)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canNext ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+title="Next page" disabled=@(!canNext) @onclick="_ => skipTo(ApiPrefs.Take)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canLast ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+title="Last page" disabled=@(!canLast) @onclick="_ => skipTo(Total)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor" /></svg>
+</button>
+</div>
+<div class="flex pb-1 sm:pb-0">
+<div class="px-4 text-lg">
+@if (apiLoading)
+{
+<span>Querying...</span>
+}
+else if (Results.Count > 0)
+{
+<span>
+<span class="hidden xl:inline">
+Showing Results
+</span>
+@(Skip + 1) - @Math.Min(Skip + Results.Count, Total) <span> of @Total</span>
+</span>
+}
+else if (Api != null)
+{
+<span>No Results</span>
+}
+</div>
+</div>
+@if (hasPrefs)
+{
+<div class="pl-2">
+<button type="button" @onclick="clearPrefs" title="Reset Preferences & Filters" class=@ToolbarButtonClass>
+<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z" /></svg>
+</button>
+</div>
+}
+@if (filtersCount > 0)
+{
+<div class="pl-2">
+<button type="button" @onclick=@(_ => open = open == Features.Filters ? null : Features.Filters) class=@ToolbarButtonClass aria-expanded="false">
+<svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+<path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+</svg>
+<span class="mr-1">
+@filtersCount @(filtersCount == 1 ? "Filter" : "Filters")
+</span>
+@if (open != Features.Filters)
+{
+<svg class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+</svg>
+}
+else
+{
+<svg class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+</svg>
+}
+</button>
+</div>
+}
+</div>
+@if (open == Features.Filters)
+{
+<FilterViews class="border-y border-gray-200 py-8 my-2" Columns="GetColumns()" Done="() => open = null" FiltersChanged="UpdateAsync" />
+}
+@if (errorSummary != null)
+{
+<ErrorSummary class="p-4" ExplicitStatus="Api?.Error" />
+}
+else if (apiLoading)
+{
+<Loading class="p-4 text-xl text-gray-500" ImageClass="w-5 h-5" />
+}
+else
+{
+<div>
+@if (Results.Count > 0)
+{
+<div class="">
+<CascadingValue IsFixed="true" Value="this">
+<DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
+PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync"
+RowSelected="OnRowSelected" HeaderSelected="HeaderSelected"
+AllowSelection="true" AllowFiltering="true" FilterDefinitions="FilterDefinitions"
+FiltersTopLeftResolver="FiltersTopLeftResolver"
+TableStyle="TableStyle.FullWidth">
+<CascadingValue IsFixed="true" Value="DataGrid">
+@Columns
+</CascadingValue>
+</DataGrid>
+</CascadingValue>
+</div>
+}
+</div>
+}
+</div>
+</ModalDialog>
+<QueryPrefs Show=@ShowQueryPrefs Columns="ViewModelColumns" Prefs="ApiPrefs" Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
+@using System.Collections
+@using ServiceStack.Text
+@{
+void RenderValue(object? value)
+{
+if (Format?.Method == null)
+{
+@FormatValue(value)
+}
+else
+{
+var str = $"{value}";
+var attrs = (Format.Options != null
+? BlazorConfig.Instance.JSParseObject(Format.Options)
+: null) ?? new();
+var cls = attrs.Remove("cls", out var oClass) ? oClass as string : null;
+if (Format.Method == FormatMethods.IconRounded)
+{
+var src = str;
+<img class=@(cls ?? IconRoundedClass) title=@str
+src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+}
+else if (Format.Method == FormatMethods.Icon)
+{
+var src = str;
+<img class=@(cls ?? IconClass) title=@str
+src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+}
+else if (Format.Method == FormatMethods.Currency)
+{
+<span class=@cls>@($"{value.ConvertTo<decimal>():C}")</span>
+}
+else if (Format.Method == FormatMethods.Bytes)
+{
+<span class=@cls>@TextUtils.FormatBytes(value.ConvertTo<long>())</span>
+}
+else if (Format.Method.StartsWith("link"))
+{
+if (Format.Method == FormatMethods.Link)
+{
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+else if (Format.Method == FormatMethods.LinkPhone)
+{
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+else if (Format.Method == FormatMethods.LinkEmail)
+{
+var href = str;
+if (attrs.Remove("subject", out var oSubject) && oSubject is string subject)
+href = href.AddQueryParam("subject", subject.UrlEncode().Replace("+", "%20"), encode: false);
+if (attrs.Remove("body", out var oBody) && oBody is string body)
+href = href.AddQueryParam("body", body.UrlEncode().Replace("+","%20"), encode:false);
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+}
+else if (Format.Method == FormatMethods.Attachment)
+{
+var url = str;
+var fileName = FileIcons.GetFileName(url)!;
+var ext = FileIcons.GetExt(fileName);
+var imgSrc = ext == null || FileIcons.CanPreview(url)
+? BlazorConfig.Instance.AssetsPathResolver(url)
+: FileIcons.IconFallbackSrc(url);
+<a class=@(cls ?? "flex") href=@BlazorConfig.Instance.AssetsPathResolver(url) title=@url target="_blank">
+<img class=@IconClass src=@imgSrc @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(imgSrc)">
+<span class="pl-1">@fileName</span>
+</a>
+}
+else if (Format.Method != FormatMethods.Hidden)
+{
+<span class=@cls>@FormatValue(value)</span>
+}
+}
+}
+}
+@if (TextUtils.IsComplexType(Value?.GetType()))
+{
+var useValue = Value;
+var e = Value as IEnumerable;
+var isCollection = e != null && Value is not IDictionary;
+var count = e != null && isCollection && IncludeCount ? EnumerableUtils.Count(e) : 0;
+<span class=@CssUtils.ClassNames(@class)>
+@if (isCollection)
+{
+useValue = EnumerableUtils.FirstOrDefault(e);
+<span class="mr-2">@count</span>
+}
+@if (IncludeIcon)
+{
+<Icon class=@ValueIconClass Image=Value!.GetType().GetIcon() />
+}
+<span>
+@if (isCollection)
+{
+@("[ ")
+}
+@if (!isCollection || count > 0)
+{
+@("{ ")
+@if (TextUtils.IsComplexType(useValue?.GetType()))
+{
+var dict = useValue.ToObjectDictionary();
+var keys = dict.Keys.ToList();
+var len = Math.Min(MaxNestedFields, keys.Count);
+for (var i = 0; i < len; i++)
+{
+var key = keys[i];
+var val = dict[key];
+var value = FormatValue(val);
+var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+if (i > 0)
+{
+@(", ")
+}
+{
+<b class="font-medium">@key</b>
+@($": {str}")
+}
+}
+if (keys.Count > len)
+{
+@("...")
+}
+}
+else
+{
+RenderValue(useValue);
+}
+@(" }")
+}
+@if (isCollection)
+{
+@(" ]")
+}
+</span>
+</span>
+}
+else
+{
+RenderValue(Value);
+}
+@inherits UiComponentBase
+@if (!string.IsNullOrEmpty(href))
+{
+<a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation>
+@ChildContent
+</a>
+}
+else
+{
+<button type=@type @onclick="onclick" class=@ClassNames(cls, Class)>
+@ChildContent
+</button>
+}
 @code {
-[Parameter, EditorRequired] public string Id { get; set; }
-[Parameter, EditorRequired] public bool Show { get; set; }
-[Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }
-[Parameter] public EventCallback Close { get; set; }
-protected DataTransition DialogTransition = new DataTransition(
-entering: new(@class: "ease-out duration-300", from: "opacity-0", to: "opacity-100"),
-leaving: new(@class: "ease-out duration-200", from: "opacity-100", to: "opacity-0"),
-visible: false);
-protected DataTransition ContentTransition = new DataTransition(
-entering: new(@class: "ease-out duration-300", from: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95", to: "opacity-100 translate-y-0 sm:scale-100"),
-leaving: new(@class: "ease-in duration-200", from: "opacity-100 translate-y-0 sm:scale-100", to: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"),
-visible:false);
-protected override void OnInitialized()
-{
-base.OnInitialized();
-DialogTransition.Show(Show);
-ContentTransition.Show(Show);
+string cls = "inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
 }
-protected override async Task OnParametersSetAsync()
+@inherits UiComponentBase
+@if (!string.IsNullOrEmpty(href))
 {
-await base.OnParametersSetAsync();
-await DataTransition.TransitionAllAsync(
-show: Show,
-onChange: StateHasChanged,
-DialogTransition,
-ContentTransition
-);
+<a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation>
+@ChildContent
+</a>
 }
+else
+{
+<button type=@type @onclick="onclick" class=@ClassNames(cls, Class)>
+@ChildContent
+</button>
+}
+@code {
+string cls = "rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
 }
 @typeparam TValue
 @inherits SelectInputBase<TValue>
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
 <select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md",
 CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
@@ -1276,45 +1513,12 @@ Close
 </div>
 </div>
 </div>
-@code {
-[Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }
-[Parameter] public string PanelClass { get; set; } = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
-[Parameter] public string FormClass { get; set; } = "flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl";
-[Parameter] public string TitlebarClass { get; set; } = "bg-gray-50 px-4 py-6 sm:px-6";
-[Parameter] public string HeadingClass { get; set; } = "text-lg font-medium text-gray-900";
-[Parameter] public string? Title { get; set; }
-[Parameter] public string? SubHeading { get; set; }
-[Parameter] public EventCallback Done { get; set; }
-protected DataTransition SlideOverTransition = new DataTransition(
-entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
-leaving: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-0", to: "translate-x-full"),
-visible: false);
-public async Task CloseAsync()
-{
-await DataTransition.TransitionAllAsync(
-show: false,
-onChange: StateHasChanged,
-SlideOverTransition
-);
-await Task.Delay(500 - SlideOverTransition.DelayMs);
-await Done.InvokeAsync();
-}
-protected override async Task OnParametersSetAsync()
-{
-await base.OnParametersSetAsync();
-await DataTransition.TransitionAllAsync(
-show: true,
-onChange: StateHasChanged,
-SlideOverTransition
-);
-}
-}
 @typeparam TValue
 @inherits TextInputBase<TValue>
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
@@ -1337,7 +1541,7 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 @{
@@ -1372,7 +1576,9 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
 }
 </div>
-using ServiceStack.Blazor.Components.Tailwind;
+@inherits UiComponentBase
+<a href=@href class=@ClassNames("text-blue-600 hover:text-blue-800", Class) title=@title target=@target @onclick="onclick" @onclick:stopPropagation>@ChildContent</a>
+using ServiceStack.Blazor.Components;
 namespace ServiceStack.Blazor;
 /// <summary>
 /// For CSS classes used in *.cs so they're exported to tailwind.html
@@ -1381,9 +1587,51 @@ public static class CssDefaults
 {
 public static class Grid
 {
+public const TableStyle DefaultTableStyle = TableStyle.StripedRows;
 public const string GridClass = "mt-4 flex flex-col";
-public const string HoverSelectionClass = "cursor-pointer hover:bg-yellow-50";
-public const string SelectedClass = "cursor-pointer bg-indigo-100";
+public const string Grid2Class = "-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8";
+public const string Grid3Class = "inline-block min-w-full py-2 align-middle md:px-6 lg:px-8";
+public const string Grid4Class = "overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg";
+public const string TableClass = "min-w-full divide-y divide-gray-200";
+public const string TableHeadClass = "bg-gray-50";
+public const string TableHeaderRowClass = "select-none";
+public const string TableHeaderCellClass = "px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap";
+public const string TableBodyClass = "";
+public static string GetGridClass(TableStyle style = DefaultTableStyle) => GridClass;
+public static string GetGrid2Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
+? "overflow-x-auto"
+: Grid2Class;
+public static string GetGrid3Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
+? "inline-block min-w-full py-2 align-middle"
+: Grid3Class;
+public static string GetGrid4Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
+? ""
+: style.HasFlag(TableStyle.FullWidth)
+? "overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5"
+: Grid4Class;
+public static string GetTableClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth) || style.HasFlag(TableStyle.VerticalLines)
+? "min-w-full divide-y divide-gray-300"
+: TableClass;
+public static string GetTableHeadClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
+? ""
+: TableHeadClass;
+public static string GetTableHeaderRowClass(TableStyle style = DefaultTableStyle) =>
+TableHeaderRowClass + (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
+public static string GetTableHeaderCellClass(TableStyle style = DefaultTableStyle) =>
+TableHeaderCellClass + (style.HasFlag(TableStyle.UppercaseHeadings) ? " uppercase" : "");
+public static string GetTableBodyClass(TableStyle style = DefaultTableStyle) =>
+(style.HasFlag(TableStyle.WhiteBackground) || style.HasFlag(TableStyle.VerticalLines)
+? "divide-y divide-gray-200"
+: "")
++ (style.HasFlag(TableStyle.VerticalLines)
+? " bg-white"
+: "");
+public static string GetTableRowClass(TableStyle style, int i, bool selected, bool allowSelection) =>
+(allowSelection ? "cursor-pointer " : "") +
+(selected ? "bg-indigo-100" : (allowSelection ? "hover:bg-yellow-50 " : "") + (style.HasFlag(TableStyle.StripedRows)
+? (i % 2 == 0 ? "bg-white" : "bg-gray-50")
+: "bg-white")) +
+(style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200" : "");
 }
 public static class Form
 {
@@ -1395,6 +1643,21 @@ public static DataTransition SlideOverTransition = new DataTransition(
 entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
 leaving: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-0", to: "translate-x-full"),
 visible: false);
+}
+public static class Modal
+{
+public const string SizeClass = "sm:max-w-prose lg:max-w-screen-md xl:max-w-screen-lg 2xl:max-w-screen-xl sm:w-full";
+}
+public static class HtmlFormat
+{
+public const string Class = "prose html-format";
+}
+public static class PreviewFormat
+{
+public const string Class = "flex items-center";
+public const string IconClass = "w-6 h-6";
+public const string IconRoundedClass = "w-8 h-8 rounded-full";
+public const string ValueIconClass = "w-5 h-5 mr-1";
 }
 public static string ToBreakpointCellClass(this Breakpoint breakpoint) => breakpoint switch
 {
