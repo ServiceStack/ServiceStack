@@ -156,8 +156,10 @@ public abstract class ModalLookup : AuthBlazorComponentBase
 
 /// <summary>
 /// Modal Lookup for selecting Referential Data
-/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/ModalLookup.png)
 /// </summary>
+/// <remarks>
+/// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/ModalLookup.png)
+/// </remarks>
 public partial class ModalLookup<Model> : ModalLookup
 {
     [Inject] public LocalStorage? LocalStorage { get; set; }
