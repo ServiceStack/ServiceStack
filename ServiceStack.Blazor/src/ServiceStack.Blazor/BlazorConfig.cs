@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ServiceStack.Blazor.Components;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -102,6 +104,11 @@ public class BlazorConfig
             ? Instance.FallbackAssetsBasePath.CombineWith(path)
             : FileIcons.SvgToDataUri(FileIcons.Icons["img"]);
     }
+    
+    /// <summary>
+    /// Change defaults for AutoQueryGrid Components
+    /// </summary>
+    public AutoQueryGridDefaults AutoQueryGridDefaults { get; set; } = new();
 
     /// <summary>
     /// Function used to parse JS Object literals
@@ -155,4 +162,24 @@ public class BlazorConfig
     static AutoQueryConvention Definition(string name, string value, Action<AutoQueryConvention>? fn = null) =>
         X.Apply(new() { Name = name, Value = value }, fn);
 
+}
+
+public class AutoQueryGridDefaults
+{
+    public bool AllowSelection { get; set; } = true;
+    public bool AllowFiltering { get; set; } = true;
+    public bool AllowQueryFilters { get; set; } = true;
+
+    public bool ShowToolbar { get; set; } = true;
+    public bool ShowPreferences { get; set; } = true;
+    public bool ShowPagingNav { get; set; } = true;
+    public bool ShowPagingInfo { get; set; } = true;
+    public bool ShowDownloadCsv { get; set; } = true;
+    public bool ShowCopyApiUrl { get; set; } = true;
+    public bool ShowResetPreferences { get; set; } = true;
+    public bool ShowFiltersView { get; set; } = true;
+    public bool ShowNewItem { get; set; } = true;
+    public TableStyle TableStyle { get; set; } = CssDefaults.Grid.DefaultTableStyle;
+    public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
+    public int MaxFieldLength { get; set; } = 150;
 }

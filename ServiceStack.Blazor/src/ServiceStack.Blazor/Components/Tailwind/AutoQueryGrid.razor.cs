@@ -22,9 +22,6 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public RenderFragment Columns { get; set; }
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
-    [Parameter] public bool AllowSelection { get; set; } = true;
-    [Parameter] public bool AllowFiltering { get; set; } = true;
-    [Parameter] public bool AllowQueryFilters { get; set; } = true;
 
     [Parameter] public List<AutoQueryConvention> FilterDefinitions { get; set; } = BlazorConfig.Instance.DefaultFilters;
     [Parameter] public Apis? Apis { get; set; }
@@ -38,24 +35,28 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     /// </summary>
     [Parameter] public RenderFragment? ToolbarButtons { get; set; }
 
-    [Parameter] public bool ShowToolbar { get; set; } = true;
-    [Parameter] public bool ShowPreferences { get; set; } = true;
-    [Parameter] public bool ShowPagingNav { get; set; } = true;
-    [Parameter] public bool ShowPagingInfo { get; set; } = true;
-    [Parameter] public bool ShowDownloadCsv { get; set; } = true;
-    [Parameter] public bool ShowCopyApiUrl { get; set; } = true;
-    [Parameter] public bool ShowResetPreferences { get; set; } = true;
-    [Parameter] public bool ShowFiltersView { get; set; } = true;
-    [Parameter] public bool ShowNewItem { get; set; } = true;
-    [Parameter] public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
+    [Parameter] public bool AllowSelection { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.AllowSelection;
+    [Parameter] public bool AllowFiltering { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.AllowFiltering;
+    [Parameter] public bool AllowQueryFilters { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.AllowQueryFilters;
+    [Parameter] public bool ShowToolbar { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowToolbar;
+    [Parameter] public bool ShowPreferences { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowPreferences;
+    [Parameter] public bool ShowPagingNav { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowPagingNav;
+    [Parameter] public bool ShowPagingInfo { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowPagingInfo;
+    [Parameter] public bool ShowDownloadCsv { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowDownloadCsv;
+    [Parameter] public bool ShowCopyApiUrl { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowCopyApiUrl;
+    [Parameter] public bool ShowResetPreferences { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowResetPreferences;
+    [Parameter] public bool ShowFiltersView { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowFiltersView;
+    [Parameter] public bool ShowNewItem { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowNewItem;
+    [Parameter] public string ToolbarButtonClass { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ToolbarButtonClass;
+    [Parameter] public int MaxFieldLength { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.MaxFieldLength;
+    [Parameter] public TableStyle TableStyle { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle;
+
     [Parameter] public List<Model> Items { get; set; } = new();
     [Parameter] public RenderFragment? CreateForm { get; set; }
     [Parameter] public RenderFragment? EditForm { get; set; }
     [Parameter] public Predicate<string>? DisableKeyBindings { get; set; }
-    [Parameter] public TableStyle TableStyle { get; set; } = CssDefaults.Grid.DefaultTableStyle;
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
-    [Parameter] public int MaxFieldLength { get; set; } = BlazorConfig.Instance.MaxFieldLength;
 
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
     AutoEditForm<Model>? AutoEditForm { get; set; }
