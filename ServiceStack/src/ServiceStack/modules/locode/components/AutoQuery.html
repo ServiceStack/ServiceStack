@@ -449,7 +449,7 @@ App.components({
                         </td>
                         <td v-for="c in columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div v-if="refInfo(row,c)" class="text-blue-700 flex cursor-pointer" v-href="refInfo(row,c).href">
-                                <span class="mr-1" v-scope="Image(refInfo(row,c).icon, { cls:'w-5 h-5' })"></span>
+                                <span class="mr-1" v-scope="Image(refInfo(row,c).icon, { cls:'w-5 h-5' })" :title="format(row,c)"></span>
                                 <div v-html="map(refInfo(row,c),x => x.html)"></div>
                             </div>
                             <div v-else v-html="format(row,c)"></div>
