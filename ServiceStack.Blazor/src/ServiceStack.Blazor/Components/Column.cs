@@ -166,7 +166,7 @@ public class Column<Model> : UiComponentBase
                     ? $"hidden {VisibleFrom.Value.ToBreakpointCellClass()} "
                     : "";
 
-                cls += CellClass ?? ClassNames("px-6 py-4 whitespace-nowrap text-sm text-gray-500", @class);
+                cls += CellClass ?? ClassNames(CssDefaults.Grid.TableCellClass, @class);
 
                 builder.AddAttribute(1, "class", cls);
 

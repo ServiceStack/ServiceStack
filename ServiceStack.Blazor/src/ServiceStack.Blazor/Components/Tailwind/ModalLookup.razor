@@ -4,26 +4,26 @@
 <ModalDialog @ref="ModalDialog" Id=@Id Show=@Show Close="Close">
      <div class="pt-2 overflow-auto" style="min-height:620px">
         <div class="mt-3 pl-5 flex flex-wrap items-center">
-            <h3 class="hidden sm:block text-xl leading-6 font-medium text-gray-900 mr-3">
+            <h3 class="hidden sm:block text-xl leading-6 font-medium text-gray-900 dark:text-gray-50 mr-3">
                 Select <span class="hidden md:inline">@TextUtils.Humanize(typeof(Model).Name)</span>
             </h3>
             <div class="flex pb-1 sm:pb-0">
                 <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
                 </button>
-                <button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+                <button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
                         title="First page" disabled=@(!canFirst) @onclick="_ => skipTo(-Total)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor" /></svg>
                 </button>
-                <button type="button" class=@ClassNames("pl-2", canPrev ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+                <button type="button" class=@ClassNames("pl-2", canPrev ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
                         title="Previous page" disabled=@(!canPrev) @onclick="_ => skipTo(-ApiPrefs.Take)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor" /></svg>
                 </button>
-                <button type="button" class=@ClassNames("pl-2", canNext ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+                <button type="button" class=@ClassNames("pl-2", canNext ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
                         title="Next page" disabled=@(!canNext) @onclick="_ => skipTo(ApiPrefs.Take)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" /></svg>
                 </button>
-                <button type="button" class=@ClassNames("pl-2", canLast ? "text-gray-700 hover:text-indigo-600" : "text-gray-400")
+                <button type="button" class=@ClassNames("pl-2", canLast ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
                         title="Last page" disabled=@(!canLast) @onclick="_ => skipTo(Total)">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor" /></svg>
                 </button>
@@ -61,7 +61,7 @@
             {
             <div class="pl-2">
                 <button type="button" @onclick=@(_ => open = open == Features.Filters ? null : Features.Filters) class=@ToolbarButtonClass aria-expanded="false">
-                    <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <svg class="flex-none w-5 h-5 mr-2 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
                     </svg>
                     <span class="mr-1">
@@ -69,13 +69,13 @@
                     </span>
                     @if (open != Features.Filters)
                     {
-                        <svg class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <svg class="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                         </svg>
                     }
                     else
                     {
-                        <svg class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <svg class="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
                         </svg>
                     }
@@ -87,7 +87,7 @@
 
         @if (open == Features.Filters)
         {
-            <FilterViews class="border-y border-gray-200 py-8 my-2" Columns="GetColumns()" Done="() => open = null" FiltersChanged="UpdateAsync" />
+            <FilterViews class="border-y border-gray-200 dark:border-gray-800 py-8 my-2" Columns="GetColumns()" Done="() => open = null" FiltersChanged="UpdateAsync" />
         }
         @if (errorSummary != null)
         {
@@ -95,7 +95,7 @@
         }
         else if (apiLoading)
         {
-            <Loading class="p-4 text-xl text-gray-500" ImageClass="w-5 h-5" />
+            <Loading class="p-4 text-xl text-gray-500 dark:text-gray-400" ImageClass="w-5 h-5" />
         }
         else
         {

@@ -36,6 +36,9 @@ JS = (function () {
         removeClass(sel, ...classes) {
             el(sel).classList.remove(...classes)
         },
+        containsClass(sel, cls) {
+            return el(sel).classList.contains(cls)
+        },
         registerKeyNav(dotnetRef) {
             dotnetRefs.push(dotnetRef)
             if (dotnetRefs.length == 1) {
@@ -46,6 +49,19 @@ JS = (function () {
             dotnetRefs = dotnetRefs.filter(x => x != dotnetRef)
             if (dotnetRefs.length == 0) {
                 document.removeEventListener('keydown', onKeyNav)
+            }
+        },
+        init(opt) {
+            if (!opt || opt.colorScheme !== false) {
+                let colorScheme = localStorage.getItem('color-scheme')
+                let darkMode = colorScheme != null
+                    ? colorScheme === 'dark'
+                    : window.matchMedia('(prefers-color-scheme: dark)').matches
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
             }
         },
     }

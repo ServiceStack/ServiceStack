@@ -4,11 +4,11 @@
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+    <label for=@Id class="block text-sm font-medium text-gray-700 dark:text-gray-300">@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
         <input type="date" class=@ClassNames("block w-full sm:text-sm rounded-md", 
-            CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300", 
+            CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600 dark:text-white dark:bg-gray-900", 
                      "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
                 id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
     @if (HasErrorField)

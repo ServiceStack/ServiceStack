@@ -2,10 +2,10 @@
 
 <form @onsubmit="submit" @onsubmit:preventDefault>
     <div class="shadow sm:overflow-hidden sm:rounded-md max-w-screen-lg">
-        <div class="space-y-6 bg-white py-6 px-4 sm:p-6">
+        <div class="space-y-6 py-6 px-4 sm:p-6 bg-white dark:bg-black">
             <div>
-                <h3 class="text-lg font-medium leading-6 text-gray-900">@(ApiType.GetDescription())</h3>
-                <p class="notes mt-1 text-sm text-gray-500">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">@(ApiType.GetDescription())</h3>
+                <p class="notes mt-1 text-sm text-gray-500 dark:text-gray-400">
                     @((MarkupString)ApiType.GetNotes())
                 </p>
             </div>
@@ -13,7 +13,7 @@
             <AutoFormFields Type="typeof(Booking)" Api="Api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
 
         </div>
-        <div class="bg-gray-50 px-4 py-3 text-right sm:px-12">
+        <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 text-right sm:px-12">
             <PrimaryButton type="submit" onclick="submit">Save</PrimaryButton>
         </div>
     </div>

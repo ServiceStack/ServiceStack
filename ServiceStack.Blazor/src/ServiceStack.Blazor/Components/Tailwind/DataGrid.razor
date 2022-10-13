@@ -24,7 +24,7 @@
                                     var allowFiltering = AllowFiltering && !TextUtils.IsComplexType(column.FieldType);
                                     var isOpen = column == ShowFilters;
                                     <td class=@ClassNames(column.VisibleFrom != null ? $"hidden {column.VisibleFrom.Value.ToBreakpointCellClass()}" : null,
-                                        column.HeaderClass ?? ClassNames(TableHeaderCellClass, isOpen ? "text-gray-900" : "text-gray-500", column.@class))>
+                                        column.HeaderClass ?? ClassNames(TableHeaderCellClass, isOpen ? "text-gray-900 dark:text-gray-50" : "text-gray-500 dark:text-gray-400", column.@class))>
 
                                         @if (!allowFiltering)
                                         {
@@ -34,7 +34,7 @@
                                         }
                                         else
                                         {
-                                            <div @onclick="e => OnHeaderSelected(e, column)" class="flex justify-between items-center cursor-pointer hover:text-gray-900">
+                                            <div @onclick="e => OnHeaderSelected(e, column)" class="flex justify-between items-center cursor-pointer hover:text-gray-900 dark:hover:text-gray-50">
                                                 @column.HeaderTemplate
                                                 <SettingsIcons Column=@column IsOpen=isOpen />
                                             </div>

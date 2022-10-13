@@ -7,13 +7,13 @@
     <div>
     @if (!string.IsNullOrEmpty(UseLabel))
     {
-         <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
+         <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
     }
         <div class="block mt-2">
             <span class="sr-only">UseHelp ?? UseLabel</span>
         @{
-            var cls = @ClassNames("block w-full sm:text-sm rounded-md",
-                CssClass("block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100",
+            var cls = @ClassNames("block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
+                CssClass("block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 dark:file:bg-violet-900 file:text-violet-700 dark:file:text-violet-200 hover:file:bg-violet-100 dark:hover:file:bg-violet-800",
                 "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
         }
             <InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder multiple=@Multiple accept=@Accept @attributes="IncludeAttributes" OnChange="@OnChange" />
@@ -79,7 +79,7 @@
                     <td class="align-top pb-2 whitespace-nowrap">
                     @if (file.ContentLength > 0)
                     {
-                        <span class="text-gray-500 text-sm bg-white">
+                        <span class="text-gray-500 dark:text-gray-400 text-sm bg-white dark:bg-black">
                             @TextUtils.FormatBytes(file.ContentLength)
                         </span>
                     }

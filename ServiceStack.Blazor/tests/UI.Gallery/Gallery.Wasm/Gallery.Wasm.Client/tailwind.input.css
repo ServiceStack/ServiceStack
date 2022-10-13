@@ -76,10 +76,19 @@ select{
 .notes a {
     color: rgb(30 64 175);
 }
+.dark .notes {
+    color: rgb(156 163 175);
+}
+.dark .notes a {
+    color: rgb(63 131 248);
+}
 
 .svg-external {
     background: url("data:image/svg+xml,%3Csvg width='1.25rem' height='1.25rem' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none'%3E%3Cpath d='M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14' stroke='%231E40AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E") no-repeat bottom right;
     padding-right: 1.35rem;
+}
+.dark .svg-external {
+    background: url("data:image/svg+xml,%3Csvg width='1.25rem' height='1.25rem' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none'%3E%3Cpath d='M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14' stroke='%233f83f8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E") no-repeat bottom right;
 }
 
 div.example-code {

@@ -1,7 +1,7 @@
 @page "/todomvc"
 @inherits AppComponentBase
 
-<h1 class="mb-4 text-2xl font-semibold text-gray-900">
+<h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
     Todos Application
 </h1>
 
@@ -13,8 +13,8 @@
 
     <TextInput placeholder="What needs to be done?" @bind-Value="request.Text" Label="" />
 
-    <div class="mt-4 bg-white shadow overflow-hidden rounded-md">
-        <ul role="list" class="divide-y divide-gray-200">
+    <div class="mt-4 bg-white dark:bg-black shadow overflow-hidden rounded-md">
+        <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800">
         @foreach (var todo in filteredTodos())
         {
             <li @key="todo.Id" class="px-6 py-4">
@@ -22,7 +22,7 @@
                     <div class="flex items-center h-6">
                         @if (todo.IsFinished)
                         {
-                            <svg class="cursor-pointer text-green-600 h-5 w-5" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                            <svg class="cursor-pointer text-green-600 dark:text-green-400 h-5 w-5" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z"></path>
                             </svg>
                         }
@@ -52,18 +52,18 @@
     </div>
 
     <div class="mt-4 flex justify-between">
-        <div class="text-gray-400 leading-8 mr-4">
+        <div class="text-gray-400 dark:text-gray-500 leading-8 mr-4">
             @unfinishedTodos().Count() <span class="hidden sm:inline">item(s)</span> left
         </div>
 
         <div class="inline-flex shadow rounded-md">
-            <button class=@TabClass("rounded-l-lg border", filter == Filter.All) @onclick=@(() => filter = Filter.All) @onclick:preventDefault>
+            <button class=@TabClass("rounded-l-lg border dark:text-white", filter == Filter.All) @onclick=@(() => filter = Filter.All) @onclick:preventDefault>
                 All
             </button>
-            <button class=@TabClass("border-t border-b", filter == Filter.Unfinished) @onclick=@(() => filter = Filter.Unfinished) @onclick:preventDefault>
+            <button class=@TabClass("border-t border-b dark:text-white", filter == Filter.Unfinished) @onclick=@(() => filter = Filter.Unfinished) @onclick:preventDefault>
                 Active
             </button>
-                <button class=@TabClass("rounded-r-md border", filter == Filter.Finished) @onclick=@(() => filter = Filter.Finished) @onclick:preventDefault>
+                <button class=@TabClass("rounded-r-md border dark:text-white", filter == Filter.Finished) @onclick=@(() => filter = Filter.Finished) @onclick:preventDefault>
                 Completed
             </button>
         </div>
@@ -75,7 +75,7 @@
         </div>
     </div>
 
-    <div class="mt-8 text-center text-gray-400 flex justify-center -ml-6">
+    <div class="mt-8 text-center text-gray-400 dark:text-gray-500 flex justify-center -ml-6">
         <SrcLink href="https://github.com/NetCoreApps/BlazorGallery/blob/main/Gallery.Server/ServiceInterface/TodosServices.cs" IconSrc="/img/code.svg" />
         <SrcLink href=@ExampleCode.GalleryCodeBaseUrl.CombineWith("../ServiceModel/Todos.cs") IconSrc="/img/loop.svg" />
         <SrcLink href=@ExampleCode.GalleryCodeBaseUrl.CombineWith("/TodoMvc.razor") IconSrc="/img/blazor.svg" />

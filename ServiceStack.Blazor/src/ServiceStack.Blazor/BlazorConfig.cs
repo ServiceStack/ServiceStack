@@ -36,6 +36,10 @@ public class BlazorConfig
     /// </summary>
     public bool IsWasm { get; init; }
     /// <summary>
+    /// Whether Components should be rendered in Dark Mode
+    /// </summary>
+    public bool DarkMode { get; internal set; }
+    /// <summary>
     /// Enable Error Logging (default true)
     /// </summary>
     public bool EnableErrorLogging { get; init; } = true;
@@ -162,6 +166,10 @@ public class BlazorConfig
     static AutoQueryConvention Definition(string name, string value, Action<AutoQueryConvention>? fn = null) =>
         X.Apply(new() { Name = name, Value = value }, fn);
 
+    public bool ToggleDarkMode(bool? value = null)
+    {
+        return DarkMode = value ?? !DarkMode;
+    }
 }
 
 public class AutoQueryGridDefaults

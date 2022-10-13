@@ -3,14 +3,14 @@
 
 <form @onsubmit="submit">
 <CascadingValue Value=@api.Error>
-<div class=@ClassNames("shadow overflow-hidden sm:rounded-md bg-white", @class)>
+<div class=@ClassNames("shadow overflow-hidden sm:rounded-md bg-white dark:bg-black", @class)>
     
-    <div class="relative px-4 py-5 bg-white sm:p-6">
+    <div class="relative px-4 py-5 bg-white dark:bg-black sm:p-6">
 
         <CloseButton OnClose="close" />
 
         <fieldset>
-            <legend class="text-base font-medium text-gray-900 text-center mb-4">Edit Booking</legend>
+            <legend class="text-base font-medium text-gray-900 dark:text-gray-50 text-center mb-4">Edit Booking</legend>
 
             <ErrorSummary Except=@VisibleFields />
             <ErrorSummary ExplicitStatus=@deleteApi.Error />
@@ -46,7 +46,7 @@
         </fieldset>
     </div>
 
-    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+    <div class="mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-900 text-right sm:px-6">
         <div class="flex justify-between items-center">
             <div>
                 <ConfirmDelete OnDelete="delete">Delete</ConfirmDelete>
@@ -54,9 +54,9 @@
             <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/BookingsCrud/Edit.razor" 
                      IconSrc="/img/blazor.svg" class="mt-2" />
             <div>
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <PrimaryButton type="submit">
                     Update Booking
-                </button>
+                </PrimaryButton>
             </div>
         </div>
     </div>

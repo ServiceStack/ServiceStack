@@ -1,32 +1,32 @@
 ﻿@page "/grid"
 
-<div class="bg-white">
+<div class="bg-white dark:bg-black">
     <main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex-shrink-0 pt-8">
             <img class="mx-auto h-20 w-auto" src="/img/blazor.svg" alt="Your Company">
         </div>
         <div class="mx-auto max-w-xl py-8 sm:py-16">
             <div class="text-center">
-                <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+                <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
                     AutoQuery Grids
                 </h1>
-                <p class="mt-2 text-lg text-gray-500">
+                <p class="mt-2 text-lg text-gray-500 dark:text-gray-400">
                     Rapidly Develop RDBMS Apps with AutoQuery Blazor Components
                 </p>
             </div>
             <div class="mt-12">
 
-                <h2 class="text-base font-semibold text-gray-500">Public Talent APIs</h2>
-                <ul role="list" class="mt-4 divide-y divide-gray-200 border-t border-b border-gray-200">
+                <h2 class="text-base font-semibold text-gray-500 dark:text-gray-400">Public Talent APIs</h2>
+                <ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
 
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(Contact).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Contact).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/contacts-meta" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -42,12 +42,12 @@
                     </li>
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(Contact).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Contact).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/contacts" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -63,12 +63,12 @@
                     </li>
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(JobApplication).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobApplication).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/job-applications" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -88,16 +88,16 @@
                     <span title="Requires Auth"><Icon class="h-6 w-6 mr-2" Svg=@Icons.Padlock /></span>
                     Secure Talent APIs
                 </h2>
-                <ul role="list" class="mt-4 divide-y divide-gray-200 border-t border-b border-gray-200">
+                <ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
                     
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(Job).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Job).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/jobs" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -114,12 +114,12 @@
 
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(JobApplicationComment).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobApplicationComment).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/job-applications/comments" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -136,12 +136,12 @@
 
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(JobApplicationEvent).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobApplicationEvent).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/job-applications/events" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -158,12 +158,12 @@
 
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(PhoneScreen).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(PhoneScreen).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/phone-screens" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -180,12 +180,12 @@
 
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(Interview).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Interview).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/interviews" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -202,12 +202,12 @@
 
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(JobOffer).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobOffer).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/job-offers" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -229,15 +229,15 @@
                     <span title="Requires Auth"><Icon class="h-6 w-6 mr-2" Svg=@Icons.Padlock /></span>
                     Booking APIs
                 </h2>
-                <ul role="list" class="mt-4 divide-y divide-gray-200 border-t border-b border-gray-200">
+                <ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(Booking).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Booking).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/bookings" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>
@@ -253,12 +253,12 @@
                     </li>
                     <li class="relative flex items-start space-x-4 py-6">
                         <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
-                                <Icon class="h-6 w-6 text-indigo-700" Image=@typeof(Coupon).GetIcon() />
+                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Coupon).GetIcon() />
                             </span>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
                                 <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <a href="/grid/coupons" class="focus:outline-none">
                                         <span class="absolute inset-0" aria-hidden="true"></span>

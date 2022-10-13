@@ -18,7 +18,7 @@
     <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
     <component type="typeof(HeadOutlet)" render-mode="Server" />
 </head>
-<body class=@(new Regex("/gallery/[a-z]*/[a-z]*").IsMatch(new Uri(NavigationManager.Uri).LocalPath) ? "p-1 overflow-hidden" : "")>
+<body class=@ServiceStack.CssUtils.ClassNames("bg-white dark:bg-black dark:text-white", new Regex("/gallery/[a-z]*/[a-z]*").IsMatch(new Uri(NavigationManager.Uri).LocalPath) ? "p-1 overflow-hidden" : "")>
 
 @RenderBody()
 
@@ -64,6 +64,7 @@
 <script type="text/javascript" src="/js/highlight.cshtml-razor.min.js"></script>
 <script>hljs.highlightAll()</script>
 <script type="text/javascript" src="/js/servicestack-blazor.js"></script>
+<script>JS.init()</script>
 
 </body>
 </html>

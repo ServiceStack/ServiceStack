@@ -10,7 +10,7 @@
 }
 
 <div class="mb-4">
-    <h1 class="text-2xl font-semibold text-gray-900">Sign Up</h1>
+    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Sign Up</h1>
 </div>
 
 <div class="max-w-screen-md">
@@ -19,7 +19,7 @@
 <CascadingValue Value=@api.Error>
     <div class="shadow overflow-hidden sm:rounded-md">
         <ErrorSummary Except=@VisibleFields />
-        <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
+        <div class="px-4 py-5 bg-white dark:bg-black space-y-6 sm:p-6">
           <div class="flex flex-col gap-y-4">
             <TextInput @bind-Value="request.DisplayName" spellcheck="false" Help="Your first and last name" required />
             <TextInput type="email" @bind-Value="request.Email" spellcheck="false" required />
@@ -28,13 +28,13 @@
             <CheckboxInput @bind-Value="request.AutoLogin" />
           </div>
         </div>
-        <div class="pt-5 px-4 py-3 bg-gray-50 text-right sm:px-6">
+        <div class="pt-5 px-4 py-3 bg-gray-50 dark:bg-gray-900 text-right sm:px-6">
           <div class="flex justify-end">
             <FormLoading class="flex-1" Loading=@api.IsLoading />
-            <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+
+            <PrimaryButton type="submit">
                 Sign Up
-            </button>
-            <FormLoading class="flex-1"/>
+            </PrimaryButton>
           </div>
         </div>
     </div>
@@ -44,10 +44,9 @@
 <div class="flex mt-8 ml-8">
     <h3 class="mr-4 leading-8 text-gray-500">Quick Links</h3>
     <span class="relative z-0 inline-flex shadow-sm rounded-md">
-        <button type="button" @onclick='_ => SetUser()'
-                class="-ml-px relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+        <SecondaryButton @onclick="SetUser">
             new@user.com
-        </button>
+        </SecondaryButton>
     </span>
 </div>
 

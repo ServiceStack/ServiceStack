@@ -4,12 +4,12 @@
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700", LabelClass)>@UseLabel</label>
+    <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
         @{
-            var cls = @ClassNames("block w-full sm:text-sm rounded-md",
-            CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+            var cls = @ClassNames("block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
+            CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
             "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
         }
         @if (UseType == Html.Input.Types.Textarea)
