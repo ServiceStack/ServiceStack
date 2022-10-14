@@ -53,7 +53,11 @@ JS = (function () {
         },
         init(opt) {
             if (!opt || opt.colorScheme !== false) {
-                let colorScheme = localStorage.getItem('color-scheme')
+                let colorScheme = location.search === "?dark"
+                    ? "dark"
+                    : location.search === "?light"
+                        ? "light"
+                        : localStorage.getItem('color-scheme')
                 let darkMode = colorScheme != null
                     ? colorScheme === 'dark'
                     : window.matchMedia('(prefers-color-scheme: dark)').matches
