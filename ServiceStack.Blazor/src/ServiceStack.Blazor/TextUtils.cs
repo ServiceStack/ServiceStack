@@ -511,9 +511,9 @@ public static class TextUtils
         return type != null && !type.IsValueType && type != typeof(string) && type != typeof(Uri);
     }
 
-    public static bool IsComputed(this Type? type)
+    public static bool IsComputed(this System.Reflection.PropertyInfo? prop)
     {
-        return type != null && !type.HasAttribute<ComputedAttribute>() && !type.HasAttribute<CustomSelectAttribute>();
+        return prop != null && prop.AllAttributes().Any(x => x.GetType() == typeof(ComputedAttribute) || x.GetType() == typeof(CustomSelectAttribute));
     }
 
     internal static object ConvertDumpType(object target)

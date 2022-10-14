@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using System.Collections;
 using ServiceStack.Blazor.Components.Tailwind;
+using System.Data.Common;
 
 namespace ServiceStack.Blazor.Components;
 
@@ -91,6 +92,8 @@ public class Column<Model> : UiComponentBase
     public PropertyInfo? Property => PropertyAccessor?.PropertyInfo;
 
     public MetadataPropertyType? MetadataProperty { get; set; }
+
+    public bool IsComputed => PropertyAccessor != null ? TextUtils.IsComputed(PropertyAccessor.PropertyInfo) : MetadataProperty?.Attributes?.Any(x => x.Name == "Computed" || x.Name == "CustomSelect") == true;
 
     public List<AutoQueryConvention> Definitions => DataGrid?.FilterDefinitions ?? TypeConstants<AutoQueryConvention>.EmptyList;
 
