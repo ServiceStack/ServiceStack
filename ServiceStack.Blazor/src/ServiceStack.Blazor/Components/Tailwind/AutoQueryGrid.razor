@@ -46,7 +46,11 @@ else
     }
     </CascadingValue>
 
-    @if (ShowToolbar)
+    @if (Toolbar != null)
+    {
+        @Toolbar
+    }
+    else if (ShowToolbar)
     {
         <QueryPrefs Show=@ShowQueryPrefs Columns="ViewModelColumns" Prefs="ApiPrefs" Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
         <div class="pl-1 pt-1 flex flex-wrap">
@@ -168,6 +172,10 @@ else
                         <span>@($"New {typeof(Model).Name}")</span>
                     </button>
                 </div>
+            }
+            @if (ToolbarButtons != null)
+            {
+                @ToolbarButtons
             }
             </div>
         </div>
