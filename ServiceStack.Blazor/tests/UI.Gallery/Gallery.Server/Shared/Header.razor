@@ -22,7 +22,7 @@
                                 <div class="mx-3 relative">
                                     <div>
                                         <button type="button" @onclick=@(_ => ShowAuthMenu=!ShowAuthMenu) @onblur=@(_ => ShowAuthMenu = false)
-                                                class="max-w-xs bg-white dark:bg-black rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 lg:p-2 lg:rounded-md lg:hover:bg-gray-50 dark:lg:hover:bg-gray-900" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                                class="max-w-xs bg-white dark:bg-black rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 lg:p-2 lg:rounded-md lg:hover:bg-gray-50 dark:lg:hover:bg-gray-900 dark:ring-offset-black" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                             <img class="h-8 w-8 rounded-full" src=@User.GetProfileUrl() alt="">
                                             <span class="hidden ml-3 text-gray-700 dark:text-gray-300 text-sm font-medium lg:block">
                                                 <span class="sr-only">Open user menu for </span>

@@ -10,7 +10,7 @@
 
 @if (render.Response?.Preview != null)
 {
-    <div class="prose lg:prose-xl min-vh-100 m-3" data-md=@Path>
+    <div class="prose dark:prose-invert lg:prose-xl min-vh-100 m-3" data-md=@Path>
         <div class="markdown-body">
             @((MarkupString)render.Response!.Preview)
         </div>

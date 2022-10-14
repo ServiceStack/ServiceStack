@@ -12,184 +12,192 @@
     <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
 </head>
 
-<body>
-    <div id="app">
-        <!-- loading: render temp static app chrome to improve perceived performance -->
-        <div id="app-loading">
+<body class="bg-white dark:bg-black dark:text-white">
+<div id="app">
+    <!-- loading: render temp static app chrome to improve perceived performance -->
+    <div id="app-loading">
 
-            <!-- <Header/> -->
-            <header class="border-b border-gray-200 pr-3">
-                <div class="flex flex-wrap items-center">
-                    <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
-                        <nav class="relative flex flex-grow">
-                            <ul class="flex flex-wrap items-center justify-end w-full m-0">
-                                <li class="relative flex flex-wrap just-fu-start m-0">
-                                    <a href="/signup" class="m-2">
-                                        <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            Sign In
-                                        </button>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-            </header>
-
-            <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
-            <div class="mobile relative z-40 hidden" role="dialog" aria-modal="true">
-                <div class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
-                <div class="fixed inset-0 flex z-40">
-                    <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-
-                        <div class="absolute top-0 right-0 -mr-12 pt-2">
-                            <button type="button"
-                                    class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-                                <span class="sr-only">Close sidebar</span>
-                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-                            <a href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
-                                <img class="h-8 w-auto"
-                                     src="/img/blazor.svg"
-                                     alt="Blazor Gallery">
-                                <div class="ml-2">Blazor Gallery</div>
-                            </a>
-                            <nav class="mt-5 px-2 space-y-1">
-                            </nav>
-                        </div>
-
-                    </div>
-
-                    <div class="flex-shrink-0 w-14">
-                        <!-- Force sidebar to shrink to fit close icon -->
-                    </div>
+        <!-- <Header/> -->
+        <header class="border-b border-gray-200 dark:border-gray-800 pr-3">
+            <div class="flex flex-wrap items-center">
+                <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
+                    <nav class="relative flex flex-grow">
+                        <ul class="flex flex-wrap items-center justify-end w-full m-0">
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <a href="/signup" class="m-2">
+                                    <button class="rounded-md border py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-black">
+                                        Sign In
+                                    </button>
+                                </a>
+                            </li>
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <button type="button" class="bg-gray-200 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" role="switch" aria-checked="false">
+                                    <span class="translate-x-5 pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow transform ring-0 transition ease-in-out duration-200">
+                                        <span class="opacity-0 ease-out duration-100 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z"></path></svg></span><!--!-->
+                                        <span class="opacity-100 ease-in duration-200 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z"></path></svg></span>
+                                    </span>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
-            <!-- Static sidebar for desktop -->
-            <div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-                <!-- Sidebar component, swap this element with another sidebar if you like -->
-                <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
-                    <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-                        <a href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+        </header>
+
+        <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+        <div class="mobile relative z-40 hidden" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-gray-600 dark:bg-gray-400 bg-opacity-75"></div>
+            <div class="fixed inset-0 flex z-40">
+                <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-black">
+
+                    <div class="absolute top-0 right-0 -mr-12 pt-2">
+                        <button type="button"
+                                class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <span class="sr-only">Close sidebar</span>
+                            <svg class="h-6 w-6 text-white dark:text-black" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                        <a href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
                             <img class="h-8 w-auto"
-                                 src="/img/blazor.svg"
-                                 alt="Blazor Gallery">
-                            <div class="ml-2">Blazor Gallery</div>
+                                    src="/img/blazor.svg"
+                                    alt="Blazor Gallery">
+                            <div class="ml-2 text-black dark:text-white">Blazor Gallery</div>
                         </a>
-                        <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
+                        <nav class="mt-5 px-2 space-y-1">
                         </nav>
                     </div>
+
+                </div>
+
+                <div class="flex-shrink-0 w-14">
+                    <!-- Force sidebar to shrink to fit close icon -->
                 </div>
             </div>
-
-            <!-- <MainLayout/> -->
-            <div class="md:pl-64 flex flex-col flex-1">
-                <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
-                    <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                        <span class="sr-only">Open sidebar</span>
-                        <!-- Heroicon name: outline/menu -->
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                </div>
-                <main class="flex-1">
-                    <div class="py-6">
-                        <div class="content px-4 sm:px-6 md:px-8">
-                            <!--PAGE-->
-                            <div class="mb-4">
-                                <h1 class="text-2xl font-semibold text-gray-900 flex">
-                                    <svg role="status" class="self-center inline w-6 h-6 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                                    </svg>
-                                    <span>Loading...</span>
-                                </h1>
-                            </div>
-                            <!--/PAGE-->
-                        </div>
-                    </div>
-                </main>
-            </div>
-
         </div>
-    </div>
-
-    <script>
-        var hideMainLayoutFor = "/gallery/[a-z]*/[a-z]*".split(',')
-        let customLayout = location.pathname == "/" || hideMainLayoutFor.some(x => new RegExp(x).test(location.pathname))
-        if (customLayout) {
-            if (location.pathname == "/") {
-                document.querySelector('#app-loading').innerHTML = `
-                <div class='bg-violet-900' style='height:100vh;width:100%;background:url(/img/bg-header.jpg) no-repeat;'>
+        <!-- Static sidebar for desktop -->
+        <div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+            <!-- Sidebar component, swap this element with another sidebar if you like -->
+            <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
+                <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+                    <a href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                        <img class="h-8 w-auto"
+                                src="/img/blazor.svg"
+                                alt="Blazor Gallery">
+                        <div class="ml-2 text-black dark:text-white">Blazor Gallery</div>
+                    </a>
+                    <nav class="mt-5 flex-1 px-2 bg-white dark:bg-black space-y-1">
+                    </nav>
                 </div>
-            `
-            } else {
-                document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML
-                document.body.classList.add('p-1', 'overflow-hidden')
-            }
-        }
+            </div>
+        </div>
 
-        TOP = `
-        API Reference,     https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/
+        <!-- <MainLayout/> -->
+        <div class="md:pl-64 flex flex-col flex-1">
+            <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white dark:bg-black">
+                <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                    <span class="sr-only">Open sidebar</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            <main class="flex-1">
+                <div class="py-6">
+                    <div class="content px-4 sm:px-6 md:px-8">
+                        <!--PAGE-->
+                        <div class="mb-4">
+                            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 flex">
+                                <svg role="status" class="self-center inline w-6 h-6 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
+                                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
+                                </svg>
+                                <span>Loading...</span>
+                            </h1>
+                        </div>
+                        <!--/PAGE-->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    </div>
+</div>
+
+<script>
+var hideMainLayoutFor = "/gallery/[a-z]*/[a-z]*".split(',')
+let customLayout = location.pathname == "/" || hideMainLayoutFor.some(x => new RegExp(x).test(location.pathname))
+if (customLayout) {
+    if (location.pathname == "/") {
+        document.querySelector('#app-loading').innerHTML = `
+        <div class='bg-violet-900' style='height:100vh;width:100%;background:url(/img/bg-header.jpg) no-repeat;'>
+        </div>
+    `
+    } else {
+        document.querySelector('#app-loading').innerHTML = document.querySelector('#app-loading h1').outerHTML
+        document.body.classList.add('p-1', 'overflow-hidden')
+    }
+}
+
+TOP = `
+    API Reference,     https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/
 `
-        SIDEBAR = `
-        Component Gallery, /gallery,                /img/nav/examples.svg
-        AutoQuery Grids,   /grid,                   /img/nav/grid.svg
-        Custom Forms,      /bookings-crud,          /img/nav/bookings.svg
-        Todos,             /todomvc,                /img/nav/todomvc.svg
-        Call Simple API,   /hello$,                 /img/nav/hello.svg
-        Call Secure API,   /hello-secure,           /img/nav/hello-secure.svg
-        HttpClient Fetch,  /fetchdata,              /img/nav/fetchdata.svg
-        Counter,           /counter,                /img/nav/counter.svg
+SIDEBAR = `
+    Component Gallery, /gallery,                /img/nav/examples.svg
+    AutoQuery Grids,   /grid,                   /img/nav/grid.svg
+    Custom Forms,      /bookings-crud,          /img/nav/bookings.svg
+    Todos,             /todomvc,                /img/nav/todomvc.svg
+    Call Simple API,   /hello$,                 /img/nav/hello.svg
+    Call Secure API,   /hello-secure,           /img/nav/hello-secure.svg
+    HttpClient Fetch,  /fetchdata,              /img/nav/fetchdata.svg
+    Counter,           /counter,                /img/nav/counter.svg
 `
 
-        const path = location.pathname
-        const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
-        $1 = s => document.querySelector(s)
+const path = location.pathname
+const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+$1 = s => document.querySelector(s)
 
-        if (!customLayout) {
-            /* Header */
-            $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
-                `<li class="relative flex flex-wrap just-fu-start m-0">
-            <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
-            ))
+if (!customLayout) {
+    /* Header */
+    $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+        `<li class="relative flex flex-wrap just-fu-start m-0">
+             <a href="${route}" class="flex items-center justify-start mw-full p-4 dark:text-white hover:text-green-600 dark:hover:text-green-400">${label}</a></li>`
+    ))
 
-            /* Sidebar */
-            const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
-            class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
-            <img class="${iconCls}" src="${icon}">
-            ${label}
-        </a>`
+    /* Sidebar */
+    const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+        class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50' : ''}">
+        <img class="${iconCls}" src="${icon}">
+        ${label}
+    </a>`
 
-            $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-                label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
-                iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
-                icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-            }))
-            $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-                label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
-                iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
-                icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
-            }))
+    $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+        label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
+        iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+        icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+    }))
+    $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+        label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+        iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+        icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+    }))
 
-            /* Prerender */
-            const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
-            fetch(`/prerender${pagePath}`)
-                .then(r => r.text())
-                .then(html => {
-                    if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
-                    const pageBody = $1('#app-loading .content')
-                    if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
-                })
-                .catch(/* no prerendered content found for this path */)
-        }
-    </script>
+    /* Prerender */
+    const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+    fetch(`/prerender${pagePath}`)
+        .then(r => r.text())
+        .then(html => {
+            if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+            const pageBody = $1('#app-loading .content')
+            if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+        })
+        .catch(/* no prerendered content found for this path */)
+}
+</script>
 
     <div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">
         <div class="flex rounded-md bg-yellow-50 p-4 m-4">

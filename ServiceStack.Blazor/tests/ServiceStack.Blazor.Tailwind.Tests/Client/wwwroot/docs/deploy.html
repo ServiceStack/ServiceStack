@@ -12,23 +12,31 @@
     <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
 </head>
 
-<body>
+<body class="bg-white dark:bg-black dark:text-white">
 <div id="app">
     <!-- loading: render temp static app chrome to improve perceived performance -->
     <div id="app-loading">
 
         <!-- <Header/> -->
-        <header class="border-b border-gray-200 pr-3">
+        <header class="border-b border-gray-200 dark:border-gray-800 pr-3">
             <div class="flex flex-wrap items-center">
                 <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
                     <nav class="relative flex flex-grow">
                         <ul class="flex flex-wrap items-center justify-end w-full m-0">
                             <li class="relative flex flex-wrap just-fu-start m-0">
                                 <a href="/signup" class="m-2">
-                                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <button class="rounded-md border py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-black">
                                         Sign In
                                     </button>
                                 </a>
+                            </li>
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <button type="button" class="bg-gray-200 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" role="switch" aria-checked="false">
+                                    <span class="translate-x-5 pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow transform ring-0 transition ease-in-out duration-200">
+                                        <span class="opacity-0 ease-out duration-100 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z"></path></svg></span><!--!-->
+                                        <span class="opacity-100 ease-in duration-200 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z"></path></svg></span>
+                                    </span>
+                                </button>
                             </li>
                         </ul>
                     </nav>
@@ -38,15 +46,15 @@
 
         <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
         <div class="mobile relative z-40 hidden" role="dialog" aria-modal="true">
-            <div class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
+            <div class="fixed inset-0 bg-gray-600 dark:bg-gray-400 bg-opacity-75"></div>
             <div class="fixed inset-0 flex z-40">
-                <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+                <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-black">
 
                     <div class="absolute top-0 right-0 -mr-12 pt-2">
                         <button type="button"
                                 class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
                             <span class="sr-only">Close sidebar</span>
-                            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            <svg class="h-6 w-6 text-white dark:text-black" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -57,7 +65,7 @@
                             <img class="h-8 w-auto"
                                     src="/img/blazor.svg"
                                     alt="My App">
-                            <div class="ml-2">My App</div>
+                            <div class="ml-2 text-black dark:text-white">My App</div>
                         </a>
                         <nav class="mt-5 px-2 space-y-1">
                         </nav>
@@ -73,15 +81,15 @@
         <!-- Static sidebar for desktop -->
         <div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
             <!-- Sidebar component, swap this element with another sidebar if you like -->
-            <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
+            <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
                 <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                     <a href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
                         <img class="h-8 w-auto"
                                 src="/img/blazor.svg"
                                 alt="My App">
-                        <div class="ml-2">My App</div>
+                        <div class="ml-2 text-black dark:text-white">My App</div>
                     </a>
-                    <nav class="mt-5 flex-1 px-2 bg-white space-y-1">
+                    <nav class="mt-5 flex-1 px-2 bg-white dark:bg-black space-y-1">
                     </nav>
                 </div>
             </div>
@@ -89,8 +97,8 @@
 
         <!-- <MainLayout/> -->
         <div class="md:pl-64 flex flex-col flex-1">
-            <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
-                <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+            <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white dark:bg-black">
+                <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                     <span class="sr-only">Open sidebar</span>
                     <!-- Heroicon name: outline/menu -->
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
@@ -285,23 +293,23 @@ $1 = s => document.querySelector(s)
 /* Header */
 $1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
     `<li class="relative flex flex-wrap just-fu-start m-0">
-    <a href="${route}" class="flex items-center justify-start mw-full p-4 hover:text-green-600">${label}</a></li>`
+        <a href="${route}" class="flex items-center justify-start mw-full p-4 dark:text-white hover:text-green-600 dark:hover:text-green-400">${label}</a></li>`
 ))
 
 /* Sidebar */
 const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
-    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}">
+    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50' : ''}">
     <img class="${iconCls}" src="${icon}">
     ${label}
 </a>`
 
 $1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium rounded-md`,
+    label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
     iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
     icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
 }))
 $1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
-    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
     iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
     icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
 }))
@@ -350,6 +358,7 @@ fetch(`/prerender${pagePath}`)
 
 <script src="_framework/blazor.webassembly.js"></script>
 <script type="text/javascript" src="/js/servicestack-blazor.js"></script>
+<script>JS.init()</script>
 
 </body>
 </html>

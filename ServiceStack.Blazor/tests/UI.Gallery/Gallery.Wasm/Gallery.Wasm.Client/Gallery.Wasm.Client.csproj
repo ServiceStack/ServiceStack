@@ -7,9 +7,7 @@
         <!-- Uncomment to view generated *.g.cs -->
         <!--<UseRazorSourceGenerator>false</UseRazorSourceGenerator>-->
     </PropertyGroup>
-    <ItemGroup>
-      <Content Remove="wwwroot\tailwind\ServiceStack.Blazor.html" />
-    </ItemGroup>
+    
     <ItemGroup>
         <PackageReference Include="Markdig" Version="0.30.4" />
         <PackageReference Include="Blazor.Extensions.Logging" Version="2.0.4" />
@@ -21,15 +19,14 @@
         <PackageReference Include="System.Memory" Version="4.5.4" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     </ItemGroup>
+    
     <ItemGroup>
       <ProjectReference Include="..\..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
       <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
       <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
       <ProjectReference Include="..\..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
     </ItemGroup>
-    <ItemGroup>
-      <None Include="wwwroot\tailwind\ServiceStack.Blazor.html" />
-    </ItemGroup>
+
     <Target Name="Tailwind" BeforeTargets="Build">
         <Exec Command="npm run ui:build" />
     </Target>

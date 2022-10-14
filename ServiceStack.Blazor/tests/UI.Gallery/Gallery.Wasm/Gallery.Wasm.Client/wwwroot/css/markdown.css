@@ -40,6 +40,21 @@
 .prose blockquote {
     border-left-style: solid;
 }
+
+.dark .prose, .dark .prose td {
+    color: rgb(209 213 219); /*text-gray-300*/
+}
+.dark .prose h1, .dark .prose h2, .dark .prose h3, .dark .prose h4, .dark .prose h5, .dark .prose h6, .dark .prose th {
+    color: rgb(243 244 246); /*text-gray-100*/
+}
+.dark .prose code {
+    background-color: rgb(30 58 138); /*text-blue-900*/
+    color: rgb(243 244 246); /*text-gray-100*/
+}
+.dark .prose pre>code {
+    background-color: transparent;
+}
+
 .html-format {
     max-width: unset;
 }
