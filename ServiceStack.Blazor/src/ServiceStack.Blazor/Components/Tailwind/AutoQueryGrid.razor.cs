@@ -309,8 +309,10 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
             foreach (string key in query)
             {
                 string? value = query[key];
-                var isProp = Properties.Any(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
-                if (value == null || !isProp) continue;
+                var isProp = Properties.Any(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    || Properties.Any(x => key.StartsWith(x.Name) || key.EndsWith(x.Name));
+                if (value == null || !isProp) 
+                    continue;
 
                 filters[key] = value;
                 sb.AppendQueryParam(key, query[key]);
