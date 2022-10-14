@@ -69,6 +69,10 @@ select{
     animation: spin 1s linear infinite;
 }
 
+.dark {
+    color-scheme: dark;
+}
+
 .lang:before {
     content: "$ ";
 }
@@ -97,6 +101,9 @@ div.example-code {
     border-radius: 8px;
 }
 
+.dark p code {
+    background-color: rgb(30 64 175);
+}
 p code {
     color: #3b82f6;
     background-color: #eff6ff;
@@ -125,6 +132,7 @@ input:-webkit-autofill:focus {
 input[data-autocompleted] {
     background-color: transparent !important;
 }
+
 
 @media (min-width: 640px) {
     .youtube {

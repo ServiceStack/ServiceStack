@@ -1,5 +1,11 @@
 REM Copies from Gallery.Server -> Gallery.Wasm -> blazor-gallery.servicestack.net -> blazor-gallery.jamstacks.net
 
+REM Update tailwind.input.css
+COPY Gallery.Server\tailwind.input.css Gallery.Wasm\Gallery.Wasm.Client\
+COPY Gallery.Server\tailwind.input.css ..\ServiceStack.Blazor.Server.Tests\Server\
+COPY Gallery.Server\tailwind.input.css ..\ServiceStack.Blazor.Tailwind.Tests\Client\
+
+
 REM Update Gallery.Wasm
 SET TO=Gallery.Wasm
 
