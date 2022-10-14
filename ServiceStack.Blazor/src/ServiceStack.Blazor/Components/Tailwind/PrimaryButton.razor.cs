@@ -15,6 +15,7 @@ public partial class PrimaryButton : UiComponentBase
     [Parameter] public string? href { get; set; }
     [Parameter] public string? title { get; set; }
     [Parameter] public string? target { get; set; }
+    [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Indigo;
     [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> onclick { get; set; }
 }
