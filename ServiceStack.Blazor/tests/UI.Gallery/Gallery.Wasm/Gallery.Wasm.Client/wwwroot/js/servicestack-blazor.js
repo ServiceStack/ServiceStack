@@ -53,7 +53,7 @@ JS = (function () {
         },
         init(opt) {
             if (!opt || opt.colorScheme !== false) {
-                let colorScheme = typeof opt.colorScheme === 'string'
+                let colorScheme = opt && typeof opt.colorScheme === 'string'
                     ? opt.colorScheme
                     : location.search === "?dark"
                         ? "dark"
