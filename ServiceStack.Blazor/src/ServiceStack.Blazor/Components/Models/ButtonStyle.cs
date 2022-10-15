@@ -7,4 +7,6 @@ public enum ButtonStyle
     Purple,
     Red,
     Green,
+    Cyan,
+    Sky,
 }
