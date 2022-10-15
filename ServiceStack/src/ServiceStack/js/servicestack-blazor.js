@@ -53,18 +53,22 @@ JS = (function () {
         },
         init(opt) {
             if (!opt || opt.colorScheme !== false) {
-                let colorScheme = location.search === "?dark"
-                    ? "dark"
-                    : location.search === "?light"
-                        ? "light"
-                        : localStorage.getItem('color-scheme')
+                let colorScheme = typeof opt.colorScheme === 'string'
+                    ? opt.colorScheme
+                    : location.search === "?dark"
+                        ? "dark"
+                        : location.search === "?light"
+                            ? "light"
+                            : localStorage.getItem('color-scheme')
                 let darkMode = colorScheme != null
                     ? colorScheme === 'dark'
                     : window.matchMedia('(prefers-color-scheme: dark)').matches
+                let classList = document.documentElement.classList
                 if (darkMode) {
-                    document.documentElement.classList.add('dark');
+                    if (!classList.contains('dark'))
+                        classList.add('dark')
                 } else {
-                    document.documentElement.classList.remove('dark');
+                    classList.remove('dark')
                 }
             }
         },
