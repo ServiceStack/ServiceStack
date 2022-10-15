@@ -273,7 +273,6 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 
     public QueryBase CreateRequestArgs() => CreateRequestArgs(out _);
 
-
     public QueryBase CreateRequestArgs(out string queryString)
     {
         // PK always needed
@@ -341,17 +340,22 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         return request;
     }
 
-    async Task UpdateAsync()
+    public async Task UpdateAsync()
     {
         var request = CreateRequestArgs(out var newQuery);
         if (lastQuery == newQuery)
             return;
         lastQuery = newQuery;
 
+        await SearchAsync(request);
+    }
+
+    public async Task SearchAsync(QueryBase request)
+    {
         var requestWithReturn = (IReturn<QueryResponse<Model>>)request;
         Api = await ApiAsync(requestWithReturn);
 
-        log($"UpdateAsync: {request.GetType().Name}({newQuery}) Succeeded: {Api.Succeeded}, Results: {Api.Response?.Results?.Count ?? 0}");
+        log($"UpdateAsync: {request.GetType().Name}({lastQuery}) Succeeded: {Api.Succeeded}, Results: {Api.Response?.Results?.Count ?? 0}");
         if (!Api.Succeeded)
             log("Api: " + Api.ErrorSummary ?? Api.Error?.ErrorCode);
 
