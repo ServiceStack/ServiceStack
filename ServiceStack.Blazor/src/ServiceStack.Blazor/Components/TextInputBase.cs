@@ -142,7 +142,6 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
             {
                 Value = value;
                 _ = ValueChanged.InvokeAsync(Value);
-                //EditContext?.NotifyFieldChanged(FieldIdentifier);
             }
         }
     }

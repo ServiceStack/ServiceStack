@@ -30,6 +30,18 @@ JS = (function () {
             }
             return f
         },
+        elInvoke(sel, fnName, args) {
+            let $el = el(sel)
+            if ($el) {
+                let f = $el[fnName]
+                if (typeof f == 'function') {
+                    let ret = f.apply($el, args || [])
+                    return ret
+                } else {
+                    return $el[fnName] = args
+                }
+            }
+        },
         addClass(sel, ...classes) {
             el(sel).classList.add(...classes)
         },
