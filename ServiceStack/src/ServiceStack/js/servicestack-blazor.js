@@ -30,7 +30,7 @@ JS = (function () {
             }
             return f
         },
-        invokeDelay = function (target, fnName, args, ms) {
+        invokeDelay(target, fnName, args, ms) {
             setTimeout(() => JS.invoke(target, fnName, args), isNaN(ms) ? 10 : ms)
         },
         elInvoke(sel, fnName, args) {
@@ -45,7 +45,7 @@ JS = (function () {
                 }
             }
         },
-        elInvokeDelay = function (sel, fnName, args, ms) {
+        elInvokeDelay(sel, fnName, args, ms) {
             setTimeout(() => JS.elInvoke(sel, fnName, args), isNaN(ms) ? 10 : ms)
         },
         addClass(sel, ...classes) {
