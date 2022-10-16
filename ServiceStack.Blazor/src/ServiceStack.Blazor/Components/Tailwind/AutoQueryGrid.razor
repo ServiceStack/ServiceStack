@@ -106,10 +106,18 @@ else
             </div>
             }
             <div class="flex pb-1 sm:pb-0">
+            @if (ShowRefresh)
+            {
+                <div class="pl-2">
+                    <button type="button" @onclick="RefreshAsync" title="Refresh" class=@ToolbarButtonClass>
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20v-5h-5M4 4v5h5m10.938 2A8.001 8.001 0 0 0 5.07 8m-1.008 5a8.001 8.001  0 0 0 14.868 3" /></svg>
+                    </button>
+                </div>
+            }
             @if (ShowDownloadCsv)
             {
                 <div class="pl-2">
-                    <button type="button" @onclick="_ => downloadCsv()" title="Download CSV" class=@ToolbarButtonClass>
+                    <button type="button" @onclick="downloadCsv" title="Download CSV" class=@ToolbarButtonClass>
                         <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd" /><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z" /><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z" /></svg>
                         <span class="text-green-900 dark:text-green-100">Excel</span>
                     </button>
@@ -118,7 +126,7 @@ else
             @if (ShowCopyApiUrl)
             {
                 <div class="pl-2">
-                    <button type="button" @onclick="_ => copyApiUrl()" title="Copy API URL" class=@ToolbarButtonClass>
+                    <button type="button" @onclick="copyApiUrl" title="Copy API URL" class=@ToolbarButtonClass>
                     @if (copiedApiUrl) 
                     {
                         <svg class="w-5 h-5 mr-1 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>

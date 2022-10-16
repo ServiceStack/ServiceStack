@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServiceStack.Text;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
@@ -45,6 +46,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public bool ShowPagingNav { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowPagingNav;
     [Parameter] public bool ShowPagingInfo { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowPagingInfo;
     [Parameter] public bool ShowDownloadCsv { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowDownloadCsv;
+    [Parameter] public bool ShowRefresh { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowRefresh;
     [Parameter] public bool ShowCopyApiUrl { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowCopyApiUrl;
     [Parameter] public bool ShowResetPreferences { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowResetPreferences;
     [Parameter] public bool ShowFiltersView { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ShowFiltersView;
@@ -271,9 +273,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     string? primaryKeyName;
     string PrimaryKeyName => primaryKeyName ??= PrimaryKey.Name;
 
-    public QueryBase CreateRequestArgs() => CreateRequestArgs(out _);
-
-    public QueryBase CreateRequestArgs(out string queryString)
+    public QueryBase CreateRequestArgs()
     {
         // PK always needed
         var selectFields = ApiPrefs.SelectedColumns.Count > 0 && !ApiPrefs.SelectedColumns.Contains(PrimaryKeyName)
@@ -321,9 +321,11 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         var strFilters = StringBuilderCache.ReturnAndFree(sb);
         strFilters.TrimEnd('&');
 
-        queryString = $"?skip={Skip}&take={Take}&fields={fields}&orderBy={orderBy}&{strFilters}";
 
         var request = Apis!.QueryRequest<Model>();
+        request.Meta ??= new();
+        request.Meta["_s"] = $"?skip={Skip}&take={Take}&fields={fields}&orderBy={orderBy}&{strFilters}";
+
         request.Skip = Skip;
         request.Take = Take;
         request.Include = "Total";
@@ -340,18 +342,32 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         return request;
     }
 
-    public async Task UpdateAsync()
+    public async Task RefreshAsync()
     {
-        var request = CreateRequestArgs(out var newQuery);
-        if (lastQuery == newQuery)
-            return;
-        lastQuery = newQuery;
-
-        await SearchAsync(request);
+        lastQuery = null;
+        await UpdateAsync();
     }
+
+    public async Task UpdateAsync() => await SearchAsync(CreateRequestArgs());
 
     public async Task SearchAsync(QueryBase request)
     {
+        if (request.Meta != null)
+        {
+            request.Meta.Remove("_s", out var newQuery);
+            if (request.Meta.Count == 0)
+                request.Meta = null;
+
+            if (lastQuery != null && lastQuery == newQuery)
+                return;
+
+            lastQuery = newQuery;
+        }
+        else
+        {
+            lastQuery = null;
+        }
+
         var requestWithReturn = (IReturn<QueryResponse<Model>>)request;
         Api = await ApiAsync(requestWithReturn);
 

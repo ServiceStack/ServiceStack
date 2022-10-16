@@ -183,6 +183,7 @@ public class AutoQueryGridDefaults
     public bool ShowPagingNav { get; set; } = true;
     public bool ShowPagingInfo { get; set; } = true;
     public bool ShowDownloadCsv { get; set; } = true;
+    public bool ShowRefresh { get; set; } = true;
     public bool ShowCopyApiUrl { get; set; } = true;
     public bool ShowResetPreferences { get; set; } = true;
     public bool ShowFiltersView { get; set; } = true;
