@@ -30,6 +30,9 @@ JS = (function () {
             }
             return f
         },
+        invokeDelay = function (target, fnName, args, ms) {
+            setTimeout(() => JS.invoke(target, fnName, args), isNaN(ms) ? 10 : ms)
+        },
         elInvoke(sel, fnName, args) {
             let $el = el(sel)
             if ($el) {
@@ -41,6 +44,9 @@ JS = (function () {
                     return $el[fnName] = args
                 }
             }
+        },
+        elInvokeDelay = function (sel, fnName, args, ms) {
+            setTimeout(() => JS.elInvoke(sel, fnName, args), isNaN(ms) ? 10 : ms)
         },
         addClass(sel, ...classes) {
             el(sel).classList.add(...classes)
