@@ -1,6 +1,7 @@
 ﻿@inject NavigationManager NavigationManager
 @inject ServiceStackStateProvider AuthStateProvider
 
+<CascadingAuthenticationState>
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData"
@@ -25,7 +26,6 @@
         </AuthorizeRouteView>
     </Found>
     <NotFound>
-        <CascadingAuthenticationState>
             <LayoutView Layout="@typeof(MainLayout)">
                 <div class="min-h-full bg-white dark:bg-black px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8">
                     <div class="mx-auto max-w-max">
@@ -45,9 +45,9 @@
                     </div>
                 </div>
             </LayoutView>
-        </CascadingAuthenticationState>
     </NotFound>
 </Router>
+</CascadingAuthenticationState>
 
 @code {
     Type GetPageLayout(RouteData route) => route.PageType?.FirstAttribute<LayoutAttribute>()?.LayoutType ?? typeof(MainLayout);
