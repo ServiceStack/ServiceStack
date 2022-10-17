@@ -93,7 +93,7 @@ public static class CssDefaults
     public static class SlideOver
     {
         public const string PanelClass = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
-        public const string FormClass = "flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-100 bg-white dark:bg-black shadow-xl";
+        public const string FormClass = "flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-black shadow-xl";
         public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 px-4 py-6 sm:px-6";
         public const string HeadingClass = "text-lg font-medium text-gray-900 dark:text-gray-50";
         
