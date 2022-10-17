@@ -9,9 +9,9 @@ namespace ServiceStack.Blazor.Components;
 public abstract class TextInputBase : ApiComponentBase
 {
     protected EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs> _validationStateChangedHandler;
-    protected bool _hasInitializedParameters;
+    protected bool hasInitializedParameters;
     protected bool _previousParsingAttemptFailed;
-    protected Type? _nullableUnderlyingType;
+    protected Type? nullableUnderlyingType;
 
     protected TextInputBase()
     {
@@ -158,7 +158,7 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
 
             bool parsingFailed;
 
-            if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
+            if (nullableUnderlyingType != null && string.IsNullOrEmpty(value))
             {
                 // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
                 // Then all subclasses get nullable support almost automatically (they just have to
@@ -228,7 +228,7 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         parameters.SetParameterProperties(this);
 
-        if (!_hasInitializedParameters)
+        if (!hasInitializedParameters)
         {
             // This is the first run
             // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
@@ -242,8 +242,8 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
             if (Id == null)
                 Id = FieldIdentifier.FieldName;
 
-            _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
-            _hasInitializedParameters = true;
+            nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+            hasInitializedParameters = true;
         }
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.

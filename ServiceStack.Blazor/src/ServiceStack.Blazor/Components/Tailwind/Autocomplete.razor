@@ -1,0 +1,64 @@
+﻿@typeparam T
+@inherits TextInputBase
+
+<div id=@($"{Id}-autocomplete")>
+@if (!string.IsNullOrEmpty(Label))
+{
+    <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+}
+    <div class="relative mt-1">
+        <input id=@Id type="text" @bind="txtValue" class=@ClassNames("block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
+            CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
+            "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
+            role="combobox" aria-controls="options" aria-expanded="false" placeholder=@(Multiple || Value == null ? placeholder : "")
+            @bind:event="oninput" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" @onclick="update" @attributes="IncludeAttributes">
+        <button type="button" @onclick="toggle" class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none" tabindex="-1">
+            <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd" />
+            </svg>
+        </button>
+        @if (showPopup)
+        {
+            <ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-black py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                @onkeydown="OnKeyDown" id=@("{Id}-options") role="listbox">
+                @foreach (var option in FilteredValues)
+                {
+                    <li class=@ClassNames(option.Equals(active) ? "active bg-indigo-600 text-white" : "text-gray-900 dark:text-gray-100", "relative cursor-default select-none py-2 pl-3 pr-9")
+                        @onmouseover="_ => setActive(option)" @onclick="_ => select(option)" role="option" tabindex="-1">
+                        @Item!(option)
+                        @if (Values.Contains(option))
+                        {
+                            <span class=@ClassNames("absolute inset-y-0 right-0 flex items-center pr-4", option.Equals(active) ? "text-white" : "text-indigo-600")>
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        else if (!Multiple && Value is not null)
+        {
+            <div @onkeydown="OnKeyDown" @onclick="toggle" class="h-8 -mt-8 ml-4">
+                @Item!(Value)
+            </div>
+        }
+        @if (HasErrorField)
+        {
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none" tabindex="-1">
+                <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+        }
+    </div>
+    @if (HasErrorField)
+    {
+        <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+    }
+    else if (!string.IsNullOrEmpty(UseHelp))
+    {
+        <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+    }
+</div>

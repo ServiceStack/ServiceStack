@@ -1,6 +1,6 @@
 ﻿/* DOM functions used in Blazor Components */
 JS = (function () {
-
+    function map(o, f) { return o == null ? null : f(o) }
     let dotnetRefs = []
     let NavKeys = 'Escape,ArrowLeft,ArrowRight,ArrowUp,ArrowDown,Home,End'.split(',')
     let InputTags = 'INPUT,SELECT,TEXTAREA'.split(',')
@@ -27,17 +27,37 @@ JS = (function () {
             if (typeof f == 'function') {
                 let ret = f.apply(target, args || [])
                 return ret
+            } else {
+                return target[fnName] = args
             }
             return f
         },
+        invokeDelay(target, fnName, args, ms) {
+            setTimeout(() => JS.invoke(target, fnName, args), isNaN(ms) ? 0 : ms)
+        },
+        elInvoke(sel, fnName, args) {
+            let $el = el(sel)
+            if ($el) {
+                let f = $el[fnName]
+                if (typeof f == 'function') {
+                    let ret = f.apply($el, args || [])
+                    return ret
+                } else {
+                    return $el[fnName] = args
+                }
+            }
+        },
+        elInvokeDelay(sel, fnName, args, ms) {
+            setTimeout(() => JS.elInvoke(sel, fnName, args), isNaN(ms) ? 0 : ms)
+        },
         addClass(sel, ...classes) {
-            el(sel).classList.add(...classes)
+            map(el(sel), el => el.classList.add(...classes))
         },
         removeClass(sel, ...classes) {
-            el(sel).classList.remove(...classes)
+            map(el(sel), el => el.classList.remove(...classes))
         },
         containsClass(sel, cls) {
-            return el(sel).classList.contains(cls)
+            return map(el(sel), el => el.classList.contains(cls)) || false
         },
         registerKeyNav(dotnetRef) {
             dotnetRefs.push(dotnetRef)
@@ -49,6 +69,21 @@ JS = (function () {
             dotnetRefs = dotnetRefs.filter(x => x != dotnetRef)
             if (dotnetRefs.length == 0) {
                 document.removeEventListener('keydown', onKeyNav)
+            }
+        },
+        focusNextElement() {
+            let elActive = document.activeElement
+            let form = elActive && elActive.form
+            if (form) {
+                let sel = ':not([disabled]):not([tabindex="-1"])'
+                let els = form.querySelectorAll(`a:not([disabled]), button${sel}, input[type=text]${sel}, [tabindex]${sel}`)
+                let focussable = Array.prototype.filter.call(els,
+                    el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === elActive);
+                let index = focussable.indexOf(elActive);
+                if (index > -1) {
+                    let elNext = focussable[index + 1] || focussable[0];
+                    elNext.focus();
+                }
             }
         },
         init(opt) {
