@@ -10,7 +10,7 @@
             <div class="grid grid-cols-6 gap-6">
                 
                 <div class="col-span-12">
-                    <Autocomplete T="Contact" Options="allContacts" @bind-Value="contact" Label="Single Contact"
+                    <Autocomplete T="Contact" Options="allContacts" @bind-Value="simple" Label="Single Contact"
                         Match="(x, value) => x!.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase)"
                         placeholder="Select Contact">
                         <Item>
@@ -18,13 +18,29 @@
                         </Item>
                     </Autocomplete>
                 </div>
+                
+                <div class="col-span-12">
+                    <Autocomplete T="Contact" Options="allContacts" @bind-Value="contact" Label="Single Contact with Icon"
+                        Match="(x, value) => x!.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase)"
+                        placeholder="Select Contact">
+                        <Item>
+                            <div class="flex items-center">
+                                <Icon class="h-6 w-6 flex-shrink-0 rounded-full" Src=@context.ProfileUrl />
+                                <span class="ml-3 truncate">@context!.DisplayName</span>
+                            </div>
+                        </Item>
+                    </Autocomplete>
+                </div>
 
                 <div class="col-span-12">
-                    <Autocomplete Options="allContacts" @bind-Values="contacts" Label="Multiple Contacts"
+                    <Autocomplete Options="allContacts" @bind-Values="contacts" Label="Multiple Contacts with Icon"
                         Match="(x, value) => x!.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase)"
                         placeholder="Select Contacts">
                         <Item>
-                            <span class="block truncate">@context!.DisplayName</span>
+                            <div class="flex items-center">
+                                <Icon class="h-6 w-6 flex-shrink-0 rounded-full" Src=@context.ProfileUrl />
+                                <span class="ml-3 truncate">@context!.DisplayName</span>
+                            </div>
                         </Item>
                     </Autocomplete>
                     @if (contacts.Count > 0)
@@ -64,6 +80,7 @@
     ApiResult<QueryResponse<Contact>> apiContacts = new();
     List<Contact> allContacts => apiContacts.Response?.Results ?? new();
     
+    Contact? simple;
     Contact? contact;
     List<Contact> contacts = new();
     void removeContact(Contact contact) => contacts.Remove(contact);
