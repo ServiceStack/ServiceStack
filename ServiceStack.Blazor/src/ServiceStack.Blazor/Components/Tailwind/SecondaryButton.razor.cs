@@ -17,4 +17,10 @@ public partial class SecondaryButton : UiComponentBase
     [Parameter] public string? target { get; set; }
     [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> onclick { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of additional attributes that will be applied to the created element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+    public virtual IReadOnlyDictionary<string, object>? IncludeAttributes => TextInputBase.SanitizeAttributes(AdditionalAttributes);
 }

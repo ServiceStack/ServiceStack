@@ -77,11 +77,11 @@ JS = (function () {
             if (form) {
                 let sel = ':not([disabled]):not([tabindex="-1"])'
                 let els = form.querySelectorAll(`a:not([disabled]), button${sel}, input[type=text]${sel}, [tabindex]${sel}`)
-                let focussable = Array.prototype.filter.call(els,
+                let focusable = Array.prototype.filter.call(els,
                     el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === elActive);
-                let index = focussable.indexOf(elActive);
+                let index = focusable.indexOf(elActive);
                 if (index > -1) {
-                    let elNext = focussable[index + 1] || focussable[0];
+                    let elNext = focusable[index + 1] || focusable[0];
                     elNext.focus();
                 }
             }

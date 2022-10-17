@@ -2,13 +2,13 @@
 
 @if (!string.IsNullOrEmpty(href))
 {
-    <a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation>
+    <a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation @attributes="IncludeAttributes">
         @ChildContent
     </a>
 }
 else
 {
-    <button type=@type @onclick="onclick" class=@ClassNames(cls, Class)>
+    <button type=@type @onclick="onclick" class=@ClassNames(cls, Class) @attributes="IncludeAttributes">
         @ChildContent
     </button>
 }

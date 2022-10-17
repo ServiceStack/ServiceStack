@@ -30,4 +30,18 @@ public abstract class UiComponentBase : ComponentBase
     /// <param name="classes"></param>
     /// <returns></returns>
     protected virtual string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
+
+    public static bool SanitizeAttribute(string name) => name == "@bind" || name.StartsWith("@bind:");
+    public static IReadOnlyDictionary<string, object>? SanitizeAttributes(IReadOnlyDictionary<string, object>? attrs)
+    {
+        if (attrs == null) return null;
+        var safeAttrs = new Dictionary<string, object>();
+        foreach (var attr in attrs)
+        {
+            if (SanitizeAttribute(attr.Key))
+                continue;
+            safeAttrs[attr.Key] = attr.Value;
+        }
+        return safeAttrs;
+    }
 }

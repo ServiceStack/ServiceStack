@@ -8,14 +8,14 @@ namespace ServiceStack.Blazor.Components;
 
 public abstract class TextInputBase : ApiComponentBase
 {
-    protected EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs> _validationStateChangedHandler;
+    protected EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs> validationStateChangedHandler;
     protected bool hasInitializedParameters;
-    protected bool _previousParsingAttemptFailed;
+    protected bool previousParsingAttemptFailed;
     protected Type? nullableUnderlyingType;
 
     protected TextInputBase()
     {
-        _validationStateChangedHandler = OnValidateStateChanged;
+        validationStateChangedHandler = OnValidateStateChanged;
     }
 
     protected override string StateClasses(string? valid = null, string? invalid = null) => UseStatus?.FieldError(Id!) == null
@@ -48,6 +48,7 @@ public abstract class TextInputBase : ApiComponentBase
     [Parameter]
     public string? Label { get; set; }
     [Parameter] public string? LabelClass { get; set; }
+    [Parameter] public string? FieldClass { get; set; }
 
     [Parameter] public string? type { get; set; }
     protected virtual string UseType => type ?? "text";
@@ -89,21 +90,6 @@ public abstract class TextInputBase : ApiComponentBase
 
     protected void UpdateAdditionalValidationAttributes()
     {
-    }
-
-    public static bool SanitizeAttribute(string name) => name == "@bind" || name.StartsWith("@bind:");
-
-    public static IReadOnlyDictionary<string, object>? SanitizeAttributes(IReadOnlyDictionary<string, object>? attrs)
-    {
-        if (attrs == null) return null;
-        var safeAttrs = new Dictionary<string, object>();
-        foreach (var attr in attrs)
-        {
-            if (SanitizeAttribute(attr.Key))
-                continue;
-            safeAttrs[attr.Key] = attr.Value;
-        }
-        return safeAttrs;
     }
 }
 
@@ -183,9 +169,9 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
             }
 
             // We can skip the validation notification if we were previously valid and still are
-            if (parsingFailed || _previousParsingAttemptFailed)
+            if (parsingFailed || previousParsingAttemptFailed)
             {
-                _previousParsingAttemptFailed = parsingFailed;
+                previousParsingAttemptFailed = parsingFailed;
             }
         }
     }
