@@ -17,7 +17,7 @@ public partial class SlideOver : BlazorComponentBase
     [Parameter] public string FormClass { get; set; } = CssDefaults.SlideOver.FormClass;
     [Parameter] public string TitlebarClass { get; set; } = CssDefaults.SlideOver.TitlebarClass;
     [Parameter] public string HeadingClass { get; set; } = CssDefaults.SlideOver.HeadingClass;
-    [Parameter] public string CloseButtonClass { get; set; } = CssDefaults.Form.CloseButtonClass;
+    [Parameter] public string CloseButtonClass { get; set; } = CssDefaults.SlideOver.CloseButtonClass;
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? SubHeading { get; set; }
     [Parameter] public bool ShowTitlebar { get; set; } = true;
