@@ -4,153 +4,150 @@ using System;
 using ServiceStack.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace ServiceStack.NetCore
+namespace ServiceStack.NetCore;
+
+public class NetCoreLogFactory : ILogFactory
 {
-    public class NetCoreLogFactory : ILogFactory
+    // In test/web watch projects the App can be disposed, disposing the ILoggerFactory 
+    // and invalidating all LogFactory instances so try FallbackLoggerFactory which holds the latest ILoggerFactory 
+    public static ILoggerFactory FallbackLoggerFactory { get; set; }
+
+    ILoggerFactory loggerFactory;
+
+    public NetCoreLogFactory(ILoggerFactory loggerFactory)
     {
-        // In test/web watch projects the App can be disposed, disposing the ILoggerFactory 
-        // and invalidating all LogFactory instances so try FallbackLoggerFactory which holds the latest ILoggerFactory 
-        public static ILoggerFactory FallbackLoggerFactory { get; set; }
+        this.loggerFactory = loggerFactory;
+    }
 
-        ILoggerFactory loggerFactory;
-        private bool debugEnabled;
-
-        public NetCoreLogFactory(ILoggerFactory loggerFactory, bool debugEnabled=false)
+    public ILog GetLogger(Type type)
+    {
+        try
         {
-            this.loggerFactory = loggerFactory;
-            this.debugEnabled = debugEnabled;
+            return new NetCoreLog(loggerFactory.CreateLogger(type));
         }
-
-        public ILog GetLogger(Type type)
+        catch (ObjectDisposedException)
         {
+            if (FallbackLoggerFactory == null) throw;
             try
             {
-                return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+                loggerFactory = FallbackLoggerFactory;
+                return new NetCoreLog(loggerFactory.CreateLogger(type));
             }
             catch (ObjectDisposedException)
             {
-                if (FallbackLoggerFactory == null) throw;
-                try
-                {
-                    loggerFactory = FallbackLoggerFactory;
-                    return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
-                }
-                catch (ObjectDisposedException)
-                {
-                    return new NullDebugLogger(type);
-                }
-            }
-        }
-
-        public ILog GetLogger(string typeName)
-        {
-            try
-            {
-                return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
-            }
-            catch (ObjectDisposedException)
-            {
-                if (FallbackLoggerFactory == null) throw;
-                try
-                {
-                    loggerFactory = FallbackLoggerFactory;
-                    return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
-                }
-                catch (ObjectDisposedException)
-                {
-                    return new NullDebugLogger(typeName);
-                }
+                return new NullDebugLogger(type);
             }
         }
     }
 
-    public class NetCoreLog : ILog
+    public ILog GetLogger(string typeName)
     {
-        private ILogger log;
-
-        public NetCoreLog(ILogger logger, bool debugEnabled=false)
+        try
         {
-            this.log = logger;
-            this.IsDebugEnabled = debugEnabled;
+            return new NetCoreLog(loggerFactory.CreateLogger(typeName));
         }
-
-        public bool IsDebugEnabled { get; }
-
-        public void Debug(object message)
+        catch (ObjectDisposedException)
         {
-            log.LogDebug(message.ToString());
-        }
-
-        public void Debug(object message, Exception exception)
-        {
-            log.LogDebug(default(EventId), exception, message.ToString());
-        }
-
-        public void DebugFormat(string format, params object[] args)
-        {
-            log.LogDebug(format, args);
-        }
-
-        public void Error(object message)
-        {
-            log.LogError(message.ToString());
-        }
-
-        public void Error(object message, Exception exception)
-        {
-            log.LogError(default(EventId), exception, message.ToString());
-        }
-
-        public void ErrorFormat(string format, params object[] args)
-        {
-            log.LogError(format, args);
-        }
-
-        public void Fatal(object message)
-        {
-            log.LogCritical(message.ToString());
-        }
-
-        public void Fatal(object message, Exception exception)
-        {
-            log.LogCritical(default(EventId), exception, message.ToString());
-        }
-
-        public void FatalFormat(string format, params object[] args)
-        {
-            log.LogCritical(format, args);
-        }
-
-        public void Info(object message)
-        {
-            log.LogInformation(message.ToString());
-        }
-
-        public void Info(object message, Exception exception)
-        {
-            log.LogInformation(default(EventId), exception, message.ToString());
-        }
-
-        public void InfoFormat(string format, params object[] args)
-        {
-            log.LogInformation(format, args);
-        }
-
-        public void Warn(object message)
-        {
-            log.LogWarning(message.ToString());
-        }
-
-        public void Warn(object message, Exception exception)
-        {
-            log.LogWarning(default(EventId), exception, message.ToString());
-        }
-
-        public void WarnFormat(string format, params object[] args)
-        {
-            log.LogWarning(format, args);
+            if (FallbackLoggerFactory == null) throw;
+            try
+            {
+                loggerFactory = FallbackLoggerFactory;
+                return new NetCoreLog(loggerFactory.CreateLogger(typeName));
+            }
+            catch (ObjectDisposedException)
+            {
+                return new NullDebugLogger(typeName);
+            }
         }
     }
 }
+
+public class NetCoreLog : ILog
+{
+    public ILogger Log { get; }
+
+    public NetCoreLog(ILogger logger)
+    {
+        this.Log = logger;
+    }
+
+    public bool IsDebugEnabled => Log.IsEnabled(LogLevel.Debug);
+
+    public void Debug(object message)
+    {        
+        Log.LogDebug(message.ToString());
+    }
+
+    public void Debug(object message, Exception exception)
+    {
+        Log.LogDebug(default(EventId), exception, message.ToString());
+    }
+
+    public void DebugFormat(string format, params object[] args)
+    {
+        Log.LogDebug(format, args);
+    }
+
+    public void Error(object message)
+    {
+        Log.LogError(message.ToString());
+    }
+
+    public void Error(object message, Exception exception)
+    {
+        Log.LogError(default(EventId), exception, message.ToString());
+    }
+
+    public void ErrorFormat(string format, params object[] args)
+    {
+        Log.LogError(format, args);
+    }
+
+    public void Fatal(object message)
+    {
+        Log.LogCritical(message.ToString());
+    }
+
+    public void Fatal(object message, Exception exception)
+    {
+        Log.LogCritical(default(EventId), exception, message.ToString());
+    }
+
+    public void FatalFormat(string format, params object[] args)
+    {
+        Log.LogCritical(format, args);
+    }
+
+    public void Info(object message)
+    {
+        Log.LogInformation(message.ToString());
+    }
+
+    public void Info(object message, Exception exception)
+    {
+        Log.LogInformation(default(EventId), exception, message.ToString());
+    }
+
+    public void InfoFormat(string format, params object[] args)
+    {
+        Log.LogInformation(format, args);
+    }
+
+    public void Warn(object message)
+    {
+        Log.LogWarning(message.ToString());
+    }
+
+    public void Warn(object message, Exception exception)
+    {
+        Log.LogWarning(default(EventId), exception, message.ToString());
+    }
+
+    public void WarnFormat(string format, params object[] args)
+    {
+        Log.LogWarning(format, args);
+    }
+}
+
 
 #endif
