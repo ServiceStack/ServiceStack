@@ -78,6 +78,7 @@ public static class CssDefaults
         public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 px-4 py-6 sm:px-6";
         public const string HeadingClass = "text-lg font-medium text-gray-900 dark:text-gray-100";
         public const string CloseButtonClass = "rounded-md bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black";
+        public const string LegendClass = "text-base font-medium text-gray-900 dark:text-gray-100 text-center mb-4";
 
         public static DataTransition SlideOverTransition = new DataTransition(
             entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
