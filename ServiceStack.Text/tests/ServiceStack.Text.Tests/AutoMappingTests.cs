@@ -1723,6 +1723,10 @@ public class PropertyExpressionTests
         var x = new RecordImplicit1 { Value = 42 };
         var y = x.ConvertTo<RecordImplicit2>();
         Assert.That(x.Value, Is.EqualTo(y.Value));
+
+        RecordImplicit1 a = new() { Value = 2 };
+        RecordImplicit2 b = a;
+        Assert.That(a.Value, Is.EqualTo(b.Value));
     }
 
     
