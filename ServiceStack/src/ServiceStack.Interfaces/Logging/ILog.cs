@@ -8,15 +8,15 @@ namespace ServiceStack.Logging;
 /// </summary>
 public interface ILog 
 {
-	/// <summary>
-	/// Gets or sets a value indicating whether this instance is debug enabled.
-	/// </summary>
-	/// <value>
-	/// 	<c>true</c> if this instance is debug enabled; otherwise, <c>false</c>.
-	/// </value>
-	bool IsDebugEnabled { get; }
+    /// <summary>
+    /// Gets or sets a value indicating whether this instance is debug enabled.
+    /// </summary>
+    /// <value>
+    /// 	<c>true</c> if this instance is debug enabled; otherwise, <c>false</c>.
+    /// </value>
+    bool IsDebugEnabled { get; }
     
-		/// <summary>
+    /// <summary>
     /// Logs a Debug message.
     /// </summary>
     /// <param name="message">The message.</param>
