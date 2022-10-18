@@ -113,7 +113,16 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         return formatUrl;
     }
 
-    async Task clearPrefs()
+    public async Task ClearFiltersAsync()
+    {
+        foreach (var c in GetColumns())
+        {
+            await c.RemoveSettingsAsync();
+        }
+        await UpdateAsync();
+    }
+
+    public async Task ResetPreferencesAsync()
     {
         foreach (var c in GetColumns())
         {
