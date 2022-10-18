@@ -128,28 +128,28 @@ public interface ILog
 public interface ILogTrace
 {
     /// <summary>
-    /// Gets or sets a value indicating whether this instance is debug enabled.
+    /// Gets or sets a value indicating whether this instance is trace enabled.
     /// </summary>
     /// <value>
-    /// 	<c>true</c> if this instance is debug enabled; otherwise, <c>false</c>.
+    /// 	<c>true</c> if this instance is trace enabled; otherwise, <c>false</c>.
     /// </value>
     bool IsTraceEnabled { get; }
 
     /// <summary>
-    /// Logs a Debug message.
+    /// Logs a Trace message.
     /// </summary>
     /// <param name="message">The message.</param>
     void Trace(object message);
 
     /// <summary>
-    /// Logs a Debug message and exception.
+    /// Logs a Trace message and exception.
     /// </summary>
     /// <param name="message">The message.</param>
     /// <param name="exception">The exception.</param>
     void Trace(object message, Exception exception);
 
     /// <summary>
-    /// Logs a Debug format message.
+    /// Logs a Trace format message.
     /// </summary>
     /// <param name="format">The format.</param>
     /// <param name="args">The args.</param>
