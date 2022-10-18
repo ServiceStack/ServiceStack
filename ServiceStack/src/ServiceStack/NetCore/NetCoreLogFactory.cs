@@ -62,13 +62,30 @@ public class NetCoreLogFactory : ILogFactory
     }
 }
 
-public class NetCoreLog : ILog
+public class NetCoreLog : ILog, ILogTrace
 {
     public ILogger Log { get; }
 
     public NetCoreLog(ILogger logger)
     {
         this.Log = logger;
+    }
+
+    public bool IsTraceEnabled => throw new NotImplementedException();
+
+    public void Trace(object message)
+    {
+        Log.LogTrace(message.ToString());
+    }
+
+    public void Trace(object message, Exception exception)
+    {
+        Log.LogTrace(default(EventId), exception, message.ToString());
+    }
+
+    public void TraceFormat(string format, params object[] args)
+    {
+        Log.LogTrace(format, args);
     }
 
     public bool IsDebugEnabled => Log.IsEnabled(LogLevel.Debug);
