@@ -1,0 +1,42 @@
+﻿@page "/gallery/navigation/navlist"
+
+<div class="max-w-screen-sm">
+
+    <NavList Title="Explore Blazor Components">
+        <NavListItem Title="DataGrid" href="/gallery/datagrid" IconSvg=@Icons.DataGrid>
+            DataGrid Component Examples for rendering tabular data
+        </NavListItem>
+        <NavListItem Title="AutoQuery Grid" href="/gallery/autoquerygrid" IconSvg=@Icons.AutoQueryGrid>
+            Instant customizable UIs for calling AutoQuery CRUD APIs
+        </NavListItem>
+        <NavListItem Title="Auto Forms" href="/gallery/autoform" IconSvg=@Icons.AutoForms>
+            Render Auto Form UIs from a Request DTO class
+        </NavListItem>
+        <NavListItem Title="Form Inputs" href="/gallery/inputs" IconSvg=@Icons.FormInputs>
+            Tailwind UI Input Components
+        </NavListItem>
+        <NavListItem Title="Navigation" href="/gallery/navigation" IconSvg=@Icons.Navigation>
+            Breadcrumbs and Link navigation components
+        </NavListItem>
+        <NavListItem Title="Alerts" href="/gallery/alerts" IconSvg=@Icons.Alerts>
+            Tailwind Alert and Notification components
+        </NavListItem>
+        <NavListItem Title="Formats" href="/gallery/formats" IconSvg=@Icons.Formats>
+            HTML Value Formatters
+        </NavListItem>
+    </NavList>
+
+    <h2 class="mt-8 text-base font-semibold text-gray-500 dark:text-gray-400 flex">
+        <span title="Requires Auth"><Icon class="h-6 w-6 mr-2" Svg=@Icons.Padlock /></span>
+        Booking APIs
+    </h2>
+    <NavList>
+        <NavListItem Title="Bookings" href="/grid/bookings" Icon=@typeof(Booking).GetIcon()>
+            Create and manage Bookings
+        </NavListItem>
+        <NavListItem Title="Coupons" href="/grid/coupons" Icon=@typeof(Coupon).GetIcon()>
+            Create and manage discount Coupons
+        </NavListItem>
+    </NavList>
+
+</div>

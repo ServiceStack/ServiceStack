@@ -25,7 +25,7 @@
                 <TextLink href=@($"mailto:{context.Email}")>@context.Email</TextLink>
             </Template>
         </Column>
-        <Column Field="(Contact x) => x.Phone">
+        <Column Field="(Contact x) => x.Phone" AllowFiltering="false">
             <Template>
                 <TextLink href=@($"tel:{context.Phone}")>@context.Phone</TextLink>
             </Template>

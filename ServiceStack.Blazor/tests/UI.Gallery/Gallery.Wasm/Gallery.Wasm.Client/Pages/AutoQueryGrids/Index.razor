@@ -16,263 +16,55 @@
             </div>
             <div class="mt-12">
 
-                <h2 class="text-base font-semibold text-gray-500 dark:text-gray-400">Public Talent APIs</h2>
-                <ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
-
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Contact).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/contacts-meta" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Contacts Metadata
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Contacts customized with Metadata</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Contact).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/contacts" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Contacts 
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Contacts customized with Blazor</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobApplication).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/job-applications" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Job Applications
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Create and manage Job Applications</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-                </ul>
+                <NavList Title="Public Talent APIs">
+                    <NavListItem Title="Contacts Metadata" href="/grid/contacts-meta" Icon=@typeof(Contact).GetIcon()>
+                        Contacts customized with Metadata
+                    </NavListItem>
+                    <NavListItem Title="Contacts Metadata" href="/grid/contacts" Icon=@typeof(Contact).GetIcon()>
+                        Contacts customized with Blazor
+                    </NavListItem>
+                    <NavListItem Title="Job Applications" href="/grid/job-applications" Icon=@typeof(JobApplication).GetIcon()>
+                        Create and manage Job Applications
+                    </NavListItem>
+                </NavList>
 
                 <h2 class="mt-8 text-base font-semibold text-gray-500 dark:text-gray-400 flex">
                     <span title="Requires Auth"><Icon class="h-6 w-6 mr-2" Svg=@Icons.Padlock /></span>
                     Secure Talent APIs
                 </h2>
-                <ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
-                    
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Job).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/jobs" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Jobs
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Create and manage Job vacancies</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobApplicationComment).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/job-applications/comments" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Job Application Comments
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Moderate Job Application Comments</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobApplicationEvent).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/job-applications/events" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Job Application Events
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">View Job Application Events (read only)</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(PhoneScreen).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/phone-screens" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Phone Screens
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Report on Phone Screening Sessions</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Interview).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/interviews" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Interviews
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Schedule Job Interviews</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(JobOffer).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/job-offers" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Interviews
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Make or see pending Job Offers</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-
-                </ul>
-
+                <NavList>
+                    <NavListItem Title="Jobs" href="/grid/jobs" Icon=@typeof(Job).GetIcon()>
+                        Create and manage Job vacancies
+                    </NavListItem>
+                    <NavListItem Title="Job Application Comments" href="/grid/job-applications/comments" Icon=@typeof(JobApplicationComment).GetIcon()>
+                        Moderate Job Application Comments
+                    </NavListItem>
+                    <NavListItem Title="Job Application Events" href="/grid/job-applications/events" Icon=@typeof(JobApplicationEvent).GetIcon()>
+                        View Job Application Events (read only)
+                    </NavListItem>
+                    <NavListItem Title="Phone Screens" href="/grid/phone-screens" Icon=@typeof(PhoneScreen).GetIcon()>
+                        Report on Phone Screening Sessions
+                    </NavListItem>
+                    <NavListItem Title="Interview" href="/grid/interviews" Icon=@typeof(Interview).GetIcon()>
+                        Schedule Job Interviews
+                    </NavListItem>
+                    <NavListItem Title="Job Offers" href="/grid/job-offers" Icon=@typeof(JobOffer).GetIcon()>
+                        Make or see pending Job Offers
+                    </NavListItem>
+                </NavList>
 
                 <h2 class="mt-8 text-base font-semibold text-gray-500 dark:text-gray-400 flex">
                     <span title="Requires Auth"><Icon class="h-6 w-6 mr-2" Svg=@Icons.Padlock /></span>
                     Booking APIs
                 </h2>
-                <ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Booking).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/bookings" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Bookings
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Create and manage Bookings</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-                    <li class="relative flex items-start space-x-4 py-6">
-                        <div class="flex-shrink-0">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
-                                <Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@typeof(Coupon).GetIcon() />
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
-                                <span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                    <a href="/grid/coupons" class="focus:outline-none">
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                        Coupons
-                                    </a>
-                                </span>
-                            </h3>
-                            <p class="text-base text-gray-500">Create and manage discount Coupons</p>
-                        </div>
-                        <div class="flex-shrink-0 self-center">
-                            <img class="h-5 w-5" src="/img/chevron-right.svg">
-                        </div>
-                    </li>
-                </ul>
+                <NavList>
+                    <NavListItem Title="Bookings" href="/grid/bookings" Icon=@typeof(Booking).GetIcon()>
+                        Create and manage Bookings
+                    </NavListItem>
+                    <NavListItem Title="Coupons" href="/grid/coupons" Icon=@typeof(Coupon).GetIcon()>
+                        Create and manage discount Coupons
+                    </NavListItem>
+                </NavList>
 
 
                 <div class="mt-8 flex justify-between">
