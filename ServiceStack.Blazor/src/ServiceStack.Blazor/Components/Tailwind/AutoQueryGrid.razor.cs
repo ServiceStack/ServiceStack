@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServiceStack.Text;
-using System.Reflection.Metadata.Ecma335;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
@@ -440,6 +440,13 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         var autoQueryFilters = AppMetadata?.Plugins?.AutoQuery?.ViewerConventions;
         if (autoQueryFilters != null)
             FilterDefinitions = autoQueryFilters;
+
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        base.InvokeAsync(async () => await OnParametersSetAsync());
     }
 
     private DotNetObjectReference<AutoQueryGrid<Model>>? dotnetRef;
@@ -453,7 +460,11 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
             await UpdateAsync();
         }
     }
-    public void Dispose() => dotnetRef?.Dispose();
+    public void Dispose()
+    {
+        dotnetRef?.Dispose();
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
 
     protected virtual async Task CloseDialogsAsync()
     {
