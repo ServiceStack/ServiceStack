@@ -179,9 +179,9 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 
     [Parameter] public Action<QueryBase> ConfigureQuery { get; set; }
 
-    [Parameter, SupplyParameterFromQuery] public int Skip { get; set; } = 0;
-    [Parameter, SupplyParameterFromQuery] public bool? New { get; set; }
-    [Parameter, SupplyParameterFromQuery] public string? Edit { get; set; }
+    [Parameter] public int Skip { get; set; } = 0;
+    [Parameter] public bool? New { get; set; }
+    [Parameter] public string? Edit { get; set; }
 
     int Take => ApiPrefs.Take;
 
@@ -244,20 +244,17 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 
     async Task OnEditDoneAsync()
     {
-        //if (AutoEditForm != null)
-        //    await AutoEditForm.CloseAsync();
+        Edit = null;
         EditModel = default;
-        string uri = NavigationManager.Uri.SetQueryParam(QueryParams.Edit, null);
-        NavigationManager.NavigateTo(uri);
+        StateHasChanged();
+        NavigationManager.NavigateTo(NavigationManager.Uri.SetQueryParam(QueryParams.Edit, null));
     }
 
     async Task OnNewDoneAsync()
     {
-        //if (AutoCreateForm != null)
-        //    await AutoCreateForm.CloseAsync();
-        EditModel = default;
-        string uri = NavigationManager.Uri.SetQueryParam(QueryParams.New, null);
-        NavigationManager.NavigateTo(uri);
+        New = false;
+        StateHasChanged();
+        NavigationManager.NavigateTo(NavigationManager.Uri.SetQueryParam(QueryParams.New, null));
     }
 
     async Task OnEditSave(Model model)
@@ -387,16 +384,20 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         StateHasChanged();
     }
 
-    protected override async Task OnParametersSetAsync()
+    void ParseQueryString(string queryString)
     {
-        await base.OnParametersSetAsync();
-        ApiPrefs = LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
-
-        var query = Pcl.HttpUtility.ParseQueryString(new Uri(NavigationManager.Uri).Query);
+        var query = Pcl.HttpUtility.ParseQueryString(queryString);
         Skip = query[QueryParams.Skip]?.ConvertTo<int>() ?? 0;
         Edit = query[QueryParams.Edit];
         New = query[QueryParams.New]?.ConvertTo<bool>();
+    }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        ParseQueryString(new Uri(NavigationManager.Uri).Query);
+
+        ApiPrefs = LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
         if (Edit != null || New == true)
         {
             if (EditModel == null || Properties.GetId(EditModel)?.ToString() != Edit)
@@ -426,12 +427,16 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
                 }
             }
         }
+        StateHasChanged();
+
         await UpdateAsync();
     }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        NavigationManager.LocationChanged += HandleLocationChanged;
+
         if (AppMetadata == null)
         {
             appMetadataApi = await ApiAppMetadataAsync();
@@ -440,8 +445,6 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         var autoQueryFilters = AppMetadata?.Plugins?.AutoQuery?.ViewerConventions;
         if (autoQueryFilters != null)
             FilterDefinitions = autoQueryFilters;
-
-        NavigationManager.LocationChanged += HandleLocationChanged;
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
