@@ -20,6 +20,7 @@ public class Column<Model> : UiComponentBase
     [Parameter] public string? CellClass { get; set; }
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? Format { get; set; }
+    [Parameter] public bool AllowFiltering { get; set; } = true;
     [Parameter] public Func<object, string>? Formatter { get; set; }
     [Parameter] public Breakpoint? VisibleFrom { get; set; }
     [Parameter] public ColumnSettings Settings { get; set; } = new();
