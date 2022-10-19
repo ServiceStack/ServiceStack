@@ -10,13 +10,13 @@
                 <h3 class="text-base font-medium mb-3 dark:text-gray-100">Sort</h3>
                 <div class="flex w-full justify-center">
                     <button type="button" title="Sort Ascending" @onclick="_ => sort(SortOrder.Ascending)"
-                            class=@ClassNames(Column.Settings.SortOrder == SortOrder.Ascending ? "bg-indigo-100 dark:bg-indigo-800 border-indigo-500 dark:border-indigo-400" : "bg-white dark:bg-black hover:bg-gray-50 hover:bg-gray-800 border-gray-300 dark:border-gray-700", 
+                            class=@ClassNames(Column.Settings.SortOrder == SortOrder.Ascending ? "bg-indigo-100 dark:bg-indigo-800 border-indigo-500 dark:border-indigo-400" : "bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-900 border-gray-300 dark:border-gray-700", 
                             "mr-1 inline-flex items-center px-2.5 py-1.5 border shadow-sm text-sm font-medium rounded text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500")>
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M10.082 5.629L9.664 7H8.598l1.789-5.332h1.234L13.402 7h-1.12l-.419-1.371h-1.781zm1.57-.785L11 2.687h-.047l-.652 2.157h1.351z" /><path d="M12.96 14H9.028v-.691l2.579-3.72v-.054H9.098v-.867h3.785v.691l-2.567 3.72v.054h2.645V14zm-8.46-.5a.5.5 0 0 1-1 0V3.707L2.354 4.854a.5.5 0 1 1-.708-.708l2-1.999l.007-.007a.498.498 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L4.5 3.707V13.5z" /></g></svg>
                         <span>ASC</span>
                     </button>
                     <button type="button" title="Sort Descending" @onclick="_ => sort(SortOrder.Descending)"
-                            class=@ClassNames(Column.Settings.SortOrder == SortOrder.Descending ? "bg-indigo-100 dark:bg-indigo-800 border-indigo-500 dark:border-indigo-400" : "bg-white dark:bg-black hover:bg-gray-50 hover:bg-gray-900 border-gray-300 dark:border-gray-700",
+                            class=@ClassNames(Column.Settings.SortOrder == SortOrder.Descending ? "bg-indigo-100 dark:bg-indigo-800 border-indigo-500 dark:border-indigo-400" : "bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-900 border-gray-300 dark:border-gray-700",
                             "ml-1 inline-flex items-center px-2.5 py-1.5 border shadow-sm text-sm font-medium rounded text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500")>
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="currentColor"><path d="M12.96 7H9.028v-.691l2.579-3.72v-.054H9.098v-.867h3.785v.691l-2.567 3.72v.054h2.645V7z" /><path fill-rule="evenodd" d="M10.082 12.629L9.664 14H8.598l1.789-5.332h1.234L13.402 14h-1.12l-.419-1.371h-1.781zm1.57-.785L11 9.688h-.047l-.652 2.156h1.351z" /><path d="M4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999l.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293V2.5z" /></g></svg>
                         <span>DESC</span>
