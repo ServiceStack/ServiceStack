@@ -12,7 +12,7 @@ namespace ServiceStack
 {
     [Serializable]
     public class WebServiceException
-        : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible
+        : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible, IHasResponseStatus
     {
         public static ILog log = LogManager.GetLogger(typeof(WebServiceException));
 
@@ -89,6 +89,7 @@ namespace ServiceStack
 
                 return responseStatus;
             }
+            set => responseStatus = value;
         }
 
         private ResponseStatus ToBuiltInResponseStatus(object statusDto)

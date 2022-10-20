@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using ServiceStack.Text;
 using System.Diagnostics;
 using System.Linq;
 
@@ -14,6 +15,23 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 
     [Inject] public JsonApiClient? Client { get; set; }
 
+    public string GetDetailedError(ResponseStatus status)
+    {
+        var sb = StringBuilderCache.Allocate();
+        sb.AppendLine($"{status.ErrorCode} {status.Message}");
+        foreach (var error in status.Errors.OrEmpty())
+        {
+            sb.AppendLine($" - {error.FieldName}: {error.ErrorCode} {error.Message}");
+        }
+        if (!string.IsNullOrEmpty(status.StackTrace))
+        {
+            sb.AppendLine("StackTrace:");
+            sb.AppendLine(status.StackTrace);
+        }
+
+        return StringBuilderCache.ReturnAndFree(sb);
+    }
+
     public async virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request)
     {
         Stopwatch? sw = null;
@@ -24,6 +42,10 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAsync(this, request);
+        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        {
+            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+        }
 
         if (EnableLogging)
         {
@@ -42,6 +64,10 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAsync(this, request);
+        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        {
+            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+        }
 
         if (EnableLogging)
         {
@@ -59,13 +85,24 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
             log("API SendAsync {0}", request.GetType().Name);
         }
 
-        var ret = await JsonApiClientUtils.SendAsync(this, request);
-
-        if (EnableLogging)
+        try
         {
-            log("END SendAsync {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+            var ret = await JsonApiClientUtils.SendAsync(this, request);
+            if (EnableLogging)
+            {
+                log("END SendAsync {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+            }
+            return ret;
         }
-        return ret;
+        catch (Exception e)
+        {
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                var status = e.GetResponseStatus();
+                log("ERROR {0}:\n{1}", request.GetType().Name, status != null ? GetDetailedError(status) : e.ToString());
+            }
+            throw;
+        }
     }
 
     public async virtual Task<IHasErrorStatus> ApiAsync<Model>(object request)
@@ -78,6 +115,10 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAsync<Model>(this, request);
+        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        {
+            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+        }
 
         if (EnableLogging)
         {
@@ -96,6 +137,10 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiFormAsync<Model>(this, method, relativeUrl, request);
+        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        {
+            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+        }
 
         if (EnableLogging)
         {
@@ -114,6 +159,10 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiFormAsync<Model>(this, relativeUrl, request);
+        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        {
+            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+        }
 
         if (EnableLogging)
         {
@@ -133,6 +182,10 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAppMetadataAsync(this);
+        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        {
+            log("ERROR AppMetadata:\n{0}", GetDetailedError(ret.Error));
+        }
 
         if (EnableLogging)
         {
