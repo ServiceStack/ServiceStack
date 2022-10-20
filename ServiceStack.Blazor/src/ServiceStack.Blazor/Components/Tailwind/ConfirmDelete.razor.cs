@@ -12,6 +12,7 @@ public partial class ConfirmDelete : UiComponentBase
 {
     bool confirmDelete;
     [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
+    [Parameter] public string Label { get; set; } = "Delete";
     [Parameter] public string ConfirmLabel { get; set; } = "confirm";
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }
