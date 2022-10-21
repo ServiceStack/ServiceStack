@@ -129,6 +129,18 @@ namespace ServiceStack.Auth
             });
         }
 
+        public override void DropSchema()
+        {
+            EachDb(db =>
+            {
+                if (UseDistinctRoleTables)
+                    db.DropTable<UserAuthRole>();
+                db.DropTable<TUserAuthDetails>();
+                db.DropTable<TUserAuth>();
+            });
+            hasInitSchema = false;
+        }
+
         public override void DropAndReCreateTables()
         {
             hasInitSchema = true;
@@ -147,6 +159,14 @@ namespace ServiceStack.Auth
             EachDb(db =>
             {
                 db.CreateTableIfNotExists<ApiKey>();
+            });
+        }
+
+        public override void DropApiKeySchema()
+        {
+            EachDb(db =>
+            {
+                db.DropTable<ApiKey>();
             });
         }
 
@@ -181,6 +201,18 @@ namespace ServiceStack.Auth
                 if (UseDistinctRoleTables)
                     db.CreateTableIfNotExists<UserAuthRole>();
             });
+        }
+
+        public virtual void DropSchema()
+        {
+            Exec(db =>
+            {
+                if (UseDistinctRoleTables)
+                    db.DropTable<UserAuthRole>();
+                db.DropTable<TUserAuthDetails>();
+                db.DropTable<TUserAuth>();
+            });
+            hasInitSchema = false;
         }
 
         public virtual void DropAndReCreateTables()
@@ -793,6 +825,13 @@ namespace ServiceStack.Auth
             Exec(db => 
             {
                 db.CreateTableIfNotExists<ApiKey>();
+            });
+        }
+        public virtual void DropApiKeySchema()
+        {
+            Exec(db =>
+            {
+                db.DropTable<ApiKey>();
             });
         }
 
