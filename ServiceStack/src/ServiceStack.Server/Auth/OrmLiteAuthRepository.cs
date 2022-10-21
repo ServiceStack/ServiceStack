@@ -120,38 +120,19 @@ namespace ServiceStack.Auth
         {
             hasInitSchema = true;
 
-            EachDb(db =>
-            {
-                db.CreateTableIfNotExists<TUserAuth>();
-                db.CreateTableIfNotExists<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.CreateTableIfNotExists<UserAuthRole>();
-            });
+            EachDb(InitSchema);
         }
 
         public override void DropSchema()
         {
-            EachDb(db =>
-            {
-                if (UseDistinctRoleTables)
-                    db.DropTable<UserAuthRole>();
-                db.DropTable<TUserAuthDetails>();
-                db.DropTable<TUserAuth>();
-            });
+            EachDb(DropSchema);
             hasInitSchema = false;
         }
 
         public override void DropAndReCreateTables()
         {
             hasInitSchema = true;
-
-            EachDb(db =>
-            {
-                db.DropAndCreateTable<TUserAuth>();
-                db.DropAndCreateTable<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.DropAndCreateTable<UserAuthRole>();
-            });
+            EachDb(DropAndReCreateTables);
         }
 
         public override void InitApiKeySchema()
@@ -194,36 +175,50 @@ namespace ServiceStack.Auth
         public virtual void InitSchema()
         {
             hasInitSchema = true;
-            Exec(db =>
-            {
-                db.CreateTableIfNotExists<TUserAuth>();
-                db.CreateTableIfNotExists<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.CreateTableIfNotExists<UserAuthRole>();
-            });
+            Exec(InitSchema);
+        }
+        
+        public virtual void InitSchema(IDbConnection db)
+        {
+            db.CreateTableIfNotExists<TUserAuth>();
+            db.CreateTableIfNotExists<TUserAuthDetails>();
+            if (UseDistinctRoleTables)
+                db.CreateTableIfNotExists<UserAuthRole>();
+            hasInitSchema = true;
         }
 
         public virtual void DropSchema()
         {
-            Exec(db =>
-            {
-                if (UseDistinctRoleTables)
-                    db.DropTable<UserAuthRole>();
-                db.DropTable<TUserAuthDetails>();
-                db.DropTable<TUserAuth>();
-            });
+            Exec(DropSchema);
+            hasInitSchema = false;
+        }
+        public virtual void DropSchema(IDbConnection db)
+        {
+            if (UseDistinctRoleTables)
+                db.DropTable<UserAuthRole>();
+            db.DropTable<TUserAuthDetails>();
+            db.DropTable<TUserAuth>();
             hasInitSchema = false;
         }
 
         public virtual void DropAndReCreateTables()
         {
             hasInitSchema = true;
-            Exec(db =>
-            {
-                db.DropAndCreateTable<TUserAuth>();
-                db.DropAndCreateTable<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.DropAndCreateTable<UserAuthRole>();
+            Exec(DropAndReCreateTables);
+        }
+        public virtual void DropAndReCreateTables(IDbConnection db)
+        {
+            db.DropAndCreateTable<TUserAuth>();
+            db.DropAndCreateTable<TUserAuthDetails>();
+            if (UseDistinctRoleTables)
+                db.DropAndCreateTable<UserAuthRole>();
+        }
+
+        public virtual bool InitCheck()
+        {
+            return hasInitSchema = Exec(db => {
+                return db.TableExists<TUserAuth>() && db.TableExists<TUserAuthDetails>()
+                    && (!UseDistinctRoleTables || db.TableExists<UserAuthRole>());
             });
         }
 
@@ -587,15 +582,13 @@ namespace ServiceStack.Auth
             });
         }
 
-        public virtual void Clear()
+        public virtual void Clear() => Exec(Clear);
+        public virtual void Clear(IDbConnection db)
         {
-            Exec(db =>
-            {
-                db.DeleteAll<TUserAuth>();
-                db.DeleteAll<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.DeleteAll<UserAuthRole>();
-            });
+            db.DeleteAll<TUserAuth>();
+            db.DeleteAll<TUserAuthDetails>();
+            if (UseDistinctRoleTables)
+                db.DeleteAll<UserAuthRole>();
         }
 
         string AssertUserAuthId(string userAuthId)
@@ -820,20 +813,10 @@ namespace ServiceStack.Auth
             }
         }
 
-        public virtual void InitApiKeySchema()
-        {
-            Exec(db => 
-            {
-                db.CreateTableIfNotExists<ApiKey>();
-            });
-        }
-        public virtual void DropApiKeySchema()
-        {
-            Exec(db =>
-            {
-                db.DropTable<ApiKey>();
-            });
-        }
+        public virtual void InitApiKeySchema() => Exec(InitApiKeySchema);
+        public virtual void InitApiKeySchema(IDbConnection db) => db.CreateTableIfNotExists<ApiKey>();
+        public virtual void DropApiKeySchema() => Exec(DropApiKeySchema);
+        public virtual void DropApiKeySchema(IDbConnection db) => db.DropTable<ApiKey>();
 
         public bool ApiKeyExists(string apiKey)
         {
