@@ -72,7 +72,7 @@ namespace ServiceStack.Auth
 
         public static async Task SaveSessionAsync(this IAuthProvider provider, IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null, CancellationToken token=default)
         {
-            var persistSession = !(provider is AuthProvider authProvider) || authProvider.PersistSession;
+            var persistSession = provider is not AuthProvider authProvider || authProvider.PersistSession;
             if (persistSession)
             {
                 await authService.SaveSessionAsync(session, sessionExpiry, token).ConfigAwait();
@@ -80,6 +80,34 @@ namespace ServiceStack.Auth
             else
             {
                 authService.Request.Items[Keywords.Session] = session;
+            }
+        }
+
+        public static void GetHashAndSaltString(string password, out string hash, out string salt)
+        {
+            // When using IAuthRepository outside of an AppHost
+            var appHost = HostContext.AppHost;
+            if (appHost == null)
+            {
+                var hasher = new PasswordHasher();
+                salt = null;
+                hash = hasher.HashPassword(password);
+                return;
+            }
+            
+            var passwordHasher = !appHost.Config.UseSaltedHash
+                ? appHost.TryResolve<IPasswordHasher>()
+                : null;
+
+            if (passwordHasher != null)
+            {
+                salt = null; // IPasswordHasher stores its Salt in PasswordHash
+                hash = passwordHasher.HashPassword(password);
+            }
+            else
+            {
+                var hashProvider = appHost.Resolve<IHashProvider>();
+                hashProvider.GetHashAndSaltString(password, out hash, out salt);
             }
         }
 
@@ -93,20 +121,7 @@ namespace ServiceStack.Auth
 
             if (password != null)
             {
-                var passwordHasher = !HostContext.Config.UseSaltedHash
-                    ? HostContext.TryResolve<IPasswordHasher>()
-                    : null;
-
-                if (passwordHasher != null)
-                {
-                    salt = null; // IPasswordHasher stores its Salt in PasswordHash
-                    hash = passwordHasher.HashPassword(password);
-                }
-                else
-                {
-                    var hashProvider = HostContext.Resolve<IHashProvider>();
-                    hashProvider.GetHashAndSaltString(password, out hash, out salt);
-                }
+                GetHashAndSaltString(password, out hash, out salt);
             }
 
             newUser.PasswordHash = hash;
