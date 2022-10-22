@@ -75,7 +75,7 @@ public partial class Autocomplete<T> : TextInputBase
         else if (multipleValues)
         {
             var values = txtValue.Split(delims, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim());
-            var matches = Options.Where(x => values.Any(value => Match!(x, value))).ToList();
+            var matches = values.Select(value => Options.FirstOrDefault(x => Match!(x, value))).Where(x => x != null).Cast<T>().ToList();
             if (matches.Count > 0)
             {
                 foreach (var match in matches)
