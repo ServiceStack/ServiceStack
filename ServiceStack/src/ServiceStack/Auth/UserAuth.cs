@@ -390,6 +390,7 @@ namespace ServiceStack.Auth
         {
             var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern
             session.IsAuthenticated = true;
+            var jsonObj = map as JsonObject;
 
             foreach (var entry in map)
             {
@@ -429,11 +430,17 @@ namespace ServiceStack.Auth
                         break;
                     case "roles":
                     case "Roles":
-                        session.Roles = entry.Value.FromJson<List<string>>();
+                        var jsonRoles = jsonObj != null
+                            ? jsonObj.GetUnescaped("roles") ?? jsonObj.GetUnescaped("Roles")
+                            : entry.Value;
+                        session.Roles = jsonRoles.FromJson<List<string>>();
                         break;
                     case "perms":
                     case "Permissions":
-                        session.Permissions = entry.Value.FromJson<List<string>>();
+                        var jsonPerms = jsonObj != null
+                            ? jsonObj.GetUnescaped("perms") ?? jsonObj.GetUnescaped("Perms")
+                            : entry.Value;
+                        session.Permissions = jsonPerms.FromJson<List<string>>();
                         break;
                     case "iat":
                     case "CreatedAt":
