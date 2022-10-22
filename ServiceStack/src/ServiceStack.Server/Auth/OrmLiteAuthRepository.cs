@@ -360,7 +360,7 @@ namespace ServiceStack.Auth
         }
 
         public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null) =>
-            Exec(db => GetUserAuths(orderBy, skip, take));
+            Exec(db => GetUserAuths(db, orderBy, skip, take));
 
         public List<IUserAuth> GetUserAuths(IDbConnection db, string orderBy = null, int? skip = null, int? take = null)
         {
