@@ -221,7 +221,7 @@ namespace ServiceStack
         internal void ThrowPrimaryKeyRequiredForRowVersion() =>
             throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
 
-        internal static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation)
+        public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation)
         {
             var appHost = HostContext.AppHost;
             var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));
