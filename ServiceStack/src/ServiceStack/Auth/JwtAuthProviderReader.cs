@@ -682,6 +682,22 @@ namespace ServiceStack.Auth
             return (Dictionary<string, object>) JSON.parse(payloadJson);
         }
 
+        public static string Dump(string jwt)
+        {
+            var sb = StringBuilderCache.Allocate();
+            var header = ExtractHeader(jwt);
+            sb.AppendLine("[JWT Header]").AppendLine();
+            Inspect.printDump(header);
+            var payload = ExtractPayload(jwt);
+            if (payload.TryGetValue("iat", out var iatObj) && iatObj is int iatEpoch)
+                payload["iat"] = $"{iatEpoch} ({iatEpoch.FromUnixTime():R})";
+            if (payload.TryGetValue("exp", out var expObj) && expObj is int expEpoch)
+                payload["exp"] = $"{expEpoch} ({expEpoch.FromUnixTime():R})";
+            sb.AppendLine("[JWT Payload]");
+            Inspect.printDump(payload);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
         /// <summary>
         /// Return token payload which has been verified to be created using the configured encryption key.
         /// Use GetValidJwtPayload() instead if you also want the payload validated.  
