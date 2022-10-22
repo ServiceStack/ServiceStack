@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -79,11 +78,9 @@ namespace ServiceStack
 
         public Func<object, IRequest, bool> ExecuteFilter { get; set; }
         
-        public List<Action<IRequest, IResponse, object>> RequestFilters { get; } = 
-            new List<Action<IRequest, IResponse, object>>();
+        public List<Action<IRequest, IResponse, object>> RequestFilters { get; } = new();
         
-        List<Func<IRequest, IResponse, object, Task>> RequestFiltersAsync { get; } =
-            new List<Func<IRequest, IResponse, object, Task>>();
+        List<Func<IRequest, IResponse, object, Task>> RequestFiltersAsync { get; } = new();
 
         public CrudEventsExecutor(IAppHost appHost)
             : this(appHost.ServiceController, appHost.Metadata.GetOperationType)
@@ -130,12 +127,9 @@ namespace ServiceStack
 
                 var session = result.Session;
 
-                if (session.UserAuthName == null)
-                    session.UserAuthName = session.UserName ?? session.Email;
-                if (session.Roles == null)
-                    session.Roles = result.Roles?.ToList();
-                if (session.Permissions == null)
-                    session.Permissions = result.Permissions?.ToList();
+                session.UserAuthName ??= session.UserName ?? session.Email;
+                session.Roles ??= result.Roles?.ToList();
+                session.Permissions ??= result.Permissions?.ToList();
 
                 req.Items[Keywords.Session] = session;
             }
