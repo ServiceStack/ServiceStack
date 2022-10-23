@@ -102,7 +102,12 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
             refPropertyName = Property.Name;
             if (refInfo.RefLabel != null)
             {
-                var colModel = MetadataType!.Properties.First(x => x.Type == refInfo.Model);
+                var colModel = MetadataType!.Properties.FirstOrDefault(x => x.Type == refInfo.Model);
+                if (colModel == null)
+                {
+                    BlazorUtils.LogError($"Could not {refInfo.Model} Property on {MetadataType.Name}");
+                }
+
                 var modelValue = colModel != null ? Model.GetIgnoreCase(colModel.Name).ToObjectDictionary() : null;
                 if (modelValue != null)
                 {
