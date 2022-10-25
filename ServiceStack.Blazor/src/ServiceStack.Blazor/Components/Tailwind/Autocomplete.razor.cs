@@ -50,20 +50,35 @@ public partial class Autocomplete<T> : TextInputBase
         }
     }
 
-    char[] delims = new[] { ',', '\n', '\t' };
+    char[] delims = { ',', '\n', '\t' };
 
     async Task OnPaste(ClipboardEventArgs e)
     {
+        try
+        {
+            var clipboardText = await JS.InvokeAsync<string>("navigator.clipboard.readText");
+            await HandlePastedText(clipboardText);
+            return;
+        }
+        catch
+        {
+            // No permission to read from clipboard, wait for 2-way binding to update txtValue
+        }
+        
         // Need to wait for oninput to fire and update txtValue
         await Task.Delay(1);
+        await HandlePastedText(txtValue);
+    }
 
-        if (string.IsNullOrEmpty(txtValue))
+    protected async Task HandlePastedText(string? txt)
+    {
+        if (string.IsNullOrEmpty(txt))
             return;
 
-        var multipleValues = txtValue.IndexOfAny(delims) >= 0;
+        var multipleValues = txt.IndexOfAny(delims) >= 0;
         if (!Multiple || !multipleValues)
         {
-            var matches = Options.Where(x => Match!(x, txtValue)).ToList();
+            var matches = Options.Where(x => Match!(x, txt)).ToList();
             if (matches.Count == 1)
             {
                 await select(matches[0]);
@@ -74,14 +89,16 @@ public partial class Autocomplete<T> : TextInputBase
         }
         else if (multipleValues)
         {
-            var values = txtValue.Split(delims, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim());
-            var matches = values.Select(value => Options.FirstOrDefault(x => Match!(x, value))).Where(x => x != null).Cast<T>().ToList();
+            var values = txt.Split(delims, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim());
+            var matches = values.Select(value => Options.FirstOrDefault(x => Match!(x, value))).Where(x => x != null)
+                .ToList();
             if (matches.Count > 0)
             {
                 foreach (var match in matches)
                 {
                     await select(match);
                 }
+
                 showPopup = false;
                 await JS.InvokeVoidAsync("JS.focusNextElement");
                 StateHasChanged();
@@ -112,7 +129,7 @@ public partial class Autocomplete<T> : TextInputBase
             return;
         }
 
-        if (e.Code == "Escape" || e.Code == "Tab")
+        if (e.Code is "Escape" or "Tab")
         {
             showPopup = false;
         }
