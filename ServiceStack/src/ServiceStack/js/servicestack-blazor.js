@@ -17,6 +17,9 @@ JS = (function () {
     }
     let el = sel => typeof sel == "string" ? document.querySelector(sel) : sel
 
+    let origScrollTo = null
+    let skipAutoScroll = true
+    
     function elVisible(el, container) {
         if (!el) return false
         container = container || el.parentElement || document.body
@@ -121,6 +124,18 @@ JS = (function () {
                     elNext.focus();
                 }
             }
+        },
+        enableAutoScroll() { skipAutoScroll = false },
+        disableAutoScroll() {
+            if (origScrollTo == null) {
+                origScrollTo = window.scrollTo
+                window.scrollTo = (x, y) => {
+                    if (x === 0 && y === 0 && skipAutoScroll)
+                        return
+                    return origScrollTo.apply(this, arguments)
+                }
+            }
+            skipAutoScroll = true
         },
         init(opt) {
             if (!opt || opt.colorScheme !== false) {
