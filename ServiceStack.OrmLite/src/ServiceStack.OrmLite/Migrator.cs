@@ -67,6 +67,7 @@ public class Migrator
     {
         DbFactory = dbFactory;
         MigrationTypes = migrationTypes;
+        JsConfig.InitStatics();
     }
     
     public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(10);
