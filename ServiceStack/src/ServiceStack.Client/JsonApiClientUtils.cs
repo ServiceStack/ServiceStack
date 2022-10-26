@@ -88,16 +88,16 @@ public static class JsonApiClientUtils
     public static async Task<ApiResult<EmptyResponse>> ApiAsync(this IHasJsonApiClient instance, IReturnVoid request) =>
         await instance.Client!.ApiAsync(request);
 
-    public static async Task<IHasErrorStatus> ApiAsync<Model>(this IHasJsonApiClient instance, object request)
+    public static async Task<IHasErrorStatus> ApiAsync<Model>(this JsonApiClient client, object request)
     {
         if (request is IReturn<Model> modelRequest)
-            return await instance.Client!.ApiAsync(modelRequest);
+            return await client.ApiAsync(modelRequest);
         if (request is IReturn<IdResponse> idRequest)
-            return await instance.Client!.ApiAsync(idRequest);
+            return await client.ApiAsync(idRequest);
         if (request is IReturn<EmptyResponse> emptyRequest)
-            return await instance.Client!.ApiAsync(emptyRequest);
+            return await client.ApiAsync(emptyRequest);
         if (request is IReturnVoid voidRequest)
-            return await instance.Client!.ApiAsync(voidRequest);
+            return await client.ApiAsync(voidRequest);
         throw new NotSupportedException($"{request.GetType().Name} must implement IReturn<{typeof(Model).Name}>, IReturn<{nameof(IdResponse)}>, IReturn<{nameof(EmptyResponse)}> or IReturnVoid");
     }
 
@@ -115,19 +115,19 @@ public static class JsonApiClientUtils
         internal static ApiResult<T>? Instance { get; set; }
     }
 
-    public static async Task<ApiResult<T>> ApiCacheAsync<T>(this IHasJsonApiClient instance, IReturn<T> requestDto)
+    public static async Task<ApiResult<T>> ApiCacheAsync<T>(this JsonApiClient client, IReturn<T> requestDto)
     {
         if (ApiResultsCache<T>.Instance != null)
             return ApiResultsCache<T>.Instance;
 
-        var api = await instance.Client!.ApiAsync(requestDto);
+        var api = await client.ApiAsync(requestDto);
         if (api.Succeeded)
             ApiResultsCache<T>.Instance = api;
         return api;
     }
 
     public static Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this IHasJsonApiClient instance, bool reload=false) =>
-        !reload ? instance.ApiCacheAsync(new MetadataApp()) : instance.Client!.ApiAsync(new MetadataApp());
+        !reload ? instance.Client!.ApiCacheAsync(new MetadataApp()) : instance.Client!.ApiAsync(new MetadataApp());
 
     public static string ReadAsString(this HttpContent content)
     {

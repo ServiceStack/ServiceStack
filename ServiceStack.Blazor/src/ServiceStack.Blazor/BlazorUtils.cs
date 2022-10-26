@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
+using System.Diagnostics;
 
 namespace ServiceStack.Blazor;
 
@@ -101,5 +102,211 @@ public static class BlazorUtils
             : prop.Type;
 
         return Html.Input.TypeNameMap.ContainsKey(unwrapType);
+    }
+
+    public static async Task OnApiErrorAsync(object requestDto, IHasErrorStatus apiError)
+    {
+        if (BlazorConfig.Instance.OnApiErrorAsync != null)
+            await BlazorConfig.Instance.OnApiErrorAsync(requestDto, apiError);
+    }
+
+    public static async Task<ApiResult<TResponse>> ManagedApiAsync<TResponse>(this JsonApiClient client, IReturn<TResponse> request)
+    {
+        Stopwatch? sw = null;
+        var config = BlazorConfig.Instance;
+        var log = BlazorConfig.Instance.GetLog();
+        if (config.EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log?.LogDebug("API {0}", request.GetType().Name);
+        }
+
+        var ret = await client!.ApiAsync(request);
+        if (ret.Error != null)
+        {
+            if (config.EnableErrorLogging)
+            {
+                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, ret.Error.GetDetailedError());
+            }
+            await OnApiErrorAsync(request, ret);
+        }
+
+        if (config.EnableLogging)
+        {
+            log?.LogDebug("END {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public static async Task<ApiResult<EmptyResponse>> ManagedApiAsync(this JsonApiClient client, IReturnVoid request)
+    {
+        Stopwatch? sw = null;
+        var config = BlazorConfig.Instance;
+        var log = BlazorConfig.Instance.GetLog();
+        if (config.EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log?.LogDebug("API void {0}", request.GetType().Name);
+        }
+
+        var ret = await client.ApiAsync(request);
+        if (ret.Error != null)
+        {
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, ret.Error.GetDetailedError());
+            }
+            await OnApiErrorAsync(request, ret);
+        }
+
+        if (config.EnableLogging)
+        {
+            log?.LogDebug("END void {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public static async Task<IHasErrorStatus> ManagedApiAsync<Model>(this JsonApiClient client, object request)
+    {
+        Stopwatch? sw = null;
+        var config = BlazorConfig.Instance;
+        var log = BlazorConfig.Instance.GetLog();
+        if (config.EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log?.LogDebug("API object {0}", request.GetType().Name);
+        }
+
+        var ret = await JsonApiClientUtils.ApiAsync<Model>(client!, request);
+        if (ret.Error != null)
+        {
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, ret.Error.GetDetailedError());
+            }
+            await OnApiErrorAsync(request, ret);
+        }
+
+        if (config.EnableLogging)
+        {
+            log?.LogDebug("END object {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public static async Task<IHasErrorStatus> ManagedApiFormAsync<Model>(this JsonApiClient client, string method, string relativeUrl, MultipartFormDataContent request)
+    {
+        Stopwatch? sw = null;
+        var config = BlazorConfig.Instance;
+        var log = BlazorConfig.Instance.GetLog();
+        if (config.EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log?.LogDebug("API Form {0}", request.GetType().Name);
+        }
+
+        var ret = await client.ApiFormAsync<Model>(method, relativeUrl, request);
+        if (ret.Error != null)
+        {
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, ret.Error.GetDetailedError());
+            }
+            await OnApiErrorAsync(request, ret);
+        }
+
+        if (config.EnableLogging)
+        {
+            log?.LogDebug("END Form {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public static async Task<IHasErrorStatus> ManagedApiFormAsync<Model>(this JsonApiClient client, string relativeUrl, MultipartFormDataContent request)
+    {
+        Stopwatch? sw = null;
+        var config = BlazorConfig.Instance;
+        var log = BlazorConfig.Instance.GetLog();
+        if (config.EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log?.LogDebug("API Form {0}", request.GetType().Name);
+        }
+
+        var ret = await client!.ApiFormAsync<Model>(relativeUrl, request);
+        if (ret.Error != null)
+        {
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, ret.Error.GetDetailedError());
+            }
+            await OnApiErrorAsync(request, ret);
+        }
+
+        if (config.EnableLogging)
+        {
+            log?.LogDebug("END Form {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public static async Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this JsonApiClient client)
+    {
+        Stopwatch? sw = null;
+        var config = BlazorConfig.Instance;
+        var log = BlazorConfig.Instance.GetLog();
+        if (config.EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log?.LogDebug("API ApiAppMetadataAsync");
+        }
+
+        var request = new MetadataApp();
+        var ret = await JsonApiClientUtils.ApiCacheAsync(client!, request);
+        if (ret.Error != null)
+        {
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log?.LogError("ERROR AppMetadata:\n{0}", ret.Error.GetDetailedError());
+            }
+            await OnApiErrorAsync(request, ret);
+        }
+
+        if (config.EnableLogging)
+        {
+            log?.LogDebug("END ApiAppMetadataAsync took {0}ms", sw!.ElapsedMilliseconds);
+        }
+        return ret;
+    }
+
+    public static async Task<TResponse> ManagedSendAsync<TResponse>(this JsonApiClient client, IReturn<TResponse> request)
+    {
+        Stopwatch? sw = null;
+        var config = BlazorConfig.Instance;
+        var log = BlazorConfig.Instance.GetLog();
+        if (config.EnableLogging)
+        {
+            sw = Stopwatch.StartNew();
+            log?.LogDebug("API SendAsync {0}", request.GetType().Name);
+        }
+
+        try
+        {
+            var ret = await client!.SendAsync(request);
+            if (config.EnableLogging)
+            {
+                log?.LogDebug("END SendAsync {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+            }
+            return ret;
+        }
+        catch (Exception e)
+        {
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                var status = e.GetResponseStatus();
+                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, status != null ? status.GetDetailedError() : e.ToString());
+            }
+            throw;
+        }
     }
 }
