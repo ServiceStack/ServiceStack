@@ -16,8 +16,10 @@ namespace ServiceStack.Blazor
             configure?.Invoke(client);
             return client;
         }
-        
-        public static IHttpClientBuilder AddBlazorApiClient(this IServiceCollection services, string baseUrl)
+
+        public static IHttpClientBuilder AddBlazorApiClient(this IServiceCollection services, string baseUrl) => 
+            services.AddBlazorApiClient(baseUrl, null);
+        public static IHttpClientBuilder AddBlazorApiClient(this IServiceCollection services, string baseUrl, Action<HttpClient>? configure)
         {
             if (BlazorConfig.Instance.UseLocalStorage)
             {
@@ -27,7 +29,10 @@ namespace ServiceStack.Blazor
             }
 
             services.AddTransient<EnableCorsMessageHandler>();
-            return services.AddHttpClient<JsonApiClient>(client => client.BaseAddress = new Uri(baseUrl))
+            return services.AddHttpClient<JsonApiClient>(client => {
+                    client.BaseAddress = new Uri(baseUrl);
+                    configure?.Invoke(client);
+                })
                 .AddHttpMessageHandler<EnableCorsMessageHandler>();
         }
     }

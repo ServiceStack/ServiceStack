@@ -15,6 +15,8 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 
     [Inject] public JsonApiClient? Client { get; set; }
 
+    protected virtual Task OnApiErrorAsync(IHasErrorStatus apiError) => Task.CompletedTask;
+
     public string GetDetailedError(ResponseStatus status)
     {
         var sb = StringBuilderCache.Allocate();
@@ -42,9 +44,13 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAsync(this, request);
-        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        if (ret.Error != null)
         {
-            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            }
+            await OnApiErrorAsync(ret);
         }
 
         if (EnableLogging)
@@ -64,9 +70,13 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAsync(this, request);
-        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        if (ret.Error != null)
         {
-            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            }
+            await OnApiErrorAsync(ret);
         }
 
         if (EnableLogging)
@@ -115,9 +125,13 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAsync<Model>(this, request);
-        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        if (ret.Error != null)
         {
-            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            }
+            await OnApiErrorAsync(ret);
         }
 
         if (EnableLogging)
@@ -137,9 +151,13 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiFormAsync<Model>(this, method, relativeUrl, request);
-        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        if (ret.Error != null)
         {
-            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            }
+            await OnApiErrorAsync(ret);
         }
 
         if (EnableLogging)
@@ -159,9 +177,13 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiFormAsync<Model>(this, relativeUrl, request);
-        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        if (ret.Error != null)
         {
-            log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
+            }
+            await OnApiErrorAsync(ret);
         }
 
         if (EnableLogging)
@@ -182,9 +204,13 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         }
 
         var ret = await JsonApiClientUtils.ApiAppMetadataAsync(this);
-        if (ret.Error != null && BlazorConfig.Instance.EnableErrorLogging)
+        if (ret.Error != null)
         {
-            log("ERROR AppMetadata:\n{0}", GetDetailedError(ret.Error));
+            if (BlazorConfig.Instance.EnableErrorLogging)
+            {
+                log("ERROR AppMetadata:\n{0}", GetDetailedError(ret.Error));
+            }
+            await OnApiErrorAsync(ret);
         }
 
         if (EnableLogging)
