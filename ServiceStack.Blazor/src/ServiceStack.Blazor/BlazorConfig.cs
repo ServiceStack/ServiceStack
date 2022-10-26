@@ -170,6 +170,8 @@ public class BlazorConfig
     {
         return DarkMode = value ?? !DarkMode;
     }
+
+    public Func<object, IHasErrorStatus, Task>? OnApiErrorAsync { get; set; }
 }
 
 public class AutoQueryGridDefaults

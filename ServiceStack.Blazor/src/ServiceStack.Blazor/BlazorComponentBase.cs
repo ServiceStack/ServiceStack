@@ -7,7 +7,7 @@ using System.Linq;
 namespace ServiceStack.Blazor;
 
 /// <summary>
-/// Blazor com
+/// Blazor component base
 /// </summary>
 public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 {
@@ -15,7 +15,7 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 
     [Inject] public JsonApiClient? Client { get; set; }
 
-    protected virtual Task OnApiErrorAsync(IHasErrorStatus apiError) => Task.CompletedTask;
+    protected virtual Task OnApiErrorAsync(object requestDto, IHasErrorStatus apiError) => Task.CompletedTask;
 
     public string GetDetailedError(ResponseStatus status)
     {
@@ -50,7 +50,9 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
             {
                 log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
             }
-            await OnApiErrorAsync(ret);
+            await OnApiErrorAsync(request, ret);
+            if (BlazorConfig.Instance.OnApiErrorAsync != null)
+                await BlazorConfig.Instance.OnApiErrorAsync(request, ret);
         }
 
         if (EnableLogging)
@@ -76,7 +78,9 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
             {
                 log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
             }
-            await OnApiErrorAsync(ret);
+            await OnApiErrorAsync(request, ret);
+            if (BlazorConfig.Instance.OnApiErrorAsync != null)
+                await BlazorConfig.Instance.OnApiErrorAsync(request, ret);
         }
 
         if (EnableLogging)
@@ -131,7 +135,9 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
             {
                 log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
             }
-            await OnApiErrorAsync(ret);
+            await OnApiErrorAsync(request, ret);
+            if (BlazorConfig.Instance.OnApiErrorAsync != null)
+                await BlazorConfig.Instance.OnApiErrorAsync(request, ret);
         }
 
         if (EnableLogging)
@@ -157,7 +163,9 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
             {
                 log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
             }
-            await OnApiErrorAsync(ret);
+            await OnApiErrorAsync(request, ret);
+            if (BlazorConfig.Instance.OnApiErrorAsync != null)
+                await BlazorConfig.Instance.OnApiErrorAsync(request, ret);
         }
 
         if (EnableLogging)
@@ -183,7 +191,9 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
             {
                 log("ERROR {0}:\n{1}", request.GetType().Name, GetDetailedError(ret.Error));
             }
-            await OnApiErrorAsync(ret);
+            await OnApiErrorAsync(request, ret);
+            if (BlazorConfig.Instance.OnApiErrorAsync != null)
+                await BlazorConfig.Instance.OnApiErrorAsync(request, ret);
         }
 
         if (EnableLogging)
@@ -203,14 +213,17 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
             log("API ApiAppMetadataAsync");
         }
 
-        var ret = await JsonApiClientUtils.ApiAppMetadataAsync(this);
+        var request = new MetadataApp();
+        var ret = await JsonApiClientUtils.ApiCacheAsync(this, request);
         if (ret.Error != null)
         {
             if (BlazorConfig.Instance.EnableErrorLogging)
             {
                 log("ERROR AppMetadata:\n{0}", GetDetailedError(ret.Error));
             }
-            await OnApiErrorAsync(ret);
+            await OnApiErrorAsync(request, ret);
+            if (BlazorConfig.Instance.OnApiErrorAsync != null)
+                await BlazorConfig.Instance.OnApiErrorAsync(request, ret);
         }
 
         if (EnableLogging)
