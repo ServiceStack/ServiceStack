@@ -15,12 +15,6 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 
     [Inject] public JsonApiClient? Client { get; set; }
 
-    protected virtual async Task OnApiErrorAsync(object requestDto, IHasErrorStatus apiError)
-    {
-        if (BlazorConfig.Instance.OnApiErrorAsync != null)
-            await BlazorConfig.Instance.OnApiErrorAsync(requestDto, apiError);
-    }
-
     public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) => Client!.ManagedApiAsync(request);
 
     public virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) => Client!.ManagedApiAsync(request);
