@@ -310,26 +310,9 @@ namespace ServiceStack
         /// <summary>
         /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton
         /// </summary>
-        public static IRequest GetOrCreateRequest(IHttpContextAccessor httpContextAccessor)
-        {
-            return GetOrCreateRequest(httpContextAccessor?.HttpContext);
-        }
+        public static IRequest GetOrCreateRequest(IHttpContextAccessor httpContextAccessor) => httpContextAccessor.GetOrCreateRequest();
 
-        public static IRequest GetOrCreateRequest(HttpContext httpContext)
-        {
-            if (httpContext != null)
-            {
-                if (httpContext.Items.TryGetValue(Keywords.IRequest, out var oRequest))
-                    return (IRequest)oRequest;
-
-                var req = httpContext.ToRequest();
-                httpContext.Items[Keywords.IRequest] = req;
-
-                return req;
-            }
-
-            return null;
-        }
+        public static IRequest GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
 
         protected override void Dispose(bool disposing)
         {
@@ -446,6 +429,28 @@ namespace ServiceStack
 
         public static IEnumerable<T> GetServices<T>(this IRequest req) => ((IServiceProvider)req).GetServices<T>();
 
+        /// <summary>
+        /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton
+        /// </summary>
+        public static IRequest GetOrCreateRequest(this IHttpContextAccessor httpContextAccessor)
+        {
+            return GetOrCreateRequest(httpContextAccessor?.HttpContext);
+        }
+
+        public static IRequest GetOrCreateRequest(this HttpContext httpContext)
+        {
+            if (httpContext != null)
+            {
+                if (httpContext.Items.TryGetValue(Keywords.IRequest, out var oRequest))
+                    return (IRequest)oRequest;
+
+                var req = httpContext.ToRequest();
+                httpContext.Items[Keywords.IRequest] = req;
+
+                return req;
+            }
+            return null;
+        }
         
 #if NET6_0_OR_GREATER
     public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null, bool setHostDir = true)
