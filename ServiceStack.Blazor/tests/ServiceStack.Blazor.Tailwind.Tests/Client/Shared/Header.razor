@@ -95,7 +95,6 @@
 
     async Task logout()
     {
-        await AuthStateProvider.LogoutAsync();
-        NavigationManager.NavigateTo(LoginUrl, true);
+        await AuthStateProvider.LogoutAsync(redirectTo: LoginUrl);
     }
 }

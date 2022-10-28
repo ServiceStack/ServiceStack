@@ -12,7 +12,7 @@ public static class ApiResult
 {
     public const string FieldErrorCode = "ValidationException";
 
-    public static ApiResult<TResponse> Create<TResponse >(TResponse response) => new(response);
+    public static ApiResult<TResponse> Create<TResponse>(TResponse response) => new(response);
 
     public static ApiResult<TResponse> CreateError<TResponse>(ResponseStatus errorStatus) => new(errorStatus);
     public static ApiResult<EmptyResponse> CreateError(ResponseStatus errorStatus) => new(errorStatus);

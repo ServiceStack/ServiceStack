@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using ServiceStack;
 using ServiceStack.Blazor;
 using MyApp;
-using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,14 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+builder.Services.AddScoped<ServiceStackStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ServiceStackStateProvider>());
+
 var baseUrl = builder.Configuration["ApiBaseUrl"] ??
     (builder.Environment.IsDevelopment() ? "https://localhost:5001" : "http://" + IPAddress.Loopback);
-
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseUrl) });
-builder.Services.AddBlazorApiClient(baseUrl);
-
-builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ServiceStackStateProvider>());
-builder.Services.AddScoped<ServiceStackStateProvider>();
+builder.Services.AddScoped(c => new HttpClient { BaseAddress = new Uri(baseUrl) });
+builder.Services.AddBlazorServerApiClient(baseUrl);
+builder.Services.AddLocalStorage();
 
 
 var app = builder.Build();

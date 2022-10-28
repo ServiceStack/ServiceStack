@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -22,11 +23,7 @@ public static class BlazorClient
     public static IHttpClientBuilder AddBlazorApiClient(this IServiceCollection services, string baseUrl, Action<HttpClient>? configure)
     {
         if (BlazorConfig.Instance.UseLocalStorage)
-        {
-            services.TryAddScoped<ILocalStorage,LocalStorage>();
-            services.TryAddScoped<LocalStorage>();
-            services.TryAddScoped<CachedLocalStorage>();
-        }
+            services.AddLocalStorage();
 
         services.AddTransient<EnableCorsMessageHandler>();
         return services.AddHttpClient<JsonApiClient>(client => {
@@ -35,4 +32,13 @@ public static class BlazorClient
             })
             .AddHttpMessageHandler<EnableCorsMessageHandler>();
     }
+
+    public static IServiceCollection AddLocalStorage(this IServiceCollection services)
+    {
+        services.TryAddScoped<ILocalStorage, LocalStorage>();
+        services.TryAddScoped<LocalStorage>();
+        services.TryAddScoped<CachedLocalStorage>();
+        return services;
+    }
 }
+

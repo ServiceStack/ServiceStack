@@ -62,7 +62,7 @@ namespace ServiceStack
                     return default;
             }
 
-            ExecValidators(request).Wait();
+            ExecValidatorsAsync(request).Wait();
 
             var response = HostContext.ServiceController.Execute(request, req);
             if (response is Task responseTask)
@@ -108,49 +108,25 @@ namespace ServiceStack
 
         private async Task<TResponse> ExecAsync<TResponse>(object request)
         {
-            foreach (var filter in HostContext.AppHost.GatewayRequestFiltersArray)
-            {
-                filter(req, request);
-                if (req.Response.IsClosed)
-                    return default;
-            }
-            foreach (var filter in HostContext.AppHost.GatewayRequestFiltersAsyncArray)
-            {
-                await filter(req, request);
-                if (req.Response.IsClosed)
-                    return default;
-            }
+            var appHost = HostContext.AppHost;
+            if (!await appHost.ApplyGatewayRequestFiltersAsync(req, request)) 
+                return default;
 
-            await ExecValidators(request);
+            await ExecValidatorsAsync(request);
 
             var response = await HostContext.ServiceController.GatewayExecuteAsync(request, req, applyFilters: false);
 
             var responseDto = ConvertToResponse<TResponse>(response);
 
-            foreach (var filter in HostContext.AppHost.GatewayResponseFiltersArray)
-            {
-                filter(req, responseDto);
-                if (req.Response.IsClosed)
-                    return default;
-            }
-            foreach (var filter in HostContext.AppHost.GatewayResponseFiltersAsyncArray)
-            {
-                await filter(req, responseDto);
-                if (req.Response.IsClosed)
-                    return default;
-            }
+            if (!await appHost.ApplyGatewayRespoonseFiltersAsync(req, responseDto))
+                return default;
 
             return responseDto;
         }
 
-        private async Task ExecValidators(object request)
-        {
-            var feature = HostContext.GetPlugin<ValidationFeature>();
-            if (feature != null)
-                await feature.ValidateRequestAsync(request, req);
-        }
+        protected virtual Task ExecValidatorsAsync(object request) => HostContext.ServiceController.ExecValidatorsAsync(request, req);
 
-        private TResponse ConvertToResponse<TResponse>(object response)
+        public TResponse ConvertToResponse<TResponse>(object response)
         {
             if (response is HttpError error)
                 throw error.ToWebServiceException();

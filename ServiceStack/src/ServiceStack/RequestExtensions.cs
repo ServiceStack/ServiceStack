@@ -352,7 +352,7 @@ namespace ServiceStack
         }
 
         public static bool AllowConnection(this IRequest req, bool requireSecureConnection) =>
-            !requireSecureConnection || req.IsSecureConnection || req.RequestAttributes.HasFlag(RequestAttributes.MessageQueue);
+            !requireSecureConnection || req.IsSecureConnection || req.RequestAttributes.HasFlag(RequestAttributes.MessageQueue) || req.IsInProcessRequest();
 
         public static void CompletedAuthentication(this IRequest req)
         {

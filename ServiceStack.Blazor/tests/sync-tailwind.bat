@@ -16,9 +16,6 @@ COPY ServiceStack.Blazor.Server.Tests\Server\App.razor ServiceStack.Blazor.Tailw
 
 COPY ServiceStack.Blazor.Server.Tests\Server\Configure.* ServiceStack.Blazor.Tailwind.Tests\Server\
 
-RD /q /s ServiceStack.Blazor.Tailwind.Tests\Client\Auth
-XCOPY /Y /E /H /C /I ServiceStack.Blazor.Server.Tests\Server\Auth ServiceStack.Blazor.Tailwind.Tests\Client\Auth
-
 RD /q /s ServiceStack.Blazor.Tailwind.Tests\Server\App_Data
 XCOPY /Y /E /H /C /I ServiceStack.Blazor.Server.Tests\Server\App_Data ServiceStack.Blazor.Tailwind.Tests\Server\App_Data
 

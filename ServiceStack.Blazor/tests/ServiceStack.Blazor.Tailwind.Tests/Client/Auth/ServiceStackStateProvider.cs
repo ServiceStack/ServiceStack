@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using ServiceStack;
 using ServiceStack.Blazor;
 
@@ -8,6 +9,6 @@ namespace MyApp;
 /// </summary>
 public class ServiceStackStateProvider : ServiceStackAuthenticationStateProvider
 {
-    public ServiceStackStateProvider(JsonApiClient client, ILogger<ServiceStackAuthenticationStateProvider> log)
-        : base(client, log) { }
+    public ServiceStackStateProvider(JsonApiClient client, ILogger<ServiceStackAuthenticationStateProvider> log, NavigationManager navigationManager)
+        : base(client, log, navigationManager) { }
 }

@@ -46,6 +46,19 @@ JS = (function () {
             return 'scrollIntoViewIfNeeded'
         return fnName
     }
+    function setCookie({ name, value, path, expires }) {
+        let expiryStr = expires ? `;expires=${expires}` : ''
+        let pathStr = path ? `;path=${path}` : ''
+        document.cookie = name + '=' + value + pathStr + expiryStr
+    }
+    function getCookie(name) {
+        var kvp = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)')
+        return kvp ? kvp[2] : null
+    }
+    function deleteCookie(name) {
+        setCookie({ name, value: getCookie(name), expires: new Date(0).toUTCString() })
+    }
+
 
     return {
         get(name) { return window[name] },
@@ -136,6 +149,14 @@ JS = (function () {
                 }
             }
             skipAutoScroll = true
+        },
+        setCookie,
+        getCookie,
+        deleteCookie,
+        setCookies(cookies) {
+            if (cookies) {
+                Array.from(cookies).forEach(setCookie)
+            }
         },
         init(opt) {
             if (!opt || opt.colorScheme !== false) {

@@ -79,7 +79,6 @@
 
     string LoginUrl { get; set; } = "/signin";
 
-
     List<NavItem> NavItems { get; set; } = new() {
         new NavItem { Label = "$0.40 /mo",     Href = "/docs/hosting" },
         new NavItem { Label = "Deployments",   Href = "/docs/deploy" },
@@ -93,7 +92,6 @@
 
     async Task logout()
     {
-        await AuthStateProvider.LogoutAsync();
-        NavigationManager.NavigateTo(LoginUrl, true);
+        await AuthStateProvider.LogoutAsync(redirectTo: LoginUrl);
     }
 }

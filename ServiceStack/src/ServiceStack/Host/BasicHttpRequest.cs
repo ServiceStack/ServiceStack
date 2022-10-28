@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -30,9 +32,19 @@ namespace ServiceStack.Host
         {
             Cookies = new Cookies(this);
         }
-        
+
+        public List<Cookie> CookieCollection { get; } = new();
+
+
         public ICookies Cookies { get; }
-        public void SetCookie(Cookie cookie) {}
+        public void SetCookie(Cookie cookie) 
+        {
+            if (!HostContext.AppHost.SetCookieFilter(Request, cookie))
+                return;
+
+            CookieCollection.RemoveAll(x => x.Name == cookie.Name);
+            CookieCollection.Add(cookie);
+        }
 
         public void ClearCookies() {}
     }

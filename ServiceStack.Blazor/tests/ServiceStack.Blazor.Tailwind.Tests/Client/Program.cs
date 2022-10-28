@@ -20,14 +20,16 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();
 
+builder.Services.AddScoped<ServiceStackStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ServiceStackStateProvider>());
+
 // Use / for local or CDN resources
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ServiceStackStateProvider>());
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
 builder.Services.AddBlazorApiClient(apiBaseUrl);
+builder.Services.AddLocalStorage();
 
-builder.Services.AddScoped<ServiceStackStateProvider>();
 
 var app = builder.Build();
 

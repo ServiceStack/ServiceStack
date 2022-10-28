@@ -134,19 +134,16 @@ namespace ServiceStack.Auth
                 if (authResponse is IHttpError)
                     throw (Exception) authResponse;
 
+                if (authResponse is IHttpResult httpResult && httpResult.Response is AuthenticateResponse dto)
+                {
+                    // Return response inside original HttpResult Cookies
+                    httpResult.Response = ToRegisterResponse(dto, session.UserAuthId);
+                    return httpResult;
+                }
+
                 if (authResponse is AuthenticateResponse typedResponse)
                 {
-                    response = new RegisterResponse {
-                        SessionId = typedResponse.SessionId,
-                        UserName = typedResponse.UserName,
-                        ReferrerUrl = typedResponse.ReferrerUrl,
-                        UserId = session.UserAuthId,
-                        BearerToken = typedResponse.BearerToken,
-                        RefreshToken = typedResponse.RefreshToken,
-                        Roles = typedResponse.Roles,
-                        Permissions = typedResponse.Permissions,
-                        Meta = typedResponse.Meta,
-                    };
+                    response = ToRegisterResponse(typedResponse, session.UserAuthId);
 
                     if (authFeature?.RegisterResponseDecorator != null)
                     {
@@ -185,6 +182,18 @@ namespace ServiceStack.Auth
 
             return response;
         }
-       
+
+        RegisterResponse ToRegisterResponse(AuthenticateResponse typedResponse, string userId) => new RegisterResponse
+        {
+            SessionId = typedResponse.SessionId,
+            UserName = typedResponse.UserName,
+            ReferrerUrl = typedResponse.ReferrerUrl,
+            UserId = userId,
+            BearerToken = typedResponse.BearerToken,
+            RefreshToken = typedResponse.RefreshToken,
+            Roles = typedResponse.Roles,
+            Permissions = typedResponse.Permissions,
+            Meta = typedResponse.Meta,
+        };
     }
 }

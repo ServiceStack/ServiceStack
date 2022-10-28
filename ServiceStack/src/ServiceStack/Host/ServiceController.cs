@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -738,6 +740,39 @@ namespace ServiceStack.Host
                     : response;
             }
             finally 
+            {
+                req.ReleaseIfInProcessRequest();
+            }
+        }
+        public async Task ExecValidatorsAsync(object request, IRequest req)
+        {
+            var feature = HostContext.GetPlugin<ValidationFeature>();
+            if (feature != null)
+                await feature.ValidateRequestAsync(request, req);
+        }
+
+        /// <summary>
+        /// Execute In Process Gateway Request with Gateway + Validation Filters
+        /// </summary>
+        public async Task<object> ManagedGatewayExecuteAsync(object request, IRequest req)
+        {
+            try
+            {
+                req.SetInProcessRequest();
+
+                if (!await appHost.ApplyGatewayRequestFiltersAsync(req, request))
+                    return default;
+
+                await ExecValidatorsAsync(request, req);
+
+                var response = await GatewayExecuteAsync(request, req, applyFilters: false);
+
+                if (!await appHost.ApplyGatewayRespoonseFiltersAsync(req, response))
+                    return default;
+
+                return response;
+            }
+            finally
             {
                 req.ReleaseIfInProcessRequest();
             }

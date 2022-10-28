@@ -405,6 +405,47 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Execute Service Gateway Request Filters
+        /// </summary>
+        public async Task<bool> ApplyGatewayRequestFiltersAsync(IRequest req, object request)
+        {
+            foreach (var filter in HostContext.AppHost.GatewayRequestFiltersArray)
+            {
+                filter(req, request);
+                if (req.Response.IsClosed)
+                    return false;
+            }
+            foreach (var filter in HostContext.AppHost.GatewayRequestFiltersAsyncArray)
+            {
+                await filter(req, request);
+                if (req.Response.IsClosed)
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Execute Service Gateway Response Filters
+        /// </summary>
+        public async Task<bool> ApplyGatewayRespoonseFiltersAsync(IRequest req, object responseDto)
+        {
+            foreach (var filter in HostContext.AppHost.GatewayResponseFiltersArray)
+            {
+                filter(req, responseDto);
+                if (req.Response.IsClosed)
+                    return false;
+            }
+            foreach (var filter in HostContext.AppHost.GatewayResponseFiltersAsyncArray)
+            {
+                await filter(req, responseDto);
+                if (req.Response.IsClosed)
+                    return false;
+            }
+            return true;
+        }
+
+
+        /// <summary>
         /// Executes Typed Request Filters 
         /// </summary>
         public void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters, IRequest req, IResponse res, object dto)

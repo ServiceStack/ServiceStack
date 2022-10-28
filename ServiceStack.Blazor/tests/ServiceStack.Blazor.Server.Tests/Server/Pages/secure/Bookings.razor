@@ -50,7 +50,7 @@
             <Template>
             @if (context.Discount != null)
             {
-                <TextLink class="flex items-end" href=@($"/grid/coupons?Id={context.Discount.Id}")>
+                <TextLink class="flex items-end" href=@($"/secure/coupons?Id={context.Discount.Id}")>
                     <PreviewFormat Value=@context.Discount />
                 </TextLink>
             }

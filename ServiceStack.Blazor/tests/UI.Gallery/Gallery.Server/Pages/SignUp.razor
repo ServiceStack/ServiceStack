@@ -1,6 +1,6 @@
 @page "/signup"
 @inherits AppAuthComponentBase
-@inject ServiceStackStateProvider authProvider
+@inject ServiceStackStateProvider AuthProvider
 @inject NavigationManager NavigationManager
 
 @if (IsAuthenticated)
@@ -72,6 +72,7 @@
         request.AutoLogin = true;
     }
 
+
     async Task submit()
     {
         api.ClearErrors();
@@ -87,18 +88,17 @@
         if (api.Failed) return;
 
         api.IsLoading = true;
-        api = await ApiAsync(request);
+        api = await AuthProvider.RegisterAsync(request);
 
         if (api.Succeeded)
         {
             if (request.AutoLogin == true)
             {
-                await authProvider.SignInAsync(api.Response!);
-                NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
+                NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), forceLoad: true);
             }
             else
             {
-                NavigationManager.NavigateTo("/signin?return=" + NavigationManager.GetReturnUrl(), true);
+                NavigationManager.NavigateTo("/signin?return=" + NavigationManager.GetReturnUrl(), forceLoad: true);
             }
         }
     }

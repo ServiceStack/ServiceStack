@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 
@@ -7,14 +8,16 @@ namespace ServiceStack.Blazor;
 public class ServiceStackAuthenticationStateProvider : AuthenticationStateProvider
 {
     protected ApiResult<AuthenticateResponse> authApi = new();
-    protected readonly JsonApiClient client;
+    protected readonly JsonApiClient Client;
 
     protected ILogger<ServiceStackAuthenticationStateProvider> Log { get; }
+    protected NavigationManager NavigationManager { get; }
 
-    public ServiceStackAuthenticationStateProvider(JsonApiClient client, ILogger<ServiceStackAuthenticationStateProvider> log)
+    public ServiceStackAuthenticationStateProvider(JsonApiClient client, ILogger<ServiceStackAuthenticationStateProvider> log, NavigationManager navigationManager)
     {
-        this.client = client;
-        this.Log = log;
+        Client = client;
+        Log = log;
+        NavigationManager = navigationManager;
     }
 
     public AuthenticateResponse? AuthUser => authApi.Response;
@@ -27,7 +30,7 @@ public class ServiceStackAuthenticationStateProvider : AuthenticationStateProvid
             if (authResponse == null)
             {
                 Log.LogInformation("Checking server /auth for authentication");
-                var authApi = await client.ApiAsync(new Authenticate());
+                var authApi = await Client.ApiAsync(new Authenticate());
                 authResponse = authApi.Response;
             }
             
@@ -68,11 +71,17 @@ public class ServiceStackAuthenticationStateProvider : AuthenticationStateProvid
             await LogoutAsync();
     }
 
-    public virtual async Task<ApiResult<AuthenticateResponse>> LogoutAsync()
+    public virtual async Task<ApiResult<AuthenticateResponse>> LogoutAsync(string? redirectTo = null)
     {
-        var logoutResult = await client.ApiAsync(new Authenticate { provider = "logout" });
+        var logoutResult = await Client.ApiAsync(new Authenticate { 
+            provider = "logout",            
+        });
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         authApi.ClearErrors();
+        
+        if (redirectTo != null)
+            NavigationManager.NavigateTo(redirectTo);
+
         return logoutResult;
     }
 
@@ -93,12 +102,28 @@ public class ServiceStackAuthenticationStateProvider : AuthenticationStateProvid
     public virtual Task<ApiResult<AuthenticateResponse>> SignInAsync(RegisterResponse registerResponse) =>
         SignInAsync(ApiResult.Create(registerResponse.ToAuthenticateResponse()));
 
-    public virtual async Task<ApiResult<AuthenticateResponse>> LoginAsync(string email, string password)
+    public virtual async Task<ApiResult<RegisterResponse>> RegisterAsync(Register request)
     {
-        return await SignInAsync(await client.ApiAsync(new Authenticate {
+        var api = await Client.ApiAsync(request);
+        if (api.Succeeded)
+        {
+            await SignInAsync(api.Response!);
+        }
+        return api;
+    }
+
+    public virtual async Task<ApiResult<AuthenticateResponse>> LoginAsync(Authenticate request)
+    {
+        return await SignInAsync(await Client.ApiAsync(request));
+    }
+
+    public virtual async Task<ApiResult<AuthenticateResponse>> LoginAsync(string email, string password, bool? rememberMe = null)
+    {
+        return await LoginAsync(new Authenticate {
             provider = "credentials",
             Password = password,
             UserName = email,
-        }));
+            RememberMe = rememberMe,
+        });
     }
 }
