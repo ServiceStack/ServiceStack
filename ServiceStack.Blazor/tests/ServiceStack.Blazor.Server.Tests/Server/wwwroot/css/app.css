@@ -961,6 +961,10 @@ input[data-autocompleted] {
   margin: 0.75rem;
 }
 
+.m-6 {
+  margin: 1.5rem;
+}
+
 .m-4 {
   margin: 1rem;
 }
@@ -971,10 +975,6 @@ input[data-autocompleted] {
 
 .m-2 {
   margin: 0.5rem;
-}
-
-.m-6 {
-  margin: 1.5rem;
 }
 
 .mx-auto {
@@ -1035,11 +1035,6 @@ input[data-autocompleted] {
 .-mx-4 {
   margin-left: -1rem;
   margin-right: -1rem;
-}
-
-.my-6 {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
 }
 
 .mb-4 {
