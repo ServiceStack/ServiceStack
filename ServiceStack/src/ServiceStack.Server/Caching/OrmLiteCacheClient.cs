@@ -476,7 +476,7 @@ namespace ServiceStack.Caching
     public class SqlServerMemoryOptimizedCacheEntry : ICacheEntry
     {
         [PrimaryKey]
-        [StringLength(StringLengthAttribute.MaxText)]
+        //[StringLength(StringLengthAttribute.MaxText)] // https://stackoverflow.com/a/2864109/85785
         [SqlServerBucketCount(1000000)]
         public string Id { get; set; }
         [StringLength(StringLengthAttribute.MaxText)]
