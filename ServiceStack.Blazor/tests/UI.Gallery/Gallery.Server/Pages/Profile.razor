@@ -3,55 +3,55 @@
 @inherits AppAuthComponentBase
 @inject ServiceStackStateProvider AuthProvider
 
-<div class="rounded-lg bg-white overflow-hidden shadow mb-3">
+<div class="rounded-lg bg-white dark:bg-black overflow-hidden shadow dark:border-2 dark:border-gray-800 mb-3">
     <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
-    <div class="bg-white p-6">
+    <div class="bg-white dark:bg-black p-6">
         <div class="sm:flex sm:items-center sm:justify-between">
             <div class="sm:flex sm:space-x-5">
                 <div class="flex-shrink-0">
                     <img class="mx-auto max-h-24 max-w-24 rounded-full" src=@User.GetProfileUrl() alt="">
                 </div>
                 <div class="mt-4 sm:mt-0 sm:pt-1 sm:text-left">
-                    <p class="text-sm font-medium text-gray-600">Welcome back,</p>
-                    <p class="text-xl font-bold text-gray-900 sm:text-2xl mb-2">@User.GetDisplayName()</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Welcome back,</p>
+                    <p class="text-xl font-bold text-gray-900 dark:text-gray-200 sm:text-2xl mb-2">@User.GetDisplayName()</p>
                     @if (User.GetRoles().Length > 0)
                     {
                         <div class="mb-2 flex flex-wrap">
-                        @foreach (var role in User.GetRoles())
-                        {
-                            <span @key="role" title="Role"
-                                class="inline-flex items-center px-2.5 py-0.5 mr-1 mb-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                @role
-                            </span>
-                        }
+                            @foreach (var role in User.GetRoles())
+                            {
+                                <span @key="role" title="Role"
+                                    class="inline-flex items-center px-2.5 py-0.5 mr-1 mb-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100">
+                                    @role
+                                </span>
+                            }
                         </div>
                     }
                     @if (User.GetPermissions().Length > 0)
                     {
                         <div class="mb-2 flex flex-wrap">
-                        @foreach (var perm in User.GetPermissions())
-                        {
-                            <span @key="perm" title="Role"
-                                class="inline-flex items-center px-2.5 py-0.5 mr-1 mb-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                @perm
-                            </span>
-                        }
+                            @foreach (var perm in User.GetPermissions())
+                            {
+                                <span @key="perm" title="Role"
+                                    class="inline-flex items-center px-2.5 py-0.5 mr-1 mb-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100">
+                                    @perm
+                                </span>
+                            }
                         </div>
                     }
                 </div>
             </div>
             <div class="mt-5 flex justify-center sm:mt-0">
-                <button type="button" @onclick="logout"
-                        class="flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 whitespace-nowrap">
+                <SecondaryButton @onclick="logout">
                     Sign Out
-                </button>
+                </SecondaryButton>
             </div>
         </div>
     </div>
 </div>
 
 @code {
-    async Task logout() {
+    async Task logout()
+    {
         await AuthProvider.LogoutAsync();
     }
 }
