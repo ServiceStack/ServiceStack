@@ -17,11 +17,11 @@
 
                     <AuthorizeView>
                         <Authorized>
-                            <li>
+                            <li @onblur="hideAuthMenu">
                                 <!-- Profile dropdown -->
                                 <div class="mx-3 relative">
                                     <div>
-                                        <button type="button" @onclick=@(_ => ShowAuthMenu=!ShowAuthMenu) @onblur=@(_ => ShowAuthMenu = false)
+                                        <button type="button" @onclick=@(_ => ShowAuthMenu=!ShowAuthMenu)
                                                 class="max-w-xs bg-white dark:bg-black rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 lg:p-2 lg:rounded-md lg:hover:bg-gray-50 dark:lg:hover:bg-gray-900 dark:ring-offset-black" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                             <img class="h-8 w-8 rounded-full" src=@User.GetProfileUrl() alt="">
                                             <span class="hidden ml-3 text-gray-700 dark:text-gray-300 text-sm font-medium lg:block">
@@ -36,10 +36,16 @@
                                     </div>
                                     <div class=@CssUtils.ClassNames("origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none",
                                          ShowAuthMenu ? "transform opacity-100 scale-100" : "transform opacity-0 scale-95")
-                                         role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-                                        <a href="javascript:void" @onclick="logout" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" role="menuitem" tabindex="-1" id="user-menu-item-2">
-                                            Logout
-                                        </a>
+                                         @onclick="hideAuthMenu" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+                                        @if (ShowAuthMenu)
+                                        {
+                                            <NavLink href="/profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" role="menuitem" tabindex="-1" id="user-menu-item-2">
+                                                Profile
+                                            </NavLink>
+                                            <a href="javascript:void" @onclick="logout" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" role="menuitem" tabindex="-1" id="user-menu-item-2">
+                                                Logout
+                                            </a>
+                                        }
                                     </div>
                                 </div>
                             </li>
@@ -79,9 +85,11 @@
 
     string LoginUrl { get; set; } = BlazorConfig.Instance.RedirectSignIn;
 
-        List<NavItem> NavItems { get; set; } = new() {
+    List<NavItem> NavItems { get; set; } = new() {
         new NavItem { Label = "API Reference", Href = "https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/" },
     };
+
+    void hideAuthMenu() => ShowAuthMenu = false;
 
     protected override Task OnParametersSetAsync()
     {
