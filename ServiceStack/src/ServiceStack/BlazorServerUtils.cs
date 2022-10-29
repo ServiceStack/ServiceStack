@@ -79,7 +79,6 @@ public class CookieHandler : DelegatingHandler, IDisposable
 
 public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvider
 {
-    protected ApiResult<AuthenticateResponse> authApi = new();
     protected JsonApiClient Client { get; }
     protected ILogger<BlazorServerAuthenticationStateProvider> Log { get; }
     protected IHttpContextAccessor HttpContextAccessor { get; }
@@ -158,8 +157,6 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
 
     public virtual Task LogoutAsync(string? redirectTo = null)
     {
-        authApi.ClearErrors();
-        authApi = new();
         NotifyAuthenticationStateChanged(Task.FromResult(UnAuthenticationState));
         var url = "/auth/logout" + (redirectTo != null ? "?continue=" + redirectTo : "");
         NavigationManager.NavigateTo(url, forceLoad: true);
@@ -168,12 +165,11 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
 
     public virtual Task<ApiResult<AuthenticateResponse>> SignInAsync(ApiResult<AuthenticateResponse> api)
     {
-        authApi = api;
-        if (authApi.Succeeded)
+        if (api.Succeeded)
         {
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
-        return Task.FromResult(authApi);
+        return Task.FromResult(api);
     }
 
     public virtual Task<ApiResult<AuthenticateResponse>> SignInAsync(AuthenticateResponse authResponse) =>
@@ -230,27 +226,29 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
                     Domain = x.Domain,
                     Expires = x.Expires.ToString("R"),
                 });
-                Log.LogDebug("API JS.setCookies: {0}", string.Join("; ", jsCookies.Select(x => $"{x.Name}={x.Value}")));
+                if (Log.IsEnabled(LogLevel.Debug)) 
+                    Log.LogDebug("API JS.setCookies: {0}", string.Join("; ", jsCookies.Select(x => $"{x.Name}={x.Value}")));
                 await JS.InvokeVoidAsync("JS.setCookies", jsCookies);
             }
             else
             {
                 var jsCookies = new JsCookie[] {
                     new() {
-                        Name = "ss-id",
+                        Name = SessionFeature.SessionId,
                         Value = apiReq.GetSessionId(),
                     },
                     new() {
-                        Name = "ss-pid",
+                        Name = SessionFeature.PermanentSessionId,
                         Value = apiReq.GetPermanentSessionId(),
                         Expires = DateTime.UtcNow.AddYears(20).ToString("R"),
                     },
                     new() {
-                        Name = "ss-opt",
+                        Name = SessionFeature.SessionOptionsKey,
                         Value = apiReq.GetSessionParam(SessionFeature.SessionOptionsKey),
                     },
                 };
-                Log.LogDebug("SESSION JS.setCookies: {0}", string.Join("; ", jsCookies.Select(x => $"{x.Name}={x.Value}")));
+                if (Log.IsEnabled(LogLevel.Debug)) 
+                    Log.LogDebug("SESSION JS.setCookies: {0}", string.Join("; ", jsCookies.Select(x => $"{x.Name}={x.Value}")));
                 await JS.InvokeVoidAsync("JS.setCookies", jsCookies);
             }
 
