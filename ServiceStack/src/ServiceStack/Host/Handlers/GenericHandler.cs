@@ -51,7 +51,7 @@ namespace ServiceStack.Host.Handlers
 
                 httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 
-                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwait();
+                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwaitNetCore();
 
                 await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
                 if (httpRes.IsClosed)
