@@ -159,7 +159,8 @@ public partial class DataGrid<Model> : UiComponentBase
         {
             if (columns.Count == 0)
             {
-                foreach (var prop in MetadataType.Properties)
+                var props = AppMetadata?.GetAllProperties(typeof(Model).Name) ?? typeof(Model).GetAllMetadataProperties();
+                foreach (var prop in props)
                 {
                     var propAccessor = TypeProperties<Model>.GetAccessor(prop.Name);
                     columns.Add(new Column<Model>

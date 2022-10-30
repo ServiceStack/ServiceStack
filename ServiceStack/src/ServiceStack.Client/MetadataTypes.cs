@@ -1395,6 +1395,35 @@ public static class AppMetadataUtils
         return props;
     }
 
+    public static List<MetadataPropertyType> GetAllMetadataProperties(this Type type) =>
+        type.GetAllProperties().Select(x => x.ToMetadataPropertyType()).ToList();
+
+    public static List<MetadataPropertyType> GetAllProperties(this AppMetadata api, string typeName) =>
+        api.GetAllProperties(api.GetType(typeName));
+    public static List<MetadataPropertyType> GetAllProperties(this AppMetadata api, string @namespace, string typeName) =>
+        api.GetAllProperties(api.GetType(@namespace, typeName));
+
+    public static List<MetadataPropertyType> GetAllProperties(this AppMetadata api, MetadataType metaType)
+    {
+        //var metaType = api.GetType(forType);
+        var to = new List<MetadataPropertyType>();
+
+        while (metaType != null)
+        {
+            foreach (var prop in metaType.Properties.OrEmpty())
+            {
+                if (to.Any(x => x.Name == prop.Name))
+                    to.Add(prop);
+            }
+            if (metaType.Inherits != null)
+            {
+                metaType = api.GetType(metaType.Inherits);
+            }
+        }
+
+        return to;
+    }
+
 
     public static PropertyInfo[] GetInstancePublicProperties(this Type type)
     {
