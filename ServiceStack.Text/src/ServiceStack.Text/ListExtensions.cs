@@ -42,18 +42,15 @@ public static class ListExtensions
             : list.Where(predicate);
     }
 
-    public static int NullableCount<T>(this List<T> list)
-    {
-        return list == null ? 0 : list.Count;
-    }
+    public static int NullableCount<T>(this List<T> list) => list?.Count ?? 0;
 
-    public static void AddIfNotExists<T>(this List<T> list, T item)
+    public static void AddIfNotExists<T>(this ICollection<T> list, T item)
     {
         if (!list.Contains(item))
             list.Add(item);
     }
 
-    public static void AddDistinctRange<T>(this List<T> list, IEnumerable<T> items)
+    public static void AddDistinctRange<T>(this ICollection<T> list, IEnumerable<T> items)
     {
         foreach (var item in items)
         {
