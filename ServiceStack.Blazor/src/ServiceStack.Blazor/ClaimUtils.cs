@@ -29,6 +29,7 @@ public static class ClaimUtils
     public static bool HasAllRoles(this ClaimsPrincipal? principal, params string[] roleNames) => principal?.GetRoles()
         .All(roleNames.Contains) == true;
 
-    public static string? GetProfileUrl(this ClaimsPrincipal? principal) => principal?.FindFirst(Picture)?.Value
+    public static string? GetProfileUrl(this ClaimsPrincipal? principal) => 
+        X.Map(principal?.FindFirst(Picture)?.Value, x => string.IsNullOrWhiteSpace(x) ? null : x)
         ?? BlazorConfig.Instance.DefaultProfileUrl;
 }
