@@ -62,18 +62,31 @@ public static class BlazorServerUtils
 public class CookieHandler : DelegatingHandler, IDisposable
 {
     IHttpContextAccessor HttpContextAccessor;
-    public CookieHandler(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
+    private ILogger<CookieHandler> Log;
+
+    public CookieHandler(IHttpContextAccessor httpContextAccessor, ILogger<CookieHandler> log)
+    {
+        HttpContextAccessor = httpContextAccessor;
+        Log = log;
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var req = (IHttpRequest)HttpContextAccessor.GetOrCreateRequest();
         var httpCookies = req.Cookies.Values.ToList();
+        var cookieHeader = httpCookies?.Count > 0
+            ? string.Join("; ", httpCookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"))
+            : null;
 
-        if (httpCookies?.Count > 0)
+        if (cookieHeader != null)
         {
-            var cookieHeader = string.Join("; ", httpCookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"));
             request.Headers.Add(HttpHeaders.Cookie, cookieHeader);
         }
+        if (Log.IsEnabled(LogLevel.Debug))
+        {
+            Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", httpCookies?.Count ?? 0, cookieHeader);
+        }
+        
         return await base.SendAsync(request, cancellationToken);
     }
 }
