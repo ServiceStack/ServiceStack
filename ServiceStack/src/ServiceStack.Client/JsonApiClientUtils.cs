@@ -115,7 +115,7 @@ public static class JsonApiClientUtils
         internal static ApiResult<T>? Instance { get; set; }
     }
 
-    public static async Task<ApiResult<T>> ApiCacheAsync<T>(this JsonApiClient client, IReturn<T> requestDto)
+    public static async Task<ApiResult<T>> ApiCacheAsync<T>(this IServiceGateway client, IReturn<T> requestDto)
     {
         if (ApiResultsCache<T>.Instance != null)
             return ApiResultsCache<T>.Instance;

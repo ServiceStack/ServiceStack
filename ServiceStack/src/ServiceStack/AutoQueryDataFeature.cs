@@ -635,7 +635,9 @@ namespace ServiceStack
         public virtual object Exec<From>(IQueryData<From> dto)
         {
             DataQuery<From> q;
-            var requestParams = Request.GetRequestParams();
+            var requestParams = Request.IsInProcessRequest()
+                ? Request.GetDtoQueryParams()
+                : Request.GetRequestParams();
             var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
             using var db = AutoQuery.GetDb<From>(ctx);
             using (Profiler.Current.Step("AutoQueryData.CreateQuery"))
@@ -651,7 +653,9 @@ namespace ServiceStack
         public virtual object Exec<From, Into>(IQueryData<From, Into> dto)
         {
             DataQuery<From> q;
-            var requestParams = Request.GetRequestParams();
+            var requestParams = Request.IsInProcessRequest()
+                ? Request.GetDtoQueryParams()
+                : Request.GetRequestParams();
             var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
             using var db = AutoQuery.GetDb<From>(ctx);
             using (Profiler.Current.Step("AutoQueryData.CreateQuery"))

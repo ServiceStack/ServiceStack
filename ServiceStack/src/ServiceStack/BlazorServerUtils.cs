@@ -31,6 +31,8 @@ public static class BlazorServerUtils
             // Most reliable way to sync AuthenticationState + HttpClient is accessing HttpContext Cookies on server
             .AddHttpContextAccessor() 
             .AddTransient<CookieHandler>()
+            .AddSingleton<IGatewayRequestFactory,GatewayRequestFactory>()
+            .AddTransient<IServiceGateway>(c => new InProcessServiceGateway(c.GetRequiredService<IGatewayRequestFactory>().Create()))
             .AddHttpClient<JsonApiClient>(client => {
                 client.BaseAddress = new Uri(baseUrl);
                 configure?.Invoke(client);
@@ -56,7 +58,18 @@ public static class BlazorServerUtils
             return "/";
         return returnUrl;
     }
+}
 
+public interface IGatewayRequestFactory
+{
+    IRequest Create();
+}
+
+public class GatewayRequestFactory : IGatewayRequestFactory
+{
+    public IHttpContextAccessor HttpContextAccessor { get; }
+    public GatewayRequestFactory(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
+    public IRequest Create() => HttpContextAccessor.GetOrCreateRequest();
 }
 
 public class CookieHandler : DelegatingHandler, IDisposable
@@ -86,7 +99,7 @@ public class CookieHandler : DelegatingHandler, IDisposable
         }
         if (Log.IsEnabled(LogLevel.Debug))
         {
-            Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", httpCookies?.Count ?? 0, cookieHeader);
+            Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", httpCookies?.Count ?? 0, string.Join(',', httpCookies.Select(x => x.Name)));
         }
 
         if (Filter != null)

@@ -12,16 +12,26 @@ namespace ServiceStack.Blazor;
 public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 {
     [Inject] ILogger<BlazorComponentBase> Log { get; set; }
-
     [Inject] public JsonApiClient? Client { get; set; }
+    [Inject] public IServiceGateway? Gateway { get; set; }
 
-    public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) => Client!.ManagedApiAsync(request);
+    public bool UseGateway { get; set; } = BlazorConfig.Instance.UseInProcessClient;
+    
+    public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) => UseGateway 
+        ? Gateway!.ManagedApiAsync(request)
+        : Client!.ManagedApiAsync(request);
 
-    public virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) => Client!.ManagedApiAsync(request);
+    public virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) => UseGateway 
+        ? Gateway!.ManagedApiAsync(request)
+        : Client!.ManagedApiAsync(request);
 
-    public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) => Client!.ManagedSendAsync(request);
+    public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) => UseGateway
+        ? Gateway!.ManagedSendAsync(request)
+        : Client!.ManagedSendAsync(request);
 
-    public virtual Task<IHasErrorStatus> ApiAsync<Model>(object request) => Client!.ManagedApiAsync<Model>(request);
+    public virtual Task<IHasErrorStatus> ApiAsync<Model>(object request) => UseGateway 
+        ? Gateway!.ManagedApiAsync<Model>(request)
+        : Client!.ManagedApiAsync<Model>(request);
 
     public virtual Task<IHasErrorStatus> ApiFormAsync<Model>(string method, string relativeUrl, MultipartFormDataContent request) =>
         Client!.ManagedApiFormAsync<Model>(method, relativeUrl, request);
@@ -30,7 +40,9 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         Client!.ManagedApiFormAsync<Model>(relativeUrl, request);
 
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
-    public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => Client!.ApiAppMetadataAsync();
+    public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => UseGateway 
+        ? Gateway!.ApiAppMetadataAsync()
+        : Client!.ApiAppMetadataAsync();
 
     bool? enableLogging;
     protected virtual bool EnableLogging => enableLogging ??= BlazorConfig.Instance.EnableVerboseLogging;

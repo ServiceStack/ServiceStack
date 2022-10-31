@@ -220,7 +220,8 @@ namespace ServiceStack.Host.Handlers
                         if (deserializer != null)
                         {
                             httpReq.AllowSyncIO();
-                            return await deserializer(requestType, httpReq.InputStream);
+                            var instance = await deserializer(requestType, httpReq.InputStream);
+                            return instance;                            
                         }
                     }
                 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using ServiceStack.Blazor.Components;
 using System.IO;
 using System.Text.Json.Serialization;
+using ServiceStack.Web;
 
 namespace ServiceStack.Blazor;
 
@@ -108,6 +109,10 @@ public class BlazorConfig
             ? Instance.FallbackAssetsBasePath.CombineWith(path)
             : FileIcons.SvgToDataUri(FileIcons.Icons["img"]);
     }
+    /// <summary>
+    /// Whether ApiAsync BlazorComponentBase APIs should use IServiceGateway instead of JsonApiClient in Blazor Server by default
+    /// </summary>
+    public bool UseInProcessClient { get; init; }
     
     /// <summary>
     /// Change defaults for AutoQueryGrid Components
@@ -148,7 +153,7 @@ public class BlazorConfig
     /// <summary>
     /// Default Filter Conventions to use in DataGrid (for non AutoQuery APIs)
     /// </summary>
-    public List<AutoQueryConvention> DefaultFilters { get; init; } = new List<AutoQueryConvention> {
+    public List<AutoQueryConvention> DefaultFilters { get; init; } = new() {
         Definition("=","%"),
         Definition("!=","%!"),
         Definition("<","<%"),
@@ -172,6 +177,7 @@ public class BlazorConfig
     }
 
     public Func<object, IHasErrorStatus, Task>? OnApiErrorAsync { get; set; }
+
 }
 
 public class AutoQueryGridDefaults

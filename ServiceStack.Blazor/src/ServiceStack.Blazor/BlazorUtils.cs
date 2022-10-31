@@ -110,7 +110,7 @@ public static class BlazorUtils
             await BlazorConfig.Instance.OnApiErrorAsync(requestDto, apiError);
     }
 
-    public static async Task<ApiResult<TResponse>> ManagedApiAsync<TResponse>(this JsonApiClient client, IReturn<TResponse> request)
+    public static async Task<ApiResult<TResponse>> ManagedApiAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> request)
     {
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
@@ -138,7 +138,7 @@ public static class BlazorUtils
         return ret;
     }
 
-    public static async Task<ApiResult<EmptyResponse>> ManagedApiAsync(this JsonApiClient client, IReturnVoid request)
+    public static async Task<ApiResult<EmptyResponse>> ManagedApiAsync(this IServiceGateway client, IReturnVoid request)
     {
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
@@ -166,7 +166,7 @@ public static class BlazorUtils
         return ret;
     }
 
-    public static async Task<IHasErrorStatus> ManagedApiAsync<Model>(this JsonApiClient client, object request)
+    public static async Task<IHasErrorStatus> ManagedApiAsync<Model>(this IServiceGateway client, object request)
     {
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
@@ -177,7 +177,7 @@ public static class BlazorUtils
             log?.LogDebug("API object {0}", request.GetType().Name);
         }
 
-        var ret = await JsonApiClientUtils.ApiAsync<Model>(client!, request);
+        var ret = await client!.ApiAsync<Model>(request);
         if (ret.Error != null)
         {
             if (BlazorConfig.Instance.EnableErrorLogging)
@@ -250,7 +250,7 @@ public static class BlazorUtils
         return ret;
     }
 
-    public static async Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this JsonApiClient client)
+    public static async Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this IServiceGateway client)
     {
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
@@ -262,7 +262,7 @@ public static class BlazorUtils
         }
 
         var request = new MetadataApp();
-        var ret = await JsonApiClientUtils.ApiCacheAsync(client!, request);
+        var ret = await client!.ApiCacheAsync(request);
         if (ret.Error != null)
         {
             if (BlazorConfig.Instance.EnableErrorLogging)
@@ -279,7 +279,7 @@ public static class BlazorUtils
         return ret;
     }
 
-    public static async Task<TResponse> ManagedSendAsync<TResponse>(this JsonApiClient client, IReturn<TResponse> request)
+    public static async Task<TResponse> ManagedSendAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> request)
     {
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
