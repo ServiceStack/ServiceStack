@@ -66,12 +66,12 @@ public class CookieHandler : DelegatingHandler, IDisposable
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var req = HttpContextAccessor.GetOrCreateRequest();
-        var httpCookies = HttpContextAccessor.HttpContext?.Request.Cookies;
+        var req = (IHttpRequest)HttpContextAccessor.GetOrCreateRequest();
+        var httpCookies = req.Cookies.Values.ToList();
 
         if (httpCookies?.Count > 0)
         {
-            var cookieHeader = string.Join("; ", httpCookies.Select(x => $"{x.Key}={x.Value.UrlEncode()}"));
+            var cookieHeader = string.Join("; ", httpCookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"));
             request.Headers.Add(HttpHeaders.Cookie, cookieHeader);
         }
         return await base.SendAsync(request, cancellationToken);
