@@ -63,6 +63,8 @@ public class CookieHandler : DelegatingHandler, IDisposable
 {
     IHttpContextAccessor HttpContextAccessor;
     private ILogger<CookieHandler> Log;
+    
+    public static Func<DelegatingHandler, HttpRequestMessage, CancellationToken, Task>? Filter { get; set; }
 
     public CookieHandler(IHttpContextAccessor httpContextAccessor, ILogger<CookieHandler> log)
     {
@@ -85,6 +87,11 @@ public class CookieHandler : DelegatingHandler, IDisposable
         if (Log.IsEnabled(LogLevel.Debug))
         {
             Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", httpCookies?.Count ?? 0, cookieHeader);
+        }
+
+        if (Filter != null)
+        {
+            await Filter(this, request, cancellationToken);
         }
         
         return await base.SendAsync(request, cancellationToken);
