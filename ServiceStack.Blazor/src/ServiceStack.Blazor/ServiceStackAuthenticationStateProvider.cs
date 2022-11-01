@@ -64,11 +64,13 @@ public class ServiceStackAuthenticationStateProvider : AuthenticationStateProvid
         }
     }
 
-    public virtual async Task LogoutIfAuthenticatedAsync()
+    public virtual async Task LogoutIfAuthenticatedAsync(string? redirectTo = null)
     {
         var authState = await GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated == true)
-            await LogoutAsync();
+            await LogoutAsync(redirectTo);
+        else if (redirectTo != null)
+            NavigationManager.NavigateTo(redirectTo);
     }
 
     public virtual async Task<ApiResult<AuthenticateResponse>> LogoutAsync(string? redirectTo = null)

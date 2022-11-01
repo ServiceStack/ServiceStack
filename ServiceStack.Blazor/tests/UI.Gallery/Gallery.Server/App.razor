@@ -1,4 +1,5 @@
 ﻿@inject NavigationManager NavigationManager
+@inject ServiceStackStateProvider AuthStateProvider
 
 <CascadingAuthenticationState>
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
@@ -53,7 +54,6 @@
 
     async Task login()
     {
-        var loginUrl = NavigationManager.GetLoginUrl();
-        NavigationManager.NavigateTo(loginUrl, true);
+        await AuthStateProvider.LogoutIfAuthenticatedAsync(redirectTo: NavigationManager.GetLoginUrl());
     }
 }

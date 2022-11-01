@@ -1,6 +1,6 @@
 @page "/signup"
 @inherits AppAuthComponentBase
-@inject ServiceStackStateProvider AuthProvider
+@inject ServiceStackStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
 @if (IsAuthenticated)
@@ -88,7 +88,7 @@
         if (api.Failed) return;
 
         api.IsLoading = true;
-        api = await AuthProvider.RegisterAsync(request);
+        api = await AuthStateProvider.RegisterAsync(request);
 
         if (api.Succeeded)
         {

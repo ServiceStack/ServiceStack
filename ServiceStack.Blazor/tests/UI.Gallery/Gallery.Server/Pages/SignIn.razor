@@ -1,6 +1,6 @@
 @page "/signin"
 @inherits AppAuthComponentBase
-@inject ServiceStackStateProvider AuthProvider
+@inject ServiceStackStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
 @if (IsAuthenticated)
@@ -124,7 +124,7 @@
         if (api.Failed) return;
 
         api.IsLoading = true;
-        api = await AuthProvider.LoginAsync(request.UserName, request.Password);
+        api = await AuthStateProvider.LoginAsync(request.UserName, request.Password);
 
         if (api.Succeeded)
             NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), forceLoad: true);

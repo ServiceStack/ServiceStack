@@ -53,8 +53,6 @@
 
     async Task login()
     {
-        var loginUrl = NavigationManager.GetLoginUrl();
-        await AuthStateProvider.LogoutIfAuthenticatedAsync();
-        NavigationManager.NavigateTo(loginUrl, true);
+        await AuthStateProvider.LogoutIfAuthenticatedAsync(redirectTo: NavigationManager.GetLoginUrl());
     }
 }

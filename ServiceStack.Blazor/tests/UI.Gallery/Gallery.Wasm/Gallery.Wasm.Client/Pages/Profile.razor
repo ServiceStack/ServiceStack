@@ -1,7 +1,7 @@
 ﻿@page "/profile"
 @attribute [Authorize]
 @inherits AppAuthComponentBase
-@inject ServiceStackStateProvider AuthProvider
+@inject ServiceStackStateProvider AuthStateProvider
 
 <div class="rounded-lg bg-white dark:bg-black overflow-hidden shadow dark:border-2 dark:border-gray-800 mb-3">
     <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
@@ -52,6 +52,6 @@
 @code {
     async Task logout()
     {
-        await AuthProvider.LogoutAsync();
+        await AuthStateProvider.LogoutAsync();
     }
 }

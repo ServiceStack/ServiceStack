@@ -194,11 +194,13 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
 
     public virtual Task OnAuthenticationStateClaimsAsync(List<Claim> claims) => Task.CompletedTask;
 
-    public virtual async Task LogoutIfAuthenticatedAsync()
+    public virtual async Task LogoutIfAuthenticatedAsync(string? redirectTo = null)
     {
         var authState = await GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated == true)
-            await LogoutAsync();
+            await LogoutAsync(redirectTo: redirectTo);
+        else if (redirectTo != null)
+            NavigationManager.NavigateTo(redirectTo);
     }
 
     public virtual Task LogoutAsync(string? redirectTo = null)
