@@ -1034,7 +1034,7 @@ namespace ServiceStack
         /// <summary>
         /// Get the configured <see cref="IServiceGateway"/>  
         /// </summary>
-        public virtual IServiceGateway GetServiceGateway() => GetServiceGateway(new BasicRequest());
+        public virtual IServiceGateway GetServiceGateway() => GetServiceGateway(new GatewayRequest());
 
         /// <summary>
         /// Get the configured <see cref="IServiceGateway"/> for this request.  
@@ -1047,7 +1047,7 @@ namespace ServiceStack
             var factory = Container.TryResolve<IServiceGatewayFactory>();
             return factory != null ? factory.GetServiceGateway(req) 
                 : Container.TryResolve<IServiceGateway>()
-                ?? new InProcessServiceGateway(req);
+                ?? new InProcessServiceGateway(GatewayRequest.Create(req));
         }
 
         /// <summary>

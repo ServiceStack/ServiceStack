@@ -35,13 +35,15 @@ public class GatewayRequest : BasicRequest, IHttpRequest
             if (dto == null) return;
             OperationName = dto.GetType().Name;
             PathInfo = "/api/" + OperationName;
-            RawUrl = AbsoluteUri = "gateway://" + PathInfo;
+            RawUrl = AbsoluteUri = "gateway:/" + PathInfo;
             Verb = HttpMethod = ServiceClientUtils.GetHttpMethod(dto.GetType());
         }
     }
 
     public static GatewayRequest Create(IRequest hostReq)
     {
+        if (hostReq is GatewayRequest gatewayRequest)
+            return gatewayRequest;
         var httpReq = hostReq as IHttpRequest;
         var ret = new GatewayRequest
         {
@@ -67,7 +69,6 @@ public class GatewayRequest : BasicRequest, IHttpRequest
             Accept = httpReq?.Accept,
         };
         ret.SetInProcessRequest();
-
         return ret;
     }
 }

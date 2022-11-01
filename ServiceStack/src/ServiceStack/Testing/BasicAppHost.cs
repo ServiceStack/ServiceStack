@@ -41,7 +41,7 @@ namespace ServiceStack.Testing
         }
 
         public override IServiceGateway GetServiceGateway(IRequest req) => 
-            base.GetServiceGateway(req ?? new BasicRequest());
+            base.GetServiceGateway(req ?? new GatewayRequest());
 
         public override void OnConfigLoad()
         {
