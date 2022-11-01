@@ -11,12 +11,16 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayAsync
+public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayAsync, IRequiresRequest
 {
     protected static ILog Log = LogManager.GetLogger(typeof(InProcessServiceGateway));
 
-    private readonly IRequest req;
-    public IRequest Request => req;
+    private IRequest req;
+    public IRequest Request
+    {
+        get => req;
+        set => req = value;
+    }
 
     public InProcessServiceGateway(IRequest req)
     {
@@ -180,6 +184,15 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
     {
         if (response is HttpError error)
             throw error.ToWebServiceException();
+
+        // Ensure Response Cookies are added before eliding the HttpResult
+        if (response is IHttpResult httpResult && req.Response is IHttpResponse httpRes)
+        {
+            foreach (var cookie in httpResult.Cookies)
+            {
+                httpRes.Cookies.Collection.Add(cookie);
+            }
+        }
 
         var responseDto = response.GetResponseDto();
 

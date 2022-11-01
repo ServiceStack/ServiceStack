@@ -227,7 +227,7 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
     public virtual Task LogoutAsync(string? redirectTo = null)
     {
         NotifyAuthenticationStateChanged(Task.FromResult(UnAuthenticationState));
-        var url = "/auth/logout" + (redirectTo != null ? "?continue=" + redirectTo.UrlEncode() : "");
+        var url = "/auth/logout" + (redirectTo != null ? "?continue=" + redirectTo : "");
         NavigationManager.NavigateTo(url, forceLoad: true);
         return Task.CompletedTask;
     }
@@ -261,29 +261,9 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
     {
         try
         {
-            var apiReq = new BasicHttpRequest();
-            object? authResult = null;
-            if (request is Authenticate authRequest)
-            {
-                using var authService = HostContext.ResolveService<AuthenticateService>(apiReq);
-                authResult = await authService.PostAsync(authRequest);
-            }
-            else if (request is Register registerRequest)
-            {
-                using var registerService = HostContext.ResolveService<RegisterService>(apiReq);
-                authResult = await registerService.PostAsync(registerRequest);
-            }
-            else
-            {
-                authResult = AppHostBase.Instance.ServiceController.ManagedGatewayExecuteAsync(request, apiReq);
-            }
-
-            var req = HttpContextAccessor.GetOrCreateRequest();
-            var httpCookies = authResult is IHttpResult httpResult && httpResult.Cookies?.Count > 0
-                ? httpResult.Cookies
-                : null;
-
-            //Log.LogDebug("CookieCollection: {0}", string.Join("; ", ((BasicHttpResponse)apiReq.Response).CookieCollection.Select(x => $"{x.Name}: {x.Value}")));
+            var apiReq = ((IRequiresRequest)Gateway).Request;
+            var authResult = await Gateway.SendAsync(request);
+            var httpCookies = ((IHttpResponse)apiReq.Response).Cookies.Collection;
 
             if (httpCookies != null)
             {
