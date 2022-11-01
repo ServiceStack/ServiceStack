@@ -18,7 +18,13 @@ public class GatewayRequest : BasicRequest, IHttpRequest
     }
     
     public IHttpResponse HttpResponse { get; set; }
-    public string HttpMethod { get; set; }
+
+    public string HttpMethod
+    {
+        get => Verb;
+        set => Verb = value;
+    }
+    
     public string XForwardedFor { get; set; }
     public int? XForwardedPort { get; set; }
     public string XForwardedProtocol { get; set; }
@@ -36,7 +42,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest
             OperationName = dto.GetType().Name;
             PathInfo = "/api/" + OperationName;
             RawUrl = AbsoluteUri = "gateway:/" + PathInfo;
-            Verb = HttpMethod = ServiceClientUtils.GetHttpMethod(dto.GetType());
+            HttpMethod = ServiceClientUtils.GetHttpMethod(dto.GetType()) ?? Verb;
         }
     }
 
