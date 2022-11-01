@@ -206,7 +206,7 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
     public virtual Task LogoutAsync(string? redirectTo = null)
     {
         NotifyAuthenticationStateChanged(Task.FromResult(UnAuthenticationState));
-        var url = "/auth/logout" + (redirectTo != null ? "?continue=" + redirectTo : "");
+        var url = "/auth/logout" + (redirectTo != null ? "?continue=" + redirectTo.UrlEncode() : "");
         NavigationManager.NavigateTo(url, forceLoad: true);
         return Task.CompletedTask;
     }

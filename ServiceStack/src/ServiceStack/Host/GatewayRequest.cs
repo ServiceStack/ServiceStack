@@ -47,8 +47,8 @@ public class GatewayRequest : BasicRequest, IHttpRequest
         {
             PathInfo = hostReq.PathInfo,
             OriginalRequest = hostReq.OriginalRequest,
-            QueryString = hostReq.QueryString.Clone(),
-            FormData = hostReq.FormData.Clone(),
+            QueryString = new(),
+            FormData = new(),
             Headers = hostReq.Headers.Clone(),
             Cookies = new Dictionary<string, Cookie>(hostReq.Cookies),
             Items = new(hostReq.Items),
