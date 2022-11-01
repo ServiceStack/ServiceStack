@@ -7,6 +7,7 @@ using ServiceStack.Web;
 using ServiceStack.Validation;
 using ServiceStack.Logging;
 using ServiceStack.Host;
+using ServiceStack.Text;
 
 namespace ServiceStack;
 
@@ -79,17 +80,7 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         ExecValidatorsAsync(request).Wait();
 
         var response = HostContext.ServiceController.Execute(request, req);
-        if (response is Task responseTask)
-            response = responseTask.GetResult();
-        else if (response is ValueTask<object> valueTaskResponse)
-        {
-            response = valueTaskResponse.GetAwaiter().GetResult();
-        }
-        else if (response is ValueTask valueTaskVoid)
-        {
-            valueTaskVoid.GetAwaiter().GetResult();
-            response = null;
-        }
+        response = UnwrapResponse(response);
 
         if (response is Task[] batchResponseTasks)
         {
@@ -130,7 +121,7 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
         var response = await HostContext.ServiceController.GatewayExecuteAsync(request, req, applyFilters: false);
 
-        var responseDto = ConvertToResponse<TResponse>(response);
+        var responseDto = await ConvertToResponseAsync<TResponse>(response).ConfigAwait();
 
         if (!await appHost.ApplyGatewayRespoonseFiltersAsync(req, responseDto))
             return default;
@@ -140,6 +131,51 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     protected virtual Task ExecValidatorsAsync(object request) => HostContext.ServiceController.ExecValidatorsAsync(request, req);
 
+    public virtual object UnwrapResponse(object response)
+    {
+        if (response is Task responseTask)
+            return responseTask.GetResult();
+        if (response is ValueTask<object> valueTaskResponse)
+            return valueTaskResponse.GetAwaiter().GetResult();
+        if (response is ValueTask valueTaskVoid)
+        {
+            valueTaskVoid.GetAwaiter().GetResult();
+            return null;
+        }
+        return response;
+    }
+
+    public virtual async Task<object> UnwrapResponseAsync(object response)
+    {
+        if (response is Task<object> responseTaskObject)
+            return await responseTaskObject;
+
+        if (response is Task responseTask)
+        {
+            await responseTask;
+            return responseTask.GetResult();
+        }
+        if (response is ValueTask<object> valueTaskResponse)
+            return await valueTaskResponse;
+        if (response is ValueTask valueTaskVoid)
+        {
+            await valueTaskVoid;
+            return null;
+        }
+
+        return response;
+    }
+
+    public virtual async Task<TResponse> ConvertToResponseAsync<TResponse>(object response)
+    {
+        if (response is Task task)
+        {
+            await task;
+            response = task.GetResult();
+        }
+        return ConvertToResponse<TResponse>(response);
+    }
+
     public virtual TResponse ConvertToResponse<TResponse>(object response)
     {
         if (response is HttpError error)
@@ -147,7 +183,7 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
         var responseDto = response.GetResponseDto();
 
-        return (TResponse) responseDto;
+        return (TResponse)responseDto;
     }
 
     public virtual TResponse Send<TResponse>(object requestDto)
