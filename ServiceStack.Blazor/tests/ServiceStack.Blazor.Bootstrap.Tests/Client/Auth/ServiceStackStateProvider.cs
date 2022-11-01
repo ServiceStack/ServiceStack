@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using ServiceStack;
 using ServiceStack.Blazor;
 
 namespace MyApp.Client;
@@ -8,8 +6,8 @@ namespace MyApp.Client;
 /// <summary>
 /// Manages App Authentication State
 /// </summary>
-public class ServiceStackStateProvider : ServiceStackAuthenticationStateProvider
+public class ServiceStackStateProvider : BlazorWasmAuthenticationStateProvider
 {
-    public ServiceStackStateProvider(JsonApiClient client, ILogger<ServiceStackAuthenticationStateProvider> log, NavigationManager navigationManager)
-        : base(client, log, navigationManager) { }
+    public ServiceStackStateProvider(BlazorWasmAuthContext context, ILogger<BlazorWasmAuthenticationStateProvider> log)
+        : base(context, log) { }
 }

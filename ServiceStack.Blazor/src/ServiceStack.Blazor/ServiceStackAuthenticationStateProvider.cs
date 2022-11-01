@@ -2,22 +2,41 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace ServiceStack.Blazor;
 
-public class ServiceStackAuthenticationStateProvider : AuthenticationStateProvider
+[Obsolete("Renamed to BlazorWasmAuthenticationStateProvider")]
+public class ServiceStackAuthenticationStateProvider : BlazorWasmAuthenticationStateProvider
 {
-    protected ApiResult<AuthenticateResponse> authApi = new();
-    protected readonly JsonApiClient Client;
-
-    protected ILogger<ServiceStackAuthenticationStateProvider> Log { get; }
-    protected NavigationManager NavigationManager { get; }
-
     public ServiceStackAuthenticationStateProvider(JsonApiClient client, ILogger<ServiceStackAuthenticationStateProvider> log, NavigationManager navigationManager)
+        : base(new BlazorWasmAuthContext(client, navigationManager), log) { }
+}
+
+public class BlazorWasmAuthContext
+{
+    public JsonApiClient Client { get; }
+    public NavigationManager NavigationManager { get; }
+    public BlazorWasmAuthContext(
+        JsonApiClient client,
+        NavigationManager navigationManager)
     {
         Client = client;
-        Log = log;
         NavigationManager = navigationManager;
+    }
+}
+
+public class BlazorWasmAuthenticationStateProvider : AuthenticationStateProvider
+{
+    protected ApiResult<AuthenticateResponse> authApi = new();
+    protected ILogger<BlazorWasmAuthenticationStateProvider> Log { get; }
+    protected JsonApiClient Client { get; }
+    protected NavigationManager NavigationManager { get; }
+    public BlazorWasmAuthenticationStateProvider(BlazorWasmAuthContext context, ILogger<BlazorWasmAuthenticationStateProvider> log)
+    {
+        Log = log;
+        Client = context.Client;
+        NavigationManager = context.NavigationManager;
     }
 
     public AuthenticateResponse? AuthUser => authApi.Response;

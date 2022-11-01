@@ -31,6 +31,7 @@ public static class BlazorServerUtils
             // Most reliable way to sync AuthenticationState + HttpClient is accessing HttpContext Cookies on server
             .AddHttpContextAccessor() 
             .AddTransient<CookieHandler>()
+            .AddTransient<BlazorServerAuthContext>()
             .AddSingleton<IGatewayRequestFactory,GatewayRequestFactory>()
             .AddTransient<IServiceGateway>(c => new InProcessServiceGateway(c.GetRequiredService<IGatewayRequestFactory>().Create()))
             .AddHttpClient<JsonApiClient>(client => {
@@ -114,26 +115,46 @@ public class CookieHandler : DelegatingHandler, IDisposable
     }
 }
 
+// Prevent breaking sub classes when adding new dependencies with single dependency
+public class BlazorServerAuthContext
+{
+    public JsonApiClient Client { get; }
+    public IServiceGateway Gateway { get; }
+    public IHttpContextAccessor HttpContextAccessor { get; }
+    public NavigationManager NavigationManager { get; }
+    public IJSRuntime JS { get; }
+    public BlazorServerAuthContext(
+        JsonApiClient client, 
+        IServiceGateway gateway, 
+        IHttpContextAccessor httpContextAccessor, 
+        NavigationManager navigationManager, 
+        IJSRuntime js)
+    {
+        Client = client;
+        Gateway = gateway;
+        HttpContextAccessor = httpContextAccessor;
+        NavigationManager = navigationManager;
+        JS = js;
+    }
+}
+
 public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvider
 {
-    protected JsonApiClient Client { get; }
     protected ILogger<BlazorServerAuthenticationStateProvider> Log { get; }
+    protected JsonApiClient Client { get; }
+    protected IServiceGateway Gateway { get; }
     protected IHttpContextAccessor HttpContextAccessor { get; }
     protected NavigationManager NavigationManager { get; }
     protected IJSRuntime JS { get; }
 
-    public BlazorServerAuthenticationStateProvider(
-        JsonApiClient client, 
-        ILogger<BlazorServerAuthenticationStateProvider> log, 
-        IHttpContextAccessor httpContextAccessor, 
-        NavigationManager navigationManager,
-        IJSRuntime js)
+    public BlazorServerAuthenticationStateProvider(BlazorServerAuthContext context, ILogger<BlazorServerAuthenticationStateProvider> log)
     {
-        Client = client;
         Log = log;
-        HttpContextAccessor = httpContextAccessor;
-        NavigationManager = navigationManager;
-        JS = js;
+        Client = context.Client;
+        Gateway = context.Gateway;
+        HttpContextAccessor = context.HttpContextAccessor;
+        NavigationManager = context.NavigationManager;
+        JS = context.JS;
     }
 
     protected AuthenticationState UnAuthenticationState => new(new ClaimsPrincipal(new ClaimsIdentity()));
