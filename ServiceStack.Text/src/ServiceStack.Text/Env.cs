@@ -103,14 +103,20 @@ namespace ServiceStack.Text
 
             VersionString = ServiceStackVersion.ToString(CultureInfo.InvariantCulture);
 
-            ServerUserAgent = "ServiceStack/" 
-                            + VersionString + " "
-                            + PclExport.Instance.PlatformName
-                            + (IsLinux ? "/Linux" : IsOSX ? "/macOS" : IsUnix ? "/Unix" : IsWindows ? "/Windows" : "/UnknownOS") 
-                                + (IsIOS ? "/iOS" : IsAndroid ? "/Android" : IsUWP ? "/UWP" : "")
-                            + (IsNet6 ? "/net6" : IsNetStandard20 ? "/std2.0" : IsNetFramework ? "/netfx" : "") + (IsMono ? "/Mono" : "")
-                            + $"/{LicenseUtils.Info}";
             __releaseDate = new DateTime(2001,01,01);
+            
+            UpdateServerUserAgent();
+        }
+
+        internal static void UpdateServerUserAgent()
+        {
+            ServerUserAgent = "ServiceStack/"
+                + VersionString + " "
+                + PclExport.Instance.PlatformName
+                + (IsLinux ? "/Linux" : IsOSX ? "/macOS" : IsUnix ? "/Unix" : IsWindows ? "/Windows" : "/UnknownOS")
+                    + (IsIOS ? "/iOS" : IsAndroid ? "/Android" : IsUWP ? "/UWP" : "")
+                + (IsNet6 ? "/net6" : IsNetStandard20 ? "/std2.0" : IsNetFramework ? "/netfx" : "") + (IsMono ? "/Mono" : "")
+                + $"/{LicenseUtils.Info}";
         }
 
         public static string VersionString { get; set; }

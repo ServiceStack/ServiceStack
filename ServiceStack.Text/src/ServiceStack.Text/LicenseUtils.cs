@@ -203,6 +203,13 @@ namespace ServiceStack
         }
 
         private static __ActivatedLicense __activatedLicense;
+
+        private static void __setActivatedLicense(__ActivatedLicense licence)
+        {
+            __activatedLicense = licence;
+            Env.UpdateServerUserAgent();
+        }
+
         public static void RegisterLicense(string licenseKeyText)
         {
             JsConfig.InitStatics();
@@ -233,7 +240,7 @@ namespace ServiceStack
             catch (PlatformNotSupportedException)
             {
                 // Allow usage in environments like dotnet script
-                __activatedLicense = new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie });
+                __setActivatedLicense(new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie }));
             }
             catch (Exception ex)
             {
@@ -286,7 +293,7 @@ namespace ServiceStack
             if (key.Type == LicenseType.Trial && DateTime.UtcNow > key.Expiry)
                 throw new LicenseException($"This trial license has expired on {key.Expiry:d}." + ContactDetails).Trace();
 
-            __activatedLicense = new __ActivatedLicense(key);
+            __setActivatedLicense(new __ActivatedLicense(key));
 
             LicenseWarningMessage = GetLicenseWarningMessage();
             if (LicenseWarningMessage != null)
@@ -329,7 +336,7 @@ namespace ServiceStack
                 throw new LicenseException($"This license has expired on {key.Expiry:d} and is not valid for use with this release.\n"
                                           + "Check https://servicestack.net/free for eligible renewals.").Trace();
 
-            __activatedLicense = new __ActivatedLicense(key);
+            __setActivatedLicense(new __ActivatedLicense(key));
         }
 
         internal static string Info => __activatedLicense?.LicenseKey == null
@@ -451,7 +458,7 @@ namespace ServiceStack
 
         public static void RemoveLicense()
         {
-            __activatedLicense = null;
+            __setActivatedLicense(null);
         }
 
         public static LicenseFeature ActivatedLicenseFeatures()
