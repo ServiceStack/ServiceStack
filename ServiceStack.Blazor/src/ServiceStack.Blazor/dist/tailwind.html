@@ -1114,10 +1114,10 @@ string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:
 }
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam TReq
-@inherits UiComponentBase
+@inherits BlazorComponentBase
 <div class="m-2 mt-4" @ref="fileDropContainer">
 <label for="blazor-input-file"
-class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssClass()))>
+class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssUtils.ClassNames(@class)))>
 <span class="flex items-center space-x-2">
 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
 stroke="currentColor" stroke-width="2">

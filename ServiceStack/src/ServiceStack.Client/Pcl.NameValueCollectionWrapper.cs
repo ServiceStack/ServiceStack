@@ -152,6 +152,30 @@ namespace ServiceStack
 {
     public static class NameValueCollectionWrapperExtensions
     {
+        public static NameValueCollection Clone(this NameValueCollection nameValues)
+        {
+            var ret = new NameValueCollection();
+            foreach (var key in nameValues.AllKeys)
+            {
+                if (key == null)
+                {
+                    //occurs when no value is specified, e.g. 'path/to/page?debug'
+                    //throw new ArgumentNullException("key", "nameValues: " + nameValues);
+                    continue;
+                }
+
+                var values = nameValues.GetValues(key);
+                if (values != null && values.Length > 0)
+                {
+                    foreach (var value in values)
+                    {
+                        ret.Add(key, value);
+                    }
+                }
+            }
+            return ret;
+        }
+
         public static Dictionary<string, string> ToDictionary(this NameValueCollection nameValues)
         {
             if (nameValues == null) return new Dictionary<string, string>();
@@ -212,5 +236,10 @@ namespace ServiceStack
             }
         }
 
+        public static void AddQueryParam(this IHasQueryParams queryParams, string key, string value)
+        {
+            queryParams.QueryParams ??= new();
+            queryParams.QueryParams[key] = value;
+        }
     }
 }

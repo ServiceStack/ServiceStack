@@ -22,7 +22,10 @@ public class PreProcessRequest : IPlugin, IHasStringId
     public void Register(IAppHost appHost)
     {
         if (HandleUploadFileAsync != null)
+        {
             appHost.GlobalRequestFiltersAsync.Add(HandleFileUploadsAsync);
+            appHost.GatewayRequestFiltersAsync.Add((req,dto) => HandleFileUploadsAsync(req, req.Response, dto));
+        }
     }
     
     public async Task HandleFileUploadsAsync(IRequest req, IResponse res, object dto)

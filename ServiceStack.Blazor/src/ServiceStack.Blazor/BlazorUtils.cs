@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 using System.Diagnostics;
+using System.Security.AccessControl;
 
 namespace ServiceStack.Blazor;
 
@@ -194,7 +195,7 @@ public static class BlazorUtils
         return ret;
     }
 
-    public static async Task<IHasErrorStatus> ManagedApiFormAsync<Model>(this JsonApiClient client, string method, string relativeUrl, MultipartFormDataContent request)
+    public static async Task<ApiResult<Model>> ManagedApiFormAsync<Model>(this IServiceGatewayFormAsync client, object requestDto, MultipartFormDataContent formData)
     {
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
@@ -202,50 +203,22 @@ public static class BlazorUtils
         if (config.EnableLogging)
         {
             sw = Stopwatch.StartNew();
-            log?.LogDebug("API Form {0}", request.GetType().Name);
+            log?.LogDebug("API Form {0}", formData.GetType().Name);
         }
 
-        var ret = await client.ApiFormAsync<Model>(method, relativeUrl, request);
+        var ret = await client.ApiFormAsync<Model>(requestDto, formData);
         if (ret.Error != null)
         {
             if (BlazorConfig.Instance.EnableErrorLogging)
             {
-                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, ret.Error.GetDetailedError());
+                log?.LogError("ERROR {0}:\n{1}", formData.GetType().Name, ret.Error.GetDetailedError());
             }
-            await OnApiErrorAsync(request, ret);
+            await OnApiErrorAsync(formData, ret);
         }
 
         if (config.EnableLogging)
         {
-            log?.LogDebug("END Form {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
-        }
-        return ret;
-    }
-
-    public static async Task<IHasErrorStatus> ManagedApiFormAsync<Model>(this JsonApiClient client, string relativeUrl, MultipartFormDataContent request)
-    {
-        Stopwatch? sw = null;
-        var config = BlazorConfig.Instance;
-        var log = BlazorConfig.Instance.GetLog();
-        if (config.EnableLogging)
-        {
-            sw = Stopwatch.StartNew();
-            log?.LogDebug("API Form {0}", request.GetType().Name);
-        }
-
-        var ret = await client!.ApiFormAsync<Model>(relativeUrl, request);
-        if (ret.Error != null)
-        {
-            if (BlazorConfig.Instance.EnableErrorLogging)
-            {
-                log?.LogError("ERROR {0}:\n{1}", request.GetType().Name, ret.Error.GetDetailedError());
-            }
-            await OnApiErrorAsync(request, ret);
-        }
-
-        if (config.EnableLogging)
-        {
-            log?.LogDebug("END Form {0} took {1}ms", request.GetType().Name, sw!.ElapsedMilliseconds);
+            log?.LogDebug("END Form {0} took {1}ms", formData.GetType().Name, sw!.ElapsedMilliseconds);
         }
         return ret;
     }

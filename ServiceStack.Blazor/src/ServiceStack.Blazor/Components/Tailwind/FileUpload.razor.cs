@@ -13,7 +13,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 /// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/templates/fileupload-blazor-usage-example.png)
 /// </remarks>
 /// <typeparam name="TReq"></typeparam>
-public partial class FileUpload<TReq> : UiComponentBase
+public partial class FileUpload<TReq> : BlazorComponentBase
 {
     [Parameter, EditorRequired]
     public TReq Request { get; set; }
@@ -32,6 +32,7 @@ public partial class FileUpload<TReq> : UiComponentBase
     ElementReference fileDropContainer;
 
     string progress = "Waiting";
+    [Parameter] public string? @class { get; set; }
 
     [Parameter]
     public EventCallback OnUploadStarted { get; set; }
@@ -96,9 +97,7 @@ public partial class FileUpload<TReq> : UiComponentBase
         ms.Position = 0;
         content.AddFile(FilePropertyName, file.Name, ms, file.ContentType);
 
-        var api = await Client.ApiFormAsync<TReq>(
-            Request.GetType().ToApiUrl(), content
-        );
+        var api = await ApiFormAsync<TReq>(Request!, content);
         if (!api.Succeeded)
             errorStatus = api.Error;
 

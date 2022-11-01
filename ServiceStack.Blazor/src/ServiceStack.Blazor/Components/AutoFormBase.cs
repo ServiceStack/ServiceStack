@@ -117,10 +117,12 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
                 }
 
                 var url = request.GetType().ToApiUrl();
-                if (reset.Count > 0)
-                    url = url.AddQueryParam("reset", string.Join(',', reset));
+                if (reset.Count > 0 && request is IHasQueryParams queryParams)
+                {
+                    queryParams.AddQueryParam("reset", string.Join(',', reset));
+                }
 
-                api = await ApiFormAsync<Model>(ServiceClientUtils.GetHttpMethod(ApiType) ?? HttpMethods.Post, url, formData);
+                api = await ApiFormAsync<Model>(request, formData);
                 //api = await ApiAsync<Model>(request);
             }
             catch (Exception e)

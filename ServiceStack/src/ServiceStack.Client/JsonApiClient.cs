@@ -23,11 +23,15 @@ public interface IHasJsonApiClient
 {
     public JsonApiClient? Client { get; }
 }
+public interface IServiceGatewayFormAsync
+{
+    Task<TResponse> SendFormAsync<TResponse>(object requestDto, MultipartFormDataContent formData, CancellationToken token = default);
+}
 
 /// <summary>
 /// JsonApiClient designed to work with 
 /// </summary>
-public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceClientMeta
+public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceClientMeta, IServiceGatewayFormAsync
 {
     public static string DefaultBasePath { get; set; } = "/api/";
     public const string DefaultHttpMethod = HttpMethods.Post;
@@ -1630,7 +1634,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return ex.ToApiResult<TResponse>();
         }
     }
-    
+
+    public Task<TResponse> SendFormAsync<TResponse>(object requestDto, MultipartFormDataContent formData, CancellationToken token = default) =>
+        SendFormAsync<TResponse>(ServiceClientUtils.GetHttpMethod(requestDto.GetType()) ?? HttpMethods.Post, requestDto.GetType().ToApiUrl(), formData, token);
 }
 
 

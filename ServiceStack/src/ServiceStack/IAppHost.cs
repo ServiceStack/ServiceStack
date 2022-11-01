@@ -192,9 +192,19 @@ namespace ServiceStack
         List<Action<IRequest, object>> GatewayRequestFilters { get; }
 
         /// <summary>
+        /// Add Async Request Filter for Service Gateway Requests
+        /// </summary>
+        List<Func<IRequest, object, Task>> GatewayRequestFiltersAsync { get; }
+
+        /// <summary>
         /// Add Response Filter for Service Gateway Responses
         /// </summary>
         List<Action<IRequest, object>> GatewayResponseFilters { get; }
+
+        /// <summary>
+        /// Add Async Response Filter for Service Gateway Responses
+        /// </summary>
+        List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; }
 
         /// <summary>
         /// Add alternative HTML View Engines

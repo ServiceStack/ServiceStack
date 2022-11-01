@@ -69,7 +69,10 @@ public class GatewayRequestFactory : IGatewayRequestFactory
 {
     public IHttpContextAccessor HttpContextAccessor { get; }
     public GatewayRequestFactory(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
-    public IRequest Create() => HttpContextAccessor.GetOrCreateRequest();
+    public IRequest Create()
+    {
+        return GatewayRequest.Create(HttpContextAccessor.GetOrCreateRequest());
+    }
 }
 
 public class CookieHandler : DelegatingHandler, IDisposable

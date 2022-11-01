@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.AccessControl;
 
 namespace ServiceStack.Blazor;
 
@@ -15,7 +16,7 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
     [Inject] public JsonApiClient? Client { get; set; }
     [Inject] public IServiceGateway? Gateway { get; set; }
 
-    public bool UseGateway { get; set; } = BlazorConfig.Instance.UseInProcessClient;
+    [Parameter] public bool UseGateway { get; set; } = BlazorConfig.Instance.UseInProcessClient;
     
     public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) => UseGateway 
         ? Gateway!.ManagedApiAsync(request)
@@ -33,11 +34,10 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         ? Gateway!.ManagedApiAsync<Model>(request)
         : Client!.ManagedApiAsync<Model>(request);
 
-    public virtual Task<IHasErrorStatus> ApiFormAsync<Model>(string method, string relativeUrl, MultipartFormDataContent request) =>
-        Client!.ManagedApiFormAsync<Model>(method, relativeUrl, request);
-
-    public virtual Task<IHasErrorStatus> ApiFormAsync<Model>(string relativeUrl, MultipartFormDataContent request) =>
-        Client!.ManagedApiFormAsync<Model>(relativeUrl, request);
+    public virtual Task<ApiResult<Model>> ApiFormAsync<Model>(object requestDto, MultipartFormDataContent request) => 
+        UseGateway && Gateway is IServiceGatewayFormAsync gatewayForm
+        ? gatewayForm.ManagedApiFormAsync<Model>(requestDto, request)
+        : Client!.ManagedApiFormAsync<Model>(requestDto, request);
 
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
     public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => UseGateway 
