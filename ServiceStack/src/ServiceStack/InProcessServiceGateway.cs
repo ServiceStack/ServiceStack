@@ -180,6 +180,13 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         return ConvertToResponse<TResponse>(response);
     }
 
+    public static Type[] ConvertibleTypes { get; set; } = new[]
+    {
+        typeof(EmptyResponse),
+        typeof(IdResponse),
+        typeof(ErrorResponse),
+    };
+
     public virtual TResponse ConvertToResponse<TResponse>(object response)
     {
         if (response is HttpError error)
@@ -195,8 +202,21 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         }
 
         var responseDto = response.GetResponseDto();
+        if (responseDto == null)
+            return default;
+        if (responseDto is TResponse typedResponse)
+            return typedResponse;
+        
+        if (typeof(TResponse) == typeof(byte[]))
+        {
+            if (responseDto is System.IO.Stream stream)
+                return (TResponse)(object)stream.ReadFully();
+        }
 
-        return (TResponse)responseDto;
+        if (!ConvertibleTypes.Contains(responseDto.GetType()) && !ConvertibleTypes.Contains(typeof(TResponse)))
+            Log.WarnFormat($"Gateway ConvertToResponse: {0} is not of type {1}", responseDto.GetType().Name, typeof(TResponse).Name);
+        
+        return responseDto.ConvertTo<TResponse>();
     }
 
     public virtual TResponse Send<TResponse>(object requestDto)
