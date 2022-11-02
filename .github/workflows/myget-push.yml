@@ -1,4 +1,4 @@
-﻿name: Dev MyGet Publish
+﻿name: A MyGet Publish
 
 on: workflow_dispatch
 
