@@ -27,7 +27,7 @@ public static class NavigationUtils
         var returnTo = nav.ToBaseRelativePath(nav.Uri);
         if (returnTo.TrimStart('/').StartsWith(BlazorConfig.Instance.RedirectSignIn.TrimStart('/')))
             return returnTo;
-        var loginUrl = BlazorConfig.Instance.RedirectSignIn.SetQueryParam("return", returnTo);
+        var loginUrl = BlazorConfig.Instance.RedirectSignIn.SetQueryParam("return", returnTo.StartsWith('/') ? returnTo : '/' + returnTo);
         return loginUrl;
     }
 }
