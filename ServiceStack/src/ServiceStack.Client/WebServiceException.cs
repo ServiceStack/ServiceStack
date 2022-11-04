@@ -97,8 +97,8 @@ namespace ServiceStack
                     }
                     else
                     {
-                        var statusCode = (HttpStatusCode)StatusCode;
-                        responseStatus = ErrorUtils.CreateError(statusCode.ToString().SplitCamelCase(), statusCode.ToString());
+                        var errorCode = StatusDescription ?? ((HttpStatusCode)StatusCode).ToString();
+                        responseStatus = ErrorUtils.CreateError(errorCode.SplitCamelCase(), errorCode);
                     }
                 }
 
