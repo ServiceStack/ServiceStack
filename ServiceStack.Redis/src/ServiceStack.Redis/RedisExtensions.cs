@@ -62,7 +62,7 @@ namespace ServiceStack.Redis
                 var qsParams = qsParts[1].Split('&');
                 foreach (var param in qsParams)
                 {
-                    var entry = param.Split('=');
+                    var entry = param.SplitOnFirst('=');
                     var value = entry.Length > 1 ? entry[1].UrlDecode() : null;
                     if (value == null) continue;
 

@@ -36,5 +36,22 @@ namespace ServiceStack.Redis.Tests
             Assert.AreEqual("localhost", ep.Host);
             Assert.AreEqual(6123, ep.Port);
         }
+        
+        [Test]
+        public void Host_Querystring_May_Contain_Equals()
+        {
+            var yuckyPassword = "U2VydmljZVN0YWNrIQ==";
+            var hosts = new[] { $"host.com:6123?password={yuckyPassword}&db=5" };
+
+            var endPoints = hosts.ToRedisEndPoints();
+
+            Assert.AreEqual(1, endPoints.Count);
+            var ep = endPoints[0];
+
+            Assert.AreEqual("host.com", ep.Host);
+            Assert.AreEqual(6123, ep.Port);
+            Assert.AreEqual(yuckyPassword, ep.Password);
+            Assert.AreEqual(5, ep.Db);
+        }
     }
 }
