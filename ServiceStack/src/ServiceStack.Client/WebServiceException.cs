@@ -97,8 +97,8 @@ namespace ServiceStack
                     }
                     else
                     {
-                        var errorCode = StatusDescription ?? ((HttpStatusCode)StatusCode).ToString();
-                        responseStatus = ErrorUtils.CreateError(errorCode.SplitCamelCase(), errorCode);
+                        var message = StatusDescription ?? base.Message ?? ((HttpStatusCode)StatusCode).ToString().SplitCamelCase();
+                        responseStatus = ErrorUtils.CreateError(message, errorCode:message);
                     }
                 }
 
@@ -123,9 +123,9 @@ namespace ServiceStack
 
         public List<ResponseError> GetFieldErrors() => ResponseStatus?.Errors ?? new List<ResponseError>();
 
-        public bool IsAny400() => StatusCode >= 400 && StatusCode < 500;
+        public bool IsAny400() => StatusCode is >= 400 and < 500;
 
-        public bool IsAny500() => StatusCode >= 500 && StatusCode < 600;
+        public bool IsAny500() => StatusCode is >= 500 and < 600;
 
         public override string ToString()
         {

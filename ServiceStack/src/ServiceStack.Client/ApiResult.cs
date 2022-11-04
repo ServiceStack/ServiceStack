@@ -145,8 +145,8 @@ public static class ErrorUtils
     public static ResponseStatus AsResponseStatus(this Exception ex) => CreateError(ex);
 
     public static ResponseStatus CreateError(Exception ex) => ex switch {
-        IResponseStatusConvertible rsc => rsc.ToResponseStatus(),
-        IHasResponseStatus hasStatus => hasStatus.ResponseStatus,
+        IResponseStatusConvertible rsc => rsc.ToResponseStatus() ?? CreateError(ex.Message, ex.GetType().Name),
+        IHasResponseStatus hasStatus => hasStatus.ResponseStatus ?? CreateError(ex.Message, ex.GetType().Name),
         ArgumentException { ParamName: { } } ae => CreateFieldError(ae.ParamName, ex.Message, ex.GetType().Name),
         _ => CreateError(ex.Message, ex.GetType().Name)
     };

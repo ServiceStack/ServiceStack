@@ -190,7 +190,11 @@ namespace ServiceStack
                 var responseJson = responseBytes.FromUtf8Bytes();
                 var errorResponse = responseJson.FromJson<ErrorResponse>();
 
-                ex.ResponseDto = errorResponse;
+                if (errorResponse != null)
+                {
+                    ex.ResponseStatus = null; // force recalculation after new ResponseDto 
+                    ex.ResponseDto = errorResponse;
+                }
             }
 
             return ex;

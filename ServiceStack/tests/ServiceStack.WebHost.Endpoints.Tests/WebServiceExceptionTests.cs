@@ -43,19 +43,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(webEx.ServerStackTrace, Is.EqualTo("stackTrace"));
 		}
 
-		[Test]
-		public void Can_retrieve_empty_Errors_from_Dto_NoStatusResponse()
-		{
-			var webEx = new WebServiceException
-			{
-				ResponseDto = new NoStatusResponse()
-			};
-
-			Assert.That(webEx.ErrorCode, Is.Null);
-			Assert.That(webEx.ErrorMessage, Is.Null);
-			Assert.That(webEx.ServerStackTrace, Is.Null);
-		}
-
 	    [Test]
 	    public void Can_Retrieve_Errors_From_ResponseBody_If_ResponseDto_Does_Not_Contain_ResponseStatus()
 	    {
