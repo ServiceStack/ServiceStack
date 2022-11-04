@@ -85,7 +85,14 @@ namespace ServiceStack
                 {
                     if (log.IsDebugEnabled)
                         log.Debug($"Could not parse Error ResponseStatus {ResponseDto?.GetType().Name}", ex);
-                }        
+                }
+
+                if (string.IsNullOrEmpty(responseStatus?.ErrorCode))
+                {
+                    responseStatus = InnerException is not IResponseStatusConvertible
+                        ? ErrorUtils.CreateError(InnerException)
+                        : ErrorUtils.CreateError(InnerException.Message, InnerException.GetType().Name);
+                }
 
                 return responseStatus;
             }
