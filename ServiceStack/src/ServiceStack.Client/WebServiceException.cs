@@ -89,9 +89,17 @@ namespace ServiceStack
 
                 if (string.IsNullOrEmpty(responseStatus?.ErrorCode))
                 {
-                    responseStatus = InnerException is not IResponseStatusConvertible
-                        ? ErrorUtils.CreateError(InnerException)
-                        : ErrorUtils.CreateError(InnerException.Message, InnerException.GetType().Name);
+                    if (InnerException != null)
+                    {
+                        responseStatus = InnerException is not IResponseStatusConvertible // avoid potential infinite recursion
+                            ? ErrorUtils.CreateError(InnerException)
+                            : ErrorUtils.CreateError(InnerException.Message, InnerException.GetType().Name);
+                    }
+                    else
+                    {
+                        var statusCode = (HttpStatusCode)StatusCode;
+                        responseStatus = ErrorUtils.CreateError(statusCode.ToString().SplitCamelCase(), statusCode.ToString());
+                    }
                 }
 
                 return responseStatus;
