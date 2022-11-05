@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
+using System.Linq.Expressions;
 
 namespace ServiceStack.Blazor.Components.Tailwind;
 
@@ -20,6 +21,11 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
     [Parameter] public UploadedFile? File { get; set; }
     [Parameter] public ICollection<UploadedFile>? Files { get; set; }
     [Parameter] public EventCallback<InputFileChangeEventArgs> OnInput { get; set; }
+
+    /// <summary>
+    /// Gets or sets an expression that identifies the bound value.
+    /// </summary>
+    [Parameter] public Expression<Func<string>>? ValueExpression { get; set; }
 
     public List<UploadedFile> FileList
     {
@@ -67,6 +73,33 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
         FallbackSrcMap.Clear();
 
         base.OnParametersSet();
+    }
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+
+        if (!hasInitializedParameters)
+        {
+            // This is the first run
+            // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
+            if (ValueExpression == null)
+            {
+                throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
+                                                    $"parameter. Normally this is provided automatically when using 'bind-Value'.");
+            }
+
+            FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
+            if (Id == null)
+                Id = FieldIdentifier.FieldName;
+
+            nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(string));
+            hasInitializedParameters = true;
+        }
+
+        // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
+        return base.SetParametersAsync(ParameterView.Empty);
     }
 
     public async ValueTask DisposeAsync()
