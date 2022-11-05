@@ -574,7 +574,9 @@ public partial class InProcessServiceGateway : IServiceGatewayFormAsync
                     var accessor = typeProps.GetAccessor(propName);
                     if (accessor != null)
                     {
-                        var value = HostContext.ContentTypes.DeserializeFromString(contentType, accessor.PropertyInfo.PropertyType, strValue);
+                        var value = contentType.MatchesContentType(MimeTypes.PlainText) 
+                            ? strValue.ConvertTo(accessor.PropertyInfo.PropertyType)
+                            : HostContext.ContentTypes.DeserializeFromString(contentType, accessor.PropertyInfo.PropertyType, strValue);
                         accessor.PublicSetter(requestDto, value);
                     }
                     req.FormData[propName] = strValue;
