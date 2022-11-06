@@ -8,6 +8,16 @@ namespace ServiceStack.Host;
 
 public class HttpFile : IHttpFile
 {
+    public HttpFile() {}
+    public HttpFile(IHttpFile file) 
+    {
+        Name = file.Name;
+        FileName = file.FileName;
+        ContentLength = file.ContentLength;
+        ContentType = file.ContentType;
+        InputStream = file.InputStream;
+    }
+
     public string Name { get; set; }
     public string FileName { get; set; }
     public long ContentLength { get; set; }
@@ -46,22 +56,3 @@ public class HttpFileContent : HttpFile
 
 
 #endif
-
-public static class HttpFileUtils
-{
-    public static HttpFile ToHttpFile(IHttpFile file, Action<HttpFile>? configure = null)
-    {
-        var to = new HttpFile
-        {
-            Name = file.Name,
-            FileName = file.FileName,
-            ContentLength = file.ContentLength,
-            ContentType = file.ContentType,
-            InputStream = file.InputStream,
-        };
-
-        configure?.Invoke(to);
-
-        return to;
-    }
-}
