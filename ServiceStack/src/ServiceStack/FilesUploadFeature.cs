@@ -22,11 +22,6 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
     public string BasePath { get; set; }
     public FilesUploadErrorMessages Errors { get; set; } = new();
 
-    public Func<IRequest, IVirtualFile, object> FileResult { get; set; } = DefaultFileResult;
-
-    public static object DefaultFileResult(IRequest req, IVirtualFile file) =>
-        new HttpResult(file, asAttachment: FileExt.Images.Contains(file.Extension));
-
     public FilesUploadFeature(string basePath, params UploadLocation[] locations)
     {
         if (string.IsNullOrEmpty(basePath))
@@ -100,10 +95,20 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         return location;
     }
 
-    public async Task<string> UploadFileAsync(UploadLocation location, IRequest req, IAuthSession session, IHttpFile file, CancellationToken token=default)
+    public async Task<string?> UploadFileAsync(UploadLocation location, IRequest req, IAuthSession session, IHttpFile file, CancellationToken token=default)
     {
         await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), token: token);
-        var paths = ResolveUploadFilePath(location, req, file);
+        var feature = HostContext.AppHost.AssertPlugin<FilesUploadFeature>();
+        var ctx = new FilesUploadContext(feature, location, req, file);
+        if (location.TransformFileAsync != null)
+        {
+            var transformedFile = await location.TransformFileAsync(ctx);
+            if (transformedFile == null)
+                return null;
+            ctx = new FilesUploadContext(feature, location, req, transformedFile);
+        }
+        
+        var paths = ResolveUploadFilePath(ctx);
         var fs = file.InputStream;
         if (fs.CanSeek && fs.Position != 0)
             fs.Position = 0;
@@ -111,13 +116,11 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         return paths.PublicPath;
     }
 
-    public ResolvedPath ResolveUploadFilePath(UploadLocation location, IRequest req, IHttpFile file)
+    public ResolvedPath ResolveUploadFilePath(FilesUploadContext ctx)
     {
-        var canCreate = location.AllowOperations.HasFlag(FilesUploadOperation.Create);
-        var canUpdate = location.AllowOperations.HasFlag(FilesUploadOperation.Update);
-        var feature = HostContext.AppHost.AssertPlugin<FilesUploadFeature>();
-        var ctx = new FilesUploadContext(feature, location, req, file.FileName);
-        var publicPath = location.ResolvePath(ctx);
+        var canCreate = ctx.Location.AllowOperations.HasFlag(FilesUploadOperation.Create);
+        var canUpdate = ctx.Location.AllowOperations.HasFlag(FilesUploadOperation.Update);
+        var publicPath = ctx.Location.ResolvePath(ctx);
         if (string.IsNullOrEmpty(publicPath))
             throw new Exception("ResolvePath is Empty");
         if (publicPath[0] != '/')
@@ -129,17 +132,17 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
 
         if (!canCreate || !canUpdate)
         {
-            var existingFile = location.VirtualFiles.GetFile(vfsPath);
+            var existingFile = ctx.Location.VirtualFiles.GetFile(vfsPath);
             if (!canUpdate && existingFile != null)
-                throw HttpError.Forbidden(Errors.NoUpdateAccess.Localize(req));
+                throw HttpError.Forbidden(Errors.NoUpdateAccess.Localize(ctx.Request));
             if (!canCreate && existingFile == null)
-                throw HttpError.Forbidden(Errors.NoCreateAccess.Localize(req));
+                throw HttpError.Forbidden(Errors.NoCreateAccess.Localize(ctx.Request));
         }
 
-        if (location.MaxFileCount != null && req.Files.Length > location.MaxFileCount)
-            throw new ArgumentException(Errors.ExceededMaxFileCountFmt.LocalizeFmt(req,location.MaxFileCount), file.Name);
+        if (ctx.Location.MaxFileCount != null && ctx.Request.Files.Length > ctx.Location.MaxFileCount)
+            throw new ArgumentException(Errors.ExceededMaxFileCountFmt.LocalizeFmt(ctx.Request,ctx.Location.MaxFileCount), ctx.File.Name);
 
-        ValidateFileUpload(location, req, file, vfsPath);
+        ValidateFileUpload(ctx.Location, ctx.Request, ctx.File, vfsPath);
 
         return new ResolvedPath(publicPath, vfsPath);
     }
@@ -253,6 +256,8 @@ public class StoreFileUploadService : Service
         foreach (var file in Request.Files)
         {
             var path = await feature.UploadFileAsync(location, Request, session, file).ConfigAwait();
+            if (path == null)
+                continue;
             results.Add(path);
         }
         return new StoreFileUploadResponse {
@@ -336,6 +341,10 @@ public readonly struct FilesUploadContext
     /// </summary>
     public T GetDto<T>() => (T)Request.Dto;
     /// <summary>
+    /// The file to upload
+    /// </summary>
+    public IHttpFile File { get; }
+    /// <summary>
     /// The Uploaded file name
     /// </summary>
     public string FileName { get; }
@@ -364,12 +373,13 @@ public readonly struct FilesUploadContext
     /// </summary>
     public string UserAuthId => Session.UserAuthId;
 
-    public FilesUploadContext(FilesUploadFeature feature, UploadLocation location, IRequest request, string fileName)
+    public FilesUploadContext(FilesUploadFeature feature, UploadLocation location, IRequest request, IHttpFile file)
     {
         Feature = feature;
         Location = location;
         Request = request;
-        FileName = fileName;
+        File = file;
+        FileName = file.FileName;
     }
 
     public string GetLocationPath(string relativePath) => Feature.BasePath.CombineWith(Location.Name, relativePath);
@@ -384,7 +394,7 @@ public class UploadLocation
         int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
         Action<IRequest,IHttpFile>? validateUpload = null, Action<IRequest,IVirtualFile>? validateDownload = null,
         Action<IRequest,IVirtualFile>? validateDelete = null,
-        Func<IRequest,IVirtualFile,object>? fileResult = null)
+        Func<FilesUploadContext,Task<IHttpFile?>>? transformFile = null)
     {
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
         this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
@@ -399,7 +409,7 @@ public class UploadLocation
         this.ValidateUpload = validateUpload;
         this.ValidateDownload = validateDownload;
         this.ValidateDelete = validateDelete;
-        this.FileResult = fileResult;
+        this.TransformFileAsync = transformFile;
     }
 
     public string Name { get; set; }
@@ -415,7 +425,11 @@ public class UploadLocation
     public Action<IRequest,IHttpFile>? ValidateUpload { get; set; }
     public Action<IRequest,IVirtualFile>? ValidateDownload { get; set; }
     public Action<IRequest,IVirtualFile>? ValidateDelete { get; set; }
-    Func<IRequest,IVirtualFile,object>? FileResult { get; set; }
+    /// <summary>
+    /// Transform the file to upload.
+    /// Can ignore file upload by returning null.
+    /// </summary>
+    public Func<FilesUploadContext,Task<IHttpFile?>>? TransformFileAsync { get; set; }
 }
 
 public static class FileExt
