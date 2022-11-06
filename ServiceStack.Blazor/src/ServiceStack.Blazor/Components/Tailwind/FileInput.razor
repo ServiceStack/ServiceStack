@@ -113,5 +113,5 @@
 
     string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
         ? ""
-        : "rounded-full";
+        : "rounded-full object-cover";
 }
