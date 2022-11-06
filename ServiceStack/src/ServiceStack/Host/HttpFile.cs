@@ -1,3 +1,6 @@
+#nullable enable
+
+using System;
 using System.IO;
 using ServiceStack.Web;
 
@@ -43,3 +46,22 @@ public class HttpFileContent : HttpFile
 
 
 #endif
+
+public static class HttpFileUtils
+{
+    public static HttpFile ToHttpFile(IHttpFile file, Action<HttpFile>? configure = null)
+    {
+        var to = new HttpFile
+        {
+            Name = file.Name,
+            FileName = file.FileName,
+            ContentLength = file.ContentLength,
+            ContentType = file.ContentType,
+            InputStream = file.InputStream,
+        };
+
+        configure?.Invoke(to);
+
+        return to;
+    }
+}
