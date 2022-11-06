@@ -109,7 +109,7 @@ public class FilesUploadFeature : IPlugin, IHasStringId, IPreInitPlugin
         }
         
         var paths = ResolveUploadFilePath(ctx);
-        var fs = file.InputStream;
+        var fs = ctx.File.InputStream;
         if (fs.CanSeek && fs.Position != 0)
             fs.Position = 0;
         await location.VirtualFiles.WriteFileAsync(paths.VirtualPath, fs, token).ConfigAwait();
