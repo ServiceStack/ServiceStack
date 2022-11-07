@@ -211,8 +211,18 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         {
             if (responseDto is System.IO.Stream stream)
                 return (TResponse)(object)stream.ReadFully();
-        }
+            if (responseDto is string str)
+                return (TResponse)(object)str.ToUtf8Bytes();
 
+            var json = responseDto.ToJson(); // IReturnVoid
+            return (TResponse)(object)json.ToUtf8Bytes();
+        }
+        if (typeof(TResponse) == typeof(string))
+        {
+            var json = responseDto.ToJson();
+            return (TResponse)(object)json;
+        }
+        
         if (!ConvertibleTypes.Contains(responseDto.GetType()) && !ConvertibleTypes.Contains(typeof(TResponse)))
             Log.WarnFormat($"Gateway ConvertToResponse: {0} is not of type {1}", responseDto.GetType().Name, typeof(TResponse).Name);
         
