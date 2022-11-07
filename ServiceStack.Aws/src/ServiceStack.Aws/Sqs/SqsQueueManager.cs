@@ -33,6 +33,7 @@ namespace ServiceStack.Aws.Sqs
         public int DefaultVisibilityTimeout { get; set; }
         public int DefaultReceiveWaitTime { get; set; }
         public bool DisableBuffering { get; set; }
+        public string AwsQueueOwnerAccountId { get; set; }
 
         public SqsConnectionFactory ConnectionFactory => sqsConnectionFactory;
 
@@ -90,10 +91,23 @@ namespace ServiceStack.Aws.Sqs
                     return qd.QueueUrl;
             }
 
-            var response = SqsClient.GetQueueUrl(new GetQueueUrlRequest { 
-                QueueName = queueName.AwsQueueName
-            });
-            return response.QueueUrl;
+            if (AwsQueueOwnerAccountId.IsNullOrEmpty())
+            {
+                log.InfoFormat("Calling GetQueueUrl() for a Queue named [{0}]", queueName);
+                var response = SqsClient.GetQueueUrl(new GetQueueUrlRequest { 
+                    QueueName = queueName.AwsQueueName,
+                });
+                return response.QueueUrl;
+            }
+            else
+            {
+                log.InfoFormat("Calling GetQueueUrl() for a Queue named [{0}] on account [{1}]", queueName, AwsQueueOwnerAccountId);
+                var response = SqsClient.GetQueueUrl(new GetQueueUrlRequest { 
+                    QueueName = queueName.AwsQueueName,
+                    QueueOwnerAWSAccountId = AwsQueueOwnerAccountId
+                });
+                return response.QueueUrl;
+            }
         }
 
         public SqsQueueDefinition GetQueueDefinition(string queueName, bool forceRecheck = false)

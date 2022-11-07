@@ -22,14 +22,16 @@ namespace ServiceStack.Aws.Sqs
 
     public class SqsQueueName : IEquatable<SqsQueueName>
     {
-        public SqsQueueName(string originalQueueName)
+        public SqsQueueName(string originalQueueName, string awsQueueAccountId = null)
         {
             QueueName = originalQueueName;
             AwsQueueName = originalQueueName.ToValidQueueName();
+            AwsQueueAccountId = awsQueueAccountId;
         }
 
         public string QueueName { get; }
         public string AwsQueueName { get; private set; }
+        public string AwsQueueAccountId { get; set; }
 
         public bool Equals(SqsQueueName other)
         {
