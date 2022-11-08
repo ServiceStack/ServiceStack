@@ -2915,6 +2915,9 @@ namespace ServiceStack.OrmLite
             if (argValue == null)
                 return FalseLiteral; // "column IN (NULL)" is always false
 
+            if (quotedColName is not PartialSqlString)
+                quotedColName = ConvertToParam(quotedColName);
+
             if (argValue is IEnumerable enumerableArg)
             {
                 var inArgs = Sql.Flatten(enumerableArg);
@@ -2964,7 +2967,7 @@ namespace ServiceStack.OrmLite
             throw new NotSupportedException($"In({argValue.GetType()})");
         }
 
-        protected virtual string CreateInSubQuerySql(object quotedColName,string subSelect)
+        protected virtual string CreateInSubQuerySql(object quotedColName, string subSelect)
         {
             return $"{quotedColName} IN ({subSelect})";
         }
