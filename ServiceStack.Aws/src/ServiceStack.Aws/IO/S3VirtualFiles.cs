@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using ServiceStack.Aws;
 using ServiceStack.Aws.S3;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.IO;
@@ -127,6 +130,35 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
             BucketName = BucketName,
             InputStream = stream,
         });
+    }
+
+    public override async Task WriteFileAsync(string filePath, object contents, CancellationToken token = default)
+    {
+        // need to buffer otherwise hangs when trying to send an uploaded file stream (depends on provider)
+        var buffer = contents is not MemoryStream;
+        var fileContents = await FileContents.GetAsync(contents, buffer);
+        if (fileContents?.Stream != null)
+        {
+            await AmazonS3.PutObjectAsync(new PutObjectRequest
+            {
+                Key = SanitizePath(filePath),
+                BucketName = BucketName,
+                InputStream = fileContents.Stream,
+            }, token).ConfigAwait();
+        }
+        else if (fileContents?.Text != null)
+        {
+            await AmazonS3.PutObjectAsync(new PutObjectRequest
+            {
+                Key = SanitizePath(filePath),
+                BucketName = BucketName,
+                ContentBody = fileContents.Text,
+            }, token).ConfigAwait();
+        }
+        else throw new NotSupportedException($"Unknown File Content Type: {contents.GetType().Name}");
+
+        if (buffer && fileContents.Stream != null) // Dispose MemoryStream buffer created by FileContents
+            using (fileContents.Stream) {}
     }
 
     public virtual void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
