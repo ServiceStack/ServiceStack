@@ -1588,7 +1588,7 @@ namespace ServiceStack
 
         public SubscriptionInfo GetSubscriptionInfo(string id)
         {
-            return GetSubscription(id).GetInfo();
+            return GetSubscription(id)?.GetInfo();
         }
 
         public List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId)
