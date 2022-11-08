@@ -1005,7 +1005,7 @@ namespace ServiceStack
                 typesToGenerateSet.Contains(StringUtils.SnakeCaseToPascalCase(name));
             
             var includeCrudServices = request.IncludeCrudOperations ?? genServices.IncludeCrudOperations;
-            var includeCrudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames(includeCrudServices);
+            var includeCrudInterfaces = Crud.CrudInterfaceMetadataNames(includeCrudServices);
             
             var existingTypes = new HashSet<string>();
             var operations = new List<MetadataOperationType>();
@@ -1164,7 +1164,7 @@ namespace ServiceStack
                         IsValueType = underlyingType.IsValueType ? true : (bool?) null,
                         IsEnum = underlyingType.IsEnum ? true : (bool?) null,
                         Namespace = dataType.Namespace,
-                        GenericArgs = MetadataTypesGenerator.ToGenericArgs(dataType),
+                        GenericArgs = dataType.ToGenericArgs(),
                         DataMember = typesConfig.AddDataContractAttributes
                             ? new MetadataDataMember { Order = i++ } 
                             : null,

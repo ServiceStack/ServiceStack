@@ -259,6 +259,10 @@ namespace ServiceStack.OrmLite
         string ToUpdateStatement<T>(IDbCommand dbCmd, T item, ICollection<string> updateFields = null);
         string ToInsertStatement<T>(IDbCommand dbCmd, T item, ICollection<string> insertFields = null);
         string MergeParamsIntoSql(string sql, IEnumerable<IDbDataParameter> dbParams);
+        
+        string GetRefSelfSql<From>(SqlExpression<From> refQ, ModelDefinition modelDef, FieldDefinition refSelf, ModelDefinition refModelDef);
+        string GetRefFieldSql(string subSql, ModelDefinition refModelDef, FieldDefinition refField);
+        string GetFieldReferenceSql(string subSql, FieldDefinition fieldDef, FieldReference fieldRef);
 
         string ToTableNamesStatement(string schema);
 

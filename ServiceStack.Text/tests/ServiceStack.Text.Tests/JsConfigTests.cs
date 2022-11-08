@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using NUnit.Framework;
 
@@ -316,4 +317,50 @@ namespace ServiceStack.Text.Tests
             Assert.That(newConfig.DateHandler, Is.EqualTo(DateHandler.UnixTime));
         }
     }
+
+    public class JsConfigScopeTests
+    {
+        [Test]
+        public void Does_ExcludeTypes_within_scope()
+        {
+            var o = new SomeObj
+            {
+                Name = "Freddie",
+                Content = new byte[] { 42 }
+            };
+
+            var normalSerialization = NormalSerialization(o);
+            var serializedWithoutByteArray = SerializeWithoutBytes(o);
+
+            Console.WriteLine("Normal Serialization: " + normalSerialization);
+            Console.WriteLine("Serialization without byte[]: " + serializedWithoutByteArray);
+
+            Assert.That(normalSerialization.IndexOf("content", StringComparison.OrdinalIgnoreCase) >= 0,
+                "normalSerialization: the Content property is missing");
+            Assert.That(serializedWithoutByteArray.IndexOf("content", StringComparison.OrdinalIgnoreCase) == -1,
+                "serializedWithoutByteArray: the Content property should not be present");
+            Assert.That(serializedWithoutByteArray, Is.Not.EqualTo(normalSerialization),
+                "Serializing the object with a different JsConfig settings should generate a different value.");
+
+            string NormalSerialization<T>(T objToSerialize)
+            {
+                return objToSerialize.ToJson();
+            }
+
+            string SerializeWithoutBytes<T>(T objToSerialize)
+            {
+                using var scope = JsConfig.With(new Config {
+                    ExcludeTypes = new HashSet<Type>(new[] { typeof(byte[]) })
+                });
+                return objToSerialize.ToJson();
+            }
+        }
+    }
+
+    public class SomeObj
+    {
+        public string Name { get; set; }
+
+        public byte[] Content { get; set; }
+    }    
 }

@@ -18,8 +18,7 @@ namespace ServiceStack
     /// </summary>
     public static class UrlExtensions
     {
-        private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache =
-            new ConcurrentDictionary<Type, List<RestRoute>>();
+        private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache = new();
 
         public static string ToRelativeUri(this IReturn requestDto, string httpMethod, string formatFallbackToPredefinedRoute = null)
         {
@@ -330,6 +329,18 @@ namespace ServiceStack
             }
             return to;
         }
+
+        public static void AppendQueryParam(this StringBuilder sb, string key, object value)
+        {
+            var qsName = JsConfig.TextCase == TextCase.SnakeCase
+                ? key.ToLowercaseUnderscore()
+                : key;
+
+            sb.Append(qsName)
+                .Append('=')
+                .Append(RestRoute.FormatQueryParameterValue(value))
+                .Append('&');
+        }
     }
 
     public class RestRoute
@@ -462,8 +473,7 @@ namespace ServiceStack
 
         internal static string GetQueryString(object request, IDictionary<string, RouteMember> propertyMap)
         {
-            var result = StringBuilderCache.Allocate();
-
+            var sb = StringBuilderCache.Allocate();
             foreach (var queryProperty in propertyMap)
             {
                 if (queryProperty.Value.IgnoreInQueryString)
@@ -476,18 +486,19 @@ namespace ServiceStack
                 if (ClientConfig.SkipEmptyArrays && value is Array array && array.Length == 0)
                     continue;
 
-                var qsName = JsConfig.TextCase == TextCase.SnakeCase
-                    ? queryProperty.Key.ToLowercaseUnderscore()
-                    : queryProperty.Key;
-
-                result.Append(qsName)
-                    .Append('=')
-                    .Append(FormatQueryParameterValue(value))
-                    .Append('&');
+                sb.AppendQueryParam(queryProperty.Key, value);
+            }
+            
+            if (request is IHasQueryParams { QueryParams: {} } qs)
+            {
+                foreach (var entry in qs.QueryParams)
+                {
+                    sb.AppendQueryParam(entry.Key, entry.Value);
+                }
             }
 
-            if (result.Length > 0) result.Length -= 1;
-            return StringBuilderCache.ReturnAndFree(result);
+            if (sb.Length > 0) sb.Length -= 1;
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)

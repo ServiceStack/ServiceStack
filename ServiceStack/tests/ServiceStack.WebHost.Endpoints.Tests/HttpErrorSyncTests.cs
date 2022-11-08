@@ -164,7 +164,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
                 Assert.That(webEx.StatusDescription, Is.EqualTo("Custom Status Description"));
-                Assert.That(webEx.ResponseStatus, Is.Null);
                 Assert.That(webEx.ResponseBody, Is.Null.Or.Empty);
             }
         }
@@ -188,7 +187,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
-                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Custom404Exception).Name));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(Custom404Exception)));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Custom Status Description"));
                 Assert.That(webEx.ResponseStatus.Errors[0].ErrorCode, Is.EqualTo("FieldErrorCode"));
                 Assert.That(webEx.ResponseStatus.Errors[0].Message, Is.EqualTo("FieldMessage"));

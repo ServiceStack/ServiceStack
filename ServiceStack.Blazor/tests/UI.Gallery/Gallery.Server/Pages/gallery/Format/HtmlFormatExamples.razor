@@ -1,0 +1,17 @@
+﻿@page "/gallery/format/html-format"
+
+<h3 class="my-4 text-lg font-semibold">Single Model</h3>
+
+<div class="max-w-screen-sm">
+    <HtmlFormat Value=@Track.Results[0] />
+</div>
+
+<h3 class="my-4 text-lg font-semibold">Item Collections</h3>
+
+<div class="max-w-screen-sm">
+    <HtmlFormat Value=@Track.Results />
+</div>
+
+<h3 class="my-4 text-lg font-semibold">Nested Complex Types</h3>
+
+<HtmlFormat Value=@Create.Players />

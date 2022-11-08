@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -15,7 +16,7 @@ namespace ServiceStack
         public virtual IServiceGateway GetServiceGateway(IRequest request)
         {
             this.Request = request;
-            localGateway = new InProcessServiceGateway(request);
+            localGateway = new InProcessServiceGateway(GatewayRequest.Create(request));
             return this;
         }
 

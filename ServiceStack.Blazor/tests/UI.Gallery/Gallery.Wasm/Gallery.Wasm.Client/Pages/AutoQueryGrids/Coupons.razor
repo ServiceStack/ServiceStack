@@ -1,0 +1,15 @@
+﻿@page "/grid/coupons"
+@attribute [Authorize(Roles = "Employee")]
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Coupons
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="Coupon" Apis="Apis.AutoQuery<QueryCoupons,CreateCoupon,UpdateCoupon,DeleteCoupon>()" />
+
+<ExampleCode Title="Source Code" Path="/AutoQueryGrids/Coupons.razor" />

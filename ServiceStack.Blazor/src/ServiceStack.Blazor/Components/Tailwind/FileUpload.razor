@@ -1,12 +1,10 @@
-﻿@using System.IO
-@using Microsoft.AspNetCore.Components.Forms
-@inherits UiComponentBase
-@inject JsonApiClient jsonApiClient
+﻿@using Microsoft.AspNetCore.Components.Forms
 @typeparam TReq
+@inherits BlazorComponentBase
 
 <div class="m-2 mt-4" @ref="fileDropContainer">
     <label for="blazor-input-file" 
-           class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssClass()))>
+           class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssUtils.ClassNames(@class)))>
         <span class="flex items-center space-x-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
                  stroke="currentColor" stroke-width="2">
@@ -41,100 +39,4 @@
 <CascadingValue Value="errorStatus">
     <ErrorSummary/>
 </CascadingValue>
-
-@code {
-
-    [Parameter, EditorRequired]
-    public TReq Request { get; set; }
-
-    [Parameter]
-    public string FilePropertyName { get; set; }
-
-
-    ResponseStatus? errorStatus;
-
-    private bool uploading = false;
-    private string selectedFile = "";
-    // Hack to clear files, avoids issues upload file with same name.
-    bool toggleInputClear = false;
-    ElementReference fileDropContainer;
-
-    string progress = "Waiting";
-
-    [Parameter]
-    public EventCallback OnUploadStarted { get; set; }
-
-    [Parameter]
-    public EventCallback OnUploadComplete { get; set; }
-
-    private async Task OnChange(InputFileChangeEventArgs e)
-    {
-        try
-        {
-            uploading = true;
-            progress = "Started...";
-            await UploadFile(e);
-        }
-        catch (Exception ex)
-        {
-            if (errorStatus == null)
-            {
-                errorStatus = new ResponseStatus
-                {
-                    Errors = new List<ResponseError>()
-                    {
-                        new()
-                        {
-                            Message = ex.Message
-                        }
-                    }
-                };
-            }
-            progress = $"Failed...";
-        }
-        finally
-        {
-            StateHasChanged();
-            await Task.Delay(3000);
-            uploading = false;
-            toggleInputClear = !toggleInputClear;
-            StateHasChanged();
-        }
-    }
-
-    long maxFileSize = 1024 * 1024 * 15;
-
-    async Task UploadFile(InputFileChangeEventArgs e)
-    {
-        await OnUploadStarted.InvokeAsync();
-
-        using var content = new MultipartFormDataContent()
-            .AddParams(Request);
-
-        var file = e.File;
-        selectedFile = file.Name;
-        progress = $"Uploading {selectedFile}...";
-        if (file.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-        {
-            throw new Exception("Invalid file name.");
-        }
-        using var stream = file.OpenReadStream(maxFileSize);
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
-        ms.Position = 0;
-        content.AddFile(FilePropertyName, file.Name, ms, file.ContentType);
-
-        var api = await jsonApiClient.ApiFormAsync<TReq>(
-            Request.GetType().ToApiUrl(), content
-            );
-        if (!api.Succeeded)
-            errorStatus = api.Error;
-
-        StateHasChanged();
-        progress = "Upload complete!";
-
-        await OnUploadComplete.InvokeAsync();
-        StateHasChanged();
-    }
-
 }

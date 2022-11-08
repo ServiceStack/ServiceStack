@@ -627,13 +627,20 @@ namespace ServiceStack
             }
         }
 
-        public static PropertyInfo[] GetSerializableProperties(this Type type)
+        /// <summary>
+        /// Includes unfiltered serializable properties suitable for caching.
+        /// Need to exclude JsConfig.ShouldExcludePropertyType() if serializing at runtime
+        /// </summary>
+        public static PropertyInfo[] GetAllSerializableProperties(this Type type)
         {
             var properties = type.IsDto()
                 ? type.GetAllProperties()
                 : type.GetPublicProperties();
             return properties.OnlySerializableProperties(type);
         }
+
+        public static PropertyInfo[] GetSerializableProperties(this Type type) =>
+            type.GetAllSerializableProperties().Where(x => !JsConfig.ShouldExcludePropertyType(x.PropertyType)).ToArray();
 
         public static PropertyInfo[] OnlySerializableProperties(this PropertyInfo[] properties, Type type = null)
         {
@@ -649,13 +656,10 @@ namespace ServiceStack
             // else return those properties that are not decorated with IgnoreDataMember
             return readableProperties
                 .Where(prop => prop.AllAttributes()
-                    .All(attr =>
-                    {
+                    .All(attr => {
                         var name = attr.GetType().Name;
                         return !IgnoreAttributesNamed.Contains(name);
                     }))
-                .Where(prop => !(JsConfig.ExcludeTypes.Contains(prop.PropertyType) ||
-                                 JsConfig.ExcludeTypeNames.Contains(prop.PropertyType.FullName)))
                 .ToArray();
         }
 

@@ -17,9 +17,9 @@ namespace ServiceStack.Host
     , IHasServiceScope
 #endif    
     {
-        public object Dto { get; set; }
+        public virtual object Dto { get; set; }
         public IMessage Message { get; set; }
-        public object OriginalRequest { get; private set; }
+        public object OriginalRequest { get; protected set; }
         public IResponse Response { get; set; }
         
 #if NETCORE
@@ -103,7 +103,7 @@ namespace ServiceStack.Host
 
         public Dictionary<string, object> Items { get; set; }
 
-        public string UserAgent { get; private set; }
+        public string UserAgent { get; protected set; }
 
         public IDictionary<string, Cookie> Cookies { get; set; }
 
@@ -116,7 +116,7 @@ namespace ServiceStack.Host
 
         public string ContentType { get; set; }
 
-        public bool IsLocal { get; private set; }
+        public bool IsLocal { get; protected set; }
 
         public string ResponseContentType { get; set; }
 

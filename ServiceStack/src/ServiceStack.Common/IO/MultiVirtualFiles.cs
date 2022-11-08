@@ -168,15 +168,9 @@ namespace ServiceStack.IO
         public bool IsDirectory => true;
         public DateTime LastModified => this.First().LastModified;
 
-        public IEnumerator<IVirtualNode> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
+        public IEnumerator<IVirtualNode> GetEnumerator() => dirs.SelectMany(dir => dir).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => dirs.SelectMany(dir => dir).GetEnumerator();
 
         public bool IsRoot => this.dirs.First().IsRoot;
 

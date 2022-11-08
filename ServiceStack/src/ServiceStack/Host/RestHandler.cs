@@ -87,7 +87,7 @@ namespace ServiceStack.Host
 
                 appHost.AssertContentType(httpReq.ResponseContentType);
 
-                var request = httpReq.Dto = await CreateRequestAsync(httpReq, restPath).ConfigAwait();
+                var request = httpReq.Dto = await CreateRequestAsync(httpReq, restPath).ConfigAwaitNetCore();
 
                 await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
                 if (httpRes.IsClosed)

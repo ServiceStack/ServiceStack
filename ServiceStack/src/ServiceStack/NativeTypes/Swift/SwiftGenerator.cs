@@ -451,7 +451,7 @@ namespace ServiceStack.NativeTypes.Swift
                         sb = sb.Indent();
                         foreach (var prop in typeProps)
                         {
-                            sb.AppendLine($"case {GetPropertyName(prop.Name)}");
+                            sb.AppendLine($"case {GetPropertyName(prop)}");
                         }
                         sb = sb.UnIndent();
                         sb.AppendLine("}");
@@ -471,7 +471,7 @@ namespace ServiceStack.NativeTypes.Swift
                             var converter = Converters.TryGetValue(realTypeName, out var c)
                                 ? c
                                 : null;
-                            var propName = GetPropertyName(prop.Name);
+                            var propName = GetPropertyName(prop);
                             var defaultValue = prop.IsArray()
                                 ? " ?? []"
                                 : !type.IsInterface() && !prop.GenericArgs.IsEmpty()
@@ -505,7 +505,7 @@ namespace ServiceStack.NativeTypes.Swift
                                 ? c
                                 : null;
                             
-                            var propName = GetPropertyName(prop.Name);
+                            var propName = GetPropertyName(prop);
                             var isCollection = prop.IsArray() || ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type);
                             var method = converter?.EncodeMethod ?? "encode";
                             sb.AppendLine(isCollection
@@ -644,7 +644,7 @@ namespace ServiceStack.NativeTypes.Swift
                 if (type.IsInterface())
                 {
                     sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
-                        GetPropertyName(prop.Name), propTypeName, optional));
+                        GetPropertyName(prop), propTypeName, optional));
                 }
                 else
                 {
@@ -655,7 +655,7 @@ namespace ServiceStack.NativeTypes.Swift
                         ? converter.Attribute + " "
                         : "";
                     sb.AppendLine(attr + "public var {0}:{1}{2}{3}".Fmt(
-                        GetPropertyName(prop.Name), propTypeName, optional, defaultValue));
+                        GetPropertyName(prop), propTypeName, optional, defaultValue));
                 }
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
@@ -1050,7 +1050,9 @@ namespace ServiceStack.NativeTypes.Swift
                 .Replace(">", " : Codable>");
         }
 
-        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle(); 
+        public string GetPropertyName(MetadataPropertyType prop) => 
+            prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
     }
 
     public static class SwiftGeneratorExtensions

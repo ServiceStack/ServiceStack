@@ -62,7 +62,7 @@ namespace ServiceStack.Text.Common
         {
             var type = typeConfig.Type;
 
-            var propertyInfos = type.GetSerializableProperties();
+            var propertyInfos = type.GetAllSerializableProperties();
             var fieldInfos = type.GetSerializableFields();
             if (propertyInfos.Length == 0 && fieldInfos.Length == 0) 
                 return default;

@@ -8,7 +8,7 @@ namespace ServiceStack
         private static readonly ILog Log = LogManager.GetLogger(typeof(FuncUtils));
 
         /// <summary>
-        /// Invokes the action provided and returns true if no excpetion was thrown.
+        /// Invokes the action provided and returns true if no exception was thrown.
         /// Otherwise logs the exception and returns false if an exception was thrown.
         /// </summary>
         /// <param name="action">The action.</param>

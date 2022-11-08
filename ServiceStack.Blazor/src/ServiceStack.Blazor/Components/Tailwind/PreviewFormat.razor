@@ -1,0 +1,152 @@
+﻿@using System.Collections
+@using ServiceStack.Text
+
+@{
+    void RenderValue(object? value)
+    {
+        if (Format?.Method == null)
+        {
+            @FormatValue(value)
+        }
+        else
+        {
+            var str = $"{value}";
+            var attrs = (Format.Options != null
+                ? BlazorConfig.Instance.JSParseObject(Format.Options)
+                : null) ?? new();
+            var cls = attrs.Remove("cls", out var oClass) ? oClass as string : null;
+
+            if (Format.Method == FormatMethods.IconRounded)
+            {
+                var src = str;
+                <img class=@(cls ?? IconRoundedClass) title=@str
+                     src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+            }
+            else if (Format.Method == FormatMethods.Icon)
+            {
+                var src = str;
+                <img class=@(cls ?? IconClass) title=@str 
+                     src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+            }
+            else if (Format.Method == FormatMethods.Currency)
+            {
+                <span class=@cls>@($"{value.ConvertTo<decimal>():C}")</span>
+            }
+            else if (Format.Method == FormatMethods.Bytes)
+            {
+                <span class=@cls>@TextUtils.FormatBytes(value.ConvertTo<long>())</span>
+            }
+            else if (Format.Method.StartsWith("link"))
+            {
+                if (Format.Method == FormatMethods.Link)
+                {
+                    <a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
+                }
+                else if (Format.Method == FormatMethods.LinkPhone)
+                {
+                    <a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
+                }
+                else if (Format.Method == FormatMethods.LinkEmail)
+                {
+                    var href = str;
+                    if (attrs.Remove("subject", out var oSubject) && oSubject is string subject)
+                        href = href.AddQueryParam("subject", subject.UrlEncode().Replace("+", "%20"), encode: false);
+                    if (attrs.Remove("body", out var oBody) && oBody is string body)
+                        href = href.AddQueryParam("body", body.UrlEncode().Replace("+","%20"), encode:false);
+                    <a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
+                }
+            }
+            else if (Format.Method == FormatMethods.Attachment)
+            {
+                var url = str;
+                var fileName = FileIcons.GetFileName(url)!;
+                var ext = FileIcons.GetExt(fileName);
+                var imgSrc = ext == null || FileIcons.CanPreview(url)
+                    ? BlazorConfig.Instance.AssetsPathResolver(url)
+                    : FileIcons.IconFallbackSrc(url);
+
+                <a class=@(cls ?? "flex") href=@BlazorConfig.Instance.AssetsPathResolver(url) title=@url target="_blank">
+                    <img class=@IconClass src=@imgSrc @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(imgSrc)">
+                    <span class="pl-1">@fileName</span>
+                </a>
+            }
+            else if (Format.Method != FormatMethods.Hidden)
+            {
+                <span class=@cls>@FormatValue(value)</span>
+            }
+        }
+    }
+}
+
+@if (TextUtils.IsComplexType(Value?.GetType()))
+{
+    var useValue = Value;
+    var e = Value as IEnumerable;
+    var isCollection = e != null && Value is not IDictionary;
+    var count = e != null && isCollection && IncludeCount ? EnumerableUtils.Count(e) : 0;
+
+    <span class=@CssUtils.ClassNames(@class)>
+        @if (isCollection)
+        {
+            useValue = EnumerableUtils.FirstOrDefault(e);
+            <span class="mr-2">@count</span>
+        }
+
+        @if (IncludeIcon)
+        {
+            <Icon class=@ValueIconClass Image=Value!.GetType().GetIcon() />
+        }
+        <span>
+        @if (isCollection)
+        {
+            @("[ ")
+        }
+
+        @if (!isCollection || count > 0)
+        {
+            @("{ ")
+
+            @if (TextUtils.IsComplexType(useValue?.GetType()))
+            {
+                var dict = useValue.ToObjectDictionary();
+                var keys = dict.Keys.ToList();
+                var len = Math.Min(MaxNestedFields, keys.Count);
+                for (var i = 0; i < len; i++)
+                {
+                    var key = keys[i];
+                    var val = dict[key];
+                    var value = FormatValue(val);
+                    var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+                    if (i > 0)
+                    {
+                        @(", ")
+                    }
+                    {
+                        <b class="font-medium">@key</b>
+                        @($": {str}")
+                    }
+                }
+                if (keys.Count > len)
+                {
+                        @("...")
+                    }
+                }
+                else
+                {
+                    RenderValue(useValue);
+                }
+
+            @(" }")
+        }
+
+        @if (isCollection)
+        {
+            @(" ]")
+        }
+        </span>
+    </span>
+}
+else
+{
+    RenderValue(Value);
+}

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 using static System.String;
 
@@ -55,5 +56,22 @@ namespace ServiceStack
 
             return to;
         }
+
+        public static string GetDetailedError(this ResponseStatus status)
+        {
+            var sb = StringBuilderCache.Allocate();
+            sb.AppendLine($"{status.ErrorCode} {status.Message}");
+            foreach (var error in status.Errors.OrEmpty())
+            {
+                sb.AppendLine($" - {error.FieldName}: {error.ErrorCode} {error.Message}");
+            }
+            if (!string.IsNullOrEmpty(status.StackTrace))
+            {
+                sb.AppendLine("StackTrace:");
+                sb.AppendLine(status.StackTrace);
+            }
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
     }
+
 }

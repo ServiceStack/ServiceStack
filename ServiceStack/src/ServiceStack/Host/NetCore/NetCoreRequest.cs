@@ -234,7 +234,7 @@ namespace ServiceStack.Host.NetCore
                     return files;
 
                 if (!request.HasFormContentType)                    
-                    return new IHttpFile[0];
+                    return Array.Empty<IHttpFile>();
 
                 var filesCount = request.Form.Files.Count;
                 files = new IHttpFile[filesCount];

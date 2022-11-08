@@ -262,7 +262,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public abstract class QueryBase : IQuery
+    public abstract class QueryBase : IQuery, IHasQueryParams
     {
         [DataMember(Order = 1)]
         public virtual int? Skip { get; set; }
@@ -284,6 +284,9 @@ namespace ServiceStack
 
         [DataMember(Order = 7)]
         public virtual Dictionary<string, string> Meta { get; set; }
+
+        [IgnoreDataMember]
+        public virtual Dictionary<string, string> QueryParams { get; set; }
 
         // note: the number of fields here must fit inside the reserved chunk
         // from GrpcServiceClient; see CreateMetaType

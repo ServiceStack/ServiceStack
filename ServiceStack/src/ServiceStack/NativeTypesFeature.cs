@@ -63,11 +63,9 @@ namespace ServiceStack
                     typeof(ValidateInclusiveBetweenAttribute),
                     typeof(ValidateExclusiveBetweenAttribute),
                     
-                    typeof(RefAttribute), 
                     typeof(IconAttribute),
                     typeof(InputAttribute),
                     typeof(FieldAttribute),
-                    typeof(FormatAttribute),
                     typeof(FieldCssAttribute),
                     typeof(LocodeCssAttribute),
                     typeof(ExplorerCssAttribute),
@@ -76,6 +74,9 @@ namespace ServiceStack
                     typeof(IntlNumber),
                     typeof(IntlDateTime),
                     typeof(IntlRelativeTime),
+
+                    //typeof(RefAttribute), in Ref
+                    //typeof(FormatAttribute), // in Format
                 },
                 ExportTypes = new HashSet<Type>
                 {

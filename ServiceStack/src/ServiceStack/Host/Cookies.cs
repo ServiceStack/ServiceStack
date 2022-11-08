@@ -8,6 +8,7 @@ using System;
 using System.Net;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Collections.Generic;
 
 namespace ServiceStack.Host
 {
@@ -22,6 +23,8 @@ namespace ServiceStack.Host
             this.httpRes = httpRes;
         }
 
+        public List<Cookie> Collection { get; set; } = new List<Cookie>();
+
         private bool UseSecureCookie(bool? secureOnly) =>
             (secureOnly ?? HostContext.Config?.UseSecureCookies ?? true) && httpRes.Request.IsSecureConnection;
 
@@ -35,6 +38,7 @@ namespace ServiceStack.Host
                 Secure = UseSecureCookie(secureOnly)
             };
             httpRes.SetCookie(cookie);
+            Collection.Add(cookie);
         }
 
         /// <summary>
@@ -46,6 +50,7 @@ namespace ServiceStack.Host
                 Secure = UseSecureCookie(secureOnly)
             };
             httpRes.SetCookie(cookie);
+            Collection.Add(cookie);
         }
 
         /// <summary>
@@ -59,6 +64,7 @@ namespace ServiceStack.Host
                 Secure = UseSecureCookie(null)
             };
             httpRes.SetCookie(cookie);
+            Collection.RemoveAll(x => x.Name == cookieName);
         }
     }
 

@@ -599,7 +599,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.ErrorCode, Is.EqualTo(nameof(ArgumentException)));
             }
 
             using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
@@ -634,7 +634,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.StatusDescription, Is.EqualTo(nameof(ArgumentException)));
             }
 
             using (var db = appHost.Resolve<IDbConnectionFactory>().Open())

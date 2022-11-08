@@ -113,6 +113,9 @@ namespace ServiceStack
 
             ProxyRequestFilter?.Invoke(httpReq, webReq);
 
+            if (httpReq.Response.IsClosed)
+                return;
+
             if (httpReq.ContentLength > 0)
             {
                 var inputStream = httpReq.InputStream;

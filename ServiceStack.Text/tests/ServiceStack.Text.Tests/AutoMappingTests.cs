@@ -1703,5 +1703,53 @@ public class PropertyExpressionTests
     public class InterfaceStringDict2
     {
         public IDictionary<string, string> Dict { get; set; }
-    }    
+    }
+
+    public record struct RecordImplicit1
+    {
+        public int Value { get; set; }
+        public static implicit operator RecordImplicit1(RecordImplicit2 from) => new() { Value = from.Value };
+    }
+
+    public record struct RecordImplicit2
+    {
+        public int Value { get; set; }
+        public static implicit operator RecordImplicit2(RecordImplicit1 from) => new() { Value = from.Value };
+    }
+    
+    [Test]
+    public void Converts_Record_Structs_with_implicit_casts()
+    {
+        var x = new RecordImplicit1 { Value = 42 };
+        var y = x.ConvertTo<RecordImplicit2>();
+        Assert.That(x.Value, Is.EqualTo(y.Value));
+
+        RecordImplicit1 a = new() { Value = 2 };
+        RecordImplicit2 b = a;
+        Assert.That(a.Value, Is.EqualTo(b.Value));
+    }
+
+    
+    public struct RecordStruct1
+    {
+        public int Value { get; set; }
+        public RecordStruct1(string value) => Value = int.Parse(value);
+        public override string ToString() => $"{Value}";
+    }
+
+    public struct RecordStruct2
+    {
+        public int Value { get; set; }
+        public RecordStruct2(string value) => Value = int.Parse(value);
+        public override string ToString() => $"{Value}";
+    }
+
+    [Test]
+    public void Converts_RecordStructs()
+    {
+        var x = new RecordStruct1 { Value = 42 };
+        var y = x.ConvertTo<RecordStruct2>();
+        Assert.That(x.Value, Is.EqualTo(y.Value));
+    }
+   
 }

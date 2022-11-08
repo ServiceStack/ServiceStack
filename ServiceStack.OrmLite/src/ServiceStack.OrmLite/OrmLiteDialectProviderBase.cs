@@ -815,6 +815,57 @@ namespace ServiceStack.OrmLite
             return sql;
         }
 
+        //Load Self Table.RefTableId PK
+        public virtual string GetRefSelfSql<From>(SqlExpression<From> refQ, ModelDefinition modelDef, FieldDefinition refSelf, ModelDefinition refModelDef)
+        {
+            refQ.Select(this.GetQuotedColumnName(modelDef, refSelf));
+            refQ.OrderBy().ClearLimits(); //clear any ORDER BY or LIMIT's in Sub Select's
+
+            var subSqlRef = refQ.ToMergedParamsSelectStatement();
+
+            var sqlRef = $"SELECT {GetColumnNames(refModelDef)} " +
+                         $"FROM {GetQuotedTableName(refModelDef)} " +
+                         $"WHERE {this.GetQuotedColumnName(refModelDef.PrimaryKey)} " +
+                         $"IN ({subSqlRef})";
+
+            if (OrmLiteConfig.LoadReferenceSelectFilter != null)
+                sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
+
+            return sqlRef;
+        }
+
+        public virtual string GetRefFieldSql(string subSql, ModelDefinition refModelDef, FieldDefinition refField)
+        {
+            var sqlRef = $"SELECT {GetColumnNames(refModelDef)} " +
+                         $"FROM {GetQuotedTableName(refModelDef)} " +
+                         $"WHERE {this.GetQuotedColumnName(refField)} " +
+                         $"IN ({subSql})";
+
+            if (OrmLiteConfig.LoadReferenceSelectFilter != null)
+                sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
+
+            return sqlRef;
+        }
+
+        public virtual string GetFieldReferenceSql(string subSql, FieldDefinition fieldDef, FieldReference fieldRef)
+        {
+            var refModelDef = fieldRef.RefModelDef;
+            
+            var useSubSql = $"SELECT {this.GetQuotedColumnName(fieldRef.RefIdFieldDef)} FROM "
+                + subSql.RightPart("FROM");
+
+            var pk = this.GetQuotedColumnName(refModelDef.PrimaryKey);
+            var sqlRef = $"SELECT {pk}, {this.GetQuotedColumnName(fieldRef.RefFieldDef)} " +
+                         $"FROM {GetQuotedTableName(refModelDef)} " +
+                         $"WHERE {pk} " +
+                         $"IN ({useSubSql})";
+
+            if (OrmLiteConfig.LoadReferenceSelectFilter != null)
+                sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
+
+            return sqlRef;
+        }
+
         public virtual bool PrepareParameterizedUpdateStatement<T>(IDbCommand cmd, ICollection<string> updateFields = null)
         {
             var sql = StringBuilderCache.Allocate();

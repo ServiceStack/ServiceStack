@@ -110,7 +110,9 @@ namespace ServiceStack.Auth
 
         public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
-            var coreReq = (HttpRequest)req.OriginalRequest;
+            // Called from MQ or Gateway 
+            if (req.OriginalRequest is not HttpRequest coreReq)
+                return;
             var claimsPrincipal = coreReq.HttpContext.User;
             if (claimsPrincipal.Identity?.IsAuthenticated != true)
                 return;

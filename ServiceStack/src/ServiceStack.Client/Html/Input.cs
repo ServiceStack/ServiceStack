@@ -39,6 +39,44 @@ public static class Input
         public const string Textarea = "textarea";
     }
 
+    public static Dictionary<Type, string> TypesMap { get; set; } = new()
+    {
+        [typeof(bool)] = Types.Checkbox,
+        [typeof(DateTime)] = Types.Date,
+        [typeof(DateTimeOffset)] = Types.Date,
+        [typeof(TimeSpan)] = Types.Time,
+        [typeof(byte)] = Types.Number,
+        [typeof(short)] = Types.Number,
+        [typeof(int)] = Types.Number,
+        [typeof(long)] = Types.Number,
+        [typeof(ushort)] = Types.Number,
+        [typeof(uint)] = Types.Number,
+        [typeof(ulong)] = Types.Number,
+        [typeof(float)] = Types.Number,
+        [typeof(double)] = Types.Number,
+        [typeof(decimal)] = Types.Number,
+        [typeof(string)] = Types.Text,
+        [typeof(Guid)] = Types.Text,
+        [typeof(Uri)] = Types.Text,
+#if NET6_0_OR_GREATER
+        [typeof(DateOnly)] = Types.Date,
+        [typeof(TimeOnly)] = Types.Time,
+#endif
+    };
+
+    static Dictionary<string, string>? typeNameMap;
+    public static Dictionary<string, string> TypeNameMap => typeNameMap ??= CreateInputTypes(TypesMap);
+    static Dictionary<string, string> CreateInputTypes(Dictionary<Type, string> inputTypesMap)
+    {
+        var to = new Dictionary<string, string>();
+        foreach (var entry in inputTypesMap)
+        {
+            to[entry.Key.Name] = entry.Value;
+        }
+        return to;
+    }
+
+
     public class ConfigureCss
     {
         public ConfigureCss(InputInfo input)
@@ -93,60 +131,72 @@ public static class Input
     {
         var pi = InspectUtils.PropertyFromExpression(expr) 
             ?? throw new Exception($"Could not resolve property expression from {expr}");
-        var css = pi.FirstAttribute<FieldCssAttribute>().ToCss();
+        return Create(pi);
+    }
+
+    public static InputInfo Create(PropertyInfo pi)
+    {
+        InputInfo create(string id, string? type = null)
+        {
+            var inputAttr = pi.FirstAttribute<InputAttribute>();
+            var input = inputAttr?.ToInput(c => { c.Id ??= id; c.Type ??= type; }) ?? new InputInfo(id, type);
+            input.Css = pi.FirstAttribute<FieldCssAttribute>().ToCss();
+            return input;
+        }
+
         var useType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
         if (useType.IsNumericType())
-            return new InputInfo(pi.Name, Types.Number) { Css = css };
+            return create(pi.Name, Types.Number);
         if (useType == typeof(bool))
-            return new InputInfo(pi.Name, Types.Checkbox) { Css = css };
+            return create(pi.Name, Types.Checkbox);
         if (useType == typeof(DateTime) || useType == typeof(DateTimeOffset) || useType.Name == "DateOnly")
-            return new InputInfo(pi.Name, Types.Date) { Css = css };
+            return create(pi.Name, Types.Date);
         if (useType == typeof(TimeSpan) || useType.Name == "TimeOnly")
-            return new InputInfo(pi.Name, Types.Time) { Css = css };
+            return create(pi.Name, Types.Time);
 
         if (useType.IsEnum)
         {
             return GetEnumEntries(useType, out var entries)
-                ? new InputInfo(pi.Name, Types.Select) {
-                    Css = css,
-                    AllowableEntries = entries
-                }
-                : new InputInfo(pi.Name, Types.Select) {
-                    Css = css,
-                    AllowableValues = entries.Select(x => x.Value).ToArray()
-                };
+                ? X.Apply(create(pi.Name, Types.Select), x => x.AllowableEntries = entries)
+                : X.Apply(create(pi.Name, Types.Select), x => x.AllowableValues = entries.Select(x => x.Value).ToArray());
         }
-        
-        return new InputInfo(pi.Name) { Css = css };
+
+        return create(pi.Name);
     }
 
     static FieldInfo GetEnumMember(Type type, string name) => 
         (FieldInfo) type.GetMember(name, BindingFlags.Public | BindingFlags.Static)[0];
 
-    public static KeyValuePair<string, string>[] GetEnumEntries(Type enumType) => 
-        GetEnumEntries(enumType, out var entries) ? entries : Array.Empty<KeyValuePair<string, string>>();
+    public static KeyValuePair<string, string>[] GetEnumEntries(Type enumType)
+    {
+        GetEnumEntries(enumType, out var entries);
+        return entries;
+    }
 
     public static bool GetEnumEntries(Type enumType, out KeyValuePair<string, string>[] entries)
     {
         var names = Enum.GetNames(enumType);
         var to = new List<KeyValuePair<string, string>>();
 
-        var useEntries = JsConfig.TreatEnumAsInteger || enumType.IsEnumFlags();
+        var intEnum = JsConfig.TreatEnumAsInteger || enumType.IsEnumFlags();
+        var useEntries = intEnum;
         
         for (var i = 0; i < names.Length; i++)
         {
             var name = names[i];
 
             var enumMember = GetEnumMember(enumType, name);
+            var rawValue = enumMember.GetRawConstantValue();
+            var value = Convert.ToInt64(rawValue).ToString();
             var enumDesc = GetDescription(enumMember);
             if (enumDesc != null)
             {
+                if (!intEnum)
+                    value = name;
+
                 name = enumDesc;
                 useEntries = true;
             }
-
-            var rawValue = enumMember.GetRawConstantValue();
-            var value = Convert.ToInt64(rawValue).ToString();
 
             var enumAttr = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
             if (enumAttr != null)

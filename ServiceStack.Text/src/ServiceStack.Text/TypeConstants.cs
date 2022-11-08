@@ -53,6 +53,7 @@ namespace ServiceStack
 
         public static readonly Dictionary<string, string> EmptyStringDictionary = new(0);
         public static readonly Dictionary<string, object> EmptyObjectDictionary = new();
+        public static readonly List<Dictionary<string, object>> EmptyObjectDictionaryList = new();
 
         public static readonly List<string> EmptyStringList = new(0);
         public static readonly List<long> EmptyLongList = new(0);

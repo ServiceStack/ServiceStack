@@ -131,15 +131,15 @@ App.component('AdminUsers', ({ store, routes, client }) => {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="(row,index) in results" :v-key="`r-${row.Id}`" :class="index %2 == 0 ? 'bg-white' : 'bg-gray-50'">
+                    <tr v-for="(row,index) in results" :v-key="`r-${mapGet(row,'Id')}`" :class="index %2 == 0 ? 'bg-white' : 'bg-gray-50'">
                         <td class="pl-2 pt-2 w-6">
                             <button type="button" title="Edit User" @click="routes.to({ new:null, edit:row.Id, $on:nav })"
                                     class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
                             </button>
                         </td>
-                        <td v-for="name in fieldNames" :v-key="`f-${row.Id}-${name}`" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{apiValueFmt(row[name])}}
+                        <td v-for="name in fieldNames" :v-key="`f-${mapGet(row,'Id')}-${name}`" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{apiValueFmt(mapGet(row,name))}}
                         </td>
                     </tr>
                     </tbody>

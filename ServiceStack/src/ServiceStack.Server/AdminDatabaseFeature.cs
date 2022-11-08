@@ -267,22 +267,26 @@ public class AdminDatabaseService : Service
         {
             sb.AppendLine($"WHERE {string.Join(" AND ", filters)}");
         }
-        if (!string.IsNullOrEmpty(request.OrderBy))
-        {
-            sb.AppendLine($"ORDER BY {OrmLiteUtils.OrderByFields(dialect, request.OrderBy)}");
-        }
+
+        var sqlWhere = StringBuilderCache.ReturnAndFree(sb);
 
         var take = Math.Min(request.Take.GetValueOrDefault(feature.QueryLimit), feature.QueryLimit);
 
-        var sql = StringBuilderCache.ReturnAndFree(sb);
-        var resultsSql = $"SELECT {fields} FROM {table}" + sql + Environment.NewLine + dialect.SqlLimit(request.Skip, take);
+        // OrderBy always required when paging
+        var n = Environment.NewLine;
+        var orderBy = request.OrderBy ?? (columns.FirstOrDefault(x => x.IsPrimaryKey == true) ?? columns[0]).Name;
+        var resultsSql = $"SELECT {fields} FROM {table}" + n 
+             + sqlWhere + n
+             + "ORDER BY " + OrmLiteUtils.OrderByFields(dialect, orderBy) + n 
+             + dialect.SqlLimit(request.Skip, take);
+        
         var results = await db.SqlListAsync<Dictionary<string, object?>>(resultsSql, dbParams);
         long? total = null;
 
         var includes = request.Include?.Split(',') ?? Array.Empty<string>();
         if (includes.Contains("total"))
         {
-            var totalSql = $"SELECT COUNT(*) FROM {table}" + sql;
+            var totalSql = $"SELECT COUNT(*) FROM {table}" + n + sqlWhere;
             total = await db.SqlScalarAsync<long>(totalSql, dbParams);
         }
 
@@ -303,7 +307,7 @@ public class AdminDatabaseService : Service
         return ColumnCache.GetOrAdd(key, k =>
         {
             var dialect = db.GetDialectProvider();
-            var columnSchemas = db.GetTableColumns($"SELECT * FROM {table}" + Environment.NewLine + dialect.SqlLimit(0, 1));
+            var columnSchemas = db.GetTableColumns($"SELECT * FROM {table} ORDER BY 1 {dialect.SqlLimit(0, 1)}");
             var columns = columnSchemas.Map(x =>
             {
                 var type = GenerateCrudServices.DefaultResolveColumnType(x, dialect);
@@ -315,7 +319,7 @@ public class AdminDatabaseService : Service
                     Type = type.GetMetadataPropertyType(),
                     IsValueType = underlyingType.IsValueType ? true : null,
                     IsEnum = underlyingType.IsEnum ? true : null,
-                    GenericArgs = MetadataTypesGenerator.ToGenericArgs(type),
+                    GenericArgs = type.ToGenericArgs(),
                     IsPrimaryKey = x.IsKey ? true : null,
                 };
             });

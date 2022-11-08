@@ -14,6 +14,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,13 +23,18 @@
 
     <Target Name="CombineTailwind" AfterTargets="Build" Condition=" '$(OS)' == 'Windows_NT' AND '$(MYTHZ_TOKEN)' != '' ">
         <Exec Command="echo CombineTailwind..." />
-        <CreateItem Include="./Components/Tailwind/*.razor">
+        <CreateItem Include="./Components/Tailwind/**/*.razor">
             <Output TaskParameter="Include" ItemName="TailwindHtmlFiles" />
         </CreateItem>
-        <ReadLinesFromFile File="%(TailwindHtmlFiles.FullPath)">
+        <CreateItem Include="./CssDefaults.cs">
+            <Output TaskParameter="Include" ItemName="TailwindHtmlFiles" />
+        </CreateItem>
+        <ReadLinesFromFile File="%(TailwindHtmlFiles.FullPath)"> 
             <Output TaskParameter="Lines" ItemName="TailwindHtmlFilesLines" />
         </ReadLinesFromFile>
         <WriteLinesToFile File="./dist/tailwind.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
+        <WriteLinesToFile File="../../tests/ServiceStack.Blazor.Server.Tests/Server/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
+        <WriteLinesToFile File="../../tests/UI.Gallery/Gallery.Server/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
         <Exec Command="npx tailwindcss -o tailwind.css --content=&quot;./*.html&quot; --minify" WorkingDirectory="dist" />
     </Target>
 

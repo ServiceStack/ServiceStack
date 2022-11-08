@@ -61,6 +61,18 @@ public class ModifySchemaTests : OrmLiteTestBase
         Assert.That(GetTableColumnNames(db), Does.Not.Contain(toRenameName));
         Assert.That(GetTableColumnNames(db), Does.Contain(db.GetNamingStrategy().GetColumnName(nameof(BookingV2.ToCreate))));
     }
+    
+    [Test]
+    public void Can_rename_column_typed()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<BookingV1>();
+        var toRenameName = db.GetNamingStrategy().GetColumnName(nameof(BookingV1.ToRemove));
+        Assert.That(GetTableColumnNames(db), Does.Contain(toRenameName));
+        db.RenameColumn<BookingV2>(x => x.ToCreate, nameof(BookingV1.ToRemove));
+        Assert.That(GetTableColumnNames(db), Does.Not.Contain(toRenameName));
+        Assert.That(GetTableColumnNames(db), Does.Contain(db.GetNamingStrategy().GetColumnName(nameof(BookingV2.ToCreate))));
+    }
 
     [Test]
     public void Can_modify_columns_without_Type()

@@ -36,7 +36,7 @@ namespace ServiceStack
         /// <summary>
         /// Which CRUD operations to implement AutoBatch implementations for 
         /// </summary>
-        public List<string> GenerateAutoBatchImplementationsFor { get; set; } = AutoCrudOperation.Write;
+        public List<string> GenerateAutoBatchImplementationsFor { get; set; } = Crud.Write.ToList();
 
         public Action<CrudContext> OnBeforeCreate { get; set; }
         public Func<CrudContext,Task> OnBeforeCreateAsync { get; set; }
@@ -221,7 +221,10 @@ namespace ServiceStack
         internal void ThrowPrimaryKeyRequiredForRowVersion() =>
             throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
 
-        internal static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation)
+        public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation) =>
+            Create(typeof(Table), request, db, dto, operation);
+        
+        public static CrudContext Create(Type tableType, IRequest request, IDbConnection db, object dto, string operation)
         {
             var appHost = HostContext.AppHost;
             var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));
@@ -232,12 +235,12 @@ namespace ServiceStack
                 Operation = operation,
                 Request = request ?? throw new ArgumentNullException(nameof(request)),
                 Db = db ?? throw new ArgumentNullException(nameof(db)),
-                NamedConnection = appHost.TryResolve<IAutoQueryDb>().GetDbNamedConnection(typeof(Table)), 
+                NamedConnection = appHost.TryResolve<IAutoQueryDb>().GetDbNamedConnection(tableType), 
                 Events = appHost.TryResolve<ICrudEvents>(),
                 Dto = dto,
-                ModelType = typeof(Table),
+                ModelType = tableType,
                 RequestType = requestType,
-                ModelDef = typeof(Table).GetModelMetadata(),
+                ModelDef = tableType.GetModelMetadata(),
                 ResponseType = responseType,
                 IdProp = responseProps?.GetAccessor(Keywords.Id),
                 CountProp = responseProps?.GetAccessor(Keywords.Count),
@@ -257,9 +260,10 @@ namespace ServiceStack
         public List<AutoFilterAttribute> AutoFilters { get; set; } = new();
         public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; } = new();
         public List<AutoApplyAttribute> AutoApplyAttrs { get; set; } = new();
-        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new();
-        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new();
-        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new();
+        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, ValidateAttribute> ValidateAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, InputInfo> MapInputs { get; set; } = new();
         public HashSet<string> NullableProps { get; set; } = new();
         public List<string> RemoveDtoProps { get; set; } = new();
@@ -323,10 +327,15 @@ namespace ServiceStack
                 {
                     to.Set(propName, inputAttr);
                 }
+                if (allAttrs.FirstOrDefault(x => x is ValidateAttribute) is ValidateAttribute validateAttr)
+                {
+                    to.Set(propName, validateAttr);
+                }
                 
                 // Deny resetting all properties with [Validate*] attrs without an explicit [AllowReset] attr  
                 var allowReset = allAttrs.FirstOrDefault(x => x is AllowResetAttribute);
-                var denyReset = allowReset == null && allAttrs.Any(x => x is ValidateAttribute);
+                var denyReset = allAttrs.FirstOrDefault(x => x is DenyResetAttribute) != null ||
+                                (allowReset == null && allAttrs.Any(x => x is ValidateAttribute));
                 if (denyReset)
                 {
                     to.DenyReset.Add(propName);
@@ -396,6 +405,11 @@ namespace ServiceStack
         public void Set(string propName, InputAttribute inputAttr)
         {
             MapInputs[propName] = inputAttr.ToInput();
+        }
+
+        public void Set(string propName, ValidateAttribute validateAttr)
+        {
+            ValidateAttrs[propName] = validateAttr;
         }
 
         public void Add(AutoPopulateAttribute populateAttr)
@@ -1073,15 +1087,6 @@ namespace ServiceStack
                 }
             }
 
-            foreach (var populateAttr in meta.PopulateAttrs)
-            {
-                dtoValues[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, req);
-            }
-
-            var populatorFn = AutoMappingUtils.GetPopulator(
-                typeof(Dictionary<string, object>), meta.DtoType);
-            populatorFn?.Invoke(dtoValues, dto);
-
             var resetField = meta.ModelDef.GetFieldDefinition(Keywords.Reset);
             var reset = resetField == null 
                 ? (dtoValues.TryRemove(Keywords.Reset, out var oReset)
@@ -1089,7 +1094,7 @@ namespace ServiceStack
                     : dtoValues.TryRemove(Keywords.reset, out oReset)
                         ? ValidationFilters.GetResetFields(oReset)
                         : null) 
-                  ?? ValidationFilters.GetResetFields(req.GetParam(Keywords.reset))
+                  ?? req.GetResetFields()
                 : null;
             
             if (reset != null)
@@ -1105,13 +1110,23 @@ namespace ServiceStack
                     //Note: validation rules for omitted PATCH values that aren't reset ignored in ValidationFilters.RequestFilterAsync
                     if (meta.DenyReset.Contains(field.Name))
                     {
-                        log ??= LogManager.GetLogger(GetType());
-                        log.Warn($"Reset of {field.Name} property containing validators is denied. Use [AllowReset] to override.");
+                        if (meta.ValidateAttrs.ContainsKey(fieldName))
+                        {
+                            log ??= LogManager.GetLogger(GetType());
+                            log.Warn($"Reset of {field.Name} property containing validators is denied. Use [AllowReset] to override.");
+                        }
                         continue;
                     }
                     dtoValues[field.Name] = field.FieldTypeDefaultValue;
                 }
             }
+
+            foreach (var populateAttr in meta.PopulateAttrs)
+            {
+                dtoValues[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, req);
+            }
+            var populatorFn = AutoMappingUtils.GetPopulator(typeof(Dictionary<string, object>), meta.DtoType);
+            populatorFn?.Invoke(dtoValues, dto);
 
             // Ensure RowVersion is always populated if defined on Request DTO
             if (meta.RowVersionGetter != null && !dtoValues.ContainsKey(Keywords.RowVersion))

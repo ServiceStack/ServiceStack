@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp</RootNamespace>
+        <AssemblyName>MyApp</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bogus" Version="34.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
+        <PackageReference Include="System.Memory" Version="4.5.4" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+        <ProjectReference Include="..\..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+        <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+        <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
+        <ProjectReference Include="..\Gallery.Wasm.Client\Gallery.Wasm.Client.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="App_Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ClientDir>$(MSBuildProjectDirectory)/../Gallery.Wasm.Client</ClientDir>
+        <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
+    </PropertyGroup>
+
+    <!-- Populated in release.yml with GitHub Actions secrets -->
+    <Target Name="DeployApi" AfterTargets="Build" Condition="$(DEPLOY_API) != ''">
+        <Exec Command="echo DEPLOY_API=$(DEPLOY_API)" />
+
+        <!-- Update Production settings with DEPLOY_API Blazor UI should use  -->
+        <WriteLinesToFile File="$(WwwRoot)/appsettings.Production.json" Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))" Overwrite="true" Encoding="UTF-8" />
+
+        <!-- 404.html SPA fallback (supported by GitHub Pages, Cloudflare & Netlify CDNs) -->
+        <Copy SourceFiles="$(WwwRoot)/index.html" DestinationFiles="$(WwwRoot)/404.html" />
+
+        <!-- define /api proxy routes (supported by Cloudflare or Netlify CDNs)  -->
+        <WriteLinesToFile File="$(WwwRoot)/_redirects" Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))" Overwrite="true" Encoding="UTF-8" />
+    </Target>
+    <Target Name="DeployCdn" AfterTargets="Build" Condition="$(DEPLOY_CDN) != ''">
+        <Exec Command="echo DEPLOY_CDN=$(DEPLOY_CDN)" />
+
+        <!-- Define custom domain name that CDN should use -->
+        <Exec Condition="$(DEPLOY_CDN) != ''" Command="echo $(DEPLOY_CDN) &gt; $(WwwRoot)/CNAME" />
+    </Target>
+    
+</Project>

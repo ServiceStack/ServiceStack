@@ -61,6 +61,8 @@ namespace ServiceStack
         /// </summary>
         public virtual MemoryCacheClient LocalCache => localCache ??= HostContext.AppHost.GetMemoryCacheClient(Request);
 
+        public virtual IDbConnection OpenDbConnection(string namedConnection) => HostContext.AppHost.GetDbConnection(namedConnection);
+
         private IDbConnection db;
         public virtual IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
 

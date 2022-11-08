@@ -25,7 +25,7 @@ namespace ServiceStack.Auth
         public const string Name = AuthenticateService.JwtProvider;
         public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
 
-        public static readonly HashSet<string> IgnoreForOperationTypes = new HashSet<string>
+        public static readonly HashSet<string> IgnoreForOperationTypes = new()
         {
             nameof(StaticFileHandler),
         };
@@ -33,7 +33,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Different HMAC Algorithms supported
         /// </summary>
-        public static readonly Dictionary<string, Func<byte[], byte[], byte[]>> HmacAlgorithms = new Dictionary<string, Func<byte[], byte[], byte[]>>
+        public static readonly Dictionary<string, Func<byte[], byte[], byte[]>> HmacAlgorithms = new()
         {
             { "HS256", (key, value) => {
                 using var sha = new HMACSHA256(key);
@@ -52,14 +52,14 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Different RSA Signing Algorithms supported
         /// </summary>
-        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[]>> RsaSignAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[]>>
+        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[]>> RsaSignAlgorithms = new()
         {
             { "RS256", (key, value) => RsaUtils.Authenticate(value, key, "SHA256", UseRsaKeyLength) },
             { "RS384", (key, value) => RsaUtils.Authenticate(value, key, "SHA384", UseRsaKeyLength) },
             { "RS512", (key, value) => RsaUtils.Authenticate(value, key, "SHA512", UseRsaKeyLength) },
         };
 
-        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[], bool>> RsaVerifyAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[], bool>>
+        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[], bool>> RsaVerifyAlgorithms = new()
         {
             { "RS256", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA256", UseRsaKeyLength) },
             { "RS384", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA384", UseRsaKeyLength) },
@@ -680,6 +680,22 @@ namespace ServiceStack.Auth
             var payloadBytes = payloadBase64.ToString().FromBase64UrlSafe();
             var payloadJson = MemoryProvider.Instance.FromUtf8Bytes(payloadBytes);
             return (Dictionary<string, object>) JSON.parse(payloadJson);
+        }
+
+        public static string Dump(string jwt)
+        {
+            var sb = StringBuilderCache.Allocate();
+            var header = ExtractHeader(jwt);
+            sb.AppendLine("[JWT Header]").AppendLine();
+            Inspect.printDump(header);
+            var payload = ExtractPayload(jwt);
+            if (payload.TryGetValue("iat", out var iatObj) && iatObj is int iatEpoch)
+                payload["iat"] = $"{iatEpoch} ({iatEpoch.FromUnixTime():R})";
+            if (payload.TryGetValue("exp", out var expObj) && expObj is int expEpoch)
+                payload["exp"] = $"{expEpoch} ({expEpoch.FromUnixTime():R})";
+            sb.AppendLine("[JWT Payload]");
+            Inspect.printDump(payload);
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         /// <summary>

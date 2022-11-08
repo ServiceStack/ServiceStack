@@ -5,9 +5,6 @@
 //   Demis Bellot (demis.bellot@gmail.com)
 //
 // Copyright 2017 ServiceStack, Inc. All Rights Reserved.
-//
-// Licensed under the same terms of reddis and ServiceStack: new BSD license.
-//
 
 using System;
 using System.Collections.Generic;

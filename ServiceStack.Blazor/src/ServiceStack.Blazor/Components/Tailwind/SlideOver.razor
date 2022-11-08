@@ -1,0 +1,57 @@
+﻿@inherits BlazorComponentBase
+
+<div class=@SlideOverClass aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div class="">
+        <div class="">
+            <div class=@DialogClass>
+                <div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
+
+                    <form class=@FormClass @onsubmit="CloseAsync">
+                        <!-- Header -->
+                        <div class="h-0 flex-1 overflow-y-auto">
+                            @if (ShowTitlebar)
+                            {
+                                <div class=@TitlebarClass>
+                                    <div class="flex items-start justify-between space-x-3">
+                                        <div class="space-y-1">
+                                            <h2 class=@HeadingClass id="slide-over-title">@Title</h2>
+                                            @if (SubHeading != null)
+                                            {
+                                                <div class="mt-1">
+                                                    <p class="notes text-sm text-gray-500">@((MarkupString)SubHeading)</p>
+                                                </div>
+                                            }
+                                        </div>
+                                        @if (ShowCloseButton)
+                                        {
+                                            <div class="flex h-7 items-center">
+                                                <button type="button" @onclick="CloseAsync" class=@CloseButtonClass>
+                                                    <span class="sr-only">Close panel</span>
+                                                    <!-- Heroicon name: outline/x-mark -->
+                                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            @ChildContent
+                        </div>
+
+                        @if (ShowFooter)
+                        {
+                            <div class="flex flex-shrink-0 justify-end px-4 py-4">
+                                <SecondaryButton @onclick="CloseAsync">
+                                    Close
+                                </SecondaryButton>
+                            </div>
+                        }
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

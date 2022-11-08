@@ -1,0 +1,117 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@inherits TextInputBase
+@implements IAsyncDisposable
+
+<div class=@ClassNames("flex", !Multiple ? "justify-between" : "flex-col")>
+
+    <div>
+    @if (!string.IsNullOrEmpty(UseLabel))
+    {
+         <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+    }
+        <div class="block mt-2">
+            <span class="sr-only">UseHelp ?? UseLabel</span>
+        @{
+            var cls = @ClassNames("block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
+                CssClass("block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 dark:file:bg-violet-900 file:text-violet-700 dark:file:text-violet-200 hover:file:bg-violet-100 dark:hover:file:bg-violet-800",
+                "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
+        }
+            <InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder multiple=@Multiple accept=@Accept @attributes="IncludeAttributes" OnChange="@OnChange" />
+        @if (HasErrorField)
+        {
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <!-- Heroicon name: solid/exclamation-circle -->
+                <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+        }
+        </div>
+
+    @if (HasErrorField)
+    {
+        <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+    }
+    else if (!string.IsNullOrEmpty(UseHelp))
+    {
+        <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+    }
+    </div>
+
+    @if (!Multiple)
+    {
+        var src = imgSrc();
+        if (!string.IsNullOrEmpty(src))
+        {
+            <div class="shrink-0 cursor-pointer" title=@(!isDataUri(src) ? src : "")>
+                <img @onclick="openFile" class=@ClassNames("h-16 w-16", imgCls(src)) alt=@($"Current {UseLabel}")
+                     src=@(FallbackSrc ?? BlazorConfig.Instance.AssetsPathResolver(src))
+                     @onerror="() => FallbackSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+            </div>
+        }
+    }
+    else if (FileList.Count > 0)
+    {
+        <div class="mt-3">
+            <table class="w-full">
+            @foreach (var file in FileList)
+            {
+                var filePath = file.FilePath ?? "";
+                var src = FileIcons.FilePathUri(filePath)!;
+                <tr>
+                    <td class="pr-6 align-bottom pb-2">
+                        <div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
+                            <img src=@((FallbackSrcMap.TryGetValue(src, out var fallback) ? fallback : null) ?? BlazorConfig.Instance.AssetsPathResolver(src))
+                                 class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
+                                 @onerror="() => FallbackSrcMap[src] = BlazorConfig.Instance.FallbackPathResolver(src)">
+                            @if (!isDataUri(filePath))
+                            {
+                                <a href=@BlazorConfig.Instance.AssetsPathResolver(filePath) target="_blank" class="overflow-hidden">
+                                    @file.FileName
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="overflow-hidden">@file.FileName</span>
+                            }
+                        </div>
+                    </td>
+                    <td class="align-top pb-2 whitespace-nowrap">
+                    @if (file.ContentLength > 0)
+                    {
+                        <span class="text-gray-500 dark:text-gray-400 text-sm bg-white dark:bg-black">
+                            @TextUtils.FormatBytes(file.ContentLength)
+                        </span>
+                    }
+                    </td>
+                </tr>
+            }
+            </table>
+        </div>
+    }
+
+</div>
+
+@code {
+    string? imgSrc()
+    {
+        var inputFile = inputFiles?.FirstOrDefault();
+        if (inputFile != null)
+            return inputFile.FilePath;
+
+        var filePath = Value ?? Values?.FirstOrDefault() ?? File?.FilePath ?? Files?.FirstOrDefault()?.FilePath;
+        if (filePath != null)
+        {
+            var resolvedFilePath = BlazorConfig.Instance.AssetsPathResolver(filePath);
+            return FileIcons.FilePathUri(resolvedFilePath);
+        }
+
+        return null;
+    }
+
+    bool isDataUri(string? src) => src == null ? false : src.StartsWith("data:") || src.StartsWith("blob:");
+
+    string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
+        ? ""
+        : "rounded-full object-cover";
+}

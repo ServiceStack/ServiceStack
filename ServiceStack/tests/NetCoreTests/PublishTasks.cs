@@ -126,7 +126,7 @@ public class PublishTasks
 
     class AppHost : AppSelfHostBase
     {
-        public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService)) {}
+        public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(TestService)) {}
         public override void Configure(Container container)
         {
             Metadata.ForceInclude = new() {
@@ -233,6 +233,12 @@ public class PublishTasks
         libFs.CopyFrom(distFs.GetAllFiles());
     }
 }
+
+public class TestService : Service
+{
+}
+
+
 
 public static class TypeScriptDefinitionUtils
 {

@@ -30,6 +30,7 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
             }
             let opTypes = Object.values(allTypesMap)
                 .filter(type => !type.isValueType && type.name.toLowerCase() !== 'string')
+            
             return Forms.groupTypes(opTypes)
         },
         inheritedTypes(typeRef) {
@@ -57,17 +58,31 @@ App.component('ApiDetails', ({ store, routes, breakpoints }) => {
 function addReferencedTypes(allTypesMap, type) {
     if (!type) return
     if (allTypesMap[type.name]) return
-    allTypesMap[type.name] = type
+    
+    /**: don't add generic types to allTypesMap, only generic arg references */
+    let genericDef = type.name.indexOf('`') >= 0 
+    if (!genericDef) {
+        allTypesMap[type.name] = type
+    }
+    if (type.genericArgs) {
+        type.genericArgs.forEach(argType => {
+            addReferencedTypes(allTypesMap, Meta.TypesMap[argType])
+        })
+    }
     if (type.inherits) {
         addReferencedTypes(allTypesMap, Meta.TypesMap[type.inherits.name])
         if (type.inherits.genericArgs) {
-            type.inherits.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, Meta.TypesMap[argType]))
+            type.inherits.genericArgs.forEach(argType => {
+                addReferencedTypes(allTypesMap, Meta.TypesMap[argType])
+            })
         }
     }
     Forms.typeProperties(type).forEach(prop => {
         addReferencedTypes(allTypesMap, Meta.TypesMap[prop.type])
         if (type.genericArgs) {
-            type.genericArgs.forEach(argType => addReferencedTypes(allTypesMap, Meta.TypesMap[argType]))
+            type.genericArgs.forEach(argType => {
+                addReferencedTypes(allTypesMap, Meta.TypesMap[argType])
+            })
         }
     })
     return allTypesMap

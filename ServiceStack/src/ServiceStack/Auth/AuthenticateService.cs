@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -338,6 +339,9 @@ namespace ServiceStack.Auth
                             authResponse.Permissions ??= (manageRoles != null
                                 ? (await manageRoles.GetPermissionsAsync(session.UserAuthId).ConfigAwait())?.ToList()
                                 : session.Permissions);
+
+                            if (authResponse.Roles?.Contains(RoleNames.Admin) == true)
+                                authResponse.Roles.AddDistinctRange(HostContext.Metadata.GetAllRoles());
                         }
                         if (authFeature.IncludeOAuthTokensInAuthenticateResponse && AuthRepositoryAsync != null)
                         {

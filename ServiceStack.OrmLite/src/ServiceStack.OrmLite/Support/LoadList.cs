@@ -88,57 +88,14 @@ namespace ServiceStack.OrmLite.Support
             }
         }
 
-        protected string GetRefSelfSql(ModelDefinition modelDef, FieldDefinition refSelf, ModelDefinition refModelDef)
-        {
-            //Load Self Table.RefTableId PK
-            var refQ = q.Clone();
-            refQ.Select(dialectProvider.GetQuotedColumnName(modelDef, refSelf));
-            refQ.OrderBy().ClearLimits(); //clear any ORDER BY or LIMIT's in Sub Select's
+        protected string GetRefSelfSql(ModelDefinition modelDef, FieldDefinition refSelf, ModelDefinition refModelDef) => 
+            dialectProvider.GetRefSelfSql(q.Clone(), modelDef, refSelf, refModelDef);
 
-            var subSqlRef = refQ.ToMergedParamsSelectStatement();
+        protected string GetRefFieldSql(ModelDefinition refModelDef, FieldDefinition refField) =>
+            dialectProvider.GetRefFieldSql(subSql, refModelDef, refField);
 
-            var sqlRef = $"SELECT {dialectProvider.GetColumnNames(refModelDef)} " +
-                         $"FROM {dialectProvider.GetQuotedTableName(refModelDef)} " +
-                         $"WHERE {dialectProvider.GetQuotedColumnName(refModelDef.PrimaryKey)} " +
-                         $"IN ({subSqlRef})";
-
-            if (OrmLiteConfig.LoadReferenceSelectFilter != null)
-                sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
-
-            return sqlRef;
-        }
-
-        protected string GetRefFieldSql(ModelDefinition refModelDef, FieldDefinition refField)
-        {
-            var sqlRef = $"SELECT {dialectProvider.GetColumnNames(refModelDef)} " +
-                         $"FROM {dialectProvider.GetQuotedTableName(refModelDef)} " +
-                         $"WHERE {dialectProvider.GetQuotedColumnName(refField)} " +
-                         $"IN ({subSql})";
-
-            if (OrmLiteConfig.LoadReferenceSelectFilter != null)
-                sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
-
-            return sqlRef;
-        }
-
-        protected string GetFieldReferenceSql(FieldDefinition fieldDef, FieldReference fieldRef)
-        {
-            var refModelDef = fieldRef.RefModelDef;
-            
-            var useSubSql = $"SELECT {dialectProvider.GetQuotedColumnName(fieldRef.RefIdFieldDef)} FROM "
-                + subSql.RightPart("FROM");
-
-            var pk = dialectProvider.GetQuotedColumnName(refModelDef.PrimaryKey);
-            var sqlRef = $"SELECT {pk}, {dialectProvider.GetQuotedColumnName(fieldRef.RefFieldDef)} " +
-                         $"FROM {dialectProvider.GetQuotedTableName(refModelDef)} " +
-                         $"WHERE {pk} " +
-                         $"IN ({useSubSql})";
-
-            if (OrmLiteConfig.LoadReferenceSelectFilter != null)
-                sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
-
-            return sqlRef;
-        }
+        protected string GetFieldReferenceSql(FieldDefinition fieldDef, FieldReference fieldRef) =>
+            dialectProvider.GetFieldReferenceSql(subSql, fieldDef, fieldRef);
 
         protected Dictionary<object, object> CreateRefMap()
         {
@@ -149,17 +106,14 @@ namespace ServiceStack.OrmLite.Support
 
         public class CaseInsensitiveObjectComparer : IEqualityComparer<object>
         {
-            public static CaseInsensitiveObjectComparer Instance = new CaseInsensitiveObjectComparer();
+            public static CaseInsensitiveObjectComparer Instance = new();
 
             public new bool Equals(object x, object y)
             {
                 if (x == null && y == null) return true;
                 if (x == null || y == null) return false;
 
-                var xStr = x as string;
-                var yStr = y as string;
-
-                return xStr != null && yStr != null
+                return x is string xStr && y is string yStr
                     ? xStr.Equals(yStr, StringComparison.OrdinalIgnoreCase)
                     : x.Equals(y);
             }

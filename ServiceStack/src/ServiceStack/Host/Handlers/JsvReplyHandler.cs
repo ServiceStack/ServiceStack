@@ -27,7 +27,7 @@ namespace ServiceStack.Host.Handlers
 
             try
             {
-                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwait();
+                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwaitNetCore();
 
                 await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
                 if (httpRes.IsClosed)

@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -352,7 +353,7 @@ namespace ServiceStack
         }
 
         public static bool AllowConnection(this IRequest req, bool requireSecureConnection) =>
-            !requireSecureConnection || req.IsSecureConnection || req.RequestAttributes.HasFlag(RequestAttributes.MessageQueue);
+            !requireSecureConnection || req.IsSecureConnection || req.RequestAttributes.HasFlag(RequestAttributes.MessageQueue) || req.IsInProcessRequest();
 
         public static void CompletedAuthentication(this IRequest req)
         {
@@ -377,6 +378,24 @@ namespace ServiceStack
             if (request.Verb is HttpMethods.Post or HttpMethods.Put && request.FormData != null)
                 request.FormData.AddToMap(map, exclude);
 
+            return map;
+        }
+
+        public static Dictionary<string, string> GetDtoQueryParams(this IRequest request) =>
+            GetDtoQueryParams(request, HostContext.AppHost?.Config.IgnoreWarningsOnPropertyNames);
+        public static Dictionary<string, string> GetDtoQueryParams(this IRequest request, HashSet<string> exclude)
+        {
+            var map = new Dictionary<string, string>();
+            if (request.Dto is IHasQueryParams hasQueryParams && hasQueryParams.QueryParams?.Count > 0)
+            {
+                foreach (var param in hasQueryParams.QueryParams)
+                {
+                    if (exclude != null && exclude.Contains(param.Key))
+                        continue;
+
+                    map[param.Key] = param.Value;
+                }
+            }
             return map;
         }
     }

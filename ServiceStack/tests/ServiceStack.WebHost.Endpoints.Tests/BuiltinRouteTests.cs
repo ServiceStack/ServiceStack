@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class BuiltinPathAppHost : AppSelfHostBase
         {
             public BuiltinPathAppHost()
-                : base(typeof(BuiltinPathAppHost).Name, typeof(BuiltinRouteServices).Assembly) {}
+                : base(nameof(BuiltinPathAppHost), typeof(BuiltinRouteServices).Assembly) {}
 
             public override void Configure(Container container)
             {

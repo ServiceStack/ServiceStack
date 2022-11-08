@@ -12,7 +12,7 @@ namespace ServiceStack
 {
     [Serializable]
     public class WebServiceException
-        : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible
+        : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible, IHasResponseStatus
     {
         public static ILog log = LogManager.GetLogger(typeof(WebServiceException));
 
@@ -85,10 +85,26 @@ namespace ServiceStack
                 {
                     if (log.IsDebugEnabled)
                         log.Debug($"Could not parse Error ResponseStatus {ResponseDto?.GetType().Name}", ex);
-                }        
+                }
+
+                if (string.IsNullOrEmpty(responseStatus?.ErrorCode))
+                {
+                    if (InnerException != null)
+                    {
+                        responseStatus = InnerException is not IResponseStatusConvertible // avoid potential infinite recursion
+                            ? ErrorUtils.CreateError(InnerException)
+                            : ErrorUtils.CreateError(InnerException.Message, InnerException.GetType().Name);
+                    }
+                    else
+                    {
+                        var message = StatusDescription ?? base.Message ?? ((HttpStatusCode)StatusCode).ToString().SplitCamelCase();
+                        responseStatus = ErrorUtils.CreateError(message, errorCode:message);
+                    }
+                }
 
                 return responseStatus;
             }
+            set => responseStatus = value;
         }
 
         private ResponseStatus ToBuiltInResponseStatus(object statusDto)
@@ -107,9 +123,9 @@ namespace ServiceStack
 
         public List<ResponseError> GetFieldErrors() => ResponseStatus?.Errors ?? new List<ResponseError>();
 
-        public bool IsAny400() => StatusCode >= 400 && StatusCode < 500;
+        public bool IsAny400() => StatusCode is >= 400 and < 500;
 
-        public bool IsAny500() => StatusCode >= 500 && StatusCode < 600;
+        public bool IsAny500() => StatusCode is >= 500 and < 600;
 
         public override string ToString()
         {

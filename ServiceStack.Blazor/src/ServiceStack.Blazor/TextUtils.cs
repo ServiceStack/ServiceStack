@@ -1,6 +1,10 @@
 using System.Collections;
 using System.Globalization;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
+using System.Text.Json;
+using ServiceStack.DataAnnotations;
+using ServiceStack.Html;
 using ServiceStack.Text;
 
 namespace ServiceStack.Blazor;
@@ -197,7 +201,7 @@ public static class TextUtils
             }
             else if (item.GetType().IsValueType)
             {
-                var v = item.ToString() ?? "";
+                var v = ToModelString(item);
                 to.Add(KeyValuePair.Create(v, v));
             }
             else
@@ -255,7 +259,7 @@ public static class TextUtils
                         {
                             row.Add(string.Empty);
                         }
-                        else if (!value.IsComplexType())
+                        else if (!IsComplexType(value?.GetType()))
                         {
                             row.Add(GetScalarText(value));
                         }
@@ -289,8 +293,9 @@ public static class TextUtils
         }
     }
 
-    public static string TextDump(object target, TextDumpOptions options)
+    public static string TextDump(object? target, TextDumpOptions options)
     {
+        if (target == null) return string.Empty;
         if (options == null)
             options = new TextDumpOptions();
 
@@ -301,7 +306,7 @@ public static class TextUtils
         {
             target = ConvertDumpType(target);
 
-            if (!target.IsComplexType())
+            if (!IsComplexType(target?.GetType()))
                 return GetScalarText(target);
 
             var headerStyle = options.HeaderStyle;
@@ -340,7 +345,7 @@ public static class TextUtils
 
                         keys.Add(StyleText(kvp.Key, headerStyle) ?? "");
 
-                        var field = !kvp.Value.IsComplexType()
+                        var field = !IsComplexType(kvp.Value?.GetType())
                             ? GetScalarText(kvp.Value)
                             : TextDump(kvp.Value, options);
 
@@ -376,7 +381,7 @@ public static class TextUtils
                 }
                 else
                 {
-                    if (!first.IsComplexType())
+                    if (!IsComplexType(first?.GetType()))
                     {
                         foreach (var o in objs)
                         {
@@ -419,7 +424,7 @@ public static class TextUtils
                         {
                             foreach (var o in objs)
                             {
-                                if (!o.IsComplexType())
+                                if (!IsComplexType(o?.GetType()))
                                 {
                                     values.Add(GetScalarText(o));
                                 }
@@ -473,37 +478,42 @@ public static class TextUtils
         }
         return len;
     }
-
-    private static string GetScalarText(object target)
+        
+    public static string GetScalarText(object? value)
     {
-        if (target == null || target.ToString() == string.Empty)
+        if (value == null || value.ToString() == string.Empty)
             return string.Empty;
 
-        if (target is string s)
+        if (value is string s)
             return FormatString(s);
 
-        if (target is decimal dec)
+        if (value is decimal dec)
         {
             var isMoney = dec == Math.Floor(dec * 100);
             if (isMoney)
                 return FormatCurrency(dec);
         }
 
-        if (target.GetType().IsNumericType() || target is bool)
-            return target.ToString() ?? "";
+        if (value.GetType().IsNumericType() || value is bool)
+            return value.ToString() ?? "";
 
-        if (target is DateTime d)
+        if (value is DateTime d)
             return FormatDate(d);
 
-        if (target is TimeSpan t)
+        if (value is TimeSpan t)
             return FormatTime(t);
 
-        return target.ToString() ?? "";
+        return value.ToString() ?? "";
     }
 
-    internal static bool IsComplexType(this object? first)
+    public static bool IsComplexType(this Type? type)
     {
-        return !(first == null || first is string || first.GetType().IsValueType);
+        return type != null && !type.IsValueType && type != typeof(string) && type != typeof(Uri);
+    }
+
+    public static bool IsComputed(this System.Reflection.PropertyInfo? prop)
+    {
+        return prop != null && prop.AllAttributes().Any(x => x.GetType() == typeof(ComputedAttribute) || x.GetType() == typeof(CustomSelectAttribute));
     }
 
     internal static object ConvertDumpType(object target)
@@ -629,5 +639,157 @@ public static class TextUtils
     {
         list.Add(item);
         return list;
+    }
+
+    public static string ToModelString(this object? from)
+    {
+        if (from == null)
+            return "";
+
+        if (from is DateTime dt)
+            return dt.ToString("yyyy-MM-dd");
+        if (from is DateTimeOffset dto)
+            return dto.ToString("yyyy-MM-dd");
+        if (from is DateOnly dtonly)
+            return dtonly.ToString("yyyy-MM-dd");
+
+        return from.ConvertTo<string>();
+    }
+
+    /// <summary>
+    /// Used to convert Typed model into an object dictionary for usage in DynamicInput
+    /// </summary>
+    public static Dictionary<string, object> ToModelDictionary<T>(this T? from)
+    {
+        var isNew = from == null;
+        if (isNew)
+            return new Dictionary<string, object>();
+
+        var obj = from.ToObjectDictionary();
+        return obj;
+    }
+
+    /// <summary>
+    /// Used to convert DynamicInput dictionary to a Typed model
+    /// </summary>
+    public static T FromModelDictionary<T>(this Dictionary<string, object> from) => (T)FromModelDictionary(from, typeof(T));
+
+    /// <summary>
+    /// Used to convert DynamicInput dictionary to a Typed model
+    /// </summary>
+    public static object FromModelDictionary(this Dictionary<string, object> from, Type type)
+    {
+        var to = from.FromObjectDictionary(type);
+        return to;
+    }
+
+    /// <summary>
+    /// Create a Form Layout from a declarative annotated DTO definition
+    /// </summary>
+    public static List<InputInfo> CreateFormLayout<T>(this MetadataType metadataType) => CreateFormLayout(metadataType, typeof(T));
+    public static List<InputInfo> CreateFormLayout(this MetadataType metadataType, Type type) => CreateFormLayout(metadataType, type, null);
+    public static List<InputInfo> CreateFormLayout(this MetadataType metadataType, Type type, AppMetadata? appMetadata)
+    {
+        var typeProps = TypeProperties.Get(type).PropertyMap;
+        metadataType.Type ??= type;
+
+        MetadataType? dataModel = null;
+        if (appMetadata != null)
+        {
+            var op = appMetadata.Api.Operations.FirstOrDefault(x => x.Request.Name == metadataType.Name);
+            if (op != null)
+            {
+                dataModel = appMetadata.GetType(op.DataModel);
+            }
+        }
+
+        var formLayout = new List<InputInfo>();
+        foreach (var prop in metadataType.Properties)
+        {
+            prop.PropertyInfo ??= typeProps.TryGetValue(prop.Name, out var pi) ? pi.PropertyInfo : null;
+            if (prop.PropertyInfo == null)
+                continue;
+
+            if (prop.IsPrimaryKey == true)
+                continue;
+
+            if (prop.Input == null)
+                prop.PopulateInput(Input.Create(prop.PropertyInfo));
+
+            var input = prop.Input!;
+            if (appMetadata != null)
+            {
+                if (input.Type == Input.Types.File && prop.UploadTo != null)
+                {
+                    var uploadLocation = appMetadata.Plugins.FilesUpload?.Locations.FirstOrDefault(x => x.Name == prop.UploadTo);
+                    if (uploadLocation?.AllowExtensions != null)
+                    {
+                        input.Accept ??= string.Join(',', uploadLocation.AllowExtensions.Map(x => x.StartsWith('.') ? x : $".{x}"));
+                    }
+                }
+                if (dataModel != null)
+                {
+                    var dataModelProp = dataModel.Property(prop.Name);
+                    prop.Ref ??= dataModelProp?.Ref;
+                }
+            }
+
+            formLayout.Add(input);
+        }
+        return formLayout;
+    }
+
+    public static string Truncate(string str, int maxLength)
+    {
+        return str.Length > maxLength
+            ? str.SafeSubstring(0, maxLength) + "..."
+            : str;
+    }
+
+    public static string TruncateJson(string json, int maxLength)
+    {
+        var s = Truncate(json, maxLength);
+        return s.EndsWith("...")
+            ? s + (s.StartsWith('{') ? " }" : s.StartsWith('[') ? " ]" : "")
+            : s;
+    }
+
+    public static object? FirstOrDefault(IEnumerable items)
+    {
+        if (items == null)
+            return null;
+        foreach (var item in items)
+        {
+            return item;
+        }
+        return null;
+    }
+
+    public static string FormatJson(object? o)
+    {
+        return o == null ? "" : System.Text.Json.JsonSerializer.Serialize(o, BlazorConfig.Instance.FormatJsonOptions);
+    }
+
+    public static string Dump(object? o) => TypeSerializer.Dump(o);
+
+    public static string Pluralize<T>(string word, ICollection<T>? collection) => Pluralize(word, collection?.Count ?? 0);
+    public static string Pluralize(string word, int count)
+    {
+        return count + " " + (count == 1
+            ? word
+            : Words.Pluralize(word));
+    }
+
+    const int k = 1024;
+    public static string[] ByteSizes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
+
+    public static string FormatBytes(long bytes, int decimals = 2)
+    {
+        if (bytes == 0)
+            return "0 bytes";
+        
+        var dm = decimals < 0 ? 0 : decimals;
+        var i = (int) Math.Floor(Math.Log(bytes) / Math.Log(k));
+        return (bytes / Math.Pow(k, i)).ToString("N" + dm) + ' ' + ByteSizes[i % ByteSizes.Length];
     }
 }

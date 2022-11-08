@@ -120,26 +120,19 @@ namespace ServiceStack.Auth
         {
             hasInitSchema = true;
 
-            EachDb(db =>
-            {
-                db.CreateTableIfNotExists<TUserAuth>();
-                db.CreateTableIfNotExists<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.CreateTableIfNotExists<UserAuthRole>();
-            });
+            EachDb(InitSchema);
+        }
+
+        public override void DropSchema()
+        {
+            EachDb(DropSchema);
+            hasInitSchema = false;
         }
 
         public override void DropAndReCreateTables()
         {
             hasInitSchema = true;
-
-            EachDb(db =>
-            {
-                db.DropAndCreateTable<TUserAuth>();
-                db.DropAndCreateTable<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.DropAndCreateTable<UserAuthRole>();
-            });
+            EachDb(DropAndReCreateTables);
         }
 
         public override void InitApiKeySchema()
@@ -147,6 +140,14 @@ namespace ServiceStack.Auth
             EachDb(db =>
             {
                 db.CreateTableIfNotExists<ApiKey>();
+            });
+        }
+
+        public override void DropApiKeySchema()
+        {
+            EachDb(db =>
+            {
+                db.DropTable<ApiKey>();
             });
         }
 
@@ -174,44 +175,67 @@ namespace ServiceStack.Auth
         public virtual void InitSchema()
         {
             hasInitSchema = true;
-            Exec(db =>
-            {
-                db.CreateTableIfNotExists<TUserAuth>();
-                db.CreateTableIfNotExists<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.CreateTableIfNotExists<UserAuthRole>();
-            });
+            Exec(InitSchema);
+        }
+        
+        public virtual void InitSchema(IDbConnection db)
+        {
+            db.CreateTableIfNotExists<TUserAuth>();
+            db.CreateTableIfNotExists<TUserAuthDetails>();
+            if (UseDistinctRoleTables)
+                db.CreateTableIfNotExists<UserAuthRole>();
+            hasInitSchema = true;
+        }
+
+        public virtual void DropSchema()
+        {
+            Exec(DropSchema);
+            hasInitSchema = false;
+        }
+        public virtual void DropSchema(IDbConnection db)
+        {
+            if (UseDistinctRoleTables)
+                db.DropTable<UserAuthRole>();
+            db.DropTable<TUserAuthDetails>();
+            db.DropTable<TUserAuth>();
+            hasInitSchema = false;
         }
 
         public virtual void DropAndReCreateTables()
         {
             hasInitSchema = true;
-            Exec(db =>
-            {
-                db.DropAndCreateTable<TUserAuth>();
-                db.DropAndCreateTable<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.DropAndCreateTable<UserAuthRole>();
+            Exec(DropAndReCreateTables);
+        }
+        public virtual void DropAndReCreateTables(IDbConnection db)
+        {
+            db.DropAndCreateTable<TUserAuth>();
+            db.DropAndCreateTable<TUserAuthDetails>();
+            if (UseDistinctRoleTables)
+                db.DropAndCreateTable<UserAuthRole>();
+        }
+
+        public virtual bool InitCheck()
+        {
+            return hasInitSchema = Exec(db => {
+                return db.TableExists<TUserAuth>() && db.TableExists<TUserAuthDetails>()
+                    && (!UseDistinctRoleTables || db.TableExists<UserAuthRole>());
             });
         }
 
-        public virtual IUserAuth CreateUserAuth(IUserAuth newUser, string password)
+        public virtual IUserAuth CreateUserAuth(IUserAuth newUser, string password) => Exec(db => CreateUserAuth(db, newUser, password));
+        public virtual IUserAuth CreateUserAuth(IDbConnection db, IUserAuth newUser, string password)
         {
             newUser.ValidateNewUser(password);
+            AssertNoExistingUser(db, newUser);
 
-            return Exec(db =>
-            {
-                AssertNoExistingUser(db, newUser);
+            newUser.PopulatePasswordHashes(password);
+            newUser.CreatedDate = DateTime.UtcNow;
+            newUser.ModifiedDate = newUser.CreatedDate;
 
-                newUser.PopulatePasswordHashes(password);
-                newUser.CreatedDate = DateTime.UtcNow;
-                newUser.ModifiedDate = newUser.CreatedDate;
+            db.Save((TUserAuth)newUser);
 
-                db.Save((TUserAuth)newUser);
-
-                newUser = db.SingleById<TUserAuth>(newUser.Id);
-                return newUser;
-            });
+            newUser = db.SingleById<TUserAuth>(newUser.Id);
+            return newUser;
         }
 
         protected virtual void AssertNoExistingUser(IDbConnection db, IUserAuth newUser, IUserAuth exceptForExistingUser = null)
@@ -232,44 +256,43 @@ namespace ServiceStack.Auth
             }
         }
 
-        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
+        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password) =>
+            Exec(db => UpdateUserAuth(db, existingUser, newUser, password));
+
+        public virtual IUserAuth UpdateUserAuth(IDbConnection db, IUserAuth existingUser, IUserAuth newUser, string password)
         {
             newUser.ValidateNewUser(password);
 
-            return Exec(db =>
-            {
-                AssertNoExistingUser(db, newUser, existingUser);
+            AssertNoExistingUser(db, newUser, existingUser);
 
-                newUser.Id = existingUser.Id;
-                newUser.PopulatePasswordHashes(password, existingUser);
-                newUser.CreatedDate = existingUser.CreatedDate;
-                newUser.ModifiedDate = DateTime.UtcNow;
+            newUser.Id = existingUser.Id;
+            newUser.PopulatePasswordHashes(password, existingUser);
+            newUser.CreatedDate = existingUser.CreatedDate;
+            newUser.ModifiedDate = DateTime.UtcNow;
 
-                db.Save((TUserAuth)newUser);
+            db.Save((TUserAuth)newUser);
 
-                return newUser;
-            });
+            return newUser;
         }
 
-        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser) =>
+            Exec(db => UpdateUserAuth(db, existingUser, newUser));
+
+        public virtual IUserAuth UpdateUserAuth(IDbConnection db, IUserAuth existingUser, IUserAuth newUser)
         {
             newUser.ValidateNewUser();
+            AssertNoExistingUser(db, newUser, existingUser);
 
-            return Exec(db =>
-            {
-                AssertNoExistingUser(db, newUser, existingUser);
+            newUser.Id = existingUser.Id;
+            newUser.PasswordHash = existingUser.PasswordHash;
+            newUser.Salt = existingUser.Salt;
+            newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
+            newUser.CreatedDate = existingUser.CreatedDate;
+            newUser.ModifiedDate = DateTime.UtcNow;
 
-                newUser.Id = existingUser.Id;
-                newUser.PasswordHash = existingUser.PasswordHash;
-                newUser.Salt = existingUser.Salt;
-                newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
-                newUser.CreatedDate = existingUser.CreatedDate;
-                newUser.ModifiedDate = DateTime.UtcNow;
+            db.Save((TUserAuth)newUser);
 
-                db.Save((TUserAuth)newUser);
-
-                return newUser;
-            });
+            return newUser;
         }
 
         public virtual IUserAuth GetUserAuthByUserName(string userNameOrEmail)
@@ -336,36 +359,38 @@ namespace ServiceStack.Auth
                 q.OrderByDescending(orderByField);
         }
 
-        public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
+        public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null) =>
+            Exec(db => GetUserAuths(db, orderBy, skip, take));
+
+        public List<IUserAuth> GetUserAuths(IDbConnection db, string orderBy = null, int? skip = null, int? take = null)
         {
-            return Exec(db => {
-                var q = db.From<TUserAuth>();
-                SetOrderBy(q, orderBy);
-                if (skip != null || take != null)
-                    q.Limit(skip, take);
-                return db.Select(q).ConvertAll(x => (IUserAuth)x);
-            });
+            var q = db.From<TUserAuth>();
+            SetOrderBy(q, orderBy);
+            if (skip != null || take != null)
+                q.Limit(skip, take);
+            return db.Select(q).ConvertAll(x => (IUserAuth)x);
         }
 
-        public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null)
+        public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null) =>
+            Exec(db => SearchUserAuths(db, query, orderBy, skip, take));
+
+        public List<IUserAuth> SearchUserAuths(IDbConnection db, string query, string orderBy = null, int? skip = null, int? take = null)
         {
-            return Exec(db => {
-                var q = db.From<TUserAuth>();
-                if (!string.IsNullOrEmpty(query))
-                {
-                    q.Where(x => x.UserName.Contains(query) ||
-                                 x.PrimaryEmail.Contains(query) ||
-                                 x.Email.Contains(query) ||
-                                 x.DisplayName.Contains(query) ||
-                                 x.Company.Contains(query));
-                }
-                SetOrderBy(q, orderBy);
-                if (skip != null || take != null)
-                    q.Limit(skip, take);
-                return db.Select(q).ConvertAll(x => (IUserAuth)x);
-            });
+            var q = db.From<TUserAuth>();
+            if (!string.IsNullOrEmpty(query))
+            {
+                q.Where(x => x.UserName.Contains(query) ||
+                             x.PrimaryEmail.Contains(query) ||
+                             x.Email.Contains(query) ||
+                             x.DisplayName.Contains(query) ||
+                             x.Company.Contains(query));
+            }
+            SetOrderBy(q, orderBy);
+            if (skip != null || take != null)
+                q.Limit(skip, take);
+            return db.Select(q).ConvertAll(x => (IUserAuth)x);
         }
-        
+
         public virtual bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
             userAuth = GetUserAuthByUserName(userName);
@@ -402,19 +427,18 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public virtual void DeleteUserAuth(string userAuthId)
+        public virtual void DeleteUserAuth(string userAuthId) => Exec(db => DeleteUserAuth(db, userAuthId));
+        public virtual void DeleteUserAuth(IDbConnection db, string userAuthId)
         {
-            Exec(db => {
-                using var trans = db.OpenTransaction();
-                var userId = int.Parse(userAuthId);
+            using var trans = db.OpenTransaction();
+            var userId = int.Parse(userAuthId);
 
-                db.Delete<TUserAuth>(x => x.Id == userId);
-                db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
-                if (UseDistinctRoleTables)
-                    db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
+            db.Delete<TUserAuth>(x => x.Id == userId);
+            db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
+            if (UseDistinctRoleTables)
+                db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
 
-                trans.Commit();
-            });
+            trans.Commit();
         }
 
         public virtual void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
@@ -431,37 +455,40 @@ namespace ServiceStack.Auth
             session.PopulateSession(userAuth, this);
         }
 
-        public virtual IUserAuth GetUserAuth(string userAuthId)
+        public virtual IUserAuth GetUserAuth(string userAuthId) => Exec(db => GetUserAuth(db, userAuthId));
+
+        public virtual IUserAuth GetUserAuth(IDbConnection db, string userAuthId)
         {
             if (string.IsNullOrEmpty(userAuthId))
                 throw new ArgumentNullException(nameof(userAuthId));
-            
-            return Exec(db => db.SingleById<TUserAuth>(int.Parse(userAuthId)));
+
+            return db.SingleById<TUserAuth>(int.Parse(userAuthId));
         }
 
-        public virtual void SaveUserAuth(IAuthSession authSession)
+        public virtual void SaveUserAuth(IAuthSession authSession) => Exec(db => SaveUserAuth(db, authSession));
+
+        public virtual void SaveUserAuth(IDbConnection db, IAuthSession authSession)
         {
             if (authSession == null)
                 throw new ArgumentNullException(nameof(authSession));
 
-            Exec(db =>
-            {
-                var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? db.SingleById<TUserAuth>(int.Parse(authSession.UserAuthId))
-                    : authSession.ConvertTo<TUserAuth>();
+            var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
+                ? db.SingleById<TUserAuth>(int.Parse(authSession.UserAuthId))
+                : authSession.ConvertTo<TUserAuth>();
 
-                if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
-                    userAuth.Id = int.Parse(authSession.UserAuthId);
+            if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
+                userAuth.Id = int.Parse(authSession.UserAuthId);
 
-                userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default(DateTime))
-                    userAuth.CreatedDate = userAuth.ModifiedDate;
+            userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.CreatedDate == default(DateTime))
+                userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                db.Save(userAuth);
-            });
+            db.Save(userAuth);
         }
 
-        public virtual void SaveUserAuth(IUserAuth userAuth)
+        public virtual void SaveUserAuth(IUserAuth userAuth) => Exec(db => SaveUserAuth(db, userAuth));
+
+        public virtual void SaveUserAuth(IDbConnection db, IUserAuth userAuth)
         {
             if (userAuth == null)
                 throw new ArgumentNullException(nameof(userAuth));
@@ -470,19 +497,15 @@ namespace ServiceStack.Auth
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            Exec(db =>
-            {
-                db.Save((TUserAuth) userAuth);
-            });
+            db.Save((TUserAuth)userAuth);
         }
 
-        public virtual List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
+        public virtual List<IUserAuthDetails> GetUserAuthDetails(string userAuthId) => Exec(db => GetUserAuthDetails(db, userAuthId));
+
+        public virtual List<IUserAuthDetails> GetUserAuthDetails(IDbConnection db, string userAuthId)
         {
             var id = int.Parse(userAuthId);
-            return Exec(db =>
-            {
-                return db.Select<TUserAuthDetails>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
-            });
+            return db.Select<TUserAuthDetails>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
         }
 
         public virtual IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
@@ -555,15 +578,13 @@ namespace ServiceStack.Auth
             });
         }
 
-        public virtual void Clear()
+        public virtual void Clear() => Exec(Clear);
+        public virtual void Clear(IDbConnection db)
         {
-            Exec(db =>
-            {
-                db.DeleteAll<TUserAuth>();
-                db.DeleteAll<TUserAuthDetails>();
-                if (UseDistinctRoleTables)
-                    db.DeleteAll<UserAuthRole>();
-            });
+            db.DeleteAll<TUserAuth>();
+            db.DeleteAll<TUserAuthDetails>();
+            if (UseDistinctRoleTables)
+                db.DeleteAll<UserAuthRole>();
         }
 
         string AssertUserAuthId(string userAuthId)
@@ -579,14 +600,24 @@ namespace ServiceStack.Auth
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
-                return userAuth?.Roles ?? TypeConstants.EmptyStringList;;
+                return userAuth?.Roles ?? TypeConstants.EmptyStringList; ;
             }
             else
             {
-                return Exec(db =>
-                {
-                    return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Role != null).ConvertAll(x => x.Role);
-                });
+                return Exec(db => GetRoles(db, userAuthId));
+            }
+        }
+
+        public virtual ICollection<string> GetRoles(IDbConnection db, string userAuthId)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(db, userAuthId);
+                return userAuth?.Roles ?? TypeConstants.EmptyStringList; ;
+            }
+            else
+            {
+                return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Role != null).ConvertAll(x => x.Role);
             }
         }
 
@@ -596,14 +627,25 @@ namespace ServiceStack.Auth
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
-                return userAuth?.Permissions ?? TypeConstants.EmptyStringList;;
+                return userAuth?.Permissions ?? TypeConstants.EmptyStringList; ;
             }
             else
             {
-                return Exec(db =>
-                {
-                    return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null).ConvertAll(x => x.Permission);
-                });
+                return Exec(db => GetPermissions(db, userAuthId));
+            }
+        }
+
+        public virtual ICollection<string> GetPermissions(IDbConnection db, string userAuthId)
+        {
+            AssertUserAuthId(userAuthId);
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(db, userAuthId);
+                return userAuth?.Permissions ?? TypeConstants.EmptyStringList; ;
+            }
+            else
+            {
+                return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null).ConvertAll(x => x.Permission);
             }
         }
 
@@ -659,8 +701,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                return Exec(db =>
-                {
+                return Exec(db => {
                     return db.Count<UserAuthRole>(q =>
                         q.UserAuthId == int.Parse(userAuthId) && q.Role == role) > 0;
                 });
@@ -682,14 +723,13 @@ namespace ServiceStack.Auth
             }
             else
             {
-                return Exec(db =>
-                {
+                return Exec(db => {
                     return db.Count<UserAuthRole>(q =>
                         q.UserAuthId == int.Parse(userAuthId) && q.Permission == permission) > 0;
                 });
             }
         }
-        
+
         public virtual void AssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
         {
             var userAuth = GetUserAuth(userAuthId);
@@ -717,45 +757,75 @@ namespace ServiceStack.Auth
             }
             else
             {
-                Exec(db =>
+                Exec(db => AssignRoles(db, userAuthId, roles, permissions));
+            }
+        }
+
+        public virtual void AssignRoles(IDbConnection db, string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            var userAuth = GetUserAuth(db, userAuthId);
+            if (!UseDistinctRoleTables)
+            {
+                if (!roles.IsEmpty())
                 {
-                    var now = DateTime.UtcNow;
-                    var userRoles = db.Select<UserAuthRole>(q => q.UserAuthId == userAuth.Id);
-
-                    if (!roles.IsEmpty())
+                    foreach (var missingRole in roles.Where(x => userAuth.Roles == null || !userAuth.Roles.Contains(x)))
                     {
-                        var roleSet = userRoles.Where(x => x.Role != null).Select(x => x.Role).ToSet();
-                        foreach (var role in roles)
+                        userAuth.Roles ??= new List<string>();
+                        userAuth.Roles.Add(missingRole);
+                    }
+                }
+
+                if (!permissions.IsEmpty())
+                {
+                    foreach (var missingPermission in permissions.Where(x => userAuth.Permissions == null || !userAuth.Permissions.Contains(x)))
+                    {
+                        userAuth.Permissions ??= new List<string>();
+                        userAuth.Permissions.Add(missingPermission);
+                    }
+                }
+
+                SaveUserAuth(db, userAuth);
+            }
+            else
+            {
+                var now = DateTime.UtcNow;
+                var userRoles = db.Select<UserAuthRole>(q => q.UserAuthId == userAuth.Id);
+
+                if (!roles.IsEmpty())
+                {
+                    var roleSet = userRoles.Where(x => x.Role != null).Select(x => x.Role).ToSet();
+                    foreach (var role in roles)
+                    {
+                        if (!roleSet.Contains(role))
                         {
-                            if (!roleSet.Contains(role))
+                            db.Insert(new UserAuthRole
                             {
-                                db.Insert(new UserAuthRole {
-                                    UserAuthId = userAuth.Id,
-                                    Role = role,
-                                    CreatedDate = now,
-                                    ModifiedDate = now,
-                                });
-                            }
+                                UserAuthId = userAuth.Id,
+                                Role = role,
+                                CreatedDate = now,
+                                ModifiedDate = now,
+                            });
                         }
                     }
+                }
 
-                    if (!permissions.IsEmpty())
+                if (!permissions.IsEmpty())
+                {
+                    var permissionSet = userRoles.Where(x => x.Permission != null).Select(x => x.Permission).ToSet();
+                    foreach (var permission in permissions)
                     {
-                        var permissionSet = userRoles.Where(x => x.Permission != null).Select(x => x.Permission).ToSet();
-                        foreach (var permission in permissions)
+                        if (!permissionSet.Contains(permission))
                         {
-                            if (!permissionSet.Contains(permission))
+                            db.Insert(new UserAuthRole
                             {
-                                db.Insert(new UserAuthRole {
-                                    UserAuthId = userAuth.Id,
-                                    Permission = permission,
-                                    CreatedDate = now,
-                                    ModifiedDate = now,
-                                });
-                            }
+                                UserAuthId = userAuth.Id,
+                                Permission = permission,
+                                CreatedDate = now,
+                                ModifiedDate = now,
+                            });
                         }
                     }
-                });
+                }
             }
         }
 
@@ -774,27 +844,40 @@ namespace ServiceStack.Auth
             }
             else
             {
-                Exec(db =>
-                {
-                    if (!roles.IsEmpty())
-                    {
-                        db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && roles.Contains(q.Role));
-                    }
-                    if (!permissions.IsEmpty())
-                    {
-                        db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && permissions.Contains(q.Permission));
-                    }
-                });
+                Exec(db => UnAssignRoles(db, userAuthId, roles, permissions));
             }
         }
 
-        public virtual void InitApiKeySchema()
+        public virtual void UnAssignRoles(IDbConnection db, string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
         {
-            Exec(db => 
+            var userAuth = GetUserAuth(db, userAuthId);
+            if (!UseDistinctRoleTables)
             {
-                db.CreateTableIfNotExists<ApiKey>();
-            });
+                roles.Each(x => userAuth.Roles.Remove(x));
+                permissions.Each(x => userAuth.Permissions.Remove(x));
+
+                if (roles != null || permissions != null)
+                {
+                    SaveUserAuth(db, userAuth);
+                }
+            }
+            else
+            {
+                if (!roles.IsEmpty())
+                {
+                    db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && roles.Contains(q.Role));
+                }
+                if (!permissions.IsEmpty())
+                {
+                    db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && permissions.Contains(q.Permission));
+                }
+            }
         }
+
+        public virtual void InitApiKeySchema() => Exec(InitApiKeySchema);
+        public virtual void InitApiKeySchema(IDbConnection db) => db.CreateTableIfNotExists<ApiKey>();
+        public virtual void DropApiKeySchema() => Exec(DropApiKeySchema);
+        public virtual void DropApiKeySchema(IDbConnection db) => db.DropTable<ApiKey>();
 
         public bool ApiKeyExists(string apiKey)
         {

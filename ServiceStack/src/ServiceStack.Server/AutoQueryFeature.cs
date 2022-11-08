@@ -759,7 +759,7 @@ namespace ServiceStack
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
                 var reqParams = Request.IsInProcessRequest()
-                    ? new Dictionary<string, string>()
+                    ? Request.GetDtoQueryParams()
                     : Request.GetRequestParams();
                 q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
             }
@@ -776,7 +776,7 @@ namespace ServiceStack
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
                 var reqParams = Request.IsInProcessRequest()
-                    ? new Dictionary<string, string>()
+                    ? Request.GetDtoQueryParams()
                     : Request.GetRequestParams();
                 q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
             }
@@ -793,7 +793,7 @@ namespace ServiceStack
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
                 var reqParams = Request.IsInProcessRequest()
-                    ? new Dictionary<string, string>()
+                    ? Request.GetDtoQueryParams()
                     : Request.GetRequestParams();
                 q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
             }
@@ -810,7 +810,7 @@ namespace ServiceStack
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
                 var reqParams = Request.IsInProcessRequest()
-                    ? new Dictionary<string, string>()
+                    ? Request.GetDtoQueryParams()
                     : Request.GetRequestParams();
                 q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
             }

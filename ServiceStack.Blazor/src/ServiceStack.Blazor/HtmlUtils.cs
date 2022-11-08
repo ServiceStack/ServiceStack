@@ -70,7 +70,7 @@ public static class HtmlUtils
         {
             target = TextUtils.ConvertDumpType(target);
 
-            if (!target.IsComplexType())
+            if (!TextUtils.IsComplexType(target?.GetType()))
                 return GetScalarHtml(target);
 
             var parentClass = options.ClassName;
@@ -131,7 +131,7 @@ public static class HtmlUtils
                                 sb.Append(TextUtils.StyleText(kvp.Key, headerStyle)?.HtmlEncode());
                                 sb.Append("</").Append(headerTag).Append('>');
                                 sb.Append("<td>");
-                                if (!kvp.Value.IsComplexType())
+                                if (!TextUtils.IsComplexType(kvp.Value?.GetType()))
                                 {
                                     sb.Append(GetScalarHtml(kvp.Value));
                                 }
@@ -145,7 +145,7 @@ public static class HtmlUtils
                             }
                         }
                     }
-                    else if (!first.IsComplexType())
+                    else if (!TextUtils.IsComplexType(first?.GetType()))
                     {
                         foreach (var o in objs)
                         {
@@ -171,7 +171,7 @@ public static class HtmlUtils
                             {
                                 sb.Append("<tr>");
 
-                                if (!o.IsComplexType())
+                                if (!TextUtils.IsComplexType(o?.GetType()))
                                 {
                                     sb.Append("<td>");
                                     sb.Append(GetScalarHtml(o));
@@ -256,13 +256,13 @@ public static class HtmlUtils
 
                         sbRows.Append("<td>");
 
-                        if (!value.IsComplexType())
+                        if (!TextUtils.IsComplexType(value?.GetType()))
                         {
                             sbRows.Append(GetScalarHtml(value));
                         }
                         else
                         {
-                            var htmlValue = HtmlDump(value, options);
+                            var htmlValue = HtmlDump(value!, options);
                             sbRows.Append(htmlValue.AsString());
                         }
 

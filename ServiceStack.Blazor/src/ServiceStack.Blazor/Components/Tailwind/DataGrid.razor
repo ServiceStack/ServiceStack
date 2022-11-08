@@ -1,0 +1,66 @@
+﻿@typeparam Model
+@inherits UiComponentBase
+
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+@if (Items.Count > 0)
+{
+    @if (ShowFilters != null)
+    {
+        <div class="relative">
+            <FilterColumn Column=@ShowFilters TopLeft=@ShowFiltersTopLeft Done="OnFilterDone" Saved="OnFilterSave" />
+        </div>
+    }
+
+    <div @ref="refResults" class=@ClassNames(GridClass, @class)>
+        <div class=@Grid2Class>
+            <div class=@Grid3Class>
+                <div class=@Grid4Class>
+                    <table class=@TableClass>
+                        <thead class=@TableHeadClass>
+                            <tr class=@TableHeaderRowClass>
+
+                                @foreach (var column in VisibleColumns)
+                                {
+                                    var allowFiltering = AllowFiltering && column.AllowFiltering && !TextUtils.IsComplexType(column.FieldType) && !column.IsComputed;
+                                    var isOpen = column == ShowFilters;
+                                    <td class=@ClassNames(column.VisibleFrom != null ? $"hidden {column.VisibleFrom.Value.ToBreakpointCellClass()}" : null,
+                                        column.HeaderClass ?? ClassNames(TableHeaderCellClass, isOpen ? "text-gray-900 dark:text-gray-50" : "text-gray-500 dark:text-gray-400", column.@class))>
+
+                                        @if (!allowFiltering)
+                                        {
+                                            <div class="flex justify-between items-center">
+                                                @column.HeaderTemplate
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div @onclick="e => OnHeaderSelected(e, column)" class="flex justify-between items-center cursor-pointer hover:text-gray-900 dark:hover:text-gray-50">
+                                                @column.HeaderTemplate
+                                                <SettingsIcons Column=@column IsOpen=isOpen />
+                                            </div>
+                                        }
+                                    </td>
+                                }
+
+                            </tr>
+                        </thead>
+                        <tbody class=@TableBodyClass>
+                            @{ var i = 0; }
+                            @foreach (var item in Items)
+                            {
+                                <tr @key="item.GetHashCode()"
+                                    class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(item), AllowSelection), RowClass?.Invoke(item, i++))
+                                    @onclick="e => OnRowSelected(e, item)">
+                                    @foreach (var column in VisibleColumns)
+                                    {
+                                        @column.CellTemplate(item)
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}

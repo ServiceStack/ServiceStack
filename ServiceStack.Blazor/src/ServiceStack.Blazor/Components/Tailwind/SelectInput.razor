@@ -4,10 +4,10 @@
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
+    <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
 }
-    <select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md", 
-        CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
+    <select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600",
+            CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
                invalid:"text-red-900 focus:ring-red-500 focus:border-red-500")) 
             @bind="CurrentValue" @attributes="IncludeAttributes">
             @ChildContent

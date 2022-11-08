@@ -310,26 +310,9 @@ namespace ServiceStack
         /// <summary>
         /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton
         /// </summary>
-        public static IRequest GetOrCreateRequest(IHttpContextAccessor httpContextAccessor)
-        {
-            return GetOrCreateRequest(httpContextAccessor?.HttpContext);
-        }
+        public static IRequest GetOrCreateRequest(IHttpContextAccessor httpContextAccessor) => httpContextAccessor.GetOrCreateRequest();
 
-        public static IRequest GetOrCreateRequest(HttpContext httpContext)
-        {
-            if (httpContext != null)
-            {
-                if (httpContext.Items.TryGetValue(Keywords.IRequest, out var oRequest))
-                    return (IRequest)oRequest;
-
-                var req = httpContext.ToRequest();
-                httpContext.Items[Keywords.IRequest] = req;
-
-                return req;
-            }
-
-            return null;
-        }
+        public static IRequest GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
 
         protected override void Dispose(bool disposing)
         {
@@ -445,6 +428,71 @@ namespace ServiceStack
             ((IServiceProvider)req).GetServices(type);
 
         public static IEnumerable<T> GetServices<T>(this IRequest req) => ((IServiceProvider)req).GetServices<T>();
+
+        /// <summary>
+        /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton
+        /// </summary>
+        public static IRequest GetOrCreateRequest(this IHttpContextAccessor httpContextAccessor)
+        {
+            return GetOrCreateRequest(httpContextAccessor?.HttpContext);
+        }
+
+        public static IRequest GetOrCreateRequest(this HttpContext httpContext)
+        {
+            if (httpContext != null)
+            {
+                if (httpContext.Items.TryGetValue(Keywords.IRequest, out var oRequest))
+                    return (IRequest)oRequest;
+
+                var req = httpContext.ToRequest();
+                httpContext.Items[Keywords.IRequest] = req;
+
+                return req;
+            }
+            return null;
+        }
+        
+#if NET6_0_OR_GREATER
+    public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null, bool setHostDir = true)
+    {
+        var holdCurrentDir = Environment.CurrentDirectory;
+        var host = new HostBuilder()
+            .ConfigureHostConfiguration(hostConfig => {
+                if (hostDir == null)
+                {
+                    // Allow local appsettings.json to override HostDir 
+                    var localConfigPath = Path.GetFullPath("appsettings.json");
+                    if (File.Exists(localConfigPath))
+                    {
+                        var appSettings = JSON.parse(File.ReadAllText(localConfigPath));
+                        if (appSettings is Dictionary<string, object> map &&
+                            map.TryGetValue("HostDir", out var oHostDir) && oHostDir is string s)
+                        {
+                            hostDir = Path.GetFullPath(s);
+                            // File based connection to relative App_Data/db.sqlite requires cd
+                            if (setHostDir)
+                                Directory.SetCurrentDirectory(hostDir);
+                        }
+                    }
+                }
+                
+                hostDir ??= Path.GetDirectoryName(config.GetType().Assembly.Location);
+                if (!Directory.Exists(hostDir)) return;
+                hostConfig.SetBasePath(hostDir);
+                var devAppSettingsPath = Path.Combine(hostDir, "appsettings.Development.json");
+                hostConfig.AddJsonFile(devAppSettingsPath, optional:true, reloadOnChange:false);
+                var appSettingsPath = Path.Combine(hostDir, "appsettings.json");
+                hostConfig.AddJsonFile(appSettingsPath, optional:true, reloadOnChange:false);
+            })
+            .ConfigureWebHost(builder => {
+                config.Configure(builder);
+            }).Build();
+
+        var service = host.Services.GetRequiredService<T>();
+        return service;
+    }
+#endif
+        
     }
 }
 

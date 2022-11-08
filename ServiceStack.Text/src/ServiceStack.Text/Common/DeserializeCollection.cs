@@ -27,7 +27,7 @@ namespace ServiceStack.Text.Common
         {
             var collectionInterface = type.GetTypeWithGenericInterfaceOf(typeof(ICollection<>));
             if (collectionInterface == null)
-                throw new ArgumentException(string.Format("Type {0} is not of type ICollection<>", type.FullName));
+                throw new ArgumentException($"Type {type.FullName} is not of type ICollection<>");
 
             //optimized access for regularly used types
             if (type.HasInterface(typeof(ICollection<string>)))
@@ -76,8 +76,7 @@ namespace ServiceStack.Text.Common
             return CollectionExtensions.CreateAndPopulate(createType, items);
         }
 
-        private static Dictionary<Type, ParseCollectionDelegate> ParseDelegateCache
-            = new Dictionary<Type, ParseCollectionDelegate>();
+        private static Dictionary<Type, ParseCollectionDelegate> ParseDelegateCache = new();
 
         private delegate object ParseCollectionDelegate(ReadOnlySpan<char> value, Type createType, ParseStringSpanDelegate parseFn);
 

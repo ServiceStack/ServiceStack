@@ -59,7 +59,7 @@ public static partial class HttpUtils
         if (url == null)
             url = "";
             
-        if (key == null || val == null)
+        if (key == null)
             return url;
             
         var qsPos = url.IndexOf('?');
@@ -75,6 +75,10 @@ public static partial class HttpUtils
                 if (endPos == -1)
                     endPos = url.Length;
 
+                // remove if null
+                if (val == null)
+                    return url.Substring(0, existingKeyPos);
+
                 var newUrl = url.Substring(0, existingKeyPos + key.Length + 1)
                              + "="
                              + val.UrlEncode()
@@ -82,6 +86,10 @@ public static partial class HttpUtils
                 return newUrl;
             }
         }
+
+        if (val == null)
+            return url;
+
         var prefix = qsPos == -1 ? "?" : "&";
         return url + prefix + key + "=" + val.UrlEncode();
     }

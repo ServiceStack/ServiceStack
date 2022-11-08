@@ -200,5 +200,7 @@ namespace ServiceStack.Validation
                 : o is IEnumerable<string> e
                     ? e
                     : throw new NotSupportedException($"'{Keywords.Reset}' is not a list of field names");
+
+        public static IEnumerable<string> GetResetFields(this IRequest req) => GetResetFields(req.GetParam(Keywords.reset));
     }
 }

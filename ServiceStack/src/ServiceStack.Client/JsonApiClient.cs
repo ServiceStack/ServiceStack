@@ -23,11 +23,15 @@ public interface IHasJsonApiClient
 {
     public JsonApiClient? Client { get; }
 }
+public interface IServiceGatewayFormAsync
+{
+    Task<TResponse> SendFormAsync<TResponse>(object requestDto, MultipartFormDataContent formData, CancellationToken token = default);
+}
 
 /// <summary>
 /// JsonApiClient designed to work with 
 /// </summary>
-public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceClientMeta
+public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceClientMeta, IServiceGatewayFormAsync
 {
     public static string DefaultBasePath { get; set; } = "/api/";
     public const string DefaultHttpMethod = HttpMethods.Post;
@@ -1589,8 +1593,21 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                 Diagnostics.Client.WriteRequestAfter(id, httpReq, response);
         }
     }
-    
-    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token=default)
+
+    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(string method, string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token = default)
+    {
+        try
+        {
+            var result = await SendFormAsync<TResponse>(method, relativeOrAbsoluteUrl, request, token).ConfigAwait();
+            return ApiResult.Create(result);
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult<TResponse>();
+        }
+    }
+
+    public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(string relativeOrAbsoluteUrl, MultipartFormDataContent request, CancellationToken token = default)
     {
         try
         {
@@ -1602,7 +1619,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return ex.ToApiResult<TResponse>();
         }
     }
-    
+
     public async Task<ApiResult<TResponse>> ApiFormAsync<TResponse>(IReturn<TResponse> request, MultipartFormDataContent body, CancellationToken token=default)
     {
         try
@@ -1617,7 +1634,9 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             return ex.ToApiResult<TResponse>();
         }
     }
-    
+
+    public Task<TResponse> SendFormAsync<TResponse>(object requestDto, MultipartFormDataContent formData, CancellationToken token = default) =>
+        SendFormAsync<TResponse>(ServiceClientUtils.GetHttpMethod(requestDto.GetType()) ?? HttpMethods.Post, requestDto.GetType().ToApiUrl(), formData, token);
 }
 
 

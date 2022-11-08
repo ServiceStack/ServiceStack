@@ -410,9 +410,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ulong RowVersion { get; set; }
     }
     
-    public class PatchRockstar : RockstarBase, IPatchDb<RockstarAuto>, IReturn<EmptyResponse>
+    public class PatchRockstar : IPatchDb<RockstarAuto>, IReturn<EmptyResponse>
     {
         public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime? DateDied { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
     }
 
     public class UpdateRockstarAdhocNonDefaults : IUpdateDb<RockstarAuto>, IReturn<EmptyResponse>
@@ -427,8 +433,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public DateTime DateOfBirth { get; set; }
         [AutoDefault(Eval = "utcNow")]
         public DateTime? DateDied { get; set; }
-        [AutoUpdate(AutoUpdateStyle.NonDefaults), AutoDefault(Value = LivingStatus.Dead)]
-        public LivingStatus LivingStatus { get; set; }
+        [AutoUpdate(AutoUpdateStyle.NonDefaults), AutoDefault(Value = Tests.LivingStatus.Dead)]
+        public LivingStatus? LivingStatus { get; set; }
     }
     
     public class DeleteRockstar : IDeleteDb<Rockstar>, IReturn<EmptyResponse>

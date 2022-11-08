@@ -1,4 +1,4 @@
-﻿name: MyGet Pack
+﻿name: A MyGet Pack
 
 on: workflow_dispatch
 

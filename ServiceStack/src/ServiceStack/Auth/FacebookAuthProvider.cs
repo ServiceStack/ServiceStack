@@ -19,8 +19,18 @@ namespace ServiceStack.Auth
         public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
         public static string[] DefaultFields = { "id", "name", "first_name", "last_name", "email" };
 
-        public string AppId { get; set; }
-        public string AppSecret { get; set; }
+        public string AppId
+        {
+            get => ConsumerKey;
+            set => ConsumerKey = value;
+        }
+
+        public string AppSecret
+        {
+            get => ConsumerSecret;
+            set => ConsumerSecret = value;
+        }
+        
         public string[] Permissions { get; set; }
         public string[] Fields { get; set; }
 

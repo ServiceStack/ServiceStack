@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -39,7 +38,7 @@ namespace ServiceStack
         public Func<string, string> IpMask { get; set; } = CrudEventsUtils.Identity;
         public Func<T, CrudContext, T> EventFilter { get; set; }
         
-        public T ToEvent(CrudContext context)
+        public virtual T ToEvent(CrudContext context)
         {
             var urnValue = context.Id?.ToString() ?? context.Operation;
             if (urnValue.IndexOf(':') >= 0)
@@ -79,11 +78,9 @@ namespace ServiceStack
 
         public Func<object, IRequest, bool> ExecuteFilter { get; set; }
         
-        public List<Action<IRequest, IResponse, object>> RequestFilters { get; } = 
-            new List<Action<IRequest, IResponse, object>>();
+        public List<Action<IRequest, IResponse, object>> RequestFilters { get; } = new();
         
-        List<Func<IRequest, IResponse, object, Task>> RequestFiltersAsync { get; } =
-            new List<Func<IRequest, IResponse, object, Task>>();
+        List<Func<IRequest, IResponse, object, Task>> RequestFiltersAsync { get; } = new();
 
         public CrudEventsExecutor(IAppHost appHost)
             : this(appHost.ServiceController, appHost.Metadata.GetOperationType)
@@ -130,12 +127,9 @@ namespace ServiceStack
 
                 var session = result.Session;
 
-                if (session.UserAuthName == null)
-                    session.UserAuthName = session.UserName ?? session.Email;
-                if (session.Roles == null)
-                    session.Roles = result.Roles?.ToList();
-                if (session.Permissions == null)
-                    session.Permissions = result.Permissions?.ToList();
+                session.UserAuthName ??= session.UserName ?? session.Email;
+                session.Roles ??= result.Roles?.ToList();
+                session.Permissions ??= result.Permissions?.ToList();
 
                 req.Items[Keywords.Session] = session;
             }
@@ -202,7 +196,7 @@ namespace ServiceStack
         /// <summary>
         /// Record an CrudEvent Sync
         /// </summary>
-        public void Record(CrudContext context)
+        public virtual void Record(CrudContext context)
         {
             if (!ShouldRecord(context))
                 return;
@@ -220,7 +214,7 @@ namespace ServiceStack
         /// <summary>
         /// Record an CrudEvent Async
         /// </summary>
-        public Task RecordAsync(CrudContext context)
+        public virtual Task RecordAsync(CrudContext context)
         {
             if (!ShouldRecord(context))
                 return Task.CompletedTask;
@@ -238,7 +232,7 @@ namespace ServiceStack
         /// <summary>
         /// Returns all rows in CrudEvent Table, lazily paging in batches of OrmLiteCrudEvents.BatchSize
         /// </summary>
-        public IEnumerable<T> GetEvents(IDbConnection db)
+        public virtual IEnumerable<T> GetEvents(IDbConnection db)
         {
             List<T> results;
             long lastId = 0;
@@ -260,7 +254,7 @@ namespace ServiceStack
             } while (results.Count > 0);
         }
 
-        public IEnumerable<T> GetEvents(IDbConnection db, string table, string id=null)
+        public virtual IEnumerable<T> GetEvents(IDbConnection db, string table, string id=null)
         {
             var q = db.From<T>()
                 .Where(x => x.Model == table);
@@ -275,7 +269,7 @@ namespace ServiceStack
         /// <summary>
         /// Create CrudEvent if it doesn't already exist
         /// </summary>
-        public void InitSchema()
+        public virtual void InitSchema()
         {
             if (!ExcludePrimaryDb)
             {
@@ -292,7 +286,7 @@ namespace ServiceStack
         /// <summary>
         /// Delete all entries in CrudEvent Table
         /// </summary>
-        public void Clear()
+        public virtual void Clear()
         {
             if (!ExcludePrimaryDb)
             {
@@ -310,7 +304,7 @@ namespace ServiceStack
         /// WARNING: DROP and RE-CREATE CrudEvent
         /// </summary>
         /// <returns></returns>
-        public OrmLiteCrudEvents<T> Reset()
+        public virtual OrmLiteCrudEvents<T> Reset()
         {
             if (!ExcludePrimaryDb)
             {

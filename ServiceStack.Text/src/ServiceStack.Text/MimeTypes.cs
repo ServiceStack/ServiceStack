@@ -19,6 +19,7 @@ public static class MimeTypes
     public const string Jsv = "application/jsv";
     public const string JsvText = "text/jsv";
     public const string Csv = "text/csv";
+    public const string Pdf = "application/pdf";
     public const string ProtoBuf = "application/x-protobuf";
     public const string JavaScript = "text/javascript";
     public const string WebAssembly = "application/wasm";
@@ -352,6 +353,9 @@ public static class MimeTypes
                 return "application/vnd.openxmlformats-officedocument.presentationml.template";
             case "ppsx":
                 return "application/vnd.openxmlformats-officedocument.presentationml.slideshow";
+
+            case "pdf":
+                return Pdf;
 
             case "mdb":
                 return "application/vnd.ms-access";

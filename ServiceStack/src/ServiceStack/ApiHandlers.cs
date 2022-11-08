@@ -40,8 +40,21 @@ public static class ApiHandlers
             var pathInfo = req.PathInfo;
             if (pathInfo.StartsWith(useApiPath))
             {
+                // Add support for overriding content type with ext, e.g. .csv
                 var apiName = pathInfo.LastRightPart('/');
-                return new GenericHandler(contentType, requestAttributes, feature) {
+                var useContentType = contentType;
+                var useRequestAttrs = requestAttributes;
+                var useFeature = feature;
+                if (apiName.IndexOf('.') >= 0)
+                {
+                    var ext = apiName.RightPart('.');
+                    apiName = apiName.LeftPart('.');
+                    useContentType = MimeTypes.GetMimeType(ext);
+                    useRequestAttrs = RequestAttributes.Reply | ContentFormat.GetEndpointAttributes(useContentType);
+                    useFeature = useContentType.ToFeature();
+                }
+
+                return new GenericHandler(useContentType, useRequestAttrs, useFeature) {
                     RequestName = apiName
                 };
             }

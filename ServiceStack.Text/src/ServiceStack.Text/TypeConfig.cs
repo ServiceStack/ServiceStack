@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 
 namespace ServiceStack.Text
 {
@@ -93,8 +91,8 @@ namespace ServiceStack.Text
             var excludedProperties = JsConfig<T>.ExcludePropertyNames ?? TypeConstants.EmptyStringArray;
 
             var properties = excludedProperties.Length > 0
-                ? config.Type.GetSerializableProperties().Where(x => !excludedProperties.Contains(x.Name))
-                : config.Type.GetSerializableProperties();
+                ? config.Type.GetAllSerializableProperties().Where(x => !excludedProperties.Contains(x.Name))
+                : config.Type.GetAllSerializableProperties();
             Properties = properties.Where(x => x.GetIndexParameters().Length == 0).ToArray();
 
             Fields = config.Type.GetSerializableFields().ToArray();
