@@ -393,6 +393,9 @@ namespace ServiceStack
 
         public bool UseSecureCookies { get; set; }
         public bool UseHttpOnlyCookies { get; set; }
+        /// <summary>
+        /// Configure cookies to use SameSite=[null:Lax,true:Strict,false:None]
+        /// </summary>
         public bool? UseSameSiteCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool AddRedirectParamsToQueryString { get; set; }
