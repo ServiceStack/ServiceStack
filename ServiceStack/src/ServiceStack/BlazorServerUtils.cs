@@ -72,7 +72,8 @@ public class GatewayRequestFactory : IGatewayRequestFactory
     public GatewayRequestFactory(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
     public IRequest Create()
     {
-        return GatewayRequest.Create(HttpContextAccessor.GetOrCreateRequest());
+        var httpReq = HttpContextAccessor.GetOrCreateRequest() ?? new BasicHttpRequest();
+        return GatewayRequest.Create(httpReq);
     }
 }
 
@@ -91,26 +92,27 @@ public class CookieHandler : DelegatingHandler, IDisposable
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var req = (IHttpRequest)HttpContextAccessor.GetOrCreateRequest();
-        var httpCookies = req.Cookies.Values.ToList();
-        var cookieHeader = httpCookies?.Count > 0
-            ? string.Join("; ", httpCookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"))
-            : null;
+        if (HttpContextAccessor.GetOrCreateRequest() is IHttpRequest req)
+        {
+            var httpCookies = req.Cookies.Values.ToList();
+            var cookieHeader = httpCookies?.Count > 0
+                ? string.Join("; ", httpCookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"))
+                : null;
 
-        if (cookieHeader != null)
-        {
-            request.Headers.Add(HttpHeaders.Cookie, cookieHeader);
-        }
-        if (Log.IsEnabled(LogLevel.Debug))
-        {
-            Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", httpCookies?.Count ?? 0, string.Join(',', httpCookies.Select(x => x.Name)));
-        }
+            if (cookieHeader != null)
+            {
+                request.Headers.Add(HttpHeaders.Cookie, cookieHeader);
+            }
+            if (Log.IsEnabled(LogLevel.Debug))
+            {
+                Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", httpCookies?.Count ?? 0, string.Join(',', httpCookies.Select(x => x.Name)));
+            }
 
-        if (Filter != null)
-        {
-            await Filter(this, request, cancellationToken);
+            if (Filter != null)
+            {
+                await Filter(this, request, cancellationToken);
+            }
         }
-        
         return await base.SendAsync(request, cancellationToken);
     }
 }

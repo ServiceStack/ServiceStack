@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using ServiceStack.Web;
@@ -9,7 +11,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest
 {
     public GatewayRequest() : this(null) {}
 
-    public GatewayRequest(object requestDto,
+    public GatewayRequest(object? requestDto,
         RequestAttributes requestAttributes =
             RequestAttributes.None | RequestAttributes.LocalSubnet | RequestAttributes.Http)
         : base(requestDto, requestAttributes)
@@ -25,11 +27,11 @@ public class GatewayRequest : BasicRequest, IHttpRequest
         set => Verb = value;
     }
     
-    public string XForwardedFor { get; set; }
+    public string? XForwardedFor { get; set; }
     public int? XForwardedPort { get; set; }
-    public string XForwardedProtocol { get; set; }
-    public string XRealIp { get; set; }
-    public string Accept { get; set; }
+    public string? XForwardedProtocol { get; set; }
+    public string? XRealIp { get; set; }
+    public string? Accept { get; set; }
 
     private object dto;
     public override object Dto
@@ -67,7 +69,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest
             UserHostAddress = hostReq.UserHostAddress,
             AcceptTypes = hostReq.AcceptTypes,
             IsSecureConnection = true,
-            HttpMethod = httpReq?.HttpMethod,
+            HttpMethod = httpReq?.HttpMethod ?? hostReq.Verb,
             XForwardedFor = httpReq?.XForwardedFor,
             XForwardedPort = httpReq?.XForwardedPort,
             XForwardedProtocol = httpReq?.XForwardedProtocol,
