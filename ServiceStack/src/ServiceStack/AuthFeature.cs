@@ -47,7 +47,7 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(redirect))
                 return;
 
-            if (redirect.StartsWith("//") || redirect.IndexOf("://", StringComparison.Ordinal) >= 0)
+            if (redirect.StartsWith("//") || redirect.Contains("://"))
             {
                 if (redirect.StartsWith(req.GetBaseUrl()))
                     return;
