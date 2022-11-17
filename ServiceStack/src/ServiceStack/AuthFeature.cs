@@ -444,6 +444,10 @@ namespace ServiceStack
                 throw new Exception("Registering IAuthEvents via both AuthFeature.AuthEvents and IOC is not allowed");
             }
         }
+
+        public IAuthProvider GetAuthProvider(string provider) => AuthenticateService.GetAuthProvider(provider);
+        public JwtAuthProviderReader GetJwtAuthProviderReader() => AuthenticateService.GetJwtAuthProvider();
+        public JwtAuthProvider GetRequiredJwtAuthProvider() => (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
     }
 
     public static class AuthFeatureExtensions
