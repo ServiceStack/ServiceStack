@@ -134,6 +134,8 @@ namespace ServiceStack
             });
         }
 
+        public bool IsRunAsAppTask() => AppTasks.IsRunAsAppTask();
+
         /// <summary>
         /// The FilePath used in Virtual File Sources
         /// </summary>
