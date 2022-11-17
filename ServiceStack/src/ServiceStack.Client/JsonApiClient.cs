@@ -200,6 +200,14 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         Headers[name] = value;
     }
 
+    public void DeleteHeader(string name)
+    {
+        if (Headers != null)
+        {
+            Headers.Remove(name);
+        }
+    }
+
     private int activeAsyncRequests;
     
     internal sealed class CompressContent : HttpContent

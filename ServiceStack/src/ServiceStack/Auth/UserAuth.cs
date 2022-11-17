@@ -386,6 +386,61 @@ namespace ServiceStack.Auth
             await repo.SaveUserAuthAsync(userAuth, token);
         }
 
+        public static void PopulateFromSession(this IAuthSession session, IAuthSession from)
+        {
+            session.Id = from.Id;
+            session.ReferrerUrl = from.ReferrerUrl;
+            session.UserAuthId = from.UserAuthId;
+            session.UserAuthName = from.UserAuthName;
+            session.UserName = from.UserName;
+            session.DisplayName = from.DisplayName;
+            session.FirstName = from.FirstName;
+            session.LastName = from.LastName;
+            session.Email = from.Email;
+            session.ProviderOAuthAccess = new(from.ProviderOAuthAccess);
+            session.CreatedAt = from.CreatedAt;
+            session.LastModified = from.LastModified;
+            session.Roles = from.Roles != null ? new(from.Roles) : session.Roles;
+            session.Permissions = from.Permissions != null ? new(from.Permissions) : from.Permissions;
+            session.IsAuthenticated = from.IsAuthenticated;
+            session.FromToken = from.FromToken;
+            session.AuthProvider = from.AuthProvider;
+            session.ProfileUrl = from.ProfileUrl;
+            session.Sequence = from.Sequence;
+
+            if (session is IAuthSessionExtended extended && from is IAuthSessionExtended other)
+            {
+                extended.Company = other.Company;
+                extended.PrimaryEmail = other.PrimaryEmail;
+                extended.BirthDate = other.BirthDate;
+                extended.Address = other.Address;
+                extended.Address2 = other.Address2;
+                extended.City = other.City;
+                extended.State = other.State;
+                extended.PostalCode = other.PostalCode;
+                extended.Country = other.Country;
+                extended.PhoneNumber = other.PhoneNumber;
+                extended.Country = other.Country;
+                extended.PhoneNumber = other.PhoneNumber;
+                extended.BirthDateRaw = other.BirthDateRaw;
+                extended.Gender = other.Gender;
+                extended.Audiences = other.Audiences != null ? new(other.Audiences) : other.Audiences;
+                extended.Scopes = other.Scopes != null ? new(other.Scopes) : other.Scopes;
+                extended.Dns = other.Dns;
+                extended.Rsa = other.Rsa;
+                extended.Sid = other.Sid;
+                extended.Hash = other.Hash;
+                extended.HomePhone = other.HomePhone;
+                extended.MobilePhone = other.MobilePhone;
+                extended.Webpage = other.Webpage;
+                extended.EmailConfirmed = other.EmailConfirmed;
+                extended.PhoneNumberConfirmed = other.PhoneNumberConfirmed;
+                extended.TwoFactorEnabled = other.TwoFactorEnabled;
+                extended.SecurityStamp = other.SecurityStamp;
+                extended.Type = other.Type;
+            }
+        }
+        
         public static void PopulateFromMap(this IAuthSession session, IDictionary<string, string> map)
         {
             var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern

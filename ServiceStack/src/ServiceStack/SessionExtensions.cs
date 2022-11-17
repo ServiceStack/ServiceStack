@@ -388,4 +388,31 @@ public static class SessionExtensions
 
         req.Items[Keywords.Session] = session;
     }
+
+    public static AuthUserSession ToAuthUserSession(this IAuthSession session)
+    {
+        return session as AuthUserSession
+            ?? session.ConvertTo<AuthUserSession>();
+    }
+
+    public static IAuthSession FromAuthUserSession(this AuthUserSession session)
+    {
+        if (session == null)
+            return null;
+        var instance = HostContext.GetPlugin<AuthFeature>()?.SessionFactory();
+        if (instance == null)
+            return session;
+
+        var fromType = instance.GetType();
+        var toType = session.GetType();
+        if (instance.GetType().IsAssignableFrom(toType))
+            return session;
+
+        instance.PopulateFromSession(session);
+
+        var existingPopulator = AutoMappingUtils.GetPopulator(fromType, toType);
+        existingPopulator?.Invoke(instance, session);
+
+        return instance;
+    }
 }

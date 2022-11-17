@@ -25,7 +25,8 @@ public static class BlazorClient
         if (BlazorConfig.Instance.UseLocalStorage)
             services.AddLocalStorage();
 
-        services.AddTransient<IServiceGateway>(c => c.GetRequiredService<JsonApiClient>())
+        services
+            .AddTransient<IServiceGateway>(c => c.GetRequiredService<JsonApiClient>())
             .AddTransient<BlazorWasmAuthContext>()
             .AddTransient<EnableCorsMessageHandler>();
         return services.AddHttpClient<JsonApiClient>(client => {
