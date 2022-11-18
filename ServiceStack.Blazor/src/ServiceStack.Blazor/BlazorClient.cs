@@ -27,6 +27,7 @@ public static class BlazorClient
 
         services
             .AddTransient<IServiceGateway>(c => c.GetRequiredService<JsonApiClient>())
+            .AddScoped<IClientFactory, BlazorWasmClientFactory>()
             .AddTransient<BlazorWasmAuthContext>()
             .AddTransient<EnableCorsMessageHandler>();
         return services.AddHttpClient<JsonApiClient>(client => {
@@ -45,3 +46,15 @@ public static class BlazorClient
     }
 }
 
+public class BlazorWasmClientFactory : IClientFactory
+{
+    public JsonApiClient Client { get; }
+    public IServiceGateway Gateway { get; }
+    public BlazorWasmClientFactory(JsonApiClient client, IServiceGateway gateway)
+    {
+        Client = client;
+        Gateway = gateway;
+    }
+    public IServiceGateway GetGateway() => Gateway;
+    public JsonApiClient GetClient() => Client;
+}
