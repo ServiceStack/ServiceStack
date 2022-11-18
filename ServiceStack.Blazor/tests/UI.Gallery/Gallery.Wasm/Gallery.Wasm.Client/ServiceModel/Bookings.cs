@@ -63,6 +63,8 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
     [Description("Name this Booking is for"), ValidateNotEmpty]
     public string Name { get; set; }
+    [Input(Type="file")]
+    public string? Photo { get; set; }
     public RoomType RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int RoomNumber { get; set; }
