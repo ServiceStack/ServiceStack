@@ -84,15 +84,13 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
         {
             // This is the first run
             // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
-            if (ValueExpression == null)
+            if (ValueExpression == null && Id == null)
             {
                 throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
                                                     $"parameter. Normally this is provided automatically when using 'bind-Value'.");
             }
-
-            FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
-            if (Id == null)
-                Id = FieldIdentifier.FieldName;
+            
+            Id ??= (FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression!)).FieldName;
 
             nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(string));
             hasInitializedParameters = true;
