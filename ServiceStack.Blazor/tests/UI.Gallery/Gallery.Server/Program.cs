@@ -49,7 +49,7 @@ app.UseServiceStack(new AppHost());
 
 BlazorConfig.Set(new() {
     Services = app.Services,
-    //UseInProcessClient = true,
+    UseInProcessClient = true,
     JSParseObject = JS.ParseObject,
     EnableLogging = app.Environment.IsDevelopment(),
     EnableVerboseLogging = app.Environment.IsDevelopment(),
