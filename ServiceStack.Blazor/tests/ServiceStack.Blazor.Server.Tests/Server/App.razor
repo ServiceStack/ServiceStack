@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager NavigationManager
 @inject ServiceStackStateProvider AuthStateProvider
+@inject HostState HostState
 
 <CascadingAuthenticationState>
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
@@ -51,6 +52,14 @@
 
 @code {
     Type GetPageLayout(RouteData route) => route.PageType?.FirstAttribute<LayoutAttribute>()?.LayoutType ?? typeof(MainLayout);
+
+    [Parameter] public InitialHostState? InitialState { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        HostState.Load(InitialState);
+        return base.OnInitializedAsync();
+    }
 
     async Task login()
     {
