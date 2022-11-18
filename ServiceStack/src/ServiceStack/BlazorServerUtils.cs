@@ -283,7 +283,13 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
             if (HostState.Session?.IsAuthenticated != true)
                 return UnAuthenticationState;
 
-            IAuthSession? session = HostState.Session;
+            var session = HostState.Session!;
+            if (session.UserAuthId == null || session.DisplayName == null || session.UserName == null)
+            {
+                Log.LogWarning("User #{0} {1}, {2} is incomplete", session.UserAuthId, session.UserName, session.DisplayName);
+                return UnAuthenticationState;
+            }
+
             List<Claim> claims = new() {
                 new Claim(ClaimTypes.NameIdentifier, session.UserAuthId),
                 new Claim(ClaimTypes.Name, session.DisplayName),
