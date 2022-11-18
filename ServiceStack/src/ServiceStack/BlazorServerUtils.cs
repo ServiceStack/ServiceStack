@@ -28,16 +28,13 @@ public static class BlazorServerUtils
 {
     public static IHttpClientBuilder AddBlazorServerApiClient(this IServiceCollection services, string baseUrl, Action<HttpClient>? configure = null)
     {
-        services
-            //.AddHttpContextAccessor() 
+        return services
             .AddScoped<HostState>()
-            //.AddTransient<CookieHandler>()
+            .AddScoped<IClientFactory,BlazorServerClientFactory>()
             .AddTransient<BlazorServerAuthContext>()
             .AddSingleton<IGatewayRequestFactory, GatewayRequestFactory>()
             .AddTransient<IServiceGateway>(c => new InProcessServiceGateway(
-                c.GetRequiredService<IGatewayRequestFactory>().Create(c.GetRequiredService<HostState>().ToGatewayRequest())));
-
-        return services
+                c.GetRequiredService<IGatewayRequestFactory>().Create(c.GetRequiredService<HostState>().ToGatewayRequest())))
             .AddHttpClient<JsonApiClient>(client => {
                 client.BaseAddress = new Uri(baseUrl);
                 configure?.Invoke(client);
@@ -46,7 +43,14 @@ public static class BlazorServerUtils
                 UseCookies = false, // needed to allow manually adding cookies
                 DefaultProxyCredentials = CredentialCache.DefaultCredentials,
             });
-        //.AddHttpMessageHandler<CookieHandler>(); 
+    }
+
+    public static JsonApiClient ConfigureClient(this HostState hostState, JsonApiClient Client)
+    {
+        Client.ClearHeaders();
+        if (hostState.CookiesHeader != null)
+            Client.AddHeader(HttpHeaders.Cookie, hostState.CookiesHeader);
+        return Client;
     }
 
     //https://jasonwatmore.com/post/2020/08/09/blazor-webassembly-get-query-string-parameters-with-navigation-manager
@@ -111,6 +115,21 @@ public static class BlazorServerUtils
     }
 }
 
+public class BlazorServerClientFactory : IClientFactory
+{
+    public HostState HostState { get; }
+    public JsonApiClient Client { get; }
+    public IServiceGateway Gateway { get; }
+    public BlazorServerClientFactory(HostState hostState, JsonApiClient client, IServiceGateway gateway)
+    {
+        HostState = hostState;
+        Client = client;
+        Gateway = gateway;
+    }
+    public JsonApiClient GetClient() => HostState.ConfigureClient(Client);
+    public IServiceGateway GetGateway() => Gateway;
+}
+
 public interface IGatewayRequestFactory
 {
     IRequest Create(IRequest request);
@@ -136,13 +155,6 @@ public class InitialHostState
 
 public class HostState
 {
-    public JsonApiClient Client { get; }
-    
-    public HostState(JsonApiClient client)
-    {
-        Client = client;
-    }
-
     // needs to be serializable
     public AuthUserSession? Session { get; set; }
     public List<JsCookie> Cookies { get; protected set; } = new();
@@ -162,12 +174,9 @@ public class HostState
         CookiesHeader = cookies.Count > 0
             ? string.Join("; ", cookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"))
             : null;
-        
-        if (CookiesHeader != null)
-            Client.AddHeader(HttpHeaders.Cookie, CookiesHeader);
-        else
-            Client.DeleteHeader(HttpHeaders.Cookie);
     }
+
+
 }
 
 public class BlazorServerClient : JsonApiClient

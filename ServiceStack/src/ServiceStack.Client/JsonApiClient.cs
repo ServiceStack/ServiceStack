@@ -27,6 +27,12 @@ public interface IServiceGatewayFormAsync
 {
     Task<TResponse> SendFormAsync<TResponse>(object requestDto, MultipartFormDataContent formData, CancellationToken token = default);
 }
+public interface IClientFactory
+{
+    IServiceGateway GetGateway();
+    JsonApiClient GetClient();
+}
+
 
 /// <summary>
 /// JsonApiClient designed to work with 
@@ -200,13 +206,8 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         Headers[name] = value;
     }
 
-    public void DeleteHeader(string name)
-    {
-        if (Headers != null)
-        {
-            Headers.Remove(name);
-        }
-    }
+    public void DeleteHeader(string name) => Headers?.Remove(name);
+    public void ClearHeaders() => Headers?.Clear();
 
     private int activeAsyncRequests;
     
