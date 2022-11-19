@@ -15,11 +15,14 @@ JS = (function () {
             dotnetRef.invokeMethodAsync('OnKeyNav', e.key)
         })
     }
-    let el = sel => typeof sel == "string" ? document.querySelector(sel) : sel
+    let SelectorAliases = { document }
+    let el = sel => typeof sel == "string"
+        ? SelectorAliases[sel] || document.querySelector(sel)
+        : sel
 
     let origScrollTo = null
     let skipAutoScroll = true
-    
+
     function elVisible(el, container) {
         if (!el) return false
         container = container || el.parentElement || document.body
@@ -61,6 +64,7 @@ JS = (function () {
 
 
     return {
+        SelectorAliases,
         get(name) { return window[name] },
         /* Loading */
         prerenderedPage() {
@@ -94,13 +98,13 @@ JS = (function () {
             }
         },
         elInvokeDelayIf(test, sel, fnName, args) {
-            if (matchesTest(test,sel)) JS.elInvoke(sel, sel, fnName, args)
+            if (matchesTest(test, sel)) JS.elInvoke(sel, sel, fnName, args)
         },
         elInvokeDelay(sel, fnName, args, ms) {
             setTimeout(() => JS.elInvoke(sel, fnName, args), isNaN(ms) ? 0 : ms)
         },
         elInvokeDelayIf(test, sel, fnName, args, ms) {
-            if (matchesTest(test,sel)) JS.elInvokeDelay(sel, fnName, args, ms)
+            if (matchesTest(test, sel)) JS.elInvokeDelay(sel, fnName, args, ms)
         },
         addClass(sel, ...classes) {
             map(el(sel), el => el.classList.add(...classes))
