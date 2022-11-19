@@ -25,6 +25,11 @@ public static class JsUtils
         await js.InvokeVoidAsync("console.log", args);
     }
 
+    public static void SetTitle(this IJSInProcessRuntime js, string title) =>
+        js.InvokeVoid("JS.elInvoke", "document", "title", title);
+    public static async Task SetTitleAsync(this IJSRuntime js, string title) =>
+        await js.InvokeVoidAsync("JS.elInvoke", "document", "title", title);
+
     public static async Task<List<NavItem>> GetNavItemsAsync(this IJSRuntime js, string name)
     {
         var csv = await js.InvokeAsync<string>("JS.get", name);
