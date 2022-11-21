@@ -114,15 +114,13 @@ namespace ServiceStack.Text
         public override Task WriteAsync(Stream stream, ReadOnlyMemory<char> value, CancellationToken token = default) =>
             WriteAsync(stream, value.Span, token);
 
-        public override Task WriteAsync(Stream stream, ReadOnlySpan<char> value, CancellationToken token=default)
+        public override async Task WriteAsync(Stream stream, ReadOnlySpan<char> value, CancellationToken token=default)
         {
             var utf8 = ToUtf8(value);
             if (stream is MemoryStream ms)
                 ms.Write(utf8.Span);
             else
-                return Task.FromResult(stream.WriteAsync(utf8, token));
-            
-            return TypeConstants.EmptyTask;
+                await stream.WriteAsync(utf8, token).ConfigAwait();
         }
 
         public override async Task WriteAsync(Stream stream, ReadOnlyMemory<byte> value, CancellationToken token = default)
