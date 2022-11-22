@@ -428,9 +428,16 @@ public class Migrator
             instance.CompletedDate = DateTime.UtcNow;
             instance.Error = e;
             instance.Log = instance.MigrationLog.ToString();
-            instance.BeforeRollback();
-            trans?.Rollback();
-            trans?.Dispose();
+            try
+            {
+                instance.BeforeRollback();
+                trans?.Rollback();
+                trans?.Dispose();
+            }
+            catch (Exception exRollback)
+            {
+                instance.Log += Environment.NewLine + exRollback.Message;
+            }
         }
         finally
         {
