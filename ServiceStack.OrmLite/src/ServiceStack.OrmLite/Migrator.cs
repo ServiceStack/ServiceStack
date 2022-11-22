@@ -444,7 +444,14 @@ public class Migrator
             instance.Db = null;
             instance.Transaction = null;
             OrmLiteConfig.BeforeExecFilter = holdFilter;
-            useDb?.Dispose();
+            try
+            {
+                useDb?.Dispose();
+            }
+            catch (Exception exRollback)
+            {
+                instance.Log += Environment.NewLine + exRollback.Message;
+            }
         }
         return instance;        
     }
