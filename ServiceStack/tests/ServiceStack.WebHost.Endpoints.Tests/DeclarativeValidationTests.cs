@@ -30,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<NoValidators> NoValidators { get; set; }
     }
 
-    public class DeclarativeCollectionValidationTest2 : IReturn<EmptyResponse>
+    public class DeclarativeCollectionValidationParentAttribute : IReturn<EmptyResponse>
     {
         [ValidateNotEmpty]
         [ValidateMaximumLength(20)]
@@ -112,7 +112,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new EmptyResponse();
         }
 
-        public object Any(DeclarativeCollectionValidationTest2 request) => new EmptyResponse();
+        public object Any(DeclarativeCollectionValidationParentAttribute request) => new EmptyResponse();
 
     }
     
@@ -143,14 +143,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OneTimeTearDown() => appHost.Dispose();
         IServiceClient CreateClient() => new JsonServiceClient(Config.ListeningOn);
 
+        
         [Test]
-        public void Does_execute_declarative_collection_validation_with_not_empty()
+        public void Does_execute_declarative_collection_validation_when_collection_has_own_not_empty()
         {
             var client = CreateClient();
 
             try
             {
-                var invalidRequest = new DeclarativeCollectionValidationTest2 {
+                var invalidRequest = new DeclarativeCollectionValidationParentAttribute {
                     Site = "Location 1",
                     DeclarativeValidationsWithNotEmpty = new List<DeclarativeChildValidation>
                     {
