@@ -30,6 +30,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<NoValidators> NoValidators { get; set; }
     }
 
+    public class DeclarativeCollectionValidationTest2 : IReturn<EmptyResponse>
+    {
+        [ValidateNotEmpty]
+        [ValidateMaximumLength(20)]
+        public string Site { get; set; }
+        [ValidateNotEmpty]
+        public List<DeclarativeChildValidation> DeclarativeValidationsWithNotEmpty { get; set; }
+    }
+
     public class DeclarativeSingleValidation
     {
         public string Name { get; set; }
@@ -102,6 +111,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             return new EmptyResponse();
         }
+
+        public object Any(DeclarativeCollectionValidationTest2 request) => new EmptyResponse();
+
     }
     
     public class DeclarativeValidationTests
@@ -131,6 +143,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OneTimeTearDown() => appHost.Dispose();
         IServiceClient CreateClient() => new JsonServiceClient(Config.ListeningOn);
 
+        [Test]
+        public void Does_execute_declarative_collection_validation_with_not_empty()
+        {
+            var client = CreateClient();
+
+            try
+            {
+                var invalidRequest = new DeclarativeCollectionValidationTest2 {
+                    Site = "Location 1",
+                    DeclarativeValidationsWithNotEmpty = new List<DeclarativeChildValidation>
+                    {
+                        new() { Name = "Location 1", Value = "Very long description > 20 chars" }
+                    }
+                };
+                var response = client.Post(invalidRequest);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.StatusDescription, Is.EqualTo(nameof(ValidateScripts.MaximumLength)));
+                var status = ex.GetResponseStatus();
+
+                var errorMsg = "The length of 'Value' must be 20 characters or fewer. You entered 32 characters.";
+                Assert.That(status.ErrorCode, Is.EqualTo(nameof(ValidateScripts.MaximumLength)));
+                Assert.That(status.Message, Is.EqualTo(errorMsg));
+                var errors = status.Errors;
+                Assert.That(errors.Count, Is.EqualTo(1));
+                Assert.That(errors[0].ErrorCode, Is.EqualTo(nameof(ValidateScripts.MaximumLength)));
+                Assert.That(errors[0].Message, Is.EqualTo(errorMsg));
+                Assert.That(errors[0].FieldName, Is.EqualTo("DeclarativeValidationsWithNotEmpty[0].Value"));
+            }
+        }
+        
         [Test]
         public void Does_execute_declarative_collection_validation_for_declarative_collections()
         {
