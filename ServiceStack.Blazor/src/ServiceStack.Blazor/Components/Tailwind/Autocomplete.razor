@@ -11,7 +11,7 @@
             CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
             "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
             role="combobox" aria-controls="options" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder=@(Multiple || Value == null ? placeholder : "")
-            @bind:event="oninput" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" @onclick="update" @onpaste="OnPaste" @attributes="IncludeAttributes">
+            @bind:event="oninput" @onkeydown="OnKeyDownAsync" @onkeyup="OnKeyUp" @onclick="update" @onpaste="OnPasteAsync" @attributes="IncludeAttributes">
         <button type="button" @onclick="toggle" class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none" tabindex="-1">
             <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd" />
@@ -20,7 +20,7 @@
         @if (showPopup)
         {
             <ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-black py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-                @onkeydown="OnKeyDown" id=@("{Id}-options") role="listbox">
+                @onkeydown="OnKeyDownAsync" id=@("{Id}-options") role="listbox">
                 @foreach (var option in FilteredValues)
                 {
                     <li class=@ClassNames(option.Equals(active) ? "active bg-indigo-600 text-white" : "text-gray-900 dark:text-gray-100", "relative cursor-default select-none py-2 pl-3 pr-9")
@@ -40,7 +40,7 @@
         }
         else if (!Multiple && Value is not null)
         {
-            <div @onkeydown="OnKeyDown" @onclick="toggle" class="h-8 -mt-8 ml-3 pt-0.5">
+            <div @onkeydown="OnKeyDownAsync" @onclick="toggle" class="h-8 -mt-8 ml-3 pt-0.5">
                 @Item!(Value)
             </div>
         }
