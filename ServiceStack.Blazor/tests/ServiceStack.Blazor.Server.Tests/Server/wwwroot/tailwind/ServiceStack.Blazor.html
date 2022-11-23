@@ -336,7 +336,7 @@ bool dismissed = false;
 CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
 "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
 role="combobox" aria-controls="options" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder=@(Multiple || Value == null ? placeholder : "")
-@bind:event="oninput" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" @onclick="update" @onpaste="OnPaste" @attributes="IncludeAttributes">
+@bind:event="oninput" @onkeydown="OnKeyDownAsync" @onkeyup="OnKeyUp" @onclick="update" @onpaste="OnPasteAsync" @attributes="IncludeAttributes">
 <button type="button" @onclick="toggle" class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none" tabindex="-1">
 <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd" />
@@ -345,7 +345,7 @@ role="combobox" aria-controls="options" aria-expanded="false" autocomplete="off"
 @if (showPopup)
 {
 <ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-black py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-@onkeydown="OnKeyDown" id=@("{Id}-options") role="listbox">
+@onkeydown="OnKeyDownAsync" id=@("{Id}-options") role="listbox">
 @foreach (var option in FilteredValues)
 {
 <li class=@ClassNames(option.Equals(active) ? "active bg-indigo-600 text-white" : "text-gray-900 dark:text-gray-100", "relative cursor-default select-none py-2 pl-3 pr-9")
@@ -365,7 +365,7 @@ role="combobox" aria-controls="options" aria-expanded="false" autocomplete="off"
 }
 else if (!Multiple && Value is not null)
 {
-<div @onkeydown="OnKeyDown" @onclick="toggle" class="h-8 -mt-8 ml-3 pt-0.5">
+<div @onkeydown="OnKeyDownAsync" @onclick="toggle" class="h-8 -mt-8 ml-3 pt-0.5">
 @Item!(Value)
 </div>
 }
@@ -1110,14 +1110,14 @@ return null;
 bool isDataUri(string? src) => src == null ? false : src.StartsWith("data:") || src.StartsWith("blob:");
 string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
 ? ""
-: "rounded-full";
+: "rounded-full object-cover";
 }
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam TReq
-@inherits UiComponentBase
+@inherits BlazorComponentBase
 <div class="m-2 mt-4" @ref="fileDropContainer">
 <label for="blazor-input-file"
-class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssClass()))>
+class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssUtils.ClassNames(@class)))>
 <span class="flex items-center space-x-2">
 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
 stroke="currentColor" stroke-width="2">
@@ -1654,6 +1654,58 @@ Close
 </div>
 </div>
 </div>
+</div>
+@inherits TextInputBase<List<string>>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+}
+<div class="mt-1 w-full relative rounded-md shadow-sm">
+@{
+var cls = ClassNames("w-full cursor-text flex flex-wrap sm:text-sm rounded-md dark:text-white dark:bg-gray-900 border focus-within:border-transparent focus-within:ring-1 focus-within:outline-none",
+CssClass("shadow-sm border-gray-300 dark:border-gray-600 focus-within:ring-indigo-500 focus-within:border-indigo-500",
+"pr-10 border-red-300 text-red-900 placeholder-red-300 focus-within:outline-none focus-within:ring-red-500 focus-within:border-red-500"));
+}
+<button class=@cls @onclick="handleClick" @onclick:preventDefault>
+<div class="flex flex-wrap pb-1.5">
+@foreach (var tag in Value.OrEmpty())
+{
+<div class="pt-1.5 pl-1">
+<span class="inline-flex rounded-full items-center py-0.5 pl-2.5 pr-1 text-sm font-medium bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300">
+@tag
+<button type="button" @onclick="_ => RemoveTagAsync(tag)" class="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-400 dark:text-indigo-500 hover:bg-indigo-200 dark:hover:bg-indigo-800 hover:text-indigo-500 dark:hover:text-indigo-400 focus:outline-none focus:bg-indigo-500 focus:text-white dark:focus:text-black">
+<svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8"><path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7"></path></svg>
+</button>
+</span>
+</div>
+}
+<div class="pt-1.5 pl-1 shrink">
+<input @ref=@txtInput type=@UseType id=@Id name=@Id @bind="InputValue" placeHolder=@placeholder
+class="p-0 dark:bg-transparent rounded-md border-none focus:!border-none focus:!outline-none"
+style=@($"box-shadow:none !important;width:{InputValue.Length + 1}ch")
+@onkeydown="KeyDownAsync" @onkeypress="KeyPressAsync" @bind:event="oninput" @onpaste="OnPasteAsync"
+@attributes="IncludeAttributes">
+</div>
+</div>
+</button>
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
 </div>
 @typeparam TValue
 @inherits TextInputBase<TValue>
