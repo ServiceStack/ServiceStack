@@ -1,6 +1,6 @@
 ﻿@inherits TextInputBase<List<string>>
 
-<div> 
+<div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
     <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>

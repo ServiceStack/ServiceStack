@@ -1176,7 +1176,7 @@ role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/sv
 }
 @inherits TextInputBase
 @implements IHasJsonApiClient
-<div class="lookup-field">
+<div class=@ClassNames("lookup-field", FieldClass)>
 <input type="hidden" name=@Input.Id value=@Value />
 @if (!string.IsNullOrEmpty(UseLabel))
 {
@@ -1582,7 +1582,7 @@ string cls => "rounded-md border py-2 px-4 text-sm font-medium shadow-sm focus:o
 }
 @typeparam TValue
 @inherits SelectInputBase<TValue>
-<div>
+<div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
 <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
@@ -1656,7 +1656,7 @@ Close
 </div>
 </div>
 @inherits TextInputBase<List<string>>
-<div>
+<div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
 <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
@@ -1709,7 +1709,7 @@ else if (!string.IsNullOrEmpty(UseHelp))
 </div>
 @typeparam TValue
 @inherits TextInputBase<TValue>
-<div>
+<div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
 <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
@@ -1732,7 +1732,7 @@ else if (!string.IsNullOrEmpty(UseHelp))
 </div>
 @typeparam TValue
 @inherits TextInputBase<TValue>
-<div>
+<div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
 <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>

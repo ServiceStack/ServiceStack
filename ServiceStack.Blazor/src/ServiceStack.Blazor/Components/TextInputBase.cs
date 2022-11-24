@@ -45,9 +45,14 @@ public abstract class TextInputBase : ApiComponentBase
     /// Label assigned to the Input Control, defaults to split Pascal Case Id.
     /// Set to empty string "" to hide
     /// </summary>
-    [Parameter]
-    public string? Label { get; set; }
+    [Parameter] public string? Label { get; set; }
+    /// <summary>
+    /// Class for Input Label
+    /// </summary>
     [Parameter] public string? LabelClass { get; set; }
+    /// <summary>
+    /// Class for outer container element
+    /// </summary>
     [Parameter] public string? FieldClass { get; set; }
 
     [Parameter] public string? type { get; set; }
