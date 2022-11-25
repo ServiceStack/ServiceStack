@@ -1,10 +1,12 @@
 using System;
+using System.CodeDom;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -994,6 +996,129 @@ namespace ServiceStack
             }
             
             return to;
+        }
+
+        public static IEnumerable ShallowClone(this IEnumerable xs)
+        {
+            if (xs == null)
+                return null;
+
+            if (xs is string s)
+                return s;
+
+            if (xs is Array array)
+                return (IEnumerable)array.Clone();
+
+            if (xs is IDictionary d)
+            {
+                var clone = (IDictionary)xs.GetType().CreateInstance();
+                foreach (var key in d.Keys)
+                {
+                    clone[key] = d[key];
+                }
+                return clone;
+            }
+            
+            if (xs is IList c)
+            {
+                var clone = (IList)xs.GetType().CreateInstance();
+                foreach (var item in c)
+                {
+                    clone.Add(item);
+                }
+                return clone;
+            }
+
+            var addMethod = xs.GetType().GetMethods().Where(x => x.Name == "Add" && x.GetParameters().Length == 1).FirstOrDefault();
+            if (addMethod == null)
+            {
+                Tracer.Instance.WriteWarning("Could not clone IEnumerable {0}", xs.GetType().Name);
+                return xs;
+            }
+
+            var invoker = GetInvoker(addMethod);
+            var instance = (IEnumerable)xs.GetType().CreateInstance();
+            foreach (var item in xs)
+            {
+                invoker(instance, item);
+            }
+
+            return instance;
+        }
+
+        // Copied from TypeExtensions to avoid coupling
+        delegate object MethodInvoker(object instance, params object[] args);
+        static Dictionary<MethodInfo, MethodInvoker> invokerCache = new();
+        static MethodInvoker GetInvoker(MethodInfo method)
+        {
+            if (invokerCache.TryGetValue(method, out var fn))
+                return fn;
+
+            fn = GetInvokerToCache(method);
+
+            Dictionary<MethodInfo, MethodInvoker> snapshot, newCache;
+            do
+            {
+                snapshot = invokerCache;
+                newCache = new Dictionary<MethodInfo, MethodInvoker>(invokerCache) { [method] = fn };
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref invokerCache, newCache, snapshot), snapshot));
+
+            return fn;
+        }
+        static MethodInvoker GetInvokerToCache(MethodInfo method)
+        {
+            if (method.IsStatic)
+                throw new NotSupportedException($"Could not create Invoker for static method {method.Name}");
+
+            var paramInstance = Expression.Parameter(typeof(object), "instance");
+            var paramArgs = Expression.Parameter(typeof(object[]), "args");
+
+            var exprArgs = CreateInvokerParamExpressions(method, paramArgs);
+
+            var methodCall = method.DeclaringType.IsValueType
+                ? Expression.Call(Expression.Convert(paramInstance, method.DeclaringType), method, exprArgs)
+                : Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+
+            var convertToMethod = typeof(PlatformExtensions).GetStaticMethod(nameof(ConvertToObject));
+            var convertReturn = convertToMethod.MakeGenericMethod(method.ReturnType);
+
+            var lambda = Expression.Lambda(typeof(MethodInvoker),
+                Expression.Call(convertReturn, methodCall),
+                paramInstance,
+                paramArgs);
+
+            var fn = (MethodInvoker)lambda.Compile();
+            return fn;
+        }
+        public static object ConvertToObject<T>(T value) => value;
+        private static Expression[] CreateInvokerParamExpressions(MethodInfo method, ParameterExpression paramArgs)
+        {
+            var convertFromMethod = typeof(PlatformExtensions).GetStaticMethod(nameof(ConvertFromObject));
+
+            var pi = method.GetParameters();
+            var exprArgs = new Expression[pi.Length];
+            for (int i = 0; i < pi.Length; i++)
+            {
+                var index = Expression.Constant(i);
+                var paramType = pi[i].ParameterType;
+                var paramAccessorExp = Expression.ArrayIndex(paramArgs, index);
+                var convertParam = convertFromMethod.MakeGenericMethod(paramType);
+                exprArgs[i] = Expression.Call(convertParam, paramAccessorExp);
+            }
+
+            return exprArgs;
+        }
+        public static T ConvertFromObject<T>(object value)
+        {
+            if (value == null)
+                return default(T);
+
+            if (value is T variable)
+                return variable;
+
+            return value.ConvertTo<T>();
         }
 
         public static void PopulateInstance(this IEnumerable<KeyValuePair<string, object>> values, object instance)

@@ -666,6 +666,15 @@ public static class TextUtils
             return new Dictionary<string, object>();
 
         var obj = from.ToObjectDictionary();
+
+        foreach (var entry in obj)
+        {
+            if (entry.Value is IEnumerable xs)
+            {
+                obj[entry.Key] = xs.ShallowClone();
+            }
+        }
+
         return obj;
     }
 
