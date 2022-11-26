@@ -62,11 +62,13 @@ public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
     [ValidateNotEmpty]
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    
+    [Input(Type = ""tag""), FieldCss(Field = ""col-span-12"")]
+    public List<string>? Skills { get; set; }}
  
     [Input(Type=""textarea"")]
     [FieldCss(Field=""col-span-12 text-center"", Input=""h-48"", Label=""text-xl text-indigo-700"")]
     public string? About { get; set; }
-}
 ";
 
     }

@@ -37,6 +37,7 @@ public static class Input
         public const string Week = "week";
         public const string Select = "select";
         public const string Textarea = "textarea";
+        public const string Tag = "tag";
     }
 
     public static Dictionary<Type, string> TypesMap { get; set; } = new()

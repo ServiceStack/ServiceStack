@@ -33,6 +33,7 @@ public class Migration1002 : MigrationBase
         public string Phone { get; set; }
 
         public string About { get; set; }
+        public List<string>? Skills { get; set; }
 
         [Reference]
         public List<JobApplication> Applications { get; set; }
