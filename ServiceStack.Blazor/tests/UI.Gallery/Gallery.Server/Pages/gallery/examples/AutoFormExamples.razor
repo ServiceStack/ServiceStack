@@ -20,7 +20,18 @@
 
 <ExampleCode Path="/gallery/AutoForm/New.razor" />
 
-<iframe class="w-full" style="height:39em" src="/gallery/autoform/create" />
+<iframe class="w-full mb-8" style="height:39em" src="/gallery/autoform/create" />
+
+<p class="my-4 text-lg">
+    By default Auto Forms are rendered in a Slide Over dialog, alternatively they can be rendered in a traditional inline Form with 
+    <code>FormStyle.Card</code>, e.g:
+</p>
+
+<ExampleCode Path="/gallery/AutoForm/NewCard.razor" />
+
+<div class="max-w-screen-md">
+    <NewCard />
+</div>
 
 <ApiReference Component="AutoEditForm<Model>">
     Edit Form
@@ -33,7 +44,17 @@
 
 <ExampleCode Path="/gallery/AutoForm/Edit.razor" />
 
-<iframe class="w-full" style="height:41em" src="/gallery/autoform/edit" />
+<iframe class="w-full mb-8" style="height:41em" src="/gallery/autoform/edit" />
+
+<p class="my-4 text-lg">
+    The same form rendered in a traditional inline form with <code>FormStyle.Card</code>:
+</p>
+
+<ExampleCode Path="/gallery/AutoForm/EditCard.razor" />
+
+<div class="max-w-screen-md">
+    <EditCard />
+</div>
 
 <p class="my-4 text-lg">
     The forms behavior and appearance is further customizable with the
