@@ -1,0 +1,87 @@
+﻿@using MyApp.Client.Pages.gallery.examples
+@inherits UiComponentBase
+
+<ApiReference Component="AutoEditForm">
+    Auto Form
+</ApiReference>
+
+<AutoEditForm class=@Class FormStyle="FormStyle.Card" Model="Contact" ApiType="typeof(UpdateContact)" Edit=@contact Save="refresh" />
+
+<ApiReference Component="TagInput">
+    Custom Form
+</ApiReference>
+
+<form @onsubmit="submit" @onsubmit:preventDefault class=@Class>
+    <CascadingValue Value=@apiQuery.Error>
+        <div class="shadow sm:rounded-md bg-white dark:bg-black">
+            <div class="relative px-4 py-5 sm:p-6">
+                <fieldset>
+                    <legend class=@CssDefaults.Form.LegendClass>TagInput Examples</legend>
+
+                    <ErrorSummary Except=@VisibleFields />
+
+                    <div class="grid grid-cols-12 gap-6">
+                        <div class="col-span-6">
+                            <TextInput @bind-Value="request.FirstName" />
+                        </div>
+
+                        <div class="col-span-6">
+                            <TextInput @bind-Value="request.LastName" />
+                        </div>
+
+                        <div class="col-span-12">
+                            <TagInput @bind-Value="request.Skills" Label="Technology Skills" />
+                        </div>
+
+                    </div>
+                </fieldset>
+            </div>
+            <div class=@CssDefaults.Form.ButtonsClass>
+                <div class="flex justify-end">
+                    <SecondaryButton class="mr-4">Cancel</SecondaryButton>
+                    <PrimaryButton type="submit">Submit</PrimaryButton>
+                </div>
+            </div>
+        </div>
+    </CascadingValue>
+</form>
+
+@code {
+    [Inject] public JsonApiClient? Client { get; set; }
+
+    string[] VisibleFields => new[] {
+        nameof(request.FirstName),
+        nameof(request.LastName),
+        nameof(request.Skills),
+    };
+
+    ApiResult<QueryResponse<Contact>> apiQuery = new();
+
+    Contact contact = new();
+    UpdateContact request = new();
+
+    ApiResult<Contact> api = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await refresh();
+    }
+
+    async Task refresh()
+    {
+        apiQuery = await Client!.ApiAsync(new QueryContacts { Take = 1 });
+
+        if (apiQuery.Succeeded)
+        {
+            contact = apiQuery.Response!.Results.First();
+            request = contact.ConvertTo<UpdateContact>();
+        }
+    }
+
+    async Task submit()
+    {
+        api = await Client!.ApiAsync(request);
+        await refresh();
+    }
+}
