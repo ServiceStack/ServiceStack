@@ -512,6 +512,19 @@ public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
 
 [Tag("Talent")]
 [ValidateIsAuthenticated]
+[AutoApply(Behavior.AuditCreate)]
+public class UpdateJobOffer : IPatchDb<JobOffer>, IReturn<JobOffer>
+{
+    public int? Id { get; set; }
+    public int? SalaryOffer { get; set; }
+    public int? JobApplicationId { get; set; }
+
+    public JobApplicationStatus? ApplicationStatus { get; set; }
+    public string? Notes { get; set; }
+}
+
+[Tag("Talent")]
+[ValidateIsAuthenticated]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryJobApplicationEvents : QueryDb<JobApplicationEvent>
 {
