@@ -7,13 +7,31 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
 {
     [Parameter, EditorRequired] public Type ApiType { get; set; }
 
+    [Parameter] public string? @class { get; set; }
     [Parameter] public string? Heading { get; set; }
     [Parameter] public string? SubHeading { get; set; }
 
-    [Parameter] public string PanelClass { get; set; } = CssDefaults.Form.PanelClass;
-    [Parameter] public string FormClass { get; set; } = CssDefaults.Form.FormClass;
-    [Parameter] public string TitlebarClass { get; set; } = CssDefaults.Form.TitlebarClass;
-    [Parameter] public string HeadingClass { get; set; } = CssDefaults.Form.HeadingClass;
+    FormStyle formStyle = CssDefaults.Form.DefaultFormStyle;
+    [Parameter]
+    public FormStyle FormStyle
+    {
+        get => formStyle;
+        set
+        {
+            formStyle = value;
+            PanelClass = CssDefaults.Form.GetPanelClass(formStyle);
+            FormClass = CssDefaults.Form.GetFormClass(formStyle);
+            HeadingClass = CssDefaults.Form.GetHeadingClass(formStyle);
+            SubHeadingClass = CssDefaults.Form.GetSubHeadingClass(formStyle);
+        }
+    }
+
+    [Parameter] public string PanelClass { get; set; } = CssDefaults.Form.GetPanelClass();
+    [Parameter] public string FormClass { get; set; } = CssDefaults.Form.GetFormClass();
+    [Parameter] public string HeadingClass { get; set; } = CssDefaults.Form.GetHeadingClass();
+    [Parameter] public string SubHeadingClass { get; set; } = CssDefaults.Form.GetSubHeadingClass();
+    [Parameter] public string TitlebarClass { get; set; } = CssDefaults.Form.SlideOver.TitlebarClass;
+    [Parameter] public string ButtonsClass { get; set; } = CssDefaults.Form.ButtonsClass;
 
     [Parameter] public bool AutoSave { get; set; } = true;
 
@@ -32,7 +50,7 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
     protected Dictionary<string, object> ModelDictionary { get; set; } = new();
     protected Dictionary<string, object> OriginalModelDictionary { get; set; } = new();
 
-    protected DataTransition SlideOverTransition = CssDefaults.Form.SlideOverTransition;
+    protected DataTransition SlideOverTransition = CssDefaults.Form.SlideOver.SlideOverTransition;
 
     protected abstract string Title { get; }
     protected virtual string? Notes => ApiType.FirstAttribute<NotesAttribute>()?.Notes;
