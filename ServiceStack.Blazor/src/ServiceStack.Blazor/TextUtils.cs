@@ -656,6 +656,17 @@ public static class TextUtils
         return from.ConvertTo<string>();
     }
 
+    public static List<string>? ToModelStrings(this object? from)
+    {
+        if (from == null)
+            return null;
+        if (from is List<string> list)
+            return list;
+        if (from is string s)
+            return s.FromJsv<List<string>>();
+        return from.ConvertTo<List<string>>();
+    }
+
     /// <summary>
     /// Used to convert Typed model into an object dictionary for usage in DynamicInput
     /// </summary>

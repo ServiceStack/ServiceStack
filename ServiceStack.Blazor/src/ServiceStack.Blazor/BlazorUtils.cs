@@ -97,6 +97,8 @@ public static class BlazorUtils
             return true;
         if (prop.Input?.Type == Html.Input.Types.File)
             return true;
+        if (prop.Input?.Type == Html.Input.Types.Tag)
+            return true;
 
         var unwrapType = prop.Type.EndsWith('?')
             ? prop.Type[..^1]
