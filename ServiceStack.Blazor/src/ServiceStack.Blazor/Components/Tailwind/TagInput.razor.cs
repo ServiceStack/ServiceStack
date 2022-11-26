@@ -63,6 +63,8 @@ public partial class TagInput : TextInputBase<List<string>>
             }
         }
     }
+    
+    async Task OnBlurAsync(FocusEventArgs e) => await KeyPressAsync(new KeyboardEventArgs { Key = "Enter" });
 
     async Task OnPasteAsync(ClipboardEventArgs e)
     {

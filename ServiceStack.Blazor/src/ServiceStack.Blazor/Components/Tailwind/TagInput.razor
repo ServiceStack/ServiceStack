@@ -28,7 +28,7 @@
                     <input @ref=@txtInput type=@UseType id=@Id name=@Id @bind="InputValue" placeHolder=@placeholder
                            class="p-0 dark:bg-transparent rounded-md border-none focus:!border-none focus:!outline-none"
                            style=@($"box-shadow:none !important;width:{InputValue.Length + 1}ch")
-                           @onkeydown="KeyDownAsync" @onkeypress="KeyPressAsync" @bind:event="oninput" @onpaste="OnPasteAsync" 
+                           @onkeydown="KeyDownAsync" @onkeypress="KeyPressAsync" @bind:event="oninput" @onpaste="OnPasteAsync" @onblur="OnBlurAsync"
                            @attributes="IncludeAttributes">
                 </div>
             </div>
