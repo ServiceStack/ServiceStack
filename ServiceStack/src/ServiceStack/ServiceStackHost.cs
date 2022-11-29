@@ -1276,7 +1276,9 @@ namespace ServiceStack
 
             if (Config.StrictMode == true && !JsConfig.HasInit)
                 JsConfig.Init(); //Ensure JsConfig global config is not mutated after StartUp
-            
+
+            ClientConfig.EvalExpression ??= EvalExpressionCached;
+
             if (config.LogUnobservedTaskExceptions)
             {
                 TaskScheduler.UnobservedTaskException += this.HandleUnobservedTaskException;

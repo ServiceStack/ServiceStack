@@ -17,7 +17,7 @@ public class SelectInputBase<TValue> : TextInputBase<TValue>
             ? TextUtils.ToKeyValuePairs(Values)
             : Input?.AllowableEntries?.Length > 0
                 ? Input!.AllowableEntries.ToList()
-                : Input?.AllowableValues.Length > 0
+                : Input!.AllowableValues?.Length > 0
                     ? TextUtils.ToKeyValuePairs(Input?.AllowableValues)
                     : TextUtils.ToKeyValuePairs(Options);
 

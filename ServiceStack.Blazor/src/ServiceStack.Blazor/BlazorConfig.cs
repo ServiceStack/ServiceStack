@@ -128,6 +128,15 @@ public class BlazorConfig
     /// </summary>
     public Func<string, Dictionary<string, object>> JSParseObject { get; set; } = DefaultJSObjectParser;
 
+    /// <summary>
+    /// Function used to evaluate script expressions in Inputs
+    /// </summary>
+    public Func<string,object> EvalExpression
+    {
+        get => ClientConfig.EvalExpression;
+        set => ClientConfig.EvalExpression = value;
+    }
+
     public static Dictionary<string,object> DefaultJSObjectParser(string js)
     {
         // Hack till we port the proper JS.eval() Object literal parser to ServiceStack.Text

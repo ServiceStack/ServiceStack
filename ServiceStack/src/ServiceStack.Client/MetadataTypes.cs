@@ -1098,6 +1098,15 @@ public static class AppMetadataUtils
             Options = input.Options,
             Ignore = input.Ignore.NullIfFalse(),
         };
+
+        if (ClientConfig.EvalExpression != null)
+        {
+            if (input.EvalAllowableValues != null)
+                ret.AllowableValues = ClientConfig.EvalExpression(input.EvalAllowableValues).ConvertTo<string[]>();
+            if (input.EvalAllowableEntries != null)
+                ret.AllowableEntries = ClientConfig.EvalExpression(input.EvalAllowableEntries).ConvertTo<KeyValuePair<string, string>[]>();
+        }
+        
         configure?.Invoke(ret);
         return ret;
     }
