@@ -14,7 +14,7 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
     [Inject] ILogger<BlazorComponentBase> Log { get; set; }
     [Inject] public IClientFactory? ClientFactory { get; set; }
 
-    public IServiceGateway Gateway => ClientFactory!.GetClient();
+    public IServiceGateway Gateway => ClientFactory!.GetGateway();
     public JsonApiClient Client => ClientFactory!.GetClient();
 
     [Parameter] public bool UseGateway { get; set; } = BlazorConfig.Instance.UseInProcessClient;
