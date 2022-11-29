@@ -400,7 +400,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         ApiPrefs = LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
         if (Edit != null || New == true)
         {
-            if (EditModel == null || Properties.GetId(EditModel)?.ToString() != Edit)
+            if (EditModel == null || Properties.GetId(EditModel)?.ToString() != Edit && PrimaryKey != null)
             {
                 var request = Apis!.QueryRequest<Model>();
                 request.QueryParams = new()
