@@ -115,16 +115,23 @@ namespace ServiceStack
 
         public static T CreateCopy<T>(this T from)
         {
-            if (typeof(T).IsValueType)
-                return (T)ChangeValueType(from, typeof(T));
+            if (from == null)
+                return from;
+            var type = from.GetType();
 
-            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
+            if (from is ICloneable clone)
+                return (T)clone.Clone();
+
+            if (typeof(T).IsValueType)
+                return (T)ChangeValueType(from, type);
+
+            if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
             {
-                var listResult = TranslateListWithElements.TryTranslateCollections(from.GetType(), typeof(T), from);
+                var listResult = TranslateListWithElements.TryTranslateCollections(from.GetType(), type, from);
                 return (T)listResult;
             }
 
-            var to = typeof(T).CreateInstance<T>();
+            var to = type.CreateInstance<T>();
             return to.PopulateWith(from);
         }
 

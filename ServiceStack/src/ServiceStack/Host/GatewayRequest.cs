@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host;
 
-public class GatewayRequest : BasicRequest, IHttpRequest
+public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest
 {
     public GatewayRequest() : this(null) {}
 
@@ -79,6 +79,9 @@ public class GatewayRequest : BasicRequest, IHttpRequest
         ret.SetInProcessRequest();
         return ret;
     }
+
+    // Need to create copy of Request DTO in InProc gateway otherwise client mutations can impact service impls
+    public T Convert<T>(T value) => value.CreateCopy();
 }
 
 public class GatewayResponse : BasicResponse, IHttpResponse
