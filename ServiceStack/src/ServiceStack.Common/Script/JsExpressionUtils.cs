@@ -198,7 +198,9 @@ namespace ServiceStack.Script
                 return literal;
             }
 
-            literal = peekLiteral.ParseJsMemberExpression(ref node, filterExpression);
+            var ret = peekLiteral.ParseJsMemberExpression(node, filterExpression);
+            literal = ret.Span;
+            node = ret.Node;
 
             token = node;
             return literal;

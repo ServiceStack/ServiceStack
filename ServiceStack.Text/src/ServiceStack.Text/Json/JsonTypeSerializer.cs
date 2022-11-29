@@ -10,6 +10,17 @@ using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Json
 {
+    public ref struct SpanIndex
+    {
+        public ReadOnlySpan<char> Span { get; }
+        public int Index { get; }
+        public SpanIndex(ReadOnlySpan<char> value, int index)
+        {
+            Span = value;
+            Index = index;
+        }
+    }
+
     public struct JsonTypeSerializer
         : ITypeSerializer
     {
@@ -420,22 +431,19 @@ namespace ServiceStack.Text.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string UnescapeString(string value)
         {
-            var i = 0;
-            return UnescapeJsonString(value, ref i);
+            return UnescapeJsonString(value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<char> UnescapeString(ReadOnlySpan<char> value)
         {
-            var i = 0;
-            return UnescapeJsonString(value, ref i);
+            return UnescapeJsonString(value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object UnescapeStringAsObject(ReadOnlySpan<char> value)
         {
-            var ignore = 0;
-            return UnescapeJsString(value, JsonUtils.QuoteChar, removeQuotes: true, ref ignore).Value();
+            return UnescapeJsString(value, JsonUtils.QuoteChar, removeQuotes: true, 0).Span.Value();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -459,28 +467,28 @@ namespace ServiceStack.Text.Json
         {
             for (; index < json.Length; index++) { var ch = json[index]; if (!JsonUtils.IsWhiteSpace(ch)) break; } //Whitespace inline
 
-            return UnescapeJsonString(json, ref index);
+            return UnescapeJsonString(json, index);
         }
 
-        private static string UnescapeJsonString(string json, ref int index)
+        private static string UnescapeJsonString(string json, int index)
         {
             return json != null 
-                ? UnescapeJsonString(json.AsSpan(), ref index).ToString() 
+                ? UnescapeJsonString(json.AsSpan(), index).ToString() 
                 : null;
         }
 
-        private static ReadOnlySpan<char> UnescapeJsonString(ReadOnlySpan<char> json, ref int index) =>
-            UnescapeJsString(json, JsonUtils.QuoteChar, removeQuotes:true, ref index);
+        private static ReadOnlySpan<char> UnescapeJsonString(ReadOnlySpan<char> json, int index) =>
+            UnescapeJsString(json, JsonUtils.QuoteChar, removeQuotes:true, index).Span;
 
         public static ReadOnlySpan<char> UnescapeJsString(ReadOnlySpan<char> json, char quoteChar)
         {
             var ignore = 0;
-            return UnescapeJsString(json, quoteChar, removeQuotes:false, ref ignore);
+            return UnescapeJsString(json, quoteChar, removeQuotes:false, ignore).Span;
         }
         
-        public static ReadOnlySpan<char> UnescapeJsString(ReadOnlySpan<char> json, char quoteChar, bool removeQuotes, ref int index)
+        public static SpanIndex UnescapeJsString(ReadOnlySpan<char> json, char quoteChar, bool removeQuotes, int index)
         {
-            if (json.IsNullOrEmpty()) return json;
+            if (json.IsNullOrEmpty()) return new(json, index);
             var jsonLength = json.Length;
             var buffer = json;
 
@@ -493,15 +501,15 @@ namespace ServiceStack.Text.Json
                 var jsonAtIndex = json.Slice(index);
                 var strEndPos = jsonAtIndex.IndexOfAny(IsSafeJsonChars);
                 if (strEndPos == -1) 
-                    return jsonAtIndex.Slice(0, jsonLength);
+                    return new(jsonAtIndex.Slice(0, jsonLength), index);
 
                 if (jsonAtIndex[strEndPos] == quoteChar)
                 {
                     var potentialValue = jsonAtIndex.Slice(0, strEndPos);
                     index += strEndPos + 1;
-                    return potentialValue.Length > 0
+                    return new(potentialValue.Length > 0
                         ? potentialValue
-                        : TypeConstants.EmptyStringSpan;
+                        : TypeConstants.EmptyStringSpan, index);
                 }
             }
             else
@@ -517,10 +525,10 @@ namespace ServiceStack.Text.Json
                     i++;
                 }
                 if (i == end) 
-                    return buffer.Slice(index, jsonLength - index);
+                    return new(buffer.Slice(index, jsonLength - index), index);
             }
 
-            return Unescape(json, removeQuotes:removeQuotes, quoteChar:quoteChar);
+            return new(Unescape(json, removeQuotes: removeQuotes, quoteChar: quoteChar), index);
         }
         
         public static string Unescape(string input) => Unescape(input, true);
