@@ -131,7 +131,7 @@ public class BlazorConfig
     /// <summary>
     /// Function used to evaluate script expressions in Inputs
     /// </summary>
-    public Func<string,object> EvalExpression
+    public Func<string,object?> EvalExpression
     {
         get => ClientConfig.EvalExpression;
         set => ClientConfig.EvalExpression = value;
