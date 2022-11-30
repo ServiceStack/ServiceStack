@@ -7,7 +7,12 @@
         <!-- Uncomment to view generated *.g.cs -->
         <!--<UseRazorSourceGenerator>false</UseRazorSourceGenerator>-->
     </PropertyGroup>
-    
+
+    <ItemGroup>
+        <Using Include="ServiceStack" />
+        <Using Include="ServiceStack.Blazor" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Markdig" Version="0.30.4" />
         <PackageReference Include="Blazor.Extensions.Logging" Version="2.0.4" />

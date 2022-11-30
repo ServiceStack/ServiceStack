@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Components;
-using ServiceStack;
-using ServiceStack.Blazor;
-
 namespace MyApp.Client;
 
 /// <summary>
