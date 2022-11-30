@@ -1,5 +1,7 @@
 ﻿#pragma warning disable IDE1006 // Naming Styles
 
+using System.Collections.Concurrent;
+using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 
 namespace ServiceStack.Blazor.Components;
@@ -9,6 +11,8 @@ namespace ServiceStack.Blazor.Components;
 /// </summary>
 public abstract class UiComponentBase : ComponentBase
 {
+    [Inject] public IJSRuntime JS { get; set; }
+
     /// <summary>
     /// Optional user defined classes for this component
     /// </summary>
@@ -44,4 +48,41 @@ public abstract class UiComponentBase : ComponentBase
         }
         return safeAttrs;
     }
+
+    static long renderIndex = 0;
+    static ConcurrentDictionary<long, Func<IJSRuntime, Task>> RenderActions = new();
+    protected virtual void QueueRenderAction(Func<IJSRuntime, Task> action) =>
+        RenderActions[Interlocked.Increment(ref renderIndex)] = action;
+
+    /// <summary>
+    /// Set the document.title
+    /// </summary>
+    protected virtual void SetTitle(string title)
+    {
+        if (JS is IJSInProcessRuntime jsWasm)
+            jsWasm.SetTitle(title);
+        else
+            QueueRenderAction(JS => JS.SetTitleAsync(title));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var orderedKeys = RenderActions.Keys.OrderBy(x => x).ToList();
+        foreach (var key in orderedKeys)
+        {
+            if (RenderActions.TryRemove(key, out var action))
+            {
+                try
+                {
+                    await action(JS);
+                }
+                catch (Exception e)
+                {
+                    BlazorUtils.LogError(e, "RenderAction in {0} failed: {1}", GetType().Name, e.Message);
+                }
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
 }

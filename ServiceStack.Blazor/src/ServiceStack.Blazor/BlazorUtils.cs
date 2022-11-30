@@ -13,19 +13,25 @@ public static class BlazorUtils
     public static int nextId = 0;
     public static int NextId() => nextId++;
 
-    public static void LogError(string? message = null)
+    public static void LogError(string message, params object[] args)
     {
         if (BlazorConfig.Instance.EnableErrorLogging)
-            BlazorConfig.Instance.GetLog()?.LogError(message);
+            BlazorConfig.Instance.GetLog()?.LogError(message, args);
     }
 
-    public static void Log(string? message = null)
+    public static void LogError(Exception ex, string message, params object[] args)
+    {
+        if (BlazorConfig.Instance.EnableErrorLogging)
+            BlazorConfig.Instance.GetLog()?.LogError(ex, message, args);
+    }
+
+    public static void Log(string message)
     {
         if (BlazorConfig.Instance.EnableLogging)
             BlazorConfig.Instance.GetLog()?.LogInformation(message);
     }
 
-    public static void LogDebug(string? message = null)
+    public static void LogDebug(string message)
     {
         if (BlazorConfig.Instance.EnableVerboseLogging)
             BlazorConfig.Instance.GetLog()?.LogDebug(message);

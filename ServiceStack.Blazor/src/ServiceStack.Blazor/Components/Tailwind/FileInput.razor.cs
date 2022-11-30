@@ -11,9 +11,8 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 /// <remarks>
 /// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/FileInput.png)
 /// </remarks>
-public partial class FileInput : TextInputBase, IAsyncDisposable
+public partial class FileInput : TextInputBase, IDisposable
 {
-    [Inject] public IJSRuntime JS { get; set; }
     [Parameter] public bool Multiple { get; set; }
     [Parameter] public string? Accept { get; set; }
     [Parameter] public string? Value { get; set; }
@@ -100,8 +99,8 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await JS.InvokeVoidAsync("Files.flush");
+        QueueRenderAction(async JS => await JS.InvokeVoidAsync("Files.flush"));
     }
 }
