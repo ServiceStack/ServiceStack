@@ -44,7 +44,7 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
 
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     protected MetadataType? metadataType;
-    public MetadataType MetadataType => metadataType ??= AppMetadata?.GetType(ApiType.Name) ?? ApiType.ToMetadataType();
+    public MetadataType MetadataType => metadataType ??= AppMetadata?.GetType(ApiType) ?? ApiType.ToMetadataType();
 
     protected Dictionary<string, object> ModelDictionary { get; set; } = new();
     protected Dictionary<string, object> OriginalModelDictionary { get; set; } = new();

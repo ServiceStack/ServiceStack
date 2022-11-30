@@ -7,7 +7,7 @@
             <div class="flex flex-col">
 
                 <h4 class="py-6 text-center text-xl">Create New Project</h4>
-                <input type="text" @bind="project" @bind:event="oninput" autocomplete="off" spellcheck="false" placeholder="ProjectName"
+                <input type="text" @bind-value="project" @bind:event="oninput" autocomplete="off" spellcheck="false" placeholder="ProjectName"
                         class="mb-8 sm:text-lg rounded-md shadow focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:bg-gray-800" />
 
                 <section class="w-full flex justify-center text-center">

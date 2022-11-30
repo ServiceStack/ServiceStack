@@ -24,6 +24,8 @@ using System.Collections.Specialized;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 
+namespace ServiceStack;
+
 public static class BlazorServerUtils
 {
     public static IHttpClientBuilder AddBlazorServerApiClient(this IServiceCollection services, string baseUrl, Action<HttpClient>? configure = null)
