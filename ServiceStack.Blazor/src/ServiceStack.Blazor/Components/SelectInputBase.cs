@@ -11,15 +11,27 @@ public class SelectInputBase<TValue> : TextInputBase<TValue>
     [Parameter] public string[]? Values { get; set; }
     [Parameter] public KeyValuePair<string, string>[]? Entries { get; set; }
 
-    protected List<KeyValuePair<string, string>> KvpValues() => Entries?.Length > 0
-        ? Entries.ToList()
-        : Values?.Length > 0
-            ? TextUtils.ToKeyValuePairs(Values)
-            : Input?.AllowableEntries?.Length > 0
-                ? Input!.AllowableEntries.ToList()
-                : Input!.AllowableValues?.Length > 0
-                    ? TextUtils.ToKeyValuePairs(Input?.AllowableValues)
-                    : TextUtils.ToKeyValuePairs(Options);
+    protected List<KeyValuePair<string, string>> KvpValues()
+    {
+        if (Entries?.Length > 0)
+            return Entries.ToList();
+        
+        if (Values?.Length > 0)
+            return TextUtils.ToKeyValuePairs(Values);
+        
+        if (Input != null)
+        {
+            if (Input.AllowableEntries?.Length > 0)
+                return Input.AllowableEntries.ToList();
+        
+            if (Input.AllowableValues?.Length > 0)
+                return TextUtils.ToKeyValuePairs(Input.AllowableValues);
+        }
+
+        return Options != null
+            ? TextUtils.ToKeyValuePairs(Options)
+            : new();
+    }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

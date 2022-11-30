@@ -14,11 +14,11 @@
         }
         @if (UseType == Html.Input.Types.Textarea)
         {
-            <textarea type=@UseType class=@cls id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes"></textarea>
+            <textarea type=@UseType class=@cls id=@Id name=@Id @bind-value="CurrentValue" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes"></textarea>
         }
         else
         {
-            <input type=@UseType class=@cls id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
+            <input type=@UseType class=@cls id=@Id name=@Id @bind-value="CurrentValue" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes">
         }
     @if (HasErrorField)
     {
