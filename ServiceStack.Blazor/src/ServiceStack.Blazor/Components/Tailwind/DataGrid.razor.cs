@@ -86,8 +86,7 @@ public partial class DataGrid<Model> : UiComponentBase
 
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     MetadataType? metadataType;
-    public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == typeof(Model).Name)
-        ?? typeof(Model).ToMetadataType();
+    public MetadataType MetadataType => metadataType ??= AppMetadata?.GetType(typeof(Model)) ?? typeof(Model).ToMetadataType();
 
     internal async Task NotifyPropertyChanged(string propertyName)
     {
