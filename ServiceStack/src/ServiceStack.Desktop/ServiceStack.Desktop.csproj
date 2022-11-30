@@ -20,7 +20,7 @@
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
 
-        <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
+        <PackageReference Include="System.Drawing.Common" Version="5.0.3" />
         <PackageReference Include="PInvoke.User32" Version="0.7.104" />
         <PackageReference Include="PInvoke.Kernel32" Version="0.7.104" />
         <PackageReference Include="PInvoke.Gdi32" Version="0.7.104" />
