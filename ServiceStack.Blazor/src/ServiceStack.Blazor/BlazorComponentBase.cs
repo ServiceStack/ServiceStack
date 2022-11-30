@@ -1,15 +1,13 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using ServiceStack.Text;
-using System.Diagnostics;
-using System.Linq;
+using ServiceStack.Blazor.Components;
 
 namespace ServiceStack.Blazor;
 
 /// <summary>
 /// Blazor component base
 /// </summary>
-public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
+public class BlazorComponentBase : UiComponentBase, IHasJsonApiClient
 {
     [Inject] ILogger<BlazorComponentBase> Log { get; set; }
     [Inject] public IClientFactory? ClientFactory { get; set; }
@@ -40,7 +38,6 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
         ? gatewayForm.ManagedApiFormAsync<Model>(requestDto, request)
         : Client.ManagedApiFormAsync<Model>(requestDto, request);
 
-    public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
     public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => UseGateway 
         ? Gateway.ApiAppMetadataAsync()
         : Client.ApiAppMetadataAsync();
