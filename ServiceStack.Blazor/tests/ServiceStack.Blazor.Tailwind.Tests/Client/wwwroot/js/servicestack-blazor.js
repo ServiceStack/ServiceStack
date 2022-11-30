@@ -76,8 +76,10 @@ JS = (function () {
             if (typeof f == 'function') {
                 let ret = f.apply(target, args || [])
                 return ret
-            } else {
-                return target[fnName] = args
+            } else {   
+                if (args !== undefined)
+                    target[fnName] = args
+                return target[fnName]
             }
             return f
         },
@@ -93,7 +95,9 @@ JS = (function () {
                     let ret = f.apply($el, args || [])
                     return ret
                 } else {
-                    return $el[fnName] = args
+                    if (args !== undefined)
+                        $el[fnName] = args
+                    return $el[fnName]
                 }
             }
         },
