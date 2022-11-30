@@ -48,6 +48,7 @@ public class AppHost : AppHostBase, IHostingStartup
             EnableRequestBodyTracking = true,
         });
         Plugins.AddIfDebug(new ProfilingFeature());
+        ScriptContext.Args["AppData"] = AppData.Instance;
     }
 
     public void Configure(IWebHostBuilder builder) => builder

@@ -181,6 +181,8 @@ public class Migration1002 : MigrationBase
         [AutoIncrement]
         public int Id { get; set; }
         public int SalaryOffer { get; set; }
+        public string Currency { get; set; }
+
         [References(typeof(JobApplication))]
         public int JobApplicationId { get; set; }
         [References(typeof(AppUser))]

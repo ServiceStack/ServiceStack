@@ -202,6 +202,8 @@ public class JobOffer : AuditBase
     [IntlNumber(Currency = NumberCurrency.USD)]
     public int SalaryOffer { get; set; }
 
+    public string Currency { get; set; }
+
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
 
@@ -502,11 +504,17 @@ public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
 {
     [ValidateGreaterThan(0)]
     public int SalaryOffer { get; set; }
+
+    [Input(Type = "select", EvalAllowableValues = "AppData.Currencies")]
+    public string Currency { get; set; }
+
     [ValidateGreaterThan(0)]
     public int JobApplicationId { get; set; }
 
     public JobApplicationStatus ApplicationStatus { get; set; }
+
     [ValidateNotEmpty]
+    [Input(Type = "textarea")]
     public string Notes { get; set; }
 }
 
@@ -517,9 +525,13 @@ public class UpdateJobOffer : IPatchDb<JobOffer>, IReturn<JobOffer>
 {
     public int? Id { get; set; }
     public int? SalaryOffer { get; set; }
+
+    [Input(Type = "select", EvalAllowableValues = "AppData.Currencies")]
+    public string Currency { get; set; }
     public int? JobApplicationId { get; set; }
 
     public JobApplicationStatus? ApplicationStatus { get; set; }
+    [Input(Type="textarea")]
     public string? Notes { get; set; }
 }
 

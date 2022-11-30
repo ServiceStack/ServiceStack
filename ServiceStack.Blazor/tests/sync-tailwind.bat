@@ -12,7 +12,7 @@ XCOPY /Y /E /H /C /I ServiceStack.Blazor.Server.Tests\Server\wwwroot\tailwind Se
 RD /q /s ServiceStack.Blazor.Tailwind.Tests\Client\Pages
 XCOPY /Y /E /H /C /I ServiceStack.Blazor.Server.Tests\Server\Pages ServiceStack.Blazor.Tailwind.Tests\Client\Pages
 DEL ServiceStack.Blazor.Tailwind.Tests\Client\Pages\*.cshtml
-COPY ServiceStack.Blazor.Server.Tests\Server\App.razor ServiceStack.Blazor.Tailwind.Tests\Client\
+REM COPY ServiceStack.Blazor.Server.Tests\Server\App.razor ServiceStack.Blazor.Tailwind.Tests\Client\
 
 COPY ServiceStack.Blazor.Server.Tests\Server\Configure.* ServiceStack.Blazor.Tailwind.Tests\Server\
 

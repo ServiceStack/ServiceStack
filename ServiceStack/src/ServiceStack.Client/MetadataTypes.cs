@@ -955,8 +955,12 @@ public static class AppMetadataUtils
             // Some times Types only appear in Response Types
             foreach (var op in app.Api.Operations)
             {
+                allTypes[op.Request.Name] = op.Request;
+                if (op.Request.Namespace != null)
+                    allTypes[op.Request.Namespace + "." + op.Request.Name] = op.Request;
+
                 var type = op.Response;
-                if (type == null || allTypes.ContainsKey(type.Name)) 
+                if (type == null || allTypes.ContainsKey(type.Name))
                     continue;
                 
                 allTypes[type.Name] = type;
@@ -979,12 +983,15 @@ public static class AppMetadataUtils
     public static MetadataType GetType(this AppMetadata app, MetadataTypeName typeRef) =>
         typeRef == null ? null : app.GetType(typeRef.Namespace, typeRef.Name);
 
-    public static MetadataType GetType(this AppMetadata app, string @namespace, string name) => 
-        X.Map(app.GetCache().TypesMap, x => x.TryGetValue(@namespace + "." + name, out var type) 
-            ? type 
-            : x.TryGetValue(name, out type) 
-                ? type 
-                : null);
+    public static MetadataType GetType(this AppMetadata app, string @namespace, string name)
+    {
+        var map = app.GetCache().TypesMap;
+        if (map.TryGetValue(@namespace + "." + name, out var type))
+            return type;
+        if (map.TryGetValue(name, out type))
+            return type;
+        return null;
+    }
 
     public static void EachOperation(this AppMetadata app, Action<MetadataOperationType> configure) 
     {
