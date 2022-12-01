@@ -6,8 +6,7 @@ namespace ServiceStack.Blazor.Components;
 public abstract class AutoFormBase<Model> : BlazorComponentBase
 {
     [Parameter, EditorRequired] public Type ApiType { get; set; }
-
-    [Parameter] public string? @class { get; set; }
+    
     [Parameter] public string? Heading { get; set; }
     [Parameter] public string? SubHeading { get; set; }
 
