@@ -1,10 +1,5 @@
-using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using ServiceStack;
-using ServiceStack.Blazor;
+using MyApp.Client.Shared;
 
 namespace MyApp.Client;
 
@@ -20,4 +15,17 @@ public abstract class AppComponentBase : ServiceStack.Blazor.BlazorComponentBase
 /// </summary>
 public abstract class AppAuthComponentBase : AuthBlazorComponentBase
 {
+}
+
+public static class AppLayouts
+{
+    static Dictionary<string, Type> Layouts = new()
+    {
+        [nameof(EmptyLayout)] = typeof(EmptyLayout),
+        [nameof(ExampleLayout)] = typeof(ExampleLayout),
+        [nameof(MainLayout)] = typeof(MainLayout),
+    };
+    public static Type GetPageLayout(this NavigationManager NavigationManager, Microsoft.AspNetCore.Components.RouteData route) =>
+        X.Map(NavigationManager.QueryString("layout"), name => Layouts.TryGetValue(name, out var layout) ? layout : null)
+            ?? route.PageType?.FirstAttribute<LayoutAttribute>()?.LayoutType ?? typeof(MainLayout);
 }

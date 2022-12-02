@@ -4,22 +4,22 @@
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData"
-                            DefaultLayout="@GetPageLayout(routeData)">
+                            DefaultLayout="@NavigationManager.GetPageLayout(routeData)">
             <NotAuthorized>
                 <h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
                     Sorry
                 </h1>
                 <p>You're not authorized to reach this page.</p>
                 <p>
-                    Please  
-                    <NavLink class="underline hover:text-green-600" @onclick=@login href="javascript:void">login</NavLink> 
+                    Please
+                    <NavLink class="underline hover:text-green-600" @onclick=@login href="javascript:void">login</NavLink>
                     as a different user.
                 </p>
             </NotAuthorized>
-            
+
             <Authorizing>
                 <p class="text-gray-400 absolute -mt-4 mr-4 right-0">Authenticating...</p>
-                <RouteView RouteData="@routeData" />
+                <RouteView RouteData="@routeData" DefaultLayout="@NavigationManager.GetPageLayout(routeData)" />
             </Authorizing>
 
         </AuthorizeRouteView>
@@ -48,9 +48,6 @@
 </Router>
 
 @code {
-
-    Type GetPageLayout(RouteData route) => route.PageType?.FirstAttribute<LayoutAttribute>()?.LayoutType ?? typeof(MainLayout);
-
     async Task login()
     {
         await AuthStateProvider.LogoutIfAuthenticatedAsync(redirectTo: NavigationManager.GetLoginUrl());
