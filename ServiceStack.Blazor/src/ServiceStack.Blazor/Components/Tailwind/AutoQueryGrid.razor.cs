@@ -61,6 +61,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public Predicate<string>? DisableKeyBindings { get; set; }
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
+    [Parameter] public ApiPrefs? Prefs { get; set; }
 
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
     AutoEditForm<Model>? AutoEditForm { get; set; }
@@ -397,7 +398,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         await base.OnParametersSetAsync();
         ParseQueryString(new Uri(NavigationManager.Uri).Query);
 
-        ApiPrefs = LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
+        ApiPrefs = Prefs ?? LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
         if (Edit != null || New == true)
         {
             if (EditModel == null || Properties.GetId(EditModel)?.ToString() != Edit && PrimaryKey != null)
@@ -457,7 +458,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     {
         if (firstRender)
         {
-            ApiPrefs = await LocalStorage.GetItemAsync<ApiPrefs>(CacheKey) ?? new();
+            ApiPrefs = Prefs ?? await LocalStorage.GetItemAsync<ApiPrefs>(CacheKey) ?? new();
             dotnetRef = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("JS.registerKeyNav", dotnetRef);
             await UpdateAsync();

@@ -15,4 +15,9 @@ public class ApiPrefs
         Take = Take, 
         SelectedColumns = SelectedColumns.ToList(),
     };
+
+    public static ApiPrefs Create(int? take = null, List<string>? columns=null) => new ApiPrefs { 
+        Take = take ?? DefaultTake,
+        SelectedColumns = columns ?? new(),
+    };
 }
