@@ -31,7 +31,7 @@ public class Contact : AuditBase
     public string Email { get; set; }
     [Format(FormatMethods.LinkPhone)]
     public string Phone { get; set; }
-
+    public List<string>? Skills { get; set; }
     public string About { get; set; }
 
     [Reference]

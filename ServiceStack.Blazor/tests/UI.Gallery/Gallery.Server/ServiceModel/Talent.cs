@@ -30,10 +30,8 @@ public class Contact
     public string Email { get; set; }
     [Format(FormatMethods.LinkPhone)]
     public string Phone { get; set; }
-
+    public List<string>? Skills { get; set; }
     public string About { get; set; }
-
-    public List<string> Skills { get; set; }
 
     [Reference]
     public List<JobApplication> Applications { get; set; }
