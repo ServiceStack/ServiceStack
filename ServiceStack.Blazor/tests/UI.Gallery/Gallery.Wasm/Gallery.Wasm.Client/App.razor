@@ -1,6 +1,7 @@
 ﻿@inject NavigationManager NavigationManager;
 @inject ServiceStackStateProvider AuthStateProvider;
 
+<CascadingAuthenticationState>
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData"
@@ -46,6 +47,7 @@
         </LayoutView>
     </NotFound>
 </Router>
+</CascadingAuthenticationState>
 
 @code {
     async Task login()
