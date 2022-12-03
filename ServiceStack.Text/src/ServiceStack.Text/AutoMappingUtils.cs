@@ -236,8 +236,10 @@ namespace ServiceStack
         
         public static object ChangeValueType(object from, Type toType)
         {
+            if (from == null)
+                return toType.GetDefaultValue();
+
             var s = from as string;
-            
             var fromType = from.GetType();
             if (!fromType.IsEnum && !toType.IsEnum)
             {

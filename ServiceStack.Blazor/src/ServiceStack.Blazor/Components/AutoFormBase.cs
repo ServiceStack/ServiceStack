@@ -115,7 +115,7 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
 
                             if (isPk || changed)
                             {
-                                if (entry.Value != null)
+                                if (entry.Value != null && (entry.Value is not string s || s != string.Empty))
                                 {
                                     formData.AddParam(entry.Key, entry.Value);
                                 }
@@ -133,13 +133,12 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
                 }
 
                 var url = request.GetType().ToApiUrl();
-                if (reset.Count > 0 && request is IHasQueryParams queryParams)
+                if (reset.Count > 0)
                 {
-                    queryParams.AddQueryParam("reset", string.Join(',', reset));
+                    formData.AddParam("reset", string.Join(',', reset));
                 }
 
                 api = await ApiFormAsync<Model>(request, formData);
-                //api = await ApiAsync<Model>(request);
             }
             catch (Exception e)
             {
