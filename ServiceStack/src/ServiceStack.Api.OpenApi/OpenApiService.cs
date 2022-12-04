@@ -574,8 +574,7 @@ namespace ServiceStack.Api.OpenApi
 
                         if (propAttr.IsRequired)
                         {
-                            if (schema.Required == null)
-                                schema.Required = new List<string>();
+                            schema.Required ??= new List<string>();
                             schema.Required.Add(schemaPropertyName);
                         }
                     }

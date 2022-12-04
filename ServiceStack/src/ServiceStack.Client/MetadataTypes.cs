@@ -34,7 +34,8 @@ public class MetadataTypesConfig
         bool addPropertyAccessors = true,
         bool excludeGenericBaseTypes = false,
         bool settersReturnThis = true,
-        bool makePropertiesOptional = true,
+        bool addNullableAnnotations = false,
+        bool makePropertiesOptional = false,
         bool makeDataContractsExtensible = false,
         bool initializeCollections = true,
         int? addImplicitVersion = null)
@@ -58,6 +59,7 @@ public class MetadataTypesConfig
         AddPropertyAccessors = addPropertyAccessors;
         ExcludeGenericBaseTypes = excludeGenericBaseTypes;
         SettersReturnThis = settersReturnThis;
+        AddNullableAnnotations = addNullableAnnotations;
         MakePropertiesOptional = makePropertiesOptional;
         AddImplicitVersion = addImplicitVersion;
     }
@@ -81,6 +83,7 @@ public class MetadataTypesConfig
     public bool AddPropertyAccessors { get; set; }
     public bool ExcludeGenericBaseTypes { get; set; }
     public bool SettersReturnThis { get; set; }
+    public bool AddNullableAnnotations { get; set; }
     public bool MakePropertiesOptional { get; set; }
     public bool ExportAsTypes { get; set; }
     public bool ExcludeImplementedInterfaces { get; set; }
@@ -1487,11 +1490,19 @@ public static class AppMetadataUtils
         property.Format ??= pi.FirstAttribute<Intl>().ToFormat();
         property.Format ??= pi.FirstAttribute<FormatAttribute>().ToFormat();
 
+        if (treatNonNullableRefTypesAsRequired)
+        {
+            var notNullRefType = pi.IsNotNullable();
+            property.IsRequired = notNullRefType;
+        }
+
         var apiMember = pi.FirstAttribute<ApiMemberAttribute>();
         if (apiMember != null)
         {
             if (apiMember.IsRequired)
                 property.IsRequired = true;
+            else if (apiMember.IsOptional)
+                property.IsRequired = false;
 
             property.ParamType = apiMember.ParameterType;
             property.DisplayType = apiMember.DataType;
@@ -1501,13 +1512,6 @@ public static class AppMetadataUtils
         var requiredProp = pi.FirstAttribute<RequiredAttribute>();
         if (requiredProp != null)
             property.IsRequired = true;
-
-        if (treatNonNullableRefTypesAsRequired)
-        {
-            var notNullRefType = pi.IsNotNullable();
-            if (notNullRefType == true)
-                property.IsRequired = true;
-        }
 
         var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
         if (apiAllowableValues != null)

@@ -619,17 +619,12 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public static bool? DefaultIsPropertyOptional(TypeScriptGenerator generator, MetadataType type, MetadataPropertyType prop)
         {
-            if (prop.IsRequired == true)
-            {
-                if (prop.Type == "string" || generator.TypeAlias(prop.Type) == "string")
-                    return generator.Config.MakePropertiesOptional;
-                return false;
-            }
-            
             if (generator.Config.MakePropertiesOptional)
                 return true;
 
-            return null;
+            return prop.IsRequired == null
+                ? null
+                : !prop.IsRequired.Value;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

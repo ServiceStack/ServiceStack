@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -131,6 +132,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
                 sb.AppendLine("{0}MakeInternal: {1}".Fmt(defaultValue("MakeInternal"), Config.MakeInternal));
                 sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
+                sb.AppendLine("{0}AddNullableAnnotations: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddNullableAnnotations));
                 sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
                 sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
                 sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
@@ -461,6 +463,14 @@ namespace ServiceStack.NativeTypes.CSharp
 
                     var propType = GetPropertyType(prop);
                     propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
+                    
+                    if (Config.AddNullableAnnotations)
+                    {
+                        if (prop.IsRequired != true && (prop.PropertyInfo?.PropertyType.IsValueType) != true)
+                        {
+                            propType = GetPropertyType(prop).EnsureSuffix('?');
+                        }
+                    }    
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;

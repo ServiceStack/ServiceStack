@@ -96,6 +96,7 @@ namespace ServiceStack.NativeTypes
         public bool? AddPropertyAccessors { get; set; }
         public bool? ExcludeGenericBaseTypes { get; set; }
         public bool? SettersReturnThis { get; set; }
+        public bool? AddNullableAnnotations { get; set; }
         public bool? MakePropertiesOptional { get; set; }
         public bool? ExportAsTypes { get; set; }
         public bool? ExportValueTypes { get; set; }

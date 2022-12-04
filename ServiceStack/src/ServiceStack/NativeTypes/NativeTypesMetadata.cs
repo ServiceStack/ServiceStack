@@ -49,6 +49,7 @@ namespace ServiceStack.NativeTypes
                 AddPropertyAccessors = req.AddPropertyAccessors ?? defaults.AddPropertyAccessors,
                 ExcludeGenericBaseTypes = req.ExcludeGenericBaseTypes ?? defaults.ExcludeGenericBaseTypes,
                 SettersReturnThis = req.SettersReturnThis ?? defaults.SettersReturnThis,
+                AddNullableAnnotations = req.AddNullableAnnotations ?? defaults.AddNullableAnnotations,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 ExportAsTypes = req.ExportAsTypes ?? defaults.ExportAsTypes,
                 ExcludeImplementedInterfaces = defaults.ExcludeImplementedInterfaces,
