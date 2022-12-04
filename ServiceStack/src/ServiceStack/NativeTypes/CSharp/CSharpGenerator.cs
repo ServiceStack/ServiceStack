@@ -50,6 +50,7 @@ namespace ServiceStack.NativeTypes.CSharp
         /// <summary>
         /// Helper to make Nullable Reference Type Annotations
         /// </summary>
+        [Obsolete("Use ConfigurePlugin<NativeTypesFeature>(feature => feature.MetadataTypesConfig.AddNullableAnnotations = true);")]
         public static bool UseNullableAnnotations
         {
             set
@@ -132,7 +133,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
                 sb.AppendLine("{0}MakeInternal: {1}".Fmt(defaultValue("MakeInternal"), Config.MakeInternal));
                 sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
-                sb.AppendLine("{0}AddNullableAnnotations: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddNullableAnnotations));
+                sb.AppendLine("{0}AddNullableAnnotations: {1}".Fmt(defaultValue("AddNullableAnnotations"), Config.AddNullableAnnotations));
                 sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
                 sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
                 sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
