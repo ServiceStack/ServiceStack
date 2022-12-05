@@ -113,7 +113,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Allows_MegaDto_through_RedisMqClients()
         {
-            var mqFactory = new RedisMessageFactory(new BasicRedisClientManager());
+            var mqFactory = new RedisMessageFactory(new BasicRedisClientManager(), new ServiceStackTextMessageByteSerializer());
 
             var request = MegaDto.Create();
 

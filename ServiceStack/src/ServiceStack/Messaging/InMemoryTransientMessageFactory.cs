@@ -9,18 +9,25 @@ namespace ServiceStack.Messaging
         : IMessageFactory
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(InMemoryTransientMessageFactory));
-        private readonly InMemoryTransientMessageService  transientMessageService;
+        private readonly InMemoryTransientMessageService transientMessageService;
+        private readonly IMessageByteSerializer messageByteSerializer;
         internal MessageQueueClientFactory MqFactory { get; set; }
 
         public InMemoryTransientMessageFactory()
             : this(null)
         {
         }
-
+        
         public InMemoryTransientMessageFactory(InMemoryTransientMessageService transientMessageService)
+            : this(transientMessageService, new ServiceStackTextMessageByteSerializer())
         {
-            this.transientMessageService = transientMessageService ?? new InMemoryTransientMessageService();
-            this.MqFactory = new MessageQueueClientFactory();
+        }
+
+        public InMemoryTransientMessageFactory(InMemoryTransientMessageService transientMessageService, IMessageByteSerializer messageByteSerializer)
+        {
+            this.transientMessageService = transientMessageService ?? new InMemoryTransientMessageService(messageByteSerializer);
+            this.messageByteSerializer = messageByteSerializer;
+            this.MqFactory = new MessageQueueClientFactory(messageByteSerializer);
         }
 
         public IMessageProducer CreateMessageProducer()
@@ -30,7 +37,7 @@ namespace ServiceStack.Messaging
 
         public IMessageQueueClient CreateMessageQueueClient()
         {
-            return new InMemoryMessageQueueClient(MqFactory);
+            return new InMemoryMessageQueueClient(MqFactory, messageByteSerializer);
         }
 
         public IMessageService CreateMessageService()
@@ -73,7 +80,7 @@ namespace ServiceStack.Messaging
             public void Publish(string queueName, IMessage message)
             {
                 this.parent.transientMessageService.MessageQueueFactory
-                    .PublishMessage(queueName, message.ToBytes());
+                    .PublishMessage(queueName, this.parent.messageByteSerializer.ToBytes(message));
             }
 
             public void SendOneWay(object requestDto)

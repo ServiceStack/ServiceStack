@@ -10,10 +10,17 @@ namespace ServiceStack.Messaging
         : IMessageQueueClient, IOneWayClient
     {
         private readonly MessageQueueClientFactory factory;
+        private readonly IMessageByteSerializer messageByteSerializer;
 
         public InMemoryMessageQueueClient(MessageQueueClientFactory factory)
+            : this(factory, new ServiceStackTextMessageByteSerializer())
+        {
+        }
+        
+        public InMemoryMessageQueueClient(MessageQueueClientFactory factory, IMessageByteSerializer messageByteSerializer)
         {
             this.factory = factory;
+            this.messageByteSerializer = messageByteSerializer;
         }
 
         public void Publish<T>(T messageBody)
@@ -35,7 +42,7 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = messageByteSerializer.ToBytes(message);
             factory.PublishMessage(queueName, messageBytes);
         }
 
@@ -60,7 +67,7 @@ namespace ServiceStack.Messaging
 
         public void Notify(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = messageByteSerializer.ToBytes(message);
             factory.PublishMessage(queueName, messageBytes);
         }
 
@@ -80,8 +87,8 @@ namespace ServiceStack.Messaging
 
         public IMessage<T> GetAsync<T>(string queueName)
         {
-            return factory.GetMessageAsync(queueName)
-                .ToMessage<T>();
+            return messageByteSerializer.ToMessage<T>(
+                factory.GetMessageAsync(queueName));
         }
 
         public void Ack(IMessage message)

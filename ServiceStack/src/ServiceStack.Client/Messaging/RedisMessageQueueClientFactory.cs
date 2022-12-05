@@ -10,19 +10,26 @@ namespace ServiceStack.Messaging
         : IMessageQueueClientFactory
     {
         private readonly Action onPublishedCallback;
+        private readonly IMessageByteSerializer messageByteSerializer;
         private readonly IRedisClientsManager clientsManager;
 
+        public RedisMessageQueueClientFactory(IRedisClientsManager clientsManager, Action onPublishedCallback)
+            : this(clientsManager, new ServiceStackTextMessageByteSerializer(), onPublishedCallback)
+        {
+        }
+        
         public RedisMessageQueueClientFactory(
-            IRedisClientsManager clientsManager, Action onPublishedCallback)
+            IRedisClientsManager clientsManager, IMessageByteSerializer messageByteSerializer, Action onPublishedCallback)
         {
             this.onPublishedCallback = onPublishedCallback;
+            this.messageByteSerializer = messageByteSerializer;
             this.clientsManager = clientsManager;
         }
 
         public IMessageQueueClient CreateMessageQueueClient()
         {
             return new RedisMessageQueueClient(
-                this.clientsManager, this.onPublishedCallback);
+                this.clientsManager, this.messageByteSerializer, this.onPublishedCallback);
         }
 
         public void Dispose()

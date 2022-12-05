@@ -50,6 +50,19 @@ namespace ServiceStack.Common.Tests
 
             Assert.That(typedMessage.GetBody().Value, Is.EqualTo(dto.Value));
         }
+        
+        [Test]
+        public void Can_serialize_IMessage_ToBytes_into_typed_Message_using_MessageByteSerializer()
+        {
+            var serializer = new ServiceStackTextMessageByteSerializer();
+            
+            var dto = new Incr { Value = 1 };
+            var iMsg = MessageFactory.Create(dto);
+            var bytes = serializer.ToBytes(iMsg);
+            var typedMessage = serializer.ToMessage<Incr>(bytes);
+
+            Assert.That(typedMessage.GetBody().Value, Is.EqualTo(dto.Value));
+        }
 
         [Test]
         public void Can_deserialize_concrete_type_into_IOAuthSession()

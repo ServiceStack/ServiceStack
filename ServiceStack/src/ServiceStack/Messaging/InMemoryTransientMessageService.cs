@@ -9,13 +9,23 @@ namespace ServiceStack.Messaging
         internal InMemoryTransientMessageFactory Factory { get; set; }
 
         public InMemoryTransientMessageService()
-            : this(null)
+            : this(factory: null)
         {
         }
 
         public InMemoryTransientMessageService(InMemoryTransientMessageFactory factory)
+            : this(factory, new ServiceStackTextMessageByteSerializer())
         {
-            this.Factory = factory ?? new InMemoryTransientMessageFactory(this);
+        }
+
+        public InMemoryTransientMessageService(IMessageByteSerializer messageByteSerializer)
+            : this(null, messageByteSerializer)
+        {
+        }
+
+        public InMemoryTransientMessageService(InMemoryTransientMessageFactory factory, IMessageByteSerializer messageByteSerializer)
+        {
+            this.Factory = factory ?? new InMemoryTransientMessageFactory(this, messageByteSerializer);
             this.Factory.MqFactory.MessageReceived += factory_MessageReceived;
         }
 

@@ -78,12 +78,13 @@ namespace ServiceStack.Messaging.Redis
         public IRedisPubSubServer RedisPubSub { get; set; }
 
         private readonly IRedisClientsManager clientsManager; //Thread safe redis client/conn factory
+        private readonly IMessageByteSerializer messageByteSerializer;
 
         public IRedisClientsManager ClientsManager => clientsManager;
 
         public IMessageQueueClient CreateMessageQueueClient()
         {
-            return new RedisMessageQueueClient(this.clientsManager, null);
+            return new RedisMessageQueueClient(this.clientsManager, this.messageByteSerializer, null);
         }
 
         /// <summary>
@@ -140,8 +141,16 @@ namespace ServiceStack.Messaging.Redis
 
         public RedisMqServer(IRedisClientsManager clientsManager,
             int retryCount = DefaultRetryCount, TimeSpan? requestTimeOut = null)
+            : this(clientsManager, new ServiceStackTextMessageByteSerializer(), retryCount, requestTimeOut)
+        {
+        }
+
+        public RedisMqServer(IRedisClientsManager clientsManager,
+            IMessageByteSerializer messageByteSerializer,
+            int retryCount = DefaultRetryCount, TimeSpan? requestTimeOut = null)
         {
             this.clientsManager = clientsManager;
+            this.messageByteSerializer = messageByteSerializer;
             RedisPubSub = new RedisPubSubServer(clientsManager, QueueNames.TopicIn)
             {
                 OnInit = OnInit,
@@ -153,7 +162,7 @@ namespace ServiceStack.Messaging.Redis
 
             this.RetryCount = retryCount;
             //this.RequestTimeOut = requestTimeOut;
-            this.MessageFactory = new RedisMessageFactory(clientsManager);
+            this.MessageFactory = new RedisMessageFactory(clientsManager, messageByteSerializer);
             this.ErrorHandler = ex => Log.Error("Exception in Redis MQ Server: " + ex.Message, ex);
             this.WaitBeforeNextRestart = TimeSpan.FromMilliseconds(2000);
         }
@@ -248,6 +257,7 @@ namespace ServiceStack.Messaging.Redis
                                 clientsManager,
                                 handlerFactory.CreateMessageHandler(),
                                 queueNames.Priority,
+                                this.messageByteSerializer,
                                 WorkerErrorHandler)));
                     }
 
@@ -256,6 +266,7 @@ namespace ServiceStack.Messaging.Redis
                             clientsManager,
                             handlerFactory.CreateMessageHandler(),
                             queueNames.In,
+                            this.messageByteSerializer,
                             WorkerErrorHandler)));
                 }
 

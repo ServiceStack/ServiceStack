@@ -17,19 +17,28 @@ namespace ServiceStack.Messaging.Redis
 	public class RedisTransientMessageFactory
 		: IMessageFactory
 	{
+		private readonly IMessageByteSerializer messageByteSerializer;
+
 		public IRedisClientsManager ClientsManager { get; private set; }
 
 		public RedisTransientMessageService MessageService { get; private set; }
 
 		public RedisTransientMessageFactory(
 			IRedisClientsManager clientsManager)
-			: this(2, null, clientsManager)
+			: this(clientsManager, new ServiceStackTextMessageByteSerializer())
+		{
+		}
+		
+		public RedisTransientMessageFactory(
+			IRedisClientsManager clientsManager, IMessageByteSerializer messageByteSerializer)
+			: this(2, null, clientsManager, messageByteSerializer)
 		{
 		}
 
 		public RedisTransientMessageFactory(int retryAttempts, TimeSpan? requestTimeOut,
-			IRedisClientsManager clientsManager)
+			IRedisClientsManager clientsManager, IMessageByteSerializer messageByteSerializer)
 		{
+			this.messageByteSerializer = messageByteSerializer;
 			this.ClientsManager = clientsManager ?? new BasicRedisClientManager();
 			MessageService = new RedisTransientMessageService(
 				retryAttempts, requestTimeOut, this);
@@ -37,12 +46,12 @@ namespace ServiceStack.Messaging.Redis
 
 		public IMessageQueueClient CreateMessageQueueClient()
 		{
-			return new RedisMessageQueueClient(this.ClientsManager, OnMessagePublished);
+			return new RedisMessageQueueClient(this.ClientsManager, this.messageByteSerializer, OnMessagePublished);
 		}
 
 		public IMessageProducer CreateMessageProducer()
 		{
-			return new RedisMessageProducer(this.ClientsManager, OnMessagePublished);
+			return new RedisMessageProducer(this.ClientsManager, this.messageByteSerializer, OnMessagePublished);
 		}
 
 		public IMessageService CreateMessageService()

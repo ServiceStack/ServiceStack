@@ -11,14 +11,24 @@ namespace ServiceStack.Messaging
         : IMessageProducer, IOneWayClient
     {
         private readonly IRedisClientsManager clientsManager;
+        private readonly IMessageByteSerializer messageByteSerializer;
         private readonly Action onPublishedCallback;
 
         public RedisMessageProducer(IRedisClientsManager clientsManager)
-            : this(clientsManager, null) { }
+            : this(clientsManager, new ServiceStackTextMessageByteSerializer(), null) { }
+
+        public RedisMessageProducer(IRedisClientsManager clientsManager, IMessageByteSerializer messageByteSerializer)
+            : this(clientsManager, messageByteSerializer, null) { }
 
         public RedisMessageProducer(IRedisClientsManager clientsManager, Action onPublishedCallback)
+            : this(clientsManager, new ServiceStackTextMessageByteSerializer(), onPublishedCallback)
+        {
+        }
+        
+        public RedisMessageProducer(IRedisClientsManager clientsManager, IMessageByteSerializer messageByteSerializer, Action onPublishedCallback)
         {
             this.clientsManager = clientsManager;
+            this.messageByteSerializer = messageByteSerializer;
             this.onPublishedCallback = onPublishedCallback;
         }
 
@@ -71,7 +81,7 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = messageByteSerializer.ToBytes(message);
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 

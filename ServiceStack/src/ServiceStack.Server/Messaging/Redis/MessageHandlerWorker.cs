@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 
 namespace ServiceStack.Messaging.Redis
 {
@@ -14,6 +13,7 @@ namespace ServiceStack.Messaging.Redis
 
         private readonly IMessageHandler messageHandler;
         private readonly IRedisClientsManager clientsManager;
+        private readonly IMessageByteSerializer messageByteSerializer;
 
         public string QueueName { get; set; }
 
@@ -37,16 +37,25 @@ namespace ServiceStack.Messaging.Redis
         public MessageHandlerWorker(
             IRedisClientsManager clientsManager, IMessageHandler messageHandler, string queueName,
             Action<MessageHandlerWorker, Exception> errorHandler)
+            : this(clientsManager, messageHandler, queueName, new ServiceStackTextMessageByteSerializer(), errorHandler)
+        {
+        }
+
+        public MessageHandlerWorker(
+            IRedisClientsManager clientsManager, IMessageHandler messageHandler, string queueName,
+            IMessageByteSerializer messageByteSerializer,
+            Action<MessageHandlerWorker, Exception> errorHandler)
         {
             this.clientsManager = clientsManager;
             this.messageHandler = messageHandler;
             this.QueueName = queueName;
+            this.messageByteSerializer = messageByteSerializer;
             this.errorHandler = errorHandler;
         }
 
         public MessageHandlerWorker Clone()
         {
-            return new MessageHandlerWorker(clientsManager, messageHandler, QueueName, errorHandler);
+            return new MessageHandlerWorker(clientsManager, messageHandler, QueueName, messageByteSerializer, errorHandler);
         }
 
         public void NotifyNewMessage()
@@ -108,7 +117,7 @@ namespace ServiceStack.Messaging.Redis
                     {
                         receivedNewMsgs = false;
 
-                        using (var mqClient = new RedisMessageQueueClient(clientsManager))
+                        using (var mqClient = new RedisMessageQueueClient(clientsManager, messageByteSerializer))
                         {
                             var msgsProcessedThisTime = messageHandler.ProcessQueue(mqClient, QueueName,
                                 () => Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started);

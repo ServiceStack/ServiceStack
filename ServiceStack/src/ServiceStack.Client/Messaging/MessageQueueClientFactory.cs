@@ -9,9 +9,21 @@ namespace ServiceStack.Messaging
     public class MessageQueueClientFactory
         : IMessageQueueClientFactory
     {
+        private readonly IMessageByteSerializer messageByteSerializer;
+
+        public MessageQueueClientFactory()
+            : this(new ServiceStackTextMessageByteSerializer())
+        {
+        }
+        
+        public MessageQueueClientFactory(IMessageByteSerializer messageByteSerializer)
+        {
+            this.messageByteSerializer = messageByteSerializer;
+        }
+        
         public IMessageQueueClient CreateMessageQueueClient()
         {
-            return new InMemoryMessageQueueClient(this);
+            return new InMemoryMessageQueueClient(this, messageByteSerializer);
         }
 
         readonly object syncLock = new object();
@@ -29,7 +41,7 @@ namespace ServiceStack.Messaging
 
         public void PublishMessage<T>(string queueName, IMessage<T> message)
         {
-            PublishMessage(queueName, message.ToBytes());
+            PublishMessage(queueName, messageByteSerializer.ToBytes(message));
         }
 
         public void PublishMessage(string queueName, byte[] messageBytes)

@@ -12,17 +12,25 @@ namespace ServiceStack.Messaging
     {
         private readonly Action onPublishedCallback;
         private readonly IRedisClientsManager clientsManager;
+        private readonly IMessageByteSerializer messageByteSerializer;
 
         public int MaxSuccessQueueSize { get; set; }
 
         public RedisMessageQueueClient(IRedisClientsManager clientsManager)
-            : this(clientsManager, null) { }
+            : this(clientsManager, new ServiceStackTextMessageByteSerializer(), null) { }
+        
+        public RedisMessageQueueClient(IRedisClientsManager clientsManager, IMessageByteSerializer messageByteSerializer)
+            : this(clientsManager, messageByteSerializer, null) { }
+
+        public RedisMessageQueueClient(IRedisClientsManager clientsManager, Action onPublishedCallback)
+            : this(clientsManager, new ServiceStackTextMessageByteSerializer(), onPublishedCallback) { }
 
         public RedisMessageQueueClient(
-            IRedisClientsManager clientsManager, Action onPublishedCallback)
+            IRedisClientsManager clientsManager, IMessageByteSerializer messageByteSerializer, Action onPublishedCallback)
         {
             this.onPublishedCallback = onPublishedCallback;
             this.clientsManager = clientsManager;
+            this.messageByteSerializer = messageByteSerializer;
             this.MaxSuccessQueueSize = 100;
         }
 
@@ -71,7 +79,7 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = messageByteSerializer.ToBytes(message);
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
@@ -80,7 +88,7 @@ namespace ServiceStack.Messaging
 
         public void Notify(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = messageByteSerializer.ToBytes(message);
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.LTrim(queueName, 0, this.MaxSuccessQueueSize);
             this.ReadWriteClient.Publish(QueueNames.TopicOut, queueName.ToUtf8Bytes());
@@ -93,13 +101,13 @@ namespace ServiceStack.Messaging
                 ? null
                 : unblockingKeyAndValue[1];
 
-            return messageBytes.ToMessage<T>();
+            return messageByteSerializer.ToMessage<T>(messageBytes);
         }
 
         public IMessage<T> GetAsync<T>(string queueName)
         {
             var messageBytes = this.ReadWriteClient.RPop(queueName);
-            return messageBytes.ToMessage<T>();
+            return messageByteSerializer.ToMessage<T>(messageBytes);
         }
 
         public void Ack(IMessage message)
