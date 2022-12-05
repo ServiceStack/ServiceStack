@@ -45,8 +45,8 @@ namespace ServiceStack.Common.Tests
         {
             var dto = new Incr { Value = 1 };
             var iMsg = MessageFactory.Create(dto);
-            var bytes = iMsg.ToBytes();
-            var typedMessage = bytes.ToMessage<Incr>();
+            var bytes = MessageSerializer.Instance.ToBytes(iMsg);
+            var typedMessage = MessageSerializer.Instance.ToMessage<Incr>(bytes);
 
             Assert.That(typedMessage.GetBody().Value, Is.EqualTo(dto.Value));
         }

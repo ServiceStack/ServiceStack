@@ -71,7 +71,7 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = MessageSerializer.Instance.ToBytes(message);
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
@@ -80,7 +80,7 @@ namespace ServiceStack.Messaging
 
         public void Notify(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = MessageSerializer.Instance.ToBytes(message);
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.LTrim(queueName, 0, this.MaxSuccessQueueSize);
             this.ReadWriteClient.Publish(QueueNames.TopicOut, queueName.ToUtf8Bytes());
@@ -93,13 +93,13 @@ namespace ServiceStack.Messaging
                 ? null
                 : unblockingKeyAndValue[1];
 
-            return messageBytes.ToMessage<T>();
+            return MessageSerializer.Instance.ToMessage<T>(messageBytes);
         }
 
         public IMessage<T> GetAsync<T>(string queueName)
         {
             var messageBytes = this.ReadWriteClient.RPop(queueName);
-            return messageBytes.ToMessage<T>();
+            return MessageSerializer.Instance.ToMessage<T>(messageBytes);
         }
 
         public void Ack(IMessage message)

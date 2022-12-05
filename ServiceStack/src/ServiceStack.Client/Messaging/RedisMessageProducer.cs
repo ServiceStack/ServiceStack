@@ -71,7 +71,7 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = MessageSerializer.Instance.ToBytes(message);
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
