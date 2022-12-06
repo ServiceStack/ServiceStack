@@ -23,6 +23,11 @@ using ServiceStack.Auth;
 using System.Collections.Specialized;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using System.IO;
+using System.Text.Encodings.Web;
 
 namespace ServiceStack;
 
@@ -447,6 +452,63 @@ public class JsCookie
     public string Path { get; set; }
     public string Domain { get; set; }
     public string Expires { get; set; }
+}
+
+public interface IComponentRenderer
+{
+    Task<string> RenderComponentAsync<T>(HttpContext httpContext, Dictionary<string, object>? args = null);
+    Task<string> RenderComponentAsync(Type type, HttpContext httpContext, Dictionary<string, object>? args = null);
+}
+
+public class ComponentRenderer : IComponentRenderer
+{
+    public Task<string> RenderComponentAsync<T>(HttpContext httpContext, Dictionary<string, object>? args = null) =>
+        RenderComponentAsync(typeof(T), httpContext, args);
+
+    public async Task<string> RenderComponentAsync(Type componentType, HttpContext httpContext, Dictionary<string, object>? args = null)
+    {
+        var componentArgs = new Dictionary<string, object>();
+        if (args != null)
+        {
+            var accessors = TypeProperties.Get(componentType);
+            foreach (var entry in args)
+            {
+                var prop = accessors.GetPublicProperty(entry.Key);
+                if (prop == null)
+                    continue;
+
+                var value = entry.Value.ConvertTo(prop.PropertyType);
+                componentArgs[prop.Name] = value;
+            }
+        }
+
+        var componentTagHelper = new ComponentTagHelper
+        {
+            ComponentType = componentType,
+            RenderMode = RenderMode.Static,
+            Parameters = componentArgs,
+            ViewContext = new ViewContext { HttpContext = httpContext },
+        };
+
+        var objArgs = new Dictionary<object, object>();
+        var tagHelperContext = new TagHelperContext(
+            new TagHelperAttributeList(),
+            objArgs,
+            "uniqueid");
+
+        var tagHelperOutput = new TagHelperOutput(
+            "tagName",
+            new TagHelperAttributeList(),
+            (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+
+        await componentTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
+
+        using var stringWriter = new StringWriter();
+
+        tagHelperOutput.Content.WriteTo(stringWriter, HtmlEncoder.Default);
+
+        return stringWriter.ToString();
+    }
 }
 
 #endif
