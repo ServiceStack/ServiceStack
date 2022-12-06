@@ -391,32 +391,9 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        /// Dump contents of JWT
-        /// </summary>
-        public static string Dump(string jwt)
-        {
-            if (string.IsNullOrEmpty(jwt))
-                throw new ArgumentNullException(nameof(jwt));
-            
-            var parts = jwt.Split('.');
-            if (parts.Length != 3 && parts.Length != 5)
-                return "Invalid JWT or JWE";
-            
-            var sb = StringBuilderCache.Allocate();
-            var header = JSON.parse(parts[0].FromBase64UrlSafe().FromUtf8Bytes());
-            sb.AppendLine("Header:");
-            sb.AppendLine(header.Dump());
-            var body = JSON.parse(parts[1].FromBase64UrlSafe().FromUtf8Bytes());
-            sb.AppendLine("Body:");
-            sb.AppendLine(body.Dump());
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        /// <summary>
         /// Print Dump contents of JWT to Console
         /// </summary>
         public static void PrintDump(string jwt) => Console.WriteLine(Dump(jwt));
-        
 
         public override async Task<string> CreateAccessTokenFromRefreshToken(string refreshToken, IRequest req)
         {

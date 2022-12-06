@@ -36,7 +36,7 @@ namespace ServiceStack.Aws.DynamoDbTests
         {
             unchecked
             {
-                return (Id.GetHashCode() * 397) ^ (CreatedDate != null ? CreatedDate.GetHashCode() : 0);
+                return (Id.GetHashCode() * 397) ^ (CreatedDate != default ? CreatedDate.GetHashCode() : 0);
             }
         }
     }

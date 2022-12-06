@@ -14,6 +14,7 @@ public class MigrationTests : OrmLiteTestBase
     private IDbConnection Create()
     {
         var db = DbFactory.Open();
+        Migrator.Recreate(db);
         Migrator.Clear(db);
         Migrator.Down(DbFactory, new[]{ typeof(Migration1000), typeof(Migration1002) });
         return db;

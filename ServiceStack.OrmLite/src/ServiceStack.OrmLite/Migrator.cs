@@ -26,7 +26,9 @@ public class Migration : IMeta
     public string? Log { get; set; }
     public string? ErrorCode { get; set; }
     public string? ErrorMessage { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
     public string? ErrorStackTrace { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
     public Dictionary<string, string> Meta { get; set; }
 }
 

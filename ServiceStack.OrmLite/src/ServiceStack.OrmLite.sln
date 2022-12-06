@@ -7,8 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{6CEB3EDE
 	ProjectSection(SolutionItems) = preProject
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
-		..\build\build.tasks = ..\build\build.tasks
-		..\README.md = ..\README.md
 		Directory.Build.props = Directory.Build.props
 		ServiceStack.OrmLite\ServiceStack.OrmLite.Core.csproj = ServiceStack.OrmLite\ServiceStack.OrmLite.Core.csproj
 		ServiceStack.OrmLite.Firebird\ServiceStack.OrmLite.Firebird.Core.csproj = ServiceStack.OrmLite.Firebird\ServiceStack.OrmLite.Firebird.Core.csproj
@@ -17,16 +15,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{6CEB3EDE
 		ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.Core.csproj = ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.Core.csproj
 		ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.Core.csproj = ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.Core.csproj
 		ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.Core.csproj = ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.Core.csproj
-		..\build\build-core.proj = ..\build\build-core.proj
 		ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj = ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj
 		ServiceStack.OrmLite.SqlServer.Data\ServiceStack.OrmLite.SqlServer.Data.csproj = ServiceStack.OrmLite.SqlServer.Data\ServiceStack.OrmLite.SqlServer.Data.csproj
 		ServiceStack.OrmLite.SqlServer.Data\ServiceStack.OrmLite.SqlServer.Data.Core.csproj = ServiceStack.OrmLite.SqlServer.Data\ServiceStack.OrmLite.SqlServer.Data.Core.csproj
-		..\build\build-core-data.proj = ..\build\build-core-data.proj
 		..\tests\Directory.Build.props = ..\tests\Directory.Build.props
-		ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.Source.csproj = ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.Source.csproj
-		ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.Source.csproj = ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.Source.csproj
-		ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.Source.csproj = ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.Source.csproj
-		ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.Source.csproj = ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.Source.csproj
 		ServiceStack.OrmLite.Oracle\ServiceStack.OrmLite.Oracle.csproj = ServiceStack.OrmLite.Oracle\ServiceStack.OrmLite.Oracle.csproj
 	EndProjectSection
 EndProject

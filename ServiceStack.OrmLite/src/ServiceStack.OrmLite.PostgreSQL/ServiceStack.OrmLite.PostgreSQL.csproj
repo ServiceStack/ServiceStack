@@ -24,10 +24,10 @@
     <PackageReference Include="Npgsql" Version="4.1.11" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Npgsql" Version="5.0.13" />
+    <PackageReference Include="Npgsql" Version="5.0.15" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Npgsql" Version="5.0.13" />
+    <PackageReference Include="Npgsql" Version="5.0.15" />
   </ItemGroup>
 
 </Project>
