@@ -461,43 +461,43 @@ namespace ServiceStack.Auth
                     case "FromToken":
                         session.FromToken = entry.Value.FromJsv<bool>();
                         break;
-                    case "sub":
+                    case JwtClaimTypes.Subject:
                         session.UserAuthId = entry.Value.LastRightPart('|'); //in-case of multi-components, last should contain userId
                         break;
                     case "UserAuthId":
                         session.UserAuthId = entry.Value;
                         break;
-                    case "email":
+                    case JwtClaimTypes.Email:
                     case "Email":
                         session.Email = entry.Value;
                         break;
                     case "UserName":
-                    case "preferred_username":
+                    case JwtClaimTypes.PreferredUserName:
                         session.UserName = entry.Value;
                         break;
-                    case "name":
+                    case JwtClaimTypes.Name:
                     case "DisplayName":
                         session.DisplayName = entry.Value;
                         break;
-                    case "picture":
+                    case JwtClaimTypes.Picture:
                     case "ProfileUrl":
                         session.ProfileUrl = entry.Value;
                         break;
-                    case "roles":
+                    case JwtClaimTypes.Roles:
                     case "Roles":
                         var jsonRoles = jsonObj != null
                             ? jsonObj.GetUnescaped("roles") ?? jsonObj.GetUnescaped("Roles")
                             : entry.Value;
                         session.Roles = jsonRoles.FromJson<List<string>>();
                         break;
-                    case "perms":
+                    case JwtClaimTypes.Permissions:
                     case "Permissions":
                         var jsonPerms = jsonObj != null
                             ? jsonObj.GetUnescaped("perms") ?? jsonObj.GetUnescaped("Perms")
                             : entry.Value;
                         session.Permissions = jsonPerms.FromJson<List<string>>();
                         break;
-                    case "iat":
+                    case JwtClaimTypes.IssuedAt:
                     case "CreatedAt":
                         session.CreatedAt = long.Parse(entry.Value).FromUnixTime();
                         break;
@@ -519,12 +519,12 @@ namespace ServiceStack.Auth
                     case "FacebookUserName":
                         authSession.FacebookUserName = entry.Value;
                         break;
-                    case "given_name":
+                    case JwtClaimTypes.GivenName:
                     case "GivenName":
                     case "FirstName":
                         session.FirstName = entry.Value;
                         break;
-                    case "family_name":
+                    case JwtClaimTypes.FamilyName:
                     case "Surname":
                     case "LastName":
                         session.LastName = entry.Value;
@@ -627,13 +627,11 @@ namespace ServiceStack.Auth
                         break;
                 }
             }
-
-            if (authSession.UserAuthName == null)
-                authSession.UserAuthName = authSession.UserName ?? authSession.Email;
+            authSession.UserAuthName ??= authSession.UserName ?? authSession.Email;
         }
         
         public static List<Claim> ConvertSessionToClaims(this IAuthSession session,
-            string issuer = null, string roleClaimType=ClaimTypes.Role, string permissionClaimType="perm")
+            string issuer = null, string roleClaimType=ClaimTypes.Role, string permissionClaimType=JwtClaimTypes.Permissions)
         {
             var claims = new List<Claim>();
 
