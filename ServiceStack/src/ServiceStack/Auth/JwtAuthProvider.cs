@@ -90,7 +90,19 @@ namespace ServiceStack.Auth
         {
             if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
             {
-                var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session);
+                IEnumerable<string> roles = null, perms = null;
+                var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(authContext.Request);
+                await using (userRepo as IAsyncDisposable)
+                {
+                    if (userRepo is IManageRolesAsync manageRoles)
+                    {
+                        var tuple = await manageRoles.GetRolesAndPermissionsAsync(authContext.Session.UserAuthId, token).ConfigAwait();
+                        roles = tuple.Item1;
+                        perms = tuple.Item2;
+                    }
+                }
+
+                var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session, roles, perms);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
                 authContext.Result.AddCookie(authContext.Request,
                     new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
