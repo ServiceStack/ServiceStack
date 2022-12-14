@@ -96,6 +96,9 @@ namespace ServiceStack.Auth
         bool? TwoFactorEnabled { get; set; }
         string SecurityStamp { get; set; }
         string Type { get; set; }
+        string RecoveryToken { get; set; }
+        int? RefId { get; set; }
+        string RefIdStr { get; set; }
 
         /// <summary>
         /// High-level overridable API that ServiceStack uses to check whether a user has all requiredRoles.

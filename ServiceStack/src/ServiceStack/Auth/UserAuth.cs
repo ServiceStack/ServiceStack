@@ -438,6 +438,9 @@ namespace ServiceStack.Auth
                 extended.TwoFactorEnabled = other.TwoFactorEnabled;
                 extended.SecurityStamp = other.SecurityStamp;
                 extended.Type = other.Type;
+                extended.RecoveryToken = other.RecoveryToken;
+                extended.RefId = other.RefId;
+                extended.RefIdStr = other.RefIdStr;
             }
         }
         
