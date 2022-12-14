@@ -86,6 +86,10 @@ namespace ServiceStack
         [DataMember(Order = 56)] public bool? TwoFactorEnabled { get; set; }
         [DataMember(Order = 57)] public string SecurityStamp { get; set; }
         [DataMember(Order = 58)] public string Type { get; set; }
+        
+        [DataMember(Order = 59)] public string RecoveryToken { get; set; }
+        [DataMember(Order = 60)] public int? RefId { get; set; }
+        [DataMember(Order = 61)] public string RefIdStr { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
