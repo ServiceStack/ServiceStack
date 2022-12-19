@@ -61,7 +61,13 @@ JS = (function () {
     function deleteCookie(name) {
         setCookie({ name, value: getCookie(name), expires: new Date(0).toUTCString() })
     }
-
+    function getBreakpoints() {
+        let resolutions = { '2xl': 1536, xl: 1280, lg: 1024, md: 768, sm: 640 }
+        let w = document.body.clientWidth
+        let o = {}
+        Object.keys(resolutions).forEach(res => o[res] = w > resolutions[res])
+        return o
+    }
 
     return {
         SelectorAliases,
@@ -166,6 +172,7 @@ JS = (function () {
                 Array.from(cookies).forEach(setCookie)
             }
         },
+        getBreakpoints,
         init(opt) {
             if (!opt || opt.colorScheme !== false) {
                 let colorScheme = opt && typeof opt.colorScheme === 'string'
