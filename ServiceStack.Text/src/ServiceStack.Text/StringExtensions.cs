@@ -1080,6 +1080,34 @@ namespace ServiceStack
             return filePart.Glob(filePattern);
         }
 
+        private static readonly Regex InvalidCharsRegex = new(@"[^a-z0-9\s-]", RegexOptions.Compiled);
+        private static readonly Regex SpacesRegex = new(@"\s", RegexOptions.Compiled);
+        private static readonly Regex CollapseHyphensRegex = new("-+", RegexOptions.Compiled);
+        public static string GenerateSlug(this string phrase)
+        {
+            var str = phrase.ToLower()
+                .Replace("#", "sharp")  // c#, f# => csharp, fsharp
+                .Replace("++", "pp");   // c++ => cpp
+
+            str = InvalidCharsRegex.Replace(str, "-");
+            //// convert multiple spaces into one space   
+            //str = CollapseSpacesRegex.Replace(str, " ").Trim();
+            // cut and trim 
+            str = str.Substring(0, str.Length <= 100 ? str.Length : 100).Trim();
+            str = SpacesRegex.Replace(str, "-");
+            str = CollapseHyphensRegex.Replace(str, "-");
+
+            if (string.IsNullOrEmpty(str))
+                return str;
+
+            if (str[0] == '-')
+                str = str.Substring(1);
+            if (str[str.Length - 1] == '-')
+                str = str.Substring(0, str.Length - 1);
+
+            return str;
+        }
+        
         public static string TrimPrefixes(this string fromString, params string[] prefixes)
         {
             if (string.IsNullOrEmpty(fromString))
