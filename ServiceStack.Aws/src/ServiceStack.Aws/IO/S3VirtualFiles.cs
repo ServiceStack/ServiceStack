@@ -178,10 +178,9 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
 
     public virtual void DeleteFile(string filePath)
     {
-        filePath = SanitizePath(filePath);
         AmazonS3.DeleteObject(new DeleteObjectRequest {
             BucketName = BucketName,
-            Key = filePath,
+            Key = SanitizePath(filePath),
         });
     }
 
@@ -198,7 +197,7 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
 
             foreach (var filePath in batch)
             {
-                request.AddKey(filePath);
+                request.AddKey(SanitizePath(filePath));
             }
 
             AmazonS3.DeleteObjects(request);
