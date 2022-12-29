@@ -1,0 +1,13 @@
+﻿@inherits AlertSuccessBase
+
+<div class=@ClassNames("mt-2 mb-3 alert alert-success", CssClass()) role="alert">
+    <span class="oi oi-check me-2"></span>
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        @Message
+    }
+    else
+    {
+        @ChildContent
+    }
+</div>

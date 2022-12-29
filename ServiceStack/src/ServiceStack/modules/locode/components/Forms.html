@@ -1,0 +1,346 @@
+ <script minify>
+App.components({
+    /** @param {CreateComponentArgs} args */
+    CreateForm({ store, routes, settings, state, save, done }) {
+        return {
+            $template: '#create-form-template',
+            store, routes, settings,
+            /** @type {ApiCss} */
+            get css() { return map(this.apiCreate, x => x.op.ui && x.op.ui.locodeCss) },
+            get formClass() { return map(this.css, x => x.form) || Forms.formClass },
+            get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
+            get state() { return state && state() },
+            /** @type ApiState */
+            get apiCreate() { return map(this.state, x => x.apiCreate) },
+            /** @type ApiResult */
+            get api() { return map(this.apiCreate, x => x.api) },
+            get apiLoading() { return map(this.apiCreate, x => x.apiLoading) },
+            get model() { return map(this.apiCreate, x => x.model) || {} },
+            get title() { return map(this.apiCreate, x => x.title) },
+            get dataModelName() { return map(this.apiCreate, x => x.op && x.op.dataModel && x.op.dataModel.name) },
+            get errorSummary() { return map(this.apiCreate, x => x.errorSummary) },
+            get gridInputs() {
+                return map(this.apiCreate, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forCreate(x.op.request)))
+            },
+            done() {
+                Files.flush()
+                done()
+            },
+            submit() {
+                this.apiCreate.apiForm(new FormData(this.$refs.form))
+                    .then(r => {
+                        if (r.api.succeeded) {
+                            save()
+                            done()
+                        }
+                    })
+            },
+            mounted() {
+                let model = this.model
+                let qs = queryString(location.search)
+                Object.keys(qs).forEach(k => {
+                    if (k === 'new') return
+                    let prop = toCamelCase(k)
+                    if (qs[k] != null) {
+                        model[prop] = qs[k]
+                    }
+                })
+            },
+        }
+    },
+    /** @param {EditComponentArgs} args */
+    EditForm({ store, routes, settings, state, save, done }) {
+        return {
+            $template: '#edit-form-template',
+            store, routes, settings,
+            /** @type {ApiCss} */
+            get css() { return map(this.useApiUpdate, x => x.op.ui && x.op.ui.locodeCss) },
+            get formClass() { return map(this.css, x => x.form) || Forms.formClass },
+            get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
+            /** @type CrudApisState */
+            get state() { return state && state() },
+            /** @type ApiState|null */
+            get apiPatch() { return map(this.state, x => x.apiPatch) },
+            /** @type ApiState|null */
+            get apiUpdate() { return map(this.state, x => x.apiUpdate) },
+            /** @type ApiState|null */
+            get apiDelete() { return map(this.state, x => x.apiDelete) },
+            /** @type ApiState|null */
+            get useApiUpdate() { return this.apiPatch || this.apiUpdate },
+            get title() { return map(this.useApiUpdate, x => x.title) },
+            /** @type {MetadataType} */
+            get dataModel() { return map(this.useApiUpdate, x => x.op && x.op.dataModel) },
+            get dataModelName() { return map(this.dataModel, x => x.name) },
+            get pk() { return Forms.getPrimaryKey(Meta.getType(this.dataModel)) },
+            get gridInputs() {
+                return map(this.useApiUpdate, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forEdit(x.op.request)))  
+            },
+            get canAccessCrudEvents() { return Server.plugins.autoQuery.crudEventsServices && store.hasRole(Server.plugins.autoQuery.accessRole) },
+            api: null,
+            apiLoading: false,
+            errorSummary: null,
+            model: {},
+            origModel: {},
+            confirmDelete: false,
+            open: null,
+            events: [],
+            eventsCount: 0,
+            done() {
+                Files.flush()
+                done()
+            },
+            updated() {
+                let pk = this.pk, state = this.state
+                if (!pk || !state || !state.opQuery || !routes.edit) return
+                /** @type ApiState */
+                let apiQuery = apiState(state.opQuery)
+                this.errorSummary = '' 
+                let complete = delaySet(x => this.apiLoading = x)
+                apiQuery.apiSend({ [pk.name]:routes.edit })
+                    .then(r => {
+                        complete()
+                        let results = map(r.api.response, x => x.results)
+                        if (results && results.length !== 1) {
+                            this.errorSummary = `'${routes.edit}' PrimaryKey lookup failed for '${apiQuery.op.request.name}', found ${results.length} results`
+                        }
+                        if (apiQuery.errorSummary) this.errorSummary = apiQuery.errorSummary
+                        this.api = r.api
+                        this.origModel = this.useApiUpdate.createModel(results[0])
+                        this.model = Object.assign({}, this.origModel)
+                    })
+                this.eventsCount = 0
+                this.events = []
+                if (this.canAccessCrudEvents) {
+                    apiSend(createClient, new GetCrudEvents({
+                        modelId: routes.edit,
+                        model: this.dataModelName,
+                        include: 'total',
+                        orderBy: '-Id',
+                    }))
+                    .then(r => {
+                        if (r.api.succeeded) {
+                            this.eventsCount = r.api.response.total
+                            this.events = r.api.response.results
+                        }
+                    })
+                }
+            },
+            submit() {
+                let pk = this.pk, useUpdateApi = this.useApiUpdate
+                if (!pk || !useUpdateApi || !routes.edit) return
+                let formData = new FormData(this.$refs.form)
+                let apiPatch = this.apiPatch
+                let reset = []
+                if (apiPatch) {
+                    let dirtyValues = {}
+                    apiPatch.formLayout.forEach(input => {
+                        let id = input.id
+                        let origValue = mapGet(this.origModel, id)
+                        if (pk && pk.name.toLowerCase() === id.toLowerCase()) {
+                            dirtyValues[id] = origValue
+                            return
+                        }
+                        let newValue = formData.get(id)
+                        let exists = newValue != null // only exists if checked 
+                        let changed = input.type === 'checkbox' 
+                            ? exists !== !!origValue
+                            : input.type === 'file'
+                                ? exists
+                                : newValue !== origValue 
+                        if (changed) {
+                            if (newValue) {
+                                dirtyValues[id] = newValue
+                            } else {
+                                if (input.type !== 'file') {
+                                    reset.push(id)
+                                }
+                            }
+                        }
+                    })
+                    Array.from(formData.keys()).filter(k => !dirtyValues[k]).forEach(k => formData.delete(k))
+                }
+                formData.set(pk.name, mapGet(this.origModel, pk.name))
+                if (Array.from(formData.keys()).length <= 1 && reset.length === 0) return done()
+                this.errorSummary = ''
+                let complete = delaySet(x => {
+                    this.apiLoading = x
+                })
+                this.useApiUpdate.apiForm(formData, reset.length > 0 ? { reset } : null)
+                    .then(r => {
+                        complete()
+                        useUpdateApi.apiResult = r
+                        this.errorSummary = useUpdateApi.errorSummary
+                        this.api = r.api
+                        if (r.api.succeeded) {
+                            done()
+                            save()
+                        }
+                    })
+            },
+            _delete() {
+                let pk = this.pk, apiDelete = this.apiDelete
+                if (!pk || !apiDelete || !routes.edit) return
+                this.errorSummary = ''
+                let complete = delaySet(x => this.apiLoading = x)
+                apiDelete.apiSend({ [pk.name]:routes.edit })
+                    .then(r => {
+                        complete()
+                        if (apiDelete.errorSummary) this.errorSummary = apiDelete.errorSummary
+                        this.api = r.api
+                        if (r.api.succeeded) {
+                            done()
+                            save()
+                        }
+                    })
+            },
+            mounted() { routes.onEditChange(() => this.updated()) },
+            unmounted() { routes.onEditChange(null) },
+            expand:{},
+            expanded(id) { return !!this.expand[id] },
+            toggle(id) {
+                this.expand[id] = !this.expand[id]
+            },
+            relativeTime(date) {
+                return Forms.relativeTimeFromDate(toDate(date))
+            },
+            fullDate(date) {
+                return toLocalISOString(toDate(date)).replace('T',' ').replace(/-/g,'/')
+            }
+       }
+    }
+})
+</script>
+<!--minify-->
+<template id="create-form-template">
+<form ref="form" @vue:mounted="mounted"  v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass">
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+        <div v-scope="CloseButton({ onclick:done })" title="Close"></div>
+        <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
+        <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+        <div class="flex flex-wrap sm:flex-nowrap">
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset :class="gridClass">
+                    <div v-for="{ input, rowClass, prop } in gridInputs" :class="rowClass">
+                        <div :key="input.id" v-scope="Input({ input, prop, model:() => model, api:() => api })"></div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6">
+        <div class="flex justify-end">
+            <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+            <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Create <span class="ml-1 hidden sm:inline">{{ humanify(dataModelName) }}</span>
+            </button>
+        </div>
+    </div>
+</form>
+</template>
+<template id="edit-form-template">
+    <form ref="form" v-if="state" @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted" @vue:unmounted="unmounted">
+        <div class="relative px-4 py-5 bg-white sm:p-6">
+            <div v-scope="CloseButton({ onclick:done })" title="Close"></div>
+            <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
+            <div v-if="errorSummary" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+            <div class="flex flex-wrap sm:flex-nowrap">
+                <div class="flex-grow mb-3 sm:mb-0">
+                    <fieldset :class="gridClass">
+                        <div v-for="{ input, rowClass, prop } in gridInputs" :class="rowClass">
+                            <div :key="input.id" v-scope="Input({ input, prop, model:() => model, api:() => api })"></div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="mt-4" v-if="canAccessCrudEvents && eventsCount">
+                <div class="flex justify-center">
+                    <button type="button" @click="open = open === 'events' ? '' : 'events'"
+                            class="px-1 py-1.5 group text-gray-700 font-medium flex items-center" aria-expanded="false">
+                        <svg class="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></g>
+                        </svg>
+                        <span class="mr-1">
+                            {{eventsCount}} Audit {{ eventsCount === 1 ? 'Event' : 'Events' }}
+                        </span>
+                        <svg v-if="open!=='events'"
+                             class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <svg v-else
+                             class="h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div v-if="open==='events'">
+                    <ul class="divide-y divide-gray-200 border-t">
+                        <li v-for="x in events" :key="x.id" class="py-4 cursor-pointer" @click="toggle(x.id)">
+                            <div class="flex space-x-3">
+                                <div class="flex-1 flex flex-col">
+                                    <div class="flex justify-between">
+                                        <div class="uppercase inline-block w-20">{{x.eventType}}</div>
+                                        <div>
+                                            <span :title="`User ${x.userAuthId}`">{{x.userAuthName}}</span>
+                                        </div>
+                                        <div>
+                                            <span :title="fullDate(x.eventDate)">{{relativeTime(x.eventDate)}}</span>
+                                            <div class="ml-3 inline-block w-5 align-middle">
+                                                <svg v-if="!expanded(x.id)" class="h-5 w-5 flex-none text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="expanded(x.id)" class="p-4">
+                                        <table>
+                                            <tr>
+                                                <td class="font-medium">API</td>
+                                                <td>{{x.requestType}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="pr-4 font-medium">User Id</td>
+                                                <td>{{x.userAuthId}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="pr-4 font-medium">Date</td>
+                                                <td>{{fullDate(x.eventDate)}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="pr-4 font-medium">IP</td>
+                                                <td>{{x.remoteIp}}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div v-if="expanded(x.id)" v-scope="PreviewObject({ val:() => JSON.parse(x.requestBody) })"></div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 px-4 py-3 bg-gray-50 sm:px-6 flex flex-wrap justify-between">
+            <div>
+                <div v-if="apiDelete && !(apiLoading && !breakpoints.sm)">
+                    <input id="confirmDelete" type="checkbox" v-model="confirmDelete"
+                           class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="confirmDelete" class="mx-1 select-none">confirm</label>
+                    <button type="button" :disabled="apiLoading || !confirmDelete" @click="_delete"
+                            :class="`${!apiLoading && confirmDelete ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
+                        Delete
+                    </button>
+                </div>
+            </div>
+            <div v-if="apiLoading" v-scope="Loading({ cls:'p-0' })"></div>
+            <div class="flex justify-end">
+                <button type="button" @click="done" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Update <span class="ml-1 hidden sm:inline">{{ humanify(dataModelName) }}</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</template>
+<!--/minify-->

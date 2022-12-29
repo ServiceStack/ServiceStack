@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <AssemblyName>ServiceStack.OrmLite.Oracle</AssemblyName>
+    <PackageId>ServiceStack.OrmLite.Oracle</PackageId>
+    <Title>OrmLite.Oracle - Fast, code-first, config-free POCO ORM</Title>
+    <PackageDescription>
+      Light, simple and fast convention-based code-first POCO ORM for Oracle RDBMS (Unofficial).
+      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently
+      stored in schemaless text blobs in Oracle.
+    </PackageDescription>
+    <PackageTags>Oracle;OrmLite;RDBMS;SQL;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+    <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="Oracle.ManagedDataAccess" Version="19.12.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.120" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.120" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="OracleCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="OracleConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+  </ItemGroup>
+
+</Project>

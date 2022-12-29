@@ -1,0 +1,59 @@
+﻿@page "/gallery"
+@layout MainLayout
+
+<div class="bg-white dark:bg-black">
+    <main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex-shrink-0 pt-8">
+            <img class="mx-auto h-20 w-auto" src="/img/blazor.svg" alt="Your Company">
+        </div>
+        <div class="mx-auto max-w-xl py-8 sm:py-16">
+            <div class="text-center">
+                <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
+                    Component Gallery
+                </h1>
+                <p class="mt-2 text-lg text-gray-500 dark:text-gray-400">
+                    ServiceStack.Blazor Tailwind Components Gallery
+                </p>
+            </div>
+            <div class="mt-12">
+
+                <NavList Title="Explore Blazor Components">
+                    <NavListItem Title="DataGrid" href="/gallery/datagrid" IconSvg=@Icons.DataGrid>
+                        DataGrid Component Examples for rendering tabular data
+                    </NavListItem>
+                    <NavListItem Title="AutoQuery Grid" href="/gallery/autoquerygrid" IconSvg=@Icons.AutoQueryGrid>
+                        Instant customizable UIs for calling AutoQuery CRUD APIs
+                    </NavListItem>
+                    <NavListItem Title="Auto Forms" href="/gallery/autoform" IconSvg=@Icons.AutoForms>
+                        Render Auto Form UIs from a Request DTO class
+                    </NavListItem>
+                    <NavListItem Title="Form Inputs" href="/gallery/inputs" IconSvg=@Icons.FormInputs>
+                        Tailwind UI Input Components
+                    </NavListItem>
+                    <NavListItem Title="Navigation" href="/gallery/navigation" IconSvg=@Icons.Navigation>
+                        Breadcrumbs and Link navigation components
+                    </NavListItem>
+                    <NavListItem Title="Alerts" href="/gallery/alerts" IconSvg=@Icons.Alerts>
+                        Tailwind Alert and Notification components
+                    </NavListItem>
+                    <NavListItem Title="Formats" href="/gallery/formats" IconSvg=@Icons.Formats>
+                        HTML Value Formatters
+                    </NavListItem>
+                </NavList>
+
+                <div class="mt-8">
+                    <a class="flex text-base font-medium text-indigo-600 hover:text-indigo-500" href=@($"https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/")>
+                        <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 6s1.5-2 5-2s5 2 5 2v14s-1.5-1-5-1s-5 1-5 1V6Zm10 0s1.5-2 5-2s5 2 5 2v14s-1.5-1-5-1s-5 1-5 1V6Z" /></svg>
+                        API Reference
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</div>
+
+@code {
+
+}

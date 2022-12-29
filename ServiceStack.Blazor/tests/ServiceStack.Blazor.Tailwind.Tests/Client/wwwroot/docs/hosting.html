@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MyApp</title>
+    <base href="/">
+    <link href="css/app.css" rel="stylesheet">
+    <link href="css/typography.css" rel="stylesheet">
+    <link href="css/markdown.css" rel="stylesheet">
+    <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
+</head>
+
+<body class="bg-white dark:bg-black dark:text-white">
+<div id="app">
+    <!-- loading: render temp static app chrome to improve perceived performance -->
+    <div id="app-loading">
+
+        <!-- <Header/> -->
+        <header class="border-b border-gray-200 dark:border-gray-800 pr-3">
+            <div class="flex flex-wrap items-center">
+                <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
+                    <nav class="relative flex flex-grow">
+                        <ul class="flex flex-wrap items-center justify-end w-full m-0">
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <a href="/signup" class="m-2">
+                                    <button class="rounded-md border py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-black">
+                                        Sign In
+                                    </button>
+                                </a>
+                            </li>
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <button type="button" class="bg-gray-200 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" role="switch" aria-checked="false">
+                                    <span class="translate-x-5 pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow transform ring-0 transition ease-in-out duration-200">
+                                        <span class="opacity-0 ease-out duration-100 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z"></path></svg></span><!--!-->
+                                        <span class="opacity-100 ease-in duration-200 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z"></path></svg></span>
+                                    </span>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+        <div class="mobile relative z-40 hidden" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-gray-600 dark:bg-gray-400 bg-opacity-75"></div>
+            <div class="fixed inset-0 flex z-40">
+                <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-black">
+
+                    <div class="absolute top-0 right-0 -mr-12 pt-2">
+                        <button type="button"
+                                class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <span class="sr-only">Close sidebar</span>
+                            <svg class="h-6 w-6 text-white dark:text-black" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                        <a href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                            <img class="h-8 w-auto"
+                                    src="/img/blazor.svg"
+                                    alt="My App">
+                            <div class="ml-2 text-black dark:text-white">My App</div>
+                        </a>
+                        <nav class="mt-5 px-2 space-y-1">
+                        </nav>
+                    </div>
+
+                </div>
+
+                <div class="flex-shrink-0 w-14">
+                    <!-- Force sidebar to shrink to fit close icon -->
+                </div>
+            </div>
+        </div>
+        <!-- Static sidebar for desktop -->
+        <div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+            <!-- Sidebar component, swap this element with another sidebar if you like -->
+            <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
+                <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+                    <a href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                        <img class="h-8 w-auto"
+                                src="/img/blazor.svg"
+                                alt="My App">
+                        <div class="ml-2 text-black dark:text-white">My App</div>
+                    </a>
+                    <nav class="mt-5 flex-1 px-2 bg-white dark:bg-black space-y-1">
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- <MainLayout/> -->
+        <div class="md:pl-64 flex flex-col flex-1">
+            <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white dark:bg-black">
+                <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                    <span class="sr-only">Open sidebar</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            <main class="flex-1">
+                <div class="py-6">
+                    <div class="content px-4 sm:px-6 md:px-8">
+
+<div class="prose lg:prose-xl min-vh-100 m-3" data-prerender="/docs/hosting">
+    <div class="markdown-body">
+        <h1 id="app-hosting-costs">App Hosting Costs</h1>
+<a href="https://jamstack.org">
+    <img src="/img/jamstack-icon.svg" style="width:3.5rem;height:3.5rem;float:left;margin:.5rem 1rem 0 0">
+</a>
+<p>The modern <a href="https://jamstack.org">jamstack.org</a> approach for developing websites is primarily concerned with adopting
+the architecture yielding the best performance and superior UX by minimizing the time to first byte from serving
+pre-built static assets from CDN edge caches.</p>
+<h2 id="cheaper-hosting">Cheaper Hosting</h2>
+<a href="https://jamstack.org">
+    <img src="/img/emoji-money.svg" style="width:3.5rem;height:3.5rem;float:left;margin:.5rem 1rem 0 0">
+</a>
+<p>A consequence of designing your UI decoupled from your back-end server is that it also becomes considerably
+cheaper to host as its static files can be hosted by any web server and is a task highly optimized by CDNs
+who are able to provide generous free &amp; low cost hosting options.</p>
+<h2 id="myapp.client"><a href="https://github.com/NetCoreTemplates/blazor-tailwind/tree/main/MyApp.Client">/MyApp.Client</a></h2>
+<p>This template takes advantage of its decoupled architecture and uses <a href="/docs/deploy">GitHub Actions to deploy</a>
+a copy of its static UI generated assets and hosted on:</p>
+<h3 id="github-pages-cdn">GitHub Pages CDN</h3>
+<h3 id="blazor-wasm.jamstacks.net"><a href="https://blazor-wasm.jamstacks.net">blazor-wasm.jamstacks.net</a></h3>
+<p>This is an optional deployment step which publishes a copy of your .NET App's <code>/wwwroot</code> folder to this templates
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/tree/gh-pages">gh-pages</a> branch where it's automatically served from
+<a href="https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages">GitHub Pages CDN</a> at <strong>no cost</strong>.</p>
+<p>It's an optional but recommended optimization as it allows the initial download from your website to be served
+directly from CDN edge caches.</p>
+<h2 id="myapp"><a href="https://github.com/NetCoreTemplates/blazor-tailwind/tree/main/MyApp">/MyApp</a></h2>
+<p>The .NET 6 <code>/MyApp</code> backend server is required for this App's dynamic functions including the Hello API on the home page
+and its <a href="https://docs.servicestack.net/auth">built-in Authentication</a>.</p>
+<p>The C# project still contains the complete App and can be hosted independently with the entire App served
+directly from its deployed ASP.NET Core server at:</p>
+<h3 id="digital-ocean">Digital Ocean</h3>
+<h3 id="blazor-wasm-api.jamstacks.net"><a href="https://blazor-wasm-api.jamstacks.net">blazor-wasm-api.jamstacks.net</a></h3>
+<p>But when accessed from the CDN <a href="https://blazor-wasm.jamstacks.net">blazor-wasm.jamstacks.net</a> that contains a
+copy of its static <code>/wwwroot</code> UI assets, only its back-end JSON APIs are used to power its dynamic features.</p>
+<h2 id="total-cost">Total Cost</h2>
+<a href="https://www.digitalocean.com/pricing">
+    <img src="/img/digital-ocean.svg" style="width:6.5rem;height:6.5rem;float:left;margin:0 1rem 0 0">
+</a>
+<p>Since hosting on GitHub Pages CDN is free, the only cost is for hosting this App's .NET Server which is being hosted
+from a basic <a href="https://www.digitalocean.com/pricing">$10 /mo</a> droplet which is currently hosting <strong>25</strong> .NET Docker
+Apps and demos of <a href="https://servicestack.net/start">starting project templates</a> which works out to be just under <strong>$0.40 /mo</strong>!</p>
+<h2 id="jamstack-benefits">Jamstack Benefits</h2>
+<p>Jamstack is quickly becoming the preferred architecture for the development of modern web apps with
+<a href="https://jamstack.org/why-jamstack/">benefits</a> that extend beyond performance to improved:</p>
+<ul>
+<li><strong>Security</strong> from a reduced attack surface from hosting read-only static resources and requiring fewer App Servers</li>
+<li><strong>Scale</strong> with non-essential load removed from App Servers to CDN's architecture capable of incredible scale &amp; load capacity</li>
+<li><strong>Maintainability</strong> resulting from reduced hosting complexity and the clean decoupling of UI and server logic</li>
+<li><strong>Portability</strong> with your static UI assets being easily capable from being deployed and generically hosted from any CDN or web server</li>
+<li><strong>Developer Experience</strong> with the major JavaScript frameworks at the forefront of amazing DX are embracing Jamstack in their dev model, libraries &amp; tooling</li>
+</ul>
+<p>Best of all the Jamstack approach fits perfectly with ServiceStack's recommended
+<a href="https://docs.servicestack.net/api-first-development">API First Development</a> model which encourages development of
+reusable message-based APIs where the same System APIs can be reused from all Web, Mobile &amp; Desktop Apps
+from multiple HTTP, MQ or gRPC endpoints.</p>
+
+    </div>
+</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    </div>
+</div>
+
+<script>
+TOP = `
+    $0.40 /mo,         /docs/hosting
+    Prerendering,      /docs/prerender
+    Deployments,       /docs/deploy
+`
+SIDEBAR = `
+    Bookings,          /secure/bookings, /img/nav/bookings.svg
+    Coupons,           /secure/coupons,  /img/nav/coupon.svg
+    Todos,             /todomvc,         /img/nav/todomvc.svg
+`
+
+const path = location.pathname
+const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+$1 = s => document.querySelector(s)
+
+/* Header */
+$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+    `<li class="relative flex flex-wrap just-fu-start m-0">
+        <a href="${route}" class="flex items-center justify-start mw-full p-4 dark:text-white hover:text-green-600 dark:hover:text-green-400">${label}</a></li>`
+))
+
+/* Sidebar */
+const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50' : ''}">
+    <img class="${iconCls}" src="${icon}">
+    ${label}
+</a>`
+
+$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+
+/* Prerender */
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r => r.text())
+    .then(html => {
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</script>
+
+<div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">
+    <div class="flex rounded-md bg-yellow-50 p-4 m-4">
+        <div class="flex-shrink-0">
+            <!-- Heroicon name: solid/exclamation -->
+            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-yellow-800">An unhandled error has occurred.</h3>
+            <div class="mt-4">
+                <div class="-mx-2 -my-1.5 flex">
+                    <button type="button" class="reload bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">Reload</button>
+                </div>
+            </div>
+        </div>
+        <div class="ml-auto pl-3">
+            <div class="-mx-1.5 -my-1.5">
+                <button type="button" class="dismiss inline-flex bg-yellow-50 rounded-md p-1.5 text-yellow-500 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">
+                    <span class="sr-only">Dismiss</span>
+                    <!-- Heroicon name: solid/x -->
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="_framework/blazor.webassembly.js"></script>
+<script src="/js/servicestack-blazor.js"></script>
+<script>JS.init()</script>
+
+</body>
+</html>

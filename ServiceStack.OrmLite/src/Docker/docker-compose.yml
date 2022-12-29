@@ -1,0 +1,131 @@
+# this file creates docker instances of all the db engines required for running integration tests 
+# before running tests, from a commandline in this directory type `docker-compose up -d` to start database engines
+# to remove all db engines after tesing, type `docker-compose down`
+
+version: '3'
+
+services:
+
+  firebird3:
+    image: "jacobalberty/firebird:3.0.4"
+    networks:
+      - servicestack_test
+    ports: 
+      - "48101:3050"
+    environment: 
+     FIREBIRD_DATABASE: "test.gdb"
+     FIREBIRD_USER: "test"
+     ISC_PASSWORD: "masterkey"
+     EnableWireCrypt: "true"
+
+  mysql5.5:
+    image: mariadb:5.5
+    networks:
+      - servicestack_test
+    ports:
+     - "48201:3306"
+    environment:
+     MYSQL_DATABASE: "test"
+     MYSQL_USER: "test"
+     MYSQL_ROOT_PASSWORD: "test"
+
+  mysql10.1:
+    image: mariadb:10.1
+    networks:
+      - servicestack_test
+    ports:
+     - "48202:3306"
+    environment:
+     MYSQL_DATABASE: "test"
+     MYSQL_USER: "test"
+     MYSQL_ROOT_PASSWORD: "test"
+
+  mysql10.2:
+    image: mariadb:10.2
+    networks:
+      - servicestack_test
+    ports:
+     - "48203:3306"
+    environment:
+     MYSQL_DATABASE: "test"
+     MYSQL_USER: "test"
+     MYSQL_ROOT_PASSWORD: "test"
+
+  mysql10.3:
+    image: mariadb:10.3
+    networks:
+      - servicestack_test
+    ports:
+     - "48204:3306"
+    environment:
+     MYSQL_DATABASE: "test"
+     MYSQL_USER: "test"
+     MYSQL_ROOT_PASSWORD: "test"
+
+  mysql10.4:
+    image: mariadb:10.4
+    networks:
+      - servicestack_test
+    ports:
+     - "48205:3306"
+    environment:
+     MYSQL_DATABASE: "test"
+     MYSQL_USER: "test"
+     MYSQL_ROOT_PASSWORD: "test"
+
+  postgres9:
+    image: postgres:9-alpine
+    networks:
+      - servicestack_test
+    ports:
+     - "48301:5432"
+    environment:
+     POSTGRES_USER: "test"
+     POSTGRES_DB: "test"
+     POSTGRES_PASSWORD: "test"
+
+  postgres10:
+    image: postgres:10-alpine
+    networks:
+      - servicestack_test
+    ports:
+     - "48302:5432"
+    environment:
+     POSTGRES_USER: "test"
+     POSTGRES_DB: "test"
+     POSTGRES_PASSWORD: "test"
+
+  postgres11:
+    image: postgres:11-alpine
+    networks:
+      - servicestack_test
+    ports:
+     - "48303:5432"
+    environment:
+     POSTGRES_USER: "test"
+     POSTGRES_DB: "test"
+     POSTGRES_PASSWORD: "test"   
+
+  oracle11:
+    image: epiclabs/docker-oracle-xe-11g
+    networks:
+      - servicestack_test
+    ports:
+     - "48401:1521"
+    environment:
+     ORACLE_ALLOW_REMOTE: "true"
+     ORACLE_PASSWORD : "test"
+ 
+  MSSqlServer2019:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    networks:
+      - servicestack_test
+    ports:
+     - "48501:1433"
+    environment:
+     MSSQL_PID: "Express"
+     ACCEPT_EULA: "Y"
+     SA_PASSWORD : "Test!tesT"
+     
+networks:
+  servicestack_test:

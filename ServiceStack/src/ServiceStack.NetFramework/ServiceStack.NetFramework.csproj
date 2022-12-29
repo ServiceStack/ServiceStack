@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>ServiceStack.NetFramework</PackageId>
+    <AssemblyName>ServiceStack.NetFramework</AssemblyName>
+    <TargetFrameworks>net472</TargetFrameworks>
+    <RootNamespace>ServiceStack</RootNamespace>
+    <Title>.NET v4.5 only features for ServiceStack</Title>
+    <PackageDescription>
+      Contains ASP.NET and .NET Framework only features used in ServiceStack:
+      - MiniProfiler
+      - SmartThreadPool, AppSelfHostBase
+    </PackageDescription>
+    <PackageTags>ServiceStack;MiniProfiler;SmartThreadPool</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MiniProfiler\UI\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+</Project>

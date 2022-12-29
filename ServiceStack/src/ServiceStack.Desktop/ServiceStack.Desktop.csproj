@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+        <Title>ServiceStack.Desktop</Title>
+        <PackageDescription>
+            Desktop Assets, Vue and React Framework libraries, Bootstrap, Material Design SVGs, Font Awesome and Win32 APIs for ServiceStack CEF .NET Core Desktop Apps
+        </PackageDescription>
+        <PackageTags>ServiceStack;Desktop,Cef,Vue,React,Bootstrap,MaterialDesign,fontawesone</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="lib\**\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+
+        <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+        <PackageReference Include="PInvoke.User32" Version="0.7.124" />
+        <PackageReference Include="PInvoke.Kernel32" Version="0.7.124" />
+        <PackageReference Include="PInvoke.Gdi32" Version="0.7.124" />
+        <PackageReference Include="PInvoke.Shell32" Version="0.7.124" />
+    </ItemGroup>
+
+</Project>

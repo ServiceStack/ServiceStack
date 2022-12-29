@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp</RootNamespace>
+        <AssemblyName>MyApp</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="ServiceStack" />
+        <Using Include="ServiceStack.Blazor" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Markdig" Version="0.30.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0" />
+        <PackageReference Include="System.Memory" Version="4.5.5" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+        <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+        <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+        <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
+        <ProjectReference Include="..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
+        <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="App_Data\" />
+      <Folder Include="wwwroot\js\" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TestsDir>$(MSBuildProjectDirectory)/../Tests</TestsDir>
+    </PropertyGroup>
+
+    <Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
+        <CallTarget Targets="Prerender" Condition="$(APP_TASKS.Contains('prerender'))" />
+    </Target>
+
+    <Target Name="Prerender">
+        <Message Text="Prerender..." />
+        <Exec Command="dotnet test --filter TestCategory=prerender --logger:&quot;console;verbosity=detailed&quot;" WorkingDirectory="$(TestsDir)" />
+    </Target>
+
+</Project>

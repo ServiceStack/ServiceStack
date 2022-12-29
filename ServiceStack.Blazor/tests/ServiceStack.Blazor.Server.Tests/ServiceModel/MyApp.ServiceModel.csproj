@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+      <TargetFramework>net6.0</TargetFramework>
+      <Nullable>enable</Nullable>
+      <RootNamespace>MyApp.ServiceModel</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <SupportedPlatform Include="browser" />
+  </ItemGroup>
+</Project>

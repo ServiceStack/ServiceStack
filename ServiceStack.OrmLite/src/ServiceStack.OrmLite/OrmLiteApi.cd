@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ServiceStack.OrmLite.OrmLiteConnectionFactory">
+    <Position X="6" Y="3.25" Width="2.5" />
+    <Members>
+      <Property Name="AlwaysReturnCommand" Hidden="true" />
+      <Property Name="AlwaysReturnTransaction" Hidden="true" />
+      <Property Name="AutoDisposeConnection" Hidden="true" />
+      <Property Name="ConnectionFilter" Hidden="true" />
+      <Property Name="ConnectionString" Hidden="true" />
+      <Property Name="DialectProvider" Hidden="true" />
+      <Field Name="namedConnections" Hidden="true" />
+      <Property Name="NamedConnections" Hidden="true" />
+      <Property Name="OnDispose" Hidden="true" />
+      <Field Name="ormLiteConnection" Hidden="true" />
+      <Property Name="OrmLiteConnection" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>EAAAAAEiACAAAAAAAAADAABBIAEAQAAAACAAAIAAAAA=</HashCode>
+      <FileName>OrmLiteConnectionFactory.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLiteSchemaModifyApi">
+    <Position X="3.25" Y="10.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAEADAAABABAAQAAAAAAQAAAAABAAAAAAAAA=</HashCode>
+      <FileName>OrmLiteSchemaModifyApi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLiteReadApi">
+    <Position X="0.5" Y="0.5" Width="2.5" />
+    <Members>
+      <Method Name="LastInsertId" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>iAIkCDAAAQAFAAGABADAIkCCFAFCBAAICgAgQAEBAAA=</HashCode>
+      <FileName>OrmLiteReadApi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLiteWriteApi">
+    <Position X="3.25" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCAMAAABACgAApAAAFAAAAACEAgAgAAAAAAAAAAAA=</HashCode>
+      <FileName>OrmLiteWriteApi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLitePersistenceProvider">
+    <Position X="6" Y="9.5" Width="2.5" />
+    <Members>
+      <Field Name="connection" Hidden="true" />
+      <Property Name="Connection" Hidden="true" />
+      <Property Name="ConnectionString" Hidden="true" />
+      <Field Name="DisposeConnection" Hidden="true" />
+      <Method Name="OrmLitePersistenceProvider" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AABAAAAAACAAAAEhAAAFAAEAACEAAAAEACAAAQAAAIA=</HashCode>
+      <FileName>OrmLitePersistenceProvider.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLiteSchemaApi">
+    <Position X="3.25" Y="7.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAABBAAAAAQAAAAAaAAAAAAAAAAAAAA=</HashCode>
+      <FileName>OrmLiteSchemaApi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.UntypedApi&lt;T&gt;">
+    <Position X="6" Y="5.25" Width="2.5" />
+    <Members>
+      <Property Name="Db" Hidden="true" />
+      <Property Name="DbCmd" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAQAAMAAAAEAgAAhEAAAAAAAAKEggBgAAAAAAAAAAAA=</HashCode>
+      <FileName>UntypedApi.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLiteReadExpressionsApi">
+    <Position X="0.5" Y="8.25" Width="2.5" />
+    <Members>
+      <Field Name="LastCommandText" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>CgAAAAAAAAAAAAAAEQIAABSAAIAAABAAAAAAQAAAAoA=</HashCode>
+      <FileName>OrmLiteReadExpressionsApi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLiteWriteExpressionsApi">
+    <Position X="3.25" Y="5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AEQAAAAAAAACAAAAAAAAAABAAAEAAAAAAIAAAAAACAA=</HashCode>
+      <FileName>OrmLiteWriteExpressionsApi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceStack.OrmLite.OrmLiteConfig">
+    <Position X="6" Y="0.5" Width="2.5" />
+    <Members>
+      <Method Name="ClearCache" Hidden="true" />
+      <Field Name="commandTimeout" Hidden="true" />
+      <Field Name="defaultCommandTimeout" Hidden="true" />
+      <Field Name="dialectProvider" Hidden="true" />
+      <Field Name="execFilter" Hidden="true" />
+      <Method Name="GetModelMetadata" Hidden="true" />
+      <Field Name="IdField" Hidden="true" />
+      <Method Name="OpenDbConnection" Hidden="true" />
+      <Method Name="OpenReadOnlyDbConnection" Hidden="true" />
+      <Field Name="ResultsFilter" Hidden="true" />
+      <Method Name="ToDbConnection" Hidden="true" />
+      <Field Name="TSCommandTimeout" Hidden="true" />
+      <Field Name="TSDialectProvider" Hidden="true" />
+      <Field Name="TSTransaction" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>EBAAIQAgEAgAAIIIEgEAQgABAAAAAgAAAAAgCBAAACA=</HashCode>
+      <FileName>OrmLiteConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

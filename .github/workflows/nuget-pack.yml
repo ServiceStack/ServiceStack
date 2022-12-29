@@ -1,0 +1,255 @@
+﻿name: NuGet Pack
+
+on: workflow_dispatch
+
+jobs:
+  build-test-all:
+    runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2017-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: Test!tesT
+          MSSQL_PID: Developer
+        ports:
+          - 48501:1433
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 48303:5432
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+          
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> $GITHUB_ENV
+
+# Individual build steps to make it easy to catch issues.
+
+      - name: Build Text
+        working-directory: ServiceStack.Text/build
+        run: dotnet build ./build.proj
+
+      - name: Text tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj  --logger 'trx;LogFileName=test-results.trx'
+
+      - name: Text Tests Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
+        with:
+          name: Text Tests
+          path: ./ServiceStack.Text/tests/ServiceStack.Text.Tests/TestResults/test-results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+      
+      - name: Build
+        working-directory: ServiceStack.Redis/build
+        run: dotnet build ./build.proj
+
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+          echo "CI_RABBITMQ=gistlyn.com:45672" >> $GITHUB_ENV
+          echo "CI_DYNAMODB=http://gistlyn.com:48000" >> $GITHUB_ENV
+
+      - name: Redis Test Without Integration
+        working-directory: ServiceStack.Redis/tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
+
+      - name: Redis Non-Integration Tests Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Redis Non-Integration Tests
+          path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/non-integration-results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+
+
+      - name: Redis Test With Integration
+        id: test_integration
+        working-directory: ServiceStack.Redis/tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
+
+      - name: Redis Integration Tests Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
+        with:
+          name: Redis Integration Tests
+          path: ./ServiceStack.Redis/tests/ServiceStack.Redis.Tests/TestResults/integration-results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+          
+      - name: Build OrmLite
+        working-directory: ServiceStack.OrmLite/build
+        run: dotnet build ./build.proj     
+      
+      - name: Test Sqlite
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: Sqlite
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
+
+      - name: Test Sqlite Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite Sqlite Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.SqliteTests/TestResults/test-results.trx
+          reporter: dotnet-trx
+
+      - name: Build ServiceStack
+        working-directory: ServiceStack/build
+        run: dotnet build ./build.proj
+
+      - name: Test ServiceStack.Common
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: ServiceStack.Common Tests
+          only-summary: 'true'
+          path: ./ServiceStack/tests/ServiceStack.Common.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
+      - name: Test ServiceStack.ServiceModels
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/ServiceStack.ServiceModel.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: ServiceModels Tests
+          only-summary: 'true'
+          path: ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
+      - name: Test ServiceStack.WebHost Endpoints
+        env:
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: ServiceStack.WebHost.Endpoints Tests
+          only-summary: 'true'
+          path: ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
+      - name: Build Aws
+        working-directory: ServiceStack.Aws/build
+        run: dotnet build ./build.proj
+
+      - name: Aws Tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/ServiceStack.Aws.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
+        with:
+          name: Text Tests
+          path: ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+
+      - name: Build Azure
+        working-directory: ServiceStack.Azure/build
+        run: dotnet build ./build.proj
+        
+      - name: Build Blazor
+        working-directory: ServiceStack.Blazor/build
+        run: dotnet build ./build.proj
+
+      - name: Build Logging
+        working-directory: ServiceStack.Logging/build
+        run: dotnet build ./build.proj
+        
+      - name: Build Core
+        working-directory: ServiceStack.Core/build
+        run: dotnet build ./build.proj
+      
+      - name: Build Stripe
+        working-directory: ServiceStack.Stripe/build
+        run: dotnet build ./build.proj
+
+      - name: Stripe Tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/ServiceStack.Stripe.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
+        with:
+          name: Stripe Tests
+          path: ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+ 
+  nuget-pack:
+    needs: build-test-all
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0'
+        include-prerelease: true
+        
+    - name: Rebuild All
+      working-directory: ./build
+      run: |
+        chmod +x ./build-all.sh
+        chmod +x ../ServiceStack/build/build.sh
+        chmod +x ../ServiceStack.Aws/build/build.sh
+        chmod +x ../ServiceStack.Azure/build/build.sh
+        chmod +x ../ServiceStack.Blazor/build/build.sh
+        chmod +x ../ServiceStack.Logging/build/build.sh
+        chmod +x ../ServiceStack.OrmLite/build/build.sh
+        chmod +x ../ServiceStack.Redis/build/build.sh
+        chmod +x ../ServiceStack.Stripe/build/build.sh
+        chmod +x ../ServiceStack.Text/build/build.sh
+        chmod +x ../ServiceStack.Core/build/build.sh
+        ./build-all.sh
+
+    - name: Stage output
+      working-directory: ./build
+      run: |
+        chmod +x ./stage-output.sh
+        ./stage-output.sh
+        cd staging
+        export number_of_packages=$(ls -1 | wc -l)
+        echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
+
+    - name: Check number of packages
+      if: env.number_of_packages < 73
+      run: |
+        echo "Less packages produced than expected, failing."
+        exit 1
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ServiceStack Packages
+        retention-days: 1
+        path: ./build/staging/*.nupkg

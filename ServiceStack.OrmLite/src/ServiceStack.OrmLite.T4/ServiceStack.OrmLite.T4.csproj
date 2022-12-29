@@ -1,0 +1,37 @@
+<Project>
+
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net472;net6.0</TargetFrameworks>
+        <PackageId>ServiceStack.OrmLite.T4</PackageId>
+        <Title>OrmLite.T4 - T4 schema-generation templates for OrmLite</Title>
+        <PackageDescription>
+            Generate POCO models for all existing tables and stored procedures in a database for use with OrmLite.
+        </PackageDescription>
+        <PackageTags>T4;SQL;Templates;CodeGen;OrmLite;RDBMS;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+        <IsPackable>true</IsPackable>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>contentFiles</ContentTargetFolders>
+        <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+        <NoWarn>CS8021</NoWarn>
+<!--        <NoBuild>true</NoBuild>-->
+        <!--<GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="**\*.tt*" Exclude="obj\**">
+            <Pack>true</Pack>
+            <PackagePath>$(ContentTargetFolders)\any\any\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+        </Content>
+        <PackageReference Remove="@(PackageReference)" />
+    </ItemGroup>
+    
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+    <Target Name="Compile" />
+    <Target Name="CopyFilesToOutputDirectory" />
+
+</Project>

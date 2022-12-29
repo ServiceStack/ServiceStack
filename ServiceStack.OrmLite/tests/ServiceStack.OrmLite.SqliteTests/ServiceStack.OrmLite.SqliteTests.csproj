@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName>ServiceStack.OrmLite.SqliteTests</AssemblyName>
+    <AssemblyTitle>ServiceStack.OrmLite.Sqlite32Tests</AssemblyTitle>
+    <OutputType>Library</OutputType>
+    <PackageId>ServiceStack.OrmLite.SqliteTests</PackageId>
+    <RuntimeIdentifiers>win;win-x86;ubuntu.16.04-x64</RuntimeIdentifiers>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+  </ItemGroup>
+
+</Project>

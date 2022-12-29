@@ -1,0 +1,375 @@
+﻿<!doctype html>
+<html lang="en-us">
+<head>
+<title>${Title}</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+BODY, H1, H2, H3, H4, H5, H6, DL, DT, DD {
+  margin: 0;
+  padding: 0;
+  color: #444;
+  font: 13px/15px Arial, Verdana, Helvetica;
+}
+H1 {
+  text-align: center;
+  font: 24px Helvetica, Verdana, Arial;
+  padding: 20px 0 10px 0;
+  background: #FBFBFB;
+  border-bottom: solid 1px #fff;
+}
+#lnks {
+  border-top: solid 1px #dfdfdf;
+  border-bottom: solid 1px #dfdfdf;
+  margin: 0 0 10px 0;
+  padding: 5px;
+  background: #f1f1f1;
+  line-height: 20px;
+  text-align: center;
+}
+#lnks B {
+  padding: 0 3px;
+}
+#body {
+  padding: 20px;
+}
+H1 B {
+  font-weight: normal;
+  color: #069;
+}
+H1 A {
+  color: #0E8F13;
+  text-decoration: underline;
+}
+H1 I {
+  font-style: normal;
+  color: #0E8F13;
+}
+A {
+  color: #337ab7;
+  text-decoration: none;
+}
+A:hover {
+  text-decoration: underline;
+}
+.ib {
+    position: relative;
+    display: -moz-inline-box;
+    display: inline-block;
+}
+* html .ib {
+    display: inline;
+}
+*:first-child + html .ib {
+    display: inline;
+}
+TABLE {
+  border-collapse:collapse;
+  border: solid 1px #ccc;
+  clear: left;
+}
+TH {
+  text-align: left;
+  padding: 4px 8px;
+  text-shadow: #fff 1px 1px -1px;
+  background: #f1f1f1;
+  white-space:nowrap;
+  cursor:pointer;
+  font-weight: bold;
+}
+TH, TD, TD DT, TD DD {
+  font-size: 13px;
+  font-family: Arial;
+}
+TD {
+  padding: 8px 8px 0 8px;
+  vertical-align: top;
+}
+DL {
+  clear: left;
+}
+DT {
+  margin: 10px 0 5px 0;
+  font: bold 18px Helvetica, Verdana, Arial;
+  min-width: 200px;
+  overflow: hidden;
+  clear: left;
+  float: left;
+  display:block;
+  white-space:nowrap;
+}
+DD {
+  margin: 5px 10px;
+  font: 18px Arial;
+  padding: 2px;
+  display: block;
+  float: left;
+}
+DL DL DT { 
+  font: bold 16px Arial;
+}
+DL DL DD {
+  font: 16px Arial;
+}
+HR {
+    display:none;
+}
+TD DL HR
+{
+    display:block;
+    padding: 0;
+    clear: left;
+    border: none;
+}
+TD DL
+{
+    padding: 4px;
+    margin: 0;
+    height:100%;
+    max-width: 700px;
+}
+DL TD DL DT {
+  padding: 2px;
+  margin: 0 10px 0 0;
+  font-weight: bold;
+  font-size: 13px;
+  width: 120px;
+  overflow: hidden;
+  clear: left;
+  float: left;
+  display:block;
+}
+DL TD DL DD {  
+  margin: 0;
+  padding: 2px;
+  font-size: 13px;
+  display: block;
+  float: left;
+}
+TBODY>TR:last-child>TD {
+  padding: 8px;
+}
+THEAD
+{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+}
+.desc, .asc {
+  background-color: #FAFAD2;
+}
+.desc {
+  background-color: #D4EDC9;
+}
+TH B {
+  display:block;
+  float:right;
+  margin: 0 0 0 5px;
+  width: 0;
+  height: 0;
+
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #ccc;
+  border-bottom: none;
+}
+.asc B {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #333;
+  border-bottom: none;
+}
+.desc B {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #333;
+  border-top: none;
+}
+#show-json {
+  display:none;
+}
+#mask {  
+  display: none;
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:100%; 
+  background: rgba(0,0,0,0.7);
+  z-index: 1;
+}
+.show-json #show-json, .show-json #mask {
+  display:block;
+}
+#show-json {
+  position: absolute;
+  left: 50%;
+  margin: 0 0 0 -350px;
+  border: solid 4px #ccc;
+  padding: 10px 20px;
+  background: #fff;
+  text-align: center;
+  float: left;  
+  z-index: 2;
+}
+H3 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+}
+#show-json TEXTAREA {
+  width: 750px;
+  height: 400px;
+  overflow:visible;
+  display: block;
+}
+#show-json BUTTON {
+  margin: 10px 0 0 0;
+  padding: 5px 10px;
+  clear: left;
+}
+</style>
+${MvcIncludes}
+</head>
+<body>
+
+<div id="mask"></div>
+
+<h1>${Header}</h1>
+
+<div id="lnks">
+  <a href="javascript:showJson()">view json datasource</a>
+  <b>from original url:</b>
+  <a href="${ServiceUrl}">${ServiceUrl}</a>
+  <b>in other formats:</b>
+  <a href="${ServiceUrl}format=json">json</a>
+  <a href="${ServiceUrl}format=xml">xml</a>
+  <a href="${ServiceUrl}format=csv">csv</a>
+  <a href="${ServiceUrl}format=jsv">jsv</a>
+</div>
+
+<div id="body">
+  
+  <div id="show-json">
+    <h3>This reports json data source</h3>
+    <textarea></textarea>
+    <button onclick="doc.body.className=null;">Close Window</button>
+  </div>
+  
+  <div id="content"></div>
+
+</div>
+
+<script>    !window.JSON && document.write(unescape('%3Cscript src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"%3E%3C/script%3E'))</script>
+
+<script>
+
+let doc = document, win = window,
+    $ = function(id) { return doc.getElementById(id); },
+    $$ = function(sel) { return doc.getElementsByTagName(sel); },
+    $each = function(fn) { for (let i=0,len=this.length; i<len; i++) fn(i, this[i], this); }
+
+$.each = function(arr, fn) { $each.call(arr, fn); }
+
+let splitCase = function (t) { return typeof t != 'string' ? t : titleCase(t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')); },
+    titleCase = function (s) { return s.replace(/\w\S*/g, function (t) { return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase(); }); },
+    uniqueKeys = function(m){ let h={}; for (let i=0,len=m.length; i<len; i++) for (let k in m[i]) if (show(k)) h[k] = k; return h; },
+    keys = function(o){ let a=[]; for (let k in o) if (show(k)) a.push(k); return a; }
+let tbls = []
+
+function val(m) {
+  if (m == null) return ''
+  if (typeof m == 'number') return num(m)
+  if (typeof m == 'string') return str(m)
+  if (typeof m == 'boolean') return m ? 'true' : 'false'
+  return m.length ? arr(m) : obj(m)
+}
+function num(m) { return m }
+let sdfmt = location.hash.indexOf('show=') >=0 && location.hash.indexOf('fulldates') >= 0 ? dmft : dmfthm
+function str(m){ return m.substr(0,6) === '/Date(' ? sdfmt(date(m)) : m.substr(0,4) === 'http' ? shref(m) : m }
+function sfmt(s) { return humanize ? splitCase(s) : s }
+function shref(s) { return humanize ? '<a href="' + s + '">' + s + '</a>' : s }
+function date(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])) }
+function pad(d) { return d < 10 ? '0'+d : d }
+function dmft(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) }
+function dmfthm(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()) }
+function show(k) { return typeof k != 'string' || k.substr(0,2) !== '__' }
+function obj(m) {
+  let sb = '<dl>'
+  for (let k in m) if (show(k)) sb += '<dt class="ib">' + sfmt(k) + '</dt><dd>' + val(m[k]) + '</dd>'
+  sb += '</dl>'
+  return sb
+}
+function arr(m) {
+  if (typeof m[0] == 'string' || typeof m[0] == 'number') return m.join(', ')
+  let id=tbls.length, h=uniqueKeys(m)
+  let sb = '<table id="tbl-' + id + '"><caption></caption><thead><tr>'
+  tbls.push(m)
+  let i=0
+  for (let k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + sfmt(k) + '</th>'
+  sb += '</tr></thead><tbody>' + makeRows(h,m) + '</tbody></table>'
+  return sb
+}
+
+function makeRows(h,m) {
+  let sb = ''
+  for (let r=0,len=m.length; r<len; r++) {
+    let row = m[r]
+    if (!row) continue
+    sb += '<tr>'
+    for (let k in h) if (show(k)) sb += '<td>' + val(row[k]) + '</td>'
+    sb += '</tr>'
+  }
+  return sb
+}
+
+let model = ${Dto},
+    txt = $$('TEXTAREA')[0],
+    humanize = ${Humanize} && location.hash.indexOf('dehumanize') === -1,
+    isIE = /msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)
+
+$("content").innerHTML = val(model)
+txt.innerHTML=JSON.stringify(model)
+
+function showJson(){ doc.body.className='show-json'; txt.select(); txt.focus(); }
+
+doc.onclick = function(e) {
+    let el = e.target || e.srcElement, cls = el.className
+    e = e || window.event
+    if (el.tagName === 'B') el = el.parentNode
+    if (el.tagName !== 'TH') return
+    el.className = cls === 'asc' ? 'desc' : (cls === 'desc' ? null : 'asc')
+    $.each($$('TH'), function(i,th){ if (th === el) return; th.className = null; })
+    clearSel()
+    let ids=el.id.split('-'), tId=ids[1], cId=ids[2]
+	if (!tbls[tId]) return
+    let tbl=tbls[tId].slice(0), h=uniqueKeys(tbl), col=keys(h)[cId], tbody=el.parentNode.parentNode.nextSibling
+    if (!el.className){ setTableBody(tbody, makeRows(h,tbls[tId])); return }
+    let d=el.className==='asc'?1:-1
+    tbl.sort(function(a,b){ return cmp(a[col],b[col]) * d; })
+    setTableBody(tbody, makeRows(h,tbl))
+}
+
+function setTableBody(tbody, html) {
+  if (!isIE) { tbody.innerHTML = html; return }
+  let temp = tbody.ownerDocument.createElement('div')
+  temp.innerHTML = '<table>' + html + '</table>'
+  tbody.parentNode.replaceChild(temp.firstChild.firstChild, tbody)
+}
+
+function clearSel() {
+  if (doc.selection && doc.selection.empty) doc.selection.empty()
+  else if(win.getSelection) {
+    let sel=win.getSelection()
+    if (sel && sel.removeAllRanges) sel.removeAllRanges()
+  }
+}
+
+function cmp(v1, v2){
+  let f1=parseFloat(v1), f2=parseFloat(v2)
+  if (!isNaN(f1) && !isNaN(f2)) { v1=f1; v2=f2 }
+  if (typeof v1 == 'string' && v1.substr(0,6) === '/Date(') { v1=date(v1); v2=date(v2) }
+  if (v1 === v2) return 0
+  return v1 > v2 ? 1 : -1
+}
+
+</script>
+</body>
+</html>

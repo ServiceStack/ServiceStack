@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MyApp</title>
+    <base href="/">
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/typography.css" rel="stylesheet" />
+    <link href="css/markdown.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet">
+    <link href="css/main-layout.css" rel="stylesheet" />
+    <link href="MyApp.Client.styles.css" rel="stylesheet" />
+    <script src="_content/Blazor.Extensions.Logging/blazor.extensions.logging.js" defer></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- loading: render temp static app chrome to improve perceived performance -->
+        <div id="app-loading" class="main-layout page">
+            <div class="sidebar">
+                <div class="top-row navbar navbar-dark">
+                    <a class="navbar-brand ps-4" href="/">MyApp</a>
+                    <button class="navbar-toggler"><span class="navbar-toggler-icon"></span></button>
+                </div>
+                <div class="collapse">
+                    <ul class="nav flex-column"></ul>
+                </div>
+            </div>
+            <div class="main">
+                <div class="main-top-row px-4">
+                    <ul class="nav nav-pills"></ul>
+                    <a href="signin?return=docs/deploy" class="btn btn-outline-primary">Login</a>
+                </div>
+                <div class="content px-4">
+
+<div class="prose lg:prose-xl min-vh-100 m-3" data-prerender="/docs/prerender">
+    <div class="markdown-body">
+        <blockquote>
+<p>Why does this page load so fast?</p>
+</blockquote>
+<h3 id="blazor-wasm-trade-offs">Blazor WASM trade-offs</h3>
+<p>Blazor WASM enables reuse of C# skills, tooling &amp; libraries offers a compelling advantage for .NET teams, so much so
+it's become our preferred technology for developing internal LOB applications as it's better able to reuse existing
+C# investments in an integrated SPA Framework utilizing a single toolchain.</p>
+<p>It does however comes at a cost of a larger initial download size and performance cost resulting in a high Time-To-First-Render (TTFR)
+and an overall poor initial User Experience when served over the Internet, that's further exacerbated over low speed Mobile connections.</p>
+<p>This is likely an acceptable trade-off for most LOB applications served over high-speed local networks but may not be a
+suitable choice for public Internet sites <em>(an area our other <a href="https://jamstacks.net">jamstacks.net</a> templates may serve better)</em>.</p>
+<p>As an SPA it also suffers from poor SEO as content isn't included in the initial page and needs to be rendered in the browser after
+the App has initialized. For some content heavy sites this can be a deal breaker either requiring proxy rules so content pages
+are served by a different SEO friendly site or otherwise prohibits using Blazor WASM entirely.</p>
+<h3 id="improving-startup-performance">Improving Startup Performance</h3>
+<p>The solution to both these problems is fairly straightforward, that's been utilized by
+<a href="https://jamstack.org/generators/">Jamstack Frameworks</a> for years, by prerendering content at build time.</p>
+<p>So we know what needs to be done, but how best to do it in Blazor WASM? Unfortunately the
+<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration?view=aspnetcore-6.0&amp;pivots=webassembly">official Blazor WASM prerendering guide</a>
+isn't prerendering at all which is typically used to describe
+<a href="https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/">Static Site Generators (SSG)</a>
+prerendering static content at build-time, where as Blazor WASM prerendering instead describes
+<a href="https://www.omnisci.com/technical-glossary/server-side-renderings">Server-Side-Rendering (SSR)</a> that mandates the additional complexity
+of forcing maintaining your Apps dependencies in both client and server projects, and doesn't yield an optimal result since prerendering
+is typically used so Apps can host their SSG content on static file hosts, instead SSR does the opposite and forces coupling of the
+.NET Server Host which prohibits Blazor WASM Apps from being served from a CDN.</p>
+<p>As this defeats <a href="hosting">many of the benefits</a> of Blazor WASM in the first place we disregarded it &amp; adopted
+a solution that doesn't compromise its CDN hostability.</p>
+<h3 id="increasing-perceived-performance">Increasing Perceived Performance</h3>
+<p>We have little opportunity over improving the startup time of the real C# Blazor App beyond hosting its static assets on CDN edge caches,
+but ultimately what matters is <a href="https://marvelapp.com/blog/a-designers-guide-to-perceived-performance/">perceived performance</a> which
+we do have control over given the screen for a default Blazor WASM project is a glaring white screen flash:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/loading-default.png" alt="" /></p>
+<p>The longer users have to wait looking at this black loading screen without signs of progress, the more they'll associate your site
+with taking forever to load.</p>
+<p>One technique many popular sites are using to increase perceived performance is to use content placeholders in place of real-content
+which gives the impression that the site has almost loaded and only requires a few moments more for the latest live data to be slotted in.</p>
+<p>As an example here's what YouTube content placeholders mimicking the page layout looks like before the real site has loaded:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/youtube-placeholder.png" alt="" /></p>
+<p>But we can do even better than an inert content placeholder, and load a temporary chrome of our App. But as this needs to be done
+before Blazor has loaded we need to implement this with a sprinkling of HTML + JS.</p>
+<p>First thing we need to do is move the scoped styles of our Apps
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/MainLayout.razor">MainLayout</a> and
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/NavMenu.razor">NavMenu</a> into an external
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/css/main-layout.css">main-layout.css</a> so our temp
+App chrome can use it.</p>
+<p>Then in our <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/wwwroot/index.html">/wwwroot/index.html</a> anything
+between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> is displayed whilst our Blazor App is loading, before it's replaced with the real App:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+    &lt;!-- loading: render temp static app chrome to improve perceived performance --&gt;
+    &lt;div id=&quot;app-loading&quot; class=&quot;main-layout page&quot;&gt;
+        &lt;div class=&quot;sidebar&quot;&gt;
+            &lt;div class=&quot;top-row navbar navbar-dark&quot;&gt;
+                &lt;a class=&quot;navbar-brand ps-4&quot; href=&quot;/&quot;&gt;MyApp&lt;/a&gt;
+                &lt;button class=&quot;navbar-toggler&quot;&gt;
+                    &lt;span class=&quot;navbar-toggler-icon&quot;&gt;&lt;/span&gt;
+                &lt;/button&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;collapse&quot;&gt;
+                &lt;ul class=&quot;nav flex-column&quot;&gt;&lt;/ul&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;main&quot;&gt;
+            &lt;div class=&quot;main-top-row px-4&quot;&gt;
+                &lt;ul class=&quot;nav nav-pills&quot;&gt;&lt;/ul&gt;
+                &lt;a href=&quot;signin?return=docs/deploy&quot; class=&quot;btn btn-outline-primary&quot;&gt;
+                    Login
+                &lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;content px-4&quot;&gt;
+                &lt;!--PAGE--&gt;
+                &lt;div class=&quot;spinner-border float-start mt-2 me-2&quot; role=&quot;status&quot;&gt;
+                    &lt;span class=&quot;sr-only&quot;&gt;&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;h1 style=&quot;font-size:36px&quot;&gt;
+                    Loading...
+                &lt;/h1&gt;
+                &lt;!--/PAGE--&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Here we just paste in the <strong>MainLayout</strong> markup minus the dynamic navigation menus which we'll generate with a bit of JS below:</p>
+<pre><code class="language-js">const SIDEBAR = `
+    Home,home,/$
+    Counter,plus,/counter
+    Todos,clipboard,/todomvc
+    Bookings CRUD,calendar,/bookings-crud
+    Call Hello,transfer,/hello$
+    Call HelloSecure,shield,/hello-secure
+    Fetch data,list-rich,/fetchdata
+    Admin,lock-locked,/admin
+    Login,account-login,/signin
+`
+const TOP = `
+    0.40 /mo,dollar,/docs/hosting
+    Prerendering,loop-circular,/docs/prerender
+    Deployments,cloud-upload,/docs/deploy
+`
+
+const path = location.pathname
+const NAV = ({ label, cls, icon, route, exact }) =&gt; `&lt;li class=&quot;nav-item${cls}&quot;&gt;
+    &lt;a href=&quot;${route}&quot; class=&quot;nav-link${(exact ? path==route : path.startsWith(route)) ? ' active' : ''}&quot;&gt;
+        &lt;span class=&quot;oi oi-${icon}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; ${label}
+    &lt;/a&gt;&lt;/li&gt;`
+const renderNav = (csv,f) =&gt; csv.trim().split(/\r?\n/g).map(s =&gt; NAV(f.apply(null,s.split(',')))).join('')
+const $1 = s =&gt; document.querySelector(s)
+
+$1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, route) =&gt; ({
+    label, cls: ` px-3${route == SIDEBAR[0].route ? ' pt-3' : ''}`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+
+$1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) =&gt; ({
+    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+</code></pre>
+<p>Which takes care of both rendering the top and sidebar menus as well as highlighting the active menu for the active
+nav item being loaded, and because we're rendering our real App navigation with real links, users will be able to navigate
+to the page they want before our App has loaded.</p>
+<p>So you can distinguish a prerendered page from a Blazor rendered page we've added a <strong>subtle box shadow</strong> to prerendered content
+which you'll see initially before being reverting to a flat border when the Blazor App takes over and replaces the entire page:</p>
+<pre><code class="language-html">&lt;style&gt;
+#app-loading .content { box-shadow: inset 0 4px 4px 0 rgb(0 0 0 / 0.05) }
+&lt;/style&gt;
+</code></pre>
+<p>With just this, every page now benefits from an instant App chrome to give the perception that our App has loaded instantly
+before any C# in our Blazor App is run. E.g. here's what the <a href="/counter">Blazor Counter</a> page looks like while it's loading:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/loading.png" alt="" /></p>
+<p>If you click refresh the <a href="/counter">/counter</a> page a few times you'll see the new loading screen prior to the Counter page being available.</p>
+<p>Our App is now in a pretty shippable state with decent UX of a loading page that looks like it loaded instantly instead
+of the &quot;under construction&quot; Loading... page from the default Blazor WASM project template.</p>
+<p>It's not quite a zero maintenance solution but still fairly low maintenance as only the <code>SIDEBAR</code> and <code>TOP</code> csv lists
+need updating when add/removing menu items.</p>
+<h3 id="improving-ux-with-prerendering">Improving UX with Prerendering</h3>
+<p>We'll now turn our focus to the most important page in our App, the <a href="/">Home Page</a> which is the page most people will see
+when loading the App from the first time.</p>
+<p>With the above temp App chrome already in place, a simple generic pre-rendering solution to be able to load any prerendered
+any page is to check if any prerendered content exists in the
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/prerender">/prerender</a>
+folder for the current path, then replace the index.html Loading... page with if it does:</p>
+<pre><code class="language-js">const pagePath = path.endsWith('/') 
+    ? path.substring(0, path.length - 2) + '/index.html' 
+    : path
+fetch(`/prerender${pagePath}`)
+    .then(r =&gt; r.text())
+    .then(html =&gt; {
+        if (html.indexOf('&lt;!DOCTYPE html&gt;') &gt;= 0) return // ignore CDN 404.html
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) 
+            pageBody.innerHTML = `&lt;i hidden data-prerender=&quot;${path}&quot;&gt;&lt;/i&gt;` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</code></pre>
+<p>We also tag which path the prerendered content is for and provide a JS function to fetch the prerendered content
+which we'll need to access later in our App:</p>
+<pre><code class="language-html">&lt;script&gt;
+/* Loading */
+window.prerenderedPage = function () {
+    const el = document.querySelector('#app-loading .content')
+    return el &amp;&amp; el.innerHTML || ''
+}
+&lt;/script&gt;
+</code></pre>
+<p>We now have a solution in place to load pre-rendered content from the <code>/prerender</code> folder, we now need some way of generating it.</p>
+<p>The solution is technology independent in that you can you use any solution your most comfortable with, (even manually construct
+each prerendered page if preferred), although it's less maintenance if you automate and get your CI to regenerate it when it publishes
+your App.</p>
+<p>Which ever tool you choose would also need to be installed in your CI/GitHub Action if that's where it's run, so we've opted for
+a dependency-free solution by using the tool or .NET projects have: MSBuild.</p>
+<p>As our <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Index.razor">/Pages/Index.razor</a> home page is pretty simple:</p>
+<pre><code class="language-razor">@page &quot;/&quot;
+
+&lt;h1&gt;Hello, world!&lt;/h1&gt;
+
+Welcome to your new Blazor WASM app, if you're new to Blazor
+&lt;a href=&quot;https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor&quot;&gt;checkout the docs&lt;/a&gt; to get started.
+
+&lt;GettingStarted /&gt;
+</code></pre>
+<p>We can get most of the way there by replacing the <code>&lt;GettingStarted /&gt;</code> text with the
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/GettingStarted.razor">GettingStarted.razor</a> component:</p>
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+  &lt;ClientDir&gt;$(MSBuildProjectDirectory)/../MyApp.Client&lt;/ClientDir&gt;
+  &lt;WwwRoot&gt;$(ClientDir)/wwwroot&lt;/WwwRoot&gt;
+&lt;/PropertyGroup&gt;
+&lt;Target Name=&quot;PrerenderPages&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;GettingStartedContents&gt;$([System.IO.File]::ReadAllText('$(ClientDir)/Shared/GettingStarted.razor'))&lt;/GettingStartedContents&gt;
+    &lt;IndexFileContents&gt;
+      $([System.IO.File]::ReadAllText('$(ClientDir)/Pages/Index.razor').Replace('&lt;GettingStarted /&gt;',$(GettingStartedContents)))
+    &lt;/IndexFileContents&gt;
+  &lt;/PropertyGroup&gt;
+  &lt;WriteLinesToFile File=&quot;$(WwwRoot)/prerender/index.html&quot; Lines=&quot;$(IndexFileContents)&quot; Overwrite=&quot;true&quot; /&gt;
+&lt;/Target&gt;
+</code></pre>
+<p>To test it out locally, you can run the MSBuild <code>PrerenderPages</code> task with:</p>
+<pre><code class="language-bash">$ dotnet msbuild -target:PrerenderPages
+</code></pre>
+<p>Whereas <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80">GitHub Actions runs it</a>
+when it publishes your App with task parameters:</p>
+<pre><code class="language-bash">$ dotnet publish -c Release /p:APP_TASKS=prerender
+</code></pre>
+<p>Enabled by an <code>AfterTargets=&quot;Build&quot;</code> Task:</p>
+<pre><code class="language-xml">&lt;Target Name=&quot;AppTasks&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(APP_TASKS) != ''&quot;&gt;
+  &lt;CallTarget Targets=&quot;PrerenderPages&quot; Condition=&quot;$(APP_TASKS.Contains('prerender'))&quot; /&gt;
+&lt;/Target&gt;
+</code></pre>
+<p>Unfortunately the <code>@directives</code> and <code>@code{}</code> blocks in <code>.razor</code> pages also needs to be stripped out but is too cumbersome to attempt
+to do with MSBuild alone so we've done this in a custom cleanup task that's generically applied to all pages in the <code>/prerender</code> folder:</p>
+<pre><code class="language-xml">&lt;Exec Command=&quot;dotnet run -task prerender:clean $(WwwRoot)/prerender&quot; /&gt;
+</code></pre>
+<p>Which may initially appear confusing as <code>dotnet run</code> is what we use to run the Blazor Server Host and WASM Client.</p>
+<h3 id="prerenderclean-task">prerender:clean task</h3>
+<p>As we need something more powerful than MSBuild without wanting to add any additional tool dependencies, we've chosen to
+reuse the existing ASP.NET Core Server App for our custom tasks by calling
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Program.cs#L4">TaskRunner.Handle(args)</a>
+at the start of our App, to run tasks defined in
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Tasks.cs">Tasks.cs</a>.</p>
+<p>This is what's used to implement our <code>-task prerender:clean</code> executed above:</p>
+<pre><code class="language-csharp">public static class TaskRunner
+{
+    public static Dictionary&lt;string, ITask&gt; Tasks = new()
+    {
+        [&quot;prerender:clean&quot;] = new PrerenderClean(),
+    };
+    
+    /// &lt;summary&gt;
+    /// Clean Blazor .html pages by removing @attributes and @code{} blocks
+    /// &lt;/summary&gt;
+    public class PrerenderClean : ITask
+    {
+        public string Usage =&gt; @&quot;Usage: -task prerender:clean &lt;dir&gt;&quot;;
+        public CommandOption[] Options =&gt; Array.Empty&lt;CommandOption&gt;();
+
+        public void Execute(ArgsParser cmd)
+        {
+            if (cmd.Args.Count &lt; 1) throw new Exception(&quot;Too few arguments&quot;);
+
+            var prerenderDir = cmd.Args[0];
+
+            foreach (var file in new DirectoryInfo(prerenderDir)
+                .GetFiles(&quot;*.html&quot;, SearchOption.AllDirectories))
+            {
+                var sb = new StringBuilder();
+                foreach (var line in File.ReadAllLines(file.FullName))
+                {
+                    if (line.StartsWith(&quot;@code&quot;))
+                        break;
+                    if (line.StartsWith(&quot;@&quot;))
+                        continue;
+                    sb.AppendLine(line);
+                }
+                sb.AppendLine(&quot;&lt;!--prerendered--&gt;&quot;); //mark prerendered pages
+                File.WriteAllText(file.FullName, sb.ToString());
+            }
+        }
+    }       
+}
+</code></pre>
+<p>Now when we next commit code, the GitHub CI Action will run the above task to generate our
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/gh-pages/prerender/index.html">/prerender/index.html</a> page
+that now loads our <a href="/">Home Page</a> instantly!</p>
+<p><a href="/"><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-wasm/home-prerendered.png" alt="" /></a></p>
+<p>The only issue now is that the default Blazor template behavior will yank our pre-rendered page, once during loading
+and another during Authorization. To stop the unwanted yanking we've updated the
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Shared/Loading.razor"><Loading/></a> component
+to instead load the prerendered page content if it's <strong>for the current path</strong>:</p>
+<pre><code class="language-razor">@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@if (!string.IsNullOrEmpty(prerenderedHtml))
+{
+    @((MarkupString)prerenderedHtml)
+}
+else
+{
+    &lt;div class=@CssUtils.ClassNames(&quot;spinner-border float-start mt-2 me-2&quot;, @class)&gt;
+        &lt;span class=&quot;sr-only&quot;&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;h1 style=&quot;font-size:36px&quot;&gt;
+        Loading...
+    &lt;/h1&gt;
+}
+
+@code {
+    [Parameter]
+    public string Messsage { get; set; } = &quot;Loading...&quot;;
+
+    [Parameter]
+    public string @class { get; set; } = &quot;&quot;;
+
+    public string prerenderedHtml { get; set; } = &quot;&quot;;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var html = await JsRuntime.InvokeAsync&lt;string&gt;(&quot;prerenderedPage&quot;) ?? &quot;&quot;;
+        var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
+        if (html.IndexOf($&quot;data-prerender=\&quot;{currentPath}\&quot;&quot;) &gt;= 0)
+            prerenderedHtml = html;
+    }
+}
+</code></pre>
+<p>Whilst to prevent yanking by the Authorization component we'll also include the current page when rendering
+the alternate layout with an <code>Authenticating...</code> text that will appear under the Login/Logout buttons on the top-right:</p>
+<pre><code class="language-xml">&lt;AuthorizeRouteView RouteData=&quot;@routeData&quot; DefaultLayout=&quot;@typeof(MainLayout)&quot;&gt;
+  &lt;Authorizing&gt;
+    &lt;p class=&quot;text-muted&quot; style=&quot;float:right;margin:1rem 1rem 0 0&quot;&gt;Authenticating...&lt;/p&gt;
+    &lt;RouteView RouteData=&quot;@routeData&quot; /&gt;
+  &lt;/Authorizing&gt;
+&lt;/AuthorizeRouteView&gt;
+</code></pre>
+<p>This last change brings us to the optimal UX we have now with the home page loading instantly whilst our Blazor App
+is loading in the background that'll eventually replace the home page with its identical looking C# version except
+for the <strong>box-shadow under the top navigation</strong> so you can tell when you're looking at the pre-rendered version
+instead of the C# Blazor version.</p>
+<h3 id="prerendering-markdown-content">Prerendering Markdown Content</h3>
+<p>The other pages that would greatly benefit from prerendering are the Markdown <code>/docs/*</code> pages (like this one) that's implemented in
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/Pages/Docs.razor">Docs.razor</a>.</p>
+<p>However to enable SEO friendly content our <code>fetch(/prerender/*)</code> solution isn't good enough as the initial page download
+needs to contain the prerendered content, i.e. instead of being downloaded in after.</p>
+<h3 id="prerendermarkdown-task">prerender:markdown task</h3>
+<p>To do this our <code>prerender:markdown</code> Task scans all <code>*.md</code> pages in the <code>&lt;src&gt;</code> directory and uses the same
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp.Client/MarkdownUtils.cs">/MyApp.Client/MarkdownUtils.cs</a>
+implementation <code>Docs.razor</code> uses to generate the markdown and embeds it into the <code>index.html</code> loading page to generate
+the pre-rendered page:</p>
+<pre><code class="language-csharp">public static class TaskRunner
+{
+    public static Dictionary&lt;string, ITask&gt; Tasks = new()
+    {
+        [&quot;prerender:markdown&quot;] = new PrerenderMarkdownTask(),
+    };
+    
+    public class PrerenderMarkdownTask : ITask
+    {
+        public string Usage =&gt; @&quot;Usage: -task prerender:markdown &lt;src-dir&gt; &lt;dest-dir&gt;&quot;;
+        public CommandOption[] Options =&gt; new CommandOption[] {
+            new(&quot;-index &lt;path&gt;&quot;, &quot;Path to index.html&quot;),
+        };
+        public void Execute(ArgsParser cmd)
+        {
+            if (cmd.Args.Count &lt; 2) throw new Exception(&quot;Too few arguments&quot;);
+    
+            string santizePath(string path) =&gt; Path.DirectorySeparatorChar == '\\'
+                ? path.Replace('/', '\\')
+                : path.Replace('\\', '/');
+    
+            var srcDir = santizePath(cmd.Args[0]);
+            var dstDir = santizePath(cmd.Args[1]);
+    
+            if (!Directory.Exists(srcDir)) 
+                throw new Exception($&quot;{Path.GetFullPath(srcDir)} does not exist&quot;);
+            if (Directory.Exists(dstDir)) 
+                FileSystemVirtualFiles.DeleteDirectoryRecursive(dstDir);
+            FileSystemVirtualFiles.AssertDirectory(dstDir);
+    
+            foreach (var file in new DirectoryInfo(srcDir)
+                .GetFiles(&quot;*.md&quot;, SearchOption.AllDirectories))
+            {
+                WriteLine($&quot;Converting {file.FullName} ...&quot;);
+    
+                var name = file.Name.WithoutExtension();
+                var docRender = MyApp.Client.MarkdownUtils.LoadDocumentAsync(name, doc =&gt;
+                    Task.FromResult(File.ReadAllText(file.FullName))).GetAwaiter().GetResult();
+    
+                if (docRender.Failed)
+                {
+                    WriteLine($&quot;Failed: {docRender.ErrorMessage}&quot;);
+                    continue;
+                }
+    
+                var dirName = dstDir.IndexOf(&quot;wwwroot&quot;) &gt;= 0
+                    ? dstDir.LastRightPart(&quot;wwwroot&quot;).Replace('\\','/')
+                    : new DirectoryInfo(dstDir).Name;
+                var path = dirName.CombineWith(name == &quot;index&quot; ? &quot;&quot; : name);
+    
+                var mdBody = @&quot;
+    &lt;div class=&quot;&quot;prose lg:prose-xl min-vh-100 m-3&quot;&quot; data-prerender=&quot;&quot;{path}&quot;&quot;&gt;
+        &lt;div class=&quot;&quot;markdown-body&quot;&quot;&gt;
+            {docRender.Response!.Preview!}
+        &lt;/div&gt;
+    &lt;/div&gt;&quot;;
+                var prerenderedPage = IndexTemplate.Render(cmd, mdBody);
+                string htmlPath = Path.GetFullPath(Path.Combine(dstDir, $&quot;{name}.html&quot;));
+                File.WriteAllText(htmlPath, prerenderedPage);
+                WriteLine($&quot;Written to {htmlPath}&quot;);
+            }
+        }
+    }
+}
+</code></pre>
+<p>Whilst the <code>wwwroot/index.html</code> is parsed with <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/MyApp/Tasks.cs">IndexTemplate</a>
+who uses the resulting layout to generate pages within <code>&lt;!--PAGE--&gt;&lt;!--/PAGE--&gt;</code> markers.</p>
+<p>Prerendering the <code>/wwwroot/content/*.md</code> pages are also executed by a MSBuild task run by GitHub Actions below which outputs
+all pre-generated pages to the
+<a href="https://github.com/NetCoreTemplates/blazor-wasm/tree/gh-pages/docs">/wwwroot/docs/*.html</a> folder:</p>
+<pre><code class="language-xml">&lt;Target Name=&quot;AppTasks&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(APP_TASKS) != ''&quot;&gt;
+  &lt;CallTarget Targets=&quot;PrerenderMarkdown&quot; Condition=&quot;$(APP_TASKS.Contains('prerender'))&quot; /&gt;
+&lt;/Target&gt;
+&lt;Target Name=&quot;PrerenderMarkdown&quot;&gt;
+  &lt;Exec Command=&quot;dotnet run -task prerender:markdown -index $(WwwRoot)/index.html $(WwwRoot)/content $(WwwRoot)/docs&quot; /&gt;
+&lt;/Target&gt;
+</code></pre>
+<p>This results in the path to the pre-generated markdown docs i.e. <a href="/docs/prerender">/docs/prerender</a> having the <strong>exact same path</strong>
+as its route in the Blazor App, which when exists, CDNs give priority to over the SPA fallback the Blazor App is loaded with.</p>
+<p>It retains the similar behavior as the home page that initially loads pre-rendered content before it's replaced with the
+C# version once the Blazor App has loaded.</p>
+<blockquote>
+<p>Why does this page load so fast?</p>
+</blockquote>
+<p>So to answer the initial question, this page loads so fast because a prerendered version is initially loaded from a CDN edge cache,
+it's the same reason why our other modern <a href="https://nextjs.jamstacks.net">nextjs.jamstacks.net</a> and
+<a href="https://vue-ssg.jamstacks.net">vue-ssg.jamstacks.net</a> Jamstack SSG templates have such great performance and UX out-of-the-box.</p>
+<p>We hope this technique serves useful in greatly improving the initial UX of Blazor Apps, a new Blazor App
+with all this integrated can be created on the <a href="/">Home Page</a></p>
+
+    </div>
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+const SIDEBAR = `
+    Home,home,/$
+    Counter,plus,/counter
+    Todos,clipboard,/todomvc
+    Bookings CRUD,calendar,/bookings-crud
+    Call Hello,transfer,/hello$
+    Call HelloSecure,shield,/hello-secure
+    Fetch data,list-rich,/fetchdata
+    Admin,lock-locked,/admin
+    Login,account-login,/signin
+`
+const TOP = `
+    0.40 /mo,dollar,/docs/hosting
+    Prerendering,loop-circular,/docs/prerender
+    Deployments,cloud-upload,/docs/deploy
+`
+
+const path = location.pathname
+const NAV = ({ label, cls, icon, route, exact }) => `<li class="nav-item${cls}">
+    <a href="${route}" class="nav-link${(exact ? path==route : path.startsWith(route)) ? ' active' : ''}">
+        <span class="oi oi-${icon}" aria-hidden="true"></span> ${label}
+    </a></li>`
+const renderNav = (csv,f) => csv.trim().split(/\r?\n/g).map(s => NAV(f.apply(null,s.split(',')))).join('')
+const $1 = s => document.querySelector(s)
+
+$1('#app-loading .sidebar .nav').innerHTML = renderNav(SIDEBAR, (label, icon, route) => ({
+    label, cls: ` px-3${route == SIDEBAR[0].route ? ' pt-3' : ''}`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+
+$1('#app-loading .main-top-row .nav').innerHTML = renderNav(TOP, (label, icon, route) => ({
+    label, cls: '', icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+    
+$1('#app-loading .navbar-toggler').onclick = function () {
+    this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
+
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r => r.text())
+    .then(html => {
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</script>
+<style>
+/* show subtle visual cue for prerendered pages */
+#app-loading .content {
+    box-shadow: inset 0 4px 4px 0 rgb(0 0 0 / 0.05);
+}
+</style>
+ 
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll()</script>
+
+<script>
+/* DOM functions used in Blazor Components */
+
+/* Loading */
+window.prerenderedPage = function () {
+    const el = document.querySelector('#app-loading .content')
+    return el && el.innerHTML || ''
+}
+/* ShellCommand */
+window.copy = function(target) {
+    let $el = document.createElement("input")
+    let $lbl = target.parentElement.querySelector('label')
+
+    $el.setAttribute("value", $lbl.innerText)
+    document.body.appendChild($el)
+    $el.select()
+    document.execCommand("copy")
+    document.body.removeChild($el);
+
+    if (typeof window.getSelection == "function") {
+        const range = document.createRange()
+        range.selectNodeContents($lbl)
+        window.getSelection()?.removeAllRanges()
+        window.getSelection()?.addRange(range)
+    }
+}
+</script>
+</body>
+</html>

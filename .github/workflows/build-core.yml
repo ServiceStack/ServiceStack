@@ -1,0 +1,26 @@
+name: Build Core
+
+on:
+  push:
+    paths:
+      - 'ServiceStack.Core/**'
+      - '.github/workflows/build-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-servicestack-core:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+          
+      - name: Build
+        working-directory: ServiceStack.Core/build
+        run: dotnet build ./build.proj   
+          

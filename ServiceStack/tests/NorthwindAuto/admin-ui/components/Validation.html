@@ -1,0 +1,485 @@
+<script minify>
+import { Types, Forms, GetValidationRules, ScriptMethodType } from '../../lib/types'
+
+App.components({
+    Validation: ({store, routes, client, Forms}) => {
+        return {
+            $template: '#validation-template',
+            txtFilter: '',
+            accessible: true,
+
+            showTypeForm: false,
+            /** @type {number?} */
+            editTypeRule: null,
+            showPropertyForm: false,
+            /** @type {number?} */
+            editPropertyRule: null,
+            
+            loading: false,
+            api: null,
+            get errorSummary() {
+                return this.api && this.api.error && this.api.summaryMessage()
+            },
+            /** @type {ValidationRule[]} */
+            get results() {
+                return this.api && this.api.response.results || []
+            },
+
+            get plugin() {
+                return Forms.Server.plugins.validation
+            },
+            get operation() {
+                return routes.op ? Forms.Meta.operations.find(op => op.request.name === routes.op) : null
+            },
+            get opProps() {
+                return this.operation && Forms.typeProperties(this.operation.request) || []
+            },
+            get hasProperties() {
+                return this.opProps.length > 0
+            },
+            get dataModelOps() {
+                return Forms.dataModelOps(this.operation && this.operation.dataModel).filter(x => x.request.name !== routes.op)
+            },
+            /** @param {{field:string,validator?:string,condition?:string}} rule */
+            handleDone(rule) {
+                if (rule.field) {
+                    this.showPropertyForm = false;
+                    this.editPropertyRule = null;
+                } else {
+                    this.showTypeForm = false;
+                    this.editTypeRule = null;
+                }
+
+                if (rule.validator || rule.condition) {
+                    return this.reset()
+                }
+            },
+            /** @param {number|null} ruleId= */
+            viewTypeForm(ruleId) {
+                this.showTypeForm = true;
+                this.editTypeRule = ruleId;
+            },
+            /** @param {number|null} ruleId= */
+            viewPropertyForm(ruleId) {
+                this.showPropertyForm = true;
+                this.editPropertyRule = ruleId;
+            },            
+            
+            reset() {
+                this.api = null
+                this.showTypeForm = this.showPropertyForm = false
+                this.editTypeRule = this.editPropertyRule = null
+
+                if (!this.operation) return
+
+                apiSend(createClient, new GetValidationRules({type: routes.op}))
+                    .then(r => this.api = r.api)
+            },
+
+            updated() {
+                this.reset()
+            },
+            sub: null,
+            unmounted: App.unsubscribe,
+            mounted() {
+                this.sub = App.events.subscribe('route:nav', args => this.updated())
+                this.updated()
+            },
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="validation-template">
+<section class="" @vue:mounted="mounted" @vue:unmounted="unmounted">
+    <div class="mt-4" v-scope="ApiSelector({ routes, Meta })"></div>
+
+    <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+
+    <main class="mt-8 max-w-screen-xl">
+        <div v-if="operation && !loading" class="flex flex-wrap">
+            <div class="md:flex-1 md:w-1/2 md:p-2 pl-0">
+
+                <div class="">
+                    <div class="flex mb-2">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                  d="M12 2C9.243 2 7 4.243 7 7v2H6c-1.103 0-2 .897-2 2v9c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-9c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2H9V7zm9.002 13H13v-2.278c.595-.347 1-.985 1-1.722c0-1.103-.897-2-2-2s-2 .897-2 2c0 .736.405 1.375 1 1.722V20H6v-9h12l.002 9z"/>
+                        </svg>
+                        <h3 class="text-xl leading-6 font-medium text-gray-900">
+                            Type Validation Rules
+                        </h3>
+                    </div>
+
+                    <div>
+                        <ul role="list" class="divide-y divide-gray-200">
+                            <li v-for="x in results.filter(x => x.field == null)" :key="x.id" class="py-4">
+                                <div v-if="editTypeRule==x.id" v-scope="EditValidationRule({
+                                    type:() => operation.request, rule:() => x, validators:plugin.typeValidators, done:handleDone
+                                })"></div>
+                                <div v-else class="flex space-x-3">
+                                    <div>
+                                        <button @click="viewTypeForm(x.id)"
+                                                class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" title="Edit Ruke">
+                                            <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+                                        </button>
+                                    </div>
+                                    <div class="flex-1 space-y-1">
+                                        <div class="flex items-center">
+                                            <h3 class="text-sm font-medium">{{x.validator ? 'Validator':'Script'}}</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-500"><b class="field">{{x.field}}</b>{{x.validator ?? x.condition}}</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="mt-4">
+                            <button v-if="!showTypeForm" @click="viewTypeForm()"
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Add Type Validation Rule
+                            </button>
+                            <div v-else-if="editTypeRule==null" v-scope="EditValidationRule({
+                                type:() => operation.request, validators:plugin.typeValidators, done:handleDone
+                            })"></div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="md:flex-1 md:w-1/2 md:p-2 pr-0 mt-4 sm:mt-0">
+
+                <div v-if="hasProperties" class="">
+                    <div class="flex mb-2">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                  d="M12 2C9.243 2 7 4.243 7 7v2H6c-1.103 0-2 .897-2 2v9c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-9c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2H9V7zm9.002 13H13v-2.278c.595-.347 1-.985 1-1.722c0-1.103-.897-2-2-2s-2 .897-2 2c0 .736.405 1.375 1 1.722V20H6v-9h12l.002 9z"/>
+                        </svg>
+                        <h3 class="text-xl leading-6 font-medium text-gray-900">
+                            Property Validation Rules
+                        </h3>
+                    </div>
+
+                    <div>
+                        <ul role="list" class="divide-y divide-gray-200">
+                            <li v-for="x in results.filter(x => x.field != null)" :key="x.id" class="py-4">
+                                <div v-if="editPropertyRule==x.id" v-scope="EditValidationRule({
+                                    type:() => operation.request, rule:() => x, properties:() => opProps,
+                                    validators:plugin.propertyValidators, done:handleDone
+                                })"></div>
+                                <div v-else class="flex space-x-3">
+                                    <div>
+                                        <button @click="viewPropertyForm(x.id)"
+                                                class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" title="Edit Ruke">
+                                            <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+                                        </button>
+                                    </div>
+                                    <div class="flex-1 space-y-1">
+                                        <div class="flex items-center">
+                                            <h3 class="text-sm font-medium">{{x.field}} {{x.validator ? 'Validator':'Script'}}</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-500">{{x.validator ?? x.condition}}</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="mt-4">
+                            <button v-if="!showPropertyForm" @click="viewPropertyForm()"
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Add Property Validation Rule
+                            </button>
+                            <div v-else-if="editPropertyRule==null" v-scope="EditValidationRule({
+                                type:() => operation.request, properties:() => opProps, 
+                                validators:plugin.propertyValidators, done:handleDone
+                            })"></div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div v-if="dataModelOps.length" class="mt-8">
+            <h3 class="text-xl leading-6 font-medium text-gray-900">Quick Jump</h3>
+            <div class="flex flex-wrap">
+                <div v-for="x in dataModelOps" :key="x.request.name">
+                    <button v-href="{ op: x.request.name }"
+                            class="mr-2 mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        {{x.request.name}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+</section>
+</template>
+
+<script>
+import { Forms, ModifyValidationRules, ValidationRule } from '../../lib/types'
+import { apiSend } from '../../shared/js/core'
+
+App.components({
+    EditValidationRule: ({ type, rule, properties, validators, done }) => {
+        /** @param {string} id */
+        let id = id => `${!properties ? 'type' : 'prop'}-${id}`
+        
+        return {
+            $template: '#edit-validation-rule-template',
+            validators,
+            done,
+            /** @type {string=} */
+            field: null, //property rule
+            errorCode: '',
+            message: '',
+            notes: '',
+            typeTab: 'validator',
+            allowDelete: false,
+            loading: false,
+
+            [id('validator')]: '',
+            [id('condition')]: '',
+            get validator() { return this[id('validator')] },
+            set validator(value) { return this[id('validator')] = value },
+            get condition() { return this[id('condition')] },
+            set condition(value) { return this[id('condition')] = value },
+            confirmDelete: false,
+
+            get model() { return this },
+            api: null,
+            get errorSummary() {
+                return this.api && this.api.error && this.api.summaryMessage()
+            },
+            
+            get formClass() { return 'shadow overflow-hidden sm:rounded-md bg-white' },
+            get gridClass() { return 'grid grid-cols-12 gap-4' },
+            get rowClass() { return 'col-span-12' },
+            
+            get type() {
+                return type && type() || null
+            },
+            get rule() {
+                return rule && rule() || null
+            },
+            get properties() {
+                return properties && properties() || null
+            },
+            get isNew() {
+                return this.rule == null
+            },
+            get isTypeValidator() {
+                return this.properties == null
+            },
+            get placeholderValidator() {
+                return (this.isTypeValidator ? 'Type' : 'Property') + ' Validator'
+            },
+            get conditionValidator() {
+                return 'Condition e.g: ' + (this.isTypeValidator
+                    ? 'dto.Prop1 != dto.Prop2'
+                    : 'it.isOdd()')
+            },
+
+            id,
+            get ruleType() {
+                return this.isTypeValidator ? 'type' : 'prop'
+            },
+
+            /** @param {string} tab */
+            setTypeTab(tab) {
+                this.typeTab = tab
+            },
+            /** @param {string} tab */
+            activeTypeTab(tab) {
+                return this.typeTab === tab
+            },
+
+            /** @param {string} sel */
+            focusValidator(sel) {
+                let txt = document.querySelector(sel)
+                let txtValue = txt ? txt.value : ''
+                let hasQuotes = true
+                let startPos = txtValue.indexOf("'"), endPos = txtValue.indexOf("'", startPos + 1)
+                if (!(startPos >= 0 && endPos >= 0)) {
+                    hasQuotes = false
+                    startPos = txtValue.indexOf("{")
+                    endPos = txtValue.indexOf("}", startPos)
+                }
+                if (txt && startPos >= 0 && endPos >= 0) {
+                    txt.selectionStart = hasQuotes ? startPos + 1 : startPos
+                    txt.selectionEnd = hasQuotes ? endPos : endPos + 1
+                    txt.focus()
+                }
+            },
+
+            /** @param {ScriptMethodType} v */
+            editValidator(v) {
+                this.validator = this.editfmt(v)
+                return this.$nextTick(() => this.focusValidator(`#${id('validator')}`))
+            },
+
+            typesWrapper: {
+                'String[]': p => "['" + p + "']",
+                'String': p => "'" + p + "'",
+            },
+
+            /** @param {string} type
+             *  @param {string} p 
+             */
+            wrap(type, p) {
+                const f = this.typesWrapper[type]
+                return f && f(p) || '{' + p + '}'
+            },
+            
+            /** @param {ScriptMethodType} v */
+            editfmt(v) {
+                let paramNames = v.paramNames || []
+                return v.name + (paramNames .length > 0 ? `(${paramNames.map((p, i) =>
+                    this.wrap(v.paramTypes[i], p)).join(',')})` : '')
+            },
+            
+            /** @param {ScriptMethodType} v */
+            fmt(v) {
+                let paramNames = v.paramNames || []
+                return v.name + (paramNames.length > 0 ? `(${paramNames.join(',')})` : '')
+            },
+
+
+            async submitDelete() {
+                apiSend(createClient, new ModifyValidationRules({ deleteRuleIds: [this.rule.id] }))
+                    .then(r => {
+                        this.api = r.api
+                        this.done(this.rule)
+                    })
+            },
+
+            submit() {
+                const request = new ValidationRule({
+                    type: this.type.name,
+                })
+                if (this.validator) {
+                    request.validator = this.validator
+                } else if (this.condition) {
+                    request.condition = this.condition
+                }
+                if (this.field) request.field = this.field
+                if (this.errorCode) request.errorCode = this.errorCode
+                if (this.message) request.message = this.message
+                if (this.notes) request.notes = this.notes
+                if (this.rule) request.id = this.rule.id
+                
+                apiSend(createClient, new ModifyValidationRules({
+                    saveRules: [request]
+                })).then(r => {
+                    this.api = r.api
+                    this.done(request)
+                })
+            },
+            
+            mounted() {
+                this.field = map(this.properties, p => p[0] && p[0].name) || null
+                if (!this.rule) return
+                this.field = this.rule.field || null
+                this.validator = this.rule.validator || null
+                this.condition = this.rule.condition || null
+                this.errorCode = this.rule.errorCode || null
+                this.message = this.rule.message || null
+                this.notes = this.rule.notes || null
+                this.typeTab = this.condition && !this.validator ? 'condition' : 'validator'
+            },
+        }
+    }
+})
+</script>
+<template id="edit-validation-rule-template">
+<form @submit.prevent="submit" autocomplete="off" :class="formClass" @vue:mounted="mounted">
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+        <div class="hidden sm:block" v-scope="CloseButton({ onclick:() => done({field}) })" title="Close"></div>
+        <div v-if="errorSummary" class="p-4" v-scope="ErrorSummary({ errorSummary: () => errorSummary })"></div>
+        <div>
+            <div class="mb-4">
+                <div class="sm:hidden">
+                    <label for="tabs-rule" class="sr-only">Select a tab</label>
+                    <select id="tabs-rule" @change="setTypeTab($event.target.value)"
+                            class="block w-full focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                        <option value="validator" :selected="typeTab==='validator'">Validator</option>
+                        <option value="condition" :selected="typeTab==='condition'">Script</option>
+                    </select>
+                </div>
+                <div class="hidden sm:block">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex" aria-label="Tabs">
+                            <button type="button" @click="setTypeTab('validator')"
+                                    :class="`${typeTab==='validator' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm`"> Validator </button>
+                            <button type="button" @click="setTypeTab('condition')"
+                                    :class="`${typeTab==='condition' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm`"> Script </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap sm:flex-nowrap">
+                <div class="flex-grow mb-3 sm:mb-0">
+                    <fieldset :class="gridClass">
+                        <div :class="rowClass">
+                            <div v-if="typeTab=='validator'"      v-scope="Input({ input:{ id:id('validator'), name:'validator', type:'text', label:'', placeholder:placeholderValidator, help:'Choose from any of the pre-defined validator\'s below', spellcheck:false }, model, api:() => api })"></div>
+                            <div v-else-if="typeTab=='condition'" v-scope="Input({ input:{ id:id('condition'), name:'condition', type:'text', label:'', placeholder:conditionValidator, help:'Script Expression that must evaluate to true, see: sharpscript.net', spellcheck:false }, model, api:() => api })"></div>
+                        </div>
+                        
+                        <div v-if="field" :class="rowClass">
+                            <div v-scope="Input({ input:{ id:'field', type:'select', label:'', 
+                                help:'The property this rule applies to', allowableValues:() => properties.map(x => x.name) }, model, api:() => api })"></div>
+                        </div>
+                        <div :class="rowClass">
+                            <div v-scope="Input({ input:{ id:'errorCode', type:'text', label:'', placeholder:'ErrorCode', help:'Override with custom error code?' }, model, api:() => api })"></div>
+                        </div>
+                        <div :class="rowClass">
+                            <div v-scope="Input({ input:{ id:'message', type:'text', label:'', placeholder:'Error Message', help:'Override with custom message?' }, model, api:() => api })"></div>
+                        </div>
+                        <div :class="rowClass">
+                            <div v-scope="Input({ input:{ id:'notes', type:'textarea', label:'', placeholder:'Notes', help:'Attach a note to this rule?' }, model, api:() => api })"></div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
+        <div>
+            <div v-if="rule && !(loading && !breakpoints.sm)">
+                <input :id="`confirmDelete-${ruleType}`" type="checkbox" v-model="confirmDelete"
+                       class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                <label :for="`confirmDelete-${ruleType}`" class="mx-1 select-none">confirm</label>
+                <button type="button" :disabled="loading || !confirmDelete" @click="submitDelete"
+                        :class="`${!loading && confirmDelete ? 'bg-red-600 hover:bg-red-700' : 'bg-red-400'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`">
+                    Delete
+                </button>
+            </div>
+        </div>
+        <div v-if="loading" v-scope="Loading({ cls:'p-0' })"></div>
+        <div class="flex justify-end">
+            <button @click="done({field})"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Close
+            </button>
+            <button type="submit" :disabled="loading"
+                    :class="`${!loading ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-400'} ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`">
+                {{rule ? 'Edit' : 'Create'}} Rule
+            </button>
+        </div>
+    </div>
+</form>
+
+<div class="my-8">
+    <h4 class="text-xl leading-6 font-medium text-gray-900">Quick Select {{isTypeValidator ? 'Type' : 'Property'}} Validator</h4>
+
+    <div v-for="x in validators" :key="x.name + x.paramNames">
+        <button type="button" @click="editValidator(x)"
+                class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            {{fmt(x)}}
+        </button>
+    </div>
+</div>
+    
+</template>
+<!--/minify-->

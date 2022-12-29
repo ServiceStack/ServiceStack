@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MyApp</title>
+    <base href="/">
+    <link href="css/app.css" rel="stylesheet">
+    <link href="css/typography.css" rel="stylesheet">
+    <link href="css/markdown.css" rel="stylesheet">
+    <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
+</head>
+
+<body class="bg-white dark:bg-black dark:text-white">
+<div id="app">
+    <!-- loading: render temp static app chrome to improve perceived performance -->
+    <div id="app-loading">
+
+        <!-- <Header/> -->
+        <header class="border-b border-gray-200 dark:border-gray-800 pr-3">
+            <div class="flex flex-wrap items-center">
+                <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
+                    <nav class="relative flex flex-grow">
+                        <ul class="flex flex-wrap items-center justify-end w-full m-0">
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <a href="/signup" class="m-2">
+                                    <button class="rounded-md border py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-black">
+                                        Sign In
+                                    </button>
+                                </a>
+                            </li>
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <button type="button" class="bg-gray-200 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" role="switch" aria-checked="false">
+                                    <span class="translate-x-5 pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow transform ring-0 transition ease-in-out duration-200">
+                                        <span class="opacity-0 ease-out duration-100 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z"></path></svg></span><!--!-->
+                                        <span class="opacity-100 ease-in duration-200 absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true"><!--!--><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z"></path></svg></span>
+                                    </span>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- <Sidebar> Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+        <div class="mobile relative z-40 hidden" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-gray-600 dark:bg-gray-400 bg-opacity-75"></div>
+            <div class="fixed inset-0 flex z-40">
+                <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-black">
+
+                    <div class="absolute top-0 right-0 -mr-12 pt-2">
+                        <button type="button"
+                                class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <span class="sr-only">Close sidebar</span>
+                            <svg class="h-6 w-6 text-white dark:text-black" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                        <a href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                            <img class="h-8 w-auto"
+                                    src="/img/blazor.svg"
+                                    alt="My App">
+                            <div class="ml-2 text-black dark:text-white">My App</div>
+                        </a>
+                        <nav class="mt-5 px-2 space-y-1">
+                        </nav>
+                    </div>
+
+                </div>
+
+                <div class="flex-shrink-0 w-14">
+                    <!-- Force sidebar to shrink to fit close icon -->
+                </div>
+            </div>
+        </div>
+        <!-- Static sidebar for desktop -->
+        <div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+            <!-- Sidebar component, swap this element with another sidebar if you like -->
+            <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
+                <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+                    <a href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                        <img class="h-8 w-auto"
+                                src="/img/blazor.svg"
+                                alt="My App">
+                        <div class="ml-2 text-black dark:text-white">My App</div>
+                    </a>
+                    <nav class="mt-5 flex-1 px-2 bg-white dark:bg-black space-y-1">
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- <MainLayout/> -->
+        <div class="md:pl-64 flex flex-col flex-1">
+            <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white dark:bg-black">
+                <button type="button" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                    <span class="sr-only">Open sidebar</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            <main class="flex-1">
+                <div class="py-6">
+                    <div class="content px-4 sm:px-6 md:px-8">
+
+<div class="prose lg:prose-xl min-vh-100 m-3" data-prerender="/docs/prerender">
+    <div class="markdown-body">
+        <h1 id="improving-ux-with-prerendering">Improving UX with Prerendering</h1>
+<blockquote>
+<p>Why does this page load so fast?</p>
+</blockquote>
+<h3 id="blazor-wasm-trade-offs">Blazor WASM trade-offs</h3>
+<p>Blazor WASM enables reuse of C# skills, tooling &amp; libraries offers a compelling advantage for .NET teams, so much so
+it's become our preferred technology for developing internal LOB applications as it's better able to reuse existing
+C# investments in an integrated SPA Framework utilizing a single toolchain.</p>
+<p>It does however comes at a cost of a larger initial download size and performance cost resulting in a high Time-To-First-Render (TTFR)
+and an overall poor initial User Experience when served over the Internet, that's further exacerbated over low speed Mobile connections.</p>
+<p>This is likely an acceptable trade-off for most LOB applications served over high-speed local networks but may not be a
+suitable choice for public Internet sites <em>(an area our other <a href="https://jamstacks.net">jamstacks.net</a> templates may serve better)</em>.</p>
+<p>As an SPA it also suffers from poor SEO as content isn't included in the initial page and needs to be rendered in the browser after
+the App has initialized. For some content heavy sites this can be a deal breaker either requiring proxy rules so content pages
+are served by a different SEO friendly site or otherwise prohibits using Blazor WASM entirely.</p>
+<h3 id="improving-startup-performance">Improving Startup Performance</h3>
+<p>The solution to both issues is fairly straightforward, by utilizing the mainstay solution behind
+<a href="https://jamstack.org/generators/">Jamstack Frameworks</a> and prerender content at build time.</p>
+<p>We know what needs to be done, but how best to do it in Blazor WASM? Unfortunately the
+<a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration?view=aspnetcore-6.0&amp;pivots=webassembly">official Blazor WASM prerendering guide</a>
+isn't actually a prerendering solution, as is typically used to describe
+<a href="https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/">Static Site Generators (SSG)</a>
+prerendering static content at build-time, whilst Blazor WASM prerendering docs instead describes
+a <a href="https://www.omnisci.com/technical-glossary/server-side-renderings">Server-Side-Rendering (SSR)</a> solution mandating the additional
+complexity of maintaining your Apps dependencies in both client and server projects. Unfortunately this approach also wont yield an
+optimal result since prerendering is typically used so Apps can host their SSG content on static file hosts, instead SSR does the
+opposite whose forced runtime coupling to the .NET Server Host prohibits Blazor WASM Apps from being served from a CDN.</p>
+<p>As this defeats <a href="hosting">many of the benefits</a> of a Blazor WASM Jamstack App in the first place, we've instead opted for a more optimal
+solution that doesn't compromise its CDN hostability.</p>
+<h3 id="increasing-perceived-performance">Increasing Perceived Performance</h3>
+<p>We've little opportunity over improving the startup time of the real C# Blazor App beyond hosting its static assets on CDN edge caches,
+but ultimately what matters is <a href="https://marvelapp.com/blog/a-designers-guide-to-perceived-performance/">perceived performance</a> which
+we do have control over given the screen for a default Blazor WASM project is a glaring white screen flash:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/loading-default.png" alt="" /></p>
+<p>The longer users have to wait looking at this black loading screen without signs of progress, the more they'll associate your site
+with taking forever to load.</p>
+<p>One technique many popular sites are using to increase perceived performance is to use content placeholders in place of real-content
+which gives the impression that the site has almost loaded and only requires a few moments more for the latest live data to be slotted in.</p>
+<p>As an example here's what YouTube content placeholders mimicking the page layout looks like before the real site has loaded:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/youtube-placeholder.png" alt="" /></p>
+<p>But we can do even better than an inert content placeholder, and load a temporary chrome of our App. But as this needs to be done
+before Blazor has loaded we need to implement this with a sprinkling of HTML + JS.</p>
+<p>Essentially we need to copy the Chrome and navigation of our App from the
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/Header.razor">Header</a>,
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/Sidebar.razor">Sidebar</a> and
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/MainLayout.razor">MainLayout</a>
+and paste it into
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/wwwroot/index.html">/wwwroot/index.html</a>
+where anything between <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code> is displayed whilst our Blazor App is loading, before it's replaced with the real C# rendered App.</p>
+<p>After which we end up with HTML similar to the structure below:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
+    &lt;!-- loading: render temp static app chrome to improve perceived performance --&gt;
+    &lt;div id=&quot;app-loading&quot;&gt;
+        &lt;!-- &lt;Header/&gt; --&gt;
+        &lt;header class=&quot;border-b border-gray-200 pr-3&quot;&gt;
+            ...
+            &lt;nav class=&quot;relative flex flex-grow&quot;&gt;
+                &lt;ul class=&quot;flex flex-wrap items-center justify-end w-full m-0&quot;&gt;
+                    &lt;li class=&quot;relative flex flex-wrap just-fu-start m-0&quot;&gt;
+                        &lt;a href=&quot;/signup&quot; class=&quot;m-2&quot;&gt;
+                            &lt;button class=&quot;inline-flex items-center px-4 py-2 border&quot;&gt;
+                                Sign In
+                            &lt;/button&gt;
+                        &lt;/a&gt;
+                    &lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/nav&gt;
+        &lt;/header&gt;
+        &lt;!-- &lt;Sidebar&gt; Off-canvas menu for mobile, show/hide based on off-canvas menu state. --&gt;
+        &lt;div class=&quot;mobile relative z-40 hidden&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+            ...
+            &lt;nav class=&quot;mt-5 px-2 space-y-1&quot;&gt;
+            &lt;/nav&gt;
+        &lt;/div&gt;
+        &lt;!-- Static sidebar for desktop --&gt;
+        &lt;div class=&quot;desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0&quot;&gt;
+            ...
+            &lt;nav class=&quot;mt-5 flex-1 px-2 bg-white space-y-1&quot;&gt;
+            &lt;/nav&gt;
+        &lt;/div&gt;
+        &lt;!-- &lt;MainLayout/&gt; --&gt;
+        &lt;div class=&quot;md:pl-64 flex flex-col flex-1&quot;&gt;
+            &lt;main class=&quot;flex-1&quot;&gt;
+                &lt;div class=&quot;py-6&quot;&gt;
+                    &lt;div class=&quot;content px-4 sm:px-6 md:px-8&quot;&gt;
+                        &lt;!--PAGE--&gt;
+                        &lt;div class=&quot;mb-4&quot;&gt;
+                            &lt;h1 class=&quot;text-2xl font-semibold text-gray-900 flex&quot;&gt;
+                                &lt;span&gt;Loading...&lt;/span&gt;
+                            &lt;/h1&gt;
+                        &lt;/div&gt;
+                        &lt;!--/PAGE--&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/main&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Less our App's navigation menus which we'll dynamically generate with the splash of JS below:</p>
+<pre><code class="language-js">TOP = `
+    $0.40 /mo,        /docs/hosting
+    Prerendering,     /docs/prerender
+    Deployments,      /docs/deploy
+`
+SIDEBAR = `
+    Counter,          /counter,       /img/nav/counter.svg
+    Todos,            /todomvc,       /img/nav/todomvc.svg
+    Bookings CRUD,    /bookings-crud, /img/nav/bookings-crud.svg
+    Call Hello,       /hello$,        /img/nav/hello.svg
+    Call HelloSecure, /hello-secure,  /img/nav/hello-secure.svg
+    Fetch data,       /fetchdata,     /img/nav/fetchdata.svg
+`
+
+const path = location.pathname
+const renderNav = (csv, f) =&gt; csv.trim().split(/\r?\n/g).map(s =&gt; f.apply(null, s.split(',').map(x =&gt; x.trim()))).join('')
+$1 = s =&gt; document.querySelector(s)
+
+/* Header */
+$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =&gt;
+    `&lt;li class=&quot;relative flex flex-wrap just-fu-start m-0&quot;&gt;
+        &lt;a href=&quot;${route}&quot; class=&quot;flex items-center justify-start mw-full p-4 hover:text-green-600&quot;&gt;${label}&lt;/a&gt;&lt;/li&gt;`
+))
+
+/* Sidebar */
+const NAV = ({ label, route, exact, icon, cls, iconCls }) =&gt; `&lt;a href=&quot;${route}&quot;
+    class=&quot;${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 text-gray-900' : ''}&quot;&gt;
+    &lt;img class=&quot;${iconCls}&quot; src=&quot;${icon}&quot;&gt;
+    ${label}
+&lt;/a&gt;`
+
+$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) =&gt; NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-base font-medium`,
+    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) =&gt; NAV({
+    label, cls: `text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium`,
+    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+</code></pre>
+<p>Which takes care of both rendering the top and sidebar menus as well as highlighting the active menu for the active
+nav item being loaded, and because we're rendering our real App navigation with real links, users will be able to navigate
+to the page they want before our App has loaded.</p>
+<p>To minimize maintenance efforts the C# Blazor App also uses the navigation defined in <code>TOP</code> and <code>SIDEBAR</code> to render its Navigation Menus.</p>
+<p>With just this, every page now benefits from an instant App chrome to give the perception that our App has loaded instantly
+before any C# in our Blazor App is run. E.g. here's what the <a href="/counter">Blazor Counter</a> page looks like while it's loading:</p>
+<p><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/loading.png" alt="" /></p>
+<p>If you click refresh the <a href="/counter">/counter</a> page a few times you'll see the new loading screen prior to the Counter page being available.</p>
+<p>Our App is now in a pretty shippable state with decent UX of a loading page that looks like it loaded instantly instead
+of the &quot;under construction&quot; Loading... page from the default Blazor WASM project template.</p>
+<p>It's a fairly low maintenance solution with the primary concession being the App's main navigation menus are defined in
+<code>SIDEBAR</code> and <code>TOP</code> csv lists so it maintains a single source of truth for both C# and JS generated UIs.</p>
+<h3 id="improving-ux-with-prerendering-1">Improving UX with Prerendering</h3>
+<p>We'll now turn our focus to the most important page in our App, the <a href="/">Home Page</a> which is the page most people will see
+when loading the App from the first time.</p>
+<p>With the above temp App chrome already in place, a simple generic pre-rendering solution to be able to load any prerendered
+page is to check if any prerendered content exists in the
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/tree/gh-pages/prerender">/prerender</a>
+folder for the current path, then if it does replace the default index.html <code>Loading...</code> page with it:</p>
+<pre><code class="language-js">const pagePath = path.endsWith('/') 
+    ? path.substring(0, path.length - 2) + '/index.html' 
+    : path
+fetch(`/prerender${pagePath}`)
+    .then(r =&gt; r.text())
+    .then(html =&gt; {
+        if (html.indexOf('&lt;!DOCTYPE html&gt;') &gt;= 0) return // ignore CDN 404.html
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) 
+            pageBody.innerHTML = `&lt;i hidden data-prerender=&quot;${path}&quot;&gt;&lt;/i&gt;` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</code></pre>
+<p>We also tag which path the prerendered content is for and provide a JS function to fetch the prerendered content
+which we'll need to access later in our App:</p>
+<pre><code class="language-html">&lt;script&gt;
+JS = (function () {
+    return {
+        /* Loading */
+        prerenderedPage() {
+            const el = document.querySelector('#app-loading .content')
+            return el &amp;&amp; el.innerHTML || ''
+        },
+    }
+})()
+&lt;/script&gt;
+</code></pre>
+<p>We now have a solution in place to load pre-rendered content from the <code>/prerender</code> folder, but still need some way of generating it.</p>
+<p>The solution is technology independent in that you can you use any solution your most comfortable with, (even manually construct
+each prerendered page if preferred), although it's less maintenance if you automate and get your CI to regenerate it when it publishes
+your App.</p>
+<p>Which ever tool you choose would also need to be installed in your CI/GitHub Action if that's where it's run, so we've opted for
+a dependency-free &amp; least invasive solution by utilizing the existing Tests project, which has both great IDE tooling support and
+can easily be run from the command-line and importantly is supported by the <a href="https://bunit.dev">bUnit</a> testing library which we'll
+be using to render component fragments in isolation.</p>
+<p>To distinguish prerendering tasks from our other Tests we've tagged
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Tests/PrerenderTasks.cs">PrerenderTasks.cs</a>
+with the <code>prerender</code> Test category. The only configuration the tasks require is the location of the <code>ClientDir</code> WASM Project
+defined in <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Tests/appsettings.json">appsettings.json</a>
+that's setup in the constructor.</p>
+<p>The <code>Render&lt;T&gt;()</code> method renders the Blazor Page inside a <code>Bunit.TestContext</code> which it saves at the location
+specified by its <code>@page</code> directive.</p>
+<pre><code class="language-csharp">[TestFixture, Category(&quot;prerender&quot;)]
+public class PrerenderTasks
+{
+    Bunit.TestContext Context;
+    string ClientDir;
+    string WwrootDir =&gt; ClientDir.CombineWith(&quot;wwwroot&quot;);
+    string PrerenderDir =&gt; WwrootDir.CombineWith(&quot;prerender&quot;);
+
+    public PrerenderTasks()
+    {
+        Context = new();
+        var config = new ConfigurationBuilder().AddJsonFile(&quot;appsettings.json&quot;).Build();
+        ClientDir = config[nameof(ClientDir)] 
+            ?? throw new Exception($&quot;{nameof(ClientDir)} not defined in appsettings.json&quot;);
+        FileSystemVirtualFiles.RecreateDirectory(PrerenderDir);
+    }
+
+    void Render&lt;T&gt;(params ComponentParameter[] parameters) where T : IComponent
+    {
+        WriteLine($&quot;Rendering: {typeof(T).FullName}...&quot;);
+        var component = Context.RenderComponent&lt;T&gt;(parameters);
+        var route = typeof(T).GetCustomAttribute&lt;RouteAttribute&gt;()?.Template;
+        if (string.IsNullOrEmpty(route))
+            throw new Exception($&quot;Couldn't infer @page for component {typeof(T).Name}&quot;);
+
+        var fileName = route.EndsWith(&quot;/&quot;) ? route + &quot;index.html&quot; : $&quot;{route}.html&quot;;
+
+        var writeTo = Path.GetFullPath(PrerenderDir.CombineWith(fileName));
+        WriteLine($&quot;Written to {writeTo}&quot;);
+        File.WriteAllText(writeTo, component.Markup);
+    }
+
+    [Test]
+    public void PrerenderPages()
+    {
+        Render&lt;Client.Pages.Index&gt;();
+        // Add Pages to prerender...
+    }
+}
+</code></pre>
+<p>Being a unit test gives it a number of different ways it can be run, using any of the NUnit test runners, from the GUI
+integrated in C# IDEs or via command-line test runners like <code>dotnet test</code> which can be done with:</p>
+<pre><code class="language-bash">$ dotnet test --filter TestCategory=prerender 
+</code></pre>
+<p>To have CI automatically run it when it creates a production build of our App we'll add it to our Host <code>.csproj</code>:</p>
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+    &lt;TestsDir&gt;$(MSBuildProjectDirectory)/../MyApp.Tests&lt;/TestsDir&gt;
+&lt;/PropertyGroup&gt;
+&lt;Target Name=&quot;AppTasks&quot; AfterTargets=&quot;Build&quot; Condition=&quot;$(APP_TASKS) != ''&quot;&gt;
+    &lt;CallTarget Targets=&quot;Prerender&quot; Condition=&quot;$(APP_TASKS.Contains('prerender'))&quot; /&gt;
+&lt;/Target&gt;
+&lt;Target Name=&quot;Prerender&quot;&gt;
+    &lt;Exec Command=&quot;dotnet test --filter TestCategory=prerender --logger:&amp;quot;console;verbosity=detailed&amp;quot;&quot; 
+            WorkingDirectory=&quot;$(TestsDir)&quot; /&gt;
+&lt;/Target&gt;
+</code></pre>
+<p>Which allows <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/9460ebf57d3e46af1680eb3a2ff5080e59d33a54/.github/workflows/release.yml#L80">GitHub Actions to run it</a>
+when it publishes the App with:</p>
+<pre><code class="language-bash">$ dotnet publish -c Release /p:APP_TASKS=prerender
+</code></pre>
+<p>Now when we next commit code, the GitHub CI Action will run the above task to generate our
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/gh-pages/prerender/index.html">/prerender/index.html</a> page
+that now loads our <a href="/">Home Page</a> instantly!</p>
+<p><a href="/"><img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/jamstack/blazor-tailwind/home-prerendered.png" alt="" /></a></p>
+<p>The only issue now is that the default Blazor template behavior will yank our pre-rendered page, once during loading
+and another during Authorization. To stop the unwanted yanking we've updated the
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Shared/Loading.razor"><Loading/></a> component
+to instead load the prerendered page content if it's <strong>for the current path</strong>:</p>
+<pre><code class="language-razor">@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@if (!string.IsNullOrEmpty(prerenderedHtml))
+{
+    @((MarkupString)prerenderedHtml)
+}
+else
+{
+    &lt;div class=@CssUtils.ClassNames(&quot;spinner-border float-start mt-2 mr-2&quot;, @class)&gt;
+        &lt;span class=&quot;sr-only&quot;&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;h1 style=&quot;font-size:36px&quot;&gt;
+        Loading...
+    &lt;/h1&gt;
+}
+
+@code {
+    [Parameter]
+    public string Message { get; set; } = &quot;Loading...&quot;;
+
+    [Parameter]
+    public string @class { get; set; } = &quot;&quot;;
+
+    public string prerenderedHtml { get; set; } = &quot;&quot;;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var html = await JsRuntime.InvokeAsync&lt;string&gt;(&quot;JS.prerenderedPage&quot;) ?? &quot;&quot;;
+        var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
+        if (html.IndexOf($&quot;data-prerender=\&quot;{currentPath}\&quot;&quot;) &gt;= 0)
+            prerenderedHtml = html;
+    }
+}
+</code></pre>
+<p>Whilst to prevent yanking by the Authorization component we'll also include the current page when rendering
+the alternate layout with an <code>Authenticating...</code> text that will appear under the Login/Logout buttons on the top-right:</p>
+<pre><code class="language-xml">&lt;AuthorizeRouteView RouteData=&quot;@routeData&quot; DefaultLayout=&quot;@typeof(MainLayout)&quot;&gt;
+  &lt;Authorizing&gt;
+    &lt;p class=&quot;text-gray-400&quot; style=&quot;float:right;margin:1rem 1rem 0 0&quot;&gt;Authenticating...&lt;/p&gt;
+    &lt;RouteView RouteData=&quot;@routeData&quot; /&gt;
+  &lt;/Authorizing&gt;
+&lt;/AuthorizeRouteView&gt;
+</code></pre>
+<p>This last change brings us to the optimal UX we have now with the home page loading instantly whilst our Blazor App
+is loading in the background that'll eventually replace the home page with its identical looking C# version.</p>
+<h3 id="prerendering-markdown-content">Prerendering Markdown Content</h3>
+<p>The other pages that would greatly benefit from prerendering are the Markdown <code>/docs/*</code> pages (like this one) that's implemented in
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Pages/Docs.razor">Docs.razor</a>.</p>
+<p>However to enable SEO friendly content our <code>fetch(/prerender/*)</code> solution isn't good enough as the initial page download
+needs to contain the prerendered content, i.e. instead of being downloaded in after.</p>
+<h3 id="prerendermarkdown-task">PrerenderMarkdown Task</h3>
+<p>To do this our <code>PrerenderMarkdown</code> Task scans all <code>*.md</code> pages in the
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/tree/main/MyApp.Client/wwwroot/content">content</a>
+directory and uses the same
+<a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/MarkdownUtils.cs">/MyApp.Client/MarkdownUtils.cs</a>
+implementation <a href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/main/MyApp.Client/Pages/Docs.razor">Docs.razor</a>
+uses to generate the markdown and embeds it into the <code>index.html</code> loading page to generate the pre-rendered page:</p>
+<pre><code class="language-csharp">[Test]
+public async Task PrerenderMarkdown()
+{
+    var srcDir = WwrootDir.CombineWith(&quot;content&quot;).Replace('\\', '/');
+    var dstDir = WwrootDir.CombineWith(&quot;docs&quot;).Replace('\\', '/');
+            
+    var indexPage = PageTemplate.Create(WwrootDir.CombineWith(&quot;index.html&quot;));
+    if (!Directory.Exists(srcDir)) throw new Exception($&quot;{Path.GetFullPath(srcDir)} does not exist&quot;);
+    FileSystemVirtualFiles.RecreateDirectory(dstDir);
+
+    foreach (var file in new DirectoryInfo(srcDir).GetFiles(&quot;*.md&quot;, SearchOption.AllDirectories))
+    {
+        WriteLine($&quot;Converting {file.FullName} ...&quot;);
+
+        var name = file.Name.WithoutExtension();
+        var docRender = await Client.MarkdownUtils.LoadDocumentAsync(name, doc =&gt;
+            Task.FromResult(File.ReadAllText(file.FullName)));
+
+        if (docRender.Failed)
+        {
+            WriteLine($&quot;Failed: {docRender.ErrorMessage}&quot;);
+            continue;
+        }
+
+        var dirName = dstDir.IndexOf(&quot;wwwroot&quot;) &gt;= 0
+            ? dstDir.LastRightPart(&quot;wwwroot&quot;).Replace('\\', '/')
+            : new DirectoryInfo(dstDir).Name;
+        var path = dirName.CombineWith(name == &quot;index&quot; ? &quot;&quot; : name);
+
+        var mdBody = @$&quot;
+&lt;div class=&quot;&quot;prose lg:prose-xl min-vh-100 m-3&quot;&quot; data-prerender=&quot;&quot;{path}&quot;&quot;&gt;
+    &lt;div class=&quot;&quot;markdown-body&quot;&quot;&gt;
+        {docRender.Response!.Preview!}
+    &lt;/div&gt;
+&lt;/div&gt;&quot;;
+        var prerenderedPage = indexPage.Render(mdBody);
+        string htmlPath = Path.GetFullPath(Path.Combine(dstDir, $&quot;{name}.html&quot;));
+        File.WriteAllText(htmlPath, prerenderedPage);
+        WriteLine($&quot;Written to {htmlPath}&quot;);
+    }
+}
+
+public class PageTemplate
+{
+    string? Header { get; set; }
+    string? Footer { get; set; }
+
+    public PageTemplate(string? header, string? footer)
+    {
+        Header = header;
+        Footer = footer;
+    }
+
+    public static PageTemplate Create(string indexPath)
+    {
+        if (!File.Exists(indexPath))
+            throw new Exception($&quot;{Path.GetFullPath(indexPath)} does not exist&quot;);
+
+        string? header = null;
+        string? footer = null;
+
+        var sb = new StringBuilder();
+        foreach (var line in File.ReadAllLines(indexPath))
+        {
+            if (header == null)
+            {
+                if (line.Contains(&quot;&lt;!--PAGE--&gt;&quot;))
+                {
+                    header = sb.ToString(); // capture up to start page marker
+                    sb.Clear();
+                }
+                else sb.AppendLine(line);
+            }
+            else
+            {
+                if (sb.Length == 0)
+                {
+                    if (line.Contains(&quot;&lt;!--/PAGE--&gt;&quot;)) // discard up to end page marker
+                    {
+                        sb.AppendLine();
+                        continue;
+                    }
+                }
+                else sb.AppendLine(line);
+            }
+        }
+        footer = sb.ToString();
+
+        if (string.IsNullOrEmpty(header) || string.IsNullOrEmpty(footer))
+            throw new Exception($&quot;Parsing {indexPath} failed, missing &lt;!--PAGE--&gt;...&lt;!--/PAGE--&gt; markers&quot;);
+
+        return new PageTemplate(header, footer);
+    }
+
+    public string Render(string body) =&gt; Header + body + Footer;
+}
+</code></pre>
+<p>Whilst the <code>wwwroot/index.html</code> is parsed with <code>PageTemplate</code> above who uses the resulting layout to generate pages
+within <code>&lt;!--PAGE--&gt;&lt;!--/PAGE--&gt;</code> markers.</p>
+<p>After it's also executed by the same MSBuild task run by GitHub Actions it prerenders all <code>/wwwroot/content/*.md</code> pages
+which are written to the <a href="https://github.com/NetCoreTemplates/blazor-tailwind/tree/gh-pages/docs">/wwwroot/docs/*.html</a> folder.</p>
+<p>This results in the path to the pre-generated markdown docs i.e. <a href="/docs/prerender">/docs/prerender</a> having the <strong>exact same path</strong>
+as its route in the Blazor App, which when exists, CDNs give priority to over the SPA fallback the Blazor App is loaded with.</p>
+<p>It shares similar behavior as the home page where its pre-rendered content is initially loaded before it's replaced with the
+C# version once the Blazor App loads. The difference is that it prerenders &quot;complete pages&quot; for better SEO &amp; TTFR.</p>
+<blockquote>
+<p>Why does this page load so fast?</p>
+</blockquote>
+<p>So to answer the initial question, this page loads so fast because a prerendered version is initially loaded from a CDN edge cache,
+i.e. the same reason why <a href="https://jamstack.org">Jamstack.org</a> SSG templates like our modern
+<a href="https://nextjs.jamstacks.net">nextjs.jamstacks.net</a> and <a href="https://vue-ssg.jamstacks.net">vue-ssg.jamstacks.net</a>
+exhibit such great performance and UX out-of-the-box.</p>
+<p>We hope this technique serves useful in greatly improving the initial UX of Blazor Apps, a new Blazor App
+with all this integrated can be created on the <a href="/">Home Page</a></p>
+
+    </div>
+</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    </div>
+</div>
+
+<script>
+TOP = `
+    $0.40 /mo,         /docs/hosting
+    Prerendering,      /docs/prerender
+    Deployments,       /docs/deploy
+`
+SIDEBAR = `
+    Bookings,          /secure/bookings, /img/nav/bookings.svg
+    Coupons,           /secure/coupons,  /img/nav/coupon.svg
+    Todos,             /todomvc,         /img/nav/todomvc.svg
+`
+
+const path = location.pathname
+const renderNav = (csv, f) => csv.trim().split(/\r?\n/g).map(s => f.apply(null, s.split(',').map(x => x.trim()))).join('')
+$1 = s => document.querySelector(s)
+
+/* Header */
+$1('#app-loading header nav ul').insertAdjacentHTML('afterbegin', renderNav(TOP, (label, route) =>
+    `<li class="relative flex flex-wrap just-fu-start m-0">
+        <a href="${route}" class="flex items-center justify-start mw-full p-4 dark:text-white hover:text-green-600 dark:hover:text-green-400">${label}</a></li>`
+))
+
+/* Sidebar */
+const NAV = ({ label, route, exact, icon, cls, iconCls }) => `<a href="${route}"
+    class="${cls}${(exact ? path == route : path.startsWith(route)) ? ' bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50' : ''}">
+    <img class="${iconCls}" src="${icon}">
+    ${label}
+</a>`
+
+$1('#app-loading .mobile nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    iconCls: `mr-4 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+$1('#app-loading .desktop nav').innerHTML = renderNav(SIDEBAR, (label, route, icon) => NAV({
+    label, cls: `text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md`,
+    iconCls: `mr-3 flex-shrink-0 h-6 w-6`,
+    icon, route: route.replace(/\$$/, ''), exact: route.endsWith('$')
+}))
+
+/* Prerender */
+const pagePath = path.endsWith('/') ? path.substring(0, path.length - 2) + '/index.html' : path
+fetch(`/prerender${pagePath}`)
+    .then(r => r.text())
+    .then(html => {
+        if (html.indexOf('<!DOCTYPE html>') >= 0) return // don't show CDN 404.html pages
+        const pageBody = $1('#app-loading .content')
+        if (pageBody) pageBody.innerHTML = `<i hidden data-prerender="${path}"></i>` + html
+    })
+    .catch(/* no prerendered content found for this path */)
+</script>
+
+<div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">
+    <div class="flex rounded-md bg-yellow-50 p-4 m-4">
+        <div class="flex-shrink-0">
+            <!-- Heroicon name: solid/exclamation -->
+            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-yellow-800">An unhandled error has occurred.</h3>
+            <div class="mt-4">
+                <div class="-mx-2 -my-1.5 flex">
+                    <button type="button" class="reload bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">Reload</button>
+                </div>
+            </div>
+        </div>
+        <div class="ml-auto pl-3">
+            <div class="-mx-1.5 -my-1.5">
+                <button type="button" class="dismiss inline-flex bg-yellow-50 rounded-md p-1.5 text-yellow-500 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600">
+                    <span class="sr-only">Dismiss</span>
+                    <!-- Heroicon name: solid/x -->
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="_framework/blazor.webassembly.js"></script>
+<script src="/js/servicestack-blazor.js"></script>
+<script>JS.init()</script>
+
+</body>
+</html>

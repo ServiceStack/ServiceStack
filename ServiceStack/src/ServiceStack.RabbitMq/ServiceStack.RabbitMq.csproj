@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>ServiceStack.RabbitMq</PackageId>
+        <AssemblyName>ServiceStack.RabbitMq</AssemblyName>
+        <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+        <Title>ServiceStack.RabbitMq</Title>
+        <PackageDescription>
+        Rabbit MQ client and server adapters for the ServiceStack web services framework.
+        This library enables consuming and publishing to ServiceStack services when hosted within a Rabbit MQ Server Host.
+        </PackageDescription>
+        <PackageTags>MQ;Message;Queue;Web;Service;Framework;Fast;JSON;ServiceStack</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj"/>
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj"/>
+        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj"/>
+        <PackageReference Include="RabbitMQ.Client" Version="5.2.0" />
+    </ItemGroup>
+
+</Project>

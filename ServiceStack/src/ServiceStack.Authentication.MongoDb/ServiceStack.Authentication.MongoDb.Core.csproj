@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Authentication.MongoDb.Core</PackageId>
+    <AssemblyName>ServiceStack.Authentication.MongoDb</AssemblyName>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <Title>ServiceStack.Authentication.MongoDb .NET Standard 2.0</Title>
+    <PackageDescription>
+      A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB.
+      Implements ServiceStack's built-in AuthProvider Model:
+      https://docs.servicestack.net/authentication-and-authorization
+      inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
+    </PackageDescription>
+    <PackageTags>ServiceStack;Authentication;Authorization;MongoDB;NoSQL;POCO;Code-First</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Core.csproj" />
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
+    <PackageReference Include="MongoDB.Bson" Version="2.13.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Logging.EventLog</PackageId>
+    <AssemblyName>ServiceStack.Logging.EventLog</AssemblyName>
+    <TargetFramework>net472</TargetFramework>
+    <Title>ServiceStack.Logging.EventLog</Title>
+    <PackageDescription>
+      Provides EventLog logging integration for other ServiceStack projects
+    </PackageDescription>
+    <PackageTags>servicestack;log;logging;EventLog</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+  </ItemGroup>
+
+</Project>

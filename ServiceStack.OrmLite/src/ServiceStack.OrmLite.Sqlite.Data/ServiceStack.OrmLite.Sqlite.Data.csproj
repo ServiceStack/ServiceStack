@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <AssemblyName>ServiceStack.OrmLite.Sqlite</AssemblyName>
+    <PackageId>ServiceStack.OrmLite.Sqlite.Data</PackageId>
+    <RootNamespace>ServiceStack.OrmLite.Sqlite</RootNamespace>
+    <Title>OrmLite.Sqlite with Microsoft.Data.SQLite</Title>
+    <PackageDescription>
+      Uses Microsoft.Data.SQLite.
+      .NET Standard 2.0 version of ServiceStack.OrmLite.Sqlite that uses Microsoft.Data.SQLite
+    </PackageDescription>
+    <PackageTags>SQLite;OrmLite;RDBMS;SQL;POCO;Code-First;ORM;Schema-less;Blobs</PackageTags>
+    <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
+  </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteBoolConverter.cs">
+      <Link>Converters\SqliteBoolConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteByteArrayConverter.cs">
+      <Link>Converters\SqliteByteArrayConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteCharConverter.cs">
+      <Link>Converters\SqliteCharConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteDateTimeConverter.cs">
+      <Link>Converters\SqliteDateTimeConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteDateTimeOffsetConverter.cs">
+      <Link>Converters\SqliteDateTimeOffsetConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteGuidConverter.cs">
+      <Link>Converters\SqliteGuidConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteStringConverters.cs">
+      <Link>Converters\SqliteStringConverters.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\SqliteDialect.cs">
+      <Link>SqliteDialect.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\SqliteExpression.cs">
+      <Link>SqliteExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\SqliteOrmLiteDialectProviderBase.cs">
+      <Link>SqliteOrmLiteDialectProviderBase.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

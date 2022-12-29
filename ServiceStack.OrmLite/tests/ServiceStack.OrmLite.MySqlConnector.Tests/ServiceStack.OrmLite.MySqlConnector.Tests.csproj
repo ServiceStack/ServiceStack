@@ -1,0 +1,165 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName>ServiceStack.OrmLite.MySqlConnector.Tests</AssemblyName>
+    <OutputType>Library</OutputType>
+    <PackageId>ServiceStack.OrmLite.MySqlMySqlConnector.Tests</PackageId>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\BooleanTests.cs">
+      <Link>BooleanTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\CustomSqlTests.cs">
+      <Link>CustomSqlTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\DateTimeColumnTest.cs">
+      <Link>DateTimeColumnTest.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\EnumTests.cs">
+      <Link>EnumTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\AdditiveExpressionsTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\Author.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\AuthorUseCase.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\ConditionalExpressionTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\EqualityExpressionsTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\ExpressionsTestBase.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\LogicalExpressionsTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\MultiplicativeExpressionsTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\OrmLiteCountTests.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\PrimaryExpressionsTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\RelationalExpressionsTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\StringFunctionTests.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\TestType.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Expressions\UnaryExpressionsTest.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\ForeignKeyAttributeTests.cs">
+      <Link>ForeignKeyAttributeTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Issues\CustomMappingIssue.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\Issues\SelectExpressionIssues.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\LocalizationTests.cs">
+      <Link>LocalizationTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\MySqlAdminTests.cs">
+      <Link>MySqlAdminTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteBasicPersistenceProviderTests.cs">
+      <Link>OrmLiteBasicPersistenceProviderTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteComplexTypesTests.cs">
+      <Link>OrmLiteComplexTypesTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteConnectionTests.cs">
+      <Link>OrmLiteConnectionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteCreateTableTests.cs">
+      <Link>OrmLiteCreateTableTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteCreateTableWithIndexesTests.cs">
+      <Link>OrmLiteCreateTableWithIndexesTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteCreateTableWithNamingStrategyTests.cs">
+      <Link>OrmLiteCreateTableWithNamingStrategyTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteDeleteTests.cs">
+      <Link>OrmLiteDeleteTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteGetScalarTests.cs">
+      <Link>OrmLiteGetScalarTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteInsertTests.cs">
+      <Link>OrmLiteInsertTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteQueryTests.cs">
+      <Link>OrmLiteQueryTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteSaveStringValueTests.cs">
+      <Link>OrmLiteSaveStringValueTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteSaveTests.cs">
+      <Link>OrmLiteSaveTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteSelectTests.cs">
+      <Link>OrmLiteSelectTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteTestBase.cs">
+      <Link>OrmLiteTestBase.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteTransactionTests.cs">
+      <Link>OrmLiteTransactionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\OrmLiteUpdateTests.cs">
+      <Link>OrmLiteUpdateTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\ShippersExample.cs">
+      <Link>ShippersExample.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\SqlMapperTests.cs">
+      <Link>SqlMapperTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\StringColumnTests.cs">
+      <Link>StringColumnTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\TypeWithByteArrayFieldTests.cs">
+      <Link>TypeWithByteArrayFieldTests.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\UseCase\CustomerOrdersUseCase.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.MySql.Tests\UseCase\SimpleUseCase.cs" />
+    
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ApiUtilExtensions.cs" Link="Shared\ApiUtilExtensions.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\BuiltInsFactory.cs" Link="Shared\BuiltInsFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\DefaultValues.cs" Link="Shared\DefaultValues.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\IModelFactory.cs" Link="Shared\IModelFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelFactoryBase.cs" Link="Shared\ModelFactoryBase.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithComplexTypes.cs" Link="Shared\ModelWithComplexTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithComplexTypesFactory.cs" Link="Shared\ModelWithComplexTypesFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithCompositeIndexFields.cs" Link="Shared\ModelWithCompositeIndexFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfDifferentAndNullableTypes.cs" Link="Shared\ModelWithFieldsOfDifferentAndNullableTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfDifferentAndNullableTypesFactory.cs" Link="Shared\ModelWithFieldsOfDifferentAndNullableTypesFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfDifferentTypes.cs" Link="Shared\ModelWithFieldsOfDifferentTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfDifferentTypesFactory.cs" Link="Shared\ModelWithFieldsOfDifferentTypesFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfNullableTypes.cs" Link="Shared\ModelWithFieldsOfNullableTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfNullableTypesFactory.cs" Link="Shared\ModelWithFieldsOfNullableTypesFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithIdAndName.cs" Link="Shared\ModelWithIdAndName.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithIdOnly.cs" Link="Shared\ModelWithIdOnly.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithIndexFields.cs" Link="Shared\ModelWithIndexFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithLongIdAndStringFields.cs" Link="Shared\ModelWithLongIdAndStringFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithMapAndList.cs" Link="Shared\ModelWithMapAndList.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithNamedCompositeIndex.cs" Link="Shared\ModelWithNamedCompositeIndex.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithNumerics.cs" Link="Shared\ModelWithNumerics.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithOnlyStringFields.cs" Link="Shared\ModelWithOnlyStringFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Movie.cs" Link="Shared\Movie.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\MultipleTables.cs" Link="Shared\MultipleTables.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Person.cs" Link="Shared\Person.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Poco.cs" Link="Shared\Poco.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\SampleOrderLine.cs" Link="Shared\SampleOrderLine.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Shipper.cs" Link="Shared\Shipper.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ShipperFactory.cs" Link="Shared\ShipperFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\TaskQueue.cs" Link="Shared\TaskQueue.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\UpdateCommandFilter.cs" Link="Shared\UpdateCommandFilter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.OrmLite.MySqlConnector\ServiceStack.OrmLite.MySqlConnector.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);MYSQLCONNECTOR</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Shared\" />
+  </ItemGroup>
+
+</Project>

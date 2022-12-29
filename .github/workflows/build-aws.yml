@@ -1,0 +1,41 @@
+﻿name: Build Aws
+
+on:
+  push:
+    paths:
+      - 'ServiceStack.Aws/**'
+      - '.github/workflows/build-aws.yml'
+
+jobs:
+  build-aws:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Build
+        working-directory: ServiceStack.Aws/build
+        run: dotnet build ./build.proj
+
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> $GITHUB_ENV
+
+      - name: Aws Tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/ServiceStack.Aws.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+          
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
+        with:
+          name: Text Tests
+          path: ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+          

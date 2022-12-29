@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+<!--    <TargetFrameworks>net472;net6.0</TargetFrameworks>-->
+    <DebugType>portable</DebugType>
+    <AssemblyName>ServiceStack.OrmLite.MySql.Tests</AssemblyName>
+    <OutputType>Library</OutputType>
+    <PackageId>ServiceStack.OrmLite.MySql.Tests</PackageId>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\IModelFactory.cs" Link="Shared\IModelFactory.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelFactoryBase.cs" Link="Shared\ModelFactoryBase.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithComplexTypes.cs" Link="Shared\ModelWithComplexTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithCompositeIndexFields.cs" Link="Shared\ModelWithCompositeIndexFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfDifferentAndNullableTypes.cs" Link="Shared\ModelWithFieldsOfDifferentAndNullableTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfDifferentTypes.cs" Link="Shared\ModelWithFieldsOfDifferentTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithFieldsOfNullableTypes.cs" Link="Shared\ModelWithFieldsOfNullableTypes.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithIdAndName.cs" Link="Shared\ModelWithIdAndName.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithIdOnly.cs" Link="Shared\ModelWithIdOnly.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithIndexFields.cs" Link="Shared\ModelWithIndexFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithLongIdAndStringFields.cs" Link="Shared\ModelWithLongIdAndStringFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithNamedCompositeIndex.cs" Link="Shared\ModelWithNamedCompositeIndex.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithOnlyStringFields.cs" Link="Shared\ModelWithOnlyStringFields.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Movie.cs" Link="Shared\Movie.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\SampleOrderLine.cs" Link="Shared\SampleOrderLine.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Shipper.cs" Link="Shared\Shipper.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\TaskQueue.cs" Link="Shared\TaskQueue.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+  </ItemGroup>
+  
+
+</Project>

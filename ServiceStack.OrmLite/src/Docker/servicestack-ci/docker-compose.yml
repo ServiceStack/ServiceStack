@@ -1,0 +1,99 @@
+# this file creates docker instances of all the db engines required for running integration tests
+# before running tests, from a commandline in this directory type `docker-compose up -d` to start database engines
+# to remove all db engines after tesing, type `docker-compose down`
+
+version: '3'
+
+services:
+
+  firebird3:
+    image: "jacobalberty/firebird:3.0.4"
+    ports:
+      - "48101:3050"
+    environment:
+     FIREBIRD_DATABASE: "test.gdb"
+     FIREBIRD_USER: "test"
+     ISC_PASSWORD: "masterkey"
+     EnableWireCrypt: "true"
+
+  mysql10.4:
+    image: mariadb:10.4
+    ports:
+     - "48205:3306"
+    environment:
+     MYSQL_DATABASE: "test"
+     MYSQL_USER: "test"
+     MYSQL_ROOT_PASSWORD: "test"
+
+  postgres11:
+    image: postgres:11-alpine
+    ports:
+     - "48303:5432"
+    environment:
+     POSTGRES_USER: "test"
+     POSTGRES_DB: "test"
+     POSTGRES_PASSWORD: "test"
+
+  oracle11:
+    image: epiclabs/docker-oracle-xe-11g
+    ports:
+     - "48401:1521"
+    environment:
+     ORACLE_ALLOW_REMOTE: "true"
+     ORACLE_PASSWORD : "test"
+
+  MSSqlServer2017:
+    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    ports:
+     - "48501:1433"
+    environment:
+     MSSQL_PID: "Express"
+     ACCEPT_EULA: "Y"
+     SA_PASSWORD : "Test!tesT"
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./data:/data"
+    command: redis-server --appendonly yes
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    ports:
+     - "48000:8000"
+
+  rabbitmq:
+    image: rabbitmq:3.7.5-management
+    hostname: app-rabbitmq
+    ports:
+        - 45672:5672
+        - 41672:15672
+    volumes:
+        - ./data/rabbitmq:/var/lib/rabbitmq/mnesia/rabbit@app-rabbitmq:cached
+    environment:
+        RABBITMQ_ERLANG_COOKIE: 6085e2412b6fa88647466c6a81c0cea0
+        RABBITMQ_DEFAULT_USER: guest
+        RABBITMQ_DEFAULT_PASS: guest
+        RABBITMQ_DEFAULT_VHOST: /
+
+  server:
+    image: jetbrains/teamcity-server
+    ports:
+      - "2080:8111"
+    volumes:
+      - /root/docker/teamcity/server/data:/data/teamcity_server/datadir
+      - /root/docker/teamcity/server/logs:/opt/teamcity/logs
+
+  ci-agent:
+    image: servicestack/ci-agent
+    volumes:
+        - /root/docker/build/ci-agent/conf:/data/teamcity_agent/conf
+    environment:
+        SERVER_URL: https://build.servicestack.net
+
+
+networks:
+ default:
+  driver: bridge

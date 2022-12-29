@@ -4,8 +4,14 @@ bin/
 obj/
 .idea/
 latest/
+/projects
 node_modules/
 /env-vars.bat
+ServiceStack/tests/NorthwindAuto/shared/css/ui.css
+ServiceStack/tests/NetCoreTests/types/
+ServiceStack/tests/NetCoreTests/dist/
+
+*.txt
 *.suo
 #ignore thumbnails created by windows
 Thumbs.db
@@ -55,8 +61,6 @@ requestlogs/
 *.DS_Store
 
 NuGet/
-
-build/
 
 *.dotCover
 

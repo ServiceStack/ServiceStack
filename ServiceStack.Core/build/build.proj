@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Default"
+         xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="4.0">
+  <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
+
+  <PropertyGroup>
+    <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
+    <ServiceStackSrcDir>$(BuildSolutionDir)/../ServiceStack/src</ServiceStackSrcDir>
+    <AwsSrcDir>$(BuildSolutionDir)/../ServiceStack.Aws/src</AwsSrcDir>
+    <AzureSrcDir>$(BuildSolutionDir)/../ServiceStack.Azure/src</AzureSrcDir>
+    <LoggingSrcDir>$(BuildSolutionDir)/../ServiceStack.Logging/src</LoggingSrcDir>
+    <OrmLiteSrcDir>$(BuildSolutionDir)/../ServiceStack.OrmLite/src</OrmLiteSrcDir>
+    <RedisSrcDir>$(BuildSolutionDir)/../ServiceStack.Redis/src</RedisSrcDir>
+    <StripeSrcDir>$(BuildSolutionDir)/../ServiceStack.Stripe/src</StripeSrcDir>
+    <TextSrcDir>$(BuildSolutionDir)/../ServiceStack.Text/src</TextSrcDir>
+    <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DoBuildSolutionsDependsOn>
+      BeforeBuildSolutions;
+      BuildSolutions
+    </DoBuildSolutionsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="BeforeBuildSolutions">
+    <Message Text="*****Before building solution*****" Importance="high"/>
+    <CallTarget Targets="UpdateVersion" />
+  </Target>
+
+  <Target Name="BuildSolutions">
+    <ItemGroup>
+      <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    </ItemGroup>
+    <Delete Files="@(NugetPackageFilesToDelete)" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Core.sln" Targets="Restore" />
+  </Target>
+
+  <Target Name="UpdateVersion">
+    <ItemGroup>
+      <RegexTransform Include="$(TextSrcDir)/ServiceStack.Text/Env.cs">
+          <Find>new DateTime.*</Find>
+          <ReplaceWith>new DateTime($([System.DateTime]::Now.ToString(`yyyy,MM,dd`)));</ReplaceWith>
+      </RegexTransform>
+    </ItemGroup>
+
+    <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
+  <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
+
+    <!-- ServiceStack.Kestrel.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Kestrel/ServiceStack.Kestrel.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Api.OpenApi.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Api.OpenApi/ServiceStack.Api.OpenApi.Core.csproj" 
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Client.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Client/ServiceStack.Client.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Common.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Common/ServiceStack.Common.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack/ServiceStack.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Mvc.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Mvc/ServiceStack.Mvc.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.HttpClient.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Interfaces.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.MsgPack.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.MsgPack/ServiceStack.MsgPack.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.ProtoBuf.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.RabbitMq.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.RabbitMq/ServiceStack.RabbitMq.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Server.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Server/ServiceStack.Server.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Authentication.MongoDb.Core -->
+    <MSBuild Projects="$(ServiceStackSrcDir)/ServiceStack.Authentication.MongoDb/ServiceStack.Authentication.MongoDb.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!--
+      ServiceStack.Aws
+    -->
+    <MSBuild Projects="$(AwsSrcDir)/ServiceStack.Aws/ServiceStack.Aws.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!--
+      ServiceStack.Azure
+    -->
+    <MSBuild Projects="$(AzureSrcDir)/ServiceStack.Azure/ServiceStack.Azure.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!--
+      ServiceStack.Logging
+    -->
+    <MSBuild Projects="$(LoggingSrcDir)/ServiceStack.Logging.Log4Net/ServiceStack.Logging.Log4Net.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(LoggingSrcDir)/ServiceStack.Logging.NLog/ServiceStack.Logging.NLog.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!--
+      ServiceStack.OrmLite
+    -->
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite/ServiceStack.OrmLite.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.Firebird/ServiceStack.OrmLite.Firebird.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.MySql/ServiceStack.OrmLite.MySql.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.MySqlConnector/ServiceStack.OrmLite.MySqlConnector.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.PostgreSQL/ServiceStack.OrmLite.PostgreSQL.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.Sqlite/ServiceStack.OrmLite.Sqlite.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!--
+      ServiceStack.Redis
+    -->
+    <MSBuild Projects="$(RedisSrcDir)/ServiceStack.Redis/ServiceStack.Redis.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!--
+      ServiceStack.Stripe
+    -->
+    <MSBuild Projects="$(StripeSrcDir)/ServiceStack.Stripe/ServiceStack.Stripe.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!--
+      ServiceStack.Text
+    -->
+    <MSBuild Projects="$(TextSrcDir)/ServiceStack.Text/ServiceStack.Text.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    
+    <!-- Copy all *.nupkg to /NuGet -->
+    <ItemGroup>
+      <NugetPackagesToMove Include="$(ServiceStackSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+      <NugetPackagesToMove Include="$(AwsSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+      <NugetPackagesToMove Include="$(AzureSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+      <NugetPackagesToMove Include="$(LoggingSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+      <NugetPackagesToMove Include="$(OrmLiteSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+      <NugetPackagesToMove Include="$(RedisSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+      <NugetPackagesToMove Include="$(StripeSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+      <NugetPackagesToMove Include="$(TextSrcDir)/**/bin/$(Configuration)/*.nupkg"/>
+    </ItemGroup>
+    <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
+
+  </Target>
+
+</Project>

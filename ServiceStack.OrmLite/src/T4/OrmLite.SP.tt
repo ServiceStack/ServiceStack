@@ -1,0 +1,73 @@
+﻿<#@ include file="OrmLite.Core.ttinclude" #>
+<#
+	// Settings
+    ConnectionStringName = "";			// Uses last connection string in config if not specified
+    var SPNamespace = "StoredProcedures";
+	ClassPrefix = "";
+	ClassSuffix = "";
+
+    // Read schema
+	var sps = LoadSPs();
+
+	// Generate output
+	if (sps.Count>0)
+	{
+#>
+<#
+if (string.IsNullOrEmpty(SPNamespace)) SPNamespace=ConnectionStringName;
+if (string.IsNullOrEmpty(SPNamespace)) SPNamespace="StoredProcedures";
+#>
+using System;
+using System.Data.Common;
+using System.Data;
+using System.Collections.Generic;
+using ServiceStack.OrmLite;
+using ServiceStack.DataAnnotations;
+
+namespace <#=SPNamespace#>
+{
+	public static class SPList 
+	{
+		private static DbParameter CreateNewParameter(DbCommand dbCommand, string paramName, object paramValue, ParameterDirection paramDirection, DbType paramType)
+		{
+			DbParameter param = dbCommand.CreateParameter();
+			param.Direction = paramDirection;
+			param.DbType = paramType;
+			param.ParameterName = paramName;
+			param.Value = paramValue ?? DBNull.Value;
+			return param;
+		}
+
+<#foreach(var sp in sps){#>
+		public static OrmLiteSPStatement <#=sp.CleanName#>(this IDbConnection db<#foreach(var param in sp.Parameters){#>, <#=param.NullableSysType#> @<#=Inflector.MakeInitialLowerCase(param.Name)#> = null<#}#>)
+		{
+			var dbCmd = (DbCommand)OrmLiteConfig.ExecFilter.CreateCommand(db).ToDbCommand();
+			dbCmd.CommandText = "<#=sp.Name#>";
+			dbCmd.CommandType = CommandType.StoredProcedure;
+<#if (sp.Parameters.Count > 0) { foreach(var param in sp.Parameters){#>
+			dbCmd.Parameters.Add(CreateNewParameter(dbCmd,"<#=param.Name#>",@<#=Inflector.MakeInitialLowerCase(param.Name)#>,<#=GetParamDirection(param.Direction)#>,<#=param.DbType#>));
+<#}#> <#}#>
+			dbCmd.Parameters.Add(CreateNewParameter(dbCmd,"__ReturnValue",0,ParameterDirection.ReturnValue,DbType.Int32));
+			return new OrmLiteSPStatement(db, dbCmd);
+		}
+
+<#}#>
+	}
+
+	<#if (IncludeSPReturnTypes) foreach(var sp in sps)
+	{
+	if (!sp.SPOutputColumns.Any()) continue; #>
+		public class <#=sp.CleanName#>_Result
+		{ 
+				<# foreach(var prop in sp.SPOutputColumns) { var _alias = false; var propName = prop.Name;  if (propName.Contains(' ') || propName.Contains('$') || propName.Contains('+') || propName.Contains('%')) { propName = propName.Replace(' ','_').Replace("$","_Dollar").Replace("+","_Plus").Replace("%","_Percent"); _alias = true; }; if (char.IsDigit(propName[0])) { propName = "_" + propName; _alias = true; };
+			
+		if (_alias) {#>		[Alias("<#=prop.Name#>")]
+		<#}#>
+		public <#=prop.DotNetType#> <#=propName#> { get; set; }			
+		<#}
+		#>
+}
+<#}#>
+
+}
+<#}#> 

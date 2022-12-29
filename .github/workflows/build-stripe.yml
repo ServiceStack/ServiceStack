@@ -1,0 +1,39 @@
+﻿name: Build Stripe
+
+on:
+  push:
+    paths:
+      - 'ServiceStack.Stripe/**'
+      - '.github/workflows/build-stripe.yml'
+
+jobs:
+  build-stripe:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Build
+        working-directory: ServiceStack.Stripe/build
+        run: dotnet build ./build.proj
+
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+
+      - name: Stripe Tests
+        run: dotnet test --framework net6.0 ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/ServiceStack.Stripe.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: (success() || failure()) && steps.test_integration.outcome != 'skipped'
+        with:
+          name: Stripe Tests
+          path: ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+          only-summary: 'true'
+          

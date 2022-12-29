@@ -1,0 +1,94 @@
+﻿@page "/grid"
+
+<div class="bg-white dark:bg-black">
+    <main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex-shrink-0 pt-8">
+            <img class="mx-auto h-20 w-auto" src="/img/blazor.svg" alt="Your Company">
+        </div>
+        <div class="mx-auto max-w-xl py-8 sm:py-16">
+            <div class="text-center">
+                <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
+                    AutoQuery Grids
+                </h1>
+                <p class="mt-2 text-lg text-gray-500 dark:text-gray-400">
+                    Rapidly Develop RDBMS Apps with AutoQuery Blazor Components
+                </p>
+            </div>
+            <div class="mt-12">
+
+                <NavList Title="Public Talent APIs">
+                    <NavListItem Title="Contacts Metadata" href="/grid/contacts-meta" Icon=@typeof(Contact).GetIcon()>
+                        Contacts customized with Metadata
+                    </NavListItem>
+                    <NavListItem Title="Contacts Metadata" href="/grid/contacts" Icon=@typeof(Contact).GetIcon()>
+                        Contacts customized with Blazor
+                    </NavListItem>
+                    <NavListItem Title="Job Applications" href="/grid/job-applications" Icon=@typeof(JobApplication).GetIcon()>
+                        Create and manage Job Applications
+                    </NavListItem>
+                </NavList>
+
+                <h2 class="mt-8 text-base font-semibold text-gray-500 dark:text-gray-400 flex">
+                    <span title="Requires Auth"><Icon class="h-6 w-6 mr-2" Svg=@Icons.Padlock /></span>
+                    Secure Talent APIs
+                </h2>
+                <NavList>
+                    <NavListItem Title="Jobs" href="/grid/jobs" Icon=@typeof(Job).GetIcon()>
+                        Create and manage Job vacancies
+                    </NavListItem>
+                    <NavListItem Title="Job Application Comments" href="/grid/job-applications/comments" Icon=@typeof(JobApplicationComment).GetIcon()>
+                        Moderate Job Application Comments
+                    </NavListItem>
+                    <NavListItem Title="Job Application Events" href="/grid/job-applications/events" Icon=@typeof(JobApplicationEvent).GetIcon()>
+                        View Job Application Events (read only)
+                    </NavListItem>
+                    <NavListItem Title="Phone Screens" href="/grid/phone-screens" Icon=@typeof(PhoneScreen).GetIcon()>
+                        Report on Phone Screening Sessions
+                    </NavListItem>
+                    <NavListItem Title="Interview" href="/grid/interviews" Icon=@typeof(Interview).GetIcon()>
+                        Schedule Job Interviews
+                    </NavListItem>
+                    <NavListItem Title="Job Offers" href="/grid/job-offers" Icon=@typeof(JobOffer).GetIcon()>
+                        Make or see pending Job Offers
+                    </NavListItem>
+                </NavList>
+
+                <h2 class="mt-8 text-base font-semibold text-gray-500 dark:text-gray-400 flex">
+                    <span title="Requires Auth"><Icon class="h-6 w-6 mr-2" Svg=@Icons.Padlock /></span>
+                    Booking APIs
+                </h2>
+                <NavList>
+                    <NavListItem Title="Bookings" href="/grid/bookings" Icon=@typeof(Booking).GetIcon()>
+                        Create and manage Bookings
+                    </NavListItem>
+                    <NavListItem Title="Coupons" href="/grid/coupons" Icon=@typeof(Coupon).GetIcon()>
+                        Create and manage discount Coupons
+                    </NavListItem>
+                    <NavListItem Title="Bookings" href="/grid/bookings-auto" Icon=@typeof(Booking).GetIcon()>
+                        Bookings Auto Columns
+                    </NavListItem>
+                </NavList>
+
+
+                <div class="mt-8 flex justify-between">
+
+                    <a class="flex text-base font-medium text-indigo-600 hover:text-indigo-500" href="/gallery/autoquerygrid">
+                        <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m16.7 4.5l2.8 2.8l-2.8 2.8l-2.8-2.8l2.8-2.8M9 5v4H5V5h4m10 10v4h-4v-4h4M16.7 1.7L11 7.3l5.7 5.7H13v8h8v-8h-4.3l5.6-5.7l-5.6-5.6M11 3H3v8h8V3M9 15v4H5v-4h4m2-2H3v8h8v-8Z" /></svg>
+                        Gallery
+                    </a>
+
+                    <a class="flex text-base font-medium text-indigo-600 hover:text-indigo-500" href=@($"https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/{UrlSegment}")>
+                        <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 6s1.5-2 5-2s5 2 5 2v14s-1.5-1-5-1s-5 1-5 1V6Zm10 0s1.5-2 5-2s5 2 5 2v14s-1.5-1-5-1s-5 1-5 1V6Z" /></svg>
+                        API Reference
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </main>
+    
+</div>
+
+@code {
+    string UrlSegment => "AutoQueryGrid`Model`";
+}

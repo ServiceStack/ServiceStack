@@ -1,0 +1,40 @@
+<script>
+(function (){
+    let apis = {
+        QueryTodos:  'Query Todos, returns all Todos by default',
+        CreateTodo:  'Create a Todo',
+        UpdateTodo:  'Update a Todo',
+        DeleteTodo:  'Delete Todo by Id',
+        DeleteTodos: 'Delete multiple Todos by Ids',
+    }
+    let apiNames = Object.keys(apis)
+    function TodosDocs({ op, routes }) {
+        return {
+            $template: '#Todos-docs',
+            get op() { return resolve(op) }, 
+            routes,
+            apis,
+            get otherApis() { return apiNames.filter(x => x !== this.op.request.name)
+                .reduce((acc,x) => { acc[x] = apis[x]; return acc }, {}) },
+        }
+    }
+    App.components(apiNames.reduce((acc, x) => { acc[x + 'Docs'] = TodosDocs; return acc }, {}))
+})() 
+</script>
+<template id="Todos-docs">
+<div class="mx-auto max-w-screen-md text-center py-8">
+    <h2 class="text-center text-3xl">{{humanize(op.request.name)}}</h2>
+    <p class="text-gray-500 text-lg my-3">{{apis[op.request.name]}}</p>
+    <div class="flex justify-center text-left">
+        <table>
+            <caption class="mt-3 text-lg font-normal">Other Todo APIs</caption>
+            <tr v-for="(info,name) in otherApis">
+                <th class="text-right font-medium pr-3">
+                    <a v-href="{ op:name }" class="text-blue-800">{{humanize(name)}}</a>
+                </th>
+                <td class="text-gray-500">{{info}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+</template>

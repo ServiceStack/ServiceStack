@@ -1,0 +1,45 @@
+@page "/docs/{path?}"
+@inherits AppComponentBase
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+@using Markdig
+@using Markdig.Syntax
+
+<link href="css/typography.css" rel="stylesheet" />
+<link href="css/markdown.css" rel="stylesheet" />
+
+@if (render.Response?.Preview != null)
+{
+    <div class="prose lg:prose-xl min-vh-100 m-3" data-md=@Path>
+        <div class="markdown-body">
+            @((MarkupString)render.Response!.Preview)
+        </div>
+    </div>
+
+    <div class="my-5 flex justify-center">
+        <SrcLink href=@($"https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/wwwroot/content/{render.Response!.FileName}") IconClass="oi oi-document" />
+        <SrcLink href="https://github.com/NetCoreTemplates/blazor-tailwind/blob/master/MyApp.Client/Pages/Docs.razor" IconSrc="/img/blazor.svg" />
+    </div>
+}
+else if (render.Error == null)
+{
+    <Loading />
+}
+
+<ErrorSummary Status=@render.Error />
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+
+    ApiResult<MarkdownFileInfo> render { get; set; } = new();
+
+    async Task loadDoc() => 
+        render = await MarkdownUtils.LoadDocumentAsync(Path!, doc => Http.GetStringAsync($"/content/{doc.FileName}"));
+
+    protected override Task OnAfterRenderAsync(bool firstRender) =>
+        JsRuntime.InvokeVoidAsync("hljs.highlightAll").AsTask();
+
+    protected override async Task OnParametersSetAsync() => await loadDoc();
+    protected override async Task OnInitializedAsync() => await loadDoc();
+}

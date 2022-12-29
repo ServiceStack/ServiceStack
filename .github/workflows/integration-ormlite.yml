@@ -1,0 +1,152 @@
+﻿name: Integration Tests OrmLite 
+
+on: workflow_dispatch
+
+jobs:
+  integration-ormlite:
+    runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 48303:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2017-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: Test!tesT
+          MSSQL_PID: Developer
+        ports:
+          - 48501:1433
+      mysql:
+        image: mysql:8.0.28
+        env:
+          MYSQL_ROOT_PASSWORD: Test!tesT
+          MYSQL_DATABASE: test
+        ports:
+          - 48205:3306
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Build
+        working-directory: ServiceStack.OrmLite/build
+        run: dotnet build ./build.proj
+
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+
+      - name: Test Sqlite
+        working-directory: ServiceStack.OrmLite/tests
+        env:
+          ORMLITE_DIALECT: Sqlite
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite Sqlite Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
+      - name: Tests Postgres Setup
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: PostgreSql11
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+
+      - name: Test Postgres OrmLite
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: PostgreSql11
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite PG Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
+      - name: Tests SQL Server Setup
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: SqlServer2017
+          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+
+
+      - name: Test SQL Server OrmLite
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: SqlServer2017
+          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite MS SQL Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+
+      - name: Tests MySql Setup
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: MySql
+          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+
+      - name: Test MySql OrmLite
+        working-directory: ServiceStack.OrmLite/tests
+        if: success() || failure()
+        env:
+          ORMLITE_DIALECT: MySql
+          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT
+        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: OrmLite MySql Tests
+          only-summary: 'true'
+          path: ./ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Tests/TestResults/results.trx
+          reporter: dotnet-trx
+

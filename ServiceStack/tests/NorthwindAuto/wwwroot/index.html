@@ -1,0 +1,139 @@
+<html>
+<head>
+    <title>Northwind CRUD</title>
+    <style>
+        body { padding: 3em; }
+        body, input[type=text] { font: 32px/42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif }
+        input { padding:.25em .5em; margin-right:.5em; }
+        #info { font-size: 20px; line-height: 26px; }
+        a { color: #007bff }
+        #result { display:inline-block;color:#28a745; }
+        th, td { padding-right: 1em; vertical-align:top; }
+        th { text-align: left; }
+        pre { border: 1px solid #ccc; padding: .25em .5em; width: 50%; min-width: 750px; color: #444; }
+        pre.sh { background: #f1f1f1; }
+        pre.comment { color: green; }
+        pre.sh::before { content: "$ " }
+        .muted { color: #999; }
+        ul, li { margin: 0; padding: 0; }
+        ul { list-style:none; }
+    </style>
+</head>
+<body>
+
+    <div id="info">
+
+        <h1><a href="/ui">/ui</a></h1>
+        <h1><a href="/locode">/locode</a></h1>
+        <h1><a href="/admin-ui">/admin-ui</a></h1>
+
+        <h2>AutoCrud Generation Links</h2>
+        <table>
+            <tr>
+                <th>RDBMS Schema</th>
+                <td>
+                    <a href="/crud/tables">/crud/tables</a>
+                </td>
+            </tr>
+            <tr>
+                <th>New Auto Generated Services (C#)</th>
+                <td>
+                    <a href="/crud/new/csharp">/crud/new/csharp</a>
+                </td>
+            </tr>
+            <tr>
+                <th>All Services (C#)</th>
+                <td>
+                    <a href="/crud/all/csharp">/crud/all/csharp</a>
+                </td>
+            </tr>
+            <tr>
+                <th>Generate DTOs in alt languages (e.g. TypeScript)</th>
+                <td>
+                    <ul>
+                        <li><a href="/crud/all/typescript">/crud/all/typescript</a></li>
+                        <li><a href="/crud/all/dart">/crud/all/dart</a></li>
+                        <li><a href="/crud/all/java">/crud/all/java</a></li>
+                        <li><a href="/crud/all/kotlin">/crud/all/kotlin</a></li>
+                        <li><a href="/crud/all/swift">/crud/all/swift</a></li>
+                        <li><a href="/crud/all/vbnet">/crud/all/vbnet</a></li>
+                        <li><a href="/crud/all/fsharp">/crud/all/fsharp</a></li>
+                    </ul>
+                </td>
+            </tr>
+            <tfoot>
+            <tr>
+                <td colspan="2" class="muted" style="padding:.5em 0 0 0">
+                    * requires <a href="https://docs.servicestack.net/debugging#debugmode">DebugMode</a> or Admin role
+                    (e.g. <a href="https://docs.servicestack.net/debugging#authsecret">?authsecret=zsecret</a>)
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+
+        <h3>Eject into code-first models</h3>
+        <p>
+            Use dotnet tool to generate Types for Tables where AutoQuery Services don't already exist:
+        </p>
+        
+        <pre class="sh">x csharp https://localhost:5001 -path /crud/new/csharp</pre>
+        
+        <div>
+            If RDBMS Schema changes, can update dtos as normal:
+        </div>
+        <pre class="sh">x csharp</pre>
+
+    </div>
+
+    <h2 style="margin-top:2em; border-top: 1px solid #eee; padding-top:.5em">
+        <a href="/json/metadata?op=Hello">Hello</a> API
+    </h2>
+    <input type="text" id="txtName" placeholder="Name" onkeyup="callHello(this.value)">
+    <div id="result"></div>
+    
+    <h3>Example Code</h3>
+    <div style="font-size:20px;line-height:26px">
+        <pre>&lt;script src="/js/servicestack-client.js"&gt;&lt;/script&gt;</pre>
+        <pre class="csharp">Object.assign(window, window['@servicestack/client']) //import
+
+var client = new JsonServiceClient()
+client.get(new Hello({ name: name }))
+    .then(function(r) {
+        console.log(r.result)
+    })
+</pre>
+        
+        <p>
+            Generate Typed DTOs from 
+            <a href="https://docs.servicestack.net/typescript-add-servicestack-reference">Add ServiceStack Reference</a> 
+        </p>
+    </div>
+
+<script src="/js/servicestack-client.js"></script>
+<script>
+    Object.assign(window, window['@servicestack/client']); //import into global namespace
+
+    // generate typed dtos with https://docs.servicestack.net/typescript-add-servicestack-reference
+    var Hello = /** @class */ (function () {
+        function Hello(init) { Object.assign(this, init); }
+        Hello.prototype.createResponse = function () { return new HelloResponse(); };
+        Hello.prototype.getTypeName = function () { return 'Hello'; };
+        return Hello;
+    }());
+    var HelloResponse = /** @class */ (function () {
+        function HelloResponse(init) { Object.assign(this, init); }
+        return HelloResponse;
+    }());
+
+    var client = new JsonServiceClient();
+    function callHello(val) {
+        client.get(new Hello({ name: val }))
+            .then(function(r) {
+                document.getElementById('result').innerHTML = r.result;
+            });
+    }
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+﻿@typeparam Model
+@inherits AutoFormBase<Model>
+
+@if (FormStyle == FormStyle.Card)
+{
+    <div class=@ClassNames(PanelClass, @class)>
+        <form @onsubmit="OnSave" @onsubmit:preventDefault>
+            <div class=@FormClass>
+                <div>
+                    <h3 class=@HeadingClass>@Title</h3>
+                    @if (SubHeading != null)
+                    {
+                        <p class=@SubHeadingClass>@SubHeading</p>
+                    }
+                    else if (Notes != null)
+                    {
+                        <p class=@ClassNames("notes", SubHeadingClass)>@((MarkupString)Notes)</p>
+                    }
+                </div>
+
+                <AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+
+            </div>
+            <div class=@ButtonsClass>
+                <div>
+                @if (DeleteApiType != null)
+                {
+                    <ConfirmDelete OnDelete="OnDelete" />
+                }
+                </div>
+                <div class="flex justify-end">
+                    <SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+                    <PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
+                </div>
+            </div>
+        </form>
+    </div>
+}
+else
+{
+    <div class=@ClassNames("relative z-10", @class) aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+        <div class="">
+            <div class="">
+                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+                    <div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
+                        <form class=@FormClass @onsubmit="OnSave" @onsubmit:preventDefault>
+                            <!-- Header -->
+                            <div class="h-0 flex-1 overflow-y-auto">
+                                <div class=@TitlebarClass>
+                                    <div class="flex items-start justify-between space-x-3">
+                                        <div class="space-y-1">
+                                            <h2 class=@HeadingClass id="slide-over-title">@Title</h2>
+                                            @if (SubHeading != null)
+                                            {
+                                                <p class=@SubHeadingClass>@SubHeading</p>
+                                            }
+                                            else if (Notes != null)
+                                            {
+                                                <p class=@ClassNames("notes", SubHeadingClass)>@((MarkupString)Notes)</p>
+                                            }
+                                        </div>
+                                        <div class="flex h-7 items-center">
+                                            <button type="button" @onclick="OnDone" class=@CssDefaults.Form.SlideOver.CloseButtonClass>
+                                                <span class="sr-only">Close panel</span>
+                                                <!-- Heroicon name: outline/x-mark -->
+                                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+
+                            </div>
+                            <div class=@ButtonsClass>
+                                <div>
+                                @if (DeleteApiType != null)
+                                {
+                                    <ConfirmDelete OnDelete="OnDelete" />
+                                }
+                                </div>
+                                <div class="flex justify-end">
+                                    <SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+                                    <PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}

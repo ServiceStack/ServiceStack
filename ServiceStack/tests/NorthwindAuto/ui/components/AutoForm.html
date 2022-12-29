@@ -1,0 +1,56 @@
+<script minify>
+import { Forms } from "../js/init"
+import { ApiState } from "../../lib/types"
+
+App.components({
+    /** @param {{state:() => ApiState}} args */
+    AutoForm({ state, onsubmit, oninput }) {
+        /** @type {ApiState|any} */
+        let emptyState = { model:{} }
+        return {
+            $template: '#form-template',
+            /** @type ApiState */
+            get state() { return state && state() || emptyState },
+            get api() { return map(this.state, x => x.apiResult && x.apiResult.api) },
+            get css() { return map(this.state, x => x.op && x.op.ui && x.op.ui.explorerCss) },
+            get formClass() { return map(this.css, x => x.form) || Forms.formClass },
+            get gridClass() { return map(this.css, x => x.fieldset) || Forms.gridClass },
+            get title() { return this.state && this.state.title },
+            get gridInputs() {
+                return map(this.state, x => x.formLayout && Forms.getGridInputs(x.formLayout, Forms.forAutoForm(x.op.request)))
+            },
+            onsubmit(e) {
+                if (onsubmit) onsubmit(e)
+            },
+            oninput: oninput || (() => {}),
+        }
+    }
+})
+</script>
+<!--minify-->
+<template id="form-template">
+<form ref="form" v-if="state" @submit.prevent="onsubmit" autocomplete="off" @input="oninput" :data-autoform="state.opName" :class="formClass">
+    <div class="relative px-4 py-5 bg-white sm:p-6">
+        <div class="text-xl text-gray-900 text-center mb-4">{{ title }}</div>
+        <div v-if="state.errorSummary" v-scope="ErrorSummary({ errorSummary: () => state.errorSummary })"></div>
+
+        <div class="flex flex-wrap sm:flex-nowrap">
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset :class="gridClass">
+                    <div v-for="{ input, rowClass, prop } in gridInputs" :class="rowClass">
+                        <div :key="input.id" v-scope="Input({ input:() => input, prop:() => prop, model:() => state.model, api:() => api })"></div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="mt-4 px-4 py-3 bg-gray-50 text-right sm:px-6">
+        <div class="flex justify-end">
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+        </div>
+    </div>
+</form>
+</template>
+<!--/minify-->

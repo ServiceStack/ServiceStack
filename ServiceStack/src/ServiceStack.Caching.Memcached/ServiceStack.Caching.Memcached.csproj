@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Caching.Memcached</PackageId>
+    <AssemblyName>ServiceStack.Caching.Memcached</AssemblyName>
+    <TargetFrameworks>net472</TargetFrameworks>
+    <Title>Memcached ServiceStack Caching Provider</Title>
+    <PackageDescription>
+      An Memcached cache client implementing ServiceStack's ICacheClient:
+      https://docs.servicestack.net/caching
+    </PackageDescription>
+    <PackageTags>ServiceStack;Caching;Memcached;Cache;CacheClient;POCO;Code-First</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+    <PackageReference Include="EnyimMemcached" Version="2.16.0" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,44 @@
+﻿name: A MyGet Publish
+
+on: workflow_dispatch
+
+jobs:
+  myget-push:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: myget-pack.yml
+          # workflow_conclusion: success
+          name: ServiceStack Packages
+          commit: ${{ github.sha }}
+          path: ./build/staging
+          
+      - name: Check output
+        working-directory: ./build
+        run: |
+          cd staging
+          export number_of_packages=$(ls -1 | wc -l)
+          echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
+          
+      - name: Push to MyGet
+        working-directory: ./build/staging
+        run: |
+          # Check if more than 73 packages 
+          if [[ ${number_of_packages} -gt 73 ]]; then
+            echo "Pushing to MyGet"
+            dotnet nuget push '*.nupkg' -s 'https://www.myget.org/F/servicestack/api/v2/package' -k '${{ secrets.MYGET_APIKEY }}'
+          else
+            echo 'Less files than expected, skipping push'
+            exit 1
+          fi
+          
+          

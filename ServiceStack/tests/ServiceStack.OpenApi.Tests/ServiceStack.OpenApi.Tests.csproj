@@ -1,0 +1,260 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CFD618DD-5DE8-42FE-8D83-CC5AB7A40FC1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack.OpenApi.Tests</RootNamespace>
+    <AssemblyName>ServiceStack.OpenApi.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Threading" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnnotatedPropertiesTests.cs" />
+    <Compile Include="GeneratedClient\AllowedAttributesOperations.cs" />
+    <Compile Include="GeneratedClient\AllowedAttributesOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\AssignRolesOperations.cs" />
+    <Compile Include="GeneratedClient\AssignRolesOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\Authenticate2.cs" />
+    <Compile Include="GeneratedClient\Authenticate2Extensions.cs" />
+    <Compile Include="GeneratedClient\AuthenticateOperations.cs" />
+    <Compile Include="GeneratedClient\AuthenticateOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\Authenticateprovider.cs" />
+    <Compile Include="GeneratedClient\Authenticateprovider2.cs" />
+    <Compile Include="GeneratedClient\Authenticateprovider2Extensions.cs" />
+    <Compile Include="GeneratedClient\AuthenticateproviderExtensions.cs" />
+    <Compile Include="GeneratedClient\GetMovieId.cs" />
+    <Compile Include="GeneratedClient\GetMovieIdExtensions.cs" />
+    <Compile Include="GeneratedClient\GetSession.cs" />
+    <Compile Include="GeneratedClient\GetSessionExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloAllTypesOperations.cs" />
+    <Compile Include="GeneratedClient\HelloAllTypesOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloAllTypesWithResultOperations.cs" />
+    <Compile Include="GeneratedClient\HelloAllTypesWithResultOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloArrayOperations.cs" />
+    <Compile Include="GeneratedClient\HelloArrayOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloDateTimeOperations.cs" />
+    <Compile Include="GeneratedClient\HelloDateTimeOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloListOperations.cs" />
+    <Compile Include="GeneratedClient\HelloListOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloName.cs" />
+    <Compile Include="GeneratedClient\HelloNameExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloOperations.cs" />
+    <Compile Include="GeneratedClient\HelloOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloStringOperations.cs" />
+    <Compile Include="GeneratedClient\HelloStringOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloTypesOperations.cs" />
+    <Compile Include="GeneratedClient\HelloTypesOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloVoidOperations.cs" />
+    <Compile Include="GeneratedClient\HelloVoidOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloWithRouteOperations.cs" />
+    <Compile Include="GeneratedClient\HelloWithRouteOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\HelloZipOperations.cs" />
+    <Compile Include="GeneratedClient\HelloZipOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\IAllowedAttributesOperations.cs" />
+    <Compile Include="GeneratedClient\IAssignRolesOperations.cs" />
+    <Compile Include="GeneratedClient\IAuthenticate2.cs" />
+    <Compile Include="GeneratedClient\IAuthenticateOperations.cs" />
+    <Compile Include="GeneratedClient\IAuthenticateprovider.cs" />
+    <Compile Include="GeneratedClient\IAuthenticateprovider2.cs" />
+    <Compile Include="GeneratedClient\IGetMovieId.cs" />
+    <Compile Include="GeneratedClient\IGetSession.cs" />
+    <Compile Include="GeneratedClient\IHelloAllTypesOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloAllTypesWithResultOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloArrayOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloDateTimeOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloListOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloName.cs" />
+    <Compile Include="GeneratedClient\IHelloOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloStringOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloTypesOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloVoidOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloWithRouteOperations.cs" />
+    <Compile Include="GeneratedClient\IHelloZipOperations.cs" />
+    <Compile Include="GeneratedClient\IReturnArrayRequest.cs" />
+    <Compile Include="GeneratedClient\IReturnDictionaryDtoRequest.cs" />
+    <Compile Include="GeneratedClient\IReturnDictionaryStringRequest.cs" />
+    <Compile Include="GeneratedClient\IReturnKeyValuePairRequest.cs" />
+    <Compile Include="GeneratedClient\IReturnListRequest.cs" />
+    <Compile Include="GeneratedClient\ISecuredDtoRequest.cs" />
+    <Compile Include="GeneratedClient\ISecuredOpsRequest.cs" />
+    <Compile Include="GeneratedClient\ISecuredRequest.cs" />
+    <Compile Include="GeneratedClient\IServiceStackAutorestClient.cs" />
+    <Compile Include="GeneratedClient\IUnAssignRolesOperations.cs" />
+    <Compile Include="GeneratedClient\IUpdateSessioneditCustomName.cs" />
+    <Compile Include="GeneratedClient\Models\AllCollectionTypes.cs" />
+    <Compile Include="GeneratedClient\Models\AllowedAttributes.cs" />
+    <Compile Include="GeneratedClient\Models\AllTypes.cs" />
+    <Compile Include="GeneratedClient\Models\ArrayResult.cs" />
+    <Compile Include="GeneratedClient\Models\AssignRoles.cs" />
+    <Compile Include="GeneratedClient\Models\AssignRolesResponse.cs" />
+    <Compile Include="GeneratedClient\Models\AssignRolesResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\Authenticate.cs" />
+    <Compile Include="GeneratedClient\Models\AuthenticateResponse.cs" />
+    <Compile Include="GeneratedClient\Models\AuthenticateResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\CustomUserSession.cs" />
+    <Compile Include="GeneratedClient\Models\GetErrorModel.cs" />
+    <Compile Include="GeneratedClient\Models\GetErrorModelException.cs" />
+    <Compile Include="GeneratedClient\Models\GetMovie.cs" />
+    <Compile Include="GeneratedClient\Models\GetSessionResponse.cs" />
+    <Compile Include="GeneratedClient\Models\GetSessionResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\Hello.cs" />
+    <Compile Include="GeneratedClient\Models\HelloAllTypes.cs" />
+    <Compile Include="GeneratedClient\Models\HelloAllTypesResponse.cs" />
+    <Compile Include="GeneratedClient\Models\HelloAllTypesResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\HelloAllTypesWithResult.cs" />
+    <Compile Include="GeneratedClient\Models\HelloArray.cs" />
+    <Compile Include="GeneratedClient\Models\HelloDateTime.cs" />
+    <Compile Include="GeneratedClient\Models\HelloDateTimeException.cs" />
+    <Compile Include="GeneratedClient\Models\HelloList.cs" />
+    <Compile Include="GeneratedClient\Models\HelloResponse.cs" />
+    <Compile Include="GeneratedClient\Models\HelloResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\HelloString.cs" />
+    <Compile Include="GeneratedClient\Models\HelloTypes.cs" />
+    <Compile Include="GeneratedClient\Models\HelloTypesException.cs" />
+    <Compile Include="GeneratedClient\Models\HelloVoid.cs" />
+    <Compile Include="GeneratedClient\Models\HelloWithRoute.cs" />
+    <Compile Include="GeneratedClient\Models\HelloZip.cs" />
+    <Compile Include="GeneratedClient\Models\HelloZipResponse.cs" />
+    <Compile Include="GeneratedClient\Models\HelloZipResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\KeyValuePairStringString.cs" />
+    <Compile Include="GeneratedClient\Models\ListResult.cs" />
+    <Compile Include="GeneratedClient\Models\MovieResponse.cs" />
+    <Compile Include="GeneratedClient\Models\MovieResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\Poco.cs" />
+    <Compile Include="GeneratedClient\Models\ResponseError.cs" />
+    <Compile Include="GeneratedClient\Models\ResponseStatus.cs" />
+    <Compile Include="GeneratedClient\Models\ReturnedDto.cs" />
+    <Compile Include="GeneratedClient\Models\SubType.cs" />
+    <Compile Include="GeneratedClient\Models\UnAssignRoles.cs" />
+    <Compile Include="GeneratedClient\Models\UnAssignRolesResponse.cs" />
+    <Compile Include="GeneratedClient\Models\UnAssignRolesResponseException.cs" />
+    <Compile Include="GeneratedClient\Models\UnAuthInfo.cs" />
+    <Compile Include="GeneratedClient\Models\UpdateSession.cs" />
+    <Compile Include="GeneratedClient\ReturnArrayRequest.cs" />
+    <Compile Include="GeneratedClient\ReturnArrayRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryDtoRequest.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryDtoRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryStringRequest.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryStringRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\ReturnKeyValuePairRequest.cs" />
+    <Compile Include="GeneratedClient\ReturnKeyValuePairRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\ReturnListRequest.cs" />
+    <Compile Include="GeneratedClient\ReturnListRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\SecuredDtoRequest.cs" />
+    <Compile Include="GeneratedClient\SecuredDtoRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\SecuredOpsRequest.cs" />
+    <Compile Include="GeneratedClient\SecuredOpsRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\SecuredRequest.cs" />
+    <Compile Include="GeneratedClient\SecuredRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\ServiceStackAutorestClient.cs" />
+    <Compile Include="GeneratedClient\UnAssignRolesOperations.cs" />
+    <Compile Include="GeneratedClient\UnAssignRolesOperationsExtensions.cs" />
+    <Compile Include="GeneratedClient\UpdateSessioneditCustomName.cs" />
+    <Compile Include="GeneratedClient\UpdateSessioneditCustomNameExtensions.cs" />
+    <Compile Include="ReturnTypeTests.cs" />
+    <Compile Include="DtoHelper.cs" />
+    <Compile Include="Services\AllTypes.cs" />
+    <Compile Include="AllTypesTests.cs" />
+    <Compile Include="Services\AnnotatedService.cs" />
+    <Compile Include="Services\AsyncService.cs" />
+    <Compile Include="Services\CodeGenTestTypes.cs" />
+    <Compile Include="Host\Config.cs" />
+    <Compile Include="Host\GeneratedClientTestBase.cs" />
+    <Compile Include="Services\InheritedDtoService.cs" />
+    <Compile Include="Services\NativeTypesTestService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ReturnTypeServices.cs" />
+    <Compile Include="Services\SecuredService.cs" />
+    <Compile Include="Services\SessionService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.19" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

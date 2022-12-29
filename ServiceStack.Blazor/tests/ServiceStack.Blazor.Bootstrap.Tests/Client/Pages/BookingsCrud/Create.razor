@@ -1,0 +1,92 @@
+@attribute [Authorize(Roles="Employee")]
+@inherits AppAuthComponentBase
+
+<form @onsubmit="_ => OnSubmit()" @onsubmit:preventDefault class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
+<CascadingValue Value=@api.Error>
+    <button type="button" class="close" @onclick="close"><i></i></button>
+
+    <h1 class="fs-4 text-secondary text-center">
+        New Booking
+    </h1>
+
+    <ErrorSummary Except=@VisibleFields />
+
+    <div class="mb-3 form-floating">
+        <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
+    </div>
+
+    <div class="mb-3 form-floating">
+        <SelectInput @bind-Value="request.RoomType" Options=@(Enum.GetValues<RoomType>()) /> 
+    </div>
+
+    <div class="d-flex">
+        <div class="mb-3 flex-fill form-floating me-1">
+            <TextInput type="number" @bind-Value="request.RoomNumber" min="0" required />
+        </div>
+
+        <div class="mb-3 flex-fill form-floating">
+            <TextInput type="number" @bind-Value="request.Cost" min="0" required />
+        </div>
+    </div>
+
+    <div class="d-flex">
+        <div class="mb-3 flex-fill form-floating me-1">
+            <DateTimeInput @bind-Value="request.BookingStartDate" required />
+        </div>
+
+        <div class="mb-3 flex-fill form-floating">
+            <DateTimeInput @bind-Value="request.BookingEndDate" />
+        </div>
+    </div>
+    
+    <div class="mb-3 form-floating">
+        <TextAreaInput @bind-Value="request.Notes" placeholder="Notes about this booking" style="height:6rem" />
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex-fill">
+            <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/BookingsCrud/Create.razor" 
+                     IconSrc="/img/blazor.svg" class="mt-2" />
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Create Booking</button>
+        </div>
+    </div>
+</CascadingValue>
+</form>
+
+@code {
+    [Parameter] public EventCallback<IdResponse> done { get; set; }
+    [Parameter] public string? @class { get; set; }
+
+    CreateBooking request = new()
+    {
+        BookingStartDate = DateTime.UtcNow,
+    };
+
+    // Hide Error Summary Messages for Visible Fields which displays contextual validation errors
+    string[] VisibleFields => new[] {
+        nameof(request.Name),
+        nameof(request.RoomType),
+        nameof(request.RoomNumber),
+        nameof(request.BookingStartDate),
+        nameof(request.BookingEndDate),
+        nameof(request.Cost),
+        nameof(request.Notes),
+    };
+
+    ApiResult<IdResponse> api = new();
+
+    async Task OnSubmit()
+    {
+        api = await ApiAsync(request);
+
+        if (api.Succeeded)
+        {
+            await done.InvokeAsync(api.Response!);
+            request = new();
+        }
+    }
+
+    async Task close() => await done.InvokeAsync(null);
+}

@@ -1,0 +1,196 @@
+﻿@inherits AppAuthComponentBase
+@using ServiceStack.Html
+
+<form @onsubmit="submit" @onsubmit:preventDefault autocomplete="off" class=@CssUtils.ClassNames("mt-3 relative shadow rounded p-4",
+        createUserApi.Failed ? "error" : "",
+        createUserApi.Completed ? "" : "loading", @class)>
+<CascadingValue Value=@createUserApi.Error>
+
+    <button type="button" class="close" @onclick="close"><i></i></button>
+    <h1 class="fs-4 text-secondary text-center">
+        New User
+    </h1>
+
+    <div class="mb-3">
+        <ErrorSummary Except=@VisibleFields />
+    </div>
+    <div class="row">
+        <div class="col col-7 sm:px-1">
+            <div class="flex-grow mb-3 sm:mb-0">
+                <fieldset class="grid grid-cols-12 gap-6">
+                @foreach (var f in FormLayout)
+                {
+                    <div class=@CssUtils.ClassNames($"mb-3 me-1 {f.Css?.Field}", f.Type != Input.Types.Checkbox ? "form-floating" : "")
+                         style="width:100%">
+                        <DynamicInput Input=@f Model=@Model />
+                    </div>
+                }
+                </fieldset>
+            </div>
+        </div>
+        <div class="col col-5 sm:px-1">
+            <div class="form-floating mb-3">
+                <TextInput type="password" @bind-Value="request.Password" />
+            </div>
+        @if (!request.Roles.IsEmpty())
+        {
+            <div class="row mb-3">
+                <div class="col form-floating">
+                    <h4>Roles</h4>
+                @foreach (var role in request.Roles)
+                {
+                    <div @key=role>
+                        <button @onclick="_ => removeRole(role)" class="btn oi oi-trash" title="Remove Role"></button>                    
+                        <span class="align-middle">@role</span>
+                    </div>
+                }
+                </div>
+            </div>
+        }
+        @if (missingRoles.Count > 0)
+        {
+            <div class="mb-3 d-flex flex-wrap">
+                <div class="flex-fill me-2 pb-2">
+                    <div class="form-floating">
+                        <SelectInput Options=@missingRoles @bind-Value="newRole" class="custom-select">
+                            <option></option>
+                        </SelectInput>
+                    </div>
+                </div>
+                <div class="d-flex pb-2">
+                    <button disabled="@string.IsNullOrWhiteSpace(newRole)" @onclick="addRole" class="btn btn-outline-secondary" title="Add Role">Add</button>                    
+                </div>
+            </div>
+        }
+        @if (!request.Permissions.IsEmpty()) 
+        {
+            <div class="row mb-3">
+                <div class="col">
+                    <h4>Permissions</h4>
+                @foreach (var perm in request.Permissions)
+                {
+                    <div>
+                        <button @onclick="_ => removePermission(perm)"
+                                class="btn oi oi-trash" title="Remove Permission"></button>                    
+                        <span class="align-middle">@perm</span>
+                    </div>
+                }
+                </div>
+            </div>
+        }
+        @if (!missingPermissions.IsEmpty())
+        {
+            <div class="row mb-3">
+                <div class="col col-8 form-floating">
+                    <SelectInput class="custom-select" @bind="newPermission" Options=@missingPermissions>
+                        <option></option>
+                    </SelectInput>
+                </div>
+                <div class="col col-4 p-0 sm:w-full">
+                    <button disabled="@string.IsNullOrWhiteSpace(newPermission)" @onclick="addPermission" 
+                            class="btn btn-outline-secondary" title="Add Permission">Add</button>                    
+                </div>
+            </div>
+        }
+        </div>            
+    </div>
+    <div class="row pt-3 border-top border-top-primary">
+        <div class="col text-end">
+            <button class="btn btn-primary">Create User</button>
+        </div>
+    </div>
+
+</CascadingValue>
+</form>
+
+@code {
+    [CascadingParameter] protected AppMetadata? appMetadata { get; set; }
+    AdminUsersInfo? plugin => appMetadata?.Plugins.AdminUsers;
+
+    [Parameter] public EventCallback<Dictionary<string,object>> done { get; set; }
+
+    [Parameter]
+    public string? @class { get; set; }
+
+    AdminCreateUser request = new() {
+       Roles = new(),
+       Permissions = new(),
+       UserAuthProperties = new(),
+    };
+
+    [CascadingParameter]
+    Dictionary<string, object> Model { get; set; } = new();
+
+    string newRole = "";
+    string newPermission = "";
+
+    ApiResult<AdminUserResponse> getUserApi = new();
+    ApiResult<AdminUserResponse> createUserApi = new();
+
+    ResponseStatus? Status => createUserApi.Error;
+
+    List<string> missingRoles => plugin?.AllRoles.Where(x => !request.Roles.Contains(x)).ToList() ?? new();
+
+    List<string> missingPermissions => plugin?.AllPermissions.Where(x => !request.Permissions.Contains(x)).ToList() ?? new();
+
+    List<InputInfo> FormLayout => plugin?.FormLayout ?? new();
+
+    string[] VisibleFields => FormLayout.Select(x => x.Id).Union(new[]{ "Password" }).ToArray();
+
+    void addRole() {
+        if (string.IsNullOrWhiteSpace(newRole)) return;
+        request.Roles.Add(newRole);
+        newRole = "";
+    }
+
+    async Task close() => await done.InvokeAsync(null);
+
+    void removeRole(string role) {
+        if (!string.IsNullOrWhiteSpace(role))
+            request.Roles.RemoveAll(x => x == role);
+    }
+
+    void addPermission() {
+        if (string.IsNullOrWhiteSpace(newPermission)) return;
+        request.Permissions.Add(newPermission);
+        newPermission = "";
+    }
+
+    void removePermission(string permission) {
+        if (!string.IsNullOrWhiteSpace(permission)) 
+            request.Permissions.RemoveAll(x => x == permission);
+    }
+
+    void syncModel()
+    {
+        foreach (var entry in Model)
+        {
+            var key = entry.Key;
+            var val = entry.Value?.ToString();
+            if (key == nameof(request.UserName))
+                request.UserName = val;
+            else if (key == nameof(request.Email))
+                request.Email = val;
+            else if (key == nameof(request.DisplayName))
+                request.DisplayName = val;
+            else if (key == nameof(request.FirstName))
+                request.FirstName = val;
+            else if (key == nameof(request.LastName))
+                request.LastName = val;
+            else if (key == nameof(request.ProfileUrl))
+                request.ProfileUrl = val;
+            else
+                request.UserAuthProperties[entry.Key] = val;
+        }
+    }
+
+    async Task submit()
+    {
+        syncModel();
+        createUserApi.ClearErrors();
+        createUserApi = await ApiAsync(request);
+
+        if (createUserApi.Succeeded)
+            await done.InvokeAsync(createUserApi.Response?.Result);
+    }
+}
