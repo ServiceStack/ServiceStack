@@ -12,20 +12,12 @@ public class EsmGenerator : ILangGenerator
     /// <summary>
     /// Split assignment expression into smaller batches to avoid "Uncaught RangeError: Maximum call stack size exceeded" in Chrome/Blink
     /// </summary>
-    public static int BatchSize { get; set; } = 100;
-    
     public bool WithoutOptions { get; set; }
     public List<string> AddQueryParamOptions { get; set; }
 
     public readonly MetadataTypesConfig Config;
     readonly NativeTypesFeature feature;
-    List<string> conflictTypeNames = new();
-    public List<MetadataType> AllTypes { get; set; }
-
-    public static Func<List<MetadataType>, List<MetadataType>> FilterTypes { get; set; } = DefaultFilterTypes;
-
-    public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
-        
+    public List<MetadataType> AllTypes => Gen.AllTypes;
     public string DictionaryDeclaration { get; set; } = CreateEmptyClass("Dictionary");
         
     public HashSet<string> AddedDeclarations { get; set; } = new();
@@ -69,17 +61,12 @@ public class EsmGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var typeNamespaces = new HashSet<string>();
-        var includeList = metadata.RemoveIgnoredTypes(Config);
-        metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
-        metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
+        Gen.Init(metadata);
 
         var defaultImports = !Config.DefaultImports.IsEmpty()
             ? Config.DefaultImports
             : TypeScriptGenerator.DefaultImports;
 
-        var globalNamespace = Config.GlobalNamespace;
-        
         string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
         var sbInner = StringBuilderCache.Allocate();
@@ -117,27 +104,7 @@ public class EsmGenerator : ILangGenerator
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
         var types = metadata.Types.CreateSortedTypeList();
-
-        AllTypes = metadata.GetAllTypesOrdered();
-        AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
-        AllTypes = FilterTypes(AllTypes);
-
-        //TypeScript doesn't support reusing same type name with different generic airity
-        var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
-            .GroupBy(g => g.LeftPart('`'))
-            .Where(g => g.Count() > 1)
-            .Select(g => g.Key)
-            .ToList();
-
-        this.conflictTypeNames = AllTypes
-            .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
-            .Map(x => x.Name);
-
-        var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
-        if (insertCode != null)
-            sb.AppendLine(insertCode);
-
-        
+       
         sb.AppendLine(@"""use strict"";");
         
         //ServiceStack core interfaces

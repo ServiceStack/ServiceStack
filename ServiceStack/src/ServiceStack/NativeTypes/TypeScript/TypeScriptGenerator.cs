@@ -11,7 +11,7 @@ namespace ServiceStack.NativeTypes.TypeScript
     {
         public readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        List<string> conflictTypeNames = new();
+        public List<string> ConflictTypeNames = new();
         public List<MetadataType> AllTypes { get; set; }
 
         public TypeScriptGenerator(MetadataTypesConfig config)
@@ -163,12 +163,28 @@ namespace ServiceStack.NativeTypes.TypeScript
             }
         }
 
+        public void Init(MetadataTypes metadata)
+        {
+            var includeList = metadata.RemoveIgnoredTypes(Config);
+            AllTypes = metadata.GetAllTypesOrdered();
+            AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+            AllTypes = FilterTypes(AllTypes);
+
+            //TypeScript doesn't support reusing same type name with different generic airity
+            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+                .GroupBy(g => g.LeftPart('`'))
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            this.ConflictTypeNames = AllTypes
+                .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
+                .Map(x => x.Name);
+        }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
-            var typeNamespaces = new HashSet<string>();
-            var includeList = metadata.RemoveIgnoredTypes(Config);
-            metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
+            Init(metadata);
 
             var defaultImports = !Config.DefaultImports.IsEmpty()
                 ? Config.DefaultImports
@@ -218,21 +234,6 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Where(x => x.Response != null)
                 .Select(x => x.Response).ToSet();
             var types = metadata.Types.CreateSortedTypeList();
-
-            AllTypes = metadata.GetAllTypesOrdered();
-            AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
-            AllTypes = FilterTypes(AllTypes);
-
-            //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
-                .GroupBy(g => g.LeftPart('`'))
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
-
-            this.conflictTypeNames = AllTypes
-                .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
-                .Map(x => x.Name);
 
             foreach (var import in defaultImports)
             {
@@ -823,7 +824,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string NameOnly(string type)
         {
-            var name = conflictTypeNames.Contains(type)
+            var name = ConflictTypeNames.Contains(type)
                 ? type.Replace('`','_')
                 : type.LeftPart('`');
 
