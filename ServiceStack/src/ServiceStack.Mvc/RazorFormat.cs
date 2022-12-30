@@ -1286,7 +1286,6 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
         return html;
     }
 
-
     public void RedirectIfNotAuthenticated(string redirect = null) => Request.RedirectIfNotAuthenticated(redirect);
 
     public Task RedirectToAsync(string path) => Request.RedirectToAsync(path);
@@ -1306,5 +1305,190 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
         Request.AssertPermissionAsync(permission: permission, message: message, redirect: redirect);
 }
 
+// View Page to support ASP.Net Razor Pages
+public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDisposable
+{
+    public IHttpRequest HttpRequest
+    {
+        get
+        {
+            if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out var oRequest))
+                return (IHttpRequest)oRequest;
+
+            return AppHostBase.GetOrCreateRequest(HttpContext) as IHttpRequest;
+        }
+    }
+
+    public IHttpResponse HttpResponse => (IHttpResponse)HttpRequest.Response;
+
+    public string GetLayout(string defaultLayout) => ViewContext.ViewData["Layout"] as string ?? defaultLayout;
+
+    public bool IsError => ModelError != null || GetErrorStatus() != null;
+
+    public object ModelError { get; set; }
+
+    public bool IsPostBack => this.HttpRequest.Verb == HttpMethods.Post;
+
+    public ResponseStatus GetErrorStatus()
+    {
+        var errorStatus = this.HttpRequest.GetItem(Keywords.ErrorStatus);
+        return errorStatus as ResponseStatus
+               ?? GetResponseStatus(ModelError);
+    }
+
+    private static ResponseStatus GetResponseStatus(object response)
+    {
+        if (response == null)
+            return null;
+
+        if (response is ResponseStatus status)
+            return status;
+
+        if (response is IHasResponseStatus hasResponseStatus)
+            return hasResponseStatus.ResponseStatus;
+
+        var propertyInfo = response.GetType().GetProperty("ResponseStatus");
+        return propertyInfo?.GetProperty(response) as ResponseStatus;
+    }
+
+    public HtmlString GetErrorMessage()
+    {
+        var errorStatus = GetErrorStatus();
+        return errorStatus == null ? null : new HtmlString(errorStatus.Message);
+    }
+
+    public HtmlString GetAbsoluteUrl(string virtualPath)
+    {
+        return new HtmlString(AppHost.ResolveAbsoluteUrl(virtualPath, HttpRequest));
+    }
+
+    public void ApplyRequestFilters(object requestDto)
+    {
+        HostContext.ApplyRequestFiltersAsync(HttpRequest, HttpResponse, requestDto).Wait();
+        if (HttpResponse.IsClosed)
+            throw new StopExecutionException();
+    }
+
+    public HtmlString GetErrorHtml()
+    {
+        return new HtmlString(RazorViewExtensions.GetErrorHtml(GetErrorStatus()) ?? "");
+    }
+
+    public string PathBase => AppHost.Config.PathBase;
+    public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
+    public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
+
+    public IAppHost AppHost => ServiceStackHost.Instance;
+
+    public bool DebugMode => HostContext.DebugMode;
+
+    public virtual TPlugin GetPlugin<TPlugin>() where TPlugin : class, IPlugin =>
+        HostContext.AppHost.GetPlugin<TPlugin>();
+
+    private IServiceStackProvider provider;
+    public virtual IServiceStackProvider ServiceStackProvider => provider ??= new ServiceStackProvider(HttpRequest);
+
+    public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
+
+    public virtual IHttpRequest ServiceStackRequest => ServiceStackProvider.Request;
+
+    public virtual IHttpResponse ServiceStackResponse => ServiceStackProvider.Response;
+
+    public virtual ICacheClient Cache => ServiceStackProvider.Cache;
+
+    public virtual ICacheClientAsync CacheAsync => ServiceStackProvider.CacheAsync;
+
+    public virtual IDbConnection Db => ServiceStackProvider.Db;
+
+    public virtual IRedisClient Redis => ServiceStackProvider.Redis;
+
+    public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => ServiceStackProvider.GetRedisAsync();
+
+    public virtual IMessageProducer MessageProducer => ServiceStackProvider.MessageProducer;
+
+    public virtual IAuthRepository AuthRepository => ServiceStackProvider.AuthRepository;
+
+    public virtual IAuthRepositoryAsync AuthRepositoryAsync => ServiceStackProvider.AuthRepositoryAsync;
+
+    public virtual ISessionFactory SessionFactory => ServiceStackProvider.SessionFactory;
+
+    public virtual Caching.ISession SessionBag => ServiceStackProvider.SessionBag;
+
+    public virtual Caching.ISessionAsync SessionBagAsync => ServiceStackProvider.SessionBagAsync;
+
+    public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
+
+    public virtual IAuthSession GetSession(bool reload = false) => ServiceStackProvider.GetSession(reload);
+
+    public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token = default) =>
+        ServiceStackProvider.GetSessionAsync(reload, token);
+
+    public virtual IAuthSession UserSession => GetSession();
+
+    public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
+
+    public virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token = default) =>
+        ServiceStackProvider.SessionAsAsync<TUserSession>(token);
+
+    public virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null,
+        CancellationToken token = default) =>
+        ServiceStackProvider.Request.SaveSessionAsync(session, expiresIn, token);
+
+    public virtual void ClearSession() => ServiceStackProvider.ClearSession();
+
+    public virtual Task ClearSessionAsync(CancellationToken token = default) =>
+        ServiceStackProvider.ClearSessionAsync(token);
+
+    public virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
+
+    public virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
+
+    public virtual object ForwardRequestToServiceStack(IRequest request = null) =>
+        ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
+
+    public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
+
+    public void Dispose()
+    {
+        if (provider == null)
+            return;
+
+        provider?.Dispose();
+        provider = null;
+        EndServiceStackRequest();
+    }
+
+    public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(HttpRequest);
+
+    public bool RenderErrorIfAny()
+    {
+        var html = GetErrorHtml(GetErrorStatus());
+        if (html == null)
+            return false;
+
+        WriteLiteral(html);
+
+        return true;
+    }
+
+    private string GetErrorHtml(ResponseStatus responseStatus)
+    {
+        if (responseStatus == null) return null;
+
+        var stackTrace = responseStatus.StackTrace != null
+            ? "<pre>" + responseStatus.StackTrace + "</pre>"
+            : "";
+
+        var html = @"
+            <div id=""error-response"" class=""alert alert-danger"">
+                <h4>" +
+                   responseStatus.ErrorCode + ": " +
+                   responseStatus.Message + @"
+                </h4>" +
+                   stackTrace +
+                   "</div>";
+        return html;
+    }
+}
 
 #endif
