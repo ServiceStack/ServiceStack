@@ -8,65 +8,65 @@ using Funq;
 using ServiceStack.Host;
 using System.Collections.Generic;
 
-namespace ServiceStack.Mvc
+namespace ServiceStack.Mvc;
+
+public class FunqControllerFactory : DefaultControllerFactory
 {
-    public class FunqControllerFactory : DefaultControllerFactory
+    private readonly ContainerResolveCache funqBuilder;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunqControllerFactory" /> class.
+    /// </summary>
+    /// <param name="container">The container.</param>
+    /// <param name="assemblies">The assemblies to reflect for IController discovery.</param>
+    public FunqControllerFactory(Container container, params Assembly[] assemblies)
     {
-        private readonly ContainerResolveCache funqBuilder;
+        this.funqBuilder = new ContainerResolveCache(container);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FunqControllerFactory" /> class.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <param name="assemblies">The assemblies to reflect for IController discovery.</param>
-        public FunqControllerFactory(Container container, params Assembly[] assemblies)
+        // aggregate the local and external assemblies for processing (unless ignored)
+        IEnumerable<Assembly> targetAssemblies = assemblies.Concat(new[] { Assembly.GetCallingAssembly() });
+
+        foreach (var assembly in targetAssemblies)
         {
-            this.funqBuilder = new ContainerResolveCache(container);
+            // Also register all the controller types as transient
+            var controllerTypes =
+                (from type in assembly.GetTypes()
+                 where typeof(IController).IsAssignableFrom(type)
+                 select type).ToList();
 
-            // aggregate the local and external assemblies for processing (unless ignored)
-            IEnumerable<Assembly> targetAssemblies = assemblies.Concat(new[] { Assembly.GetCallingAssembly() });
-
-            foreach (var assembly in targetAssemblies)
-            {
-                // Also register all the controller types as transient
-                var controllerTypes =
-                    (from type in assembly.GetTypes()
-                     where typeof(IController).IsAssignableFrom(type)
-                     select type).ToList();
-
-                container.RegisterAutoWiredTypes(controllerTypes);
-            }
+            container.RegisterAutoWiredTypes(controllerTypes);
         }
+    }
 
-        protected override IController GetControllerInstance(
-            System.Web.Routing.RequestContext requestContext, Type controllerType)
+    protected override IController GetControllerInstance(
+        System.Web.Routing.RequestContext requestContext, Type controllerType)
+    {
+        try
         {
-            try
-            {
-                if (controllerType == null)
-                    return base.GetControllerInstance(requestContext, null);
+            if (controllerType == null)
+                return base.GetControllerInstance(requestContext, null);
 
-                var req = requestContext.HttpContext.ToRequest();
-                var controller = funqBuilder.CreateInstance(req, controllerType) as IController;
+            var req = requestContext.HttpContext.ToRequest();
+            var controller = funqBuilder.CreateInstance(req, controllerType) as IController;
 
-                return controller ?? base.GetControllerInstance(requestContext, controllerType);
-            }
-            catch (HttpException ex)
+            return controller ?? base.GetControllerInstance(requestContext, controllerType);
+        }
+        catch (HttpException ex)
+        {
+            if (ex.GetHttpCode() == 404)
             {
-                if (ex.GetHttpCode() == 404)
+                try
                 {
-                    try
+                    if (ServiceStackController.CatchAllController != null)
                     {
-                        if (ServiceStackController.CatchAllController != null)
-                        {
-                            return ServiceStackController.CatchAllController(requestContext);
-                        }
+                        return ServiceStackController.CatchAllController(requestContext);
                     }
-                    catch { } //ignore not found CatchAllController
                 }
-                throw;
+                catch { } //ignore not found CatchAllController
             }
+            throw;
         }
     }
 }
+
 #endif
