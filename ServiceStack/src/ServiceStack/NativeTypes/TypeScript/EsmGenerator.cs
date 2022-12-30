@@ -310,7 +310,6 @@ public class EsmGenerator : ILangGenerator
                     sb.AppendLine("getMethod() { return '" + options.Op.Method + "'; };");
                 if (responseTypeExpression != null)
                     sb.AppendLine(responseTypeExpression);
-                sb.AppendLine($"return {typeName};");
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
