@@ -77,8 +77,8 @@ namespace ServiceStack.NativeTypes
     }
 
     [ExcludeMetadata]
-    [Route("/types/esm")]
-    public class TypesEsm : NativeTypesBase
+    [Route("/types/mjs")]
+    public class TypesMjs : NativeTypesBase
     {
         public bool? Cache { get; set; }
         public string Vfx { get; set; }
@@ -149,7 +149,7 @@ namespace ServiceStack.NativeTypes
                 {"TypeScript", new TypesTypeScript().ToAbsoluteUri(Request)},
                 {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri(Request)},
                 {"CommonJs", new TypesCommonJs().ToAbsoluteUri(Request)},
-                {"Esm", new TypesEsm().ToAbsoluteUri(Request)},
+                {"Mjs", new TypesMjs().ToAbsoluteUri(Request)},
                 {"Dart", new TypesDart().ToAbsoluteUri(Request)},
                 {"Java", new TypesJava().ToAbsoluteUri(Request)},
                 {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
@@ -273,7 +273,7 @@ namespace ServiceStack.NativeTypes
         }
 
         [AddHeader(ContentType = MimeTypes.JavaScript)]
-        public object Any(TypesEsm request)
+        public object Any(TypesMjs request)
         {
             string Generate()
             {
@@ -284,7 +284,7 @@ namespace ServiceStack.NativeTypes
                 typesConfig.ExportAsTypes = true;
 
                 var metadataTypes = ResolveMetadataTypes(typesConfig);
-                var typeScript = new EsmGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+                var typeScript = new MjsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
                 return typeScript;
             }
 

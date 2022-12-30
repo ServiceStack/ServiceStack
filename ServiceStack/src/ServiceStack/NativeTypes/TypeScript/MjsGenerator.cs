@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.TypeScript;
 
-public class EsmGenerator : ILangGenerator
+public class MjsGenerator : ILangGenerator
 {
     /// <summary>
     /// Split assignment expression into smaller batches to avoid "Uncaught RangeError: Maximum call stack size exceeded" in Chrome/Blink
@@ -52,7 +52,7 @@ public class EsmGenerator : ILangGenerator
         return typeName;
     }
 
-    public EsmGenerator(MetadataTypesConfig config)
+    public MjsGenerator(MetadataTypesConfig config)
     {
         Config = config;
         feature = HostContext.GetPlugin<NativeTypesFeature>();
