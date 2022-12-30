@@ -76,6 +76,14 @@ namespace ServiceStack.NativeTypes
         public string Vfx { get; set; }
     }
 
+    [ExcludeMetadata]
+    [Route("/types/esm")]
+    public class TypesEsm : NativeTypesBase
+    {
+        public bool? Cache { get; set; }
+        public string Vfx { get; set; }
+    }
+
     public class NativeTypesBase
     {
         public string BaseUrl { get; set; }
@@ -141,6 +149,7 @@ namespace ServiceStack.NativeTypes
                 {"TypeScript", new TypesTypeScript().ToAbsoluteUri(Request)},
                 {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri(Request)},
                 {"CommonJs", new TypesCommonJs().ToAbsoluteUri(Request)},
+                {"Esm", new TypesEsm().ToAbsoluteUri(Request)},
                 {"Dart", new TypesDart().ToAbsoluteUri(Request)},
                 {"Java", new TypesJava().ToAbsoluteUri(Request)},
                 {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
@@ -254,6 +263,28 @@ namespace ServiceStack.NativeTypes
 
                 var metadataTypes = ResolveMetadataTypes(typesConfig);
                 var typeScript = new CommonJsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+                return typeScript;
+            }
+
+            if (request.Cache != false && !HostContext.DebugMode)
+                return Request.ToOptimizedResultUsingCache(LocalCache, cacheKey:Request.AbsoluteUri, Generate);
+            
+            return Generate();
+        }
+
+        [AddHeader(ContentType = MimeTypes.JavaScript)]
+        public object Any(TypesEsm request)
+        {
+            string Generate()
+            {
+                request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+                var typesConfig = NativeTypesMetadata.GetConfig(request);
+                typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+                typesConfig.ExportAsTypes = true;
+
+                var metadataTypes = ResolveMetadataTypes(typesConfig);
+                var typeScript = new EsmGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
                 return typeScript;
             }
 
