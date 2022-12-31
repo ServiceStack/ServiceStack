@@ -256,6 +256,7 @@ namespace ServiceStack
         }
 
         public string userAuthId(ScriptScopeContext scope) => scope.GetRequest().GetSession()?.UserAuthId;
+        public int? userAuthIntId(ScriptScopeContext scope) => scope.GetRequest().GetSession()?.UserAuthId.ToInt();
         public string userAuthName(ScriptScopeContext scope)
         {
             var authSession = scope.GetRequest().GetSession();
