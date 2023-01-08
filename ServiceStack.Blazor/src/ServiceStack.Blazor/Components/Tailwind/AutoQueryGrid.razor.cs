@@ -66,8 +66,9 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
     AutoEditForm<Model>? AutoEditForm { get; set; }
 
-    List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
-    int Total => Api?.Response?.Total ?? Results.Count;
+    public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
+    public int Total => Api?.Response?.Total ?? Results.Count;
+    public ResponseStatus? Error => Api?.Error;
 
     // needs to be outside Form to use full screen width
     protected DynamicModalLookup? ModalLookup { get; set; }
