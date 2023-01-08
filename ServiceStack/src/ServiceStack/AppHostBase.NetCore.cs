@@ -168,7 +168,6 @@ namespace ServiceStack
                 }
 
                 RegisterLicenseFromAppSettings(AppSettings);
-                InjectRequestContext = app?.ApplicationServices.GetService<IHttpContextAccessor>() != null;
             }
         }
 
@@ -184,7 +183,7 @@ namespace ServiceStack
 
         public Func<HttpContext, Task<bool>> NetCoreHandler { get; set; }
 
-        public bool InjectRequestContext { get; set; }
+        public bool InjectRequestContext { get; set; } = true;
 
         public virtual async Task ProcessRequest(HttpContext context, Func<Task> next)
         {

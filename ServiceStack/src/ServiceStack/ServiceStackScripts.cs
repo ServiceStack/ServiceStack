@@ -873,12 +873,9 @@ namespace ServiceStack
         
         public static NavOptions WithDefaults(this NavOptions options, IRequest request)
         {
-            if (options == null)
-                options = new NavOptions();
-            if (options.ActivePath == null)
-                options.ActivePath = request.PathInfo;
-            if (options.Attributes == null)
-                options.Attributes = request.GetUserAttributes();
+            options ??= new NavOptions();
+            options.ActivePath ??= request.PathInfo;
+            options.Attributes ??= request.GetUserAttributes();
             var pathBase = HostContext.Config.PathBase;
             if (!string.IsNullOrEmpty(pathBase))
                 options.BaseHref = pathBase;

@@ -20,6 +20,7 @@ namespace ServiceStack
         public static RedirectHttpHandler NonRootModeDefaultHttpHandler;
         public static IHttpHandler ForbiddenHttpHandler;
         public static IHttpHandler NotFoundHttpHandler;
+        public static NotFoundHttpHandler PassThruHttpHandler;
         public static IHttpHandler StaticFilesHandler = new StaticFileHandler();
 
         [ThreadStatic]
@@ -81,8 +82,7 @@ namespace ServiceStack
                     NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
                 }
 
-                if (DefaultHttpHandler == null)
-                    DefaultHttpHandler = NotFoundHttpHandler;
+                DefaultHttpHandler ??= NotFoundHttpHandler;
 
                 var debugDefaultHandler = DefaultHttpHandler is RedirectHttpHandler defaultRedirectHandler
                     ? defaultRedirectHandler.RelativeUrl
@@ -100,17 +100,14 @@ namespace ServiceStack
                     };
                 }
 
-                NotFoundHttpHandler = appHost.GetCustomErrorHttpHandler(HttpStatusCode.NotFound);
-                if (NotFoundHttpHandler == null)
+                PassThruHttpHandler = new NotFoundHttpHandler
                 {
-                    NotFoundHttpHandler = new NotFoundHttpHandler
-                    {
-                        WebHostPhysicalPath = WebHostPhysicalPath,
-                        WebHostUrl = config.WebHostUrl,
-                        DefaultRootFileName = DefaultRootFileName,
-                        DefaultHandler = debugDefaultHandler,
-                    };
-                }
+                    WebHostPhysicalPath = WebHostPhysicalPath,
+                    WebHostUrl = config.WebHostUrl,
+                    DefaultRootFileName = DefaultRootFileName,
+                    DefaultHandler = debugDefaultHandler,
+                };
+                NotFoundHttpHandler = appHost.GetCustomErrorHttpHandler(HttpStatusCode.NotFound) ?? PassThruHttpHandler;
             }
             catch (Exception ex)
             {

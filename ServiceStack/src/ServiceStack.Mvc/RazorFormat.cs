@@ -13,10 +13,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -89,7 +92,9 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         var viewEngineResult = GetPageFromPathInfo(pathInfo);
 
         return viewEngineResult != null
-            ? new RazorHandler(viewEngineResult)
+            ? (viewEngineResult.View as RazorView)?.RazorPage is RazorPage //allow RazorPages through
+                ? HttpHandlerFactory.PassThruHttpHandler
+                : new RazorHandler(viewEngineResult)
             : null;
     }
 
@@ -325,8 +330,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             }
         }
 
-        if (viewData == null)
-            viewData = CreateViewData(dto);
+        viewData ??= CreateViewData(dto);
 
         if (routingArgs != null)
         {
@@ -388,7 +392,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         return null;
     }
 
-    internal static ViewDataDictionary CreateViewData<T>(T model)
+    public static ViewDataDictionary CreateViewData<T>(T model)
     {
         if (model is ViewDataDictionary viewData)
             return viewData;
@@ -414,15 +418,14 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         var razorView = view as RazorView;
         try
         {
-            var actionContext = new ActionContext(
-                ((HttpRequest) req.OriginalRequest).HttpContext,
+            var httpCtx = ((HttpRequest)req.OriginalRequest).HttpContext;
+            var actionContext = new ActionContext(httpCtx,
                 new RouteData(),
                 new ActionDescriptor());
-
+            
             var sw = new StreamWriter(stream); // don't dispose of stream so other middleware can re-read / filter it
             {
-                if (viewData == null)
-                    viewData = CreateViewData((object)null);
+                viewData ??= CreateViewData((object)null);
 
                 // Use "_Layout" if unspecified
                 if (razorView != null)
@@ -433,6 +436,8 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                     viewData["Layout"] = layout;
 
                 viewData[Keywords.IRequest] = req;
+                if (razorView.RazorPage is RazorPage razorPage)
+                    PopulateRazorPageContext(httpCtx, razorPage, viewData, actionContext);
 
                 var viewContext = new ViewContext(
                     actionContext,
@@ -468,6 +473,28 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             await req.Response.WriteErrorBody(ex).ConfigAwait();
         }
     }
+
+    private void PopulateRazorPageContext(HttpContext httpCtx, RazorPage razorPage, ViewDataDictionary viewData, ActionContext actionContext)
+    {
+        // var urlHelperFactory = httpCtx.RequestServices.GetRequiredService<IUrlHelperFactory>();
+        // var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
+        var modelType = razorPage.GetType().GetProperty("ViewData")!.PropertyType.FirstGenericArg();
+        var pagModel = modelType.CreateInstance();
+        var pageViewData = GetType().GetStaticMethod(nameof(CreateViewData)).MakeGenericMethod(modelType)
+            .Invoke(null, new[] { pagModel }) as ViewDataDictionary;
+        foreach (var entry in viewData)
+        {
+            pageViewData[entry.Key] = entry.Value;
+        }
+
+        razorPage.PageContext = new PageContext(actionContext)
+        {
+            ViewData = pageViewData,
+            RouteData = httpCtx.GetRouteData(),
+            HttpContext = httpCtx,
+        };
+    }
+
 
     public async Task<ReadOnlyMemory<char>> RenderToHtmlAsync(IView view, object model = null, string layout = null)
     {
@@ -510,6 +537,8 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                     viewData["Layout"] = layout;
 
                 viewData[Keywords.IRequest] = req ?? new Host.BasicRequest { PathInfo = view.Path };
+                if (razorView.RazorPage is RazorPage razorPage)
+                    PopulateRazorPageContext(ctx, razorPage, viewData, actionContext);
 
                 var viewContext = new ViewContext(
                     actionContext,
@@ -694,8 +723,10 @@ public static class RazorViewExtensions
 
     public static IRequest GetRequest(this IHtmlHelper htmlHelper)
     {
-        return htmlHelper.ViewContext.ViewData[Keywords.IRequest] as IRequest
+        var req = htmlHelper.ViewContext.ViewData[Keywords.IRequest] as IRequest
+            ?? htmlHelper.ViewContext.HttpContext.Items[Keywords.IRequest] as IRequest
             ?? HostContext.AppHost.TryGetCurrentRequest();
+        return req;
     }
 
     public static IResponse GetResponse(this IHtmlHelper htmlHelper) => 
@@ -1489,6 +1520,24 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
                    "</div>";
         return html;
     }
+
+    public void RedirectIfNotAuthenticated(string redirect = null) => HttpRequest.RedirectIfNotAuthenticated(redirect);
+
+    public Task RedirectToAsync(string path) => HttpRequest.RedirectToAsync(path);
+
+    public HtmlString RedirectTo(string path) => HttpRequest.RedirectTo(path);
+
+    public HtmlString AssertRole(string role, string message = null, string redirect = null) =>
+        HttpRequest.AssertRole(role: role, message: message, redirect: redirect);
+
+    public Task AssertRoleAsync(string role, string message = null, string redirect = null) =>
+        HttpRequest.AssertRoleAsync(role: role, message: message, redirect: redirect);
+
+    public HtmlString AssertPermission(string permission, string message = null, string redirect = null) =>
+        HttpRequest.AssertPermission(permission: permission, message: message, redirect: redirect);
+
+    public Task AssertPermissionAsync(string permission, string message = null, string redirect = null) =>
+        HttpRequest.AssertPermissionAsync(permission: permission, message: message, redirect: redirect);
 }
 
 #endif
