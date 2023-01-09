@@ -54,6 +54,16 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public string ToolbarButtonClass { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ToolbarButtonClass;
     [Parameter] public int MaxFieldLength { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.MaxFieldLength;
     [Parameter] public TableStyle TableStyle { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle;
+    [Parameter] public string GridClass { get; set; } = CssDefaults.Grid.GetGridClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string Grid2Class { get; set; } = CssDefaults.Grid.GetGrid2Class(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string Grid3Class { get; set; } = CssDefaults.Grid.GetGrid3Class(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string Grid4Class { get; set; } = CssDefaults.Grid.GetGrid4Class(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableClass { get; set; } = CssDefaults.Grid.GetTableClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableHeadClass { get; set; } = CssDefaults.Grid.GetTableHeadClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableHeaderRowClass { get; set; } = CssDefaults.Grid.GetTableHeaderRowClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableHeaderCellClass { get; set; } = CssDefaults.Grid.GetTableHeaderCellClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableBodyClass { get; set; } = CssDefaults.Grid.GetTableBodyClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+
 
     [Parameter] public List<Model> Items { get; set; } = new();
     [Parameter] public RenderFragment? CreateForm { get; set; }

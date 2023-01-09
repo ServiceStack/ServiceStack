@@ -798,7 +798,9 @@ else
 <div>
 <CascadingValue IsFixed="true" Value="this">
 <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
-PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync" TableStyle="TableStyle"
+PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync"
+TableStyle=@TableStyle GridClass=@GridClass Grid2Class=@Grid2Class Grid3Class=@Grid3Class Grid4Class=@Grid4Class
+TableClass=@TableClass TableHeadClass=@TableHeadClass TableHeaderRowClass=@TableHeaderRowClass TableHeaderCellClass=@TableHeaderCellClass TableBodyClass=@TableBodyClass
 RowSelected="OnRowSelected" HeaderSelected="HeaderSelected" MaxFieldLength="MaxFieldLength"
 AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
 >
