@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -256,6 +257,42 @@ namespace ServiceStack.Text.Tests
             Assert.DoesNotThrow(() => ret = StaticParseMethod<DangerousText2>.Parse);
             Assert.IsNull(ret);
         }
+
+#if NET6_0_OR_GREATER
+        [Test]
+        public void ObjectId_With_Value()
+        {
+            var json = "{\"nextCursor\": \"hasValue\", \"myValue\": null, \"myString\": null}";
+            var dto = json.FromJson<RecordObjectId>();
+            Assert.That(dto.NextCursor.HasValue);
+        }
+        [Test]
+        public void ObjectId_With_NULL_Value()
+        {
+            "{\"nextCursor\": null, \"myValue\": null, \"myString\": null}".FromJson<RecordObjectId>();
+            var json = "{\"nextCursor\": null, \"myValue\": null, \"myString\": null}";
+            var dto = json.FromJson<RecordObjectId>();
+            Assert.That(!dto.NextCursor.HasValue);
+        }
+        [Test]
+        public void ObjectId_Without_Value()
+        {
+            var json = "{\"myValue\": null, \"myString\": null}";
+            var dto = json.FromJson<RecordObjectId>();
+            Assert.That(!dto.NextCursor.HasValue);
+        }
+        
+        public record RecordObjectId(ObjectId? NextCursor, ulong? MyValue, string? MyString);
+
+        public struct ObjectId
+        {
+            private readonly string _objectId;
+            public ObjectId(string objectId) => _objectId = objectId;
+            public override string ToString() => _objectId;
+            public static implicit operator ObjectId(string objectId) => new(objectId);
+            public static implicit operator string(ObjectId objectId) => objectId._objectId;
+        }
+#endif
 
 #if !NETCORE
         [Explicit("Ensure this test has proven to work, before adding it to the test suite")]
