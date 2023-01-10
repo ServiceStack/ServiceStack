@@ -1,0 +1,34 @@
+@page
+@{
+    ViewBag.Title = "Profile";
+}
+
+@if (!await Html.IsAuthenticatedAsync()) { return; }
+
+<div id="profile" class="text-center">
+
+    <img src="@Html.UserProfileUrl()" class="svg-8x" />
+
+    <p class="my-2">
+        @UserSession.DisplayName <span>#@UserSession.UserAuthId</span>
+    </p>
+    <p>
+        @(UserSession.UserName ?? UserSession.Email)
+    </p>
+
+    <p>
+    @foreach (var role in UserSession.Roles.Safe()) {
+        <mark>@role</mark>        
+    }
+    </p>
+
+    <p>
+    @foreach (var permission in UserSession.Permissions.Safe()) {
+        <mark>@permission</mark>        
+    }
+    </p>
+    
+    <p>
+        <a href="/auth/logout" class="btn btn-primary">Sign Out</a>
+    </p>
+</div>

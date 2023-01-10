@@ -1,0 +1,21 @@
+@page
+@model string
+
+<div class="forbidden">
+    <h3>
+        You are not authorized to access
+        @if (HttpRequest.PathInfo != null)
+        {
+            <code>@HttpRequest.PathInfo</code>
+        }
+        else
+        {
+            <span>this page</span>
+        }
+    </h3>
+
+    @if (Model != null)
+    {
+        <p>@Model</p>
+    }
+</div>

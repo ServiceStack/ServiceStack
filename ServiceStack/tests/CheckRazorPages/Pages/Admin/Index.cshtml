@@ -1,0 +1,22 @@
+@page
+
+@if (!await Html.HasRoleAsync("Admin")) { return; }
+
+<div id="admin" class="text-center">
+    <div class="svg-female-business svg-8x ml-2"></div>
+    <p class="my-2">
+        @UserSession.DisplayName
+    </p>
+
+    <p>
+        @(UserSession.UserName ?? UserSession.Email)
+    </p>
+
+    <p>
+    @foreach (var role in UserSession.Roles.Safe()) {
+        <mark>@role</mark>        
+    }
+    </p>
+
+    <h3 class="mt-5">Admin Page</h3>
+</div>

@@ -1,0 +1,117 @@
+@page
+@using MyApp.ServiceModel
+@if (!await Html.IsAuthenticatedAsync()) { return; }
+
+<h3>Add new Contact</h3>
+
+<div class="w-sm">
+    <form action=@(new CreateContact().ToPostUrl()) method="post" class="w-100">
+        <div class="mb-3" data-validation-summary="title,name,color,filmGenres,age,agree"></div>
+
+        <div class="mb-3">
+            <div class="form-check">
+            @foreach (var it in Html.ContactTitles())
+            {
+                <div class="custom-control custom-radio custom-control-inline">
+                    <input type="radio" id="title-@it.Key" name="title" value="@it.Key" class="custom-control-input">
+                    <label class="custom-control-label" for="title-@it.Key">@it.Value</label>
+                </div>
+            }
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="name">Full Name</label>
+            <input class="form-control" id="name" name="name" type="text" placeholder="Name">
+            <small id="name-help" class="text-muted">Your first and last name</small>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="color">Favorite color</label>
+            <select id="color" name="color" class="col-4 form-control">
+                <option value=""></option>
+            @foreach (var it in Html.ContactColors())
+            {
+                <option value="@it.Key">@it.Value</option>
+            }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-check-label">Favorite Film Genres</label>
+            <div class="form-check">
+            @foreach (var it in Html.ContactGenres())
+            {
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" id="filmGenres-@it" name="filmGenres" value="@it" class="form-check-input">
+                    <label class="form-check-label" for="filmGenres-@it">@it</label>
+                </div>
+            }
+            </div>
+        </div>
+        <div class="mb-3">
+            <input class="form-control col-3" name="age" type="number" min="13" placeholder="Age">
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input class=" form-check-input" id="agree" name="agree" type="checkbox" value="true">
+                <label class="form-check-label" for="agree">Agree to terms and conditions</label>
+            </div>
+        </div>
+        <div class="mb-3">
+            <button class="btn btn-primary me-2" type="submit">Add Contact</button>
+            <a href="/Contacts">reset</a>
+        </div>
+    </form>
+
+    <div id="results"></div>
+</div>
+
+<template id="results-template">
+    <table class="mt-3 w-100">
+        <tr :style="`background:${contact.color}`" v-for="contact in contacts" :key="contact.id">
+            <td class="ps-3 w-xs">{{contact.title}} {{contact.name}} ({{contact.age}})</td>
+            <td class="pe-2"><a :href="`/Contacts/Edit?id=${contact.id}`">edit</a></td>
+            <td class="p-1"><button class="btn btn-sm btn-primary" @@click="deleteContact(contact)">delete</button></td>
+        </tr>
+    </table>
+</template>
+
+@section Scripts {
+<script type="module">
+import { $1, bootstrapForm, bindHandlers } from "/js/servicestack-client.mjs"
+import { client } from "/js/default.mjs"
+import { GetContacts, DeleteContact } from "/js/dtos.mjs"
+import { createApp, reactive, ref, computed } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
+
+let contacts = @((await Gateway.SendAsync(new GetContacts())).Results.AsRawJson());
+let AppData = reactive({ contacts })
+
+bootstrapForm($1("form"), {
+    success: function (r) {
+        $1("form").reset()
+        AppData.contacts.push(r.result)
+    },
+})
+
+createApp({
+    template:$1('#results-template'),
+    setup(props) {
+        let contacts = computed(() => AppData.contacts)
+        
+        const deleteContact = ({ id }) => {
+            if (!confirm('Are you sure?')) 
+                return;
+            client.apiVoid(new DeleteContact({ id })).then(_ => 
+              client.api(new GetContacts()).then(api => {
+                 if (api.succeeded) {
+                     AppData.contacts = api.response.results
+                 }
+             }))
+        }
+        return {
+            contacts,
+            deleteContact,            
+        }
+    },
+}).mount('#results')
+
+</script>
+}
