@@ -1,6 +1,12 @@
 @page
 @{
     ViewBag.Title = "Sign In";
+
+    if (await Html.IsAuthenticatedAsync())
+    {
+        await Html.RedirectToAsync(Html.GetReturnUrl());
+        return;
+    }
 }
 
 <div class="d-flex container-md">

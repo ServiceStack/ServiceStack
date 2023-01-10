@@ -1,6 +1,6 @@
 @page
 @using MyApp.ServiceModel
-@if (!await Html.IsAuthenticatedAsync()) { return; }
+@if (!await Html.EnsureAuthenticatedAsync()) { return; }
 
 <h3>Add new Contact</h3>
 

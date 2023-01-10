@@ -3,7 +3,7 @@
     ViewBag.Title = "Profile";
 }
 
-@if (!await Html.IsAuthenticatedAsync()) { return; }
+@if (!await Html.EnsureAuthenticatedAsync()) { return; }
 
 <div id="profile" class="text-center">
 

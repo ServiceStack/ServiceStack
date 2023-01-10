@@ -768,10 +768,11 @@ public static class RazorViewExtensions
         return html;
     }
 
-    public static IRequest GetRequest(this IHtmlHelper htmlHelper)
+    public static IRequest GetRequest(this IHtmlHelper html)
     {
-        var req = htmlHelper.ViewContext.ViewData[Keywords.IRequest] as IRequest
-            ?? htmlHelper.ViewContext.HttpContext.Items[Keywords.IRequest] as IRequest
+        var req = html.ViewContext.ViewData.Model is RazorPage razorPage ? razorPage.HttpRequest : null
+            ?? html.ViewContext.ViewData[Keywords.IRequest] as IRequest
+            ?? html.ViewContext.HttpContext.Items[Keywords.IRequest] as IRequest
             ?? HostContext.AppHost.TryGetCurrentRequest();
         return req;
     }
@@ -1073,15 +1074,21 @@ public static class RazorViewExtensions
         if (req.GetSession().IsAuthenticated)
             return;
 
+        RedirectUnauthenticated(req, redirect);
+        if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+            throw new StopExecutionException();
+    }
+
+    public static void RedirectUnauthenticated(this IRequest req, string redirect = null)
+    {
         var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
         redirect ??= authFeature.HtmlRedirect
-            ?? HostContext.Config.DefaultRedirectPath
-            ?? HostContext.Config.WebHostUrl
-            ?? "/";
+                     ?? HostContext.Config.DefaultRedirectPath
+                     ?? HostContext.Config.WebHostUrl
+                     ?? "/";
         authFeature.DoHtmlRedirect(redirect, req, req.Response, includeRedirectParam: true);
-        throw new StopExecutionException();
     }
-    
+
     private static HtmlString WaitStopAsync(Func<Task> fn)
     {
         fn().Wait();
@@ -1092,6 +1099,13 @@ public static class RazorViewExtensions
     
     internal static async Task RedirectToAsync(this IRequest req, string path)
     {
+        await req.RedirectToAsyncInternalAsync(path);
+        if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+            throw new StopExecutionException();
+    }
+
+    internal static async Task RedirectToAsyncInternalAsync(this IRequest req, string path)
+    {
         var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
             Headers = {
                 [HttpHeaders.Location] = path.FirstCharEquals('~')
@@ -1100,7 +1114,6 @@ public static class RazorViewExtensions
             }
         };
         await req.Response.WriteToResponse(req, result).ConfigAwait();
-        throw new StopExecutionException();
     }
 
     public static HtmlString RedirectTo(this IHtmlHelper html, string path) => WaitStopAsync(() => 
@@ -1130,14 +1143,15 @@ public static class RazorViewExtensions
             return;
         }
 
-        if (!session.HasRole(role, req.TryResolve<IAuthRepository>()))
+        if (!await session.HasRoleAsync(role, req.TryResolve<IAuthRepositoryAsync>()).ConfigAwait())
         {
             if (redirect != null)
                 await req.RedirectToAsync(redirect).ConfigAwait();
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            throw new StopExecutionException();
+            if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+                throw new StopExecutionException();
         }
     }
 
@@ -1158,14 +1172,15 @@ public static class RazorViewExtensions
             return;
         }
 
-        if (!session.HasPermission(permission, req.TryResolve<IAuthRepository>()))
+        if (!await session.HasPermissionAsync(permission, req.TryResolve<IAuthRepositoryAsync>()))
         {
             if (redirect != null)
                 await req.RedirectToAsync(redirect).ConfigAwait();
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            throw new StopExecutionException();
+            if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+                throw new StopExecutionException();
         }
     }
 }
@@ -1590,62 +1605,56 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
 
     public async Task RedirectIfNotAuthenticatedAsync(string redirect = null)
     {
-        var session = await HttpRequest.GetSessionAsync().ConfigAwait();
-        if (session.IsAuthenticated)
+        var req = HttpRequest;
+        if ((await req.GetSessionAsync()).IsAuthenticated)
             return;
 
-        RedirectNotAuthenticated(redirect);
-    }
-
-    public void RedirectNotAuthenticated(string redirect)
-    {
-        var req = HttpRequest;
-        var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
-        redirect ??= authFeature.HtmlRedirect
-                     ?? HostContext.Config.DefaultRedirectPath
-                     ?? HostContext.Config.WebHostUrl
-                     ?? "/";
-        authFeature.DoHtmlRedirect(redirect, req, req.Response, includeRedirectParam: true);
+        req.RedirectUnauthenticated(redirect);
     }
 
     public async Task RedirectToAsync(string path)
     {
-        var req = HttpRequest;
-        var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
-            Headers = {
-                [HttpHeaders.Location] = path.FirstCharEquals('~')
-                    ? req.ResolveAbsoluteUrl(path)
-                    : path
-            }
-        };
-        await req.Response.WriteToResponse(req, result).ConfigAwait();
+        await HttpRequest.RedirectToAsyncInternalAsync(path).ConfigAwait();
     }
 }
 
 #if NET6_0_OR_GREATER
 public static class RazorPageHtmlExtensions
 {
-    public static async Task<bool> IsAuthenticatedAsync(this IHtmlHelper html, string redirect = null)
+    public static string GetReturnUrl(this IHtmlHelper html) => html.GetRequest().GetReturnUrl() ?? "/";
+    public static RazorPage GetRazorPage(this IHtmlHelper html) => html.ViewContext?.ViewData?.Model as RazorPage;
+
+    public static async Task<bool> IsAuthenticatedAsync(this IHtmlHelper html) =>
+        (await html.GetRequest().GetSessionAsync().ConfigAwait()).IsAuthenticated;
+    
+    public static async Task<bool> EnsureAuthenticatedAsync(this IHtmlHelper html, string redirect = null)
     {
-        var page = (RazorPage)html.ViewContext.ViewData.Model;
-        var req = page.HttpRequest;
+        var req = html.GetRequest();
         var session = await req.GetSessionAsync().ConfigAwait();
         if (!session.IsAuthenticated)
         {
-            page.RedirectNotAuthenticated(redirect);
+            req.RedirectUnauthenticated(redirect);
             return false;
         }
         return true;
     }
-    
-    public static async Task<bool> HasRoleAsync(this IHtmlHelper html, string role, string message = null, string redirect = null)
+
+    public static async Task<bool> HasRoleAsync(this IHtmlHelper html, string role)
     {
-        var page = (RazorPage)html.ViewContext.ViewData.Model;
-        var req = page.HttpRequest;
+        var req = html.GetRequest();
+        var session = await req.GetSessionAsync().ConfigAwait();
+        if (!session.IsAuthenticated)
+            return false;
+        return await session.HasRoleAsync(role, req.TryResolve<IAuthRepositoryAsync>()).ConfigAwait();
+    }
+    
+    public static async Task<bool> EnsureRoleAsync(this IHtmlHelper html, string role, string message = null, string redirect = null)
+    {
+        var req = html.GetRequest();
         var session = await req.GetSessionAsync().ConfigAwait();
         if (!session.IsAuthenticated)
         {
-            page.RedirectNotAuthenticated(redirect);
+            req.RedirectUnauthenticated(redirect);
             return false;
         }
 
@@ -1653,7 +1662,7 @@ public static class RazorPageHtmlExtensions
         {
             if (redirect != null)
             {
-                await page.RedirectToAsync(redirect).ConfigAwait();
+                await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
                 return false;
             }
 
@@ -1661,7 +1670,7 @@ public static class RazorPageHtmlExtensions
             if (feature.ForbiddenRedirect != null)
             {
                 var url = feature.ForbiddenRedirect.AddQueryParam("role", role);
-                await page.RedirectToAsync(url);
+                await req.RedirectToAsyncInternalAsync(url).ConfigAwait();
             }
             else if (feature.ForbiddenPartial != null)
             {
@@ -1678,14 +1687,23 @@ public static class RazorPageHtmlExtensions
         return true;
     }
     
-    public static async Task<bool> HasPermissionAsync(this IHtmlHelper html, string permission, string message = null, string redirect = null) 
+    public static async Task<bool> HasPermissionAsync(this IHtmlHelper html, string role)
+    {
+        var req = html.GetRequest();
+        var session = await req.GetSessionAsync().ConfigAwait();
+        if (!session.IsAuthenticated)
+            return false;
+        return await session.HasPermissionAsync(role, req.TryResolve<IAuthRepositoryAsync>()).ConfigAwait();
+    }
+    
+    public static async Task<bool> EnsurePermissionAsync(this IHtmlHelper html, string permission, string message = null, string redirect = null) 
     {
         var page = (RazorPage)html.ViewContext.ViewData.Model;
         var req = page.HttpRequest;
         var session = await req.GetSessionAsync().ConfigAwait();
         if (!session.IsAuthenticated)
         {
-            page.RedirectNotAuthenticated(redirect);
+            await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
             return false;
         }
 
@@ -1701,7 +1719,7 @@ public static class RazorPageHtmlExtensions
             if (feature.ForbiddenRedirect != null)
             {
                 var url = feature.ForbiddenRedirect.AddQueryParam("permission", permission);
-                await page.RedirectToAsync(url);
+                await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
             }
             else if (feature.ForbiddenPartial != null)
             {
