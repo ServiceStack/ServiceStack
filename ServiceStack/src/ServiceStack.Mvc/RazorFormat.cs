@@ -1,6 +1,7 @@
 ﻿#if NETCORE
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -15,11 +16,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -41,9 +40,32 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     public string Id { get; set; } = Plugins.Razor;
     public static ILog log = LogManager.GetLogger(typeof(RazorFormat));
 
-    public static string DefaultLayout { get; set; } = "_Layout";
+    public string DefaultLayout { get; set; } = "_Layout";
+    public string DefaultPage { get; set; } = "default.cshtml";
+    public string ForbiddenRedirect { get; set; }
+    public string ForbiddenPartial { get; set; }
 
     public List<string> ViewLocations { get; set; }
+
+    private bool razorPages;
+    public bool RazorPages
+    {
+        get => razorPages;
+        set
+        {
+            razorPages = value;
+            if (razorPages)
+            {
+                PagesPath = "~/Pages";
+                DefaultPage = "Index.cshtml";
+            }
+            else
+            {
+                PagesPath = "~/View/Pages";
+                DefaultPage = "default.cshtml";
+            }
+        }
+    }
 
     public string PagesPath { get; set; } = "~/Views/Pages";
 
@@ -100,15 +122,17 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public ViewEngineResult GetPageFromPathInfo(string pathInfo)
     {
-        if (pathInfo.EndsWith("/"))
-            pathInfo += "default.cshtml";
+        var origPath = pathInfo;
+        var isDir = pathInfo.EndsWith("/"); 
+        if (isDir)
+            pathInfo += DefaultPage;
 
         var viewPath = "~/wwwroot".CombineWith(pathInfo);
         if (!viewPath.EndsWith(".cshtml"))
             viewPath += ".cshtml";
 
         var viewEngineResult = ViewEngine.GetView("", viewPath, 
-            isMainPage: viewPath == "~/wwwroot/default.cshtml");
+            isMainPage: viewPath == "~/wwwroot/" + DefaultPage);
 
         if (!viewEngineResult.Success)
         {
@@ -117,7 +141,14 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                 viewPath += ".cshtml";
 
             viewEngineResult = ViewEngine.GetView("", viewPath,
-                isMainPage: viewPath == $"{PagesPath}/default.cshtml");
+                isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
+
+            if (!viewEngineResult.Success && RazorPages && !isDir)
+            {
+                viewPath = PagesPath.CombineWith(origPath + "/" + DefaultPage);
+                viewEngineResult = ViewEngine.GetView("", viewPath,
+                    isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
+            }
         }
 
         return viewEngineResult.Success 
@@ -364,31 +395,40 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     public ViewEngineResult FindView(IEnumerable<string> viewNames, out Dictionary<string, object> routingArgs)
     {
         routingArgs = null;
-        const string execPath = "";
         foreach (var viewName in viewNames)
         {
-            if (viewName.StartsWith("/"))
-            {
-                var viewEngineResult = GetPageFromPathInfo(viewName);                
-                if (viewEngineResult?.Success == true)
-                    return viewEngineResult;
-        
-                viewEngineResult = GetRoutingPage(viewName, out routingArgs);                
-                if (viewEngineResult?.Success == true)
-                    return viewEngineResult;
-            }
-            else
-            {
-                foreach (var location in ViewLocations)
-                {
-                    var viewPath = location.CombineWith(viewName) + ".cshtml";
-                    var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
-                    if (viewEngineResult?.Success == true)
-                        return viewEngineResult;
-                }
-            }
+            var ret = FindView(viewName, out routingArgs);
+            if (ret != null)
+                return ret;
         }
 
+        return null;
+    }
+
+    public ViewEngineResult FindView(string viewName, out Dictionary<string, object> routingArgs)
+    {
+        routingArgs = null;
+        const string execPath = "";
+        if (viewName.StartsWith("/"))
+        {
+            var viewEngineResult = GetPageFromPathInfo(viewName);
+            if (viewEngineResult?.Success == true)
+                return viewEngineResult;
+
+            viewEngineResult = GetRoutingPage(viewName, out routingArgs);
+            if (viewEngineResult?.Success == true)
+                return viewEngineResult;
+        }
+        else
+        {
+            foreach (var location in ViewLocations)
+            {
+                var viewPath = location.CombineWith(viewName) + ".cshtml";
+                var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
+                if (viewEngineResult?.Success == true)
+                    return viewEngineResult;
+            }
+        }
         return null;
     }
 
@@ -474,14 +514,21 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         }
     }
 
-    private void PopulateRazorPageContext(HttpContext httpCtx, RazorPage razorPage, ViewDataDictionary viewData, ActionContext actionContext)
+    internal static void PopulateRazorPageContext(HttpContext httpCtx, RazorPage razorPage, ViewDataDictionary viewData, ActionContext actionContext = null)
     {
         // var urlHelperFactory = httpCtx.RequestServices.GetRequiredService<IUrlHelperFactory>();
         // var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
-        var modelType = razorPage.GetType().GetProperty("ViewData")!.PropertyType.FirstGenericArg();
-        var pagModel = modelType.CreateInstance();
-        var pageViewData = GetType().GetStaticMethod(nameof(CreateViewData)).MakeGenericMethod(modelType)
-            .Invoke(null, new[] { pagModel }) as ViewDataDictionary;
+        var viewDataProp = razorPage.GetType().GetProperty("ViewData");
+        if (viewDataProp == null)
+            return;
+        var modelType = viewData.Model?.GetType() ?? viewDataProp.PropertyType.FirstGenericArg();
+        var pagModel = viewData.Model ?? modelType.CreateInstance();
+        var invoker = createViewDataCache.GetOrAdd(modelType, type => {
+            var mi = typeof(RazorFormat).GetStaticMethod(nameof(CreateViewData)).MakeGenericMethod(type);
+            var invoker = mi.GetStaticInvoker();
+            return invoker;
+        });
+        var pageViewData = invoker(pagModel) as ViewDataDictionary;
         foreach (var entry in viewData)
         {
             pageViewData[entry.Key] = entry.Value;
@@ -494,7 +541,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             HttpContext = httpCtx,
         };
     }
-
+    static ConcurrentDictionary<Type, StaticMethodInvoker> createViewDataCache = new();
 
     public async Task<ReadOnlyMemory<char>> RenderToHtmlAsync(IView view, object model = null, string layout = null)
     {
@@ -1339,11 +1386,31 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
 // View Page to support ASP.Net Razor Pages
 public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDisposable
 {
+    public HttpContext GetHttpContext() => base.HttpContext ?? base.ViewContext.HttpContext;
+
+    public override ViewContext ViewContext
+    {
+        get => base.ViewContext;
+        set
+        {
+            base.ViewContext = value;
+            if (base.PageContext == null)
+            {
+                var httpCtx = GetHttpContext();
+                var actionContext = new ActionContext(httpCtx,
+                    httpCtx.GetRouteData(),
+                    ViewContext.ActionDescriptor);
+                RazorFormat.PopulateRazorPageContext(httpCtx, this, value.ViewData, actionContext);
+            }
+        }
+    }
+
     public IHttpRequest HttpRequest
     {
         get
         {
-            if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out var oRequest))
+            if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out var oRequest)
+                || GetHttpContext()?.Items.TryGetValue(Keywords.IRequest, out oRequest) == true)
                 return (IHttpRequest)oRequest;
 
             return AppHostBase.GetOrCreateRequest(HttpContext) as IHttpRequest;
@@ -1521,23 +1588,137 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
         return html;
     }
 
-    public void RedirectIfNotAuthenticated(string redirect = null) => HttpRequest.RedirectIfNotAuthenticated(redirect);
+    public async Task RedirectIfNotAuthenticatedAsync(string redirect = null)
+    {
+        var session = await HttpRequest.GetSessionAsync().ConfigAwait();
+        if (session.IsAuthenticated)
+            return;
 
-    public Task RedirectToAsync(string path) => HttpRequest.RedirectToAsync(path);
+        RedirectNotAuthenticated(redirect);
+    }
 
-    public HtmlString RedirectTo(string path) => HttpRequest.RedirectTo(path);
+    public void RedirectNotAuthenticated(string redirect)
+    {
+        var req = HttpRequest;
+        var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
+        redirect ??= authFeature.HtmlRedirect
+                     ?? HostContext.Config.DefaultRedirectPath
+                     ?? HostContext.Config.WebHostUrl
+                     ?? "/";
+        authFeature.DoHtmlRedirect(redirect, req, req.Response, includeRedirectParam: true);
+    }
 
-    public HtmlString AssertRole(string role, string message = null, string redirect = null) =>
-        HttpRequest.AssertRole(role: role, message: message, redirect: redirect);
-
-    public Task AssertRoleAsync(string role, string message = null, string redirect = null) =>
-        HttpRequest.AssertRoleAsync(role: role, message: message, redirect: redirect);
-
-    public HtmlString AssertPermission(string permission, string message = null, string redirect = null) =>
-        HttpRequest.AssertPermission(permission: permission, message: message, redirect: redirect);
-
-    public Task AssertPermissionAsync(string permission, string message = null, string redirect = null) =>
-        HttpRequest.AssertPermissionAsync(permission: permission, message: message, redirect: redirect);
+    public async Task RedirectToAsync(string path)
+    {
+        var req = HttpRequest;
+        var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
+            Headers = {
+                [HttpHeaders.Location] = path.FirstCharEquals('~')
+                    ? req.ResolveAbsoluteUrl(path)
+                    : path
+            }
+        };
+        await req.Response.WriteToResponse(req, result).ConfigAwait();
+    }
 }
+
+#if NET6_0_OR_GREATER
+public static class RazorPageHtmlExtensions
+{
+    public static async Task<bool> IsAuthenticatedAsync(this IHtmlHelper html, string redirect = null)
+    {
+        var page = (RazorPage)html.ViewContext.ViewData.Model;
+        var req = page.HttpRequest;
+        var session = await req.GetSessionAsync().ConfigAwait();
+        if (!session.IsAuthenticated)
+        {
+            page.RedirectNotAuthenticated(redirect);
+            return false;
+        }
+        return true;
+    }
+    
+    public static async Task<bool> HasRoleAsync(this IHtmlHelper html, string role, string message = null, string redirect = null)
+    {
+        var page = (RazorPage)html.ViewContext.ViewData.Model;
+        var req = page.HttpRequest;
+        var session = await req.GetSessionAsync().ConfigAwait();
+        if (!session.IsAuthenticated)
+        {
+            page.RedirectNotAuthenticated(redirect);
+            return false;
+        }
+
+        if (!await session.HasRoleAsync(role, req.TryResolve<IAuthRepositoryAsync>()))
+        {
+            if (redirect != null)
+            {
+                await page.RedirectToAsync(redirect).ConfigAwait();
+                return false;
+            }
+
+            var feature = HostContext.GetPlugin<RazorFormat>();
+            if (feature.ForbiddenRedirect != null)
+            {
+                var url = feature.ForbiddenRedirect.AddQueryParam("role", role);
+                await page.RedirectToAsync(url);
+            }
+            else if (feature.ForbiddenPartial != null)
+            {
+                message ??= $"Missing Role {role}";
+                await html.RenderPartialAsync(feature.ForbiddenPartial, message).ConfigAwait();
+            }
+            else
+            {
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
+                await req.Response.WriteToResponse(req, error).ConfigAwait();
+            }
+            return false;
+        }
+        return true;
+    }
+    
+    public static async Task<bool> HasPermissionAsync(this IHtmlHelper html, string permission, string message = null, string redirect = null) 
+    {
+        var page = (RazorPage)html.ViewContext.ViewData.Model;
+        var req = page.HttpRequest;
+        var session = await req.GetSessionAsync().ConfigAwait();
+        if (!session.IsAuthenticated)
+        {
+            page.RedirectNotAuthenticated(redirect);
+            return false;
+        }
+
+        if (!await session.HasPermissionAsync(permission, req.TryResolve<IAuthRepositoryAsync>()))
+        {
+            if (redirect != null)
+            {
+                await page.RedirectToAsync(redirect).ConfigAwait();
+                return false;
+            }
+
+            var feature = HostContext.GetPlugin<RazorFormat>();
+            if (feature.ForbiddenRedirect != null)
+            {
+                var url = feature.ForbiddenRedirect.AddQueryParam("permission", permission);
+                await page.RedirectToAsync(url);
+            }
+            else if (feature.ForbiddenPartial != null)
+            {
+                message ??= $"Missing Permission {permission}";
+                await html.RenderPartialAsync(feature.ForbiddenPartial, message).ConfigAwait();
+            }
+            else
+            {
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
+                await req.Response.WriteToResponse(req, error).ConfigAwait();
+            }
+            return false;
+        }
+        return true;
+    }
+}
+#endif
+
 
 #endif
