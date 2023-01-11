@@ -1735,6 +1735,19 @@ public static class RazorPageHtmlExtensions
         }
         return true;
     }
+
+    public static IHtmlContent ImportMap(this IHtmlHelper html, Dictionary<string, (string Dev, string Prod)> importMaps)
+    {
+        var map = new Dictionary<string, object>();
+        var imports = new Dictionary<string, object> { ["imports"] = map };
+        var isDev = HostContext.AppHost.IsDevelopmentEnvironment();
+        foreach (var importMap in importMaps)
+        {
+            map[importMap.Key] = isDev ? importMap.Value.Dev : importMap.Value.Prod;
+        }
+        var script = $"<script type=\"importmap\">\n{imports.ToJson().IndentJson()}\n</script>";
+        return html.Raw(script);
+    }
 }
 #endif
 
