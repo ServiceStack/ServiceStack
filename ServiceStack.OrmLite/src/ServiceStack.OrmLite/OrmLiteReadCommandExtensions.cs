@@ -776,7 +776,7 @@ namespace ServiceStack.OrmLite
             while (reader.Read())
             {
                 var value = dialectProvider.FromDbValue(reader, 0, typeof(T));
-                if (value == DBNull.Value)
+                if (value == DBNull.Value || value == null)
                     value = default(T);
 
                 columValues.Add((T)value);
