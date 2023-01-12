@@ -84,6 +84,7 @@ public class MjsGenerator : ILangGenerator
 
             sb.AppendLine();
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}AddDocAnnotations: {1}".Fmt(defaultValue("AddDocAnnotations"), Config.AddDocAnnotations));
             sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
@@ -192,10 +193,48 @@ public class MjsGenerator : ILangGenerator
     {
         if (!type.IsInterface.GetValueOrDefault() || type.IsEnum.GetValueOrDefault())
         {
-            var typeName = Type(type.Name, type.GenericArgs);
+            var origType = Gen.Type(type.Name, type.GenericArgs);
+            var typeName = origType.LeftPart('<');
+            var args = typeName.Length != origType.Length
+                ? origType.RightPart('<').LastLeftPart('>').Split(',')
+                : null;
             
             if (type.IsEnum.GetValueOrDefault())
             {
+                if (Config.AddDocAnnotations)
+                {
+                    var sbType = StringBuilderCacheAlt.Allocate();
+                    if (type.EnumNames != null)
+                    {
+                        var isStrEnum = false;
+                        for (var i = 0; i < type.EnumNames.Count; i++)
+                        {
+                            var name = type.EnumNames[i];
+                            var value = type.EnumValues?[i];
+                            var memberValue = type.GetEnumMemberValue(i); 
+                            var strValue = memberValue ?? name;
+                            isStrEnum = value == null || memberValue != null;
+                            if (!isStrEnum) break;
+                            if (sbType.Length > 0)
+                                sbType.Append('|');
+                            sbType.Append($"'{strValue}'");
+                        }
+
+                        if (isStrEnum)
+                        {
+                            sb.AppendLine("/** @typedef {" + StringBuilderCacheAlt.ReturnAndFree(sbType) + "} */");
+                        }
+                        else
+                        {
+                            sb.AppendLine("/** @typedef {number} */");
+                        }
+                    }
+                    else
+                    {
+                        sb.AppendLine("/** @typedef {any} */");
+                    }
+                }
+                
                 sb.AppendLine($"export var {typeName};");
                 sb.AppendLine("(function (" + typeName + ") {");
                 sb = sb.Indent();
@@ -235,10 +274,61 @@ public class MjsGenerator : ILangGenerator
                     sb.AppendLine(addDeclaration);
                 }
 
+                if (Config.AddDocAnnotations && args?.Length > 0)
+                {
+                    // Treat Generic Args as 'any' placeholders 
+                    foreach (var arg in args)
+                    {
+                        sb.AppendLine($"/** @typedef {arg} " + "{any} */");
+                    }
+                }
+
                 sb.AppendLine(extendsType.Length > 0
                     ? "export class " + typeName + " extends " + extendsType + " {"
                     : "export class " + typeName + " {");
                 sb = sb.Indent();
+                
+                
+                var includeResponseStatus = Config.AddResponseStatus && options.IsResponse
+                    && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus));
+                if (Config.AddDocAnnotations)
+                {
+                    var sbType = StringBuilderCacheAlt.Allocate();
+                    foreach (var prop in type.Properties.Safe())
+                    {
+                        // ignore & allow properties to be optional in constructor
+                        var propType = Gen.GetPropertyType(prop, out var optionalProperty);
+                        propType = TypeScriptGenerator.PropertyTypeFilter?.Invoke(Gen, type, prop) ?? propType;
+                        if (sbType.Length > 0)
+                            sbType.Append(',');
+                        sbType.Append(GetPropertyName(prop)).Append("?:").Append(propType);
+                    }
+                    if (includeResponseStatus)
+                    {
+                        if (sbType.Length > 0)
+                            sbType.Append(',');
+                        sb.AppendLine("responseType?:ResponseType");
+                    }
+
+                    var baseType = Gen.FindType(type.Inherits);
+                    while (baseType != null)
+                    {
+                        foreach (var baseProp in baseType.Properties.Safe())
+                        {
+                            var propType = Gen.GetPropertyType(baseProp, out var _);
+                            propType = TypeScriptGenerator.PropertyTypeFilter?.Invoke(Gen, type, baseProp) ?? propType;
+                            if (sbType.Length > 0)
+                                sbType.Append(',');
+                            sbType.Append(GetPropertyName(baseProp)).Append("?:").Append(propType);
+                        }
+                        baseType = Gen.FindType(baseType.Inherits);
+                    }
+
+                    if (sbType.Length > 0)
+                    {
+                        sb.AppendLine("/** @param {{" + StringBuilderCacheAlt.ReturnAndFree(sbType) + "}} [init] */");
+                    }
+                }
                 sb.AppendLine(extendsType.Length > 0
                     ? "constructor(init) { super(init); Object.assign(this, init); }"
                     : "constructor(init) { Object.assign(this, init); }");
@@ -248,9 +338,7 @@ public class MjsGenerator : ILangGenerator
                     : null;
 
                 //Request DTO props...
-                AddProperties(sb, type,
-                    includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                    && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
+                AddProperties(sb, type, includeResponseStatus: includeResponseStatus);
                 
                 var implStr = options?.ImplementsFn?.Invoke();
                 if (!string.IsNullOrEmpty(implStr))
@@ -290,12 +378,28 @@ public class MjsGenerator : ILangGenerator
     {
         var wasAdded = false;
 
-        if (type.Properties != null)
+        foreach (var prop in type.Properties.Safe())
         {
-            foreach (var prop in type.Properties)
+            if (Config.AddDocAnnotations)
             {
-                sb.AppendLine(GetPropertyName(prop) + ";");
+                var propType = Gen.GetPropertyType(prop, out var optionalProperty);
+                propType = TypeScriptGenerator.PropertyTypeFilter?.Invoke(Gen, type, prop) ?? propType;
+                var optional = TypeScriptGenerator.IsPropertyOptional(Gen, type, prop) ?? optionalProperty
+                    ? "?"
+                    : "";
+                if (Config.AddDescriptionAsComments && !string.IsNullOrEmpty(prop.Description))
+                {
+                    sb.AppendLine("/**");
+                    sb.AppendLine(" * @type {" + optional + propType + "}");
+                    sb.AppendLine($" * @description {prop.Description} */");
+                }
+                else
+                {
+                    sb.AppendLine("/** @type {" + optional + propType + "} */");
+                }
             }
+
+            sb.AppendLine(GetPropertyName(prop) + ";");
         }
 
         if (includeResponseStatus)
@@ -303,7 +407,7 @@ public class MjsGenerator : ILangGenerator
             sb.AppendLine("ResponseStatus;");
         }
     }
-    
+
     public string GetPropertyName(MetadataPropertyType prop) => 
         prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
 

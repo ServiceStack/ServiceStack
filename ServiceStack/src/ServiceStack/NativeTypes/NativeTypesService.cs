@@ -92,6 +92,7 @@ namespace ServiceStack.NativeTypes
         public bool? MakeInternal { get; set; }
         public bool? AddReturnMarker { get; set; }
         public bool? AddDescriptionAsComments { get; set; }
+        public bool? AddDocAnnotations { get; set; }
         public bool? AddDataContractAttributes { get; set; }
         public bool? MakeDataContractsExtensible { get; set; }
         public bool? AddIndexesToDataMembers { get; set; }

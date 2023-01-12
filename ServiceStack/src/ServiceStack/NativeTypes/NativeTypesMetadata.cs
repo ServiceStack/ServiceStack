@@ -35,6 +35,7 @@ namespace ServiceStack.NativeTypes
                 MakeInternal = req.MakeInternal ?? defaults.MakeInternal,
                 AddReturnMarker = req.AddReturnMarker ?? defaults.AddReturnMarker,
                 AddDescriptionAsComments = req.AddDescriptionAsComments ?? defaults.AddDescriptionAsComments,
+                AddDocAnnotations = req.AddDocAnnotations ?? defaults.AddDocAnnotations,
                 AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
                 MakeDataContractsExtensible = req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
                 AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,

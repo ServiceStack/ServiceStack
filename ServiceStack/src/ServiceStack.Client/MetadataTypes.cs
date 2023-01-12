@@ -22,6 +22,7 @@ public class MetadataTypesConfig
         bool makeVirtual = true,
         bool addReturnMarker = true,
         bool convertDescriptionToComments = true,
+        bool addDocAnnotations = true,
         bool addDataContractAttributes = false,
         bool addIndexesToDataMembers = false,
         bool addGeneratedCodeAttributes = false,
@@ -45,6 +46,7 @@ public class MetadataTypesConfig
         MakeVirtual = makeVirtual;
         AddReturnMarker = addReturnMarker;
         AddDescriptionAsComments = convertDescriptionToComments;
+        AddDocAnnotations = addDocAnnotations;
         AddDataContractAttributes = addDataContractAttributes;
         AddDefaultXmlNamespace = addDefaultXmlNamespace;
         BaseClass = baseClass;
@@ -73,6 +75,7 @@ public class MetadataTypesConfig
     public string Package { get; set; }
     public bool AddReturnMarker { get; set; }
     public bool AddDescriptionAsComments { get; set; }
+    public bool AddDocAnnotations { get; set; }
     public bool AddDataContractAttributes { get; set; }
     public bool AddIndexesToDataMembers { get; set; }
     public bool AddGeneratedCodeAttributes { get; set; }

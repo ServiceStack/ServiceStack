@@ -182,6 +182,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Map(x => x.Name);
         }
 
+        public MetadataType FindType(MetadataTypeName typeRef) =>
+            typeRef == null ? null : FindType(typeRef.Name, typeRef.Namespace); 
+        public MetadataType FindType(string name, string @namespace = null) => AllTypes.FirstOrDefault(x => x.Name == name 
+            && (@namespace == null || @namespace == x.Namespace));
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             Init(metadata);
@@ -835,9 +840,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         {
             if (desc != null && Config.AddDescriptionAsComments)
             {
-                sb.AppendLine("/**");
-                sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
-                sb.AppendLine("*/");
+                sb.AppendLine("/** @description {0}".Fmt(desc.SafeComment()) + " */");
             }
             return false;
         }
