@@ -227,6 +227,8 @@ public static class MimeTypes
                 return "text/html";
 
             case "js":
+            case "mjs":
+            case "cjs":
                 return "text/javascript";
             case "ts":
                 return "text/typescript";
