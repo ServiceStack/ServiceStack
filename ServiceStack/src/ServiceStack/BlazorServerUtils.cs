@@ -22,28 +22,42 @@ using Microsoft.JSInterop;
 using ServiceStack.Auth;
 using System.Collections.Specialized;
 using ServiceStack.Configuration;
+using ServiceStack.Logging;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using System.IO;
+using System.Text.Encodings.Web;
+
+namespace ServiceStack;
 
 public static class BlazorServerUtils
 {
     public static IHttpClientBuilder AddBlazorServerApiClient(this IServiceCollection services, string baseUrl, Action<HttpClient>? configure = null)
     {
         return services
-            // Most reliable way to sync AuthenticationState + HttpClient is accessing HttpContext Cookies on server
-            .AddHttpContextAccessor() 
-            .AddTransient<CookieHandler>()
+            .AddScoped<HostState>()
+            .AddScoped<IClientFactory,BlazorServerClientFactory>()
             .AddTransient<BlazorServerAuthContext>()
-            .AddSingleton<IGatewayRequestFactory,GatewayRequestFactory>()
-            .AddTransient<IServiceGateway>(c => new InProcessServiceGateway(c.GetRequiredService<IGatewayRequestFactory>().Create()))
+            .AddSingleton<IGatewayRequestFactory, GatewayRequestFactory>()
+            .AddTransient<IServiceGateway>(c => new InProcessServiceGateway(
+                c.GetRequiredService<IGatewayRequestFactory>().Create(c.GetRequiredService<HostState>().ToGatewayRequest())))
             .AddHttpClient<JsonApiClient>(client => {
                 client.BaseAddress = new Uri(baseUrl);
                 configure?.Invoke(client);
             })
-            .ConfigureHttpMessageHandlerBuilder(h => new HttpClientHandler
-            {
+            .ConfigureHttpMessageHandlerBuilder(h => new HttpClientHandler {
                 UseCookies = false, // needed to allow manually adding cookies
                 DefaultProxyCredentials = CredentialCache.DefaultCredentials,
-            })
-            .AddHttpMessageHandler<CookieHandler>();
+            });
+    }
+
+    public static JsonApiClient ConfigureClient(this HostState hostState, JsonApiClient Client)
+    {
+        Client.ClearHeaders();
+        if (hostState.CookiesHeader != null)
+            Client.AddHeader(HttpHeaders.Cookie, hostState.CookiesHeader);
+        return Client;
     }
 
     //https://jasonwatmore.com/post/2020/08/09/blazor-webassembly-get-query-string-parameters-with-navigation-manager
@@ -59,58 +73,163 @@ public static class BlazorServerUtils
             return "/";
         return returnUrl;
     }
+
+    public static InitialHostState? GetInitialHostState(this HttpRequest httpReq)
+    {
+        if (httpReq.HttpContext.GetOrCreateRequest() is IHttpRequest req)
+        {
+            var to = new InitialHostState
+            {
+                Session = req.GetSession().ToAuthUserSession(),
+                AbsoluteUri = req.AbsoluteUri,
+                Headers = req.Headers.ToDictionary(),
+                Cookies = req.Cookies.Values.Map(x => x.ToJsCookie()) ?? new()
+            };
+
+            var log = LogManager.GetLogger(typeof(BlazorServerUtils));
+            if (log.IsDebugEnabled)
+                log.DebugFormat("InitialHostState {0} Cookies: {1}", to.Cookies.Count, string.Join(',', to.Cookies.Select(x => x.Name)));
+
+            return to;
+        }
+        return null;
+    }
+
+    public static JsCookie ToJsCookie(this Cookie cookie) => new() {
+        Name = cookie.Name,
+        Value = cookie.Value,
+        Path = cookie.Path,
+        Domain = cookie.Domain,
+        Expires = cookie.Expires.ToString("R"),
+    };
+
+    public static Cookie ToCookie(this JsCookie cookie) => new() {
+        Name = cookie.Name,
+        Value = cookie.Value,
+        Path = cookie.Path,
+        Domain = cookie.Domain,
+    };
+
+    public static GatewayRequest ToGatewayRequest(this HostState hostState)
+    {
+        var to = GatewayRequest.Create(new BasicHttpRequest());
+        to.Items[Keywords.Session] = hostState.Session.FromAuthUserSession();
+        foreach (var cookie in hostState.Cookies)
+        {
+            to.Cookies.Add(new(cookie.Name, cookie.ToCookie()));
+        }
+        return to;
+    }
+}
+
+public class BlazorServerClientFactory : IClientFactory
+{
+    public HostState HostState { get; }
+    public JsonApiClient Client { get; }
+    public IServiceGateway Gateway { get; }
+    public BlazorServerClientFactory(HostState hostState, JsonApiClient client, IServiceGateway gateway)
+    {
+        HostState = hostState;
+        Client = client;
+        Gateway = gateway;
+    }
+    public JsonApiClient GetClient() => HostState.ConfigureClient(Client);
+    public IServiceGateway GetGateway() => Gateway;
 }
 
 public interface IGatewayRequestFactory
 {
-    IRequest Create();
+    IRequest Create(IRequest request);
 }
 
 public class GatewayRequestFactory : IGatewayRequestFactory
 {
-    public IHttpContextAccessor HttpContextAccessor { get; }
-    public GatewayRequestFactory(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
-    public IRequest Create()
+    public IRequest Create(IRequest request)
     {
-        return GatewayRequest.Create(HttpContextAccessor.GetOrCreateRequest());
+        var to = GatewayRequest.Create(request);
+        return to;
     }
 }
 
+public class InitialHostState
+{
+    public string AbsoluteUri { get; init; }
+    // needs to be serializable
+    public AuthUserSession Session { get; set; }
+    public Dictionary<string, string> Headers { get; set; } = new();
+    public List<JsCookie> Cookies { get; set; } = new();
+}
+
+public class HostState
+{
+    // needs to be serializable
+    public AuthUserSession? Session { get; set; }
+    public List<JsCookie> Cookies { get; protected set; } = new();
+    public string? CookiesHeader { get; protected set; }
+    public virtual void Load(InitialHostState? hostState)
+    {
+        if (hostState != null)
+        {
+            Session = hostState.Session;
+            Load(hostState.Cookies);
+        }
+    }
+
+    public virtual void Load(List<JsCookie> cookies)
+    {
+        Cookies = cookies;
+        CookiesHeader = cookies.Count > 0
+            ? string.Join("; ", cookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"))
+            : null;
+    }
+
+
+}
+
+public class BlazorServerClient : JsonApiClient
+{
+    HostState HostState { get; }
+    public BlazorServerClient(HttpClient httpClient, HostState hostState) : base(httpClient)
+    {
+        HostState = hostState;
+        if (HostState.CookiesHeader != null)
+        {
+            this.AddHeader(HttpHeaders.Cookie, HostState.CookiesHeader);
+        }
+    }
+}
+
+
+// Scopes services doesn't work for Delegating Handler's
+// https://andrewlock.net/understanding-scopes-with-ihttpclientfactory-message-handlers/
+// Uses IHttpContextAccessor to fetch token https://auth0.com/blog/call-protected-api-in-aspnet-core/
 public class CookieHandler : DelegatingHandler, IDisposable
 {
-    IHttpContextAccessor HttpContextAccessor;
-    private ILogger<CookieHandler> Log;
+    HostState HostState;
+    ILogger<CookieHandler> Log;
     
     public static Func<DelegatingHandler, HttpRequestMessage, CancellationToken, Task>? Filter { get; set; }
 
-    public CookieHandler(IHttpContextAccessor httpContextAccessor, ILogger<CookieHandler> log)
+    public CookieHandler(HostState hostState, ILogger<CookieHandler> log)
     {
-        HttpContextAccessor = httpContextAccessor;
+        HostState = hostState;
         Log = log;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var req = (IHttpRequest)HttpContextAccessor.GetOrCreateRequest();
-        var httpCookies = req.Cookies.Values.ToList();
-        var cookieHeader = httpCookies?.Count > 0
-            ? string.Join("; ", httpCookies.Select(x => $"{x.Name}={x.Value.UrlEncode()}"))
-            : null;
-
-        if (cookieHeader != null)
+        if (HostState.CookiesHeader != null)
         {
-            request.Headers.Add(HttpHeaders.Cookie, cookieHeader);
+            request.Headers.Add(HttpHeaders.Cookie, HostState.CookiesHeader);
+            if (Log.IsEnabled(LogLevel.Debug))
+            {
+                Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", HostState.Cookies.Count, string.Join(',', HostState.Cookies.Select(x => x.Name)));
+            }
+            if (Filter != null)
+            {
+                await Filter(this, request, cancellationToken);
+            }
         }
-        if (Log.IsEnabled(LogLevel.Debug))
-        {
-            Log.LogDebug("Added {0} Cookies to HttpClient request: {1}", httpCookies?.Count ?? 0, string.Join(',', httpCookies.Select(x => x.Name)));
-        }
-
-        if (Filter != null)
-        {
-            await Filter(this, request, cancellationToken);
-        }
-        
         return await base.SendAsync(request, cancellationToken);
     }
 }
@@ -120,19 +239,19 @@ public class BlazorServerAuthContext
 {
     public JsonApiClient Client { get; }
     public IServiceGateway Gateway { get; }
-    public IHttpContextAccessor HttpContextAccessor { get; }
+    public HostState HostState { get; }
     public NavigationManager NavigationManager { get; }
     public IJSRuntime JS { get; }
     public BlazorServerAuthContext(
         JsonApiClient client, 
-        IServiceGateway gateway, 
-        IHttpContextAccessor httpContextAccessor, 
+        IServiceGateway gateway,
+        HostState hostState,
         NavigationManager navigationManager, 
         IJSRuntime js)
     {
         Client = client;
         Gateway = gateway;
-        HttpContextAccessor = httpContextAccessor;
+        HostState = hostState;
         NavigationManager = navigationManager;
         JS = js;
     }
@@ -143,7 +262,7 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
     protected ILogger<BlazorServerAuthenticationStateProvider> Log { get; }
     protected JsonApiClient Client { get; }
     protected IServiceGateway Gateway { get; }
-    protected IHttpContextAccessor HttpContextAccessor { get; }
+    public HostState HostState { get; }
     protected NavigationManager NavigationManager { get; }
     protected IJSRuntime JS { get; }
 
@@ -152,56 +271,34 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
         Log = log;
         Client = context.Client;
         Gateway = context.Gateway;
-        HttpContextAccessor = context.HttpContextAccessor;
+        HostState = context.HostState;
         NavigationManager = context.NavigationManager;
         JS = context.JS;
     }
 
     protected AuthenticationState UnAuthenticationState => new(new ClaimsPrincipal(new ClaimsIdentity()));
 
-    public const string DefaultProfileUrl = "data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .path%7B%7D %3C/style%3E%3Cg id='male-svg'%3E%3Cpath fill='%23556080' d='M1 92.84V84.14C1 84.14 2.38 78.81 8.81 77.16C8.81 77.16 19.16 73.37 27.26 69.85C31.46 68.02 32.36 66.93 36.59 65.06C36.59 65.06 37.03 62.9 36.87 61.6H40.18C40.18 61.6 40.93 62.05 40.18 56.94C40.18 56.94 35.63 55.78 35.45 47.66C35.45 47.66 32.41 48.68 32.22 43.76C32.1 40.42 29.52 37.52 33.23 35.12L31.35 30.02C31.35 30.02 28.08 9.51 38.95 12.54C34.36 7.06 64.93 1.59 66.91 18.96C66.91 18.96 68.33 28.35 66.91 34.77C66.91 34.77 71.38 34.25 68.39 42.84C68.39 42.84 66.75 49.01 64.23 47.62C64.23 47.62 64.65 55.43 60.68 56.76C60.68 56.76 60.96 60.92 60.96 61.2L64.74 61.76C64.74 61.76 64.17 65.16 64.84 65.54C64.84 65.54 69.32 68.61 74.66 69.98C84.96 72.62 97.96 77.16 97.96 81.13C97.96 81.13 99 86.42 99 92.85L1 92.84Z'/%3E%3C/g%3E%3C/svg%3E";
-    public const string Picture = "picture";
-    public const string PermissionType = "perm";
     public const string AuthenticationType = "Server Authentication";
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         try
         {
-            var req = AppHostBase.GetOrCreateRequest(HttpContextAccessor);
-            var session = await req.GetSessionAsync();
-            if (!session.IsAuthenticated)
+            if (HostState.Session?.IsAuthenticated != true)
                 return UnAuthenticationState;
 
-            List<Claim> claims = new() {
-                new Claim(ClaimTypes.NameIdentifier, session.UserAuthId),
-                new Claim(ClaimTypes.Name, session.DisplayName),
-                new Claim(ClaimTypes.Email, session.UserName),
-                new Claim(Picture, session.ProfileUrl ?? DefaultProfileUrl),
-            };
+            var session = HostState.Session!;
+            if (session.UserAuthId == null || session.DisplayName == null || session.UserName == null)
+            {
+                Log.LogWarning("User #{0} {1}, {2} is incomplete", session.UserAuthId, session.UserName, session.DisplayName);
+                return UnAuthenticationState;
+            }
 
-            var roles = (session.FromToken
-                ? session.Roles
-                : await session.GetRolesAsync(HostContext.AppHost.GetAuthRepositoryAsync())).OrEmpty().ToList();
-            // Add all App Roles to Admin Users
-            if (roles.Contains(RoleNames.Admin))
-            {
-                roles.AddDistinctRange(HostContext.Metadata.GetAllRoles());
-            }
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync();
+            var claims = await session.AsClaimsAsync(authRepo);
+            using (authRepo as IDisposable) {}
 
             await OnAuthenticationStateClaimsAsync(claims);
-
-            var perms = session.FromToken
-                ? session.Permissions
-                : await session.GetRolesAsync(HostContext.AppHost.GetAuthRepositoryAsync());
-            foreach (var permission in perms.OrEmpty())
-            {
-                claims.Add(new Claim(PermissionType, permission));
-            }
 
             var identity = new ClaimsIdentity(claims, AuthenticationType);
             return new AuthenticationState(new ClaimsPrincipal(identity));
@@ -226,6 +323,7 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
 
     public virtual Task LogoutAsync(string? redirectTo = null)
     {
+        HostState.Session = HostContext.GetPlugin<AuthFeature>()?.SessionFactory() as AuthUserSession;
         NotifyAuthenticationStateChanged(Task.FromResult(UnAuthenticationState));
         var url = "/auth/logout" + (redirectTo != null ? "?continue=" + redirectTo : "");
         NavigationManager.NavigateTo(url, forceLoad: true);
@@ -267,14 +365,7 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
 
             if (httpCookies != null)
             {
-                var jsCookies = httpCookies.Map(x => new JsCookie
-                {
-                    Name = x.Name,
-                    Value = x.Value,
-                    Path = x.Path,
-                    Domain = x.Domain,
-                    Expires = x.Expires.ToString("R"),
-                });
+                var jsCookies = httpCookies.Map(x => x.ToJsCookie());
                 if (Log.IsEnabled(LogLevel.Debug)) 
                     Log.LogDebug("API JS.setCookies: {0}", string.Join("; ", jsCookies.Select(x => $"{x.Name}={x.Value}")));
                 await JS.InvokeVoidAsync("JS.setCookies", jsCookies);
@@ -334,6 +425,63 @@ public class JsCookie
     public string Path { get; set; }
     public string Domain { get; set; }
     public string Expires { get; set; }
+}
+
+public interface IComponentRenderer
+{
+    Task<string> RenderComponentAsync<T>(HttpContext httpContext, Dictionary<string, object>? args = null);
+    Task<string> RenderComponentAsync(Type type, HttpContext httpContext, Dictionary<string, object>? args = null);
+}
+
+public class ComponentRenderer : IComponentRenderer
+{
+    public Task<string> RenderComponentAsync<T>(HttpContext httpContext, Dictionary<string, object>? args = null) =>
+        RenderComponentAsync(typeof(T), httpContext, args);
+
+    public async Task<string> RenderComponentAsync(Type componentType, HttpContext httpContext, Dictionary<string, object>? args = null)
+    {
+        var componentArgs = new Dictionary<string, object>();
+        if (args != null)
+        {
+            var accessors = TypeProperties.Get(componentType);
+            foreach (var entry in args)
+            {
+                var prop = accessors.GetPublicProperty(entry.Key);
+                if (prop == null)
+                    continue;
+
+                var value = entry.Value.ConvertTo(prop.PropertyType);
+                componentArgs[prop.Name] = value;
+            }
+        }
+
+        var componentTagHelper = new ComponentTagHelper
+        {
+            ComponentType = componentType,
+            RenderMode = RenderMode.Static,
+            Parameters = componentArgs,
+            ViewContext = new ViewContext { HttpContext = httpContext },
+        };
+
+        var objArgs = new Dictionary<object, object>();
+        var tagHelperContext = new TagHelperContext(
+            new TagHelperAttributeList(),
+            objArgs,
+            "uniqueid");
+
+        var tagHelperOutput = new TagHelperOutput(
+            "tagName",
+            new TagHelperAttributeList(),
+            (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+
+        await componentTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
+
+        using var stringWriter = new StringWriter();
+
+        tagHelperOutput.Content.WriteTo(stringWriter, HtmlEncoder.Default);
+
+        return stringWriter.ToString();
+    }
 }
 
 #endif

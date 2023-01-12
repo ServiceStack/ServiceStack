@@ -52,12 +52,12 @@ public partial class Autocomplete<T> : TextInputBase
 
     char[] delims = { ',', '\n', '\t' };
 
-    async Task OnPaste(ClipboardEventArgs e)
+    async Task OnPasteAsync(ClipboardEventArgs e)
     {
         try
         {
             var clipboardText = await JS.InvokeAsync<string>("navigator.clipboard.readText");
-            await HandlePastedText(clipboardText);
+            await HandlePastedTextAsync(clipboardText);
             return;
         }
         catch
@@ -67,10 +67,10 @@ public partial class Autocomplete<T> : TextInputBase
         
         // Need to wait for oninput to fire and update txtValue
         await Task.Delay(1);
-        await HandlePastedText(txtValue);
+        await HandlePastedTextAsync(txtValue);
     }
 
-    protected async Task HandlePastedText(string? txt)
+    protected virtual async Task HandlePastedTextAsync(string? txt)
     {
         if (string.IsNullOrEmpty(txt))
             return;
@@ -114,7 +114,7 @@ public partial class Autocomplete<T> : TextInputBase
         update();
     }
 
-    async Task OnKeyDown(KeyboardEventArgs e)
+    async Task OnKeyDownAsync(KeyboardEventArgs e)
     {
         if (e.ShiftKey || e.CtrlKey || e.AltKey) return;
 

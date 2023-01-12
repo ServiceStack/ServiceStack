@@ -408,10 +408,7 @@ namespace ServiceStack
             return value.ConvertTo<T>();
         }
 
-        public static object ConvertToObject<T>(T value)
-        {
-            return value;
-        }
+        public static object ConvertToObject<T>(T value) => value;
 
         public static Func<object,object> GetPropertyAccessor(this Type type, PropertyInfo forProperty)
         {

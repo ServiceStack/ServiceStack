@@ -54,19 +54,31 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public string ToolbarButtonClass { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.ToolbarButtonClass;
     [Parameter] public int MaxFieldLength { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.MaxFieldLength;
     [Parameter] public TableStyle TableStyle { get; set; } = BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle;
+    [Parameter] public string GridClass { get; set; } = CssDefaults.Grid.GetGridClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string Grid2Class { get; set; } = CssDefaults.Grid.GetGrid2Class(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string Grid3Class { get; set; } = CssDefaults.Grid.GetGrid3Class(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string Grid4Class { get; set; } = CssDefaults.Grid.GetGrid4Class(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableClass { get; set; } = CssDefaults.Grid.GetTableClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableHeadClass { get; set; } = CssDefaults.Grid.GetTableHeadClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableHeaderRowClass { get; set; } = CssDefaults.Grid.GetTableHeaderRowClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableHeaderCellClass { get; set; } = CssDefaults.Grid.GetTableHeaderCellClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string TableBodyClass { get; set; } = CssDefaults.Grid.GetTableBodyClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+
 
     [Parameter] public List<Model> Items { get; set; } = new();
     [Parameter] public RenderFragment? CreateForm { get; set; }
-    [Parameter] public RenderFragment? EditForm { get; set; }
+    [Parameter] public RenderFragment<Model>? EditForm { get; set; }
     [Parameter] public Predicate<string>? DisableKeyBindings { get; set; }
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
+    [Parameter] public ApiPrefs? Prefs { get; set; }
 
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
     AutoEditForm<Model>? AutoEditForm { get; set; }
 
-    List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
-    int Total => Api?.Response?.Total ?? Results.Count;
+    public List<Model> Results => Api?.Response?.Results ?? TypeConstants<Model>.EmptyList;
+    public int Total => Api?.Response?.Total ?? Results.Count;
+    public ResponseStatus? Error => Api?.Error;
 
     // needs to be outside Form to use full screen width
     protected DynamicModalLookup? ModalLookup { get; set; }
@@ -216,7 +228,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     {
         if (item == null)
         {
-            await OnEditDoneAsync();
+            OnEditDone();
             return;
         }
 
@@ -242,7 +254,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 
     Model? EditModel { get; set; }
 
-    async Task OnEditDoneAsync()
+    public void OnEditDone()
     {
         Edit = null;
         EditModel = default;
@@ -250,23 +262,23 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         NavigationManager.NavigateTo(NavigationManager.Uri.SetQueryParam(QueryParams.Edit, null));
     }
 
-    async Task OnNewDoneAsync()
+    public void OnNewDone()
     {
         New = false;
         StateHasChanged();
         NavigationManager.NavigateTo(NavigationManager.Uri.SetQueryParam(QueryParams.New, null));
     }
 
-    async Task OnEditSave(Model model)
+    public void OnEditSave(Model model)
     {
         lastQuery = null;
-        await OnEditDoneAsync();
+        OnEditDone();
     }
 
-    async Task OnNewSaveAsync(Model model)
+    public void OnNewSave(Model model)
     {
         lastQuery = null;
-        await OnNewDoneAsync();
+        OnNewDone();
     }
 
     bool hasPrefs => GetColumns().Any(c => c.Filters.Count > 0 || c.Settings.SortOrder != null)
@@ -397,10 +409,10 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         await base.OnParametersSetAsync();
         ParseQueryString(new Uri(NavigationManager.Uri).Query);
 
-        ApiPrefs = LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
+        ApiPrefs = Prefs ?? LocalStorage.GetCachedItem<ApiPrefs>(CacheKey) ?? new();
         if (Edit != null || New == true)
         {
-            if (EditModel == null || Properties.GetId(EditModel)?.ToString() != Edit)
+            if (EditModel == null || Properties.GetId(EditModel)?.ToString() != Edit && PrimaryKey != null)
             {
                 var request = Apis!.QueryRequest<Model>();
                 request.QueryParams = new()
@@ -457,7 +469,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     {
         if (firstRender)
         {
-            ApiPrefs = await LocalStorage.GetItemAsync<ApiPrefs>(CacheKey) ?? new();
+            ApiPrefs = Prefs ?? await LocalStorage.GetItemAsync<ApiPrefs>(CacheKey) ?? new();
             dotnetRef = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("JS.registerKeyNav", dotnetRef);
             await UpdateAsync();
@@ -469,12 +481,12 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         NavigationManager.LocationChanged -= HandleLocationChanged;
     }
 
-    protected virtual async Task CloseDialogsAsync()
+    protected virtual void CloseDialogs()
     {
         if (Edit != null)
-            await OnEditDoneAsync();
+            OnEditDone();
         if (New != null)
-            await OnNewDoneAsync();
+            OnNewDone();
 
         ShowQueryPrefs = false;
         StateHasChanged();
@@ -488,7 +500,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 
         if (key == KeyCodes.Escape)
         {
-            await CloseDialogsAsync();
+            CloseDialogs();
             return;
         }
         if (key == KeyCodes.ArrowLeft && canPrev)

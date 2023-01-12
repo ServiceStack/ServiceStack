@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ServiceStack;
 
@@ -51,4 +52,6 @@ public class InputAttributeBase : MetadataAttributeBase
     public string[] AllowableValues { get; set; }
     public string Options  { get; set; }
     public bool Ignore { get; set; }
+    public string EvalAllowableValues { get; set; }
+    public string EvalAllowableEntries { get; set; }
 }

@@ -47,7 +47,7 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(redirect))
                 return;
 
-            if (redirect.StartsWith("//") || redirect.IndexOf("://", StringComparison.Ordinal) >= 0)
+            if (redirect.StartsWith("//") || redirect.Contains("://"))
             {
                 if (redirect.StartsWith(req.GetBaseUrl()))
                     return;
@@ -444,6 +444,10 @@ namespace ServiceStack
                 throw new Exception("Registering IAuthEvents via both AuthFeature.AuthEvents and IOC is not allowed");
             }
         }
+
+        public IAuthProvider GetAuthProvider(string provider) => AuthenticateService.GetAuthProvider(provider);
+        public JwtAuthProviderReader GetJwtAuthProviderReader() => AuthenticateService.GetJwtAuthProvider();
+        public JwtAuthProvider GetRequiredJwtAuthProvider() => (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
     }
 
     public static class AuthFeatureExtensions

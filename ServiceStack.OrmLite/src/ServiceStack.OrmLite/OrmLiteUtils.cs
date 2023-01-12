@@ -39,12 +39,12 @@ namespace ServiceStack.OrmLite
 
         internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteUtils));
 
-        public static void HandleException(Exception ex, string message = null)
+        public static void HandleException(Exception ex, string message = null, params object[] args)
         {
             if (OrmLiteConfig.ThrowOnError)
                 throw ex;
 
-            Log.Error(message ?? ex.Message, ex);
+            Log.Error(ex, message ?? ex.Message, args);
         }
 
         public static void DebugCommand(this ILog log, IDbCommand cmd)

@@ -444,7 +444,7 @@ namespace ServiceStack
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task WriteAsync(this Stream stream, string text, CancellationToken token = default) =>
-            MemoryProvider.Instance.WriteAsync(stream, text.AsSpan(), token);
+            MemoryProvider.Instance.WriteAsync(stream, text.AsMemory(), token);
 
         public static byte[] ToMd5Bytes(this Stream stream)
         {

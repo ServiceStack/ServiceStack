@@ -24,7 +24,9 @@ namespace ServiceStack.Text.Common
             var typeConstructor = GetTypeStringConstructor(type);
             if (typeConstructor != null)
             {
-                return value => typeConstructor.Invoke(new object[] { value.ToString() });
+                return value => value.IsEmpty
+                    ? null
+                    : typeConstructor.Invoke(new object[] { value.ToString() });
             }
 
             return null;

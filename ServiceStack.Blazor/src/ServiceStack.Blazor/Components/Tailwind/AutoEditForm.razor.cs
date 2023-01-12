@@ -19,7 +19,6 @@ public partial class AutoEditForm<Model> : AutoFormBase<Model>
 
     IHasErrorStatus? deleteApi;
 
-
     async Task OnDelete()
     {
         if (DeleteApiType == null)

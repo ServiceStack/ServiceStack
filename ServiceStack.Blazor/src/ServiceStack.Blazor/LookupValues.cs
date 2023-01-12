@@ -64,7 +64,7 @@ public static class LookupValues
             {
                 var lookupIds = results.Select(x => x.GetIgnoreCase(prop.Name).ConvertTo<string>()).Where(x => x != null).ToList();
 
-                var dataModel = appMetadata.Api.Types.FirstOrDefault(x => x.Name == refModel);
+                var dataModel = appMetadata.GetType(refModel);
                 if (dataModel == null)
                 {
                     BlazorUtils.Log($"Couldn't find AutoQuery Type for {refModel}");

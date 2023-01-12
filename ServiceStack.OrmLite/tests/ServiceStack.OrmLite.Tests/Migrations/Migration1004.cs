@@ -6,7 +6,6 @@ public class Migration1004 : MigrationBase
 {
     class Booking
     {
-        [Default(0)]
         public bool IsLocked { get; set; }
     }
     

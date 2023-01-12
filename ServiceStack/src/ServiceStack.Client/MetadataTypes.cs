@@ -22,6 +22,7 @@ public class MetadataTypesConfig
         bool makeVirtual = true,
         bool addReturnMarker = true,
         bool convertDescriptionToComments = true,
+        bool addDocAnnotations = true,
         bool addDataContractAttributes = false,
         bool addIndexesToDataMembers = false,
         bool addGeneratedCodeAttributes = false,
@@ -34,7 +35,8 @@ public class MetadataTypesConfig
         bool addPropertyAccessors = true,
         bool excludeGenericBaseTypes = false,
         bool settersReturnThis = true,
-        bool makePropertiesOptional = true,
+        bool addNullableAnnotations = false,
+        bool makePropertiesOptional = false,
         bool makeDataContractsExtensible = false,
         bool initializeCollections = true,
         int? addImplicitVersion = null)
@@ -44,6 +46,7 @@ public class MetadataTypesConfig
         MakeVirtual = makeVirtual;
         AddReturnMarker = addReturnMarker;
         AddDescriptionAsComments = convertDescriptionToComments;
+        AddDocAnnotations = addDocAnnotations;
         AddDataContractAttributes = addDataContractAttributes;
         AddDefaultXmlNamespace = addDefaultXmlNamespace;
         BaseClass = baseClass;
@@ -58,6 +61,7 @@ public class MetadataTypesConfig
         AddPropertyAccessors = addPropertyAccessors;
         ExcludeGenericBaseTypes = excludeGenericBaseTypes;
         SettersReturnThis = settersReturnThis;
+        AddNullableAnnotations = addNullableAnnotations;
         MakePropertiesOptional = makePropertiesOptional;
         AddImplicitVersion = addImplicitVersion;
     }
@@ -71,6 +75,7 @@ public class MetadataTypesConfig
     public string Package { get; set; }
     public bool AddReturnMarker { get; set; }
     public bool AddDescriptionAsComments { get; set; }
+    public bool AddDocAnnotations { get; set; }
     public bool AddDataContractAttributes { get; set; }
     public bool AddIndexesToDataMembers { get; set; }
     public bool AddGeneratedCodeAttributes { get; set; }
@@ -81,6 +86,7 @@ public class MetadataTypesConfig
     public bool AddPropertyAccessors { get; set; }
     public bool ExcludeGenericBaseTypes { get; set; }
     public bool SettersReturnThis { get; set; }
+    public bool AddNullableAnnotations { get; set; }
     public bool MakePropertiesOptional { get; set; }
     public bool ExportAsTypes { get; set; }
     public bool ExcludeImplementedInterfaces { get; set; }
@@ -955,8 +961,12 @@ public static class AppMetadataUtils
             // Some times Types only appear in Response Types
             foreach (var op in app.Api.Operations)
             {
+                allTypes[op.Request.Name] = op.Request;
+                if (op.Request.Namespace != null)
+                    allTypes[op.Request.Namespace + "." + op.Request.Name] = op.Request;
+
                 var type = op.Response;
-                if (type == null || allTypes.ContainsKey(type.Name)) 
+                if (type == null || allTypes.ContainsKey(type.Name))
                     continue;
                 
                 allTypes[type.Name] = type;
@@ -979,12 +989,15 @@ public static class AppMetadataUtils
     public static MetadataType GetType(this AppMetadata app, MetadataTypeName typeRef) =>
         typeRef == null ? null : app.GetType(typeRef.Namespace, typeRef.Name);
 
-    public static MetadataType GetType(this AppMetadata app, string @namespace, string name) => 
-        X.Map(app.GetCache().TypesMap, x => x.TryGetValue(@namespace + "." + name, out var type) 
-            ? type 
-            : x.TryGetValue(name, out type) 
-                ? type 
-                : null);
+    public static MetadataType GetType(this AppMetadata app, string @namespace, string name)
+    {
+        var map = app.GetCache().TypesMap;
+        if (map.TryGetValue(@namespace + "." + name, out var type))
+            return type;
+        if (map.TryGetValue(name, out type))
+            return type;
+        return null;
+    }
 
     public static void EachOperation(this AppMetadata app, Action<MetadataOperationType> configure) 
     {
@@ -1098,6 +1111,15 @@ public static class AppMetadataUtils
             Options = input.Options,
             Ignore = input.Ignore.NullIfFalse(),
         };
+
+        if (ClientConfig.EvalExpression != null)
+        {
+            if (input.EvalAllowableValues != null)
+                ret.AllowableValues = ClientConfig.EvalExpression(input.EvalAllowableValues).ConvertTo<string[]>();
+            if (input.EvalAllowableEntries != null)
+                ret.AllowableEntries = ClientConfig.EvalExpression(input.EvalAllowableEntries).ConvertTo<KeyValuePair<string, string>[]>();
+        }
+        
         configure?.Invoke(ret);
         return ret;
     }
@@ -1471,11 +1493,19 @@ public static class AppMetadataUtils
         property.Format ??= pi.FirstAttribute<Intl>().ToFormat();
         property.Format ??= pi.FirstAttribute<FormatAttribute>().ToFormat();
 
+        if (treatNonNullableRefTypesAsRequired)
+        {
+            var notNullRefType = pi.IsNotNullable();
+            property.IsRequired = notNullRefType;
+        }
+
         var apiMember = pi.FirstAttribute<ApiMemberAttribute>();
         if (apiMember != null)
         {
             if (apiMember.IsRequired)
                 property.IsRequired = true;
+            else if (apiMember.IsOptional)
+                property.IsRequired = false;
 
             property.ParamType = apiMember.ParameterType;
             property.DisplayType = apiMember.DataType;
@@ -1485,13 +1515,6 @@ public static class AppMetadataUtils
         var requiredProp = pi.FirstAttribute<RequiredAttribute>();
         if (requiredProp != null)
             property.IsRequired = true;
-
-        if (treatNonNullableRefTypesAsRequired)
-        {
-            var notNullRefType = pi.IsNotNullable();
-            if (notNullRefType == true)
-                property.IsRequired = true;
-        }
 
         var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
         if (apiAllowableValues != null)

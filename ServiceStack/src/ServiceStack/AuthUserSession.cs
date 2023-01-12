@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
@@ -85,6 +86,10 @@ namespace ServiceStack
         [DataMember(Order = 56)] public bool? TwoFactorEnabled { get; set; }
         [DataMember(Order = 57)] public string SecurityStamp { get; set; }
         [DataMember(Order = 58)] public string Type { get; set; }
+        
+        [DataMember(Order = 59)] public string RecoveryToken { get; set; }
+        [DataMember(Order = 60)] public int? RefId { get; set; }
+        [DataMember(Order = 61)] public string RefIdStr { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
@@ -302,6 +307,38 @@ namespace ServiceStack
             return this.Permissions != null 
                 ? this.Permissions
                 : TypeConstants.EmptyStringArray;
+        }
+
+        public virtual async Task<List<Claim>> AsClaimsAsync(IAuthRepositoryAsync authRepo)
+        {
+            List<Claim> claims = new() {
+                new Claim(ClaimTypes.NameIdentifier, UserAuthId),
+                new Claim(ClaimTypes.Name, DisplayName),
+                new Claim(ClaimTypes.Email, Email == null || UserAuthName.Contains('@') ? UserAuthName : Email),
+                new Claim(JwtClaimTypes.Picture, ProfileUrl ?? JwtClaimTypes.DefaultProfileUrl),
+            };
+
+            var roles = (FromToken
+                ? Roles
+                : await GetRolesAsync(authRepo)).OrEmpty().ToList();
+            // Add all App Roles to Admin Users
+            if (roles.Contains(RoleNames.Admin))
+            {
+                roles.AddDistinctRange(HostContext.Metadata.GetAllRoles());
+            }
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var perms = FromToken
+                ? Permissions
+                : await GetRolesAsync(authRepo);
+            foreach (var permission in perms.OrEmpty())
+            {
+                claims.Add(new Claim(JwtClaimTypes.Permissions, permission));
+            }
+            return claims;
         }
 
         public virtual void OnLoad(IRequest httpReq) {}

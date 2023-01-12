@@ -35,7 +35,7 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = MessageSerializer.Instance.ToBytes(message);
             factory.PublishMessage(queueName, messageBytes);
         }
 
@@ -60,7 +60,7 @@ namespace ServiceStack.Messaging
 
         public void Notify(string queueName, IMessage message)
         {
-            var messageBytes = message.ToBytes();
+            var messageBytes = MessageSerializer.Instance.ToBytes(message);
             factory.PublishMessage(queueName, messageBytes);
         }
 
@@ -80,8 +80,7 @@ namespace ServiceStack.Messaging
 
         public IMessage<T> GetAsync<T>(string queueName)
         {
-            return factory.GetMessageAsync(queueName)
-                .ToMessage<T>();
+            return MessageSerializer.Instance.ToMessage<T>(factory.GetMessageAsync(queueName));
         }
 
         public void Ack(IMessage message)

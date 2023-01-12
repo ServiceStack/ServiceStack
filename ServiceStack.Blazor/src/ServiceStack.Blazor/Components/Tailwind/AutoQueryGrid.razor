@@ -18,7 +18,7 @@ else
     {
         if (invalidCreateAccess != null)
         {
-            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDoneAsync" />
+            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDone" />
         }
         else if (CreateForm != null)
         {
@@ -26,22 +26,22 @@ else
         }
         else if (Apis!.Create != null)
         {
-            <AutoCreateForm @ref="AutoCreateForm" Model="Model" ApiType="Apis!.Create" Done="OnNewDoneAsync" Save="OnNewSaveAsync" />
+            <AutoCreateForm @ref="AutoCreateForm" Model="Model" ApiType="Apis!.Create" Done="OnNewDone" Save="OnNewSave" />
         }
     }
     else if (EditModel != null)
     {
         if (invalidUpdateAccess != null)
         {
-            <EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDoneAsync" />
+            <EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDone" />
         }
         else if (EditForm != null)
         {
-            @EditForm
+            @EditForm(EditModel)
         }
         else if (Apis!.Patch != null || Apis!.Update != null)
         {
-            <AutoEditForm @ref="AutoEditForm" Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDoneAsync" Save="OnEditSave" Delete="OnEditSave" />
+            <AutoEditForm @ref="AutoEditForm" Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDone" Save="OnEditSave" Delete="OnEditSave" />
         }
     }
     </CascadingValue>
@@ -209,10 +209,12 @@ else
                 <div>
                     <CascadingValue IsFixed="true" Value="this">
                         <DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
-                                    PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync" TableStyle="TableStyle"
-                                    RowSelected="OnRowSelected" HeaderSelected="HeaderSelected" MaxFieldLength="MaxFieldLength"
-                                    AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
-                                    >
+                            PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync"
+                            TableStyle=@TableStyle GridClass=@GridClass Grid2Class=@Grid2Class Grid3Class=@Grid3Class Grid4Class=@Grid4Class
+                            TableClass=@TableClass TableHeadClass=@TableHeadClass TableHeaderRowClass=@TableHeaderRowClass TableHeaderCellClass=@TableHeaderCellClass TableBodyClass=@TableBodyClass
+                            RowSelected="OnRowSelected" HeaderSelected="HeaderSelected" MaxFieldLength="MaxFieldLength"
+                            AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
+                            >
                             <CascadingValue IsFixed="true" Value="DataGrid">
                                 @Columns
                             </CascadingValue>
@@ -222,6 +224,7 @@ else
             }
         </div>
     }
+
     </div>
     </CascadingValue>
     <DynamicModalLookup @ref="ModalLookup" AppMetadata=@AppMetadata />

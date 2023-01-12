@@ -248,7 +248,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryBookmarks : QueryDb<Bookmark> { }
 
     // custom script methods
-    [AutoPopulate(nameof(Bookmark.Id), Eval = "nguid")] 
+    [AutoPopulate(nameof(Bookmark.Id), Eval = "nguid", NoCache = true)] 
     [AutoPopulate(nameof(Bookmark.CreatedBy), Eval = "userAuthId")]
     [AutoPopulate(nameof(Bookmark.CreateDate), Eval = "utcNowOffset")]
     [AutoPopulate(nameof(Bookmark.ModifiedBy), Eval = "userAuthId")]

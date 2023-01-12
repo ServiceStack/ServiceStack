@@ -426,6 +426,48 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_send_batch_requests_for_custom_Guid_Id_and_DateTimeOffset()
+        {
+            try
+            {
+                client.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "admin@email.com",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+                
+                var response = client.SendAll(new[]
+                {
+                    new CreateBookmark {
+                        Description = "Description1", 
+                        Slug = "Slug1", 
+                        Title = "Title1", 
+                        Url = "Url1", 
+                    },
+                    new CreateBookmark {
+                        Description = "Description2", 
+                        Slug = "Slug2", 
+                        Title = "Title2", 
+                        Url = "Url2", 
+                    },
+                });
+                
+                Assert.That(response[0].Id, Is.Not.EqualTo(new Guid()));
+                Assert.That(response[0].Result.Id, Is.EqualTo(response[0].Id));
+                Assert.That(response[0].Result.Description, Is.EqualTo("Description1"));
+                Assert.That(response[1].Id, Is.Not.EqualTo(new Guid()));
+                Assert.That(response[1].Result.Id, Is.EqualTo(response[1].Id));
+                Assert.That(response[1].Result.Description, Is.EqualTo("Description2"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        [Test]
         public void Does_validate_TestAuthValidators()
         {
             try

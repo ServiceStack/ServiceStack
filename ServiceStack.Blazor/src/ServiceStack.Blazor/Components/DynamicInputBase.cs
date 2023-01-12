@@ -20,6 +20,12 @@ public class DynamicInputBase : TextInputBase
         set => Model[Input!.Id] = value;
     }
 
+    protected List<string> Values
+    {
+        get => Model.TryGetValue(Input!.Id, out var value) ? TextUtils.ToModelStrings(value) ?? new() : new();
+        set => Model[Input!.Id] = value;
+    }
+
 
     [Parameter, EditorRequired]
     public InputInfo? Input { get; set; }

@@ -1,0 +1,60 @@
+@page
+@{
+    Layout = "";
+    var search = (@HttpRequest.PathInfo ?? "").LastRightPart('/');
+}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Page Not Found</title>
+        <link rel="stylesheet" href="/assets/css/bootstrap.min.css"/>
+        <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        h1 {
+            background-color: #c30;
+            color: #FFF;
+            font-size: 26px;
+            font-weight: normal;
+            margin: 0 0 40px 0;
+            padding: 20px 0;
+        }
+        #content {
+            padding: 15px;
+            margin: auto;
+            width: 350px;
+        }
+        form {
+            margin: 40px 0 0 0;
+        }
+    </style>
+    </head>
+    <body>        
+        <h1>Page Not Found</h1>
+        
+        <div id="content">
+
+            <p>
+                We're sorry <b>@HttpRequest.PathInfo</b> is no longer here.
+            </p> 
+
+            @if (!string.IsNullOrEmpty(search))
+            {
+                <p> 
+                    Maybe Google has it?
+                </p>
+
+                <form action="https://www.google.com/search" method="GET">
+                    <div class="d-flex align-items-center">
+                        <input class="form-control" type="search" name="q" value="@search"/>
+                        <button type="submit" class="ms-2 btn btn-primary">Search</button>
+                    </div>
+                </form>
+            }
+        </div>                
+    </body>
+</html>

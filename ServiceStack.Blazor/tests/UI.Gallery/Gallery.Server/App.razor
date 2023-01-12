@@ -1,11 +1,12 @@
 ﻿@inject NavigationManager NavigationManager
 @inject ServiceStackStateProvider AuthStateProvider
+@inject HostState HostState
 
 <CascadingAuthenticationState>
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData"
-                            DefaultLayout="@GetPageLayout(routeData)">
+                            DefaultLayout="@NavigationManager.GetPageLayout(routeData)">
             <NotAuthorized>
                 <h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
                     Sorry
@@ -20,7 +21,7 @@
 
             <Authorizing>
                 <p class="text-gray-400 absolute -mt-4 mr-4 right-0">Authenticating...</p>
-                <RouteView RouteData="@routeData" />
+                <RouteView RouteData="@routeData" DefaultLayout="@NavigationManager.GetPageLayout(routeData)" />
             </Authorizing>
 
         </AuthorizeRouteView>
@@ -50,7 +51,13 @@
 </CascadingAuthenticationState>
 
 @code {
-    Type GetPageLayout(RouteData route) => route.PageType?.FirstAttribute<LayoutAttribute>()?.LayoutType ?? typeof(MainLayout);
+    [Parameter] public InitialHostState? InitialState { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        HostState.Load(InitialState);
+        return base.OnInitializedAsync();
+    }
 
     async Task login()
     {

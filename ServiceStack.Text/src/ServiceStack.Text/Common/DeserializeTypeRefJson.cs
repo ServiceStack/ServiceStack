@@ -42,14 +42,16 @@ namespace ServiceStack.Text.Common
 
             while (index < strTypeLength)
             {
-                var propertyName = JsonTypeSerializer.UnescapeJsString(strType, JsonUtils.QuoteChar, removeQuotes:true, ref index);
+                var result = JsonTypeSerializer.UnescapeJsString(strType, JsonUtils.QuoteChar, removeQuotes: true, index);
+                var propertyName = result.Span;
+                index = result.Index;
 
                 //Serializer.EatMapKeySeperator(strType, ref index);
                 for (; index < strTypeLength; index++) { if (!JsonUtils.IsWhiteSpace(buffer[index])) break; } //Whitespace inline
                 if (strTypeLength != index) index++;
 
                 var propertyValueStr = Serializer.EatValue(strType, ref index);
-                var possibleTypeInfo = propertyValueStr != null && propertyValueStr.Length > 1;
+                var possibleTypeInfo = propertyValueStr.Length > 1;
 
                 //if we already have an instance don't check type info, because then we will have a half deserialized object
                 //we could throw here or just use the existing instance.

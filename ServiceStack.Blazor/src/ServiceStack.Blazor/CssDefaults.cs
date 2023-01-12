@@ -73,17 +73,36 @@ public static class CssDefaults
 
     public static class Form
     {
-        public const string FormClass = "flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 shadow-xl bg-white dark:bg-black";
-        public const string PanelClass = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
-        public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 px-4 py-6 sm:px-6";
-        public const string HeadingClass = "text-lg font-medium text-gray-900 dark:text-gray-100";
-        public const string CloseButtonClass = "rounded-md bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black";
+        public const FormStyle DefaultFormStyle = FormStyle.SlideOver;
+        public static string GetPanelClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.PanelClass : SlideOver.PanelClass;
+        public static string GetFormClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.FormClass : SlideOver.FormClass;
+        public static string GetHeadingClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.HeadingClass : SlideOver.HeadingClass;
+        public static string GetSubHeadingClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.SubHeadingClass : SlideOver.SubHeadingClass;
+        public const string ButtonsClass = "mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-900 sm:px-6 flex flex-wrap justify-between";
         public const string LegendClass = "text-base font-medium text-gray-900 dark:text-gray-100 text-center mb-4";
 
-        public static DataTransition SlideOverTransition = new DataTransition(
-            entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
-            leaving: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-0", to: "translate-x-full"),
-            visible: false); 
+        public static class SlideOver
+        {
+            public const string PanelClass = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
+            public const string FormClass = "flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 shadow-xl bg-white dark:bg-black";
+            public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 px-4 py-6 sm:px-6";
+            public const string HeadingClass = "text-lg font-medium text-gray-900 dark:text-gray-100";
+            public const string SubHeadingClass = "mt-1 text-sm text-gray-500 dark:text-gray-400";
+            public const string CloseButtonClass = "rounded-md bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black";
+
+            public static DataTransition SlideOverTransition = new DataTransition(
+                entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
+                leaving: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-0", to: "translate-x-full"),
+                visible: false);
+        }
+
+        public static class Card
+        {
+            public const string PanelClass = "shadow sm:overflow-hidden sm:rounded-md";
+            public const string FormClass = "space-y-6 bg-white dark:bg-black py-6 px-4 sm:p-6";
+            public const string HeadingClass = "text-lg font-medium leading-6 text-gray-900 dark:text-gray-100";
+            public const string SubHeadingClass = "mt-1 text-sm text-gray-500 dark:text-gray-400";
+        }
     }
 
     public static class Modal
@@ -97,7 +116,7 @@ public static class CssDefaults
         public const string DialogClass = "pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16";
         public const string PanelClass = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
         public const string FormClass = "flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-black shadow-xl";
-        public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 px-4 py-6 sm:px-6";
+        public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 p-3 sm:p-6";
         public const string HeadingClass = "text-lg font-medium text-gray-900 dark:text-gray-50";
         public const string CloseButtonClass = "rounded-md bg-gray-50 dark:bg-black text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black";
 

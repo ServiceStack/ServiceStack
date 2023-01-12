@@ -32,13 +32,10 @@ public partial class FileUpload<TReq> : BlazorComponentBase
     ElementReference fileDropContainer;
 
     string progress = "Waiting";
-    [Parameter] public string? @class { get; set; }
 
-    [Parameter]
-    public EventCallback OnUploadStarted { get; set; }
+    [Parameter] public EventCallback OnUploadStarted { get; set; }
 
-    [Parameter]
-    public EventCallback OnUploadComplete { get; set; }
+    [Parameter] public EventCallback OnUploadComplete { get; set; }
 
     private async Task OnChange(InputFileChangeEventArgs e)
     {

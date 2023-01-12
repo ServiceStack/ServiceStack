@@ -1,11 +1,8 @@
 using Chinook.ServiceModel;
-using MyApp.Migrations;
 using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Host;
-using Booking = MyApp.Migrations.Booking;
-using RoomType = MyApp.Migrations.RoomType;
+using ServiceStack.OrmLite;
 
 namespace MyApp.ServiceInterface;
 
@@ -157,8 +154,15 @@ public class TestServices : Service
             {"foo","bar"}, 
             {"baz","1"}
         });
-        
-        Db.CreateBooking("4th of the Bookings", RoomType.Single, 44, 400, "admin@email.com");
+
+        Db.Insert(new Booking {
+            Name = "4th of the Bookings",
+            RoomType = RoomType.Single,
+            RoomNumber = 44,
+            Cost = 400,
+            BookingStartDate = DateTime.UtcNow.AddDays(10),
+            BookingEndDate = DateTime.UtcNow.AddDays(10 + 7),
+        }.WithAudit("admin@email.com"));
 
         var mqRequest = new CreateMqBooking {
             Name = "John Smith",

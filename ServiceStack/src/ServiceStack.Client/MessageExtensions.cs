@@ -108,7 +108,7 @@ namespace ServiceStack
         public static IMessage ConvertToMessage(object oBytes)
         {
             var bytes = (byte[]) oBytes;
-            return bytes.ToMessage<T>();
+            return MessageSerializer.Instance.ToMessage<T>(bytes);
         }
     }
 }

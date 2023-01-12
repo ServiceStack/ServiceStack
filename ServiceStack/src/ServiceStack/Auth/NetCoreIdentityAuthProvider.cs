@@ -51,7 +51,7 @@ namespace ServiceStack.Auth
         public List<string> RestrictToClientIds { get; set; }
         
         public string RoleClaimType { get; set; } = ClaimTypes.Role;
-        public string PermissionClaimType { get; set; } = "perm";
+        public string PermissionClaimType { get; set; } = JwtClaimTypes.Permissions;
         
         /// <summary>
         /// Automatically Assign these roles to Admin Users. 

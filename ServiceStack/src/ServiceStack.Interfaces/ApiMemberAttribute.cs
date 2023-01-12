@@ -53,6 +53,11 @@ namespace ServiceStack
         /// For path, this is always true. Otherwise, this field tells the client whether or not the field must be supplied.
         /// </summary>
         public bool IsRequired { get; set; }
+        
+        /// <summary>
+        /// Explicitly declare a property to be optional
+        /// </summary>
+        public bool IsOptional { get; set; } // workaround as bool? not allowed in attributes
 
         /// <summary>
         /// For query params, this specifies that a comma-separated list of values can be passed to the API. For path and body types, this field cannot be true.

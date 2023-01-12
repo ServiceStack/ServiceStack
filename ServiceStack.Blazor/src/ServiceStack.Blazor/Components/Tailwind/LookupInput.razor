@@ -1,7 +1,7 @@
 ﻿@inherits TextInputBase
 @implements IHasJsonApiClient
 
-<div class="lookup-field">
+<div class=@ClassNames("lookup-field", FieldClass)>
     <input type="hidden" name=@Input.Id value=@Value />
     @if (!string.IsNullOrEmpty(UseLabel))
     {
