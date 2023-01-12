@@ -1,0 +1,47 @@
+﻿@page "/gallery/autoform/edit/card/embed"
+@layout ExampleLayout
+
+<div class="flex justify-center">
+    <AutoEditForm class="max-w-screen-md" FormStyle="FormStyle.Card" Model="Contact" ApiType="typeof(UpdateContact)" 
+        Edit=@contact Save="refresh" />
+</div>
+
+@code {
+    [Inject] public JsonApiClient? Client { get; set; }
+
+    string[] VisibleFields => new[] {
+        nameof(request.FirstName),
+        nameof(request.LastName),
+        nameof(request.Skills),
+    };
+
+    ApiResult<QueryResponse<Contact>> apiQuery = new();
+
+    Contact contact = new();
+    UpdateContact request = new();
+
+    ApiResult<Contact> api = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await refresh();
+    }
+
+    async Task refresh()
+    {
+        apiQuery = await Client!.ApiAsync(new QueryContacts { Take = 1 });
+
+        if (apiQuery.Succeeded)
+        {
+            contact = apiQuery.Response!.Results.First();
+            request = contact.ConvertTo<UpdateContact>();
+        }
+    }
+
+    async Task submit()
+    {
+        api = await Client!.ApiAsync(request);
+        await refresh();
+    }
+}

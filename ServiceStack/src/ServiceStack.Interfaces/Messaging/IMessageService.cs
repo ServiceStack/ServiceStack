@@ -1,83 +1,81 @@
 using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Messaging
+namespace ServiceStack.Messaging;
+
+/// <summary>
+/// Simple definition of an MQ Host
+/// </summary>
+public interface IMessageService
+    : IDisposable
 {
     /// <summary>
-    /// Simple definition of an MQ Host
+    /// Factory to create consumers and producers that work with this service
     /// </summary>
-    public interface IMessageService
-        : IDisposable
-    {
-        /// <summary>
-        /// Factory to create consumers and producers that work with this service
-        /// </summary>
-        IMessageFactory MessageFactory { get; }
+    IMessageFactory MessageFactory { get; }
 
-        /// <summary>
-        /// Register DTOs and handlers the MQ Server will process
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="processMessageFn"></param>
-        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn);
+    /// <summary>
+    /// Register DTOs and handlers the MQ Server will process
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="processMessageFn"></param>
+    void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn);
 
-        /// <summary>
-        /// Register DTOs and handlers the MQ Server will process using specified number of threads
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="processMessageFn"></param>
-        /// <param name="noOfThreads"></param>
-        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, int noOfThreads);
+    /// <summary>
+    /// Register DTOs and handlers the MQ Server will process using specified number of threads
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="processMessageFn"></param>
+    /// <param name="noOfThreads"></param>
+    void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, int noOfThreads);
 
-        /// <summary>
-        /// Register DTOs and handlers the MQ Server will process
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="processMessageFn"></param>
-        /// <param name="processExceptionEx"></param>
-        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx);
+    /// <summary>
+    /// Register DTOs and handlers the MQ Server will process
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="processMessageFn"></param>
+    /// <param name="processExceptionEx"></param>
+    void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx);
 
-        /// <summary>
-        /// Register DTOs and handlers the MQ Server will process using specified number of threads
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="processMessageFn"></param>
-        /// <param name="processExceptionEx"></param>
-        /// <param name="noOfThreads"></param>
-        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads);
+    /// <summary>
+    /// Register DTOs and handlers the MQ Server will process using specified number of threads
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="processMessageFn"></param>
+    /// <param name="processExceptionEx"></param>
+    /// <param name="noOfThreads"></param>
+    void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads);
 
-        /// <summary>
-        /// Get Total Current Stats for all Message Handlers
-        /// </summary>
-        /// <returns></returns>
-        IMessageHandlerStats GetStats();
+    /// <summary>
+    /// Get Total Current Stats for all Message Handlers
+    /// </summary>
+    /// <returns></returns>
+    IMessageHandlerStats GetStats();
 
-        /// <summary>
-        /// Get a list of all message types registered on this MQ Host
-        /// </summary>
-        List<Type> RegisteredTypes { get; }
+    /// <summary>
+    /// Get a list of all message types registered on this MQ Host
+    /// </summary>
+    List<Type> RegisteredTypes { get; }
 
-        /// <summary>
-        /// Get the status of the service. Potential Statuses: Disposed, Stopped, Stopping, Starting, Started
-        /// </summary>
-        /// <returns></returns>
-        string GetStatus();
+    /// <summary>
+    /// Get the status of the service. Potential Statuses: Disposed, Stopped, Stopping, Starting, Started
+    /// </summary>
+    /// <returns></returns>
+    string GetStatus();
 
-        /// <summary>
-        /// Get a Stats dump
-        /// </summary>
-        /// <returns></returns>
-        string GetStatsDescription();
+    /// <summary>
+    /// Get a Stats dump
+    /// </summary>
+    /// <returns></returns>
+    string GetStatsDescription();
 
-        /// <summary>
-        /// Start the MQ Host if not already started.
-        /// </summary>
-        void Start();
+    /// <summary>
+    /// Start the MQ Host if not already started.
+    /// </summary>
+    void Start();
 
-        /// <summary>
-        /// Stop the MQ Host if not already stopped. 
-        /// </summary>
-        void Stop();
-    }
-
+    /// <summary>
+    /// Stop the MQ Host if not already stopped. 
+    /// </summary>
+    void Stop();
 }

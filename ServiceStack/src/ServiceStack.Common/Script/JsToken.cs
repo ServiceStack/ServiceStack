@@ -11,6 +11,17 @@ using ServiceStack.Extensions;
 
 namespace ServiceStack.Script
 {
+    public ref struct SpanJsToken
+    {
+        public ReadOnlySpan<char> Span { get; }
+        public JsToken Node { get; }
+        public SpanJsToken(ReadOnlySpan<char> value, JsToken node)
+        {
+            Span = value;
+            Node = node;
+        }
+    }
+
     public abstract class JsToken : IRawString
     {
         public abstract string ToRawString();
@@ -477,7 +488,9 @@ namespace ServiceStack.Script
 
                 if (hasMemberSuffix) 
                 {
-                    literal = literal.Advance(numLiteral.Length).ParseJsMemberExpression(ref token, filterExpression);
+                    var result = literal.Advance(numLiteral.Length).ParseJsMemberExpression(token, filterExpression);                    
+                    literal = result.Span;
+                    token = result.Node;
                     return literal;
                 }
 
@@ -573,9 +586,11 @@ namespace ServiceStack.Script
             // identifier
             literal = literal.ParseIdentifier(out var node);
 
-            if (!(node is JsOperator))
+            if (node is not JsOperator)
             {
-                literal = literal.ParseJsMemberExpression(ref node, filterExpression);
+                var result = literal.ParseJsMemberExpression(node, filterExpression);
+                literal = result.Span;
+                node = result.Node;
             }
 
             token = node;
@@ -752,12 +767,12 @@ namespace ServiceStack.Script
             return literal;
         }
 
-        internal static ReadOnlySpan<char> ParseJsMemberExpression(this ReadOnlySpan<char> literal, ref JsToken node, bool filterExpression)
+        internal static SpanJsToken ParseJsMemberExpression(this ReadOnlySpan<char> literal, JsToken node, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
 
             if (literal.IsNullOrEmpty())
-                return literal;
+                return new(literal,node);
             
             var c = literal[0];
 
@@ -790,15 +805,14 @@ namespace ServiceStack.Script
                     {
                         literal = literal.ParseWhitespaceArgument(out var argument);
                         node = new JsCallExpression(node, argument);
-                        return literal;
+                        return new(literal,node);
                     }
 
                     var peekLiteral = literal.AdvancePastWhitespace();
                     if (peekLiteral.StartsWith("=>"))
                     {
                         literal = peekLiteral.ParseArrowExpressionBody(new[]{ new JsIdentifier("it") }, out var arrowExpr);
-                        node = arrowExpr;
-                        return literal;
+                        return new(literal, arrowExpr);
                     }
                 }
 
@@ -810,7 +824,7 @@ namespace ServiceStack.Script
                 c = literal[0];
             }
 
-            return literal;
+            return new(literal, node);
         }
 
         internal static ReadOnlySpan<char> EnsurePastChar(this ReadOnlySpan<char> literal, char c)

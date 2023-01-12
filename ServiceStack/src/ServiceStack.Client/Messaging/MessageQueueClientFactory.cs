@@ -24,12 +24,11 @@ namespace ServiceStack.Messaging
             received?.Invoke(this, e);
         }
 
-        private readonly Dictionary<string, Queue<byte[]>> queueMessageBytesMap
-            = new Dictionary<string, Queue<byte[]>>();
+        private readonly Dictionary<string, Queue<byte[]>> queueMessageBytesMap = new();
 
         public void PublishMessage<T>(string queueName, IMessage<T> message)
         {
-            PublishMessage(queueName, message.ToBytes());
+            PublishMessage(queueName, MessageSerializer.Instance.ToBytes(message));
         }
 
         public void PublishMessage(string queueName, byte[] messageBytes)
@@ -45,7 +44,7 @@ namespace ServiceStack.Messaging
                 bytesQueue.Enqueue(messageBytes);
             }
 
-            InvokeMessageReceived(new EventArgs());
+            InvokeMessageReceived(EventArgs.Empty);
         }
 
         /// <summary>

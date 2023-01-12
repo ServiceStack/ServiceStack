@@ -1,0 +1,20 @@
+@page
+@{
+    ViewData["Title"] = "Forbidden";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>You are not authorized to access this page.</p>
+
+@if (!string.IsNullOrEmpty(Html.Query("role")))
+{
+    <p> 
+        Required Role @Html.Query("role")
+    </p>
+}
+@if (!string.IsNullOrEmpty(Html.Query("permission")))
+{
+    <p> 
+        Required Permission @Html.Query("permission")
+    </p>
+}

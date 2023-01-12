@@ -11,9 +11,8 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 /// <remarks>
 /// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/FileInput.png)
 /// </remarks>
-public partial class FileInput : TextInputBase, IAsyncDisposable
+public partial class FileInput : TextInputBase, IDisposable
 {
-    [Inject] public IJSRuntime JS { get; set; }
     [Parameter] public bool Multiple { get; set; }
     [Parameter] public string? Accept { get; set; }
     [Parameter] public string? Value { get; set; }
@@ -84,15 +83,13 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
         {
             // This is the first run
             // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
-            if (ValueExpression == null)
+            if (ValueExpression == null && Id == null)
             {
                 throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
                                                     $"parameter. Normally this is provided automatically when using 'bind-Value'.");
             }
-
-            FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
-            if (Id == null)
-                Id = FieldIdentifier.FieldName;
+            
+            Id ??= (FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression!)).FieldName;
 
             nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(string));
             hasInitializedParameters = true;
@@ -102,8 +99,8 @@ public partial class FileInput : TextInputBase, IAsyncDisposable
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await JS.InvokeVoidAsync("Files.flush");
+        QueueRenderAction(async JS => await JS.InvokeVoidAsync("Files.flush"));
     }
 }

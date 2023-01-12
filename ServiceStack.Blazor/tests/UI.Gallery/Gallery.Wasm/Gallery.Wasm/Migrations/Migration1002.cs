@@ -31,7 +31,7 @@ public class Migration1002 : MigrationBase
 
         public string Email { get; set; }
         public string Phone { get; set; }
-
+        public List<string>? Skills { get; set; }
         public string About { get; set; }
 
         [Reference]
@@ -180,6 +180,8 @@ public class Migration1002 : MigrationBase
         [AutoIncrement]
         public int Id { get; set; }
         public int SalaryOffer { get; set; }
+        public string Currency { get; set; }
+
         [References(typeof(JobApplication))]
         public int JobApplicationId { get; set; }
         [References(typeof(AppUser))]

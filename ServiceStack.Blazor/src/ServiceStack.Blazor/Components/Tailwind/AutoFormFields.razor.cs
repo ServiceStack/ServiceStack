@@ -19,8 +19,7 @@ public partial class AutoFormFields : UiComponentBase
 
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     protected MetadataType? metadataType;
-    public MetadataType MetadataType => metadataType ??= AppMetadata?.Api.Types.FirstOrDefault(x => x.Name == Type.Name)
-        ?? Type.ToMetadataType();
+    public MetadataType MetadataType => metadataType ??= AppMetadata?.GetType(Type) ?? Type.ToMetadataType();
 
     MetadataType? dataModelType = null;
     public MetadataType? DataModelType => dataModelType ??= AppMetadata.GetType(AppMetadata?.GetOperation(Type.Name)?.DataModel) ?? MetadataType;

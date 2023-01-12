@@ -15,7 +15,7 @@ namespace ServiceStack.OrmLite.Tests
         /// <summary>
         /// This value controls which providers are tested for all <see cref="TestFixtureOrmLiteAttribute"/> tests where dialects are not explicitly set
         /// </summary>
-        public static Dialect Dialects = EnvironmentVariable("ORMLITE_DIALECT", Dialect.Sqlite);
+        public static Dialect Dialects = EnvironmentVariable("ORMLITE_DIALECT", Dialect.SqlServer);
     }
 
     [Flags]

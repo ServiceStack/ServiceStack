@@ -1,3 +1,4 @@
+#nullable  enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ public class PreProcessRequest : IPlugin, IHasStringId
     /// <summary>
     /// Handle async file uploads 
     /// </summary>
-    public Func<IRequest, IHttpFile, CancellationToken, Task<string?>> HandleUploadFileAsync { get; set; }
+    public Func<IRequest, IHttpFile, CancellationToken, Task<string?>>? HandleUploadFileAsync { get; set; }
 
     public void Register(IAppHost appHost)
     {

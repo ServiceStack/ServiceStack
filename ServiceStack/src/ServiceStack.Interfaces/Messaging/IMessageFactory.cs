@@ -1,9 +1,7 @@
 using System;
 
-namespace ServiceStack.Messaging
+namespace ServiceStack.Messaging;
+public interface IMessageFactory : IMessageQueueClientFactory
 {
-    public interface IMessageFactory : IMessageQueueClientFactory
-    {
-        IMessageProducer CreateMessageProducer();
-    }
+    IMessageProducer CreateMessageProducer();
 }

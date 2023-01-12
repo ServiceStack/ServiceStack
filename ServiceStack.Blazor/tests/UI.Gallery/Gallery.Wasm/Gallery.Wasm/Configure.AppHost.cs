@@ -38,6 +38,8 @@ public class AppHost : AppHostBase, IHostingStartup
                         : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
                     readAccessRole: RoleNames.AllowAnon, writeAccessRole: RoleNames.AllowAnon)
         ));
+
+        ScriptContext.Args["AppData"] = AppData.Instance;
     }
 
     public void Configure(IWebHostBuilder builder) => builder

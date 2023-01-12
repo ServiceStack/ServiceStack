@@ -79,7 +79,7 @@ namespace ServiceStack
         }
 
         public string ErrorCode { get; set; }
-        public string StackTrace { get; set; }
+        public new string StackTrace { get; set; }
 
         public string ContentType { get; set; }
 

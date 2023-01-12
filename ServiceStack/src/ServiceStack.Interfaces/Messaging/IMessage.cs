@@ -1,35 +1,34 @@
 using System;
 using ServiceStack.Model;
 
-namespace ServiceStack.Messaging
+namespace ServiceStack.Messaging;
+
+public interface IMessage
+    : IHasId<Guid>, IMeta
 {
-    public interface IMessage
-        : IHasId<Guid>, IMeta
-    {
-        DateTime CreatedDate { get; }
+    DateTime CreatedDate { get; }
 
-        long Priority { get; set; }
+    long Priority { get; set; }
 
-        int RetryAttempts { get; set; }
+    int RetryAttempts { get; set; }
 
-        Guid? ReplyId { get; set; }
+    Guid? ReplyId { get; set; }
 
-        string ReplyTo { get; set; }
+    string ReplyTo { get; set; }
 
-        int Options { get; set; }
+    int Options { get; set; }
 
-        ResponseStatus Error { get; set; }
+    ResponseStatus Error { get; set; }
 
-        string Tag { get; set; }
+    string Tag { get; set; }
 
-        object Body { get; set; }
-        
-        string TraceId { get; set; }
-    }
+    object Body { get; set; }
+    
+    string TraceId { get; set; }
+}
 
-    public interface IMessage<T>
-        : IMessage
-    {
-        T GetBody();
-    }
+public interface IMessage<T>
+    : IMessage
+{
+    T GetBody();
 }

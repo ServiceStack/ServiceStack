@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common", "..\.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj", "{B2917A3A-6A60-4438-A3E8-31305FB100AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Kestrel", "..\..\ServiceStack\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj", "{085C64CA-8E90-45D0-87BB-12AE919EB7D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{B2917A3A-6A60-4438-A3E8-31305FB100AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2917A3A-6A60-4438-A3E8-31305FB100AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2917A3A-6A60-4438-A3E8-31305FB100AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{085C64CA-8E90-45D0-87BB-12AE919EB7D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{085C64CA-8E90-45D0-87BB-12AE919EB7D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{085C64CA-8E90-45D0-87BB-12AE919EB7D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{085C64CA-8E90-45D0-87BB-12AE919EB7D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,5 +82,6 @@ Global
 		{9F1DA3D4-89FC-4B2C-BABB-1C4FCA7CF6A2} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
 		{E21E106A-0C68-4E02-81F5-762090CEF06D} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
 		{B2917A3A-6A60-4438-A3E8-31305FB100AD} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
+		{085C64CA-8E90-45D0-87BB-12AE919EB7D8} = {AB0D6C2B-CF78-45F2-9BD0-5565ACB345D4}
 	EndGlobalSection
 EndGlobal

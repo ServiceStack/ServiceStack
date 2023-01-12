@@ -138,6 +138,5 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
         }
     }
 
-    public ImageInfo Icon => AppMetadata!.Api.Types.FirstOrDefault(x => x.Name == Property.Ref.Model)?.Icon
-        ?? BlazorConfig.Instance.DefaultTableIcon;
+    public ImageInfo Icon => AppMetadata!.GetType(Property.Ref.Model)?.Icon ?? BlazorConfig.Instance.DefaultTableIcon;
 }

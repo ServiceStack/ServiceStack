@@ -1,0 +1,33 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="mt-5 d-flex justify-content-center">
+    <div class="max-w-sm" style="width:22rem">
+        <h2><a href="/ui/Hello">Hello</a> API</h2>
+        <input class="form-control" type="text" id="txtName">
+        <h4 id="result" class="mt-4 text-success text-center"></h4>
+    </div>
+</div>
+
+@section Scripts {
+<script type="module">
+import { $1 } from "/js/servicestack-client.mjs"
+import { client } from "/js/default.mjs"
+import { Hello } from "/js/dtos.mjs"
+
+$1("#txtName").addEventListener('keyup', e => {
+    client.get(new Hello({ name:e.target.value }))
+        .then(r => {
+            $1('#result').innerHTML = r.result;
+        })
+})
+</script>
+}

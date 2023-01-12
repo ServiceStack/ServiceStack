@@ -58,11 +58,21 @@ public class AppTasks
         Instance.Tasks[taskName] = appTask;
     }
 
-    public static int? RanAsTask()
+    public static string? GetAppTaskCommands()
     {
         var argsMap = Environment.GetCommandLineArgs().Select(a => a.Split('='))
-            .ToDictionary(a => a[0].TrimPrefixes("/","--"), a => a.Length == 2 ? a[1] : null);
-        if (argsMap.TryGetValue(nameof(AppTasks), out var appTasksStr))
+            .ToDictionary(a => a[0].TrimPrefixes("/", "--"), a => a.Length == 2 ? a[1] : null);
+        return argsMap.TryGetValue(nameof(AppTasks), out var appTasksStr)
+            ? appTasksStr
+            : null;
+    }
+
+    public static bool IsRunAsAppTask() => GetAppTaskCommands() != null;
+
+    public static int? RanAsTask()
+    {
+        var appTasksStr = GetAppTaskCommands();
+        if (appTasksStr != null)
         {
             var tasks = Instance.Tasks;
             if (tasks.Count > 0)

@@ -76,6 +76,14 @@ namespace ServiceStack.NativeTypes
         public string Vfx { get; set; }
     }
 
+    [ExcludeMetadata]
+    [Route("/types/mjs")]
+    public class TypesMjs : NativeTypesBase
+    {
+        public bool? Cache { get; set; }
+        public string Vfx { get; set; }
+    }
+
     public class NativeTypesBase
     {
         public string BaseUrl { get; set; }
@@ -84,6 +92,7 @@ namespace ServiceStack.NativeTypes
         public bool? MakeInternal { get; set; }
         public bool? AddReturnMarker { get; set; }
         public bool? AddDescriptionAsComments { get; set; }
+        public bool? AddDocAnnotations { get; set; }
         public bool? AddDataContractAttributes { get; set; }
         public bool? MakeDataContractsExtensible { get; set; }
         public bool? AddIndexesToDataMembers { get; set; }
@@ -96,6 +105,7 @@ namespace ServiceStack.NativeTypes
         public bool? AddPropertyAccessors { get; set; }
         public bool? ExcludeGenericBaseTypes { get; set; }
         public bool? SettersReturnThis { get; set; }
+        public bool? AddNullableAnnotations { get; set; }
         public bool? MakePropertiesOptional { get; set; }
         public bool? ExportAsTypes { get; set; }
         public bool? ExportValueTypes { get; set; }
@@ -140,6 +150,7 @@ namespace ServiceStack.NativeTypes
                 {"TypeScript", new TypesTypeScript().ToAbsoluteUri(Request)},
                 {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri(Request)},
                 {"CommonJs", new TypesCommonJs().ToAbsoluteUri(Request)},
+                {"Mjs", new TypesMjs().ToAbsoluteUri(Request)},
                 {"Dart", new TypesDart().ToAbsoluteUri(Request)},
                 {"Java", new TypesJava().ToAbsoluteUri(Request)},
                 {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
@@ -253,6 +264,28 @@ namespace ServiceStack.NativeTypes
 
                 var metadataTypes = ResolveMetadataTypes(typesConfig);
                 var typeScript = new CommonJsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+                return typeScript;
+            }
+
+            if (request.Cache != false && !HostContext.DebugMode)
+                return Request.ToOptimizedResultUsingCache(LocalCache, cacheKey:Request.AbsoluteUri, Generate);
+            
+            return Generate();
+        }
+
+        [AddHeader(ContentType = MimeTypes.JavaScript)]
+        public object Any(TypesMjs request)
+        {
+            string Generate()
+            {
+                request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+                var typesConfig = NativeTypesMetadata.GetConfig(request);
+                typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+                typesConfig.ExportAsTypes = true;
+
+                var metadataTypes = ResolveMetadataTypes(typesConfig);
+                var typeScript = new MjsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
                 return typeScript;
             }
 

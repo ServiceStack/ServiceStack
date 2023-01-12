@@ -22,14 +22,18 @@ public enum Department
 // Custom User Table with extended Metadata properties
 public class AppUser : UserAuth
 {
+    [Format(FormatMethods.IconRounded)]
+    public string ProfileUrl { get; set; }
     public Department Department { get; set; }
-    public string? ProfileUrl { get; set; }
-    public string? LastLoginIp { get; set; }
-
+    public string Title { get; set; }
+    public string JobArea { get; set; }
+    public string Location { get; set; }
+    public int Salary { get; set; }
+    public string About { get; set; }
     public bool IsArchived { get; set; }
     public DateTime? ArchivedDate { get; set; }
-
     public DateTime? LastLoginDate { get; set; }
+    public string LastLoginIp { get; set; }
 }
 
 public class AppUserAuthEvents : AuthEvents

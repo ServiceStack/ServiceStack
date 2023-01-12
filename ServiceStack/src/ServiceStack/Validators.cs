@@ -172,7 +172,7 @@ namespace ServiceStack
                 {
                     typeRules.Add(rule);
                 }
-                if (rule == null && registerChildValidators && pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
+                if (registerChildValidators && pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
                 {
                     var collectionGenericType = pi.PropertyType.GetTypeWithGenericInterfaceOf(typeof(IEnumerable<>));
                     if (collectionGenericType != null)

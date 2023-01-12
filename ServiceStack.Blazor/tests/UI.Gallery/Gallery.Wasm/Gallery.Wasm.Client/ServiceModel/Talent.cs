@@ -30,7 +30,7 @@ public class Contact
     public string Email { get; set; }
     [Format(FormatMethods.LinkPhone)]
     public string Phone { get; set; }
-
+    public List<string>? Skills { get; set; }
     public string About { get; set; }
 
     [Reference]
@@ -200,6 +200,8 @@ public class JobOffer : AuditBase
     [IntlNumber(Currency = NumberCurrency.USD)]
     public int SalaryOffer { get; set; }
 
+    public string Currency { get; set; }
+
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
 
@@ -279,6 +281,9 @@ public class CreateContact : ICreateDb<Contact>, IReturn<Contact>
     [ValidateNotEmpty]
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
+
+    [Input(Type = "tag"), FieldCss(Field = "col-span-12")]
+    public List<string>? Skills { get; set; }
     [Input(Type = "textarea")]
     [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label = "text-xl text-indigo-700")]
     public string? About { get; set; }
@@ -303,6 +308,8 @@ public class UpdateContact : IPatchDb<Contact>, IReturn<Contact>
     [ValidateNotEmpty]
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    [Input(Type = "tag"), FieldCss(Field = "col-span-12")]
+    public List<string>? Skills { get; set; }
     [Input(Type = "textarea")]
     [FieldCss(Field = "col-span-12 text-center", Input = "h-48", Label= "text-xl text-indigo-700")]
     public string? About { get; set; }
@@ -495,12 +502,35 @@ public class CreateJobOffer : ICreateDb<JobOffer>, IReturn<JobOffer>
 {
     [ValidateGreaterThan(0)]
     public int SalaryOffer { get; set; }
+
+    [Input(Type = "select", EvalAllowableValues = "AppData.Currencies")]
+    public string Currency { get; set; }
+
     [ValidateGreaterThan(0)]
     public int JobApplicationId { get; set; }
 
     public JobApplicationStatus ApplicationStatus { get; set; }
+
     [ValidateNotEmpty]
+    [Input(Type = "textarea")]
     public string Notes { get; set; }
+}
+
+[Tag("Talent")]
+[ValidateIsAuthenticated]
+[AutoApply(Behavior.AuditCreate)]
+public class UpdateJobOffer : IPatchDb<JobOffer>, IReturn<JobOffer>
+{
+    public int? Id { get; set; }
+    public int? SalaryOffer { get; set; }
+
+    [Input(Type = "select", EvalAllowableValues = "AppData.Currencies")]
+    public string Currency { get; set; }
+    public int? JobApplicationId { get; set; }
+
+    public JobApplicationStatus? ApplicationStatus { get; set; }
+    [Input(Type="textarea")]
+    public string? Notes { get; set; }
 }
 
 [Tag("Talent")]

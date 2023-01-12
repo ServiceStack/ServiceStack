@@ -458,8 +458,9 @@ namespace ServiceStack.Text
 
             if (dirSep == 0)
                 return TypeConstants.NullStringSpan;
-            
-            MemoryExtensions.TrimEnd(filePath, dirSep).SplitOnLast(dirSep, out var first, out _); 
+
+            ReadOnlySpan<char> first;
+            MemoryExtensions.TrimEnd(filePath, dirSep).SplitOnLast(dirSep, out first, out _); 
             return first;
         }
 

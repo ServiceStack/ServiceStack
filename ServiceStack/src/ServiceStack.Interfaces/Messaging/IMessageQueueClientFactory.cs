@@ -1,10 +1,9 @@
 using System;
 
-namespace ServiceStack.Messaging
+namespace ServiceStack.Messaging;
+
+public interface IMessageQueueClientFactory
+    : IDisposable
 {
-    public interface IMessageQueueClientFactory
-        : IDisposable
-    {
-        IMessageQueueClient CreateMessageQueueClient();
-    }
+    IMessageQueueClient CreateMessageQueueClient();
 }

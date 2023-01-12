@@ -68,6 +68,9 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     protected virtual TResponse ExecSync<TResponse>(object request)
     {
+        if (Request is IConvertRequest convertRequest)
+            request = convertRequest.Convert(request);
+
         foreach (var filter in HostContext.AppHost.GatewayRequestFiltersArray)
         {
             filter(req, request);
@@ -117,6 +120,9 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     protected virtual async Task<TResponse> ExecAsync<TResponse>(object request)
     {
+        if (Request is IConvertRequest convertRequest)
+            request = convertRequest.Convert(request);
+
         var appHost = HostContext.AppHost;
         if (!await appHost.ApplyGatewayRequestFiltersAsync(req, request)) 
             return default;
@@ -397,13 +403,16 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         }
     }
 
-    public virtual void Publish(object requestDto)
+    public virtual void Publish(object request)
     {
+        if (Request is IConvertRequest convertRequest)
+            request = convertRequest.Convert(request);
+
         var holdDto = req.Dto;
         var holdOp = req.OperationName;
         var holdAttrs = req.RequestAttributes;
-        var holdVerb = SetVerb(requestDto);
-        InitRequest(requestDto);
+        var holdVerb = SetVerb(request);
+        InitRequest(request);
 
         req.RequestAttributes &= ~RequestAttributes.Reply;
         req.RequestAttributes |= RequestAttributes.OneWay;
@@ -413,12 +422,12 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         Exception e = null;
         try
         {
-            var response = HostContext.ServiceController.Execute(requestDto, req);
+            var response = HostContext.ServiceController.Execute(request, req);
         }
         catch (Exception ex)
         {
             e = ex;
-            HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
+            HostContext.RaiseGatewayException(req, request, ex).Wait();
             throw;
         }
         finally
@@ -435,13 +444,16 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         }
     }
 
-    public virtual async Task PublishAsync(object requestDto, CancellationToken token = new CancellationToken())
+    public virtual async Task PublishAsync(object request, CancellationToken token = new CancellationToken())
     {
+        if (Request is IConvertRequest convertRequest)
+            request = convertRequest.Convert(request);
+
         var holdDto = req.Dto;
         var holdOp = req.OperationName;
         var holdAttrs = req.RequestAttributes;
-        var holdVerb = SetVerb(requestDto);
-        InitRequest(requestDto);
+        var holdVerb = SetVerb(request);
+        InitRequest(request);
 
         req.RequestAttributes &= ~RequestAttributes.Reply;
         req.RequestAttributes |= RequestAttributes.OneWay;
@@ -451,12 +463,12 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         Exception e = null;
         try
         {
-            await HostContext.ServiceController.GatewayExecuteAsync(requestDto, req, applyFilters: false);
+            await HostContext.ServiceController.GatewayExecuteAsync(request, req, applyFilters: false);
         }
         catch (Exception ex)
         {
             e = ex;
-            await HostContext.RaiseGatewayException(req, requestDto, ex);
+            await HostContext.RaiseGatewayException(req, request, ex);
             throw;
         }
         finally
@@ -475,6 +487,9 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual void PublishAll(IEnumerable<object> requestDtos)
     {
+        if (Request is IConvertRequest convertRequest)
+            requestDtos = convertRequest.Convert(requestDtos);
+
         var holdDto = req.Dto;
         var holdAttrs = req.RequestAttributes;
         string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
@@ -512,6 +527,9 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual async Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
     {
+        if (Request is IConvertRequest convertRequest)
+            requestDtos = convertRequest.Convert(requestDtos);
+
         var holdDto = req.Dto;
         var holdAttrs = req.RequestAttributes;
         string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;

@@ -689,12 +689,12 @@ public abstract class JwtAuthProviderTests
         JwtAuthProvider.Dump(jwtToken).Print();
 
         var payload = JwtAuthProvider.ExtractPayload(jwtToken);
-        Assert.That(payload["roles"], Is.EquivalentTo(roles));
-        Assert.That(payload["perms"], Is.EquivalentTo(perms));
+        Assert.That(payload[JwtClaimTypes.Roles], Is.EquivalentTo(roles));
+        Assert.That(payload[JwtClaimTypes.Permissions], Is.EquivalentTo(perms));
         
         var jsonObj = jwtProvider.GetVerifiedJwtPayload(jwtToken);
-        Assert.That(jsonObj.GetUnescaped("roles"), Is.EquivalentTo("[\"Super Admin\"]"));
-        Assert.That(jsonObj.GetUnescaped("perms"), Is.EquivalentTo("[\"Perm\",\"The Perm\",\"Super Perm\"]"));
+        Assert.That(jsonObj.GetUnescaped(JwtClaimTypes.Roles), Is.EquivalentTo("[\"Super Admin\"]"));
+        Assert.That(jsonObj.GetUnescaped(JwtClaimTypes.Permissions), Is.EquivalentTo("[\"Perm\",\"The Perm\",\"Super Perm\"]"));
 
         var session = new AuthUserSession();
         session.PopulateFromMap(jsonObj);

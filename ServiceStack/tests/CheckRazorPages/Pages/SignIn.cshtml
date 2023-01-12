@@ -1,0 +1,77 @@
+@page
+@{
+    ViewBag.Title = "Sign In";
+
+    if (await Html.IsAuthenticatedAsync())
+    {
+        await Html.RedirectToAsync(Html.GetReturnUrl());
+        return;
+    }
+}
+
+<div class="d-flex container-md">
+    <div>
+        <h1 class="fs-2 mb-3">@ViewBag.Title</h1>
+
+        <form action="/auth/credentials" method="post" class="w-sm">
+            <div class="mb-3 form-floating">
+                <div class="form-group" data-validation-summary="userName,password"></div>
+                @Html.HiddenInputs(new { redirect = Html.Query("redirect") })
+            </div>
+            <div class="mb-3 form-floating">
+                <input class="form-control" id="userName" name="userName" type="text" placeholder="UserName">
+                <label for="userName">Username</label>
+            </div>
+            <div class="mb-3 form-floating">
+                <input class="form-control" id="password" name="password" type="password" placeholder="Password">
+                <label for="password">Password</label>
+            </div>
+            <div class="mb-3 form-check">
+                <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe" value="true">
+                <label class="form-check-label ms-2" for="rememberMe">Remember Me</label>
+            </div>
+            <div class="mb-3 form-floating">
+                <button type="submit" class="btn btn-lg btn-primary">Login</button>
+                <a href="/SignUp" class="btn btn-lg btn-outline-primary">Register New User</a>
+            </div>
+        </form>
+        
+        <div class="mt-5 d-flex align-items-center">
+            <span class="me-2">Quick Links:</span>
+            <div class="btn-group">
+                <a class="btn btn-outline-secondary mb-1" href="javascript:void(0)" data-click="switchUser:admin@@email.com">admin@@email.com</a>
+                <a class="btn btn-outline-secondary mb-1" href="javascript:void(0)" data-click="switchUser:new@@user.com">new@@user.com</a>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="justify-content-end mt-5 ms-5">
+            <div>
+                @Html.NavButtonGroup(Html.GetNavItems("auth"), new NavOptions {
+                    NavClass = "d-flex flex-column",
+                    NavItemClass = "btn btn-block btn-lg mb-2",
+                })
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+<script type="module">
+import { $1, bootstrapForm, bindHandlers } from "/js/servicestack-client.mjs"
+
+bootstrapForm($1('form'), {
+    success: r => {
+        location.href = $1('[name=redirect]').value || '/'
+    },
+})
+
+bindHandlers({
+    switchUser: u => {
+        $1("[name=userName]").value = u
+        $1("[name=password]").value = 'p@@55wOrd'
+    },
+})
+</script>
+}

@@ -14,7 +14,7 @@ namespace ServiceStack.Auth
 
         public AuthMetadataProvider()
         {
-            NoProfileImgUrl = Svg.GetDataUri(Svg.Icons.DefaultProfile);
+            NoProfileImgUrl = JwtClaimTypes.DefaultProfileUrl;
         }
 
         public virtual void AddMetadata(IAuthTokens tokens, Dictionary<string, string> authInfo)

@@ -1,8 +1,8 @@
 ﻿@typeparam TValue
 @inherits TextInputBase<TValue>
 
-<textarea id=@Id name=@Id @bind="CurrentValue" class=@ClassNames($"form-control", CssClass(invalid:"is-invalid")) 
-          placeHolder=@UsePlaceholder @bind:event="oninput" aria-describedby=@($"{Id}-description") @attributes="IncludeAttributes" />
+<textarea id=@Id name=@Id @bind-value="CurrentValue" class=@ClassNames($"form-control", CssClass(invalid:"is-invalid")) 
+          placeHolder=@UsePlaceholder @bind-value:event="oninput" aria-describedby=@($"{Id}-description") @attributes="IncludeAttributes" />
 @if (!string.IsNullOrEmpty(UsePlaceholder) && Label != "")
 {
     <label for=@Id>@UsePlaceholder</label>

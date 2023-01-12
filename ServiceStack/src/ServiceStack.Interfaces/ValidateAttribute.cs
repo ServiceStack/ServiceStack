@@ -285,11 +285,13 @@ namespace ServiceStack
     {
         public ValidateEqualAttribute(string value) : base($"Equal(`{value}`)") { }
         public ValidateEqualAttribute(int value) : base($"Equal({value})") { }
+        public ValidateEqualAttribute(bool value) : base($"Equal({value.ToString().ToLower()})") { }
     }
     public class ValidateNotEqualAttribute : ValidateAttribute
     {
         public ValidateNotEqualAttribute(string value) : base($"NotEqual(`{value}`)") { }
         public ValidateNotEqualAttribute(int value) : base($"NotEqual({value})") { }
+        public ValidateNotEqualAttribute(bool value) : base($"NotEqual({value.ToString().ToLower()})") { }
     }
     public class ValidateInclusiveBetweenAttribute : ValidateAttribute
     {

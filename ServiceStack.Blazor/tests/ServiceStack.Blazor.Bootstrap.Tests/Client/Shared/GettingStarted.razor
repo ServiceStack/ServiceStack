@@ -7,7 +7,7 @@
             <div class="d-flex flex-column mx-auto" style="width:380px">
 
                 <h4 class="my-4 text-center fs-5">Create New Project</h4>
-                <input type="text" @bind="project" @bind:event="oninput" autocomplete="off" spellcheck="false" placeholder="ProjectName"
+                <input type="text" @bind-value="project" @bind-value:event="oninput" autocomplete="off" spellcheck="false" placeholder="ProjectName"
                        class="form-control form-control-lg mb-5" />
 
                 <div class="d-flex justify-content-center">

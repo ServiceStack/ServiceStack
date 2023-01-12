@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
-namespace ServiceStack.Mvc
-{
+namespace ServiceStack.Mvc;
+
 #if !NETCORE
     public class MvcPageResult : System.Web.Mvc.ActionResult
     {
@@ -31,29 +31,29 @@ namespace ServiceStack.Mvc
         }
     }
 #else
-    public class MvcPageResult : Microsoft.AspNetCore.Mvc.ActionResult
+public class MvcPageResult : Microsoft.AspNetCore.Mvc.ActionResult
+{
+    readonly PageResult pageResult;
+
+    public MvcPageResult(PageResult pageResult) => this.pageResult = pageResult;
+
+    public override async Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context)
     {
-        readonly PageResult pageResult;
-
-        public MvcPageResult(PageResult pageResult) => this.pageResult = pageResult;
-
-        public override async Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context)
+        foreach (var entry in pageResult.Options)
         {
-            foreach (var entry in pageResult.Options)
-            {
-                if (entry.Key == HttpHeaders.ContentType)
-                    context.HttpContext.Response.ContentType = entry.Value;
-                else
-                    context.HttpContext.Response.Headers[entry.Key] = entry.Value;
-            }
-
-            await pageResult.WriteToAsync(context.HttpContext.Response.Body).ConfigAwait();
+            if (entry.Key == HttpHeaders.ContentType)
+                context.HttpContext.Response.ContentType = entry.Value;
+            else
+                context.HttpContext.Response.Headers[entry.Key] = entry.Value;
         }
+
+        await pageResult.WriteToAsync(context.HttpContext.Response.Body).ConfigAwait();
     }
+}
 #endif    
     
-    public static class MvcPageResultExtensions
-    {
+public static class MvcPageResultExtensions
+{
 #if !NETCORE
         public static async Task<MvcPageResult> ToMvcResultAsync(this PageResult pageResult)
         {
@@ -62,7 +62,6 @@ namespace ServiceStack.Mvc
             return new MvcPageResult(pageResult, ms);
         }
 #else
-        public static MvcPageResult ToMvcResult(this PageResult pageResult) => new MvcPageResult(pageResult);        
+    public static MvcPageResult ToMvcResult(this PageResult pageResult) => new MvcPageResult(pageResult);        
 #endif    
-    }
 }

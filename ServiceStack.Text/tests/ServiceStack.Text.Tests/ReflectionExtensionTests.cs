@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -164,6 +166,34 @@ namespace ServiceStack.Text.Tests
             var hasAnyChildValidators = elementProps 
                 .Any(elProp => elProp.HasAttributeOf<ValidateAttribute>());
             Assert.That(hasAnyChildValidators);
+        }
+
+        [Test]
+        public void Can_clone_Enumerables()
+        {
+            var source = new[] { "A", "B", "C" };
+            AssertClone(source.ShallowClone(), source);
+            
+            var list = new List<string>(source);
+            AssertClone(list.ShallowClone(), list);
+            
+            var set = new HashSet<string>(source);
+            AssertClone(set.ShallowClone(), set);
+
+            var dict = new Dictionary<string, int>();
+            source.Each((i,x) => dict[x] = i);
+            AssertClone(dict.ShallowClone(), dict);
+
+            var cDict = new ConcurrentDictionary<string, int>();
+            source.Each((i,x) => cDict[x] = i);
+            AssertClone(cDict.ShallowClone(), cDict);
+        }
+        
+        public void AssertClone(IEnumerable actual, IEnumerable expected)
+        {
+            Assert.That(ReferenceEquals(actual, expected), Is.False);
+            Assert.That(actual.GetType(), Is.EqualTo(expected.GetType()));
+            Assert.That(actual, Is.EquivalentTo(expected));
         }
     }
 

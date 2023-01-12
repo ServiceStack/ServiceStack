@@ -201,8 +201,8 @@ public class Migration1002 : MigrationBase
         Db.DeleteAll<Level>();
 
         // DROP ForeignKey Tables in dependent order
-        Db.DropTable<Level>();
         Db.DropTable<Player>();
+        Db.DropTable<Level>();
 
         // DROP tables without Foreign Keys in any order
         Db.DropTable<Profile>();

@@ -75,7 +75,7 @@ namespace ServiceStack.Host
         public T TryResolve<T>()
         {
 #if NETCORE
-            if (ServiceScope != null)
+            if (ServiceScope?.ServiceProvider != null)
             {
                 var instance = ServiceScope.ServiceProvider.GetService(typeof(T));
                 if (instance != null)

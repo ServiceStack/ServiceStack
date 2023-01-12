@@ -11,69 +11,68 @@ using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc.Controllers;
 #endif
 
-namespace ServiceStack.Mvc
+namespace ServiceStack.Mvc;
+
+public class ExecuteServiceStackFiltersAttribute : ActionFilterAttribute
 {
-    public class ExecuteServiceStackFiltersAttribute : ActionFilterAttribute
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
     {
-        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        if (!(filterContext.Controller is ServiceStackController ssController)) return;
+
+        ssController.ViewData[Keywords.IRequest] = ssController.ServiceStackRequest;
+
+        var authAttr = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext)
+            .FirstOrDefault();
+
+        if (!ssController.IsAuthorized(authAttr))
         {
-            if (!(filterContext.Controller is ServiceStackController ssController)) return;
+            var authError = authAttr?.HtmlRedirect != null
+                ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
+                : ssController.AuthenticationErrorResult;
 
-            ssController.ViewData[Keywords.IRequest] = ssController.ServiceStackRequest;
-
-            var authAttr = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext)
-                .FirstOrDefault();
-
-            if (!ssController.IsAuthorized(authAttr))
-            {
-                var authError = authAttr?.HtmlRedirect != null
-                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
-                    : ssController.AuthenticationErrorResult;
-
-                filterContext.Result = authError;
-                return;
-            }
-
-            var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
-            var anyRoleAttrs = GetActionAndControllerAttributes<RequiresAnyRoleAttribute>(filterContext);
-            var permAttrs = GetActionAndControllerAttributes<RequiredPermissionAttribute>(filterContext);
-            var anyPermAttrs = GetActionAndControllerAttributes<RequiresAnyPermissionAttribute>(filterContext);
-
-            if (!ssController.HasAccess(roleAttrs, anyRoleAttrs, permAttrs, anyPermAttrs))
-            {
-                var authError = authAttr?.HtmlRedirect != null
-                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
-                    : ssController.ForbiddenErrorResult;
-
-                filterContext.Result = authError;
-            }
+            filterContext.Result = authError;
+            return;
         }
 
-        private static List<T> GetActionAndControllerAttributes<T>(ActionExecutingContext filterContext)
-            where T : Attribute
+        var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
+        var anyRoleAttrs = GetActionAndControllerAttributes<RequiresAnyRoleAttribute>(filterContext);
+        var permAttrs = GetActionAndControllerAttributes<RequiredPermissionAttribute>(filterContext);
+        var anyPermAttrs = GetActionAndControllerAttributes<RequiresAnyPermissionAttribute>(filterContext);
+
+        if (!ssController.HasAccess(roleAttrs, anyRoleAttrs, permAttrs, anyPermAttrs))
         {
-            var attrs = new List<T>();
+            var authError = authAttr?.HtmlRedirect != null
+                ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
+                : ssController.ForbiddenErrorResult;
+
+            filterContext.Result = authError;
+        }
+    }
+
+    private static List<T> GetActionAndControllerAttributes<T>(ActionExecutingContext filterContext)
+        where T : Attribute
+    {
+        var attrs = new List<T>();
 
 #if !NETCORE
-            var attr = filterContext.ActionDescriptor
-                .GetCustomAttributes(typeof(T), true)
-                .FirstOrDefault() as T;
+        var attr = filterContext.ActionDescriptor
+            .GetCustomAttributes(typeof(T), true)
+            .FirstOrDefault() as T;
 #else
-            var controllerActionDescriptor = filterContext.ActionDescriptor as ControllerActionDescriptor;
-            var attr = controllerActionDescriptor?.MethodInfo.FirstAttribute<T>();
+        var controllerActionDescriptor = filterContext.ActionDescriptor as ControllerActionDescriptor;
+        var attr = controllerActionDescriptor?.MethodInfo.FirstAttribute<T>();
 #endif
 
 
-            if (attr != null)
-                attrs.Add(attr);
+        if (attr != null)
+            attrs.Add(attr);
 
-            attr = filterContext.Controller.GetType().FirstAttribute<T>();
+        attr = filterContext.Controller.GetType().FirstAttribute<T>();
 
-            if (attr != null)
-                attrs.Add(attr);
+        if (attr != null)
+            attrs.Add(attr);
 
-            return attrs;
-        }
-
+        return attrs;
     }
+
 }

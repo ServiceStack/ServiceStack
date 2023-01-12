@@ -1,0 +1,70 @@
+@page
+@{
+    ViewBag.Title = "Sign Up";
+}
+
+<div class="d-flex container-md">
+    <div>
+        <h1 class="fs-2 mb-3">@ViewBag.Title</h1>
+
+        <form action="/register" method="post" class="w-sm">
+            <div class="mb-3 form-floating">
+                <div class="form-group" data-validation-summary="displayName,email,password,confirmPassword"></div>
+                @Html.HiddenInputs(new { @continue = Html.Query("redirect") })
+            </div>
+            <div class="mb-3 form-floating">
+                <input class="form-control" id="displayName" name="displayName" type="text" placeholder="Display Name">
+                <label for="displayName">Display Name</label>
+            </div>
+            <div class="mb-3 form-floating">
+                <input class="form-control" id="email" name="email" type="text" placeholder="Email">
+                <label for="email">Email</label>
+            </div>
+            <div class="mb-3 form-floating">
+                <input class="form-control" id="password" name="password" type="password" placeholder="Password">
+                <label for="password">Password</label>
+            </div>
+            <div class="mb-3 form-floating">
+                <input class="form-control" id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm Password">
+                <label for="confirmPassword">Confirm Password</label>
+            </div>
+            <div class="mb-3 form-check">
+                <input class="form-check-input" type="checkbox" id="autoLogin" name="autoLogin" value="true" checked>
+                <label class="form-check-label ms-2" for="autoLogin">Auto Login</label>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-lg btn-primary" type="submit">Register</button>
+                <a href="/SignIn" class="btn btn-lg">Sign In</a>
+            </div>
+
+            <div class="mt-5 d-flex align-items-center">
+                <span class="me-2">Quick Populate:</span>
+                <div class="btn-group">
+                    <a href="javascript:void(0)" class="btn btn-outline-info mb-1" data-click="newUser:new@user.com">new@user.com</a>
+                </div>
+            </div>
+        </form>
+        
+    </div>
+</div>
+
+@section Scripts {
+<script type="module">
+import { $1, bootstrapForm, bindHandlers, splitOnFirst, toPascalCase } from "/js/servicestack-client.mjs"
+
+bootstrapForm($1('form'), {
+    success: r => {
+        location.href = $1('[name=continue]').value || '/'
+    },
+})
+
+bindHandlers({
+    newUser: function(u) {
+        const names = u.split('@@')
+        $1("[name=displayName]").value = toPascalCase(names[0]) + " " + toPascalCase(splitOnFirst(names[1],'.')[0]) 
+        $1("[name=email]").value = u
+        $1("[name=password]").value = $1("[name=confirmPassword]").value = 'p@55wOrd'
+    },
+})
+</script>
+}

@@ -73,7 +73,7 @@ namespace ServiceStack.Messaging
             public void Publish(string queueName, IMessage message)
             {
                 this.parent.transientMessageService.MessageQueueFactory
-                    .PublishMessage(queueName, message.ToBytes());
+                    .PublishMessage(queueName, MessageSerializer.Instance.ToBytes(message));
             }
 
             public void SendOneWay(object requestDto)
@@ -95,7 +95,6 @@ namespace ServiceStack.Messaging
             {
             }
         }
-
     }
 }
 #endif

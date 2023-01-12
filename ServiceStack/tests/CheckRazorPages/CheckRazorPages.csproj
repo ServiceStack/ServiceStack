@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <Using Include="MyApp" />
+        <Using Include="ServiceStack" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\assets\css\bootstrap.min.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\css\default.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\js\bootstrap.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\js\default.mjs" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\js\dtos.mjs" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\js\servicestack-client.min.mjs" />
+    </ItemGroup>
+
+</Project>

@@ -168,6 +168,12 @@ public static class NumberCurrency
     public const string SAR = nameof(SAR);
     public const string MYR = nameof(MYR);
     public const string RON = nameof(RON);
+
+    public static string[] All = new[]
+    {
+        USD,EUR,JPY,GBP,CHF,CAD,AUD,ZAR,CNY,HKD,NZD,KRW,SGD,NOK,MXN,INR,RUB,
+        TRY,BRL,TWD,DKK,PLN,THB,IDR,HUF,CZK,ILS,CLP,PHP,AED,COP,SAR,MYR,RON,
+    };
 }
 
 public static class NumberUnit

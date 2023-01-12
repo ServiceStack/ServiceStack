@@ -13,7 +13,7 @@ namespace ServiceStack.Aws.DynamoDbTests
         private ICacheClientAsync cache;
 
         [OneTimeSetUp]
-        public async Task OnOneTimeSetUp()
+        public void OnOneTimeSetUp()
         {   
             cache = (ICacheClientAsync)CreateCacheClient();
         }

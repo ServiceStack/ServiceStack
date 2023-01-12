@@ -84,7 +84,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
             public Guid EventCategoryId { get; set; }
 
 
-            [System.ComponentModel.DataAnnotations.Required]
+            [Required]
             public string Name { get; set; }
 
             /// <summary>
@@ -213,20 +213,17 @@ namespace ServiceStack.OrmLite.Tests.Issues
         [Test]
         public async Task Can_order_by_parent_table_in_LoadSelectAsync()
         {
-            OrmLiteConfig.BeforeExecFilter = cmd => cmd.GetDebugString().Print(); 
-            
-            using (var db = OpenDbConnection())
-            {
-                db.DropAndCreateTable<Person>();
-                db.DropAndCreateTable<Contact>();
+            OrmLiteConfig.BeforeExecFilter = cmd => cmd.GetDebugString().Print();
+
+            using var db = await OpenDbConnectionAsync();
+            db.DropAndCreateTable<Person>();
+            db.DropAndCreateTable<Contact>();
                 
-                string[] include = null; 
-                var personQuery = db.From<Person>();
-                personQuery.OrderByFields("Id");
+            string[] include = null; 
+            var personQuery = db.From<Person>();
+            personQuery.OrderByFields("Id");
 
-                var results = await db.LoadSelectAsync(personQuery, include);
-           }
+            var results = await db.LoadSelectAsync(personQuery, include);
         }
-
     }
 }

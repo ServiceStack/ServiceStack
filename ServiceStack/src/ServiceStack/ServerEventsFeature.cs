@@ -293,11 +293,11 @@ namespace ServiceStack
                     OnError = feature.OnError,
                     Meta = new Dictionary<string, string> {
                         { "userId", userId },
-                        { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
+                        { "isAuthenticated", session is { IsAuthenticated: true } ? "true": "false" },
                         { "displayName", displayName },
                         { "channels", string.Join(",", channels) },
                         { "createdAt", now.ToUnixTimeMs().ToString() },
-                        { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? Svg.GetDataUri(Svg.Icons.DefaultProfile) },
+                        { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? JwtClaimTypes.DefaultProfileUrl },
                     }.ToConcurrentDictionary(),
                     ServerArgs = new Dictionary<string, string>(),
                 };

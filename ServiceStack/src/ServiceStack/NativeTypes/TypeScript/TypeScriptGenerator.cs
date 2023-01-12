@@ -11,7 +11,7 @@ namespace ServiceStack.NativeTypes.TypeScript
     {
         public readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        List<string> conflictTypeNames = new();
+        public List<string> ConflictTypeNames = new();
         public List<MetadataType> AllTypes { get; set; }
 
         public TypeScriptGenerator(MetadataTypesConfig config)
@@ -100,6 +100,11 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"List", "[]"},
             {"Uint8Array", "new Uint8Array(0)"},
         };
+
+        public HashSet<string> UseGenericDefinitionsFor { get; set; } = new()
+        {
+            typeof(QueryResponse<>).Name,
+        };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
         public static Func<string, string> CookedTypeFilter { get; set; }
@@ -163,12 +168,33 @@ namespace ServiceStack.NativeTypes.TypeScript
             }
         }
 
+        public void Init(MetadataTypes metadata)
+        {
+            var includeList = metadata.RemoveIgnoredTypes(Config);
+            AllTypes = metadata.GetAllTypesOrdered();
+            AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+            AllTypes = FilterTypes(AllTypes);
+
+            //TypeScript doesn't support reusing same type name with different generic airity
+            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+                .GroupBy(g => g.LeftPart('`'))
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            this.ConflictTypeNames = AllTypes
+                .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
+                .Map(x => x.Name);
+        }
+
+        public MetadataType FindType(MetadataTypeName typeRef) =>
+            typeRef == null ? null : FindType(typeRef.Name, typeRef.Namespace); 
+        public MetadataType FindType(string name, string @namespace = null) => AllTypes.FirstOrDefault(x => x.Name == name 
+            && (@namespace == null || @namespace == x.Namespace));
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
-            var typeNamespaces = new HashSet<string>();
-            var includeList = metadata.RemoveIgnoredTypes(Config);
-            metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
+            Init(metadata);
 
             var defaultImports = !Config.DefaultImports.IsEmpty()
                 ? Config.DefaultImports
@@ -218,21 +244,6 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Where(x => x.Response != null)
                 .Select(x => x.Response).ToSet();
             var types = metadata.Types.CreateSortedTypeList();
-
-            AllTypes = metadata.GetAllTypesOrdered();
-            AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
-            AllTypes = FilterTypes(AllTypes);
-
-            //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
-                .GroupBy(g => g.LeftPart('`'))
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
-
-            this.conflictTypeNames = AllTypes
-                .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
-                .Map(x => x.Name);
 
             foreach (var import in defaultImports)
             {
@@ -619,17 +630,12 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public static bool? DefaultIsPropertyOptional(TypeScriptGenerator generator, MetadataType type, MetadataPropertyType prop)
         {
-            if (prop.IsRequired == true)
-            {
-                if (prop.Type == "string" || generator.TypeAlias(prop.Type) == "string")
-                    return generator.Config.MakePropertiesOptional;
-                return false;
-            }
-            
             if (generator.Config.MakePropertiesOptional)
                 return true;
 
-            return null;
+            return prop.IsRequired == null
+                ? null
+                : !prop.IsRequired.Value;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
@@ -828,7 +834,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string NameOnly(string type)
         {
-            var name = conflictTypeNames.Contains(type)
+            var name = ConflictTypeNames.Contains(type)
                 ? type.Replace('`','_')
                 : type.LeftPart('`');
 
@@ -839,9 +845,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         {
             if (desc != null && Config.AddDescriptionAsComments)
             {
-                sb.AppendLine("/**");
-                sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
-                sb.AppendLine("*/");
+                sb.AppendLine("/** @description {0}".Fmt(desc.SafeComment()) + " */");
             }
             return false;
         }

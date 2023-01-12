@@ -773,13 +773,12 @@ namespace ServiceStack.NativeTypes.Python
 
         public static bool? DefaultIsPropertyOptional(PythonGenerator generator, MetadataType type, MetadataPropertyType prop)
         {
-            if (prop.IsRequired == true)
-                return false;
-            
             if (generator.Config.MakePropertiesOptional)
                 return true;
 
-            return prop.IsValueType != true;
+            return prop.IsRequired == null
+                ? null
+                : !prop.IsRequired.Value;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

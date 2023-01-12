@@ -90,7 +90,19 @@ namespace ServiceStack.Auth
         {
             if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
             {
-                var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session);
+                IEnumerable<string> roles = null, perms = null;
+                var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(authContext.Request);
+                await using (userRepo as IAsyncDisposable)
+                {
+                    if (userRepo is IManageRolesAsync manageRoles)
+                    {
+                        var tuple = await manageRoles.GetRolesAndPermissionsAsync(authContext.Session.UserAuthId, token).ConfigAwait();
+                        roles = tuple.Item1;
+                        perms = tuple.Item2;
+                    }
+                }
+
+                var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session, roles, perms);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
                 authContext.Result.AddCookie(authContext.Request,
                     new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
@@ -320,12 +332,12 @@ namespace ServiceStack.Auth
         {
             var header = new JsonObject
             {
-                { "typ", "JWT" },
-                { "alg", algorithm }
+                { JwtClaimTypes.Type, "JWT" },
+                { JwtClaimTypes.Algorithm, algorithm }
             };
 
             if (keyId != null)
-                header["kid"] = keyId;
+                header[JwtClaimTypes.KeyId] = keyId;
 
             return header;
         }
@@ -339,39 +351,39 @@ namespace ServiceStack.Auth
             var now = DateTime.UtcNow;
             var jwtPayload = new JsonObject
             {
-                {"iss", issuer},
-                {"sub", session.UserAuthId},
-                {"iat", now.ToUnixTime().ToString()},
-                {"exp", now.Add(expireIn).ToUnixTime().ToString()},
+                [JwtClaimTypes.Issuer] = issuer,
+                [JwtClaimTypes.Subject] = session.UserAuthId,
+                [JwtClaimTypes.IssuedAt] = now.ToUnixTime().ToString(),
+                [JwtClaimTypes.Expiration] = now.Add(expireIn).ToUnixTime().ToString(),
             };
 
             jwtPayload.SetAudience(audiences?.ToList());
 
             if (!string.IsNullOrEmpty(session.Email))
-                jwtPayload["email"] = session.Email;
+                jwtPayload[JwtClaimTypes.Email] = session.Email;
             if (!string.IsNullOrEmpty(session.FirstName))
-                jwtPayload["given_name"] = session.FirstName;
+                jwtPayload[JwtClaimTypes.GivenName] = session.FirstName;
             if (!string.IsNullOrEmpty(session.LastName))
-                jwtPayload["family_name"] = session.LastName;
+                jwtPayload[JwtClaimTypes.FamilyName] = session.LastName;
             if (!string.IsNullOrEmpty(session.DisplayName))
-                jwtPayload["name"] = session.DisplayName;
+                jwtPayload[JwtClaimTypes.Name] = session.DisplayName;
 
             if (!string.IsNullOrEmpty(session.UserName))
-                jwtPayload["preferred_username"] = session.UserName;
+                jwtPayload[JwtClaimTypes.PreferredUserName] = session.UserName;
             else if (!string.IsNullOrEmpty(session.UserAuthName))
-                jwtPayload["preferred_username"] = session.UserAuthName;
+                jwtPayload[JwtClaimTypes.PreferredUserName] = session.UserAuthName;
 
             var profileUrl = session.GetProfileUrl();
-            if (profileUrl != null && profileUrl != Svg.GetDataUri(Svg.Icons.DefaultProfile))
+            if (profileUrl != null && profileUrl != JwtClaimTypes.DefaultProfileUrl)
             {
                 if (profileUrl.Length <= MaxProfileUrlSize)
                 {
-                    jwtPayload["picture"] = profileUrl;
+                    jwtPayload[JwtClaimTypes.Picture] = profileUrl;
                 }
                 else
                 {
                     LogManager.GetLogger(typeof(JwtAuthProvider)).Warn($"User '{session.UserAuthId}' ProfileUrl exceeds max JWT Cookie size, using default profile");
-                    jwtPayload["picture"] = HostContext.GetPlugin<AuthFeature>()?.ProfileImages?.RewriteImageUri(profileUrl);
+                    jwtPayload[JwtClaimTypes.Picture] = HostContext.GetPlugin<AuthFeature>()?.ProfileImages?.RewriteImageUri(profileUrl);
                 }
             }
 
@@ -382,41 +394,18 @@ namespace ServiceStack.Auth
             permissions.Each(x => combinedPerms.AddIfNotExists(x));
 
             if (combinedRoles.Count > 0)
-                jwtPayload["roles"] = combinedRoles.ToJson();
+                jwtPayload[JwtClaimTypes.Roles] = combinedRoles.ToJson();
 
             if (combinedPerms.Count > 0)
-                jwtPayload["perms"] = combinedPerms.ToJson();
+                jwtPayload[JwtClaimTypes.Permissions] = combinedPerms.ToJson();
 
             return jwtPayload;
-        }
-
-        /// <summary>
-        /// Dump contents of JWT
-        /// </summary>
-        public static string Dump(string jwt)
-        {
-            if (string.IsNullOrEmpty(jwt))
-                throw new ArgumentNullException(nameof(jwt));
-            
-            var parts = jwt.Split('.');
-            if (parts.Length != 3 && parts.Length != 5)
-                return "Invalid JWT or JWE";
-            
-            var sb = StringBuilderCache.Allocate();
-            var header = JSON.parse(parts[0].FromBase64UrlSafe().FromUtf8Bytes());
-            sb.AppendLine("Header:");
-            sb.AppendLine(header.Dump());
-            var body = JSON.parse(parts[1].FromBase64UrlSafe().FromUtf8Bytes());
-            sb.AppendLine("Body:");
-            sb.AppendLine(body.Dump());
-            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         /// <summary>
         /// Print Dump contents of JWT to Console
         /// </summary>
         public static void PrintDump(string jwt) => Console.WriteLine(Dump(jwt));
-        
 
         public override async Task<string> CreateAccessTokenFromRefreshToken(string refreshToken, IRequest req)
         {

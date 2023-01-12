@@ -1,9 +1,6 @@
 ﻿@inherits LayoutComponentBase
-@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
-<div class="example">
-@Body
+<div class=@CssUtils.ClassNames("example", NavigationManager.QueryString("class"))>
+    @Body
 </div>
-
-@code {
-}

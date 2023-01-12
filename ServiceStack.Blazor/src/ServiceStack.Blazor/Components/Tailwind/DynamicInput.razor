@@ -3,7 +3,7 @@
 @if (IsSelect)
 {
     <SelectInput Id=@UseId Status=@Status TValue="string" Input=@Input
-             @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@TextUtils.Humanize(UseId) @attributes="AllAttributes" />
+        @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@TextUtils.Humanize(UseId) @attributes="AllAttributes" />
 }
 else if (IsCheckbox)
 {
@@ -40,6 +40,10 @@ else if (UseType == "file")
         Multiple=@(Input?.Multiple ?? false) Accept=@(Input?.Accept)
         Value=@value Values=@values File=@file Files=@files
         OnInput="e => Model[Input!.Id] = e" />
+}
+else if (UseType == "tag")
+{
+    <TagInput Id=@UseId Status=@Status @bind-Value="Values" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }
 else
 {

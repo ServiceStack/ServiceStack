@@ -15,11 +15,14 @@ JS = (function () {
             dotnetRef.invokeMethodAsync('OnKeyNav', e.key)
         })
     }
-    let el = sel => typeof sel == "string" ? document.querySelector(sel) : sel
+    let SelectorAliases = { document }
+    let el = sel => typeof sel == "string"
+        ? SelectorAliases[sel] || document.querySelector(sel)
+        : sel
 
     let origScrollTo = null
     let skipAutoScroll = true
-    
+
     function elVisible(el, container) {
         if (!el) return false
         container = container || el.parentElement || document.body
@@ -58,9 +61,16 @@ JS = (function () {
     function deleteCookie(name) {
         setCookie({ name, value: getCookie(name), expires: new Date(0).toUTCString() })
     }
-
+    function getBreakpoints() {
+        let resolutions = { '2xl': 1536, xl: 1280, lg: 1024, md: 768, sm: 640 }
+        let w = document.body.clientWidth
+        let o = {}
+        Object.keys(resolutions).forEach(res => o[res] = w > resolutions[res])
+        return o
+    }
 
     return {
+        SelectorAliases,
         get(name) { return window[name] },
         /* Loading */
         prerenderedPage() {
@@ -72,8 +82,10 @@ JS = (function () {
             if (typeof f == 'function') {
                 let ret = f.apply(target, args || [])
                 return ret
-            } else {
-                return target[fnName] = args
+            } else {   
+                if (args !== undefined)
+                    target[fnName] = args
+                return target[fnName]
             }
             return f
         },
@@ -89,18 +101,20 @@ JS = (function () {
                     let ret = f.apply($el, args || [])
                     return ret
                 } else {
-                    return $el[fnName] = args
+                    if (args !== undefined)
+                        $el[fnName] = args
+                    return $el[fnName]
                 }
             }
         },
         elInvokeDelayIf(test, sel, fnName, args) {
-            if (matchesTest(test,sel)) JS.elInvoke(sel, sel, fnName, args)
+            if (matchesTest(test, sel)) JS.elInvoke(sel, sel, fnName, args)
         },
         elInvokeDelay(sel, fnName, args, ms) {
             setTimeout(() => JS.elInvoke(sel, fnName, args), isNaN(ms) ? 0 : ms)
         },
         elInvokeDelayIf(test, sel, fnName, args, ms) {
-            if (matchesTest(test,sel)) JS.elInvokeDelay(sel, fnName, args, ms)
+            if (matchesTest(test, sel)) JS.elInvokeDelay(sel, fnName, args, ms)
         },
         addClass(sel, ...classes) {
             map(el(sel), el => el.classList.add(...classes))
@@ -158,6 +172,7 @@ JS = (function () {
                 Array.from(cookies).forEach(setCookie)
             }
         },
+        getBreakpoints,
         init(opt) {
             if (!opt || opt.colorScheme !== false) {
                 let colorScheme = opt && typeof opt.colorScheme === 'string'

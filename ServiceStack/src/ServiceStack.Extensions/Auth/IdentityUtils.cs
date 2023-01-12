@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ServiceStack.Auth;
 
@@ -31,4 +32,11 @@ public static class IdentityUtils
 
     public static void AssertSucceededSync(this Task<IdentityResult> taskResult)
         => taskResult.GetAwaiter().GetResult().AssertSucceeded();
+
+    public static TokenValidationParameters UseStandardJwtClaims(this TokenValidationParameters options)
+    {
+        options.NameClaimType = JwtClaimTypes.Name;
+        options.RoleClaimType = JwtClaimTypes.Roles;
+        return options;
+    }
 }

@@ -26,7 +26,7 @@ public class Booking : AuditBase
     public string? CouponId { get; set; }
 
     [Reference]
-    public Coupon Discount { get; set; }
+    public Coupon? Discount { get; set; }
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
 }
@@ -134,7 +134,7 @@ public class CreateCoupon : ICreateDb<Coupon>, IReturn<IdResponse>
     public string Description { get; set; }
     [ValidateGreaterThan(0)]
     public int Discount { get; set; }
-    [Required]
+    [ValidateNotNull]
     public DateTime ExpiryDate { get; set; }
 }
 
@@ -145,13 +145,12 @@ public class UpdateCoupon : IPatchDb<Coupon>, IReturn<IdResponse>
 {
     public string Id { get; set; }
     [ValidateNotEmpty]
-    public string Description { get; set; }
-    [ValidateGreaterThan(0)]
-    public int Discount { get; set; }
-    [Required]
-    public DateTime ExpiryDate { get; set; }
+    public string? Description { get; set; }
+    [ValidateNotNull, ValidateGreaterThan(0)]
+    public int? Discount { get; set; }
+    [ValidateNotNull]
+    public DateTime? ExpiryDate { get; set; }
 }
-
 
 [Tag("bookings"), Description("Delete a Coupon")]
 [Route("/coupons/{Id}", "DELETE")]
