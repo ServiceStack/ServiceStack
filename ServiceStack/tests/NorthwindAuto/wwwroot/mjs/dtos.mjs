@@ -1,5 +1,5 @@
 /* Options:
-Date: 2023-01-12 15:41:37
+Date: 2023-01-12 16:26:12
 Version: 6.51
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1280,15 +1280,15 @@ export class Todo {
     /** @type {boolean} */
     isFinished;
 }
-/** @typedef Todo {any} */
+/** @typedef T {any} */
 export class QueryResponse {
-    /** @param {{offset?:number,total?:number,results?:Todo[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init); }
     /** @type {number} */
     offset;
     /** @type {number} */
     total;
-    /** @type {Todo[]} */
+    /** @type {T[]} */
     results;
     /** @type {{ [index: string]: string; }} */
     meta;

@@ -100,6 +100,11 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"List", "[]"},
             {"Uint8Array", "new Uint8Array(0)"},
         };
+
+        public HashSet<string> UseGenericDefinitionsFor { get; set; } = new()
+        {
+            typeof(QueryResponse<>).Name,
+        };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
         public static Func<string, string> CookedTypeFilter { get; set; }

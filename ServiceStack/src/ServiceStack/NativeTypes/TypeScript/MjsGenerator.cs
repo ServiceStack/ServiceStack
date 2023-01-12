@@ -193,6 +193,10 @@ public class MjsGenerator : ILangGenerator
     {
         if (!type.IsInterface.GetValueOrDefault() || type.IsEnum.GetValueOrDefault())
         {
+            if (Gen.UseGenericDefinitionsFor.Contains(type.Name))
+            {
+                type = type.Type?.GetGenericTypeDefinition()?.ToMetadataType() ?? type;
+            }
             var origType = Gen.Type(type.Name, type.GenericArgs);
             var typeName = origType.LeftPart('<');
             var args = typeName.Length != origType.Length
