@@ -810,7 +810,7 @@ namespace ServiceStack
             var attrs = new HashSet<string>();
             if (authSession?.IsAuthenticated == true)
             {
-                attrs.Add("auth");
+                attrs.Add(When.IsAuthenticated);
                 
                 if (HostContext.HasValidAuthSecret(request))
                     attrs.Add(RoleNames.Admin);
@@ -836,14 +836,14 @@ namespace ServiceStack
                 {
                     foreach (var role in roles)
                     {
-                        attrs.Add("role:" + role);
+                        attrs.Add(When.HasRole(role));
                     }
                 }
                 if (permissions != null)
                 {
                     foreach (var perm in permissions)
                     {
-                        attrs.Add("perm:" + perm);
+                        attrs.Add(When.HasPermission(perm));
                     }
                 }
                 
@@ -853,7 +853,7 @@ namespace ServiceStack
                     {
                         foreach (var item in extended.Scopes)
                         {
-                            attrs.Add("scope:" + item);
+                            attrs.Add(When.HasScope(item));
                         }
                     }
                 }
@@ -862,7 +862,7 @@ namespace ServiceStack
                 {
                     foreach (var claim in claims)
                     {
-                        attrs.Add("claim:" + claim);
+                        attrs.Add(When.HasClaim(claim.ToString()));
                     }
                 }
             }

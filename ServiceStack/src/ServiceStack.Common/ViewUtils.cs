@@ -341,6 +341,15 @@ namespace ServiceStack
         public static List<NavItem> GetNavItems(string key) => ViewUtils.GetNavItems(key);
     }
 
+    public static class When
+    {
+        public static string IsAuthenticated => "auth";
+        public static string HasRole(string role) => $"role:{role}";
+        public static string HasPermission(string perm) => $"perm:{perm}";
+        public static string HasScope(string scope) => $"scope:{scope}";
+        public static string HasClaim(string claim) => $"claim:{claim}";
+    }
+
     /// <summary>
     /// Shared Utils shared between different Template Filters and Razor Views/Helpers
     /// </summary>
