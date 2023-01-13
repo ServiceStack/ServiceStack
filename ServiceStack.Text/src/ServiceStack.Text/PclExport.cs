@@ -87,8 +87,6 @@ namespace ServiceStack
 
         public StringComparer InvariantComparerIgnoreCase = StringComparer.OrdinalIgnoreCase;
 
-        public abstract string ReadAllText(string filePath);
-
         // HACK: The only way to detect anonymous types right now.
         public virtual bool IsAnonymousType(Type type)
         {
@@ -101,47 +99,56 @@ namespace ServiceStack
             return value.ToString().ToUpperInvariant();
         }
 
+        public virtual string ReadAllText(string filePath)
+        {
+            return File.ReadAllText(filePath);
+        }
+
         public virtual bool FileExists(string filePath)
         {
-            return false;
+            return File.Exists(filePath);
         }
 
         public virtual bool DirectoryExists(string dirPath)
         {
-            return false;
+            return Directory.Exists(dirPath);
         }
 
         public virtual void CreateDirectory(string dirPath)
         {
+            Directory.CreateDirectory(dirPath);
         }
 
         public virtual void RegisterLicenseFromConfig()
         {            
         }
 
-        public virtual string GetEnvironmentVariable(string name)
-        {
-            return null;
-        }
+        public virtual string GetEnvironmentVariable(string name) => Environment.GetEnvironmentVariable(name);
+
+        public virtual void WriteLine(string line) => Console.WriteLine(line);
+
+        public virtual void WriteLine(string format, params object[] args) => Console.WriteLine(format, args);
 
         public virtual string[] GetFileNames(string dirPath, string searchPattern = null)
         {
-            return TypeConstants.EmptyStringArray;
+            if (!Directory.Exists(dirPath))
+                return TypeConstants.EmptyStringArray;
+
+            return searchPattern != null
+                ? Directory.GetFiles(dirPath, searchPattern)
+                : Directory.GetFiles(dirPath);
         }
 
         public virtual string[] GetDirectoryNames(string dirPath, string searchPattern = null)
         {
-            return TypeConstants.EmptyStringArray;
-        }
+            if (!Directory.Exists(dirPath))
+                return TypeConstants.EmptyStringArray;
 
-        public virtual void WriteLine(string line)
-        {
+            return searchPattern != null
+                ? Directory.GetDirectories(dirPath, searchPattern)
+                : Directory.GetDirectories(dirPath);
         }
-
-        public virtual void WriteLine(string line, params object[] args)
-        {
-        }
-
+        
         public virtual void Config(HttpWebRequest req,
             bool? allowAutoRedirect = null,
             TimeSpan? timeout = null,
@@ -149,10 +156,40 @@ namespace ServiceStack
             string userAgent = null,
             bool? preAuthenticate = null)
         {
+            try
+            {
+                if (allowAutoRedirect.HasValue) 
+                    req.AllowAutoRedirect = allowAutoRedirect.Value;
+
+                if (userAgent != null)
+                    req.UserAgent = userAgent;
+
+                if (readWriteTimeout.HasValue) 
+                    req.ReadWriteTimeout = (int) readWriteTimeout.Value.TotalMilliseconds;
+                if (timeout.HasValue) 
+                    req.Timeout = (int) timeout.Value.TotalMilliseconds;
+
+                if (preAuthenticate.HasValue)
+                    req.PreAuthenticate = preAuthenticate.Value;
+            }
+            catch (Exception ex)
+            {
+                Tracer.Instance.WriteError(ex);
+            }
         }
 
         public virtual void AddCompression(WebRequest webRequest)
         {
+            try
+            {
+                var httpReq = (HttpWebRequest)webRequest;
+                httpReq.Headers[HttpRequestHeader.AcceptEncoding] = "gzip,deflate";
+                httpReq.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            }
+            catch (Exception ex)
+            {
+                Tracer.Instance.WriteError(ex);
+            }
         }
 
         public virtual Stream GetRequestStream(WebRequest webRequest)
@@ -204,25 +241,55 @@ namespace ServiceStack
 
         public virtual void SetUserAgent(HttpWebRequest httpReq, string value)
         {
-            httpReq.Headers[HttpRequestHeader.UserAgent] = value;
+            try
+            {
+                httpReq.UserAgent = value;
+            }
+            catch (Exception e) // API may have been removed by Xamarin's Linker
+            {
+                Tracer.Instance.WriteError(e);
+            }
         }
 
         public virtual void SetContentLength(HttpWebRequest httpReq, long value)
         {
-            httpReq.Headers[HttpRequestHeader.ContentLength] = value.ToString();
+            try
+            {
+                httpReq.ContentLength = value;
+            }
+            catch (Exception e) // API may have been removed by Xamarin's Linker
+            {
+                Tracer.Instance.WriteError(e);
+            }
         }
 
         public virtual void SetAllowAutoRedirect(HttpWebRequest httpReq, bool value)
         {
+            try
+            {
+                httpReq.AllowAutoRedirect = value;
+            }
+            catch (Exception e) // API may have been removed by Xamarin's Linker
+            {
+                Tracer.Instance.WriteError(e);
+            }
         }
 
         public virtual void SetKeepAlive(HttpWebRequest httpReq, bool value)
         {
+            try
+            {
+                httpReq.KeepAlive = value;
+            }
+            catch (Exception e) // API may have been removed by Xamarin's Linker
+            {
+                Tracer.Instance.WriteError(e);
+            }
         }
 
         public virtual Assembly[] GetAllAssemblies()
         {
-            return new Assembly[0];
+            return AppDomain.CurrentDomain.GetAssemblies();
         }
 
         public virtual Type FindType(string typeName, string assemblyName)
@@ -247,45 +314,18 @@ namespace ServiceStack
 
         public virtual string GetAsciiString(byte[] bytes, int index, int count)
         {
-            return Encoding.UTF8.GetString(bytes, index, count);
+            return Encoding.ASCII.GetString(bytes, index, count);
         }
 
         public virtual byte[] GetAsciiBytes(string str)
         {
-            return Encoding.UTF8.GetBytes(str);
+            return Encoding.ASCII.GetBytes(str);
         }
 
         public virtual Encoding GetUTF8Encoding(bool emitBom=false)
         {
             return new UTF8Encoding(emitBom);
         }
-
-        
-        [Obsolete("ReflectionOptimizer.CreateGetter")]
-        public GetMemberDelegate CreateGetter(PropertyInfo propertyInfo) => ReflectionOptimizer.Instance.CreateGetter(propertyInfo);
-
-        [Obsolete("ReflectionOptimizer.CreateGetter")]
-        public GetMemberDelegate<T> CreateGetter<T>(PropertyInfo propertyInfo) => ReflectionOptimizer.Instance.CreateGetter<T>(propertyInfo);
-
-        [Obsolete("ReflectionOptimizer.CreateSetter")]
-        public SetMemberDelegate CreateSetter(PropertyInfo propertyInfo) => ReflectionOptimizer.Instance.CreateSetter(propertyInfo);
-
-        [Obsolete("ReflectionOptimizer.CreateSetter")]
-        public SetMemberDelegate<T> CreateSetter<T>(PropertyInfo propertyInfo) => ReflectionOptimizer.Instance.CreateSetter<T>(propertyInfo);
-        
-
-        [Obsolete("ReflectionOptimizer.CreateGetter")]
-        public virtual GetMemberDelegate CreateGetter(FieldInfo fieldInfo) => ReflectionOptimizer.Instance.CreateGetter(fieldInfo);
-
-        [Obsolete("ReflectionOptimizer.CreateGetter")]
-        public virtual GetMemberDelegate<T> CreateGetter<T>(FieldInfo fieldInfo) => ReflectionOptimizer.Instance.CreateGetter<T>(fieldInfo);
-
-        [Obsolete("ReflectionOptimizer.CreateSetter")]
-        public virtual SetMemberDelegate CreateSetter(FieldInfo fieldInfo) => ReflectionOptimizer.Instance.CreateSetter(fieldInfo);
-
-        [Obsolete("ReflectionOptimizer.CreateSetter")]
-        public virtual SetMemberDelegate<T> CreateSetter<T>(FieldInfo fieldInfo) => ReflectionOptimizer.Instance.CreateSetter<T>(fieldInfo);
-
         
         public virtual bool InSameAssembly(Type t1, Type t2)
         {
@@ -346,7 +386,17 @@ namespace ServiceStack
 
 
         public virtual void InitHttpWebRequest(HttpWebRequest httpReq,
-            long? contentLength = null, bool allowAutoRedirect = true, bool keepAlive = true) {}
+            long? contentLength = null, bool allowAutoRedirect = true, bool keepAlive = true)
+        {
+            httpReq.UserAgent = Env.ServerUserAgent;
+            httpReq.AllowAutoRedirect = allowAutoRedirect;
+            httpReq.KeepAlive = keepAlive;
+
+            if (contentLength != null)
+            {
+                SetContentLength(httpReq, contentLength.Value);
+            }
+        }
 
         public virtual void CloseStream(Stream stream)
         {
@@ -376,7 +426,7 @@ namespace ServiceStack
         public virtual DataMemberAttribute GetWeakDataMember(FieldInfo pi) => null;
 
         public virtual void RegisterForAot() {}
-        public virtual string GetStackTrace() => null;
+        public virtual string GetStackTrace() => Environment.StackTrace;
 
         public virtual Task WriteAndFlushAsync(Stream stream, byte[] bytes)
         {
