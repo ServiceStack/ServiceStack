@@ -777,6 +777,11 @@ public static class RazorViewExtensions
         return req;
     }
 
+    public static bool MatchesPath(this IHtmlHelper html, string path, bool exact = false) =>
+        X.Map(html.GetRequest(), req => exact || path.Length <= 1
+            ? req.PathInfo?.TrimEnd('/').EqualsIgnoreCase(path.TrimEnd('/')) == true
+            : req.PathInfo.TrimEnd('/').StartsWithIgnoreCase(path.TrimEnd('/')));
+
     public static IResponse GetResponse(this IHtmlHelper htmlHelper) => 
         htmlHelper.GetRequest().Response;
 

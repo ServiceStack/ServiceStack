@@ -231,7 +231,8 @@ namespace ServiceStack
         public static string NavClass { get; set; } = "nav";
         public static string NavItemClass { get; set; } = "nav-item";
         public static string NavLinkClass { get; set; } = "nav-link";
-        
+        public static string ActiveClass { get; set; } = "active";
+
         public static string ChildNavItemClass { get; set; } = "nav-item dropdown";
         public static string ChildNavLinkClass { get; set; } = "nav-link dropdown-toggle";
         public static string ChildNavMenuClass { get; set; } = "dropdown-menu";
@@ -322,7 +323,8 @@ namespace ServiceStack
         public string NavClass { get; set; } = NavDefaults.NavClass;
         public string NavItemClass { get; set; } = NavDefaults.NavItemClass;
         public string NavLinkClass { get; set; } = NavDefaults.NavLinkClass;
-        
+        public string ActiveClass { get; set; } = NavDefaults.ActiveClass;
+
         public string ChildNavItemClass { get; set; } = NavDefaults.ChildNavItemClass;
         public string ChildNavLinkClass { get; set; } = NavDefaults.ChildNavLinkClass;
         public string ChildNavMenuClass { get; set; } = NavDefaults.ChildNavMenuClass;
