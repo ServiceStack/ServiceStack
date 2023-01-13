@@ -29,7 +29,7 @@
     <ItemGroup>
         <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="NUnit" Version="3.13.3" />
         <PackageReference Include="Grpc.Net.Client" Version="2.50.0" />
         <PackageReference Include="Grpc.Core.Api" Version="2.50.0" />
         <PackageReference Include="Grpc.Core" Version="2.46.5" />
