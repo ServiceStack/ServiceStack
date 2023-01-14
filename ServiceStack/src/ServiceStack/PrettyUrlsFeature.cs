@@ -13,7 +13,7 @@ public class PrettyUrlsFeature : IPlugin, Model.IHasStringId
         var fs = ((ServiceStackHost)appHost).GetVirtualFileSource<FileSystemVirtualFiles>();
         appHost.CatchAllHandlers.Add((string httpMethod, string pathInfo, string filePath) =>
         {
-            if (httpMethod == HttpMethods.Get && !pathInfo.Contains('.'))
+            if (httpMethod == HttpMethods.Get && pathInfo.IndexOfAny('.') == -1)
             {
                 foreach (var ext in Extensions)
                 {
