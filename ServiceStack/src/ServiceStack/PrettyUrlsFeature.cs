@@ -1,0 +1,29 @@
+using ServiceStack.Host.Handlers;
+using ServiceStack.IO;
+
+namespace ServiceStack;
+
+public class PrettyUrlsFeature : IPlugin, Model.IHasStringId
+{
+    public string Id { get; set; } = Plugins.PrettyUrls;
+    public string[] Extensions { get; set; } = { "html" };
+    
+    public void Register(IAppHost appHost)
+    {
+        var fs = ((ServiceStackHost)appHost).GetVirtualFileSource<FileSystemVirtualFiles>();
+        appHost.CatchAllHandlers.Add((string httpMethod, string pathInfo, string filePath) =>
+        {
+            if (httpMethod == HttpMethods.Get && !pathInfo.Contains('.'))
+            {
+                foreach (var ext in Extensions)
+                {
+                    var relativePath = pathInfo + "." + ext;
+                    var file = fs.GetFile(relativePath);
+                    if (file != null)
+                        return new StaticFileHandler(file);
+                }
+            }
+            return null;
+        });
+    }
+}
