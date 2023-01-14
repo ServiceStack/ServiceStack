@@ -10,7 +10,8 @@ public class ConfigureUi : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureAppHost(appHost => {
-            appHost.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/notfound");
+            //Can't detect page at custom route, use app.UseStatusCodePagesWithReExecute("/NotFound"); instead
+            //appHost.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/notfound");
             appHost.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new RazorHandler("/Forbidden");
             
             View.NavItems.AddRange(new List<NavItem> {
