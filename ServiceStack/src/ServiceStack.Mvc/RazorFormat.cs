@@ -40,34 +40,9 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     public string Id { get; set; } = Plugins.Razor;
     public static ILog log = LogManager.GetLogger(typeof(RazorFormat));
 
-    public string DefaultLayout { get; set; } = "_Layout";
-    public string DefaultPage { get; set; } = "default.cshtml";
-    public string ForbiddenRedirect { get; set; }
-    public string ForbiddenPartial { get; set; }
+    public static string DefaultLayout { get; set; } = "_Layout";
 
     public List<string> ViewLocations { get; set; }
-
-    private bool razorPages;
-    public bool RazorPages
-    {
-        get => razorPages;
-        set
-        {
-            razorPages = value;
-            if (razorPages)
-            {
-                PagesPath = "~/Pages";
-                DefaultPage = "Index.cshtml";
-                DisableServiceStackRazor = true;
-                DisablePageBasedRouting = true;
-            }
-            else
-            {
-                PagesPath = "~/View/Pages";
-                DefaultPage = "default.cshtml";
-            }
-        }
-    }
 
     public string PagesPath { get; set; } = "~/Views/Pages";
 
@@ -75,7 +50,6 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public IRazorViewEngine ViewEngine => viewEngine ?? throw new Exception(ErrorMvcNotInit);
 
-    public bool DisableServiceStackRazor { get; set; }
     public bool DisablePageBasedRouting { get; set; }
 
     IRazorViewEngine viewEngine;
@@ -95,17 +69,19 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public void Register(IAppHost appHost)
     {
-        ViewLocations ??= GetDefaultViewLocations(appHost.VirtualFiles);
+        if (ViewLocations == null)
+            ViewLocations = GetDefaultViewLocations(appHost.VirtualFiles);
 
-        if (!DisableServiceStackRazor)
-            appHost.CatchAllHandlers.Add(CatchAllHandler);
-        if (!DisablePageBasedRouting)
-            appHost.FallbackHandlers.Add(PageBasedRoutingHandler);
-        
+        appHost.CatchAllHandlers.Add(CatchAllHandler);
         appHost.ViewEngines.Add(this);
 
         viewEngine = appHost.TryResolve<IRazorViewEngine>();
         tempDataProvider = appHost.TryResolve<ITempDataProvider>();
+
+        if (!DisablePageBasedRouting)
+        {
+            appHost.FallbackHandlers.Add(PageBasedRoutingHandler);
+        }
         
         if (viewEngine == null || tempDataProvider == null)
             throw new Exception(ErrorMvcNotInit);
@@ -116,54 +92,35 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         var viewEngineResult = GetPageFromPathInfo(pathInfo);
 
         return viewEngineResult != null
-            ? (viewEngineResult.View as RazorView)?.RazorPage is RazorPage //allow RazorPages through
-                ? HttpHandlerFactory.PassThruHttpHandler
-                : new RazorHandler(viewEngineResult)
+            ? new RazorHandler(viewEngineResult)
             : null;
     }
 
     public ViewEngineResult GetPageFromPathInfo(string pathInfo)
     {
-        try
-        {
-            var origPath = pathInfo;
-            var isDir = pathInfo.EndsWith("/"); 
-            if (isDir)
-                pathInfo += DefaultPage;
+        if (pathInfo.EndsWith("/"))
+            pathInfo += "default.cshtml";
 
-            var viewPath = "~/wwwroot".CombineWith(pathInfo);
+        var viewPath = "~/wwwroot".CombineWith(pathInfo);
+        if (!viewPath.EndsWith(".cshtml"))
+            viewPath += ".cshtml";
+
+        var viewEngineResult = ViewEngine.GetView("", viewPath, 
+            isMainPage: viewPath == "~/wwwroot/default.cshtml");
+
+        if (!viewEngineResult.Success)
+        {
+            viewPath = PagesPath.CombineWith(pathInfo);
             if (!viewPath.EndsWith(".cshtml"))
                 viewPath += ".cshtml";
 
-            var viewEngineResult = ViewEngine.GetView("", viewPath, 
-                isMainPage: viewPath == "~/wwwroot/" + DefaultPage);
-
-            if (!viewEngineResult.Success)
-            {
-                viewPath = PagesPath.CombineWith(pathInfo);
-                if (!viewPath.EndsWith(".cshtml"))
-                    viewPath += ".cshtml";
-
-                viewEngineResult = ViewEngine.GetView("", viewPath,
-                    isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
-
-                if (!viewEngineResult.Success && RazorPages && !isDir)
-                {
-                    viewPath = PagesPath.CombineWith(origPath + "/" + DefaultPage);
-                    viewEngineResult = ViewEngine.GetView("", viewPath,
-                        isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
-                }
-            }
-
-            return viewEngineResult.Success 
-                ? viewEngineResult 
-                : null;
+            viewEngineResult = ViewEngine.GetView("", viewPath,
+                isMainPage: viewPath == $"{PagesPath}/default.cshtml");
         }
-        catch (Exception e) /*GetView fails when RazorPage doesn't build */
-        {
-            log.Error(e, "Failed to ViewEngine.GetView({0}): {1}", pathInfo, e.Message);
-            return ViewEngineResult.NotFound(pathInfo, new[]{ pathInfo });
-        }
+
+        return viewEngineResult.Success 
+            ? viewEngineResult 
+            : null;
     }
 
     public bool HasView(string viewName, IRequest httpReq = null) => false;
@@ -371,7 +328,8 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             }
         }
 
-        viewData ??= CreateViewData(dto);
+        if (viewData == null)
+            viewData = CreateViewData(dto);
 
         if (routingArgs != null)
         {
@@ -405,40 +363,31 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     public ViewEngineResult FindView(IEnumerable<string> viewNames, out Dictionary<string, object> routingArgs)
     {
         routingArgs = null;
+        const string execPath = "";
         foreach (var viewName in viewNames)
         {
-            var ret = FindView(viewName, out routingArgs);
-            if (ret != null)
-                return ret;
-        }
-
-        return null;
-    }
-
-    public ViewEngineResult FindView(string viewName, out Dictionary<string, object> routingArgs)
-    {
-        routingArgs = null;
-        const string execPath = "";
-        if (viewName.StartsWith("/"))
-        {
-            var viewEngineResult = GetPageFromPathInfo(viewName);
-            if (viewEngineResult?.Success == true)
-                return viewEngineResult;
-
-            viewEngineResult = GetRoutingPage(viewName, out routingArgs);
-            if (viewEngineResult?.Success == true)
-                return viewEngineResult;
-        }
-        else
-        {
-            foreach (var location in ViewLocations)
+            if (viewName.StartsWith("/"))
             {
-                var viewPath = location.CombineWith(viewName) + ".cshtml";
-                var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
+                var viewEngineResult = GetPageFromPathInfo(viewName);                
+                if (viewEngineResult?.Success == true)
+                    return viewEngineResult;
+        
+                viewEngineResult = GetRoutingPage(viewName, out routingArgs);                
                 if (viewEngineResult?.Success == true)
                     return viewEngineResult;
             }
+            else
+            {
+                foreach (var location in ViewLocations)
+                {
+                    var viewPath = location.CombineWith(viewName) + ".cshtml";
+                    var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
+                    if (viewEngineResult?.Success == true)
+                        return viewEngineResult;
+                }
+            }
         }
+
         return null;
     }
 
@@ -468,11 +417,11 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         var razorView = view as RazorView;
         try
         {
-            var httpCtx = ((HttpRequest)req.OriginalRequest).HttpContext;
-            var actionContext = new ActionContext(httpCtx,
+            var actionContext = new ActionContext(
+                ((HttpRequest) req.OriginalRequest).HttpContext,
                 new RouteData(),
                 new ActionDescriptor());
-            
+
             var sw = new StreamWriter(stream); // don't dispose of stream so other middleware can re-read / filter it
             {
                 viewData ??= CreateViewData((object)null);
@@ -486,8 +435,6 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                     viewData["Layout"] = layout;
 
                 viewData[Keywords.IRequest] = req;
-                if (razorView.RazorPage is RazorPage razorPage)
-                    PopulateRazorPageContext(httpCtx, razorPage, viewData, actionContext);
 
                 var viewContext = new ViewContext(
                     actionContext,
@@ -523,35 +470,6 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             await req.Response.WriteErrorBody(ex).ConfigAwait();
         }
     }
-
-    internal static void PopulateRazorPageContext(HttpContext httpCtx, RazorPage razorPage, ViewDataDictionary viewData, ActionContext actionContext = null)
-    {
-        // var urlHelperFactory = httpCtx.RequestServices.GetRequiredService<IUrlHelperFactory>();
-        // var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
-        var viewDataProp = razorPage.GetType().GetProperty("ViewData");
-        if (viewDataProp == null)
-            return;
-        var modelType = viewData.Model?.GetType() ?? viewDataProp.PropertyType.FirstGenericArg();
-        var pagModel = viewData.Model ?? modelType.CreateInstance();
-        var invoker = createViewDataCache.GetOrAdd(modelType, type => {
-            var mi = typeof(RazorFormat).GetStaticMethod(nameof(CreateViewData)).MakeGenericMethod(type);
-            var invoker = mi.GetStaticInvoker();
-            return invoker;
-        });
-        var pageViewData = invoker(pagModel) as ViewDataDictionary;
-        foreach (var entry in viewData)
-        {
-            pageViewData[entry.Key] = entry.Value;
-        }
-
-        razorPage.PageContext = new PageContext(actionContext)
-        {
-            ViewData = pageViewData,
-            RouteData = httpCtx.GetRouteData(),
-            HttpContext = httpCtx,
-        };
-    }
-    static ConcurrentDictionary<Type, StaticMethodInvoker> createViewDataCache = new();
 
     public async Task<ReadOnlyMemory<char>> RenderToHtmlAsync(IView view, object model = null, string layout = null)
     {
@@ -594,8 +512,6 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                     viewData["Layout"] = layout;
 
                 viewData[Keywords.IRequest] = req ?? new Host.BasicRequest { PathInfo = view.Path };
-                if (razorView.RazorPage is RazorPage razorPage)
-                    PopulateRazorPageContext(ctx, razorPage, viewData, actionContext);
 
                 var viewContext = new ViewContext(
                     actionContext,
@@ -780,8 +696,11 @@ public static class RazorViewExtensions
 
     public static IRequest GetRequest(this IHtmlHelper html)
     {
-        var req = html.ViewContext.ViewData.Model is RazorPage razorPage ? razorPage.HttpRequest : null
-            ?? html.ViewContext.ViewData[Keywords.IRequest] as IRequest
+        var req = 
+#if NET6_0_OR_GREATER
+            html.ViewContext.ViewData.Model is ServiceStack.Mvc.RazorPage razorPage ? razorPage.HttpRequest : null ??
+#endif 
+            html.ViewContext.ViewData[Keywords.IRequest] as IRequest
             ?? html.ViewContext.HttpContext.Items[Keywords.IRequest] as IRequest
             ?? HostContext.AppHost.TryGetCurrentRequest();
         return req;
@@ -1090,7 +1009,7 @@ public static class RazorViewExtensions
             return;
 
         RedirectUnauthenticated(req, redirect);
-        if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+        if (HostContext.HasPlugin<RazorFormat>()); 
             throw new StopExecutionException();
     }
 
@@ -1115,7 +1034,7 @@ public static class RazorViewExtensions
     internal static async Task RedirectToAsync(this IRequest req, string path)
     {
         await req.RedirectToAsyncInternalAsync(path);
-        if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+        if (HostContext.HasPlugin<RazorFormat>()); 
             throw new StopExecutionException();
     }
 
@@ -1165,7 +1084,7 @@ public static class RazorViewExtensions
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+            if (HostContext.HasPlugin<RazorFormat>()); 
                 throw new StopExecutionException();
         }
     }
@@ -1194,7 +1113,7 @@ public static class RazorViewExtensions
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+            if (HostContext.HasPlugin<RazorFormat>()); 
                 throw new StopExecutionException();
         }
     }
