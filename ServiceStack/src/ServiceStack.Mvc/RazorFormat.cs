@@ -58,6 +58,8 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             {
                 PagesPath = "~/Pages";
                 DefaultPage = "Index.cshtml";
+                DisableServiceStackRazor = true;
+                DisablePageBasedRouting = true;
             }
             else
             {
@@ -73,6 +75,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public IRazorViewEngine ViewEngine => viewEngine ?? throw new Exception(ErrorMvcNotInit);
 
+    public bool DisableServiceStackRazor { get; set; }
     public bool DisablePageBasedRouting { get; set; }
 
     IRazorViewEngine viewEngine;
@@ -94,16 +97,15 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     {
         ViewLocations ??= GetDefaultViewLocations(appHost.VirtualFiles);
 
-        appHost.CatchAllHandlers.Add(CatchAllHandler);
+        if (!DisableServiceStackRazor)
+            appHost.CatchAllHandlers.Add(CatchAllHandler);
+        if (!DisablePageBasedRouting)
+            appHost.FallbackHandlers.Add(PageBasedRoutingHandler);
+        
         appHost.ViewEngines.Add(this);
 
         viewEngine = appHost.TryResolve<IRazorViewEngine>();
         tempDataProvider = appHost.TryResolve<ITempDataProvider>();
-
-        if (!DisablePageBasedRouting)
-        {
-            appHost.FallbackHandlers.Add(PageBasedRoutingHandler);
-        }
         
         if (viewEngine == null || tempDataProvider == null)
             throw new Exception(ErrorMvcNotInit);
@@ -122,38 +124,46 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public ViewEngineResult GetPageFromPathInfo(string pathInfo)
     {
-        var origPath = pathInfo;
-        var isDir = pathInfo.EndsWith("/"); 
-        if (isDir)
-            pathInfo += DefaultPage;
-
-        var viewPath = "~/wwwroot".CombineWith(pathInfo);
-        if (!viewPath.EndsWith(".cshtml"))
-            viewPath += ".cshtml";
-
-        var viewEngineResult = ViewEngine.GetView("", viewPath, 
-            isMainPage: viewPath == "~/wwwroot/" + DefaultPage);
-
-        if (!viewEngineResult.Success)
+        try
         {
-            viewPath = PagesPath.CombineWith(pathInfo);
+            var origPath = pathInfo;
+            var isDir = pathInfo.EndsWith("/"); 
+            if (isDir)
+                pathInfo += DefaultPage;
+
+            var viewPath = "~/wwwroot".CombineWith(pathInfo);
             if (!viewPath.EndsWith(".cshtml"))
                 viewPath += ".cshtml";
 
-            viewEngineResult = ViewEngine.GetView("", viewPath,
-                isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
+            var viewEngineResult = ViewEngine.GetView("", viewPath, 
+                isMainPage: viewPath == "~/wwwroot/" + DefaultPage);
 
-            if (!viewEngineResult.Success && RazorPages && !isDir)
+            if (!viewEngineResult.Success)
             {
-                viewPath = PagesPath.CombineWith(origPath + "/" + DefaultPage);
+                viewPath = PagesPath.CombineWith(pathInfo);
+                if (!viewPath.EndsWith(".cshtml"))
+                    viewPath += ".cshtml";
+
                 viewEngineResult = ViewEngine.GetView("", viewPath,
                     isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
-            }
-        }
 
-        return viewEngineResult.Success 
-            ? viewEngineResult 
-            : null;
+                if (!viewEngineResult.Success && RazorPages && !isDir)
+                {
+                    viewPath = PagesPath.CombineWith(origPath + "/" + DefaultPage);
+                    viewEngineResult = ViewEngine.GetView("", viewPath,
+                        isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
+                }
+            }
+
+            return viewEngineResult.Success 
+                ? viewEngineResult 
+                : null;
+        }
+        catch (Exception e) /*GetView fails when RazorPage doesn't build */
+        {
+            log.Error(e, "Failed to ViewEngine.GetView({0}): {1}", pathInfo, e.Message);
+            return ViewEngineResult.NotFound(pathInfo, new[]{ pathInfo });
+        }
     }
 
     public bool HasView(string viewName, IRequest httpReq = null) => false;
