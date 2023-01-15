@@ -1413,9 +1413,17 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
         Request.AssertPermissionAsync(permission: permission, message: message, redirect: redirect);
 }
 
+public class RazorPageConfig
+{
+    public string? ForbiddenRedirect { get; set; } = "/Error?code=403";
+    public string? ForbiddenPartial { get; set; }
+}
+
 // View Page to support ASP.Net Razor Pages
 public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDisposable
 {
+    public static RazorPageConfig Config { get; set; } = new(); 
+    
     public HttpContext GetHttpContext() => base.HttpContext ?? base.ViewContext.HttpContext;
 
     public override ViewContext ViewContext
@@ -1637,7 +1645,9 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
 public static class RazorPageHtmlExtensions
 {
     public static string GetReturnUrl(this IHtmlHelper html) => html.GetRequest().GetReturnUrl() ?? "/";
-    public static RazorPage GetRazorPage(this IHtmlHelper html) => html.ViewContext?.ViewData?.Model as RazorPage;
+    public static RazorPage TryGetRazorPage(this IHtmlHelper html) => html.ViewContext?.ViewData?.Model as RazorPage;
+    public static RazorPage GetRazorPage(this IHtmlHelper html) => html.ViewContext?.ViewData?.Model as RazorPage
+        ?? throw new NotSupportedException("Only available from a ServiceStack.Mvc.RazorPage");
 
     public static async Task<bool> IsAuthenticatedAsync(this IHtmlHelper html) =>
         (await html.GetRequest().GetSessionAsync().ConfigAwait()).IsAuthenticated;
@@ -1681,16 +1691,15 @@ public static class RazorPageHtmlExtensions
                 return false;
             }
 
-            var feature = HostContext.GetPlugin<RazorFormat>();
-            if (feature.ForbiddenRedirect != null)
+            if (RazorPage.Config.ForbiddenRedirect != null)
             {
-                var url = feature.ForbiddenRedirect.AddQueryParam("role", role);
+                var url = RazorPage.Config.ForbiddenRedirect.AddQueryParam("role", role);
                 await req.RedirectToAsyncInternalAsync(url).ConfigAwait();
             }
-            else if (feature.ForbiddenPartial != null)
+            else if (RazorPage.Config.ForbiddenPartial != null)
             {
                 message ??= $"Missing Role {role}";
-                await html.RenderPartialAsync(feature.ForbiddenPartial, message).ConfigAwait();
+                await html.RenderPartialAsync(RazorPage.Config.ForbiddenPartial, message).ConfigAwait();
             }
             else
             {
@@ -1713,8 +1722,7 @@ public static class RazorPageHtmlExtensions
     
     public static async Task<bool> EnsurePermissionAsync(this IHtmlHelper html, string permission, string message = null, string redirect = null) 
     {
-        var page = (RazorPage)html.ViewContext.ViewData.Model;
-        var req = page.HttpRequest;
+        var req = html.GetRequest();
         var session = await req.GetSessionAsync().ConfigAwait();
         if (!session.IsAuthenticated)
         {
@@ -1726,20 +1734,19 @@ public static class RazorPageHtmlExtensions
         {
             if (redirect != null)
             {
-                await page.RedirectToAsync(redirect).ConfigAwait();
+                await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
                 return false;
             }
 
-            var feature = HostContext.GetPlugin<RazorFormat>();
-            if (feature.ForbiddenRedirect != null)
+            if (RazorPage.Config.ForbiddenRedirect != null)
             {
-                var url = feature.ForbiddenRedirect.AddQueryParam("permission", permission);
-                await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
+                var url = RazorPage.Config.ForbiddenRedirect.AddQueryParam("permission", permission);
+                await req.RedirectToAsyncInternalAsync(url).ConfigAwait();
             }
-            else if (feature.ForbiddenPartial != null)
+            else if (RazorPage.Config.ForbiddenPartial != null)
             {
                 message ??= $"Missing Permission {permission}";
-                await html.RenderPartialAsync(feature.ForbiddenPartial, message).ConfigAwait();
+                await html.RenderPartialAsync(RazorPage.Config.ForbiddenPartial, message).ConfigAwait();
             }
             else
             {
