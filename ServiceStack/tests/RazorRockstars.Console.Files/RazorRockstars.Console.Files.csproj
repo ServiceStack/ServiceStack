@@ -367,7 +367,7 @@
     <PackageReference Include="EntityFramework" Version="6.3.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="SharpCompress" Version="0.29.0" />
     <PackageReference Include="Snappy.NET" Version="1.1.1.8" />
     <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.113.3" />
