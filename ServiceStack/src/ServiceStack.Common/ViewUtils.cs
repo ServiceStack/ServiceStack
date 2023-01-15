@@ -357,6 +357,8 @@ namespace ServiceStack
 
     public static class When
     {
+        public static string Development => "dev";
+        public static string Production => "prod";
         public static string IsAuthenticated => "auth";
         public static string HasRole(string role) => $"role:{role}";
         public static string HasPermission(string perm) => $"perm:{perm}";

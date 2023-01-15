@@ -62,6 +62,11 @@ namespace ServiceStack.Auth
         /// Fired before the session is removed after the /auth/logout Service is called
         /// </summary>
         void OnLogout(IServiceBase authService);
+
+        /// <summary>
+        /// Return User Attributes for this Session
+        /// </summary>
+        HashSet<string> GetUserAttributes(IRequest request);
     }
 
     public interface IAuthSessionExtended : IAuthSession

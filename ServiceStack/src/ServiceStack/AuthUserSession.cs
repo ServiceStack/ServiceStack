@@ -361,6 +361,71 @@ namespace ServiceStack
         public virtual IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) => null;
         public virtual Task<IHttpResult> ValidateAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo,
             CancellationToken token = default) => ((IHttpResult)null).InTask();
+
+        public virtual HashSet<string> GetUserAttributes(IRequest request)
+        {
+            var attrs = new HashSet<string> {
+                HostContext.DebugMode ? When.Development : When.Production
+            };
+
+            if (IsAuthenticated)
+            {
+                attrs.Add(When.IsAuthenticated);
+                
+                if (HostContext.HasValidAuthSecret(request))
+                    attrs.Add(RoleNames.Admin);
+
+                var roles = Roles;
+                var permissions = Permissions;
+                
+                if (roles.IsEmpty() && permissions.IsEmpty())
+                {
+                    var authRepo = HostContext.AppHost.GetAuthRepository(request);
+                    using (authRepo as IDisposable)
+                    {
+                        if (authRepo is IManageRoles manageRoles)
+                        {
+                            manageRoles.GetRolesAndPermissions(UserAuthId, out var managedRoles, out var managedPerms);
+                            roles = managedRoles.ToList();
+                            permissions = managedPerms.ToList();
+                        }
+                    }
+                }
+                if (roles != null)
+                {
+                    foreach (var role in roles)
+                    {
+                        attrs.Add(When.HasRole(role));
+                    }
+                }
+                if (permissions != null)
+                {
+                    foreach (var perm in permissions)
+                    {
+                        attrs.Add(When.HasPermission(perm));
+                    }
+                }
+                if (this is IAuthSessionExtended extended)
+                {
+                    if (extended.Scopes != null)
+                    {
+                        foreach (var item in extended.Scopes)
+                        {
+                            attrs.Add(When.HasScope(item));
+                        }
+                    }
+                }
+                var claims = request.GetClaims();
+                if (claims != null)
+                {
+                    foreach (var claim in claims)
+                    {
+                        attrs.Add(When.HasClaim(claim.ToString()));
+                    }
+                }
+            }
+            return attrs;
+        }
     }
 
     public class WebSudoAuthUserSession : AuthUserSession, IWebSudoAuthSession
