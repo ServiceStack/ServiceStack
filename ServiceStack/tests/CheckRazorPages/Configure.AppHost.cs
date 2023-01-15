@@ -21,6 +21,8 @@ public class AppHost : AppHostBase, IHostingStartup
         SetConfig(new HostConfig {
         });
 
+        Plugins.Add(new StaticFilePrettyUrlsFeature());
+        
         Plugins.Add(new RazorFormat {
             RazorPages = true,
             ForbiddenRedirect = "/forbidden",

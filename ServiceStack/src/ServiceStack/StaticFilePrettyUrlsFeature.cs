@@ -3,7 +3,7 @@ using ServiceStack.IO;
 
 namespace ServiceStack;
 
-public class PrettyUrlsFeature : IPlugin, Model.IHasStringId
+public class StaticFilePrettyUrlsFeature : IPlugin, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.PrettyUrls;
     public string[] Extensions { get; set; } = { "html" };
