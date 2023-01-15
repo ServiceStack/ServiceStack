@@ -1009,7 +1009,7 @@ public static class RazorViewExtensions
             return;
 
         RedirectUnauthenticated(req, redirect);
-        if (HostContext.HasPlugin<RazorFormat>()); 
+        if (HostContext.HasPlugin<RazorFormat>())
             throw new StopExecutionException();
     }
 
@@ -1034,7 +1034,7 @@ public static class RazorViewExtensions
     internal static async Task RedirectToAsync(this IRequest req, string path)
     {
         await req.RedirectToAsyncInternalAsync(path);
-        if (HostContext.HasPlugin<RazorFormat>()); 
+        if (HostContext.HasPlugin<RazorFormat>()) 
             throw new StopExecutionException();
     }
 
@@ -1084,7 +1084,7 @@ public static class RazorViewExtensions
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            if (HostContext.HasPlugin<RazorFormat>()); 
+            if (HostContext.HasPlugin<RazorFormat>()) 
                 throw new StopExecutionException();
         }
     }
@@ -1113,7 +1113,7 @@ public static class RazorViewExtensions
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            if (HostContext.HasPlugin<RazorFormat>()); 
+            if (HostContext.HasPlugin<RazorFormat>()) 
                 throw new StopExecutionException();
         }
     }
@@ -1189,7 +1189,7 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
     public void ApplyRequestFilters(object requestDto)
     {
         HostContext.ApplyRequestFiltersAsync(Request, Response, requestDto).Wait();
-        if (Response.IsClosed)
+        if (Response.IsClosed && HostContext.HasPlugin<RazorFormat>())
             throw new StopExecutionException();
     }
 
