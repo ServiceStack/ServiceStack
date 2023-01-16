@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}"
 EndProject
@@ -28,8 +28,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack", "ServiceStack\ServiceStack.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Common", "ServiceStack.Common\ServiceStack.Common.csproj", "{982416DB-C143-4028-A0C3-CF41892D18D3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorRockstars.Console.Files", "..\tests\RazorRockstars.Console.Files\RazorRockstars.Console.Files.csproj", "{1A5796C5-8AB6-4676-AC20-83594AED1798}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Razor", "ServiceStack.Razor\ServiceStack.Razor.csproj", "{D73274AE-006B-4CEE-BA60-0ECF5873048D}"
 EndProject
@@ -77,43 +75,43 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckWebCore", "..\tests\Ch
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckTemplatesCore", "..\tests\CheckTemplatesCore\CheckTemplatesCore.csproj", "{6BF52B7D-4F38-469A-84A7-263C22CB9553}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckRazorCore", "..\tests\CheckRazorCore\CheckRazorCore.csproj", "{CBC8FEA0-548D-4255-894D-8D8B79D572EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckRazorCore", "..\tests\CheckRazorCore\CheckRazorCore.csproj", "{CBC8FEA0-548D-4255-894D-8D8B79D572EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Extensions", "ServiceStack.Extensions\ServiceStack.Extensions.csproj", "{6AA17A99-5C6C-4514-972E-84761BF37C3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Extensions", "ServiceStack.Extensions\ServiceStack.Extensions.csproj", "{6AA17A99-5C6C-4514-972E-84761BF37C3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Extensions.Tests", "..\tests\ServiceStack.Extensions.Tests\ServiceStack.Extensions.Tests.csproj", "{E14395FD-F351-4E27-8AAD-294DF2B49AB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Extensions.Tests", "..\tests\ServiceStack.Extensions.Tests\ServiceStack.Extensions.Tests.csproj", "{E14395FD-F351-4E27-8AAD-294DF2B49AB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.GrpcClient", "ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj", "{09C4193C-C3D3-4882-9D15-79DA18E834FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.GrpcClient", "ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj", "{09C4193C-C3D3-4882-9D15-79DA18E834FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckGrpc", "..\tests\CheckGrpc\CheckGrpc.csproj", "{BB5EE2B1-6663-4145-B1EC-92AED6FAD748}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckGrpc", "..\tests\CheckGrpc\CheckGrpc.csproj", "{BB5EE2B1-6663-4145-B1EC-92AED6FAD748}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckCoreApi", "..\tests\CheckCoreApi\CheckCoreApi.csproj", "{E0AF102A-4503-4768-A15F-AE3CFE05DD50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckCoreApi", "..\tests\CheckCoreApi\CheckCoreApi.csproj", "{E0AF102A-4503-4768-A15F-AE3CFE05DD50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Desktop", "ServiceStack.Desktop\ServiceStack.Desktop.csproj", "{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Desktop", "ServiceStack.Desktop\ServiceStack.Desktop.csproj", "{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckIdentity", "..\tests\CheckIdentity\CheckIdentity.csproj", "{60726697-6993-4F81-BF4D-662217C240DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckIdentity", "..\tests\CheckIdentity\CheckIdentity.csproj", "{60726697-6993-4F81-BF4D-662217C240DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NorthwindAuto", "..\tests\NorthwindAuto\NorthwindAuto.csproj", "{4087FC9D-F03D-43FC-8AE0-78B0E3AF0007}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NorthwindAuto", "..\tests\NorthwindAuto\NorthwindAuto.csproj", "{4087FC9D-F03D-43FC-8AE0-78B0E3AF0007}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj", "{A7070566-EEE2-46D3-B8BF-A2C79873D267}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Text", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj", "{A7070566-EEE2-46D3-B8BF-A2C79873D267}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis", "..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj", "{C344931C-7117-4087-BE1A-A6586B68184B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Redis", "..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj", "{C344931C-7117-4087-BE1A-A6586B68184B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj", "{CEC1251E-5D68-4B1F-A851-BBDA04FB030B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj", "{CEC1251E-5D68-4B1F-A851-BBDA04FB030B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Sqlite", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj", "{D5D2DC52-558A-4371-8D8E-A08C0F754A0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.Sqlite", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj", "{D5D2DC52-558A-4371-8D8E-A08C0F754A0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.PostgreSQL", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj", "{AD9DA2A8-1F73-4FCA-9F4A-341E9C181121}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.PostgreSQL", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj", "{AD9DA2A8-1F73-4FCA-9F4A-341E9C181121}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServer", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj", "{F071880A-C9F4-4CE0-9FD3-7991F4E4BC13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.SqlServer", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj", "{F071880A-C9F4-4CE0-9FD3-7991F4E4BC13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.MySql", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj", "{1952E16F-657F-44B2-9CAC-EDAC737C4A47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.MySql", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj", "{1952E16F-657F-44B2-9CAC-EDAC737C4A47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Aws", "..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj", "{E0273BE3-A1B6-47CF-AD37-150FA2875A49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Aws", "..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj", "{E0273BE3-A1B6-47CF-AD37-150FA2875A49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Azure", "..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj", "{3691EAFC-B6D6-4A10-8609-74E9E48B144A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Azure", "..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj", "{3691EAFC-B6D6-4A10-8609-74E9E48B144A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckRazorPages", "..\tests\CheckRazorPages\CheckRazorPages.csproj", "{C259128F-9F1B-4E9D-946E-CE9EACFDEDFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckRazorPages", "..\tests\CheckRazorPages\CheckRazorPages.csproj", "{C259128F-9F1B-4E9D-946E-CE9EACFDEDFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -199,16 +197,6 @@ Global
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Release|x86.ActiveCfg = Release|Any CPU
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Release|x86.Build.0 = Release|Any CPU
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|x86.ActiveCfg = Debug|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|x86.Build.0 = Debug|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|Any CPU.ActiveCfg = Release|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|Mixed Platforms.Build.0 = Release|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|x86.ActiveCfg = Release|x86
-		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|x86.Build.0 = Release|x86
 		{D73274AE-006B-4CEE-BA60-0ECF5873048D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D73274AE-006B-4CEE-BA60-0ECF5873048D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D73274AE-006B-4CEE-BA60-0ECF5873048D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -691,7 +679,6 @@ Global
 		{A5646013-C243-453F-A2B6-3B6870A9637D} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{B7F650D2-6D7E-48BE-ADCE-19076249B3B7} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
-		{1A5796C5-8AB6-4676-AC20-83594AED1798} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{BB47EC88-D61D-4B67-9491-78C7155A7798} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{F709A373-6FD5-4415-B2ED-2520EA7CC568} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{9982317F-831C-478B-9CC3-57F888BCD97A} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
