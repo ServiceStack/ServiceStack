@@ -381,5 +381,7 @@ public static class RazorPageHtmlExtensions
         var script = $"<script type=\"importmap\">\n{imports.ToJson().IndentJson()}\n</script>";
         return html.Raw(script);
     }
+
+    public static string ClassNames(this IHtmlHelper html, params string?[] classes) => CssUtils.ClassNames(classes);
 }
 #endif

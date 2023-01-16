@@ -33,10 +33,9 @@ public static class CssUtils
         public static string Input(string cls) => Input(false, cls);
         public static string Input(bool invalid, string cls)
         {
-            return string.Join(" ", new string[] {
-                "block w-full sm:text-sm rounded-md bg-white dark:bg-black disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none", !invalid
-                    ? "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-700"
-                    : "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500", cls });
+            return string.Join(" ", "block w-full sm:text-sm rounded-md bg-white dark:bg-black disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none", !invalid
+                ? "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-700"
+                : "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500", cls);
         }
 
         public static string ToolbarButtonClass { get; set; } =
