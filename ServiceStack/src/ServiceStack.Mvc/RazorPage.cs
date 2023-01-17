@@ -381,6 +381,16 @@ public static class RazorPageHtmlExtensions
         var script = $"<script type=\"importmap\">\n{imports.ToJson().IndentJson()}\n</script>";
         return html.Raw(script);
     }
+    
+    public static IHtmlContent StaticImportMap(this IHtmlHelper html, Dictionary<string, string> importMaps)
+    {
+        var to = new Dictionary<string, (string Dev, string Prod)>();
+        foreach (var entry in importMaps)
+        {
+            to[entry.Key] = (entry.Value, entry.Value);
+        }
+        return html.ImportMap(to);
+    }
 
     public static string ClassNames(this IHtmlHelper html, params string?[] classes) => CssUtils.ClassNames(classes);
 }
