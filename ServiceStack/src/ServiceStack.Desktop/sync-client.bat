@@ -1,4 +1,4 @@
-x run sync-client.sc
+node sync-client.js
 del ..\ServiceStack\js\servicestack-client.js
 copy lib\js\@servicestack\client\servicestack-client.min.js ..\ServiceStack\js\servicestack-client.js
 tsc && ^

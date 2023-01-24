@@ -204,7 +204,9 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .align-text-top{vertical-align:text-top}.align-text-bottom{vertical-align:text-bottom}
 
 .inset-0{top:0;right:0;bottom:0;left:0}.-inset-0{top:0;right:0;bottom:0;left:0}
-.inset-y-0 {top:0;bottom:0}.inset-x-0{right:0;left:0}.-inset-y-0{top:0;bottom:0}.-inset-x-0{right:0;left:0}
+.inset-y-0{top:0;bottom:0}.inset-x-0{right:0;left:0}.-inset-y-0{top:0;bottom:0}.-inset-x-0{right:0;left:0}
+.-inset-px{top:-1px;right:-1px;bottom:-1px;left:-1px}
+
 .top-0{top:0}.right-0{right:0}.bottom-0{bottom:0}.left-0{left:0}
 .-top-0{top:0}.-right-0{right:0}.-bottom-0{bottom:0}.-left-0{left:0}
 .-top-2{top: -0.5rem;}
@@ -441,6 +443,8 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .border-red-500{--tw-border-opacity:1;border-color: rgba(239, 68, 68, var(--tw-border-opacity))}
 .border-yellow-500{--tw-border-opacity:1;border-color: rgba(245, 158, 11, var(--tw-border-opacity))}
 .border-green-500{--tw-border-opacity:1;border-color: rgba(16, 185, 129, var(--tw-border-opacity))}
+.border-indigo-500{--tw-border-opacity: 1;border-color: rgb(99 102 241 / var(--tw-border-opacity))}
+
 .border-opacity-0{--tw-border-opacity:0}.border-opacity-5{--tw-border-opacity:0.05}.border-opacity-10{--tw-border-opacity:0.1}
 .border-opacity-20{--tw-border-opacity:0.2}.border-opacity-25{--tw-border-opacity:0.25}.border-opacity-30{--tw-border-opacity:0.3}
 .border-opacity-40{--tw-border-opacity:0.4}.border-opacity-50{--tw-border-opacity:0.5}.border-opacity-60{--tw-border-opacity:0.6}
@@ -450,6 +454,9 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .border-r-1{border-right-width:1px}.border-r-2{border-right-width:2px}.border-r-3{border-right-width:3px}.border-r-4{border-right-width:4px}
 .border-b-1{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-b-3{border-bottom-width:3px}.border-b-4{border-bottom-width:4px}
 .border-l-1{border-left-width:1px}.border-l-2{border-left-width:2px}.border-l-3{border-left-width:3px}.border-l-4{border-left-width:4px}
+
+.rounded-l-md{border-top-left-radius:0.375rem;border-bottom-left-radius: 0.375rem}
+.rounded-r-md{border-top-right-radius:0.375rem;border-bottom-right-radius: 0.375rem}
 
 .rounded-none{border-radius:0}.rounded-sm{border-radius:0.125rem}.rounded{border-radius:0.25rem}.rounded-md{border-radius:0.375rem}.rounded-lg{border-radius:0.5rem}
 .rounded-xl{border-radius:0.75rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}
@@ -553,6 +560,7 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .shadow-none{--tw-shadow: 0 0 #0000;box-shadow: var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}
 
 .cursor-auto{cursor:auto}.cursor-default{cursor:default}.cursor-pointer{cursor:pointer}.cursor-wait{cursor:wait}.cursor-text{cursor:text}.cursor-move{cursor:move}.cursor-help{cursor:help}.cursor-not-allowed{cursor:not-allowed}
+.pointer-events-none{pointer-events:none}
 
 .antialiased{-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale}
 .subpixel-antialiased{-webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto}
@@ -581,7 +589,14 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
     --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
     --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
     box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}
-.focus\:outline-none:focus {outline: 2px solid transparent;outline-offset: 2px}
+.focus\:outline-none:focus {outline: 2px solid transparent;outline-offset:2px}
+.focus\:ring-1:focus {
+    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+    box-shadow: var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000);
+}
+.focus\:z-10:focus{z-index:10}
+
 
 .hover\:opacity-100:hover {opacity:1; transition:opacity 0.4s}
 .hover\:opacity-80:hover {opacity:.8; transition:opacity 0.4s}
@@ -650,7 +665,9 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
     .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem }
     .sm\:text-base{font-size:1rem;line-height:1.5rem}
     .sm\:justify-between{justify-content:space-between}.sm\:justify-evenly{justify-content:space-evenly}
-    .sm\:invisible{visibility: hidden}.sm\:visible{visibility: visible}
+    .sm\:invisible{visibility:hidden}.sm\:visible{visibility:visible}
+    .sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .sm\:gap-x-4{-moz-column-gap: 1rem;column-gap: 1rem}
 }
 @media (min-width: 768px) {
     .container { max-width: 768px }
