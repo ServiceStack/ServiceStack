@@ -132,6 +132,7 @@ public class MetadataTypes
 [Exclude(Feature.Soap)]
 public class AppMetadata : IMeta
 {
+    public DateTime Date { get; set; }
     public AppInfo App { get; set; }
     public UiInfo Ui { get; set; }
     public ConfigInfo Config { get; set; }
@@ -504,6 +505,10 @@ public class AppInfo : IMeta
     /// Name of the ServiceStack Instance
     /// </summary>
     public string ServiceName { get; set; }
+    /// <summary>
+    /// The Config.ApiVersion
+    /// </summary>
+    public string ApiVersion { get; set; }
     /// <summary>
     /// Textual description of the ServiceStack App (shown in Home Services list)
     /// </summary>

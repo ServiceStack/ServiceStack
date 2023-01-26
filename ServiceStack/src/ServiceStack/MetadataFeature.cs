@@ -244,6 +244,7 @@ namespace ServiceStack
             var config = appHost.Config;
             var response = new AppMetadata
             {
+                Date = DateTime.UtcNow,
                 App = config.AppInfo ?? new AppInfo(),
                 Ui = uiFeature?.Info,
                 Config = new ConfigInfo {
@@ -261,6 +262,7 @@ namespace ServiceStack
 
             response.App.BaseUrl ??= req.GetBaseUrl();
             response.App.ServiceName ??= appHost.ServiceName;
+            response.App.ApiVersion ??= config.ApiVersion;
             response.App.JsTextCase ??= $"{Text.JsConfig.TextCase}";
 
             if (uiFeature?.PreserveAttributesNamed != null && view is "locode" or "explorer" or "admin-ui")
