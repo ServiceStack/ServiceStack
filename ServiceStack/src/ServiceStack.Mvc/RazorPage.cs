@@ -200,6 +200,12 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
     {
         return (await Gateway.ApiAsync(request).ConfigAwait()).Response.AsRawJson();
     }
+
+    public virtual async Task<HtmlString> ApiResultsAsJsonAsync<T>(IReturn<QueryResponse<T>> request)
+    {
+        var api = await Gateway.ApiAsync(request).ConfigAwait();
+        return api.Response?.Results?.AsRawJson() ?? RazorViewExtensions.NullJson;
+    }
     
     public void Dispose()
     {

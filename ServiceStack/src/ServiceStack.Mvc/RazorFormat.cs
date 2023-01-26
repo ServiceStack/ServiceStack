@@ -662,21 +662,31 @@ public class RazorHandler : ServiceStackHandlerBase
 
 public static class RazorViewExtensions
 {
+    internal static HtmlString NullJson = new("null");
+
     public static HtmlString AsRawJson<T>(this T model)
     {
-        var json = !Equals(model, default(T)) ? model.ToJson() : "null";
-        return new HtmlString(json);
+        var json = !Equals(model, default(T)) 
+            ? model.ToJson() 
+            : null;
+        return json != null ? new HtmlString(json) : NullJson;
     }
 
     public static HtmlString AsRaw<T>(this T model)
     {
         return new HtmlString(
-            (model != null ? model : default(T))?.ToString());
+            (model != null ? model : default)?.ToString());
     }
 
     public static async Task<HtmlString> ApiAsJsonAsync<TResponse>(this IHtmlHelper html, IReturn<TResponse> request)
     {
         return (await html.Gateway().ApiAsync(request)).Response.AsRawJson();
+    }
+
+    public static async Task<HtmlString> ApiResultsAsJsonAsync<T>(this IHtmlHelper html, IReturn<QueryResponse<T>> request)
+    {
+        var api = await html.Gateway().ApiAsync(request).ConfigAwait();
+        return api.Response?.Results?.AsRawJson() ?? NullJson;
     }
 
     public static string GetErrorHtml(ResponseStatus responseStatus)
