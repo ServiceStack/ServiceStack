@@ -674,6 +674,11 @@ public static class RazorViewExtensions
             (model != null ? model : default(T))?.ToString());
     }
 
+    public static async Task<HtmlString> ApiAsRawJsonAsync<TResponse>(this IHtmlHelper html, IReturn<TResponse> request)
+    {
+        return (await html.Gateway().ApiAsync(request)).Response.AsRawJson();
+    }
+
     public static string GetErrorHtml(ResponseStatus responseStatus)
     {
         if (responseStatus == null) return null;
