@@ -196,7 +196,7 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
 
     public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
 
-    public virtual async Task<HtmlString> ApiAsRawJsonAsync<TResponse>(IReturn<TResponse> request)
+    public virtual async Task<HtmlString> ApiAsJsonAsync<TResponse>(IReturn<TResponse> request)
     {
         return (await Gateway.ApiAsync(request).ConfigAwait()).Response.AsRawJson();
     }
