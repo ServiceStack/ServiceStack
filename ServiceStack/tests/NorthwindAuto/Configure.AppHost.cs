@@ -35,6 +35,10 @@ public class AppHost : AppHostBase
             AdminAuthSecret = "secret",
         });
 
+        Plugins.Add(new CorsFeature(new[] {
+            "http://localhost:5173", //vite
+        }));
+
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
         var files = VirtualFiles.GetDirectory("custom").GetAllFiles();
         files.Each(file => memFs.WriteFile($"locode/{file.Name}", file));
