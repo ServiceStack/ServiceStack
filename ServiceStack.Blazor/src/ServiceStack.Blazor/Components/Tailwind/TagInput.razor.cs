@@ -48,7 +48,7 @@ public partial class TagInput : TextInputBase<List<string>>
             return;
 
         var isEnter = args.Key is "Enter" or "NumpadEnter";
-        if (isEnter || args.Key.Length == 1 && Delimiters.Contains(args.Key[0]))
+        if (isEnter || (args.Key.Length == 1 && Delimiters.Contains(args.Key[0])))
         {
             var newValue = new List<string>(Value.OrEmpty());
             newValue.AddIfNotExists(tag);
