@@ -241,6 +241,7 @@ namespace ServiceStack
             {
                 res.ContentType = MimeTypes.ServerSentEvents;
                 res.AddHeader(HttpHeaders.CacheControl, "no-cache");
+                res.AddHeader(HttpHeaders.XAccelBuffering, "no");
                 res.ApplyGlobalResponseHeaders();
                 res.UseBufferedStream = false;
                 res.KeepAlive = true;
