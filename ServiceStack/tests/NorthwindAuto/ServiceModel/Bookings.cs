@@ -64,11 +64,13 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
     [Description("Name this Booking is for"), ValidateNotEmpty]
     public string Name { get; set; } = string.Empty;
-    public RoomType RoomType { get; set; }
+    [ValidateNotEmpty]
+    public RoomType? RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int RoomNumber { get; set; }
     [ValidateGreaterThan(0)]
     public decimal Cost { get; set; }
+    [ValidateNotEmpty]
     public DateTime BookingStartDate { get; set; }
     [FieldCss(Label = "text-green-800", Input = "bg-green-100")]
     public DateTime? BookingEndDate { get; set; }

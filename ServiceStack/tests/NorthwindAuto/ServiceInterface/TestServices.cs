@@ -2,6 +2,7 @@ using Chinook.ServiceModel;
 using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Html;
 using ServiceStack.OrmLite;
 
 namespace MyApp.ServiceInterface;
@@ -11,6 +12,7 @@ public class AllTypes : IReturn<AllTypes>
 {
     public int Id { get; set; }
     public int? NullableId { get; set; }
+    public bool Boolean { get; set; }
     public byte Byte { get; set; }
     public short Short { get; set; }
     public int Int { get; set; }
@@ -30,6 +32,7 @@ public class AllTypes : IReturn<AllTypes>
     public KeyValuePair<string, string> KeyValuePair { get; set; }
     public DateTime? NullableDateTime { get; set; }
     public TimeSpan? NullableTimeSpan { get; set; }
+    [Input(Type=Input.Types.Tag)]
     public List<string> StringList { get; set; }
     public string[] StringArray { get; set; }
     public Dictionary<string, string> StringMap { get; set; }

@@ -37,7 +37,7 @@ public class AppHost : AppHostBase
 
         Plugins.Add(new CorsFeature(new[] {
             "http://localhost:5173", //vite
-        }));
+        }, allowCredentials:true));
 
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
         var files = VirtualFiles.GetDirectory("custom").GetAllFiles();
