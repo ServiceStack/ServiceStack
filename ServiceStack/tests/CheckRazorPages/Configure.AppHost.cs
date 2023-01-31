@@ -22,7 +22,7 @@ public class AppHost : AppHostBase, IHostingStartup
         });
 
         // Allow return .html pages without extension  
-        Plugins.Add(new StaticFilePrettyUrlsFeature());
+        Plugins.Add(new CleanUrlsFeature());
         
         // For TodosService
         Plugins.Add(new AutoQueryDataFeature());

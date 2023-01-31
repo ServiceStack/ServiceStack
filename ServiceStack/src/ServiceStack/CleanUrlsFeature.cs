@@ -3,9 +3,9 @@ using ServiceStack.IO;
 
 namespace ServiceStack;
 
-public class StaticFilePrettyUrlsFeature : IPlugin, Model.IHasStringId
+public class CleanUrlsFeature : IPlugin, Model.IHasStringId
 {
-    public string Id { get; set; } = Plugins.PrettyUrls;
+    public string Id { get; set; } = Plugins.CleanUrls;
     public string[] Extensions { get; set; } = { "html" };
     
     public void Register(IAppHost appHost)
