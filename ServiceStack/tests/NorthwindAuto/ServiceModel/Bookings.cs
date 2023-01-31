@@ -126,7 +126,7 @@ public class UpdateBooking2 : AuditBase {}
 
 [Tag("Bookings"), Description("Delete a Booking")]
 [Route("/booking/{Id}", "DELETE")]
-[ValidateHasRole("Admin")]
+[ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
 {

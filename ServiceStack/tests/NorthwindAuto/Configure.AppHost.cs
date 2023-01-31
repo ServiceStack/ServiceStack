@@ -36,7 +36,8 @@ public class AppHost : AppHostBase
         });
 
         Plugins.Add(new CorsFeature(new[] {
-            "http://localhost:5173", //vite
+            "http://localhost:5173", //vite dev
+            "https://docs.servicestack.net"
         }, allowCredentials:true));
 
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
