@@ -872,7 +872,9 @@ namespace ServiceStack.Api.OpenApi
 
                 paramAttrs[propertyName] = apiMembers;
                 propertyTypes[propertyName] = property.PropertyType;
-                var allowableValuesAttr = property.FirstAttribute<ApiAllowableValuesAttribute>(); 
+                var allowableValuesAttrs = property.AllAttributes<ApiAllowableValuesAttribute>();
+                var allowableValuesAttr = allowableValuesAttrs.FirstOrDefault(); 
+                allowableParams.AddRange(allowableValuesAttrs);
 
                 if (hasDataContract && attr == null)
                     continue;
