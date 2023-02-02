@@ -215,7 +215,7 @@ public static class Input
 
     public static string[]? GetEnumValues(Type enumType)
     {
-        if (!enumType.IsEnum) return null;
+        if (enumType is not { IsEnum: true }) return null;
         GetEnumEntries(enumType, out var entries);
         return entries.Select(x => x.Value).ToArray();
     }

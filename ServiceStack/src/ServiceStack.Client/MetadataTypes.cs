@@ -1112,7 +1112,7 @@ public static class AppMetadataUtils
             Accept = input.Accept,
             Capture = input.Capture,
             Multiple = input.Multiple.NullIfFalse(),
-            AllowableValues = input.AllowableValues,
+            AllowableValues = input.AllowableValues ?? Input.GetEnumValues(input.AllowableValuesEnum),
             Options = input.Options,
             Ignore = input.Ignore.NullIfFalse(),
         };

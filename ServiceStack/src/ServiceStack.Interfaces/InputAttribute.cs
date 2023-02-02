@@ -50,6 +50,7 @@ public class InputAttributeBase : MetadataAttributeBase
     public string Capture  { get; set; }
     public bool Multiple { get; set; }
     public string[] AllowableValues { get; set; }
+    public Type AllowableValuesEnum { get; set; }
     public string Options  { get; set; }
     public bool Ignore { get; set; }
     public string EvalAllowableValues { get; set; }
