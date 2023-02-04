@@ -47,7 +47,6 @@ namespace ServiceStack.Redis.Tests.Issues
             Assert.That(userPromoEvent.UserId, Is.EqualTo(userId));
         }
 
-
         [Test]
         public void Can_from_Retrieve_DomainEvents_list()
         {
@@ -59,7 +58,10 @@ namespace ServiceStack.Redis.Tests.Issues
             var eventsForUser = new AggregateEvents
             {
                 Id = userId,
-                Events = new List<DomainEvent>()
+                Events = new List<DomainEvent>
+                {
+                    new UserPromotedEvent { UserId = userId }
+                }
             };
 
             eventsForUser.Events.Add(new UserPromotedEvent { UserId = userId });

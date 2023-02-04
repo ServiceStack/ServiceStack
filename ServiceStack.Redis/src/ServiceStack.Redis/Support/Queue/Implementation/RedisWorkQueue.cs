@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Text;
 
-
 namespace ServiceStack.Redis.Support.Queue.Implementation;
 
 /// <summary>

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Runtime.Serialization;
+using NUnit.Framework;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.Text.Tests
