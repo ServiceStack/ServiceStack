@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -1142,13 +1143,36 @@ namespace ServiceStack
 
         public virtual Task<object> CreateAsync<Table>(ICreateDb<Table> dto) => AutoQuery.CreateAsync(dto, Request);
 
+        private static ConcurrentDictionary<Type, ObjectActivator> genericListCache = new();
+        
+        private static IList CreateGenericList<T>(Type responseType)
+        {
+            if (responseType == typeof(object))
+                return new List<object>();
+            
+            var activator = genericListCache.GetOrAdd(responseType, type => 
+                typeof(List<>).MakeGenericType(type).GetConstructor(Type.EmptyTypes).GetActivator());
+            return (IList)activator(Array.Empty<object>());
+        }
+
+        private static Type GetResponseType(Type requestType)
+        {
+            if (requestType == null)
+                return null;
+            var responseType = requestType.GetInterfaces()
+                .FirstOrDefault(x => x.IsOrHasGenericInterfaceTypeOf(typeof(IReturn<>)))?.GenericTypeArguments[0];
+            responseType ??= HostContext.Metadata.GetResponseTypeByRequest(requestType);
+            return responseType;
+        }
+
         public virtual async Task<object> BatchCreateAsync<T>(IEnumerable<ICreateDb<T>> requests)
         {
             using var db = AutoQuery.GetDb<T>(Request);
             using var dbTrans = db.OpenTransaction();
 
-            var results = new List<object>();
-            foreach (var request in requests)
+            var list = requests.ToList();
+            var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
+            foreach (var request in list)
             {
                 var response = await AutoQuery.CreateAsync(request, Request, db);
                 results.Add(response);
@@ -1167,8 +1191,9 @@ namespace ServiceStack
             using var db = AutoQuery.GetDb<T>(Request);
             using var dbTrans = db.OpenTransaction();
 
-            var results = new List<object>();
-            foreach (var request in requests)
+            var list = requests.ToList();
+            var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
+            foreach (var request in list)
             {
                 var response = await AutoQuery.UpdateAsync(request, Request, db);
                 results.Add(response);
@@ -1187,8 +1212,9 @@ namespace ServiceStack
             using var db = AutoQuery.GetDb<T>(Request);
             using var dbTrans = db.OpenTransaction();
 
-            var results = new List<object>();
-            foreach (var request in requests)
+            var list = requests.ToList();
+            var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
+            foreach (var request in list)
             {
                 var response = await AutoQuery.PartialUpdateAsync<T>(request, Request, db);
                 results.Add(response);
@@ -1207,8 +1233,9 @@ namespace ServiceStack
             using var db = AutoQuery.GetDb<T>(Request);
             using var dbTrans = db.OpenTransaction();
 
-            var results = new List<object>();
-            foreach (var request in requests)
+            var list = requests.ToList();
+            var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
+            foreach (var request in list)
             {
                 var response = await AutoQuery.DeleteAsync(request, Request, db);
                 results.Add(response);
@@ -1227,8 +1254,9 @@ namespace ServiceStack
             using var db = AutoQuery.GetDb<T>(Request);
             using var dbTrans = db.OpenTransaction();
 
-            var results = new List<object>();
-            foreach (var request in requests)
+            var list = requests.ToList();
+            var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
+            foreach (var request in list)
             {
                 var response = await AutoQuery.SaveAsync(request, Request, db);
                 results.Add(response);
