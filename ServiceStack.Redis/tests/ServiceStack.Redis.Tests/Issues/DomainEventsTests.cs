@@ -20,6 +20,7 @@ namespace ServiceStack.Redis.Tests.Issues
         public string Name { get; set; }
     }
 
+    [Serializable]
     public class UserPromotedEvent : DomainEvent
     {
         public Guid UserId { get; set; }

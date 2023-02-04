@@ -675,6 +675,7 @@ namespace ServiceStack.Text
         public static HashSet<string> AllowRuntimeTypeInTypesWithNamespaces { get; set; }
 
         public static Func<Type, bool> AllowRuntimeType { get; set; }
+        public static bool AllowRuntimeInterfaces { get; set; }
 
         public static void Reset()
         {
@@ -700,10 +701,11 @@ namespace ServiceStack.Text
             __uniqueTypes = new HashSet<Type>();
 
             //Called when writing each string, too expensive to maintain as scoped config
-            
+            AllowRuntimeInterfaces = true;
             AllowRuntimeType = null;
             AllowRuntimeTypeWithAttributesNamed = new HashSet<string>
             {
+                nameof(SerializableAttribute),
                 nameof(DataContractAttribute),
                 nameof(RuntimeSerializableAttribute),
             };
@@ -718,11 +720,13 @@ namespace ServiceStack.Text
             };
             AllowRuntimeTypeInTypesWithNamespaces = new HashSet<string>
             {
+                "ServiceStack.Auth",
                 "ServiceStack.Messaging",
             };
             AllowRuntimeTypeInTypes = new HashSet<string>
             {
-                "ServiceStack.RequestLogEntry"
+                "ServiceStack.Messaging.Message",
+                "ServiceStack.RequestLogEntry",
             };
             PlatformExtensions.ClearRuntimeAttributes();
             ReflectionExtensions.Reset();

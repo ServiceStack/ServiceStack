@@ -215,6 +215,7 @@ namespace ServiceStack.Text.Tests
             public string Name { get; set; }
         }
 
+        [Serializable]
         public class UserPromotedEvent : DomainEvent
         {
             public Guid UserId { get; set; }

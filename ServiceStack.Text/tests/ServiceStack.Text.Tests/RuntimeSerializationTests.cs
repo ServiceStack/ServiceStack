@@ -50,7 +50,7 @@ namespace ServiceStack.Text.Tests
         public IObject Object { get; set; }
     }
     public interface IObject { }
-    public class AInterface : IObject { }
+    public class AInterface : IObject, IRuntimeSerializable { }
 
     public class RuntimeObjects
     {
