@@ -254,11 +254,11 @@ public class MjsGenerator : ILangGenerator
 
                         if (value == null || memberValue != null)
                         {
-                            sb.AppendLine($"{typeName}[\"{name}\"] = \"{strValue}\";");
+                            sb.AppendLine($"{typeName}[\"{name}\"] = \"{strValue}\"");
                         }
                         else
                         {
-                            sb.AppendLine($"{typeName}[{typeName}[\"{name}\"] = {value}] = \"{name}\";");
+                            sb.AppendLine($"{typeName}[{typeName}[\"{name}\"] = {value}] = \"{name}\"");
                         }
                     }
                 }
@@ -334,8 +334,8 @@ public class MjsGenerator : ILangGenerator
                     }
                 }
                 sb.AppendLine(extendsType.Length > 0
-                    ? "constructor(init) { super(init); Object.assign(this, init); }"
-                    : "constructor(init) { Object.assign(this, init); }");
+                    ? "constructor(init) { super(init); Object.assign(this, init) }"
+                    : "constructor(init) { Object.assign(this, init) }");
 
                 string responseTypeExpression = options?.Op != null
                     ? "createResponse () { };"
@@ -355,18 +355,18 @@ public class MjsGenerator : ILangGenerator
                             var returnType = types.Substring(0, types.Length - 1);
 
                             var responseName = GetReturnType(returnType);
-                            responseTypeExpression = "createResponse() { return " + responseName + "; };";
+                            responseTypeExpression = "createResponse() { return " + responseName + " }";
                         }
                         else if (implStr == "IReturnVoid")
                         {
-                            responseTypeExpression = "createResponse() { };";
+                            responseTypeExpression = "createResponse() { }";
                         }
                     }
                 }
                 if (options?.Op != null)
-                    sb.AppendLine("getTypeName() { return '" + typeName +  "'; };");
+                    sb.AppendLine("getTypeName() { return '" + typeName +  "' }");
                 if (options?.Op?.Method != null)
-                    sb.AppendLine("getMethod() { return '" + options.Op.Method + "'; };");
+                    sb.AppendLine("getMethod() { return '" + options.Op.Method + "' }");
                 if (responseTypeExpression != null)
                     sb.AppendLine(responseTypeExpression);
 
