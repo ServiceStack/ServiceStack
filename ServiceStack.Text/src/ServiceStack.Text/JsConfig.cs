@@ -720,6 +720,7 @@ namespace ServiceStack.Text
                 "ICrud",
                 "IMeta",
                 "IAuthTokens",
+                "IHasResponseStatus",
             };
             AllowRuntimeTypeInTypesWithNamespaces = new HashSet<string>
             {
