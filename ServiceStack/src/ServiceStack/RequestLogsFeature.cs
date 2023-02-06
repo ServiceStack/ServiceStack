@@ -4,6 +4,7 @@ using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -117,6 +118,8 @@ namespace ServiceStack
         /// Default take, if none is specified
         /// </summary>
         public int DefaultLimit { get; set; } = 100;
+
+        public string RegisterAllowRuntimeTypeInTypes { get; set; } = typeof(RequestLogEntry).FullName;
         
         public bool DefaultIgnoreFilter(object o)
         {
@@ -167,6 +170,9 @@ namespace ServiceStack
         {
             if (!string.IsNullOrEmpty(AtRestPath))
                 appHost.RegisterService<RequestLogsService>(AtRestPath);
+
+            if (RegisterAllowRuntimeTypeInTypes != null)
+                JsConfig.AllowRuntimeTypeInTypes.Add(RegisterAllowRuntimeTypeInTypes);
 
             var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
             requestLogger.EnableSessionTracking = EnableSessionTracking;

@@ -530,18 +530,15 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
             var bytes = GetResponseBytes(response);
             if (bytes != null)
             {
-                if (string.IsNullOrEmpty(contentType) || contentType.MatchesContentType(MimeTypes.Json))
+                serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                if (contentType.MatchesContentType(MimeTypes.Json) || 
+                    (string.IsNullOrEmpty(contentType) && !string.IsNullOrEmpty(serviceEx.ResponseBody) && serviceEx.ResponseBody.AsSpan().TrimStart().StartsWith("{")))
                 {
                     var stream = MemoryStreamFactory.GetStream(bytes);
-                    serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                     serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
 
                     if (stream.CanRead)
                         stream.Dispose(); //alt ms throws when you dispose twice
-                }
-                else
-                {
-                    serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                 }
             }
         }

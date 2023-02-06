@@ -14,6 +14,11 @@ namespace ServiceStack.Text.Tests
     [TestFixture]
     public class MessagingTests : TestBase
     {
+        public MessagingTests()
+        {
+            JsConfig.AllowRuntimeTypeInTypes.Add(typeof(Message).FullName);
+        }
+
         [Test]
         public void Can_serialize_IMessage_into_typed_Message()
         {

@@ -184,6 +184,8 @@ namespace ServiceStack.Messaging.Redis
             handlerThreadCountMap[typeof(T)] = noOfThreads;
 
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, handlerMap.Count);
+            if (RedisMessageFactory.RegisterAllowRuntimeTypeInTypes != null)
+                JsConfig.AllowRuntimeTypeInTypes.Add(RedisMessageFactory.RegisterAllowRuntimeTypeInTypes);
         }
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)

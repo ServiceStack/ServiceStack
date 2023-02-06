@@ -199,7 +199,7 @@ namespace ServiceStack.Text.Tests
         [Test]
         public void Does_allow_Unknown_Type_in_MQ_Messages()
         {
-            //Uses JsConfig.AllowRuntimeTypeInTypesWithNamespaces
+            JsConfig.AllowRuntimeTypeInTypes.Add(typeof(Message).FullName);
 
             var mqMessage = new Message<AType> //Internal Type used for ServiceStack MQ
             {
@@ -215,7 +215,7 @@ namespace ServiceStack.Text.Tests
         [Test]
         public void Does_allow_Unknown_Type_in_RequestLogEntry()
         {
-            //Uses JsConfig.AllowRuntimeTypeInTypes
+            JsConfig.AllowRuntimeTypeInTypes.Add(typeof(RequestLogEntry).FullName);
 
             var logEntry = new RequestLogEntry //Internal Type used for ServiceStack LogEntry
             {

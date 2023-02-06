@@ -30,8 +30,8 @@ namespace ServiceStack.Text.Common
         public const string ItemSeperatorString = ",";
         public const string MapKeySeperatorString = ":";
 
-        public static readonly char[] CsvChars = new[] { ItemSeperator, QuoteChar };
-        public static readonly char[] EscapeChars = new[] { QuoteChar, MapKeySeperator, ItemSeperator, MapStartChar, MapEndChar, ListStartChar, ListEndChar, ReturnChar, LineFeedChar };
+        public static readonly char[] CsvChars = { ItemSeperator, QuoteChar };
+        public static readonly char[] EscapeChars = { QuoteChar, MapKeySeperator, ItemSeperator, MapStartChar, MapEndChar, ListStartChar, ListEndChar, ReturnChar, LineFeedChar };
 
         private const int LengthFromLargestChar = '}' + 1;
         private static readonly bool[] EscapeCharFlags = new bool[LengthFromLargestChar];
