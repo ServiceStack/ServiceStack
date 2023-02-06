@@ -26,6 +26,7 @@ namespace ServiceStack.Aws.Sqs
         }
 
         public bool DisableBuffering { get; set; }
+        public string AwsQueueOwnerAccountId { get; set; }
         public QueueNames QueueNames { get; private set; }
         
         public int VisibilityTimeout
