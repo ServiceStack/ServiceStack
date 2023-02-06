@@ -22,6 +22,9 @@ public class AppHost : AppHostBase, IHostingStartup
             allowOriginWhitelist: new[]{
             "http://localhost:5000",
             "https://localhost:5001",
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "https://docs.servicestack.net",
             "https://" + Environment.GetEnvironmentVariable("DEPLOY_CDN")
         }, allowCredentials: true));
 

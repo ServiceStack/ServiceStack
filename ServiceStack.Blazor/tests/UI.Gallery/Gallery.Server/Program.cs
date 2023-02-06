@@ -6,7 +6,7 @@ using ServiceStack;
 using ServiceStack.Blazor;
 using System.Net;
 
-Licensing.RegisterLicense("OSS BSD-3-Clause 2022 https://github.com/NetCoreApps/BlazorGallery aG/bfnbSOwyw1RnIF/FDKGNNOGGxQIU6EUpTRRi+T+5xwitylq/eECYb1auMpMYavN5HsY6zgphgNy9xq94a9GP5/OJzhnNS9WJPf0sXKt/iBk6Fdd4TzaZxyD57fPEKzTYtYof/Z6xtJmP8avbAvivfr19HaGkNcyD02KlTs4s=");
+Licensing.RegisterLicense("OSS BSD-3-Clause 2023 https://github.com/NetCoreApps/BlazorGallery WZ4hSuvzmoeRsZSygYGa3b7y1F+ohVZhYvHsfbRBw3hr0Jhyk/xSrPOl86g8St+H9zll7ehDjG5D5176JvP9baU3zIoZKek3+RvDbr+Th/COMaXrnByIA/pBjIR7aApF6l8tLXA4qV05rEE7wNxla74QGCupdH5NU2r2algvLTU=");
 
 var builder = WebApplication.CreateBuilder(args);
 
