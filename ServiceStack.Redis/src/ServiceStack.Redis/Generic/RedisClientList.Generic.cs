@@ -30,16 +30,13 @@ namespace ServiceStack.Redis.Generic
             this.client = client;
         }
 
-        public string Id
-        {
-            get { return listId; }
-        }
+        public string Id => listId;
 
         public IEnumerator<T> GetEnumerator()
         {
             return this.Count <= PageLimit
-                    ? client.GetAllItemsFromList(this).GetEnumerator()
-                    : GetPagingEnumerator();
+                ? client.GetAllItemsFromList(this).GetEnumerator()
+                : GetPagingEnumerator();
         }
 
         public IEnumerator<T> GetPagingEnumerator()
@@ -99,15 +96,9 @@ namespace ServiceStack.Redis.Generic
             return false;
         }
 
-        public int Count
-        {
-            get
-            {
-                return (int)client.GetListCount(this);
-            }
-        }
+        public int Count => (int)client.GetListCount(this);
 
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         public int IndexOf(T item)
         {
@@ -138,8 +129,8 @@ namespace ServiceStack.Redis.Generic
 
         public T this[int index]
         {
-            get { return client.GetItemFromList(this, index); }
-            set { client.SetItemInList(this, index, value); }
+            get => client.GetItemFromList(this, index);
+            set => client.SetItemInList(this, index, value);
         }
 
         public List<T> GetAll()

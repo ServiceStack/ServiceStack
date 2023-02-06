@@ -39,10 +39,7 @@ namespace ServiceStack.Redis
 
             public IRedisSet this[string setId]
             {
-                get
-                {
-                    return new RedisClientSet(client, setId);
-                }
+                get => new RedisClientSet(client, setId);
                 set
                 {
                     var col = this[setId];
@@ -158,9 +155,9 @@ namespace ServiceStack.Redis
         bool AddRangeToSetNeedsSend(string setId, List<string> items)
         {
             if (setId.IsNullOrEmpty())
-                throw new ArgumentNullException("setId");
+                throw new ArgumentNullException(nameof(setId));
             if (items == null)
-                throw new ArgumentNullException("items");
+                throw new ArgumentNullException(nameof(items));
             if (items.Count == 0)
                 return false;
 

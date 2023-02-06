@@ -10,7 +10,6 @@ namespace ServiceStack.Redis.Generic
     /// </summary>
     internal partial class QueuedRedisTypedCommand<T> : QueuedRedisOperation
     {
-
         public Action<IRedisTypedClient<T>> VoidReturnCommand { get; set; }
         public Func<IRedisTypedClient<T>, int> IntReturnCommand { get; set; }
         public Func<IRedisTypedClient<T>, long> LongReturnCommand { get; set; }
@@ -30,42 +29,34 @@ namespace ServiceStack.Redis.Generic
                 if (VoidReturnCommand != null)
                 {
                     VoidReturnCommand(client);
-
                 }
                 else if (IntReturnCommand != null)
                 {
                     IntReturnCommand(client);
-
                 }
                 else if (LongReturnCommand != null)
                 {
                     LongReturnCommand(client);
-
                 }
                 else if (DoubleReturnCommand != null)
                 {
                     DoubleReturnCommand(client);
-
                 }
                 else if (BytesReturnCommand != null)
                 {
                     BytesReturnCommand(client);
-
                 }
                 else if (StringReturnCommand != null)
                 {
                     StringReturnCommand(client);
-
                 }
                 else if (MultiBytesReturnCommand != null)
                 {
                     MultiBytesReturnCommand(client);
-
                 }
                 else if (MultiStringReturnCommand != null)
                 {
                     MultiStringReturnCommand(client);
-
                 }
             }
             catch (Exception ex)

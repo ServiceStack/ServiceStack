@@ -12,8 +12,7 @@ namespace ServiceStack.Redis
 #endif
     public sealed class BufferedStream : Stream
     {
-        Stream networkStream;
-
+        readonly Stream networkStream;
         public BufferedStream(Stream stream)
             : this(stream, 0) {}
 
@@ -29,8 +28,8 @@ namespace ServiceStack.Redis
 
         public override long Position
         {
-            get { return networkStream.Position; }
-            set { networkStream.Position = value; }
+            get => networkStream.Position;
+            set => networkStream.Position = value;
         }
 
         public override long Length => networkStream.Length;

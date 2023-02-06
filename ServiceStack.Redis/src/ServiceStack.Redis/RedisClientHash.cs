@@ -95,15 +95,9 @@ namespace ServiceStack.Redis
 			return false;
 		}
 
-		public int Count
-		{
-			get { return (int)client.GetHashCount(hashId); }
-		}
+		public int Count => (int)client.GetHashCount(hashId);
 
-		public bool IsReadOnly
-		{
-			get { return false; }
-		}
+		public bool IsReadOnly => false;
 
 		public bool ContainsKey(string key)
 		{
@@ -128,35 +122,14 @@ namespace ServiceStack.Redis
 
 		public string this[string key]
 		{
-			get
-			{
-				return client.GetValueFromHash(hashId, key);
-			}
-			set
-			{
-				client.SetEntryInHash(hashId, key, value);
-			}
+			get => client.GetValueFromHash(hashId, key);
+			set => client.SetEntryInHash(hashId, key, value);
 		}
 
-		public ICollection<string> Keys
-		{
-			get
-			{
-				return client.GetHashKeys(hashId);
-			}
-		}
+		public ICollection<string> Keys => client.GetHashKeys(hashId);
 
-		public ICollection<string> Values
-		{
-			get
-			{
-				return client.GetHashValues(hashId);
-			}
-		}
+		public ICollection<string> Values => client.GetHashValues(hashId);
 
-		public string Id
-		{
-			get { return hashId; }
-		}
+		public string Id => hashId;
 	}
 }

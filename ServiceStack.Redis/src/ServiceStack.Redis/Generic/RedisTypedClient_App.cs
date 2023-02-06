@@ -17,14 +17,12 @@ namespace ServiceStack.Redis.Generic
             var childRefKey = GetChildReferenceSetKey<TChild>(parentId);
             var childKeys = children.ConvertAll(x => client.UrnKey(x));
 
-            using (var trans = client.CreateTransaction())
-            {
-                //Ugly but need access to a generic constraint-free StoreAll method
-                trans.QueueCommand(c => ((RedisClient)c)._StoreAll(children));
-                trans.QueueCommand(c => c.AddRangeToSet(childRefKey, childKeys));
+            using var trans = client.CreateTransaction();
+            //Ugly but need access to a generic constraint-free StoreAll method
+            trans.QueueCommand(c => ((RedisClient)c)._StoreAll(children));
+            trans.QueueCommand(c => c.AddRangeToSet(childRefKey, childKeys));
 
-                trans.Commit();
-            }
+            trans.Commit();
         }
 
         public void StoreRelatedEntities<TChild>(object parentId, params TChild[] children)

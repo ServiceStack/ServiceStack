@@ -37,10 +37,7 @@ namespace ServiceStack.Redis.Generic
 
             public IRedisList<T> this[string listId]
             {
-                get
-                {
-                    return new RedisClientList<T>(client, listId);
-                }
+                get => new RedisClientList<T>(client, listId);
                 set
                 {
                     var list = this[listId];

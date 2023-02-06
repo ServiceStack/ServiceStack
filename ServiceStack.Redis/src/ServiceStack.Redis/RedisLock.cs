@@ -56,11 +56,9 @@ namespace ServiceStack.Redis
                         //acquire the lock. The above call to Watch(_lockKey) enrolled the key in monitoring, so if it changes
                         //before we call Commit() below, the Commit will fail and return false, which means that another thread 
                         //was able to acquire the lock before we finished processing.
-                        using (var trans = redisClient.CreateTransaction()) // we started the "Watch" above; this tx will succeed if the value has not moved 
-                        {
-                            trans.QueueCommand(r => r.Set(key, lockString));
-                            return trans.Commit(); //returns false if Transaction failed
-                        }
+                        using var trans = redisClient.CreateTransaction();
+                        trans.QueueCommand(r => r.Set(key, lockString));
+                        return trans.Commit(); //returns false if Transaction failed
                     },
                 timeOut
             );

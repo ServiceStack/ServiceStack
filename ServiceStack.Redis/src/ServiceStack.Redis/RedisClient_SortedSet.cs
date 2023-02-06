@@ -37,10 +37,7 @@ namespace ServiceStack.Redis
 
             public IRedisSortedSet this[string setId]
             {
-                get
-                {
-                    return new RedisClientSortedSet(client, setId);
-                }
+                get => new RedisClientSortedSet(client, setId);
                 set
                 {
                     var col = this[setId];
@@ -52,7 +49,7 @@ namespace ServiceStack.Redis
 
         public static double GetLexicalScore(string value)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
                 return 0;
 
             var lexicalValue = 0;
@@ -217,8 +214,7 @@ namespace ServiceStack.Redis
             for (var i = 0; i < multiDataList.Length; i += 2)
             {
                 var key = multiDataList[i].FromUtf8Bytes();
-                double value;
-                Double.TryParse(multiDataList[i + 1].FromUtf8Bytes(), NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+                double.TryParse(multiDataList[i + 1].FromUtf8Bytes(), NumberStyles.Any, CultureInfo.InvariantCulture, out var value);
                 map[key] = value;
             }
 

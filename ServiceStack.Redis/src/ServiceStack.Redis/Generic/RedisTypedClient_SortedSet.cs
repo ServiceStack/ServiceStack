@@ -33,10 +33,7 @@ namespace ServiceStack.Redis.Generic
 
             public IRedisSortedSet<T> this[string setId]
             {
-                get
-                {
-                    return new RedisClientSortedSet<T>(client, setId);
-                }
+                get => new RedisClientSortedSet<T>(client, setId);
                 set
                 {
                     var col = this[setId];

@@ -32,10 +32,7 @@ namespace ServiceStack.Redis.Generic
             this.setId = setId;
         }
 
-        public string Id
-        {
-            get { return this.setId; }
-        }
+        public string Id => this.setId;
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -105,7 +102,7 @@ namespace ServiceStack.Redis.Generic
             }
         }
 
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         public T PopItemWithHighestScore()
         {

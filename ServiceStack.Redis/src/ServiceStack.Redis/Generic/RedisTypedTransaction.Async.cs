@@ -52,7 +52,6 @@ namespace ServiceStack.Redis.Generic
                 //execute transaction
                 await ExecAsync(token).ConfigureAwait(false);
 
-                /////////////////////////////
                 //receive expected results
                 foreach (var queuedCommand in QueuedCommands)
                 {

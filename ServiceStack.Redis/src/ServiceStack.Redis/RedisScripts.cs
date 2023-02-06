@@ -30,7 +30,7 @@ namespace ServiceStack.Redis
         private IRedisClientsManager redisManager;
         public IRedisClientsManager RedisManager
         {
-            get => redisManager ?? (redisManager = Context.Container.Resolve<IRedisClientsManager>());
+            get => redisManager ??= Context.Container.Resolve<IRedisClientsManager>();
             set => redisManager = value;
         }
 
@@ -41,10 +41,8 @@ namespace ServiceStack.Redis
                 if ((options is Dictionary<string, object> obj && obj.TryGetValue("connectionString", out var oRedisConn))
                     || scope.PageResult.Args.TryGetValue(RedisConnection, out oRedisConn))
                 {
-                    using (var redis = new RedisClient((string)oRedisConn))
-                    {
-                        return fn(redis);
-                    }
+                    using var redis = new RedisClient((string)oRedisConn);
+                    return fn(redis);
                 }
                 
                 using (var redis = RedisManager.GetClient())
@@ -79,7 +77,7 @@ namespace ServiceStack.Redis
             for (var i = 0; i < cmd.Length; i++)
             {
                 var c = cmd[i];
-                if (c == '{' || c == '[')
+                if (c is '{' or '[')
                 {
                     break; //stop splitting args if value is complex type
                 }

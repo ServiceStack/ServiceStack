@@ -15,37 +15,30 @@ namespace ServiceStack.Redis.Pipeline
                 if (VoidReturnCommand != null)
                 {
                     VoidReturnCommand(client);
-
                 }
                 else if (IntReturnCommand != null)
                 {
                     IntReturnCommand(client);
-
                 }
                 else if (LongReturnCommand != null)
                 {
                     LongReturnCommand(client);
-
                 }
                 else if (DoubleReturnCommand != null)
                 {
                     DoubleReturnCommand(client);
-
                 }
                 else if (BytesReturnCommand != null)
                 {
                     BytesReturnCommand(client);
-
                 }
                 else if (StringReturnCommand != null)
                 {
                     StringReturnCommand(client);
-
                 }
                 else if (MultiBytesReturnCommand != null)
                 {
                     MultiBytesReturnCommand(client);
-
                 }
                 else if (MultiStringReturnCommand != null)
                 {

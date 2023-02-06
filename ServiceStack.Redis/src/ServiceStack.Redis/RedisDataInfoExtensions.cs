@@ -7,18 +7,16 @@ namespace ServiceStack.Redis
 {
     public static class RedisDataInfoExtensions
     {
-        public static String ToJsonInfo(this RedisText redisText)
+        public static string ToJsonInfo(this RedisText redisText)
         {
             var source = redisText.GetResult();
             return Parse(source);
         }
 
-        #region Private
-
-        private static String Parse(String source)
+        private static string Parse(string source)
         {
-            var result = new Dictionary<String, Dictionary<String, String>>();
-            var section = new Dictionary<String, String>();
+            var result = new Dictionary<string, Dictionary<string, string>>();
+            var section = new Dictionary<string, string>();
 
             var rows = SplitRows(source);
 
@@ -27,7 +25,7 @@ namespace ServiceStack.Redis
                 if (row.IndexOf("#", StringComparison.Ordinal) == 0)
                 {
                     var name = ParseSection(row);
-                    section = new Dictionary<String, String>();
+                    section = new Dictionary<string, string>();
                     result.Add(name, section);
                 }
                 else
@@ -43,33 +41,32 @@ namespace ServiceStack.Redis
             return JsonSerializer.SerializeToString(result);
         }
 
-        private static IEnumerable<String> SplitRows(String source)
+        private static string[] CRLF = { "\r\n" };
+        private static IEnumerable<string> SplitRows(string source)
         {
-            return source.Split(new[] { "\r\n" }, StringSplitOptions.None).Where(n => !String.IsNullOrWhiteSpace(n));
+            return source.Split(CRLF, StringSplitOptions.None).Where(n => !string.IsNullOrWhiteSpace(n));
         }
 
-        private static String ParseSection(String source)
+        private static string ParseSection(string source)
         {
             return (source.IndexOf("#", StringComparison.Ordinal) == 0)
                 ? source.Trim('#').Trim()
-                : String.Empty;
+                : string.Empty;
         }
 
-        private static KeyValuePair<String, String>? ParseKeyValue(String source)
+        private static KeyValuePair<string, string>? ParseKeyValue(string source)
         {
-            KeyValuePair<String, String>? result = null;
+            KeyValuePair<string, string>? result = null;
 
-            var devider = source.IndexOf(":", StringComparison.Ordinal);
-            if (devider > 0)
+            var divider = source.IndexOf(":", StringComparison.Ordinal);
+            if (divider > 0)
             {
-                var name = source.Substring(0, devider);
-                var value = source.Substring(devider + 1);
-                result = new KeyValuePair<String, String>(name.Trim(), value.Trim());
+                var name = source.Substring(0, divider);
+                var value = source.Substring(divider + 1);
+                result = new KeyValuePair<string, string>(name.Trim(), value.Trim());
             }
 
             return result;
         }
-
-        #endregion Private
     }
 }

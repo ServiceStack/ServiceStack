@@ -32,10 +32,7 @@ namespace ServiceStack.Redis
 			this.client = client;
 		}
 
-		public string Id
-		{
-			get { return listId; }
-		}
+		public string Id => listId;
 
 		public IEnumerator<string> GetEnumerator()
 		{
@@ -95,15 +92,9 @@ namespace ServiceStack.Redis
 			return client.RemoveItemFromList(listId, item) > 0;
 		}
 
-		public int Count
-		{
-			get
-			{
-				return (int)client.GetListCount(listId);
-			}
-		}
+		public int Count => (int)client.GetListCount(listId);
 
-		public bool IsReadOnly { get { return false; } }
+		public bool IsReadOnly => false;
 
 		public int IndexOf(string item)
 		{
@@ -134,8 +125,8 @@ namespace ServiceStack.Redis
 
 		public string this[int index]
 		{
-			get { return client.GetItemFromList(listId, index); }
-			set { client.SetItemInList(listId, index, value); }
+			get => client.GetItemFromList(listId, index);
+			set => client.SetItemInList(listId, index, value);
 		}
 
 		public List<string> GetAll()

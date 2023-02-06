@@ -29,8 +29,6 @@ namespace ServiceStack.Redis
         {
             try
             {
-
-
                 // flush send buffers
                 RedisClient.FlushSendBuffer();
 

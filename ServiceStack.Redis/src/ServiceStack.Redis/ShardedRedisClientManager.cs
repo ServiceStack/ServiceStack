@@ -12,7 +12,7 @@ namespace ServiceStack.Redis
 	/// </summary>
 	public class ShardedRedisClientManager
 	{
-		private readonly ConsistentHash<ShardedConnectionPool> _consistentHash;
+		private readonly ConsistentHash<ShardedConnectionPool> consistentHash;
 
 		public ShardedRedisClientManager(params ShardedConnectionPool[] connectionPools)
 		{
@@ -23,7 +23,7 @@ namespace ServiceStack.Redis
 			{
 				pools.Add(new KeyValuePair<ShardedConnectionPool, int>(connectionPool, connectionPool.weight));
 			}
-			_consistentHash = new ConsistentHash<ShardedConnectionPool>(pools);
+			consistentHash = new ConsistentHash<ShardedConnectionPool>(pools);
 		}
 
 		/// <summary>
@@ -33,7 +33,7 @@ namespace ServiceStack.Redis
 		/// <returns>a redis connection pool</returns>
 		public ShardedConnectionPool GetConnectionPool(string key)
 		{
-			return _consistentHash.GetTarget(key);
+			return consistentHash.GetTarget(key);
 		}
 	}
 }

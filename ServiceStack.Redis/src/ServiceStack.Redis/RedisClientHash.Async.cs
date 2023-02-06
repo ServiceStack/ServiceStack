@@ -44,7 +44,7 @@ namespace ServiceStack.Redis
             => AsyncClient.GetHashCountAsync(hashId, token).AsInt32();
 
         IAsyncEnumerator<KeyValuePair<string, string>> IAsyncEnumerable<KeyValuePair<string, string>>.GetAsyncEnumerator(CancellationToken token)
-            => AsyncClient.ScanAllHashEntriesAsync(hashId).GetAsyncEnumerator(token); // note: we're using HSCAN here, not HGETALL
+            => AsyncClient.ScanAllHashEntriesAsync(hashId, token: token).GetAsyncEnumerator(token); // note: we're using HSCAN here, not HGETALL
 
         ValueTask<long> IRedisHashAsync.IncrementValueAsync(string key, int incrementBy, CancellationToken token)
             => AsyncClient.IncrementValueInHashAsync(hashId, key, incrementBy, token);

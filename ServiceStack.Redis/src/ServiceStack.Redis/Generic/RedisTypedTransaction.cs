@@ -94,7 +94,6 @@ namespace ServiceStack.Redis.Generic
                 //execute transaction
                 Exec();
 
-                /////////////////////////////
                 //receive expected results
                 foreach (var queuedCommand in QueuedCommands)
                 {

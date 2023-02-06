@@ -39,7 +39,7 @@ namespace ServiceStack.Redis
             Init();
         }
 
-        internal static HashSet<Type> __uniqueTypes = new HashSet<Type>();
+        internal static HashSet<Type> __uniqueTypes = new();
 
         public static Func<RedisClient> NewFactoryFn = () => new RedisClient();
 
@@ -96,8 +96,8 @@ namespace ServiceStack.Redis
 
         public string this[string key]
         {
-            get { return GetValue(key); }
-            set { SetValue(key, value); }
+            get => GetValue(key);
+            set => SetValue(key, value);
         }
 
         public override void OnConnected() { }

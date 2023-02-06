@@ -109,8 +109,8 @@ namespace ServiceStack.Redis
             return CreateRedisClient(GetReadOnlyHost(desiredIndex), master: false);
         }
 
-        object oLock = new object();
-        private string lastInvalidMasterHost = null;
+        readonly object oLock = new();
+        private string lastInvalidMasterHost;
         private long lastValidMasterTicks = DateTime.UtcNow.Ticks;
  
         private DateTime lastValidMasterFromSentinelAt

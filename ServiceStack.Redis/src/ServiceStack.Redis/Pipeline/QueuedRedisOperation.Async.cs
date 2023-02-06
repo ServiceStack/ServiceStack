@@ -10,12 +10,12 @@ namespace ServiceStack.Redis.Pipeline
     {
         public virtual ValueTask ExecuteAsync(IRedisClientAsync client) => default;
 
-        private Delegate _asyncReadCommand;
+        private Delegate asyncReadCommand;
         private QueuedRedisOperation SetAsyncReadCommand(Delegate value)
         {
-            if (_asyncReadCommand is object && _asyncReadCommand != value)
+            if (asyncReadCommand is object && asyncReadCommand != value)
                 throw new InvalidOperationException("Only a single async read command can be assigned");
-            _asyncReadCommand = value;
+            asyncReadCommand = value;
             return this;
         }
 
@@ -46,7 +46,7 @@ namespace ServiceStack.Redis.Pipeline
         {
             try
             {
-                switch (_asyncReadCommand)
+                switch (asyncReadCommand)
                 {
                     case null:
                         ProcessResultThrowIfSync();
@@ -133,7 +133,7 @@ namespace ServiceStack.Redis.Pipeline
 
         partial void OnProcessResultThrowIfAsync()
         {
-            if (_asyncReadCommand is object)
+            if (asyncReadCommand is object)
             {
                 throw new InvalidOperationException("An async read command was present, but the queued operation is being processed synchronously");
             }

@@ -10,13 +10,13 @@ namespace ServiceStack.Redis
     /// </summary>
     internal partial class RedisCommand
     {
-        private Delegate _asyncReturnCommand;
-        protected Delegate AsyncReturnCommand => _asyncReturnCommand;
+        private Delegate asyncReturnCommand;
+        protected Delegate AsyncReturnCommand => asyncReturnCommand;
         private RedisCommand SetAsyncReturnCommand(Delegate value)
         {
-            if (_asyncReturnCommand is object && _asyncReturnCommand != value)
+            if (asyncReturnCommand is object && asyncReturnCommand != value)
                 throw new InvalidOperationException("Only a single async return command can be assigned");
-            _asyncReturnCommand = value;
+            asyncReturnCommand = value;
             return this;
         }
         internal RedisCommand WithAsyncReturnCommand(Func<IRedisClientAsync, ValueTask> VoidReturnCommandAsync)
@@ -48,7 +48,7 @@ namespace ServiceStack.Redis
         {
             try
             {
-                switch (_asyncReturnCommand)
+                switch (asyncReturnCommand)
                 {
                     case null:
                         ExecuteThrowIfSync();
@@ -91,7 +91,7 @@ namespace ServiceStack.Redis
 
         partial void OnExecuteThrowIfAsync()
         {
-            if (_asyncReturnCommand is object)
+            if (asyncReturnCommand is object)
             {
                 throw new InvalidOperationException("An async return command was present, but the queued operation is being processed synchronously");
             }

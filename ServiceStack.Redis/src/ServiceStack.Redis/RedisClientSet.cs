@@ -87,20 +87,11 @@ namespace ServiceStack.Redis
 			return true;
 		}
 
-		public int Count
-		{
-			get
-			{
-				return (int)client.GetSetCount(setId);
-			}
-		}
+		public int Count => (int)client.GetSetCount(setId);
 
 		public bool IsReadOnly { get { return false; } }
 
-		public string Id
-		{
-			get { return this.setId; }
-		}
+		public string Id => this.setId;
 
 		public List<string> GetRangeFromSortedSet(int startingFrom, int endingAt)
 		{

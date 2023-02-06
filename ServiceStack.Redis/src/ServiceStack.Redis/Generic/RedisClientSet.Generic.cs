@@ -32,10 +32,7 @@ namespace ServiceStack.Redis.Generic
             this.setId = setId;
         }
 
-        public string Id
-        {
-            get { return this.setId; }
-        }
+        public string Id => this.setId;
 
         public IEnumerator<T> GetEnumerator()
         {

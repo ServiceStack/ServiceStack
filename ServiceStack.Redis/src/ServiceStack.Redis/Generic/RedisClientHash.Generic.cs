@@ -31,10 +31,7 @@ namespace ServiceStack.Redis.Generic
             this.hashId = hashId;
         }
 
-        public string Id
-        {
-            get { return this.hashId; }
-        }
+        public string Id => this.hashId;
 
         public IEnumerator<KeyValuePair<TKey, T>> GetEnumerator()
         {
@@ -84,15 +81,9 @@ namespace ServiceStack.Redis.Generic
             return Contains(item) && client.RemoveEntryFromHash(this, item.Key);
         }
 
-        public int Count
-        {
-            get { return (int)client.GetHashCount(this); }
-        }
+        public int Count => (int)client.GetHashCount(this);
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         public bool ContainsKey(TKey key)
         {
@@ -122,19 +113,13 @@ namespace ServiceStack.Redis.Generic
 
         public T this[TKey key]
         {
-            get { return client.GetValueFromHash(this, key); }
-            set { client.SetEntryInHash(this, key, value); }
+            get => client.GetValueFromHash(this, key);
+            set => client.SetEntryInHash(this, key, value);
         }
 
-        public ICollection<TKey> Keys
-        {
-            get { return client.GetHashKeys(this); }
-        }
+        public ICollection<TKey> Keys => client.GetHashKeys(this);
 
-        public ICollection<T> Values
-        {
-            get { return client.GetHashValues(this); }
-        }
+        public ICollection<T> Values => client.GetHashValues(this);
 
         public List<TKey> GetAllKeys()
         {

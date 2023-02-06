@@ -23,8 +23,8 @@ namespace ServiceStack.Redis.Generic
 
         public long Db
         {
-            get { return client.Db; }
-            set { client.Db = value; }
+            get => client.Db;
+            set => client.Db = value;
         }
 
         internal partial class RedisClientSets
@@ -39,10 +39,7 @@ namespace ServiceStack.Redis.Generic
 
             public IRedisSet<T> this[string setId]
             {
-                get
-                {
-                    return new RedisClientSet<T>(client, setId);
-                }
+                get => new RedisClientSet<T>(client, setId);
                 set
                 {
                     var col = this[setId];

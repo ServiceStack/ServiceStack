@@ -40,9 +40,9 @@ namespace ServiceStack.Redis
 
 
                 list[i] = new SlowlogItem(
-                    Int32.Parse((string)log[0], CultureInfo.InvariantCulture),
-                    DateTimeExtensions.FromUnixTime(Int32.Parse((string)log[1], CultureInfo.InvariantCulture)),
-                    Int32.Parse((string)log[2], CultureInfo.InvariantCulture),
+                    int.Parse((string)log[0], CultureInfo.InvariantCulture),
+                    int.Parse((string)log[1], CultureInfo.InvariantCulture).FromUnixTime(),
+                    int.Parse((string)log[2], CultureInfo.InvariantCulture),
                     arguments
                     );
             }

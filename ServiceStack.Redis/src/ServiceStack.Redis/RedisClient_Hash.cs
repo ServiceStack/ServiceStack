@@ -35,10 +35,7 @@ namespace ServiceStack.Redis
 
             public IRedisHash this[string hashId]
             {
-                get
-                {
-                    return new RedisClientHash(client, hashId);
-                }
+                get => new RedisClientHash(client, hashId);
                 set
                 {
                     var hash = this[hashId];

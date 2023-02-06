@@ -233,21 +233,16 @@ namespace ServiceStack.Redis
         public static byte[] GetUnit(string unit)
         {
             if (unit == null)
-                throw new ArgumentNullException("unit");
+                throw new ArgumentNullException(nameof(unit));
 
-            switch (unit)
+            return unit switch
             {
-                case RedisGeoUnit.Meters:
-                    return Meters;
-                case RedisGeoUnit.Kilometers:
-                    return Kilometers;
-                case RedisGeoUnit.Miles:
-                    return Miles;
-                case RedisGeoUnit.Feet:
-                    return Feet;
-                default:
-                    throw new NotSupportedException("Unit '{0}' is not a valid unit".Fmt(unit));
-            }
+                RedisGeoUnit.Meters => Meters,
+                RedisGeoUnit.Kilometers => Kilometers,
+                RedisGeoUnit.Miles => Miles,
+                RedisGeoUnit.Feet => Feet,
+                _ => throw new NotSupportedException($"Unit '{unit}' is not a valid unit")
+            };
         }
     }
 }
