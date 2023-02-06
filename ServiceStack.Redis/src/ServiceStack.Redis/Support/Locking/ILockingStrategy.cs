@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace ServiceStack.Redis.Support.Locking
-{
-    /// <summary>
-    /// Locking strategy interface
-    /// </summary>
-	public interface ILockingStrategy
-    {
-        IDisposable ReadLock();
+namespace ServiceStack.Redis.Support.Locking;
 
-        IDisposable WriteLock();
-    }
+/// <summary>
+/// Locking strategy interface
+/// </summary>
+public interface ILockingStrategy
+{
+    IDisposable ReadLock();
+
+    IDisposable WriteLock();
 }

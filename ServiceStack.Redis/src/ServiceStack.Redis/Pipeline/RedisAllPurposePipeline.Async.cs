@@ -5,326 +5,324 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public partial class RedisAllPurposePipeline : IRedisPipelineAsync
 {
+    private IRedisPipelineAsync AsAsync() => this;
 
-    public partial class RedisAllPurposePipeline : IRedisPipelineAsync
+    private protected virtual async ValueTask<bool> ReplayAsync(CancellationToken token)
     {
-        private IRedisPipelineAsync AsAsync() => this;
+        Init();
+        await ExecuteAsync().ConfigureAwait(false);
+        await AsAsync().FlushAsync(token).ConfigureAwait(false);
+        return true;
+    }
 
-        private protected virtual async ValueTask<bool> ReplayAsync(CancellationToken token)
+    protected async ValueTask ExecuteAsync()
+    {
+        int count = QueuedCommands.Count;
+        for (int i = 0; i < count; ++i)
         {
-            Init();
-            await ExecuteAsync().ConfigureAwait(false);
-            await AsAsync().FlushAsync(token).ConfigureAwait(false);
-            return true;
+            var op = QueuedCommands[0];
+            QueuedCommands.RemoveAt(0);
+            await op.ExecuteAsync(RedisClient).ConfigureAwait(false);
+            QueuedCommands.Add(op);
         }
+    }
 
-        protected async ValueTask ExecuteAsync()
-        {
-            int count = QueuedCommands.Count;
-            for (int i = 0; i < count; ++i)
-            {
-                var op = QueuedCommands[0];
-                QueuedCommands.RemoveAt(0);
-                await op.ExecuteAsync(RedisClient).ConfigureAwait(false);
-                QueuedCommands.Add(op);
-            }
-        }
+    ValueTask<bool> IRedisPipelineSharedAsync.ReplayAsync(CancellationToken token)
+        => ReplayAsync(token);
 
-        ValueTask<bool> IRedisPipelineSharedAsync.ReplayAsync(CancellationToken token)
-            => ReplayAsync(token);
-
-        async ValueTask IRedisPipelineSharedAsync.FlushAsync(CancellationToken token)
-        {
-            // flush send buffers
-            await RedisClient.FlushSendBufferAsync(token).ConfigureAwait(false);
-            RedisClient.ResetSendBuffer();
+    async ValueTask IRedisPipelineSharedAsync.FlushAsync(CancellationToken token)
+    {
+        // flush send buffers
+        await RedisClient.FlushSendBufferAsync(token).ConfigureAwait(false);
+        RedisClient.ResetSendBuffer();
             
-            try
+        try
+        {
+            //receive expected results
+            foreach (var queuedCommand in QueuedCommands)
             {
-                //receive expected results
-                foreach (var queuedCommand in QueuedCommands)
-                {
-                    await queuedCommand.ProcessResultAsync(token).ConfigureAwait(false);
-                }
+                await queuedCommand.ProcessResultAsync(token).ConfigureAwait(false);
             }
-            catch (Exception)
-            {
-                // The connection cannot be reused anymore. All queued commands have been sent to redis. Even if a new command is executed, the next response read from the
-                // network stream can be the response of one of the queued commands, depending on when the exception occurred. This response would be invalid for the new command.
-                RedisClient.DisposeConnection();
-                throw;
-            }
-
-            ClosePipeline();
         }
-
-        private protected virtual ValueTask DisposeAsync()
+        catch (Exception)
         {
-            // don't need to send anything; just clean up
-            Dispose();
-            return default;
+            // The connection cannot be reused anymore. All queued commands have been sent to redis. Even if a new command is executed, the next response read from the
+            // network stream can be the response of one of the queued commands, depending on when the exception occurred. This response would be invalid for the new command.
+            RedisClient.DisposeConnection();
+            throw;
         }
 
-        ValueTask IAsyncDisposable.DisposeAsync() => DisposeAsync();
+        ClosePipeline();
+    }
 
-        internal static void AssertSync<T>(ValueTask<T> command)
+    private protected virtual ValueTask DisposeAsync()
+    {
+        // don't need to send anything; just clean up
+        Dispose();
+        return default;
+    }
+
+    ValueTask IAsyncDisposable.DisposeAsync() => DisposeAsync();
+
+    internal static void AssertSync<T>(ValueTask<T> command)
+    {
+        if (!command.IsCompleted)
         {
-            if (!command.IsCompleted)
-            {
-                _ = ObserveAsync(command.AsTask());
-                throw new InvalidOperationException($"The operations provided to {nameof(IRedisQueueableOperationAsync.QueueCommand)} should not perform asynchronous operations internally");
-            }
-            // this serves two purposes: 1) surface any fault, and
-            // 2) ensure that if pooled (IValueTaskSource), it is reclaimed
-            _ = command.Result;
+            _ = ObserveAsync(command.AsTask());
+            throw new InvalidOperationException($"The operations provided to {nameof(IRedisQueueableOperationAsync.QueueCommand)} should not perform asynchronous operations internally");
         }
+        // this serves two purposes: 1) surface any fault, and
+        // 2) ensure that if pooled (IValueTaskSource), it is reclaimed
+        _ = command.Result;
+    }
 
-        internal static void AssertSync(ValueTask command)
+    internal static void AssertSync(ValueTask command)
+    {
+        if (!command.IsCompleted)
         {
-            if (!command.IsCompleted)
-            {
-                _ = ObserveAsync(command.AsTask());
-                throw new InvalidOperationException($"The operations provided to {nameof(IRedisQueueableOperationAsync.QueueCommand)} should not perform asynchronous operations internally");
-            }
-            // this serves two purposes: 1) surface any fault, and
-            // 2) ensure that if pooled (IValueTaskSource), it is reclaimed
-            command.GetAwaiter().GetResult();
+            _ = ObserveAsync(command.AsTask());
+            throw new InvalidOperationException($"The operations provided to {nameof(IRedisQueueableOperationAsync.QueueCommand)} should not perform asynchronous operations internally");
         }
+        // this serves two purposes: 1) surface any fault, and
+        // 2) ensure that if pooled (IValueTaskSource), it is reclaimed
+        command.GetAwaiter().GetResult();
+    }
 
-        static async Task ObserveAsync(Task task) // semantically this is "async void", but: some sync-contexts explode on that
+    static async Task ObserveAsync(Task task) // semantically this is "async void", but: some sync-contexts explode on that
+    {
+        // we've already thrown an exception via AssertSync; this
+        // just ensures that an "unobserved exception" doesn't fire
+        // as well
+        try { await task.ConfigureAwait(false); }
+        catch { }
+    }
+
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask> command, Action onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            // we've already thrown an exception via AssertSync; this
-            // just ensures that an "unobserved exception" doesn't fire
-            // as well
-            try { await task.ConfigureAwait(false); }
-            catch { }
-        }
+            OnSuccessVoidCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask> command, Action onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<int>> command, Action<int> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessVoidCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessIntCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<int>> command, Action<int> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<long>> command, Action<long> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessIntCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessLongCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<long>> command, Action<long> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<bool>> command, Action<bool> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessLongCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessBoolCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<bool>> command, Action<bool> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<double>> command, Action<double> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessBoolCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessDoubleCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<double>> command, Action<double> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<byte[]>> command, Action<byte[]> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessDoubleCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessBytesCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<byte[]>> command, Action<byte[]> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<byte[][]>> command, Action<byte[][]> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessBytesCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessMultiBytesCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<byte[][]>> command, Action<byte[][]> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<string>> command, Action<string> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessMultiBytesCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessStringCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<string>> command, Action<string> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<List<string>>> command, Action<List<string>> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessStringCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessMultiStringCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<List<string>>> command, Action<List<string>> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<HashSet<string>>> command, Action<HashSet<string>> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessMultiStringCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
-
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<HashSet<string>>> command, Action<HashSet<string>> onSuccessCallback, Action<Exception> onErrorCallback)
+            OnSuccessMultiStringCallback = list => onSuccessCallback(list.ToSet()),
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(async r =>
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessMultiStringCallback = list => onSuccessCallback(list.ToSet()),
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(async r =>
-            {
-                var result = await command(r).ConfigureAwait(false);
-                return result.ToList();
-            }));
-            AssertSync(command(RedisClient));
-        }
+            var result = await command(r).ConfigureAwait(false);
+            return result.ToList();
+        }));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<Dictionary<string, string>>> command, Action<Dictionary<string, string>> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<Dictionary<string, string>>> command, Action<Dictionary<string, string>> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessDictionaryStringCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessDictionaryStringCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<RedisData>> command, Action<RedisData> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<RedisData>> command, Action<RedisData> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessRedisDataCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessRedisDataCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<RedisText>> command, Action<RedisText> onSuccessCallback, Action<Exception> onErrorCallback)
+    void IRedisQueueableOperationAsync.QueueCommand(Func<IRedisClientAsync, ValueTask<RedisText>> command, Action<RedisText> onSuccessCallback, Action<Exception> onErrorCallback)
+    {
+        BeginQueuedCommand(new QueuedRedisCommand
         {
-            BeginQueuedCommand(new QueuedRedisCommand
-            {
-                OnSuccessRedisTextCallback = onSuccessCallback,
-                OnErrorCallback = onErrorCallback
-            }.WithAsyncReturnCommand(command));
-            AssertSync(command(RedisClient));
-        }
+            OnSuccessRedisTextCallback = onSuccessCallback,
+            OnErrorCallback = onErrorCallback
+        }.WithAsyncReturnCommand(command));
+        AssertSync(command(RedisClient));
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteMultiBytesQueuedCommandAsync(Func<CancellationToken, ValueTask<byte[][]>> multiBytesReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteMultiBytesQueuedCommandAsync(Func<CancellationToken, ValueTask<byte[][]>> multiBytesReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(multiBytesReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(multiBytesReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
 
-        void IRedisQueueCompletableOperationAsync.CompleteLongQueuedCommandAsync(Func<CancellationToken, ValueTask<long>> longReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteLongQueuedCommandAsync(Func<CancellationToken, ValueTask<long>> longReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(longReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(longReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteBytesQueuedCommandAsync(Func<CancellationToken, ValueTask<byte[]>> bytesReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteBytesQueuedCommandAsync(Func<CancellationToken, ValueTask<byte[]>> bytesReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(bytesReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(bytesReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteVoidQueuedCommandAsync(Func<CancellationToken, ValueTask> voidReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteVoidQueuedCommandAsync(Func<CancellationToken, ValueTask> voidReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(voidReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(voidReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteStringQueuedCommandAsync(Func<CancellationToken, ValueTask<string>> stringReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteStringQueuedCommandAsync(Func<CancellationToken, ValueTask<string>> stringReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(stringReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(stringReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteDoubleQueuedCommandAsync(Func<CancellationToken, ValueTask<double>> doubleReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteDoubleQueuedCommandAsync(Func<CancellationToken, ValueTask<double>> doubleReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(doubleReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(doubleReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteIntQueuedCommandAsync(Func<CancellationToken, ValueTask<int>> intReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteIntQueuedCommandAsync(Func<CancellationToken, ValueTask<int>> intReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(intReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(intReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteMultiStringQueuedCommandAsync(Func<CancellationToken, ValueTask<List<string>>> multiStringReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteMultiStringQueuedCommandAsync(Func<CancellationToken, ValueTask<List<string>>> multiStringReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(multiStringReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(multiStringReadCommand);
+        AddCurrentQueuedOperation();
+    }
 
-        void IRedisQueueCompletableOperationAsync.CompleteRedisDataQueuedCommandAsync(Func<CancellationToken, ValueTask<RedisData>> redisDataReadCommand)
-        {
-            //AssertCurrentOperation();
-            // this can happen when replaying pipeline/transaction
-            if (CurrentQueuedOperation == null) return;
+    void IRedisQueueCompletableOperationAsync.CompleteRedisDataQueuedCommandAsync(Func<CancellationToken, ValueTask<RedisData>> redisDataReadCommand)
+    {
+        //AssertCurrentOperation();
+        // this can happen when replaying pipeline/transaction
+        if (CurrentQueuedOperation == null) return;
 
-            CurrentQueuedOperation.WithAsyncReadCommand(redisDataReadCommand);
-            AddCurrentQueuedOperation();
-        }
+        CurrentQueuedOperation.WithAsyncReadCommand(redisDataReadCommand);
+        AddCurrentQueuedOperation();
     }
 }

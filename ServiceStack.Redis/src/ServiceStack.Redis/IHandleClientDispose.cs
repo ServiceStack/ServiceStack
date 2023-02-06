@@ -1,7 +1,6 @@
-﻿namespace ServiceStack.Redis
+﻿namespace ServiceStack.Redis;
+
+public interface IHandleClientDispose
 {
-    public interface IHandleClientDispose
-    {
-        void DisposeClient(RedisNativeClient client);
-    }
+    void DisposeClient(RedisNativeClient client);
 }

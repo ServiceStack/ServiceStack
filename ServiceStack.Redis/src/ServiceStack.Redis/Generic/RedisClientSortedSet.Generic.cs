@@ -14,189 +14,188 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ServiceStack.Redis.Generic
+namespace ServiceStack.Redis.Generic;
+
+/// <summary>
+/// Wrap the common redis set operations under a ICollection[string] interface.
+/// </summary>
+internal partial class RedisClientSortedSet<T>
+    : IRedisSortedSet<T>
 {
-    /// <summary>
-    /// Wrap the common redis set operations under a ICollection[string] interface.
-    /// </summary>
-    internal partial class RedisClientSortedSet<T>
-        : IRedisSortedSet<T>
+    private readonly RedisTypedClient<T> client;
+    private readonly string setId;
+    private const int PageLimit = 1000;
+
+    public RedisClientSortedSet(RedisTypedClient<T> client, string setId)
     {
-        private readonly RedisTypedClient<T> client;
-        private readonly string setId;
-        private const int PageLimit = 1000;
+        this.client = client;
+        this.setId = setId;
+    }
 
-        public RedisClientSortedSet(RedisTypedClient<T> client, string setId)
+    public string Id => this.setId;
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        return this.Count <= PageLimit
+            ? client.GetAllItemsFromSortedSet(this).GetEnumerator()
+            : GetPagingEnumerator();
+    }
+
+    public IEnumerator<T> GetPagingEnumerator()
+    {
+        var skip = 0;
+        List<T> pageResults;
+        do
         {
-            this.client = client;
-            this.setId = setId;
-        }
-
-        public string Id => this.setId;
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            return this.Count <= PageLimit
-                    ? client.GetAllItemsFromSortedSet(this).GetEnumerator()
-                    : GetPagingEnumerator();
-        }
-
-        public IEnumerator<T> GetPagingEnumerator()
-        {
-            var skip = 0;
-            List<T> pageResults;
-            do
+            pageResults = client.GetRangeFromSortedSet(this, skip, skip + PageLimit - 1);
+            foreach (var result in pageResults)
             {
-                pageResults = client.GetRangeFromSortedSet(this, skip, skip + PageLimit - 1);
-                foreach (var result in pageResults)
-                {
-                    yield return result;
-                }
-                skip += PageLimit;
-            } while (pageResults.Count == PageLimit);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public void Add(T item)
-        {
-            client.AddItemToSortedSet(this, item);
-        }
-
-        public void Add(T item, double score)
-        {
-            client.AddItemToSortedSet(this, item, score);
-        }
-
-        public void Clear()
-        {
-            client.RemoveEntry(setId);
-        }
-
-        public bool Contains(T item)
-        {
-            return client.SortedSetContainsItem(this, item);
-        }
-
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            var allItemsInSet = client.GetAllItemsFromSortedSet(this);
-            allItemsInSet.CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(T item)
-        {
-            client.RemoveItemFromSortedSet(this, item);
-            return true;
-        }
-
-        public int Count
-        {
-            get
-            {
-                var setCount = (int)client.GetSortedSetCount(this);
-                return setCount;
+                yield return result;
             }
-        }
+            skip += PageLimit;
+        } while (pageResults.Count == PageLimit);
+    }
 
-        public bool IsReadOnly => false;
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
-        public T PopItemWithHighestScore()
+    public void Add(T item)
+    {
+        client.AddItemToSortedSet(this, item);
+    }
+
+    public void Add(T item, double score)
+    {
+        client.AddItemToSortedSet(this, item, score);
+    }
+
+    public void Clear()
+    {
+        client.RemoveEntry(setId);
+    }
+
+    public bool Contains(T item)
+    {
+        return client.SortedSetContainsItem(this, item);
+    }
+
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        var allItemsInSet = client.GetAllItemsFromSortedSet(this);
+        allItemsInSet.CopyTo(array, arrayIndex);
+    }
+
+    public bool Remove(T item)
+    {
+        client.RemoveItemFromSortedSet(this, item);
+        return true;
+    }
+
+    public int Count
+    {
+        get
         {
-            return client.PopItemWithHighestScoreFromSortedSet(this);
+            var setCount = (int)client.GetSortedSetCount(this);
+            return setCount;
         }
+    }
 
-        public T PopItemWithLowestScore()
-        {
-            return client.PopItemWithLowestScoreFromSortedSet(this);
-        }
+    public bool IsReadOnly => false;
 
-        public double IncrementItem(T item, double incrementBy)
-        {
-            return client.IncrementItemInSortedSet(this, item, incrementBy);
-        }
+    public T PopItemWithHighestScore()
+    {
+        return client.PopItemWithHighestScoreFromSortedSet(this);
+    }
 
-        public int IndexOf(T item)
-        {
-            return (int)client.GetItemIndexInSortedSet(this, item);
-        }
+    public T PopItemWithLowestScore()
+    {
+        return client.PopItemWithLowestScoreFromSortedSet(this);
+    }
 
-        public long IndexOfDescending(T item)
-        {
-            return client.GetItemIndexInSortedSetDesc(this, item);
-        }
+    public double IncrementItem(T item, double incrementBy)
+    {
+        return client.IncrementItemInSortedSet(this, item, incrementBy);
+    }
 
-        public List<T> GetAll()
-        {
-            return client.GetAllItemsFromSortedSet(this);
-        }
+    public int IndexOf(T item)
+    {
+        return (int)client.GetItemIndexInSortedSet(this, item);
+    }
 
-        public List<T> GetAllDescending()
-        {
-            return client.GetAllItemsFromSortedSetDesc(this);
-        }
+    public long IndexOfDescending(T item)
+    {
+        return client.GetItemIndexInSortedSetDesc(this, item);
+    }
 
-        public List<T> GetRange(int fromRank, int toRank)
-        {
-            return client.GetRangeFromSortedSet(this, fromRank, toRank);
-        }
+    public List<T> GetAll()
+    {
+        return client.GetAllItemsFromSortedSet(this);
+    }
 
-        public List<T> GetRangeByLowestScore(double fromScore, double toScore)
-        {
-            return client.GetRangeFromSortedSetByLowestScore(this, fromScore, toScore);
-        }
+    public List<T> GetAllDescending()
+    {
+        return client.GetAllItemsFromSortedSetDesc(this);
+    }
 
-        public List<T> GetRangeByLowestScore(double fromScore, double toScore, int? skip, int? take)
-        {
-            return client.GetRangeFromSortedSetByLowestScore(this, fromScore, toScore, skip, take);
-        }
+    public List<T> GetRange(int fromRank, int toRank)
+    {
+        return client.GetRangeFromSortedSet(this, fromRank, toRank);
+    }
 
-        public List<T> GetRangeByHighestScore(double fromScore, double toScore)
-        {
-            return client.GetRangeFromSortedSetByHighestScore(this, fromScore, toScore);
-        }
+    public List<T> GetRangeByLowestScore(double fromScore, double toScore)
+    {
+        return client.GetRangeFromSortedSetByLowestScore(this, fromScore, toScore);
+    }
 
-        public List<T> GetRangeByHighestScore(double fromScore, double toScore, int? skip, int? take)
-        {
-            return client.GetRangeFromSortedSetByHighestScore(this, fromScore, toScore, skip, take);
-        }
+    public List<T> GetRangeByLowestScore(double fromScore, double toScore, int? skip, int? take)
+    {
+        return client.GetRangeFromSortedSetByLowestScore(this, fromScore, toScore, skip, take);
+    }
 
-        public long RemoveRange(int minRank, int maxRank)
-        {
-            return client.RemoveRangeFromSortedSet(this, minRank, maxRank);
-        }
+    public List<T> GetRangeByHighestScore(double fromScore, double toScore)
+    {
+        return client.GetRangeFromSortedSetByHighestScore(this, fromScore, toScore);
+    }
 
-        public long RemoveRangeByScore(double fromScore, double toScore)
-        {
-            return client.RemoveRangeFromSortedSetByScore(this, fromScore, toScore);
-        }
+    public List<T> GetRangeByHighestScore(double fromScore, double toScore, int? skip, int? take)
+    {
+        return client.GetRangeFromSortedSetByHighestScore(this, fromScore, toScore, skip, take);
+    }
 
-        public double GetItemScore(T item)
-        {
-            return client.GetItemScoreInSortedSet(this, item);
-        }
+    public long RemoveRange(int minRank, int maxRank)
+    {
+        return client.RemoveRangeFromSortedSet(this, minRank, maxRank);
+    }
 
-        public long PopulateWithIntersectOf(params IRedisSortedSet<T>[] setIds)
-        {
-            return client.StoreIntersectFromSortedSets(this, setIds);
-        }
+    public long RemoveRangeByScore(double fromScore, double toScore)
+    {
+        return client.RemoveRangeFromSortedSetByScore(this, fromScore, toScore);
+    }
 
-        public long PopulateWithIntersectOf(IRedisSortedSet<T>[] setIds, string[] args)
-        {
-            return client.StoreIntersectFromSortedSets(this, setIds, args);
-        }
+    public double GetItemScore(T item)
+    {
+        return client.GetItemScoreInSortedSet(this, item);
+    }
 
-        public long PopulateWithUnionOf(params IRedisSortedSet<T>[] setIds)
-        {
-            return client.StoreUnionFromSortedSets(this, setIds);
-        }
+    public long PopulateWithIntersectOf(params IRedisSortedSet<T>[] setIds)
+    {
+        return client.StoreIntersectFromSortedSets(this, setIds);
+    }
 
-        public long PopulateWithUnionOf(IRedisSortedSet<T>[] setIds, string[] args)
-        {
-            return client.StoreUnionFromSortedSets(this, setIds, args);
-        }
+    public long PopulateWithIntersectOf(IRedisSortedSet<T>[] setIds, string[] args)
+    {
+        return client.StoreIntersectFromSortedSets(this, setIds, args);
+    }
+
+    public long PopulateWithUnionOf(params IRedisSortedSet<T>[] setIds)
+    {
+        return client.StoreUnionFromSortedSets(this, setIds);
+    }
+
+    public long PopulateWithUnionOf(IRedisSortedSet<T>[] setIds, string[] args)
+    {
+        return client.StoreUnionFromSortedSets(this, setIds, args);
     }
 }

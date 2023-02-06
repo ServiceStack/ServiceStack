@@ -1,10 +1,7 @@
-﻿namespace ServiceStack.Redis.Support
-{
-    public interface ISerializer
-    {
+﻿namespace ServiceStack.Redis.Support;
 
-        byte[] Serialize(object value);
-        object Deserialize(byte[] someBytes);
-      
-    }
+public interface ISerializer
+{
+    byte[] Serialize(object value);
+    object Deserialize(byte[] someBytes);
 }
