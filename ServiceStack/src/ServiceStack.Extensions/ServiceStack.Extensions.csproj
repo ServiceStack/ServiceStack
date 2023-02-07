@@ -8,14 +8,11 @@
         <Title>ServiceStack.Extensions</Title>
         <PackageDescription>ServiceStack extensions for .NET Core Apps, including GrpcFeature</PackageDescription>
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
-        <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net6.0</TargetFrameworks>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.17" />
-    </ItemGroup>
     <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.13" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,7 +28,7 @@
         <PackageReference Include="protobuf-net" Version="3.1.33" />
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.1.1" />
         
-        <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
+        <PackageReference Include="System.Threading.Channels" Version="7.0.0" />
 
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.25.1" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.1" />
