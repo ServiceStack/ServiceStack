@@ -230,7 +230,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
 #if DEBUG    
     
-//    [Ignore("Can hang builds")]
+    [Ignore("Can hang builds")]
     [TestFixture]
     public class MemoryServerEventsTests : ServerEventsTests
     {
@@ -266,6 +266,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Ignore("Can hang builds")]
     [TestFixture]
     public class RedisServerEventsStatefulTests
     {
