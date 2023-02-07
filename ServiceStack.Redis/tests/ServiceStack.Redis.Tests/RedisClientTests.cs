@@ -382,7 +382,7 @@ namespace ServiceStack.Redis.Tests
             }
         }
 
-        [Test, [Ignore("Flaky in CI")]]
+        [Test, Ignore("Flaky in CI")]
         public void Can_AcquireLock_TimeOut()
         {
             // guid here is to prevent competition between concurrent runtime tests
