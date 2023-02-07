@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results[0].RockstarId, Is.EqualTo(3));
         }
 
-        [Test]
+        [Test, Ignore("Now receiving Rate Limit Exceeded")]
         public void Does_Cache_third_party_api_ServiceSource()
         {
             GetGithubRepos.ApiCalls = 0;
@@ -75,7 +75,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(2));
         }
 
-        [Test]
+
+        [Test, Ignore("Now receiving Rate Limit Exceeded")]
         public void Does_Cache_MemorySource()
         {
             QueryResponse<GithubContributor> response;
