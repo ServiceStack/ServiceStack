@@ -721,6 +721,7 @@ namespace ServiceStack.Text
                 "IMeta",
                 "IAuthTokens",
                 "IHasResponseStatus",
+                "IHasId`1",
             };
             AllowRuntimeTypeInTypesWithNamespaces = new HashSet<string>
             {
