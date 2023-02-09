@@ -61,7 +61,7 @@ namespace ServiceStack.Metadata
         {
             var baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
             var sbTags = StringBuilderCache.Allocate();
-            Operation?.Tags.Each(x => sbTags.Append($"<span><b>{x.Name}</b></span>"));
+            Operation?.Tags.Each(x => sbTags.Append($"<span><b>{x}</b></span>"));
             var tagsHtml = sbTags.Length > 0
                 ? "<div class=\"tags\">" + StringBuilderCache.ReturnAndFree(sbTags) + "</div>"
                 : "";

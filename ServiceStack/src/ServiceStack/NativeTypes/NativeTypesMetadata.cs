@@ -125,7 +125,7 @@ namespace ServiceStack.NativeTypes
                 if (predicate != null && !predicate(op))
                     return true;
 
-                if (!meta.IsVisible(req, op) && exportTags.All(tag => op.Tags?.Any(x => x.Name == tag) != true))
+                if (!meta.IsVisible(req, op) && exportTags.All(tag => op.Tags?.Any(x => x == tag) != true))
                     return true;
 
                 if (skipTypes.Contains(op.RequestType))
@@ -157,7 +157,7 @@ namespace ServiceStack.NativeTypes
                     RequiresAnyRole = operation.RequiresAnyRole.NullIfEmpty(),
                     RequiredPermissions = operation.RequiredPermissions.NullIfEmpty(),
                     RequiresAnyPermission = operation.RequiresAnyPermission.NullIfEmpty(),
-                    Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
+                    Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x) : null,
                     Ui = operation.LocodeCss == null && operation.ExplorerCss == null && operation.FormLayout == null 
                         ? null 
                         : new ApiUiInfo {

@@ -67,7 +67,7 @@ namespace ServiceStack.Host
             var actions = serviceType.GetRequestActions(requestType);
             var actionUpperNames = actions.Select(x => x.NameUpper).Distinct().ToList();
             authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
-            var tagAttrs = requestType.AllAttributes<TagAttribute>().ToList();
+            var tagNames = requestType.AllAttributes<TagAttribute>().Map(x => x.Name);
 
             var operation = new Operation
             {
@@ -88,7 +88,7 @@ namespace ServiceStack.Host
                 RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequestPropertyAttributes = requestType.GetPublicProperties().SelectMany(x => x.AllAttributes()).Map(x => x.GetType()).ToSet(),
-                Tags = tagAttrs,
+                Tags = tagNames,
                 LocodeCss = X.Map(requestType.FirstAttribute<LocodeCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
                 ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
             };
@@ -157,10 +157,10 @@ namespace ServiceStack.Host
         }
 
         public List<Operation> GetOperationsByTag(string tag) => 
-            Operations.Where(x => x.Tags.Any(t => t.Name == tag)).ToList();
+            Operations.Where(x => x.Tags.Any(t => t== tag)).ToList();
 
         public List<Operation> GetOperationsByTags(string[] tags) => 
-            Operations.Where(x => x.Tags.Any(t => Array.IndexOf(tags, t.Name) >= 0)).ToList();
+            Operations.Where(x => x.Tags.Any(t => Array.IndexOf(tags, t) >= 0)).ToList();
 
         public Operation? GetOperation(Type? requestType)
         {
@@ -796,7 +796,7 @@ namespace ServiceStack.Host
         public List<string>? RequiresAnyRole { get; set; }
         public List<string>? RequiredPermissions { get; set; }
         public List<string>? RequiresAnyPermission { get; set; }
-        public List<TagAttribute>? Tags { get; set; }
+        public List<string>? Tags { get; set; }
         public ApiCss? LocodeCss { get; set; } 
         public ApiCss? ExplorerCss { get; set; } 
         public List<InputInfo>? FormLayout { get; set; }
@@ -961,7 +961,7 @@ namespace ServiceStack.Host
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.Map(x => x.Path),
-                Tags = operation.Tags.Map(x => x.Name),
+                Tags = operation.Tags.Map(x => x),
             };
 
             if (operation.RestrictTo != null)

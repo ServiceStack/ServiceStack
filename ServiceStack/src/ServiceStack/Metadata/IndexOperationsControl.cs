@@ -34,7 +34,7 @@ namespace ServiceStack.Metadata
 
             var opTemplate = StringBuilderCache.Allocate();
             opTemplate.Append($"<tr><th data-tags=\"" + 
-                op.Tags.Map(x => x.Name).Join(",") + 
+                op.Tags.Map(x => x).Join(",") + 
                 "\">" + icons + 
                 (HostContext.AppHost.HasUi() ? "<a href='ui/{0}'>{0}</a>" : "{0}") +
                 "</th>");
