@@ -165,12 +165,9 @@ namespace CheckWeb
     public class SwaggerPostTest : IReturn<HelloResponse>
     {
         [ApiMember(Verb = "POST")]
-        [ApiMember(Route = "/swaggerpost/{Required1}", Verb = "GET", ParameterType = "path")]
-        [ApiMember(Route = "/swaggerpost/{Required1}/{Optional1}", Verb = "GET", ParameterType = "path")]
         public string Required1 { get; set; }
 
         [ApiMember(Verb = "POST")]
-        [ApiMember(Route = "/swaggerpost/{Required1}/{Optional1}", Verb = "GET", ParameterType = "path")]
         public string Optional1 { get; set; }
     }
 
@@ -180,11 +177,9 @@ namespace CheckWeb
     public class SwaggerPostTest2 : IReturn<HelloResponse>
     {
         [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}", Verb = "GET", ParameterType = "path")]
-        [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb = "GET", ParameterType = "path")]
         public string Required1 { get; set; }
 
         [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}", Verb = "GET", ParameterType = "path")]
-        [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb = "GET", ParameterType = "path")]
         public string Required2 { get; set; }
 
         [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb = "GET", ParameterType = "path")]

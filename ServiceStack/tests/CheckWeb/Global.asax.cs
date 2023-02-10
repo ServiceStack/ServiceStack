@@ -25,6 +25,7 @@ using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Redis;
+using ServiceStack.Logging;
 
 namespace CheckWeb
 {
@@ -142,7 +143,7 @@ namespace CheckWeb
                     if (attr.GetAutoGenerateField() == null || (attr.GetAutoGenerateField().HasValue && !attr.GetAutoGenerateField().Value))
                         metadata.Args.Add(new MetadataPropertyType {
                             Name = nameof(DisplayAttribute.AutoGenerateField), 
-                            TypeNamespace = "System", 
+                            Namespace = "System", 
                             Type = nameof(Boolean), 
                             Value = "false"
                         });
@@ -218,9 +219,6 @@ namespace CheckWeb
             // Configure ServiceStack Authentication plugin.
             this.ConfigureAuth(container);
 
-            // Configure ServiceStack Fluent Validation plugin.
-            this.ConfigureValidation(container);
-
             // Configure ServiceStack Razor views.
             this.ConfigureView(container);
 
@@ -240,6 +238,12 @@ namespace CheckWeb
             //});
             
             Plugins.Add(new ProtoBufFormat());
+
+            AfterPluginsLoaded.Add(appHost =>
+            {
+                // Configure ServiceStack Fluent Validation plugin.
+                this.ConfigureValidation(container);
+            });
         }
 
         public static Rockstar[] GetRockstars()
@@ -711,7 +715,8 @@ namespace CheckWeb
         protected void Application_Start(object sender, EventArgs e)
         {
             try 
-            { 
+            {
+                ServiceStack.Logging.LogManager.LogFactory = new ConsoleLogFactory(debugEnabled: true);
                 new AppHost().Init();
             }
             catch (Exception exception)
