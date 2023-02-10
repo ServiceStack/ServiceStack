@@ -88,8 +88,10 @@ namespace ServiceStack.Host
                 appHost.AssertContentType(httpReq.ResponseContentType);
 
                 var request = httpReq.Dto = await CreateRequestAsync(httpReq, restPath).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
 
-                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
+                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
                 if (httpRes.IsClosed)
                     return;
 
@@ -97,10 +99,12 @@ namespace ServiceStack.Host
                 httpReq.RequestAttributes |= HandlerAttributes | requestContentType;
 
                 var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
                 if (httpRes.IsClosed)
                     return;
 
-                await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwait();
+                await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
             }
             //sync with GenericHandler
             catch (TaskCanceledException)
@@ -116,34 +120,41 @@ namespace ServiceStack.Host
                 }
                 else
                 {
-                    await HandleException(httpReq, httpRes, operationName,
-                        await appHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception ?? ex).ConfigAwait();
+                    var useEx = await appHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception ?? ex;
+                    await HandleException(httpReq, httpRes, operationName, useEx).ConfigAwait();
                 }
             }
         }
 
         public static async Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath)
         {
-            using (Profiler.Current.Step("Deserialize Request"))
+            using var step = Profiler.Current.Step("Deserialize Request");
+            var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
+            if (dtoFromBinder != null)
             {
-                var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
-                if (dtoFromBinder != null)
-                    return await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder).ConfigAwait();
-
+                var ret = await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
+                return ret;
+            }
+            else
+            {
                 var requestParams = httpReq.GetFlattenedRequestParams();
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat("CreateRequestAsync/requestParams:" + string.Join(",", requestParams.Keys));
 
-                var ret = await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq,
-                    await CreateRequestAsync(httpReq, restPath, requestParams).ConfigAwait()).ConfigAwait();
+                var requestDto = await CreateRequestAsync(httpReq, restPath, requestParams).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
 
+                var ret = await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, requestDto).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
                 return ret;
             }
         }
 
         public static async Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
         {
-            var requestDto = await CreateContentTypeRequestAsync(httpReq, restPath.RequestType, httpReq.ContentType).ConfigAwait();
+            var requestDto = await CreateContentTypeRequestAsync(httpReq, restPath.RequestType, httpReq.ContentType).ConfigAwaitNetCore();
+            HostContext.AppHost.OnAfterAwait(httpReq);
 
             return CreateRequest(httpReq, restPath, requestParams, requestDto);
         }
