@@ -1,8 +1,8 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2022-10-06 13:53:59
-Version: 6.21
+Date: 2023-02-10 19:00:06
+Version: 6.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -217,6 +217,7 @@ export class AppInfo
     public baseUrl: string;
     public serviceStackVersion: string;
     public serviceName: string;
+    public apiVersion: string;
     public serviceDescription: string;
     public serviceIconUrl: string;
     public brandUrl: string;
@@ -518,7 +519,7 @@ export class ProfilingInfo
     public accessRole: string;
     public defaultLimit: number;
     public summaryFields: string[];
-    public tagLabel: string;
+    public tagLabel?: string;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<ProfilingInfo>) { (Object as any).assign(this, init); }
@@ -613,6 +614,7 @@ export class MetadataPropertyType
     public allowableMin?: number;
     public allowableMax?: number;
     public attributes: MetadataAttribute[];
+    public uploadTo: string;
     public input: InputInfo;
     public format: FormatInfo;
     public ref: RefInfo;
@@ -752,6 +754,7 @@ export class MetadataTypesConfig
     public package: string;
     public addReturnMarker: boolean;
     public addDescriptionAsComments: boolean;
+    public addDocAnnotations: boolean;
     public addDataContractAttributes: boolean;
     public addIndexesToDataMembers: boolean;
     public addGeneratedCodeAttributes: boolean;
@@ -762,6 +765,7 @@ export class MetadataTypesConfig
     public addPropertyAccessors: boolean;
     public excludeGenericBaseTypes: boolean;
     public settersReturnThis: boolean;
+    public addNullableAnnotations: boolean;
     public makePropertiesOptional: boolean;
     public exportAsTypes: boolean;
     public excludeImplementedInterfaces: boolean;
@@ -927,26 +931,26 @@ export class RequestLogEntry
 export class DiagnosticEntry
 {
     public id: number;
-    public traceId: string;
+    public traceId?: string;
     public source: string;
     public eventType: string;
     public message: string;
     public operation: string;
     public threadId: number;
-    public error: ResponseStatus;
+    public error?: ResponseStatus;
     public commandType: string;
     public command: string;
-    public userAuthId: string;
-    public sessionId: string;
-    public arg: string;
-    public args: string[];
-    public argLengths: number[];
-    public namedArgs: { [index: string]: Object; };
+    public userAuthId?: string;
+    public sessionId?: string;
+    public arg?: string;
+    public args?: string[];
+    public argLengths?: number[];
+    public namedArgs?: { [index: string]: Object; };
     public duration?: string;
     public timestamp: number;
     public date: string;
-    public tag: string;
-    public stackTrace: string;
+    public tag?: string;
+    public stackTrace?: string;
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<DiagnosticEntry>) { (Object as any).assign(this, init); }
@@ -980,6 +984,7 @@ export class KeyValuePair<TKey, TValue>
 
 export class AppMetadata
 {
+    public date: string;
     public app: AppInfo;
     public ui: UiInfo;
     public config: ConfigInfo;
@@ -1184,11 +1189,11 @@ export class AdminProfilingResponse
 export class AdminRedisResponse
 {
     public db: number;
-    public searchResults: RedisSearchResult[];
-    public info: { [index: string]: string; };
-    public endpoint: RedisEndpointInfo;
-    public result: RedisText;
-    public responseStatus: ResponseStatus;
+    public searchResults?: RedisSearchResult[];
+    public info?: { [index: string]: string; };
+    public endpoint?: RedisEndpointInfo;
+    public result?: RedisText;
+    public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminRedisResponse>) { (Object as any).assign(this, init); }
 }
@@ -1197,8 +1202,8 @@ export class AdminDatabaseResponse
 {
     public results: { [index:string]: Object; }[];
     public total?: number;
-    public columns: MetadataPropertyType[];
-    public responseStatus: ResponseStatus;
+    public columns?: MetadataPropertyType[];
+    public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminDatabaseResponse>) { (Object as any).assign(this, init); }
 }
@@ -1272,18 +1277,14 @@ export class ModifyValidationRules implements IReturnVoid
     public createResponse() {}
 }
 
-/**
-* Sign In
-*/
+/** @description Sign In */
 // @Route("/auth", "OPTIONS,GET,POST,DELETE")
 // @Route("/auth/{provider}", "OPTIONS,GET,POST,DELETE")
 // @Api(Description="Sign In")
 // @DataContract
 export class Authenticate implements IReturn<AuthenticateResponse>, IPost
 {
-    /**
-    * AuthProvider, e.g. credentials
-    */
+    /** @description AuthProvider, e.g. credentials */
     // @DataMember(Order=1)
     public provider: string;
 
@@ -1575,16 +1576,16 @@ export class RequestLogs implements IReturn<RequestLogsResponse>
 
 export class AdminProfiling implements IReturn<AdminProfilingResponse>
 {
-    public source: string;
-    public eventType: string;
+    public source?: string;
+    public eventType?: string;
     public threadId?: number;
-    public traceId: string;
-    public userAuthId: string;
-    public sessionId: string;
-    public tag: string;
+    public traceId?: string;
+    public userAuthId?: string;
+    public sessionId?: string;
+    public tag?: string;
     public skip: number;
     public take?: number;
-    public orderBy: string;
+    public orderBy?: string;
     public withErrors?: boolean;
     public pending?: boolean;
 
@@ -1597,11 +1598,11 @@ export class AdminProfiling implements IReturn<AdminProfilingResponse>
 export class AdminRedis implements IReturn<AdminRedisResponse>, IPost
 {
     public db?: number;
-    public query: string;
-    public reconnect: RedisEndpointInfo;
+    public query?: string;
+    public reconnect?: RedisEndpointInfo;
     public take?: number;
     public position?: number;
-    public args: string[];
+    public args?: string[];
 
     public constructor(init?: Partial<AdminRedis>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminRedis'; }
@@ -1611,14 +1612,14 @@ export class AdminRedis implements IReturn<AdminRedisResponse>, IPost
 
 export class AdminDatabase implements IReturn<AdminDatabaseResponse>, IGet
 {
-    public db: string;
-    public schema: string;
-    public table: string;
-    public fields: string[];
+    public db?: string;
+    public schema?: string;
+    public table?: string;
+    public fields?: string[];
     public take?: number;
     public skip?: number;
-    public orderBy: string;
-    public include: string;
+    public orderBy?: string;
+    public include?: string;
 
     public constructor(init?: Partial<AdminDatabase>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminDatabase'; }

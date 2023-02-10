@@ -154,6 +154,7 @@ public class PublishTasks
             var dbFactory = new OrmLiteConnectionFactory(":memory:",
                 SqliteDialect.Provider);
             container.AddSingleton<IDbConnectionFactory>(dbFactory);
+            container.AddSingleton<IAuthRepository>(c => new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
 
             container.AddSingleton<ICrudEvents>(c =>
                 new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
