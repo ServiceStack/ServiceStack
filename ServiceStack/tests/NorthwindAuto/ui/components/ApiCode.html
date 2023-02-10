@@ -1,4 +1,12 @@
 <script minify>
+let mjsImportMap = `&lt;script type="importmap"&gt;
+{
+    "imports": {
+        "@servicestack/client": "/js/servicestack-client.mjs"
+    }
+}
+&lt;/script&gt;`
+let mjsImportMapDecoded = mjsImportMap.replaceAll('&lt;','<').replaceAll('&gt;','>')
 let swiftPkg = `dependencies: [
     .package(name: "ServiceStack", 
         url: "https://github.com/ServiceStack/ServiceStack.Swift.git", 
@@ -11,7 +19,9 @@ App.component('ApiCode', ({ store, routes }) => {
         .replace(/Hello/g,store.opName)
         .replace(/&gt;/g,'>').replace(/&lt;/g,'<') 
     
-    let highlight = language => hljs.highlight(langSrc(language), { language }).value
+    let highlight = language => {
+        return hljs.highlight(langSrc(language), { language }).value
+    }
     
     return {
         $template: '#api-code-template',
@@ -19,6 +29,7 @@ App.component('ApiCode', ({ store, routes }) => {
         langSrc,
         get csharpSrc() { return highlight('csharp') },
         get typescriptSrc() { return highlight('typescript') },
+        get mjsSrc() { return highlight('mjs') },
         get dartSrc() { return highlight('dart') },
         get javaSrc() { return highlight('java') },
         get kotlinSrc() { return highlight('kotlin') },
@@ -26,6 +37,8 @@ App.component('ApiCode', ({ store, routes }) => {
         get swiftSrc() { return highlight('swift') },
         get vbnetSrc() { return highlight('vbnet') },
         get fsharpSrc() { return highlight('fsharp') },
+        mjsImportMap,
+        mjsImportMapDecoded,
         swiftPkg,
     }
 })
@@ -112,10 +125,10 @@ App.components({ InstallTool: '#install-tool-template' })
                 <div v-else-if="store.useLang=='typescript'" class="">
                     <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from TypeScript</h2>
                     <p class="text-lg p-4 pt-20">
-                        <b class="mr-2">1.</b> Include <b>@servicestack/client</b> package in your projects<em>package.json</em>
+                        <b class="mr-2">1.</b> Install <b>@servicestack/client</b> into your projects<em>package.json</em>
                     </p>
 
-                    <div v-scope='CopyLine({ text: () => `"@servicestack/client": "^1.1.17"` })'></div>
+                    <div v-scope='CopyLine({ text: () => `npm install @servicestack/client` })'></div>
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
@@ -131,13 +144,41 @@ App.components({ InstallTool: '#install-tool-template' })
 
                     <div v-scope="InstallTool({ store })"></div>
                 </div>
+                <div v-else-if="store.useLang=='mjs'" class="">
+                    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from a JavaScript Module</h2>
+                    <p class="text-lg p-4 pt-20">
+                        <b class="mr-2">1.</b> Save <a class="text-blue-600 underline" href="https://unpkg.com/@servicestack/client@2/dist/servicestack-client.mjs">servicestack-client.mjs</a>
+                        to your project
+                    </p>
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">2.</b> Define an <a class="text-blue-600 underline" href="https://docs.servicestack.net/javascript-add-servicestack-reference">Import Map</a> referencing its saved location</div>
+                    </div>
+                    <div class="p-4 bg-gray-50 border-y overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => mjsImportMapDecoded, cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code lang="html" v-highlightjs="mjsImportMapDecoded"></code></pre>
+                    </div>
+
+                    <div class="text-lg p-4 flex">
+                        <div><b class="mr-2">3.</b> Copy the DTOs source code for this API</div>
+                        <div class="ml-3 relative" v-scope="CopyIcon({ text:() => store.activeLangSrc, cls:'absolute' })" title="Copy code"></div>
+                    </div>
+                    <div class="text-lg p-4">
+                        <b class="mr-2">4.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+                    </div>
+                    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+                        <div class="relative" v-scope="CopyIcon({ text:() => langSrc(store.useLang), cls:'absolute right-0' })" title="Copy code"></div>
+                        <pre><code class="language-javascript" v-html="mjsSrc"></code></pre>
+                    </div>
+
+                    <div v-scope="InstallTool({ store })"></div>
+                </div>
                 <div v-else-if="store.useLang=='dart'" class="">
                     <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 fixed w-full bg-white z-[1]">Call this API from Dart</h2>
                     <p class="text-lg p-4 pt-20">
                         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
                     </p>
 
-                    <div v-scope='CopyLine({ text: () => `servicestack: ^2.0.0` })'></div>
+                    <div v-scope='CopyLine({ text: () => `servicestack: ^2.0.2` })'></div>
 
                     <div class="text-lg p-4 flex">
                         <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
@@ -322,7 +363,7 @@ App.components({ InstallTool: '#install-tool-template' })
 <template id="csharp-help">
 using ServiceStack;
 
-var client = new JsonServiceClient("{BASE_URL}");
+var client = new JsonApiClient("{BASE_URL}");
 
 var response = await client.SendAsync(new Hello {
     //...
@@ -332,16 +373,28 @@ var response = await client.SendAsync(new Hello {
 Inspect.printDump(response);
 </template>
 <template id="typescript-help">
-import { JsonServiceClient, Inspect } from '@servicestack/client'
+import { JsonApiClient, Inspect } from '@servicestack/client'
 import { Hello } from './dtos'
 
-let client = new JsonServiceClient('{BASE_URL}')
+const client = JsonApiClient.create('{BASE_URL}')
 
-let response = await client.send(new Hello({
+const api = await client.api(new Hello({
     //...
 }))
 
-Inspect.printDump(response)
+Inspect.printDump(api.response)
+</template>
+<template id="mjs-help">
+import { JsonApiClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos.mjs'
+
+const client = JsonApiClient.create('{BASE_URL}')
+
+const api = await client.api(new Hello({
+    //...
+}))
+
+Inspect.printDump(api.response)
 </template>
 <template id="dart-help">
 import 'dart:io';
@@ -411,7 +464,7 @@ Inspect.printDump(response)
 <template id="vbnet-help">
 Imports ServiceStack
 
-Dim client = New JsonServiceClient("{BASE_URL}")
+Dim client = New JsonApiClient("{BASE_URL}")
 
 Dim response = Await client.SendAsync(New Hello() With {
     '...
@@ -423,7 +476,7 @@ Inspect.printDump(response)
 <template id="fsharp-help">
 open ServiceStack
 
-let client = new JsonServiceClient("{BASE_URL}")
+let client = new JsonApiClient("{BASE_URL}")
 
 let response = client.Send(new Hello(
     //...

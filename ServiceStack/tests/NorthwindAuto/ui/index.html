@@ -127,8 +127,8 @@ App.directive('highlightjs', ({ effect, get, el}) => {
     effect(() => {
         let src = get()
         if (src) {
-            el.className = '' // remove existing stale class
-            el.innerHTML = enc(src)
+            el.className = `language-${el.getAttribute('lang')}`
+            el.textContent = src
             hljs.highlightElement(el)
         }
     })
@@ -143,12 +143,13 @@ App.build({
     langs: {
         csharp: "C#",
         typescript: "TypeScript",
+        mjs: "JS",
         dart: "Dart",
         java: "Java",
         kotlin: "Kotlin",
         python: "Python",
         swift: "Swift",
-        vbnet: "VB.NET",
+        vbnet: "VB",
         fsharp: "F#",
     },
     store,
