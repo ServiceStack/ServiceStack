@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -1151,22 +1152,42 @@ namespace ServiceStack.NativeTypes
                     .Select(o => o.Request)
                     .ToList();
 
-                // Ignore generic response types, e.g. QueryResponse`1
-                var includeSet = includedMetadataTypes
-                    .Where(x => x.RequestType?.ReturnType != null && x.RequestType.ReturnType.GenericArgs.IsEmpty())
-                    .Select(x => x.RequestType.ReturnType.Name)
-                    .ToSet();
-
-                var includedResponses = metadata.Operations
-                    .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null && t.Response.GenericArgs.IsEmpty())
-                    .Select(o => o.Response)
-                    .ToList();
-                includedResponses.ForEach(x => includeSet.Add(x.Name));
-
                 var includedTypeNames = includedMetadataTypes
                     .Where(x => x.Implements?.Length > 0)
                     .SelectMany(x => x.Implements.Select(i => i.Name))
                     .ToSet();
+
+                // Ignore generic response types, e.g. QueryResponse`1
+                var includeSet = new HashSet<string>();
+                includedMetadataTypes
+                    .Where(x => x.RequestType?.ReturnType != null)
+                    .ForEach(x => {
+                        if (x.RequestType.ReturnType.GenericArgs.IsEmpty())
+                        {
+                            includeSet.Add(x.RequestType.ReturnType.Name);
+                        }
+                        else
+                        {
+                            includedTypeNames.Add(x.RequestType.ReturnType.Name);
+                            x.RequestType.ReturnType.GenericArgs.ForEach(x => includeSet.Add(x));
+                        }                         
+                    });
+
+                metadata.Operations
+                    .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
+                    .Select(o => o.Response)
+                    .ForEach(x => {
+                        if (x.GenericArgs.IsEmpty())
+                        {
+                            includeSet.Add(x.Name);
+                        }
+                        else
+                        {
+                            includedTypeNames.Add(x.Name);
+                            x.GenericArgs.ForEach(x => includeSet.Add(x));
+                        }
+                    });
+
                 foreach (var op in includedMetadataOperations)
                 {
                     if (op.ReturnType != null)
