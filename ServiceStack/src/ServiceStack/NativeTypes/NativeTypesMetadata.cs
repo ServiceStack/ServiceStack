@@ -932,57 +932,50 @@ namespace ServiceStack.NativeTypes
                 if (metaTypes.Count == 1)
                 {
                     var metaType = metaTypes[0];
-                    if (metaType.Inherits != null)
+                    AddType(metaType);
+                }
+            }
+
+            void AddType(MetadataType type)
+            {
+                if (type.Inherits != null)
+                {
+                    Add(type.Inherits.Name);
+                    foreach (var genericArg in type.Inherits.GenericArgs.Safe())
                     {
-                        Add(metaType.Inherits.Name);
-                        foreach (var genericArg in metaType.Inherits.GenericArgs.Safe())
-                        {
-                            Add(genericArg);
-                        }
+                        Add(genericArg);
                     }
-                    foreach (var iface in metaType.Implements.Safe())
+                }
+                foreach (var iface in type.Implements.Safe())
+                {
+                    if (!iface.IsSystemOrServiceStackType())
                     {
-                        if (!iface.IsSystemOrServiceStackType())
-                        {
-                            Add(iface.Name);
-                        }
+                        Add(iface.Name);
                     }
-                    foreach (var pi in metaType.Properties.Safe())
+                }
+                foreach (var pi in type.Properties.Safe())
+                {
+                    Add(pi.Type);
+
+                    foreach (var genericArg in pi.GenericArgs.Safe())
                     {
-                        Add(pi.Type);
-                        foreach (var genericArg in pi.GenericArgs.Safe())
+                        Add(genericArg);
+                    }
+                    foreach (var attr in pi.Attributes.Safe())
+                    {
+                        foreach (var arg in attr.ConstructorArgs.Safe().Union(attr.Args.Safe()))
                         {
-                            Add(genericArg);
+                            if (arg.Type == nameof(Type) && arg.Value?.StartsWith("typeof(") == true)
+                            {
+                                var typeNameOnly = arg.Value.Substring(7, arg.Value.Length - 8).LastRightPart('.');
+                                Add(typeNameOnly);
+                            }
                         }
                     }
                 }
             }
             
-            if (type.Inherits != null)
-            {
-                Add(type.Inherits.Name);
-
-                foreach (var genericArg in type.Inherits.GenericArgs.Safe())
-                {
-                    Add(genericArg);
-                }
-            }
-            foreach (var iface in type.Implements.Safe())
-            {
-                if (!iface.IsSystemOrServiceStackType())
-                {
-                    Add(iface.Name);
-                }
-            }
-            foreach (var pi in type.Properties.Safe())
-            {
-                Add(pi.Type);
-
-                foreach (var genericArg in pi.GenericArgs.Safe())
-                {
-                    Add(genericArg);
-                }
-            }
+            AddType(type);
 
             return to;
         }
@@ -1158,13 +1151,14 @@ namespace ServiceStack.NativeTypes
                     .Select(o => o.Request)
                     .ToList();
 
+                // Ignore generic response types, e.g. QueryResponse`1
                 var includeSet = includedMetadataTypes
-                    .Where(x => x.RequestType?.ReturnType != null)
+                    .Where(x => x.RequestType?.ReturnType != null && x.RequestType.ReturnType.GenericArgs.IsEmpty())
                     .Select(x => x.RequestType.ReturnType.Name)
                     .ToSet();
 
                 var includedResponses = metadata.Operations
-                    .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
+                    .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null && t.Response.GenericArgs.IsEmpty())
                     .Select(o => o.Response)
                     .ToList();
                 includedResponses.ForEach(x => includeSet.Add(x.Name));
