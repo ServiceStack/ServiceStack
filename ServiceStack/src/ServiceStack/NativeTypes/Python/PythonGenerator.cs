@@ -832,11 +832,10 @@ namespace ServiceStack.NativeTypes.Python
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
-            if (value.StartsWith("typeof("))
+            if (value.IsTypeValue())
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
-                return "typeof(" + typeNameOnly + ")";
+                return "typeof(" + value.ExtractTypeName() + ")";
             }
 
             return value;

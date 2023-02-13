@@ -590,11 +590,10 @@ if (includeOptions)
             if (alias == "String")
                 return value.QuotedSafeValue();
 
-            if (value.StartsWith("typeof("))
+            if (value.IsTypeValue())
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
-                return "GetType(" + typeNameOnly + ")";
+                return "GetType(" + value.ExtractTypeName() + ")";
             }
 
             return value;

@@ -572,11 +572,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
-            if (value.StartsWith("typeof("))
+            if (value.IsTypeValue())
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
-                return typeNameOnly + ".class";
+                return value.ExtractTypeName() + ".class";
             }
 
             return value;
