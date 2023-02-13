@@ -954,6 +954,8 @@ namespace ServiceStack.NativeTypes
                         Add(iface.Name);
                     }
                 }
+                AddAttributes(type.Attributes);
+
                 foreach (var pi in type.Properties.Safe())
                 {
                     Add(pi.Type);
@@ -962,24 +964,32 @@ namespace ServiceStack.NativeTypes
                     {
                         Add(genericArg);
                     }
-                    foreach (var attr in pi.Attributes.Safe())
+
+                    AddAttributes(pi.Attributes);
+                }
+            }
+            
+            void AddAttributes(List<MetadataAttribute> attrs)
+            {
+                foreach (var attr in attrs.Safe())
+                {
+                    foreach (var arg in attr.ConstructorArgs.Safe().Union(attr.Args.Safe()))
                     {
-                        foreach (var arg in attr.ConstructorArgs.Safe().Union(attr.Args.Safe()))
+                        if (arg.Type == nameof(Type) && arg.Value.IsTypeValue())
                         {
-                            if (arg.Type == nameof(Type) && arg.Value?.StartsWith("typeof(") == true)
-                            {
-                                var typeNameOnly = arg.Value.Substring(7, arg.Value.Length - 8).LastRightPart('.');
-                                Add(typeNameOnly);
-                            }
+                            Add(arg.Value.ExtractTypeName());
                         }
                     }
                 }
             }
-            
+
             AddType(type);
 
             return to;
         }
+
+        internal static bool IsTypeValue(this string value) => value?.StartsWith("typeof(") == true;
+        internal static string ExtractTypeName(this string value) => value.Substring(7, value.Length - 8).LastRightPart('.');
 
         public static bool IgnoreSystemType(this MetadataType type)
         {
