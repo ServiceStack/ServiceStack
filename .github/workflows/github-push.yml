@@ -38,6 +38,7 @@ jobs:
         shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          cp ../clear-github-packages.sh .
           chmod +x ./clear-github-packages.sh
           ./clear-github-packages.sh
           
