@@ -32,6 +32,16 @@ jobs:
           export number_of_packages=$(ls -1 | wc -l)
           echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
           
+          
+      - name: Clear packages
+        working-directory: ./build
+        run: |
+          gh auth login --with-token ${{ secrets.GITHUB_TOKEN }}
+          ls -1 | grep .nupkg | sed -e 's/\..*$//' | while read line
+          do
+              gh api --method DELETE -H "Accept: application/vnd.github+json" "/orgs/ServiceStack/packages/nuget/$line"
+          done
+          
       - name: Push to GitHub
         working-directory: ./build/staging
         run: |
