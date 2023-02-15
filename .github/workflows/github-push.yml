@@ -35,9 +35,10 @@ jobs:
           
       - name: Clear packages
         working-directory: ./build
+        shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          ls -1 | grep .nupkg | sed -e 's/\..*$//' | while read line ; echo "/orgs/ServiceStack/packages/nuget/$line" ; done
+          ls -1 | grep .nupkg | sed -e 's/\..*$//' | while read line ; echo "/orgs/ServiceStack/packages/nuget/$line"; done
           
       - name: Push to GitHub
         working-directory: ./build/staging
