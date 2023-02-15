@@ -8,9 +8,9 @@
             @foreach (var c in Columns.Where(c => c.Filters.Count > 0))
             {
                 <fieldset class="group pr-4 sm:pr-6 lg:pr-8">
-                    <legend class="block font-medium flex justify-between w-full">
+                    <legend class="flex justify-between w-full font-medium">
                         <span>@c.Label</span>
-                        <span class="block w-6 flex justify-end">
+                        <span class="w-6 flex justify-end">
                             <span class="hidden group-hover:inline">
                                 <button @onclick="_ => removeFilters(c)" title=@($"Clear all {c.Title} filters")
                                     class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-red-600 hover:bg-red-200 hover:text-red-500 focus:outline-none focus:bg-red-500 focus:text-white">
