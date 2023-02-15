@@ -22,7 +22,7 @@ jobs:
           workflow: myget-pack.yml
           # workflow_conclusion: success
           name: ServiceStack Packages
-          commit: 44c1dfe8ab83925149d901148c22578c19424143 #${{ github.sha }}
+          commit: ${{ github.sha }}
           path: ./build/staging
           
       - name: Check output
