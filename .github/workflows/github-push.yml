@@ -37,10 +37,7 @@ jobs:
         working-directory: ./build
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          ls -1 | grep .nupkg | sed -e 's/\..*$//' | while read line; \
-          do \
-              gh api --method DELETE -H "Accept: application/vnd.github+json" "/orgs/ServiceStack/packages/nuget/$line"; \
-          done
+          ls -1 | grep .nupkg | sed -e 's/\..*$//' | while read line ; do gh api --method DELETE -H "Accept: application/vnd.github+json" "/orgs/ServiceStack/packages/nuget/$line" ; done
           
       - name: Push to GitHub
         working-directory: ./build/staging
