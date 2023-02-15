@@ -34,7 +34,7 @@ jobs:
           
           
       - name: Clear packages
-        working-directory: ./build
+        working-directory: ./build/staging
         shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
