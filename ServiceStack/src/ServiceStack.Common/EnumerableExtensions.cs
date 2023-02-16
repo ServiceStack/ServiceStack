@@ -240,6 +240,9 @@ namespace ServiceStack
             return default(T);
         }
 
+        /// <summary>
+        /// Constant Time byte[] comparison
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool EquivalentTo(this byte[] bytes, byte[] other)
         {
