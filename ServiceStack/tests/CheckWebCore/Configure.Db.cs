@@ -27,11 +27,17 @@ namespace MyApp
         {
             // Create non-existing Table and add Seed Data Example
             using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+            if (db.CreateTableIfNotExists<Coupon>())
+            {
+                new[] { 5, 10, 15, 20, 25, 30, 40, 50, 60, 70,  }.Each(percent => {
+                    db.Insert(new Coupon { Id = $"BOOK{percent}", Description = $"{percent}% off", Discount = 10, ExpiryDate = DateTime.UtcNow.AddDays(30) });
+                });
+            }
             if (db.CreateTableIfNotExists<Booking>())
             {
-                db.CreateBooking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
-                db.CreateBooking("Booking 2", RoomType.Double, 12, 120, "manager@email.com");
-                db.CreateBooking("Booking the 3rd", RoomType.Suite, 13, 130, "employee@email.com");
+                db.CreateBooking("First Booking!",  RoomType.Queen,  10, 100, "BOOK10", "employee@email.com");
+                db.CreateBooking("Booking 2",       RoomType.Double, 12, 120, "BOOK25", "manager@email.com");
+                db.CreateBooking("Booking the 3rd", RoomType.Suite,  13, 130, null,     "employee@email.com");
             }
             
             using var dbPgsql = appHost.Resolve<IDbConnectionFactory>().Open("pgsql");
@@ -50,16 +56,15 @@ namespace MyApp
     {
         static int bookingId = 0;
 
-        public static void CreateBooking(this IDbConnection db, string name, RoomType type, int roomNo, decimal cost, string by) =>
-            db.Insert(new Booking
-            {
-                Id = ++bookingId,
+        public static void CreateBooking(this IDbConnection Db, string name, RoomType type, int roomNo, decimal cost, string? couponId, string by) =>
+            Db.Insert(new Booking {
                 Name = name,
                 RoomType = type,
                 RoomNumber = roomNo,
                 Cost = cost,
-                BookingStartDate = DateTime.UtcNow.AddDays(bookingId),
-                BookingEndDate = DateTime.UtcNow.AddDays(bookingId + 7),
+                BookingStartDate = DateTime.UtcNow.AddDays(roomNo),
+                BookingEndDate = DateTime.UtcNow.AddDays(roomNo + 7),
+                CouponId = couponId,
                 CreatedBy = by,
                 CreatedDate = DateTime.UtcNow,
                 ModifiedBy = by,

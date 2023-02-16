@@ -204,7 +204,7 @@ namespace ServiceStack.Razor.Managers
                 catch (Exception ex)
                 {
                     ex = ex.UnwrapIfSingleException();
-                    if (!(ex is StopExecutionException))
+                    if (ex is not StopExecutionException)
                         throw;
                 }
 
