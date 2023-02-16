@@ -58,6 +58,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     }
 
     public static Func<HttpMessageHandler>? GlobalHttpMessageHandlerFactory { get; set; }
+    public static Action<JsonApiClient,HttpMessageHandler>? HttpMessageHandlerFilter { get; set; }
     public HttpMessageHandler? HttpMessageHandler { get; set; }
 
     public HttpClient? HttpClient { get; set; }
@@ -190,14 +191,16 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
             
         var baseUri = new Uri(BaseUri);
 
-        var client = new HttpClient(handler, disposeHandler: HttpMessageHandler == null) { BaseAddress = baseUri };
+        var client = HttpClient = new HttpClient(handler, disposeHandler: HttpMessageHandler == null) { BaseAddress = baseUri };
+
+        HttpMessageHandlerFilter?.Invoke(this, handler);
 
         if (BearerToken != null)
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
         else if (AlwaysSendBasicAuthHeader)
             AddBasicAuth(client);
 
-        return HttpClient = client;
+        return HttpClient;
     }
 
     public void AddHeader(string name, string value)
