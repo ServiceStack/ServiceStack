@@ -33,20 +33,18 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         public void Can_get_operation_name()
         {
             Assert.That(typeof(Root).GetOperationName(), Is.EqualTo("Root"));
-            Assert.That(typeof(Root.Nested).GetOperationName(), Is.EqualTo("Root.Nested"));
+            Assert.That(typeof(Root.Nested).GetOperationName(), Is.EqualTo("Nested"));
         }
 
         [Test]
         public void Can_use_nested_classes_as_Request_DTOs()
         {
-            using (var appHost = new BasicAppHost(typeof(NestedService).Assembly).Init())
-            {
-                var root = (Root)appHost.ExecuteService(new Root { Id = 1 });
-                Assert.That(root.Id, Is.EqualTo(1));
+            using var appHost = new BasicAppHost(typeof(NestedService).Assembly).Init();
+            var root = (Root)appHost.ExecuteService(new Root { Id = 1 });
+            Assert.That(root.Id, Is.EqualTo(1));
 
-                var nested = (Root.Nested)appHost.ExecuteService(new Root.Nested { Id = 2 });
-                Assert.That(nested.Id, Is.EqualTo(2));
-            }
+            var nested = (Root.Nested)appHost.ExecuteService(new Root.Nested { Id = 2 });
+            Assert.That(nested.Id, Is.EqualTo(2));
         }
 
         [Test]
