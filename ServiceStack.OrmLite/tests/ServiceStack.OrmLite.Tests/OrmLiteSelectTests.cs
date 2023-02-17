@@ -438,6 +438,26 @@ namespace ServiceStack.OrmLite.Tests
 
             Assert.That(rows.Count, Is.EqualTo(1));
         }
+        
+        public class Accounts
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        [Test]
+        public void Does_return_null_when_no_record_with_id_exists()
+        {
+            using var db = OpenDbConnection();
+            // OrmLiteUtils.PrintSql();
+            db.DropAndCreateTable<Accounts>();
+            db.Insert(new Accounts { Id = "johnsmith", Name = "John Smith" });
+            
+            Assert.That(db.SingleById<Accounts>("johnsmith").Name, Is.EqualTo("John Smith"));
+            Assert.That(db.SingleById<Accounts>(""), Is.Null);
+            Assert.That(db.SingleById<Accounts>("johnsmith2"), Is.Null);
+            Assert.Throws<ArgumentNullException>(() => db.SingleById<Accounts>(null));
+        }
 
         [TestCase(1E125)]
         [TestCase(-1E125)]
