@@ -565,7 +565,7 @@ namespace ServiceStack
         {
             this.PopulateRequestMetadata(requestDto);
             return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) 
-                ?? requestDto.ToUrl(httpMethod, fallback:requestType => BasePath + requestType.GetOperationTypeName()));
+                ?? requestDto.ToUrl(httpMethod, fallback:requestType => BasePath + requestType.GetOperationName()));
         }
 
         internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)

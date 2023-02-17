@@ -192,7 +192,7 @@ namespace ServiceStack
                 var requestType = args[0].ParameterType;
                 var execCtx = new ReceiverExecContext
                 {
-                    Id = ReceiverExecContext.Key(actionName, requestType.GetOperationTypeName()),
+                    Id = ReceiverExecContext.Key(actionName, requestType.GetOperationName()),
                     ServiceType = typeof(T),
                     RequestType = requestType,
                     Method = mi.Name

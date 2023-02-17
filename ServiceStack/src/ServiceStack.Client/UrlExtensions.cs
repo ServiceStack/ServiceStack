@@ -61,13 +61,13 @@ namespace ServiceStack
         public static string ToOneWayUrlOnly(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            return $"/{format}/oneway/{requestType.GetOperationTypeName()}";
+            return $"/{format}/oneway/{requestType.GetOperationName()}";
         }
 
         public static string ToOneWayUrl(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            var predefinedRoute = $"/{format}/oneway/{requestType.GetOperationTypeName()}";
+            var predefinedRoute = $"/{format}/oneway/{requestType.GetOperationName()}";
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
             var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
             if (!IsNullOrEmpty(queryString))
@@ -79,13 +79,13 @@ namespace ServiceStack
         public static string ToReplyUrlOnly(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            return $"/{format}/reply/{requestType.GetOperationTypeName()}";
+            return $"/{format}/reply/{requestType.GetOperationName()}";
         }
 
         public static string ToReplyUrl(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            var predefinedRoute = $"/{format}/reply/{requestType.GetOperationTypeName()}";
+            var predefinedRoute = $"/{format}/reply/{requestType.GetOperationName()}";
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
             var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
             if (!IsNullOrEmpty(queryString))
@@ -95,12 +95,12 @@ namespace ServiceStack
         }
 
         public static string ToApiUrl(this Type requestType) =>
-            "/api".CombineWith(requestType.GetOperationTypeName());
+            "/api".CombineWith(requestType.GetOperationName());
 
 
         public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null) =>
             requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute != null
-                ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationTypeName()}"
+                ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationName()}"
                 : null);
         
         public static string ToUrl(this object requestDto, string httpMethod, Func<Type, string> fallback)
@@ -134,7 +134,7 @@ namespace ServiceStack
             {
                 var errors = Join(Empty, routesApplied.Select(x =>
                     $"\r\n\t{x.Route.Path}:\t{x.FailReason}").ToArray());
-                var errMsg = $"None of the given rest routes matches '{requestType.GetOperationTypeName()}' request:{errors}";
+                var errMsg = $"None of the given rest routes matches '{requestType.GetOperationName()}' request:{errors}";
 
                 throw new InvalidOperationException(errMsg);
             }
@@ -168,49 +168,13 @@ namespace ServiceStack
             return urlFilter == null ? url : urlFilter.ToUrl(url);
         }
 
-        /// <summary>
-        /// Resolve Type Name for pre-defined routes in Client Libraries
-        /// </summary>
-        public static string GetOperationTypeName(this Type type)
+        public static string GetOperationName(this Type type)
         {
             if (type.IsArray && type.IsOrHasGenericInterfaceTypeOf(typeof(List<>)))
             {
                 return type.GetCollectionType().Name + "[]";
             }
             return type.Name.LastRightPart('+');
-        }
-
-        public static string GetOperationName(this Type type)
-        {
-            //Need to expand Arrays of Generic Types like Nullable<Byte>[]
-            if (type.IsArray)
-            {
-                return type.GetElementType().ExpandTypeName() + "[]";
-            }
-
-            string fullname = type.FullName;
-            int genericPrefixIndex = type.IsGenericParameter ? 1 : 0;
-                
-            if (fullname == null)
-                return genericPrefixIndex > 0 ? "'" + type.Name : type.Name;
-
-            int startIndex = type.Namespace != null ? type.Namespace.Length + 1: 0; //trim namespace + "."
-            int endIndex = fullname.IndexOf("[[", startIndex, StringComparison.Ordinal);  //Generic Fullname
-            if (endIndex == -1)
-                endIndex = fullname.Length;
-
-            char[] op = new char[endIndex - startIndex + genericPrefixIndex];
-
-            for (int i = startIndex; i < endIndex; i++)
-            {
-                var cur = fullname[i];
-                op[i - startIndex + genericPrefixIndex] = cur != '+' ? cur : '.';
-            }
-
-            if (genericPrefixIndex > 0)
-                op[0] = '\'';
-            
-            return new string(op);
         }
 
         public static string GetFullyQualifiedName(this Type type)
