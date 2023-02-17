@@ -159,7 +159,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     {
         this.PopulateRequestMetadata(requestDto);
         return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) 
-            ?? requestDto.ToUrl(httpMethod, fallback:requestType => BasePath + requestType.GetOperationName()));
+            ?? requestDto.ToUrl(httpMethod, fallback:requestType => BasePath + requestType.GetOperationTypeName()));
     }
 
     public HttpClient GetHttpClient()

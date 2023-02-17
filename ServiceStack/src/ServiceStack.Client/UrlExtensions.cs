@@ -61,13 +61,13 @@ namespace ServiceStack
         public static string ToOneWayUrlOnly(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            return $"/{format}/oneway/{requestType.GetOperationName()}";
+            return $"/{format}/oneway/{requestType.GetOperationTypeName()}";
         }
 
         public static string ToOneWayUrl(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            var predefinedRoute = $"/{format}/oneway/{requestType.GetOperationName()}";
+            var predefinedRoute = $"/{format}/oneway/{requestType.GetOperationTypeName()}";
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
             var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
             if (!IsNullOrEmpty(queryString))
@@ -79,13 +79,13 @@ namespace ServiceStack
         public static string ToReplyUrlOnly(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            return $"/{format}/reply/{requestType.GetOperationName()}";
+            return $"/{format}/reply/{requestType.GetOperationTypeName()}";
         }
 
         public static string ToReplyUrl(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            var predefinedRoute = $"/{format}/reply/{requestType.GetOperationName()}";
+            var predefinedRoute = $"/{format}/reply/{requestType.GetOperationTypeName()}";
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
             var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
             if (!IsNullOrEmpty(queryString))
@@ -94,9 +94,90 @@ namespace ServiceStack
             return predefinedRoute;
         }
 
-        public static string GetMetadataPropertyType(this Type type)
+        public static string ToApiUrl(this Type requestType) =>
+            "/api".CombineWith(requestType.GetOperationTypeName());
+
+
+        public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null) =>
+            requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute != null
+                ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationTypeName()}"
+                : null);
+        
+        public static string ToUrl(this object requestDto, string httpMethod, Func<Type, string> fallback)
         {
-            return GetOperationName(type);
+            httpMethod = httpMethod.ToUpper();
+            var urlFilter = requestDto as IUrlFilter;
+
+            var requestType = requestDto.GetType();
+            var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
+            if (requestRoutes.Count == 0)
+            {
+                if (fallback == null)
+                    throw new InvalidOperationException($"There are no rest routes mapped for '{requestType}' type. "
+                        + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and "
+                        + "not with routes registered in the IAppHost!)");
+
+                var predefinedRoute = fallback(requestType);
+                if (httpMethod is "GET" or "DELETE" or "OPTIONS" or "HEAD")
+                {
+                    var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
+                    if (queryProperties.Count > 0)
+                        predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
+                }
+
+                return urlFilter == null ? predefinedRoute : urlFilter.ToUrl(predefinedRoute);
+            }
+
+            var routesApplied = requestRoutes.Select(route => route.Apply(requestDto, httpMethod)).ToList();
+            var matchingRoutes = routesApplied.Where(x => x.Matches).ToList();
+            if (matchingRoutes.Count == 0)
+            {
+                var errors = Join(Empty, routesApplied.Select(x =>
+                    $"\r\n\t{x.Route.Path}:\t{x.FailReason}").ToArray());
+                var errMsg = $"None of the given rest routes matches '{requestType.GetOperationTypeName()}' request:{errors}";
+
+                throw new InvalidOperationException(errMsg);
+            }
+
+            RouteResolutionResult matchingRoute;
+            if (matchingRoutes.Count > 1)
+            {
+                matchingRoute = FindMostSpecificRoute(matchingRoutes);
+                if (matchingRoute == null)
+                {
+                    var errors = Join(Empty, matchingRoutes.Select(x => "\r\n\t" + x.Route.Path).ToArray());
+                    var errMsg = $"Ambiguous matching routes found for '{requestType.Name}' request:{errors}";
+                    throw new InvalidOperationException(errMsg);
+                }
+            }
+            else
+            {
+                matchingRoute = matchingRoutes[0];
+            }
+
+            var url = matchingRoute.Uri;
+            if (!HttpUtils.HasRequestBody(httpMethod))
+            {
+                var queryParams = matchingRoute.Route.FormatQueryParameters(requestDto);
+                if (!IsNullOrEmpty(queryParams))
+                {
+                    url += "?" + queryParams;
+                }
+            }
+
+            return urlFilter == null ? url : urlFilter.ToUrl(url);
+        }
+
+        /// <summary>
+        /// Resolve Type Name for pre-defined routes in Client Libraries
+        /// </summary>
+        public static string GetOperationTypeName(this Type type)
+        {
+            if (type.IsArray && type.IsOrHasGenericInterfaceTypeOf(typeof(List<>)))
+            {
+                return type.GetCollectionType().Name + "[]";
+            }
+            return type.Name.LastRightPart('+');
         }
 
         public static string GetOperationName(this Type type)
@@ -120,7 +201,7 @@ namespace ServiceStack
 
             char[] op = new char[endIndex - startIndex + genericPrefixIndex];
 
-            for(int i = startIndex; i < endIndex; i++)
+            for (int i = startIndex; i < endIndex; i++)
             {
                 var cur = fullname[i];
                 op[i - startIndex + genericPrefixIndex] = cur != '+' ? cur : '.';
@@ -180,78 +261,9 @@ namespace ServiceStack
             return fullName;
         }
 
-        public static string ToApiUrl(this Type requestType) =>
-            "/api".CombineWith(requestType.GetOperationName());
-
-
-        public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null) =>
-            requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute != null
-                ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationName()}"
-                : null);
-        
-        public static string ToUrl(this object requestDto, string httpMethod, Func<Type, string> fallback)
+        public static string GetMetadataPropertyType(this Type type)
         {
-            httpMethod = httpMethod.ToUpper();
-            var urlFilter = requestDto as IUrlFilter;
-
-            var requestType = requestDto.GetType();
-            var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
-            if (requestRoutes.Count == 0)
-            {
-                if (fallback == null)
-                    throw new InvalidOperationException($"There are no rest routes mapped for '{requestType}' type. "
-                        + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and "
-                        + "not with routes registered in the IAppHost!)");
-
-                var predefinedRoute = fallback(requestType);
-                if (httpMethod is "GET" or "DELETE" or "OPTIONS" or "HEAD")
-                {
-                    var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
-                    if (queryProperties.Count > 0)
-                        predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
-                }
-
-                return urlFilter == null ? predefinedRoute : urlFilter.ToUrl(predefinedRoute);
-            }
-
-            var routesApplied = requestRoutes.Select(route => route.Apply(requestDto, httpMethod)).ToList();
-            var matchingRoutes = routesApplied.Where(x => x.Matches).ToList();
-            if (matchingRoutes.Count == 0)
-            {
-                var errors = Join(Empty, routesApplied.Select(x =>
-                    $"\r\n\t{x.Route.Path}:\t{x.FailReason}").ToArray());
-                var errMsg = $"None of the given rest routes matches '{requestType.GetOperationName()}' request:{errors}";
-
-                throw new InvalidOperationException(errMsg);
-            }
-
-            RouteResolutionResult matchingRoute;
-            if (matchingRoutes.Count > 1)
-            {
-                matchingRoute = FindMostSpecificRoute(matchingRoutes);
-                if (matchingRoute == null)
-                {
-                    var errors = Join(Empty, matchingRoutes.Select(x => "\r\n\t" + x.Route.Path).ToArray());
-                    var errMsg = $"Ambiguous matching routes found for '{requestType.Name}' request:{errors}";
-                    throw new InvalidOperationException(errMsg);
-                }
-            }
-            else
-            {
-                matchingRoute = matchingRoutes[0];
-            }
-
-            var url = matchingRoute.Uri;
-            if (!HttpUtils.HasRequestBody(httpMethod))
-            {
-                var queryParams = matchingRoute.Route.FormatQueryParameters(requestDto);
-                if (!IsNullOrEmpty(queryParams))
-                {
-                    url += "?" + queryParams;
-                }
-            }
-
-            return urlFilter == null ? url : urlFilter.ToUrl(url);
+            return GetOperationName(type);
         }
 
         private static List<RestRoute> GetRoutesForType(Type requestType)
@@ -380,7 +392,7 @@ namespace ServiceStack
         private const string VariablePostfix = "}";
         private const char VariablePostfixChar = '}';
 
-        private readonly IDictionary<string, RouteMember> queryProperties = new Dictionary<string, RouteMember>();
+        private readonly IDictionary<string, RouteMember> queryProperties;
         private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(PclExport.Instance.InvariantComparerIgnoreCase);
 
         public RestRoute(Type type, string path, string verbs, int priority)
@@ -394,9 +406,7 @@ namespace ServiceStack
             foreach (var variableName in GetUrlVariables(path))
             {
                 var safeVarName = variableName.TrimEnd('*');
-
-                RouteMember propertyInfo;
-                if (!this.queryProperties.TryGetValue(safeVarName, out propertyInfo))
+                if (!this.queryProperties.TryGetValue(safeVarName, out var propertyInfo))
                 {
                     this.AppendError($"Variable '{variableName}' does not match any property.");
                     continue;
