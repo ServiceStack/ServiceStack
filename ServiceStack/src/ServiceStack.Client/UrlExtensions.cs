@@ -170,7 +170,7 @@ namespace ServiceStack
 
         public static string GetOperationName(this Type type)
         {
-            if (type.IsArray && type.IsOrHasGenericInterfaceTypeOf(typeof(List<>)))
+            if (type.IsArray)
             {
                 return type.GetCollectionType().Name + "[]";
             }

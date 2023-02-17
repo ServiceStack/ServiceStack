@@ -34,6 +34,8 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         {
             Assert.That(typeof(Root).GetOperationName(), Is.EqualTo("Root"));
             Assert.That(typeof(Root.Nested).GetOperationName(), Is.EqualTo("Nested"));
+            Assert.That(typeof(ArrayOfString).GetOperationName(), Is.EqualTo("ArrayOfString"));
+            Assert.That(typeof(ArrayOfString[]).GetOperationName(), Is.EqualTo("ArrayOfString[]"));
         }
 
         [Test]
