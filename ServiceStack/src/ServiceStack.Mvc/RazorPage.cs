@@ -60,8 +60,10 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
         {
             if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out var oRequest)
                 || GetHttpContext()?.Items.TryGetValue(Keywords.IRequest, out oRequest) == true)
-                return (IHttpRequest)oRequest!;
-
+            {
+                if (oRequest is IHttpRequest httpReq)
+                    return httpReq;
+            }
             return AppHostBase.GetOrCreateRequest(HttpContext) as IHttpRequest
                 ?? new BasicHttpRequest();
         }
