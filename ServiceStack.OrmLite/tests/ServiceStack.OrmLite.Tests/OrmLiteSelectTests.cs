@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Tests.Expression;
 using ServiceStack.Text;
 
@@ -439,24 +440,33 @@ namespace ServiceStack.OrmLite.Tests
             Assert.That(rows.Count, Is.EqualTo(1));
         }
         
-        public class Accounts
+        public class AccountIntId
         {
-            public string Id { get; set; }
-            public string Name { get; set; }
+            [AutoIncrement]
+            public int Id { get; set; }
+
+            [Required]
+            [Unique]
+            public string Username { get; set; }
         }
 
         [Test]
-        public void Does_return_null_when_no_record_with_id_exists()
+        public void Does_return_null_when_no_record_with_id_exists_in_AccountIntId()
         {
             using var db = OpenDbConnection();
-            // OrmLiteUtils.PrintSql();
-            db.DropAndCreateTable<Accounts>();
-            db.Insert(new Accounts { Id = "johnsmith", Name = "John Smith" });
+            OrmLiteUtils.PrintSql();
+            db.DropAndCreateTable<AccountIntId>();
+            db.Insert(new AccountIntId { Username = "johnsmith" });
+            db.Insert(new AccountIntId { Username = "2-whatever-more-3" });
             
-            Assert.That(db.SingleById<Accounts>("johnsmith").Name, Is.EqualTo("John Smith"));
-            Assert.That(db.SingleById<Accounts>(""), Is.Null);
-            Assert.That(db.SingleById<Accounts>("johnsmith2"), Is.Null);
-            Assert.Throws<ArgumentNullException>(() => db.SingleById<Accounts>(null));
+            Assert.That(db.SingleById<AccountIntId>(1).Username, Is.EqualTo("johnsmith"));
+            Assert.That(db.SingleById<AccountIntId>(3), Is.Null);
+            Assert.That(db.SingleById<AccountIntId>(""), Is.Null);
+            Assert.That(db.SingleById<AccountIntId>("johnsmith2"), Is.Null);
+            Assert.Throws<ArgumentNullException>(() => db.SingleById<AccountIntId>(null));
+
+            // Returns Id=2 in Sqlite/MySql
+            // Assert.That(db.SingleById<AccountIntId>("2-whatever-more-3"), Is.Null);
         }
 
         [TestCase(1E125)]
