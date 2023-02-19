@@ -1084,7 +1084,7 @@ namespace ServiceStack
         private static readonly Regex SpacesRegex = new(@"\s", RegexOptions.Compiled);
         private static readonly Regex CollapseHyphensRegex = new("-+", RegexOptions.Compiled);
         private static readonly Regex RemoveNonAsciiRegex = new(@"[^\u0000-\u007F]+", RegexOptions.Compiled);
-        public static string GenerateSlug(string phrase, int maxLength = 100)
+        public static string GenerateSlug(this string phrase, int maxLength = 100)
         {
             if (string.IsNullOrEmpty(phrase))
                 return string.Empty;
