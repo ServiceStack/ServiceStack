@@ -1085,6 +1085,9 @@ namespace ServiceStack
         private static readonly Regex CollapseHyphensRegex = new("-+", RegexOptions.Compiled);
         public static string GenerateSlug(this string phrase)
         {
+            if (string.IsNullOrEmpty(phrase))
+                return string.Empty;
+            
             var str = phrase.ToLower()
                 .Replace("#", "sharp")  // c#, f# => csharp, fsharp
                 .Replace("++", "pp");   // c++ => cpp
