@@ -9,6 +9,7 @@ App.components({
         return {
             $template: '#input-template',
             get input() { return resolve(input) },
+            get attrs() { return omit(resolve(input),['css']) },
             get prop() { return resolve(prop) },
             get model() { return  resolve(model) || {} },
             get error() { return resolve(api, x => x && x.error) },
@@ -92,7 +93,7 @@ App.components({
                v-html="useLabel(input)"></label>
         <div class="block mt-2">
             <span class="sr-only">{{input.help || useLabel(input)}}</span>
-            <input ref="inputFile" type="file" :name="input.id" :multiple="isMultiple(input)" v-bind="input" class="block w-full text-sm text-slate-500
+            <input ref="inputFile" type="file" :name="input.id" :multiple="isMultiple(input)" v-bind="attrs" class="block w-full text-sm text-slate-500
               file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
               file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100" 
               @change="fileChange(input,event)" />
@@ -152,7 +153,7 @@ App.components({
     <span>&nbsp;</span>
     <div class="flex items-start">
         <div class="flex items-center h-5 flex-col">
-            <input :name="input.id" v-bind="input" type="checkbox" v-model="model[input.id]"
+            <input :name="input.id" v-bind="attrs" type="checkbox" v-model="model[input.id]"
                    :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
         </div>
@@ -168,16 +169,16 @@ App.components({
     <label v-if="useLabel(input)" :for="input.id" :class="['block text-sm font-medium text-gray-700',labelClass(input)]"
            v-html="useLabel(input)"></label>
     <div class="mt-1 relative rounded-md shadow-sm">
-        <select v-if="input.type=='select'" :name="input.id" v-bind="input"
+        <select v-if="input.type=='select'" :name="input.id" v-bind="attrs"
                 :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                 :class="inputClass(input)" v-model="model[input.id]">
             <option v-if="input['data-type']=='Nullable`1'"></option>
             <option v-for="entry in kvpValues(input)" :value="entry.key">{{entry.value}}</option>
         </select>
-        <textarea v-else-if="input.type=='textarea'" :name="input.id" v-bind="input" :placeholder="usePlaceholder(input)"
+        <textarea v-else-if="input.type=='textarea'" :name="input.id" v-bind="attrs" :placeholder="usePlaceholder(input)"
                   :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                   :class="inputClass(input)" v-model="model[input.id]"></textarea>
-        <input v-else :name="input.id" v-bind="input" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
+        <input v-else :name="input.id" v-bind="attrs" :type="input.type||'text'" :placeholder="usePlaceholder(input)" autocomplete="new-password"
                :aria-invalid="hasError(input.id)" :aria-describedby="ariaDescribedby(input)"
                :class="inputClass(input)" v-model="model[input.id]" />
         <div v-if="fieldError(input.id)" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

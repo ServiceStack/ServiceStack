@@ -67,7 +67,7 @@ function createForms(Meta, css, ui) {
             input.type = 'url'
         }
         if (prop.input)
-            Object.assign(input, prop.input)
+            Object.assign(input, omit(prop.input,['id']))
         return input
     }
     let pad4 = n => n <= 9999 ? `000${n}`.slice(-4) : n;

@@ -1,4 +1,4 @@
-import { humanify, padInt, toDate, mapGet, apiValue, isDate, indexOfAny, fromXsdDuration, enc, uniq } from "@servicestack/client"
+import { humanify, padInt, toDate, mapGet, apiValue, isDate, indexOfAny, fromXsdDuration, enc, uniq, omit } from "@servicestack/client"
 import { Types } from "./Types"
 import { Crud, map } from "./core";
 import { MetadataOperationType, MetadataType, MetadataPropertyType, ApiCss, UiInfo, InputInfo } from "../../lib/types"
@@ -78,7 +78,8 @@ export function createForms(Meta, css, ui) {
             input.type = 'url'
         }
         if (prop.input)
-            Object.assign(input, prop.input)
+            Object.assign(input, omit(prop.input,['id']))
+        
         return input
     }
     let pad4 = n => n <= 9999 ? `000${n}`.slice(-4) : n;
