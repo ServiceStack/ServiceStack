@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using ServiceStack.Text;
 
 namespace ServiceStack.Blazor.Components;
 
@@ -81,10 +82,11 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
         {
             try
             {
+                //BlazorUtils.LogDebug("OnSave(): {0} => {1}", OriginalModelDictionary.Dump(), ModelDictionary.Dump());
                 var pk = MetadataType.Properties.GetPrimaryKey();
-
                 var formData = new MultipartFormDataContent();
                 var reset = new List<string>();
+
                 foreach (var entry in ModelDictionary)
                 {
                     if (entry.Value is InputFileChangeEventArgs e)
@@ -137,6 +139,8 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
                 {
                     formData.AddParam("reset", string.Join(',', reset));
                 }
+
+                //BlazorUtils.LogDebug("ApiFormAsync({0}): {1}", request.Dump(), formDataParams.Dump());
 
                 api = await ApiFormAsync<Model>(request, formData);
             }

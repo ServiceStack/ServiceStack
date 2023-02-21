@@ -48,6 +48,13 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest
         }
     }
 
+    public void Clear()
+    {
+        FormData.Clear();
+        QueryString.Clear();
+        Items.Clear();
+    }
+    
     public static GatewayRequest Create(IRequest hostReq)
     {
         if (hostReq is GatewayRequest gatewayRequest)
