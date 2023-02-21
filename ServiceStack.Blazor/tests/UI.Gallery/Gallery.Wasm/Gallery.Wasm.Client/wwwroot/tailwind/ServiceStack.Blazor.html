@@ -98,9 +98,9 @@ Cancel
 @foreach (var c in Columns.Where(c => c.Filters.Count > 0))
 {
 <fieldset class="group pr-4 sm:pr-6 lg:pr-8">
-<legend class="block font-medium flex justify-between w-full">
+<legend class="flex justify-between w-full font-medium">
 <span>@c.Label</span>
-<span class="block w-6 flex justify-end">
+<span class="w-6 flex justify-end">
 <span class="hidden group-hover:inline">
 <button @onclick="_ => removeFilters(c)" title=@($"Clear all {c.Title} filters")
 class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-red-600 hover:bg-red-200 hover:text-red-500 focus:outline-none focus:bg-red-500 focus:text-white">
@@ -1251,7 +1251,16 @@ role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/sv
 {
 <div class="flex justify-between">
 <label for=@Input.Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
-<span class="text-sm text-gray-500 dark:text-gray-400 pr-3">@Value</span>
+@if (!string.IsNullOrEmpty(Value))
+{
+<div class="flex items-center">
+<span class="text-sm text-gray-500 dark:text-gray-400 mr-1">@Value</span>
+<button @onclick="Clear" type="button" title="clear" class="mr-1 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black">
+<span class="sr-only">Clear</span>
+<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+</button>
+</div>
+}
 </div>
 }
 @if (Property.Ref != null)
