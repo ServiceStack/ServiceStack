@@ -67,24 +67,24 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
 
     static GatewayRequest FromRequest(IRequest req)
     {
-        var httpReq = (IHttpRequest)req;
+        var httpReq = req as IHttpRequest;
         var ret = new GatewayRequest
         {
-            PathInfo = httpReq.PathInfo,
-            OriginalRequest = httpReq.OriginalRequest,
+            PathInfo = req.PathInfo,
+            OriginalRequest = req.OriginalRequest,
             QueryString = new(),
             FormData = new(),
-            Headers = httpReq.Headers.Clone(),
-            Cookies = new Dictionary<string, Cookie>(httpReq.Cookies),
-            Items = new(httpReq.Items),
-            RawUrl = httpReq.RawUrl,
-            Verb = httpReq.Verb,
-            UserAgent = httpReq.UserAgent,
-            RemoteIp = httpReq.RemoteIp,
-            UserHostAddress = httpReq.UserHostAddress,
-            AcceptTypes = httpReq.AcceptTypes,
+            Headers = req.Headers.Clone(),
+            Cookies = new Dictionary<string, Cookie>(req.Cookies),
+            Items = new(req.Items),
+            RawUrl = req.RawUrl,
+            Verb = req.Verb,
+            UserAgent = req.UserAgent,
+            RemoteIp = req.RemoteIp,
+            UserHostAddress = req.UserHostAddress,
+            AcceptTypes = req.AcceptTypes,
             IsSecureConnection = true,
-            HttpMethod = httpReq?.HttpMethod ?? httpReq.Verb,
+            HttpMethod = httpReq?.HttpMethod ?? req.Verb,
             XForwardedFor = httpReq?.XForwardedFor,
             XForwardedPort = httpReq?.XForwardedPort,
             XForwardedProtocol = httpReq?.XForwardedProtocol,
