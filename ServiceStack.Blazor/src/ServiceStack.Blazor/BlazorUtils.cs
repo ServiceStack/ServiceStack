@@ -31,10 +31,22 @@ public static class BlazorUtils
             BlazorConfig.Instance.GetLog()?.LogInformation(message);
     }
 
+    public static void Log(string message, params object[] args)
+    {
+        if (BlazorConfig.Instance.EnableLogging)
+            BlazorConfig.Instance.GetLog()?.LogInformation(message, args);
+    }
+
     public static void LogDebug(string message)
     {
         if (BlazorConfig.Instance.EnableVerboseLogging)
             BlazorConfig.Instance.GetLog()?.LogDebug(message);
+    }
+
+    public static void LogDebug(string message, params object[] args)
+    {
+        if (BlazorConfig.Instance.EnableVerboseLogging)
+            BlazorConfig.Instance.GetLog()?.LogDebug(message, args);
     }
 
     public static string FormatValue(object? value) => 
