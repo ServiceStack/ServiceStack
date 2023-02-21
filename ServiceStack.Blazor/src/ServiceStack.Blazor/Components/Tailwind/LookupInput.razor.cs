@@ -23,6 +23,8 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
     MetadataPropertyType? property;
     MetadataPropertyType Property => property ??= MetadataType!.Properties.First(x => x.Name == Input.Id);
     [Parameter, EditorRequired] public Dictionary<string, object?> Model { get; set; }
+    [Parameter] public EventCallback Change { get; set; }
+
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     ApiResult<AppMetadata> appMetadataApi = new();
 
@@ -44,7 +46,7 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
 
     async Task lookup()
     {
-        BlazorUtils.Log($"lookup: {ModalLookup != null}");
+        //BlazorUtils.LogDebug($"lookup: {ModalLookup != null}");
 
         if (ModalLookup == null)
             return;
@@ -52,19 +54,27 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
         await ModalLookup.OpenAsync(Property.Ref, OnLookupSelected);
     }
 
-    Task OnLookupSelected(object row)
+    async Task OnLookupSelected(object row)
     {
         if (row != null)
         {
             var refInfo = Property.Ref;
             var refModel = row.ToObjectDictionary();
-            Model[Property.Name] = refModel.GetIgnoreCase(refInfo.RefId);
+            Model[Input!.Id] = refModel.GetIgnoreCase(refInfo.RefId);
             refInfoValue = LookupValues.SetValue(refInfo, refModel);
+            //BlazorUtils.LogDebug($"Model[{Input!.Id}] = {Model[Input!.Id]}, {refInfoValue} = ({refInfo.RefId}:{refInfo.RefLabel})");
             StateHasChanged();
+            await Change.InvokeAsync();
         }
-        return Task.CompletedTask;
     }
 
+    async Task Clear()
+    {
+        Model[Input!.Id] = null;
+        refInfoValue = null;
+        StateHasChanged();
+        await Change.InvokeAsync();
+    }
 
     string? refPropertyName;
     string? refInfoValue;
@@ -72,16 +82,17 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
     {
         await base.OnParametersSetAsync();
         Model ??= new();
-        if (!Model.ContainsKey(Property.Name))
+        if (!Model.ContainsKey(Input!.Id))
         {
-            Model[Property.Name] = null;
+            Model[Input!.Id] = null;
         }
 
         refInfoValue = null;
+        //BlazorUtils.LogDebug("refInfoValue = null");
         var refInfo = Property.Ref;
         var refIdValue = refInfo.SelfId == null
             ? Model.GetIgnoreCase(Property.Name)?.ConvertTo<string>()
-            : Model.GetIgnoreCase(refInfo.RefId)?.ConvertTo<string>();
+            : Model.GetIgnoreCase(refInfo.SelfId)?.ConvertTo<string>();
 
         var isRefType = TextUtils.IsComplexType(refIdValue?.GetType());
         if (isRefType)
@@ -99,13 +110,15 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
                 return;
 
             refInfoValue = propValue.ConvertTo<string>();
+            //BlazorUtils.LogDebug("refInfoValue = {0}, RefLabel: {1} ", refInfoValue, refInfo.RefLabel);
+
             refPropertyName = Property.Name;
             if (refInfo.RefLabel != null)
             {
                 var colModel = MetadataType!.Properties.FirstOrDefault(x => x.Type == refInfo.Model);
                 if (colModel == null)
                 {
-                    BlazorUtils.LogError($"Could not {refInfo.Model} Property on {MetadataType.Name}");
+                    BlazorUtils.LogError("Could not resolve {0} Property on {1}", refInfo.Model, MetadataType.Name);
                 }
 
                 var modelValue = colModel != null ? Model.GetIgnoreCase(colModel.Name).ToObjectDictionary() : null;
@@ -115,14 +128,17 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
                     if (label != null)
                     {
                         refInfoValue = label;
+                        //BlazorUtils.LogDebug("{0} = LookupValues.SetValue({1},{2},{3})", label, refInfo.Model, refIdValue, refInfo.RefLabel);
                         LookupValues.SetValue(refInfo.Model, refIdValue, refInfo.RefLabel, label);
                     }
-                    else
-                    {
-                        var isComputed = Property.Attributes?.Any(x => x.Name == "Computed") == true;
-                        label = await LookupValues.GetOrFetchValueAsync(Client!, AppMetadata!, refInfo.Model, refIdValue, refInfo.RefLabel, isComputed);
-                        refInfoValue = label != null ? label : $"{refInfo.Model}: {refInfoValue}";
-                    }
+                }
+                else
+                {
+                    var isComputed = Property.Attributes?.Any(x => x.Name == "Computed") == true;
+                    var label = await LookupValues.GetOrFetchValueAsync(Client!, AppMetadata!, refInfo.Model, refInfo.RefId, refInfo.RefLabel, isComputed, refIdValue);
+                    //BlazorUtils.LogDebug("{0} = LookupValues.GetOrFetchValueAsync({1},{2},{3},{4},{5})",
+                    //    label ?? "null", refInfo.Model, refInfo.RefId, refInfo.RefLabel, isComputed, refIdValue);
+                    refInfoValue = label != null ? label : $"{refInfo.Model}: {refInfoValue}";
                 }
             }
         }

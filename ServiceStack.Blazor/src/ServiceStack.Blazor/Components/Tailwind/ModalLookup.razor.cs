@@ -28,6 +28,8 @@ public partial class DynamicModalLookup : UiComponentBase
         StateHasChanged();
     }
 
+    public void CloseModal() => close();
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -44,7 +46,7 @@ public partial class DynamicModalLookup : UiComponentBase
 
     public async Task OpenAsync(RefInfo? refInfo, Func<object, Task> callback)
     {
-        BlazorUtils.Log($"OpenAsync {refInfo.Dump()}, Initialized: {ModalLookup != null}");
+        //BlazorUtils.Log($"OpenAsync {refInfo.Dump()}, Initialized: {ModalLookup != null}");
         ModalLookup?.Reset();
 
         Show = true;
