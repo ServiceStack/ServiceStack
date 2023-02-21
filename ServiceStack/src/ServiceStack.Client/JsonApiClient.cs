@@ -32,7 +32,10 @@ public interface IClientFactory
     IServiceGateway GetGateway();
     JsonApiClient GetClient();
 }
-
+public interface ICloneServiceGateway
+{
+    IServiceGateway Clone();
+}
 
 /// <summary>
 /// JsonApiClient designed to work with 

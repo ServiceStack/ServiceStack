@@ -566,8 +566,15 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 }
 
 #if NET6_0_OR_GREATER
-public partial class InProcessServiceGateway : IServiceGatewayFormAsync
+public partial class InProcessServiceGateway : IServiceGatewayFormAsync, ICloneServiceGateway
 {
+    public IServiceGateway Clone()
+    {
+        return Request is ICloneable cloneable
+            ? new InProcessServiceGateway((IRequest)cloneable.Clone())
+            : this;
+    }
+
     public async Task<TResponse> SendFormAsync<TResponse>(object requestDto, System.Net.Http.MultipartFormDataContent formData, CancellationToken token = default)
     {
         var holdDto = req.Dto;

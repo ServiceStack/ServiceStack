@@ -136,11 +136,6 @@ public class BlazorServerClientFactory : IClientFactory
     public JsonApiClient GetClient() => HostState.ConfigureClient(Client);
     public IServiceGateway GetGateway()
     {
-        if (Gateway is InProcessServiceGateway inProcGateway && inProcGateway.Request is GatewayRequest gatewayReq)
-        {
-            gatewayReq.Clear();
-        }
-
         return Gateway;
     }
 }
