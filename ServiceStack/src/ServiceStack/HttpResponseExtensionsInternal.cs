@@ -185,6 +185,7 @@ namespace ServiceStack
                     var httpResult = result as IHttpResult;
                     if (httpResult != null)
                     {
+                        response.Items[Keywords.Result] = result;
                         if (httpResult.ResultScope != null)
                             resultScope = httpResult.ResultScope();
 

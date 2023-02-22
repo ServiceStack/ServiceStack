@@ -34,6 +34,19 @@ public class AppHost : AppHostBase
             DebugMode = true,
             AdminAuthSecret = "secret",
         });
+        
+        Plugins.Add(new RequestLogsFeature
+        {
+            RequestLogger = new CsvRequestLogger(
+                new FileSystemVirtualFiles(HostContext.Config.WebHostPhysicalPath),
+                "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
+                "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv",
+                TimeSpan.FromSeconds(1)
+            ),
+            EnableResponseTracking = true,
+            EnableRequestBodyTracking = true,
+            EnableErrorTracking = true
+        });
 
         Plugins.Add(new CorsFeature(new[] {
             "http://localhost:5173", //vite dev

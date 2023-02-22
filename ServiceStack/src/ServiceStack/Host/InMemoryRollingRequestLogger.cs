@@ -160,8 +160,13 @@ namespace ServiceStack.Host
 #endif
                 }
             }
-                
-            if (!response.IsErrorResponse())
+
+            // Error Response has been converted into Response DTO before it's logged at end of request, use Result to get original error
+            var useResponse = (request.Response.Items.TryGetValue(Keywords.Result, out var originalResponse)
+                ? originalResponse
+                : null) ?? response;
+
+            if (!useResponse.IsErrorResponse() && request.Response.StatusCode < 400)
             {
                 var enableResponseTracking = ResponseTrackingFilter?.Invoke(request);
                 if (enableResponseTracking ?? EnableResponseTracking)
@@ -177,15 +182,14 @@ namespace ServiceStack.Host
             {
                 if (EnableErrorTracking)
                 {
-                    entry.ErrorResponse = ToSerializableErrorResponse(response);
+                    entry.ErrorResponse = response;
 
-                    if (response is IHttpError httpError)
+                    if (useResponse is IHttpError httpError)
                     {
                         entry.StatusCode = (int)httpError.StatusCode;
                         entry.StatusDescription = httpError.StatusDescription;
                     }
-
-                    if (response is Exception exception)
+                    if (useResponse is Exception exception)
                     {
                         if (exception.InnerException != null)
                             exception = exception.InnerException;
