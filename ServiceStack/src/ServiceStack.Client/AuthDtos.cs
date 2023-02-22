@@ -229,6 +229,7 @@ public class GetEventSubscribers : IGet, IReturn<List<Dictionary<string, string>
     public string[] Channels { get; set; }
 }
 
+[Tag(TagNames.Auth)]
 [DataContract]
 public class GetApiKeys : IGet, IReturn<GetApiKeysResponse>, IMeta
 {
@@ -245,6 +246,7 @@ public class GetApiKeysResponse : IHasResponseStatus, IMeta
     [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
 }
 
+[Tag(TagNames.Auth)]
 [DataContract]
 public class RegenerateApiKeys : IPost, IReturn<RegenerateApiKeysResponse>, IMeta
 {
@@ -294,6 +296,7 @@ public class ConvertSessionToTokenResponse : IMeta
     public ResponseStatus ResponseStatus { get; set; }
 }
     
+[Tag(TagNames.Auth)]
 [DataContract, ExcludeMetadata]
 public partial class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
 {
