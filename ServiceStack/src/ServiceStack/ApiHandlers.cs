@@ -1,6 +1,7 @@
 using System;
 using ServiceStack.Web;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Text;
 
 namespace ServiceStack;
 
@@ -42,6 +43,21 @@ public static class ApiHandlers
             {
                 // Add support for overriding content type with ext, e.g. .csv
                 var apiName = pathInfo.LastRightPart('/');
+                if (string.IsNullOrEmpty(apiName))
+                {
+                    var feature = HostContext.GetPlugin<PredefinedRoutesFeature>();
+                    if (feature?.ApiIndex != null)
+                    {
+                        var ret = feature.ApiIndex(req);
+                        return new CustomActionHandlerAsync(async (req, res) =>
+                        {
+                            res.ContentType = contentType;
+                            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
+                            await serializer(req, ret, req.Response.OutputStream).ConfigAwait();
+                        });
+                    }
+                }
+                
                 var useContentType = contentType;
                 var useRequestAttrs = requestAttributes;
                 var useFeature = feature;

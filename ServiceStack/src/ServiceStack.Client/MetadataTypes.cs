@@ -865,6 +865,22 @@ public class MetadataAttribute
     public List<MetadataPropertyType> Args { get; set; }
 }
 
+[DataContract]
+public class ApiDescription
+{
+    [DataMember(Order = 1)]
+    public string Name { get; set; }
+    [DataMember(Order = 2)]
+    public string Returns { get; set; }
+    [DataMember(Order = 3)]
+    public string Description { get; set; }
+    [DataMember(Order = 4)]
+    public string Notes { get; set; }
+    [DataMember(Order = 5)]
+    public Dictionary<string, string> Links { get; set; }
+}
+
+
 public static class MetadataTypeExtensions
 {
     public static bool InheritsAny(this MetadataType type, params string[] typeNames) =>
