@@ -21,6 +21,8 @@ App.components({
             get canPrev() { return this.skip > 0 },
             get canNext() { return this.results.length >= this.take },
             get canLast() { return this.results.length >= this.take },
+            get plugin() { return Forms.Server.plugins.autoQuery },
+            get definitions() { return this.plugin.viewerConventions },
             min(num1,num2) { return Math.min(num1, num2) },
             get dataModel() { return map(this.state, x => x.dataModel) },
             get dataModelName() { return map(this.dataModel, x => x.name) },
@@ -156,7 +158,7 @@ App.components({
 <template id="modal-lookup-template">
 <div id="modal-lookup" data-transition-for="modal-lookup" style="display:none" @click="close" @vue:mounted="mounted"
      class="fixed z-20 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div v-if="prefs" v-scope="QueryPrefs({ id:'lookup-prefs', routes, store, settings, columns:() => viewModelColumns, prefs:() => prefs, save:updatePrefs })"></div>
+    <div v-scope="QueryPrefs({ id:'lookup-prefs', routes, store, settings, maxLimit:plugin.maxLimit, columns:() => viewModelColumns, prefs:() => settings.op(routes.op), save:updatePrefs })"></div>
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div data-transition="{
                 entering: { cls:'ease-out duration-300', from:'opacity-0',   to:'opacity-100'},
@@ -232,13 +234,20 @@ App.components({
                         </div>
                     </div>
                 </div>
-                <div v-if="open==='filters'" class="border-b border-gray-200 py-8" v-scope="FilterViews({ routes, settings, filters:() => filters, save, done:() => open='' })"></div>
+                <div v-if="open==='filters'" class="border-y border-gray-200 py-8 mb-2" v-scope="FilterViews({ routes, definitions, 
+            prefs:name => settings.opProp(routes.op, name), 
+            saveProp:(name,prefs) => settings.saveOpProp(routes.op, name, x => Object.assign(x, prefs)),
+            saveFilters: (f,filters) => settings.saveOpProp(routes.op, f.column.name, x => x.filters=filters),
+            filters:() => filters, save, done:() => open='' })"></div>
                 <div v-if="apiLoading" v-scope="Loading()"></div>
                 <div v-else class="mt-3 flex flex-col">
                     <div class="-mx-1">
                         <div class="inline-block min-w-full py-2 align-middle">
                             <div class="shadow-sm ring-1 ring-black ring-opacity-5">
-                                <div v-if="filter" v-scope="FilterColumn({ store, routes, settings, filter:() => filter, save, done:() => filter=null })" class="relative"></div>
+                                <div v-if="filter" v-scope="FilterColumn({ store, routes, definitions, 
+                    prefs:() => settings.opProp(routes.op, filter && filter.column.name), 
+                    saveProp:(name,prefs) => settings.saveOpProp(routes.op, name, x => Object.assign(x, prefs)),
+                    filter:() => filter, save, done:() => filter=null })" class="relative"></div>
                                 <table class="min-w-full border-separate" style="border-spacing:0">
                                     <thead class="bg-gray-50">
                                     <tr>
