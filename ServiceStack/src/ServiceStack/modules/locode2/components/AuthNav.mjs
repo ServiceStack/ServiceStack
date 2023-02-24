@@ -40,14 +40,16 @@ const AuthNav = {
           </div>
       </div>`,
     setup(props) {
-        
+
         const store = inject('store')
+        const routes = inject('routes')
         const showPopup = ref(false)
         const { signOut } = useAuth()
         
         async function logout() {
             globalThis.AUTH = store.auth = null
             await signOut()
+            routes.to({ op:'', provider:'', skip:'', preview:'', new:'', edit:'' })
         }
         
         onMounted(() => {

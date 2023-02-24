@@ -21,8 +21,8 @@ let DEBUG = false
         "dev-vue": "https://unpkg.com/vue@3.2.47/dist/vue.esm-browser.js",        
         "dev-@servicestack/vue": "http://localhost:8080/servicestack-vue.mjs",
         "vue": "../js/vue.mjs",
-        "@servicestack/client": "../js/servicestack-client.mjs",
         "@servicestack/vue": "../js/servicestack-vue.mjs",
+        "@servicestack/client": "../js/servicestack-client.mjs",
         "app": "./lib/app.mjs",
         "core": "./lib/core.mjs",
         "dtos": "./lib/dtos.mjs"
@@ -120,9 +120,15 @@ const App = {
         const routes = inject('routes')
         const grid = ref()
         let sub = null
+        let lastOp = null
         onMounted(() => {
             sub = app.events.subscribe('route:nav', args => {
-                //grid.value?.update()
+                // need to refresh to update when navigating to the same op/page 
+                if (args.op && args.op === lastOp) {
+                    // console.log('route:nav', JSON.stringify(args))
+                    grid.value?.update()
+                }
+                lastOp = args.op
             })
         })
         return { store, routes, grid }
