@@ -993,13 +993,18 @@ namespace ServiceStack
                 }
             }
 
+            var log = LogManager.GetLogger(typeof(GenerateCrudServices));
+
             var typesToGenerateMap = new Dictionary<string, TableSchema>();
             var typesToGenerateSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var result in results)
             {
                 var keysCount = result.Columns?.Count(x => x.IsKey) ?? 0;
                 if (keysCount != 1) // Only support tables with 1 PK
+                {
+                    log.WarnFormat("Ignoring table '{0}' with multiple primary keys", result.Name);
                     continue;
+                }
                 
                 typesToGenerateMap[result.Name] = result;
                 typesToGenerateSet.Add(StringUtils.SnakeCaseToPascalCase(result.Name));
