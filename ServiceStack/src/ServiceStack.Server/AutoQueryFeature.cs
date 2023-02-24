@@ -13,6 +13,7 @@ using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.HtmlModules;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -147,6 +148,9 @@ namespace ServiceStack
         public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode") {
             DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
         };
+        public HtmlModule HtmlModule2 { get; set; } = new("/modules/locode2", "/locode2") {
+            DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
+        };
 
         public AutoQueryFeature()
         {
@@ -155,6 +159,15 @@ namespace ServiceStack
         
         public void BeforePluginsLoaded(IAppHost appHost)
         {
+            if (HtmlModule2 != null)
+                appHost.ConfigurePlugin<UiFeature>(feature =>
+                {
+                    feature.HtmlModules.Add(HtmlModule2);
+                    HtmlModule2.OnConfigure.Add((_, module) => {
+                        module.Handlers.Add(new ScriptModulesHandler("modules"));
+                        module.LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
+                    });
+                });
             if (HtmlModule != null)
                 appHost.ConfigurePlugin<UiFeature>(feature => feature.HtmlModules.Add(HtmlModule));
         }

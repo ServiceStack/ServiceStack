@@ -189,6 +189,15 @@ public class FilesTransformer
         }
     }
     
+    public static List<HtmlModuleLine> HtmlModuleLineTransformers { get; } = new()
+    {
+        new RemoveLineEndingWith(new[]{ "/*debug*/", "<!--debug-->" }, ignoreWhiteSpace:true, Run.IgnoreInDebug),
+        // Hide dev comments from browser
+        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always),
+    };
+
     public static List<HtmlModuleLine> HtmlLineTransformers { get; } = new()
     {
         // Enable static typing during dev, strip from browser to run

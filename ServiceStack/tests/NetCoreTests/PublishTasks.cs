@@ -40,6 +40,39 @@ public class PublishTasks
         ToModulesDir.Print();
     }
 
+    [Test]
+    public void Update_js()
+    {
+        Directory.SetCurrentDirectory(NetCoreTestsDir);
+
+        var jsFiles = new Dictionary<string, string>
+        {
+            ["servicestack-client.js"] = "../../../../servicestack-client/dist/servicestack-client.min.js",
+            ["servicestack-client.mjs"] = "../../../../servicestack-client/dist/servicestack-client.min.mjs",
+            ["servicestack-vue.mjs"] = "../../../../servicestack-vue/dist/servicestack-vue.min.mjs",
+            ["vue.mjs"] = "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js",
+        };
+
+        var jsDir = "../../src/ServiceStack/js";
+
+        foreach (var jsFile in jsFiles)
+        {
+            var toFile = Path.GetFullPath(jsDir.CombineWith(jsFile.Key));
+            if (jsFile.Value.StartsWith("https://"))
+            {
+                $"GET {jsFile.Value}".Print();
+                var js = jsFile.Value.GetStringFromUrl();
+                File.WriteAllText(toFile, js);
+            }
+            else
+            {
+                var fromFile = Path.GetFullPath(jsFile.Value);
+                $"COPY {fromFile} {toFile}".Print();
+                File.Copy(fromFile, toFile, overwrite:true);
+            }
+        }
+    }
+
     /*  publish.bat:
         call npm run ui:build 
         RD /q /s ..\..\src\ServiceStack\modules\ui 
@@ -89,6 +122,16 @@ public class PublishTasks
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")),
             cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        
+        // copy to modules/locode2
+        var moduleOptions = FilesTransformer.Defaults(debugMode: true);
+        moduleOptions.FileExtensions["html"].LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
+        moduleOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode2")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode2")), 
+            cleanTarget: true,
+            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }
 
