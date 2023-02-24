@@ -97,6 +97,9 @@ namespace ServiceStack
         
         public Action<GenerateMissingServicesContext> GenerateMissingServicesFilter { get; set; }
 
+        /// <summary>
+        /// Filter to modify the `TableSchema` used by AutoGen to generate data models
+        /// </summary>
         public Action<List<TableSchema>> TableSchemasFilter { get; set; }
 
         public static Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
