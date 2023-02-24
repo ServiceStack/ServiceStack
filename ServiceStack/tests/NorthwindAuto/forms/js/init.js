@@ -34,7 +34,7 @@ export let routes = usePageRoutes(App,{
     page:'op',
     queryKeys:'tab,provider,preview,body,doc,skip,new,edit'.split(','),
     handlers: {
-        nav(state) { console.log('nav', state) } /*debug*/
+        nav(state) { console.debug('nav', state) } /*debug*/
     }
 })
 

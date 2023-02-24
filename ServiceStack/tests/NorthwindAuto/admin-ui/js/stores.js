@@ -22,7 +22,7 @@ export let routes = usePageRoutes(App,{
         'show,orderBy,operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,' +
         'source,threadId,eventType,traceId,userId,tag,body').split(','),
     handlers: {
-        nav(state) { console.log('nav', state) } /*debug*/
+        nav(state) { console.debug('nav', state) } /*debug*/
     },
     extend: {
         dbTable() {
