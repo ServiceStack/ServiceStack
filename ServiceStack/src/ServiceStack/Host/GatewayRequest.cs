@@ -70,15 +70,16 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
         var httpReq = req as IHttpRequest;
         var ret = new GatewayRequest
         {
+            OriginalRequest = req,
+            AbsoluteUri = req.AbsoluteUri,
             PathInfo = req.PathInfo,
-            OriginalRequest = req.OriginalRequest,
+            RawUrl = req.RawUrl,
+            Verb = req.Verb,
             QueryString = new(),
             FormData = new(),
             Headers = req.Headers.Clone(),
             Cookies = new Dictionary<string, Cookie>(req.Cookies),
             Items = new(req.Items),
-            RawUrl = req.RawUrl,
-            Verb = req.Verb,
             UserAgent = req.UserAgent,
             RemoteIp = req.RemoteIp,
             UserHostAddress = req.UserHostAddress,
