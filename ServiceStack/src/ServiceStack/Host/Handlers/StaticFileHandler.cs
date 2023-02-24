@@ -48,6 +48,7 @@ namespace ServiceStack.Host.Handlers
         public static int DefaultBufferSize = 1024 * 1024;
 
         public static Action<IRequest, IResponse, IVirtualFile> ResponseFilter { get; set; }
+        public Action<IRequest, IResponse, IVirtualFile> Filter { get; set; }
 
         public StaticFileHandler()
         {
@@ -166,6 +167,7 @@ namespace ServiceStack.Host.Handlers
                     r.StatusCode = (int)HttpStatusCode.NotModified;
                     r.StatusDescription = HttpStatusCode.NotModified.ToString();
 
+                    Filter?.Invoke(request, r, file);
                     ResponseFilter?.Invoke(request, r, file);
                     return;
                 }
@@ -177,10 +179,15 @@ namespace ServiceStack.Host.Handlers
                     r.AddHeaderLastModified(file.LastModified);
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
 
+                    if (Filter != null)
+                    {
+                        Filter(request, r, file);
+                        if (r.IsClosed)
+                            return;
+                    }
                     if (ResponseFilter != null)
                     {
                         ResponseFilter(request, r, file);
-
                         if (r.IsClosed)
                             return;
                     }
