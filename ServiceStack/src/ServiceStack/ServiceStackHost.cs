@@ -1589,7 +1589,7 @@ namespace ServiceStack
         /// </summary>
         public virtual string GetBaseUrl(IRequest httpReq)
         {
-            if (httpReq is GatewayRequest gatewayRequest)
+            if (httpReq is GatewayRequest gatewayRequest && gatewayRequest.OriginalRequest is not BasicHttpRequest)
                 httpReq = gatewayRequest.OriginalRequest as IRequest ?? gatewayRequest;
             var useHttps = UseHttps(httpReq);
             var baseUrl = HostContext.Config.WebHostUrl;

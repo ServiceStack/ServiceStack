@@ -1068,9 +1068,10 @@ namespace ServiceStack
                 throw new ArgumentNullException(nameof(req));
 
             var factory = Container.TryResolve<IServiceGatewayFactory>();
-            return factory != null ? factory.GetServiceGateway(req) 
+            var ret = factory != null ? factory.GetServiceGateway(req) 
                 : Container.TryResolve<IServiceGateway>()
                 ?? new InProcessServiceGateway(GatewayRequest.Create(req));
+            return ret;
         }
 
         /// <summary>

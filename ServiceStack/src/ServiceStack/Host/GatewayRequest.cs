@@ -71,9 +71,6 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
         var ret = new GatewayRequest
         {
             OriginalRequest = req,
-            AbsoluteUri = req.AbsoluteUri,
-            PathInfo = req.PathInfo,
-            RawUrl = req.RawUrl,
             Verb = req.Verb,
             QueryString = new(),
             FormData = new(),
@@ -92,6 +89,9 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
             XRealIp = httpReq?.XRealIp,
             Accept = httpReq?.Accept,
         };
+        ret.PathInfo = req.PathInfo ?? ret.PathInfo;
+        ret.AbsoluteUri = req.AbsoluteUri ?? ret.AbsoluteUri;
+        ret.RawUrl = req.RawUrl ?? ret.RawUrl;
         return ret;
     }
 
