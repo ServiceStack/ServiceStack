@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.NativeTypes;
 
 namespace ServiceStack
@@ -126,7 +128,12 @@ namespace ServiceStack
                 },
             };
         }
-        
+
+        public static bool AllCollectionProperties(MetadataType type) => true;
+
+        public static bool NonAutoQueryCollectionProperties(MetadataType type) => !(type.IsCrud() || type.IsAutoQueryData());
+
+        public Func<MetadataType, bool> ShouldInitializeCollection { get; set; } = NonAutoQueryCollectionProperties;
 
         public void ExportAttribute<T>(Func<Attribute, MetadataAttribute> converter) =>
             ExportAttribute(typeof(T), converter);

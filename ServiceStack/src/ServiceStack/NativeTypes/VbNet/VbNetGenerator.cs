@@ -435,7 +435,7 @@ if (includeOptions)
 
             var collectionProps = new List<MetadataPropertyType>();
             if (type.Properties != null && Config.InitializeCollections)
-                collectionProps = type.Properties.Where(x => x.IsCollection()).ToList();
+                collectionProps = type.Properties.Where(x => x.IsCollection() && feature.ShouldInitializeCollection(type)).ToList();
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
             if (!addVersionInfo && collectionProps.Count <= 0) return;

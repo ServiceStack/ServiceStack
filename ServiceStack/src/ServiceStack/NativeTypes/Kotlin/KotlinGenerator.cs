@@ -435,7 +435,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 }
 
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && Config.InitializeCollections,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections && feature.ShouldInitializeCollection(type),
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
@@ -476,7 +476,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                     var initProp = initCollections && !prop.GenericArgs.IsEmpty() &&
-                                   (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
+                        (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
 
                     sb.Emit(prop, Lang.Kotlin);
                     PrePropertyFilter?.Invoke(sb, prop, type);

@@ -420,7 +420,7 @@ namespace ServiceStack.NativeTypes.Swift
 
                 var typeProps = type.Properties ?? TypeConstants<MetadataPropertyType>.EmptyList;
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && Config.InitializeCollections,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections && feature.ShouldInitializeCollection(type),
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && typeProps.All(x => x.Name != nameof(ResponseStatus)));
 
