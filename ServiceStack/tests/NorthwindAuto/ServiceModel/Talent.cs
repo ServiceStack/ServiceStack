@@ -95,9 +95,11 @@ public class JobApplication : AuditBase
     public int ContactId { get; set; }
 
     [Reference]
+    [Format(FormatMethods.Hidden)]
     public Job Position { get; set; }
 
     [Reference]
+    [Format(FormatMethods.Hidden)]
     public Contact Applicant { get; set; }
 
     [Reference]

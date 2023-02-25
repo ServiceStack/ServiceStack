@@ -18,7 +18,7 @@ const CellFormat = {
             const { Apis, isComplexProp } = useMetadata()
             
             const apis = Apis.forType(ref.model)
-            if (!apis.AnyQuery || isComplexProp(propType))
+            if (!apis.AnyQuery)
                 return hOrig
 
             const routes = inject('routes')
@@ -29,7 +29,18 @@ const CellFormat = {
                 title:`${ref.model} ${value}`,
                 onClick: (e) => {
                     e.stopPropagation()
-                    const $qs = { [ref.refId]: value }
+                    const $qs = {}
+                    if (ref.selfId) {
+                        const selfId = mapGet(modelValue, ref.selfId)
+                        $qs[ref.refId] = selfId 
+                    } else {
+                        if (isComplexProp(propType)) {
+                            const refValue = mapGet(value, ref.refId)
+                            $qs[ref.refId] = refValue
+                        } else {
+                            $qs[ref.refId] = value
+                        }
+                    }
                     routes.to({ op: apis.AnyQuery.request.name, $qs })
                 }
             }, [
