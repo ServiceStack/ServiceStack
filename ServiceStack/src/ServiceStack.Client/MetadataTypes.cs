@@ -1536,58 +1536,56 @@ public static class AppMetadataUtils
             return null;
         }
 
-        var refInfo = X.Map(allAttrs.FirstOrDefault(x => x is ReferencesAttribute) as ReferencesAttribute,
-            x => meta.CreateRefModel(x.Type.Name));
-        if (refInfo != null) 
-            return refInfo;
+        var refsAttr = allAttrs.OfType<ReferencesAttribute>().FirstOrDefault();
+        if (refsAttr != null)
+            return meta.CreateRefModel(refsAttr.Type.Name);
 
-        refInfo = X.Map(allAttrs.FirstOrDefault(x => x is ForeignKeyAttribute) as ForeignKeyAttribute,
-            x => meta.CreateRefModel(x.Type.Name));
-        if (refInfo != null) 
-            return refInfo;
+        var fkAttr = allAttrs.OfType<ForeignKeyAttribute>().FirstOrDefault();
+        if (fkAttr != null)
+            return meta.CreateRefModel(fkAttr.Type.Name);
 
-        return X.Map(allAttrs.FirstOrDefault(x => x is ReferenceAttribute) as ReferenceAttribute,
-            x =>
+        if (allAttrs.OfType<ReferenceAttribute>().FirstOrDefault() != null)
+        {
+            var pt = p.PropertyInfo.PropertyType;
+            var typePk = type.Properties?.FirstOrDefault(prop => prop.IsPrimaryKey == true);
+            if (pt.HasInterface(typeof(IEnumerable)))
             {
-                var pt = p.PropertyInfo.PropertyType;
-                var typePk = type.Properties?.FirstOrDefault(prop => prop.IsPrimaryKey == true);
-                if (pt.HasInterface(typeof(IEnumerable)))
+                if (typePk == null)
+                    return null;
+                    
+                var refType = pt.GetCollectionType();
+                var refMetaType = meta.GetType(refType.Name);
+                if (refMetaType == null)
+                    return null;
+                    
+                var fkId = type.Name + "Id";
+                var fkProp = refMetaType.Properties?.FirstOrDefault(prop => prop.Name == fkId);
+                    
+                return fkProp == null ? null : new RefInfo
                 {
-                    if (typePk == null)
-                        return null;
+                    Model = refType.Name,
+                    SelfId = typePk.Name,
+                    RefId = fkProp.Name,
+                };
+            }
+            else
+            {
+                var selfRefId = pt.Name + "Id";
+                var selfRef = type.Properties?.FirstOrDefault(prop => prop.Name == selfRefId);
+                if (selfRef == null)
+                    return meta.CreateRefModel(pt.Name);
+                var refMetaType = meta.GetType(pt.Name);
+                var fkProp = refMetaType?.Properties?.FirstOrDefault(prop => prop.IsPrimaryKey == true);
                     
-                    var refType = pt.GetCollectionType();
-                    var refMetaType = meta.GetType(refType.Name);
-                    if (refMetaType == null)
-                        return null;
-                    
-                    var fkId = type.Name + "Id";
-                    var fkProp = refMetaType.Properties?.FirstOrDefault(prop => prop.Name == fkId);
-                    
-                    return fkProp == null ? null : new RefInfo
-                    {
-                        Model = refType.Name,
-                        SelfId = typePk.Name,
-                        RefId = fkProp.Name,
-                    };
-                }
-                else
+                return fkProp == null ? null : new RefInfo
                 {
-                    var selfRefId = pt.Name + "Id";
-                    var selfRef = type.Properties?.FirstOrDefault(prop => prop.Name == selfRefId);
-                    if (selfRef == null)
-                        return meta.CreateRefModel(pt.Name);
-                    var refMetaType = meta.GetType(pt.Name);
-                    var fkProp = refMetaType?.Properties?.FirstOrDefault(prop => prop.IsPrimaryKey == true);
-                    
-                    return fkProp == null ? null : new RefInfo
-                    {
-                        Model = pt.Name,
-                        SelfId = selfRefId,
-                        RefId = fkProp.Name,
-                    };
-                }
-            });
+                    Model = pt.Name,
+                    SelfId = selfRefId,
+                    RefId = fkProp.Name,
+                };
+            }
+        }
+        return null;
     }
 
     internal static bool ContainsMatch(this HashSet<Type> types, Type target)
@@ -1668,59 +1666,56 @@ public static class AppMetadataUtils
         }
         if (!ClientConfig.ImplicitRefInfo)
             return null;
+        
+        var refsAttr = allAttrs.OfType<ReferencesAttribute>().FirstOrDefault();
+        if (refsAttr != null)
+            return refsAttr.Type.CreateRefModel();
+ 
+        var fkAttr = allAttrs.OfType<ForeignKeyAttribute>().FirstOrDefault();
+        if (fkAttr != null)
+            return fkAttr.Type.CreateRefModel();
 
-        var refInfo = X.Map(allAttrs.FirstOrDefault(x => x is ReferencesAttribute) as ReferencesAttribute,
-            x => x.Type.CreateRefModel());
-        if (refInfo != null) 
-            return refInfo;
-
-        refInfo = X.Map(allAttrs.FirstOrDefault(x => x is ForeignKeyAttribute) as ForeignKeyAttribute,
-            x => x.Type.CreateRefModel());
-        if (refInfo != null) 
-            return refInfo;
-
-        return X.Map(allAttrs.FirstOrDefault(x => x is ReferenceAttribute) as ReferenceAttribute,
-            x =>
+        if (allAttrs.OfType<ReferenceAttribute>().FirstOrDefault() != null)
+        {
+            var pt = p.PropertyInfo.PropertyType;
+            var props = p.PropertyInfo.DeclaringType?.GetAllProperties() ?? Array.Empty<PropertyInfo>();
+            var typePk = props.GetPrimaryKey();
+            if (pt.HasInterface(typeof(IEnumerable)))
             {
-                var pt = p.PropertyInfo.PropertyType;
-                var props = pt.GetAllProperties();
+                if (typePk == null)
+                    return null;
 
-                var typePk = props.GetPrimaryKey();
-                if (pt.HasInterface(typeof(IEnumerable)))
+                var refType = pt.GetCollectionType();
+                var refTypeProps = refType.GetAllProperties();
+                    
+                var fkId = refType.Name + "Id";
+                var fkProp = refTypeProps.FirstOrDefault(prop => prop.Name == fkId);
+                    
+                return fkProp == null ? null : new RefInfo
                 {
-                    if (typePk == null)
-                        return null;
+                    Model = refType.Name,
+                    SelfId = typePk.Name,
+                    RefId = fkProp.Name,
+                };
+            }
+            else
+            {
+                var selfRefId = pt.Name + "Id";
+                var selfRef = props.FirstOrDefault(prop => prop.Name == selfRefId);
+                if (selfRef == null)
+                    return pt.CreateRefModel();
                     
-                    var refType = pt.GetCollectionType();
-                    var refTypeProps = refType.GetAllProperties();
-                    
-                    var fkId = refType.Name + "Id";
-                    var fkProp = refTypeProps.FirstOrDefault(prop => prop.Name == fkId);
-                    
-                    return fkProp == null ? null : new RefInfo
-                    {
-                        Model = refType.Name,
-                        SelfId = typePk.Name,
-                        RefId = fkProp.Name,
-                    };
-                }
-                else
+                var refMetaTypeProps = pt.GetAllProperties();
+                var fkProp = refMetaTypeProps.GetPrimaryKey();
+                return fkProp == null ? null : new RefInfo
                 {
-                    var selfRefId = pt.Name + "Id";
-                    var selfRef = props.FirstOrDefault(prop => prop.Name == selfRefId);
-                    if (selfRef == null)
-                        return pt.CreateRefModel();
-                    
-                    var refMetaTypeProps = pt.GetAllProperties();
-                    var fkProp = refMetaTypeProps.GetPrimaryKey();
-                    return fkProp == null ? null : new RefInfo
-                    {
-                        Model = pt.Name,
-                        SelfId = selfRefId,
-                        RefId = fkProp.Name,
-                    };
-                }
-            });
+                    Model = pt.Name,
+                    SelfId = selfRefId,
+                    RefId = fkProp.Name,
+                };
+            }            
+        }
+        return null;
     }
 
     // Shared by NativeTypesMetadata.ToProperty
