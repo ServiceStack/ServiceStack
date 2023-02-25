@@ -13,7 +13,6 @@ export class QueryResponse {
     /** @type {ResponseStatus} */
     responseStatus;
 }
-
 export class QueryBase {
     /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -32,13 +31,11 @@ export class QueryBase {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
-
 /** @typedef T {any} */
 export class QueryDb extends QueryBase {
     /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
-
 export class Authenticate {
     /** @param {{provider?:string,state?:string,oauth_token?:string,oauth_verifier?:string,userName?:string,password?:string,rememberMe?:boolean,errorView?:string,nonce?:string,uri?:string,response?:string,qop?:string,nc?:string,cnonce?:string,accessToken?:string,accessTokenSecret?:string,scope?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -84,7 +81,6 @@ export class Authenticate {
     getMethod() { return 'POST' }
     createResponse() { return new AuthenticateResponse() }
 }
-
 export class AuthenticateResponse {
     /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,profileUrl?:string,roles?:string[],permissions?:string[],responseStatus?:ResponseStatus,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -113,7 +109,6 @@ export class AuthenticateResponse {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
-
 export class GetCrudEvents extends QueryDb
 {
     /** @param {{authSecret?:string,model?:string,modelId?:string}} [init] */

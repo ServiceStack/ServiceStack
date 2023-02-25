@@ -3,13 +3,10 @@ import { JsonServiceClient, map, lastLeftPart, trimEnd, appendQueryString, human
 import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/vue"
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "./core.mjs"
 import { Authenticate } from "./dtos.mjs"
-
 const { setConfig } = useConfig()
 const { invalidAccessMessage } = useAuth()
 const { Crud, apiOf } = useMetadata()
-
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI, '/'), '/')
-
 export let AppData = {
     init: false,
     baseUrl: BASE_URL,
@@ -26,10 +23,7 @@ export let AppData = {
     /** @type Record<number,string> */
     HttpErrors: { 401:'Unauthorized', 403:'Forbidden' },
 }
-
 export const app = new App()
-
-
 /**
  * Create a new `JsonServiceStack` client instance configured with the authenticated user
  *
@@ -50,10 +44,8 @@ export function createClient(fn) {
         if (fn) fn(c)
     })
 }
-
 /** App's pre-configured `JsonServiceClient` instance for making typed API requests */
 export const client = createClient()
-
 /** @type {Object<String,String>} */
 let qs = queryString(location.search)
 let stateQs = qs.IncludeTypes ? `?IncludeTypes=${qs.IncludeTypes}` : ''
@@ -66,14 +58,11 @@ function urlWithState(url) {
         ? (stateQs ? '&' + stateQs.substring(1) : '')
         : stateQs)
 }
-
 export const breakpoints = useBreakpoints(app, {
     handlers: {
         change({ previous, current }) { console.debug('breakpoints.change', previous, current) } /*debug*/
     }
 })
-
-
 export const routes = usePageRoutes(app, {
     page: 'op',
     queryKeys: 'tab,provider,preview,body,doc,skip,new,edit'.split(','),
@@ -106,8 +95,6 @@ export const routes = usePageRoutes(app, {
         }
     }
 })
-
-
 /** Manage users query & filter preferences in the Users browsers localStorage
  * @type {LocodeSettings} */
 export const settings = {
@@ -179,14 +166,11 @@ export const settings = {
         removeKeys.forEach(k => localStorage.removeItem(k))
     }
 }
-
 export const sideNav = ((Server) => {
-
     const operations = Server.api.operations 
     operations.forEach(op => {
         if (!op.tags) op.tags = []
     })
-
     let appOps = operations.filter(op => !(op.request.namespace || "").startsWith('ServiceStack') && Crud.isAnyQuery(op))
     let appTags = Array.from(new Set(appOps.flatMap(op => op.tags))).sort()
     /** Organized data structure to render Sidebar
@@ -197,7 +181,6 @@ export const sideNav = ((Server) => {
         expanded: true,
         operations: appOps.filter(op => op.tags.indexOf(tag) >= 0)
     }))
-
     let ssOps = operations.filter(op => (op.request.namespace || "").startsWith('ServiceStack') && Crud.isAnyQuery(op))
     let ssTags = Array.from(new Set(ssOps.flatMap(op => op.tags))).sort()
     ssTags.map(tag => ({
@@ -205,7 +188,6 @@ export const sideNav = ((Server) => {
         expanded: true,
         operations: ssOps.filter(op => op.tags.indexOf(tag) >= 0)
     })).forEach(nav => sideNav.push(nav))
-
     let tags = Server.ui.locode.tags
     let other = {
         tag: appTags.length > 0 ? tags.other : tags.default,
@@ -213,16 +195,12 @@ export const sideNav = ((Server) => {
         operations: [...appOps, ...ssOps].filter(op => op.tags.length === 0)
     }
     if (other.operations.length > 0) sideNav.push(other)
-
     let alwaysHideTags = Server.ui.alwaysHideTags || !DEBUG && Server.ui.hideTags
     if (alwaysHideTags) {
         sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
     }
-    
     return sideNav
-
 })(globalThis.Server);
-
 /** App's primary reactive store maintaining global functionality for Locode Apps
  * @type {LocodeStore} */
 let store = {
@@ -248,14 +226,11 @@ let store = {
     baseUrl: BASE_URL,
     /** @type {any|null} */
     modalLookup: null,
-
     /** @return {string} */
     get useLang() { return 'csharp' },
-
     init() {
         setBodyClass({ page: routes.op })
     },
-
     /** @return {{tag:string,operations:MetadataOperationType[],expanded:boolean}[]} */
     get filteredSideNav() {
         let filter = op => {
@@ -274,16 +249,13 @@ let store = {
                 ...nav,
                 operations: sortOps(nav.operations.filter(filter))
             }))
-
         return ret
     },
-
     /** @param {string} tag */
     toggle(tag) {
         let nav = this.sideNav.find(x => x.tag === tag)
         nav.expanded = !nav.expanded
     },
-
     /** @return {MetadataOperationType} */
     get op() { return routes.op ? apiOf(routes.op) : null },
     /** @return {string} */
@@ -294,10 +266,8 @@ let store = {
     get opDataModel() { return this.op && this.op.dataModel && this.op.dataModel.name },
     /** @return {string} */
     get opViewModel() { return this.op && this.op.viewModel && this.op.viewModel.name },
-
     /** @return {boolean} */
     get isServiceStackType() { return this.op && (this.op.request.namespace || "").startsWith("ServiceStack") },
-
     /** @param {string} url
      *  @returns {Promise<string>} */
     cachedFetch(url) {
@@ -321,7 +291,6 @@ let store = {
             }
         })
     },
-
     /** @param opt
      *  @return {Function}
      *  @constructor */
@@ -335,7 +304,6 @@ let store = {
             })
             : NoAuth({ message:`Welcome to ${this.serviceName}` })
     },
-
     /** @param {any} args
      *  @param {Function} [$on] */
     login(args, $on) {
@@ -366,7 +334,6 @@ let store = {
                 }
             })
     },
-
     logout() {
         setBodyClass({ auth: this.auth })
         client.api(new Authenticate({ provider: 'logout' }))
@@ -375,15 +342,12 @@ let store = {
         this.auth = null
         routes.to({ $page:null })
     },
-
-    /**: v-if doesn't protect against nested access so need to guard against deep NRE access */
     /** @return {string[]} */
     get authRoles() { return this.auth && this.auth.roles || [] },
     /** @return {string[]} */
     get authPermissions() { return this.auth && this.auth.permissions || [] },
     /** @return {string|null} */
     get authProfileUrl() { return this.auth && this.auth.profileUrl },
-
     /** @return {LinkInfo[]} */
     get authLinks() {
         let to = []
@@ -396,7 +360,6 @@ let store = {
         }
         return to
     },
-
     /** @return {string|null} */
     get displayName() {
         let auth = this.auth
@@ -404,7 +367,6 @@ let store = {
             ? auth.displayName || (auth.firstName ? `${auth.firstName} ${auth.lastName}` : null) || auth.userName || auth.email
             : null
     },
-
     /** @return {string|null} */
     invalidAccess() { return invalidAccessMessage(this.op, this.auth) },
     /** @param {string} role
@@ -413,13 +375,10 @@ let store = {
 }
 store = reactive(store)
 export { store }
-
 app.events.subscribe('route:nav', args => store.init())
-
 app.use(ServiceStackVue)
 app.component('RouterLink', ServiceStackVue.component('RouterLink'))
 app.provides({ client, store, routes, breakpoints, settings, server:globalThis.Server })
-           
 setConfig({
     navigate: (url) => {
         console.debug('navigate', url)
@@ -430,4 +389,3 @@ setConfig({
         }
     }
 })
-

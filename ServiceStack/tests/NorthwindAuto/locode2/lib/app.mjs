@@ -1,7 +1,7 @@
 import { reactive } from "vue"
 import { JsonServiceClient, map, lastLeftPart, trimEnd, appendQueryString, humanify, queryString } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/vue"
-import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "./core.mjs"
+import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 
 const { setConfig } = useConfig()

@@ -1,8 +1,9 @@
+/*minify:*/
 import { createApp, reactive } from "vue"
 import { createBus, map, each, leftPart, on, queryString } from "@servicestack/client"
 import { useMetadata } from "@servicestack/vue"
 
-const { typeOf, typeOfRef } = useMetadata()
+const { typeOfRef } = useMetadata()
 
 export class App {
     app
@@ -313,3 +314,4 @@ export function getIcon({op, type}) {
     }
     return defaultIcon
 }
+/*:minify*/

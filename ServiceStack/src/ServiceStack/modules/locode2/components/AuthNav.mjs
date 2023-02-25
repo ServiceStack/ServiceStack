@@ -2,7 +2,6 @@ import { inject, onMounted, ref } from "vue"
 import { on } from "@servicestack/client"
 import { useAuth } from "@servicestack/vue"
 import { app } from "app"
-
 const AuthNav = {
     template:/*html*/`
       <div class="ml-3 mt-1 relative bg-gray-50">
@@ -40,24 +39,20 @@ const AuthNav = {
           </div>
       </div>`,
     setup(props) {
-
         const store = inject('store')
         const routes = inject('routes')
         const showPopup = ref(false)
         const { signOut } = useAuth()
-        
         async function logout() {
             globalThis.AUTH = store.auth = null
             await signOut()
             routes.to({ op:'', provider:'', skip:'', preview:'', new:'', edit:'' })
         }
-        
         onMounted(() => {
             on(document.body, {
                 click: e => showPopup.value = false
             })
         })
-        
         return {
             store,
             get displayName() {
@@ -67,8 +62,6 @@ const AuthNav = {
             showPopup,
             logout,
         }
-        
     }
 }
-
 app.components({ AuthNav })

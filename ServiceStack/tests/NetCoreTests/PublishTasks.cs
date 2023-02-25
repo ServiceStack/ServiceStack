@@ -123,6 +123,13 @@ public class PublishTasks
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")),
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+
+        // copy to js
+        FilesTransformer.Defaults(debugMode:false).CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/js")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../js")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
         // copy to modules/locode2
         var moduleOptions = FilesTransformer.Defaults(debugMode: true);
@@ -132,6 +139,19 @@ public class PublishTasks
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode2")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+    }
+
+    [Test]
+    public void Copy_mjs()
+    {
+        Directory.SetCurrentDirectory(ProjectDir);
+
+        // copy to js
+        FilesTransformer.Defaults(debugMode: false).CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/js")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../js")),
+            cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }
 

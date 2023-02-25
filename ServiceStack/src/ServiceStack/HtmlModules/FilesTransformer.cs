@@ -211,6 +211,15 @@ public class FilesTransformer
     };
 
     // Enable static typing during dev, strip from browser to run
+    public static List<HtmlModuleLine> MjsLineTransformers { get; } = new()
+    {
+        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
+        // Hide dev comments from browser
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always),
+    };
+
+    // Enable static typing during dev, strip from browser to run
     public static List<HtmlModuleLine> JsLineTransformers { get; } = new()
     {
         new RemoveLineStartingWith(new[] { "import ", "declare " }, ignoreWhiteSpace:false, Run.Always),
@@ -263,6 +272,17 @@ public static class FilesTransformerUtils
                         new RemoveBlock("/**", "*/", Run.IgnoreInDebug),
                     },
                     LineTransformers = FilesTransformer.JsLineTransformers.ToList(),
+                },
+                ["mjs"] = new FileTransformerOptions
+                {
+                    BlockTransformers = {
+                        new RawBlock("/*raw:*/", "/*:raw*/", Run.Always),
+                        new MinifyBlock("/*minify:*/", "/*:minify*/", Minifiers.JavaScript, Run.IgnoreInDebug) {
+                            LineTransformers = FilesTransformer.MjsLineTransformers.ToList()
+                        },
+                        new RemoveBlock("/**", "*/", Run.IgnoreInDebug),
+                    },
+                    LineTransformers = FilesTransformer.MjsLineTransformers.ToList(),
                 },
                 ["css"] = new FileTransformerOptions
                 {

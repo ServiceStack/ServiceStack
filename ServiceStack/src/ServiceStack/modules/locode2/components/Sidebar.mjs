@@ -1,7 +1,6 @@
 import { inject } from "vue"
 import { app } from "app"
 import { getIcon } from "core"
-
 const SidebarNav = {
     template:/*html*/`
     <nav class="flex-1 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Sidebar">
@@ -29,7 +28,6 @@ const SidebarNav = {
     setup(props) {
         const store = inject('store')
         const routes = inject('routes')
-        
         return {
             store,
             routes,
@@ -37,7 +35,6 @@ const SidebarNav = {
         }
     }
 }
-
 const Brand = {
     template:/*html*/`
     <div class="flex items-center flex-shrink-0 max-w-sidebar">
@@ -51,11 +48,9 @@ const Brand = {
     props: ['icon','name'],
     setup(props) {
         const store = inject('store')
-        
         return { store }
     }
 }
-
 const SidebarTop = {
     components: { Brand },
     template:/*html*/`
@@ -74,7 +69,6 @@ const SidebarTop = {
         return { server, store }
     }
 }
-
 const Sidebar = {
     components: { SidebarNav, SidebarTop },
     template:/*html*/`
@@ -85,7 +79,6 @@ const Sidebar = {
             entering: { cls:'transition-opacity ease-linear duration-300', from:'opacity-0',   to:'opacity-100'}, 
             leaving:  { cls:'transition-opacity ease-linear duration-300', from:'opacity-100', to:'opacity-0' } 
         }" data-transition-for="sidebar" class="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true"></div>
-    
         <!---: Off-canvas menu, show/hide based on off-canvas menu state. -->
         <div data-transition="{ 
             entering: { cls:'transition ease-in-out duration-300 transform', from:'-translate-x-full', to:'translate-x-0'}, 
@@ -116,7 +109,6 @@ const Sidebar = {
             <!---: Force sidebar to shrink to fit close icon -->
         </div>
     </div>
-    
     <div class="hidden md:flex w-sidebar md:flex-col md:fixed md:inset-y-0">
         <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
             <div class="flex-1 flex flex-col pt-5 pb-4">
@@ -128,9 +120,7 @@ const Sidebar = {
     `,
     setup(props) {
         const store = inject('store')
-        
         return { store }
     }
 }
-
 app.components({ Sidebar })
