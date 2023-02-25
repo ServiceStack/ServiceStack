@@ -93,6 +93,8 @@ public class PublishTasks
             onOut:   Console.WriteLine, 
             onError: Console.Error.WriteLine);
         
+        // modules are copied over as debug versions then minified/cached at runtime on load
+        
         // copy to modules/ui
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
@@ -125,6 +127,7 @@ public class PublishTasks
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
         // copy to js
+        // gets served as a static file so need to copy prod version to /js
         FilesTransformer.Defaults(debugMode:false).CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/js")),
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../js")),

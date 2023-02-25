@@ -22,7 +22,10 @@ export class App {
         Object.keys(components).forEach(k => this.Components[k] = components[k])
     }
     component(name, c) {
-        this.Components[name] = c
+        if (c) {
+            this.Components[name] = c
+        }
+        return this.Components[name]
     }
     directive(name, f) {
         this.Directives[name] = f

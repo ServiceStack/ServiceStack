@@ -36,10 +36,10 @@ let DEBUG = false
 <div id="app"></div>
 <template id="app-template">
 <div class="flex">
-    <sidebar></sidebar>
+    <sidebar v-if="showSidebar" @hide="showSidebar=false"></sidebar>
     <div class="md:pl-sidebar md:w-sidebar overflow-auto flex flex-col flex-1">
         <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
-            <button type="button" @click="transition('sidebar')"
+            <button type="button" @click="showSidebar=true"
                     class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                 <span class="sr-only">Open sidebar</span>
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -66,8 +66,13 @@ let DEBUG = false
                             </h1>
                         </div>
                         <div class="pt-2 pb-4 sm:px-2 lg:px-4">
-                            <auto-query-grid :key="store.opDataModel" ref="grid" :type="store.opDataModel"
-                                grid2-class="-my-2 -mx-4 sm:-mx-6 lg:-mx-8"></auto-query-grid>
+                            <component v-if="store.gridComponentFor(store.opDataModel)" :key="`${store.opDataModel}Grid`" :is="store.gridComponentFor(store.opDataModel)" :type="store.opDataModel"></component>
+                            <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel"
+                                grid2-class="-my-2 -mx-4 sm:-mx-6 lg:-mx-8">
+                                <template #formfooter="{ form, type, apis, model, id }">
+                                    <audit-events v-if="form === 'edit' && canAccessCrudEvents" class="mt-4" :key="id" :type="type" :id="id"></audit-events>
+                                </template>
+                            </auto-query-grid>
                         </div>
                     </div>
                 </div>
@@ -110,7 +115,7 @@ window.config = {
 <!--modules:components/*.mjs-->
 <!--file:custom.html-->
 <script type="module">
-import { ref, nextTick, inject, onMounted } from "vue"
+import { ref, computed, nextTick, inject, onMounted } from "vue"
 import { $1, $$ } from "@servicestack/client"
 import { app } from "app"
 const App = {
@@ -118,6 +123,8 @@ const App = {
     setup(props) {
         const store = inject('store')
         const routes = inject('routes')
+        const server = inject('server')
+        const showSidebar = ref(true)
         const grid = ref()
         let sub = null
         let lastOp = null
@@ -131,7 +138,9 @@ const App = {
                 lastOp = args.op
             })
         })
-        return { store, routes, grid }
+        const canAccessCrudEvents = computed(() => 
+            server.plugins.autoQuery.crudEventsServices && store.hasRole(server.plugins.autoQuery.accessRole)) 
+        return { store, routes, grid, showSidebar, canAccessCrudEvents }
     }
 }
 app.build(App).mount('#app')

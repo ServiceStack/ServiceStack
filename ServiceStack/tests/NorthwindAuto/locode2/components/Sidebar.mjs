@@ -1,4 +1,5 @@
-import { inject } from "vue"
+import { inject, onMounted, ref, watch } from "vue"
+import { useUtils } from "@servicestack/vue"
 import { app } from "app"
 import { getIcon } from "core"
 
@@ -14,7 +15,7 @@ const SidebarNav = {
                 {{nav.tag}}
             </button>
             <div v-if="nav.expanded" class="space-y-1">
-                <a v-for="op in nav.operations" v-href="{ op:op.request.name, provider:'', skip:'', preview:'', new:'', edit:'', $on:on }" :title="op.request.name"
+                <a v-for="op in nav.operations" v-href="{ op:op.request.name, provider:'', skip:'', preview:'', new:'', edit:'' }" :title="op.request.name"
                    :class="[op.request.name === routes.op ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
                     'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
                     <Icon :image="getIcon({op})" class="w-5 h-5 mr-1" />
@@ -25,7 +26,6 @@ const SidebarNav = {
         </div>
     </nav>
     `,
-    props: ['on'],
     setup(props) {
         const store = inject('store')
         const routes = inject('routes')
@@ -59,13 +59,15 @@ const Brand = {
 const SidebarTop = {
     components: { Brand },
     template:/*html*/`
-    <Brand class="pl-4 pb-3" :icon="server.ui.brandIcon" :name="store.serviceName" />
-    <div class="bg-white py-1.5 px-3.5">
+    <div>
+      <Brand class="pl-4 pb-3" :icon="server.ui.brandIcon" :name="store.serviceName" />
+      <div class="bg-white py-1.5 px-3.5">
         <svg class="absolute ml-2.5 mt-2.5 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
+          <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
         </svg>
-        <input type="search" v-model="store.filter" placeholder="Filter..." 
+        <input type="search" v-model="store.filter" placeholder="Filter..."
                class="border rounded-full overflow-hidden flex w-full px-4 py-1 pl-8 border-gray-200">
+      </div>
     </div>
     `,
     setup(props) {
@@ -78,25 +80,15 @@ const SidebarTop = {
 const Sidebar = {
     components: { SidebarNav, SidebarTop },
     template:/*html*/`
-    <!---: Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
-    <div id="sidebar" data-transition-for="sidebar" class="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true">
+    <div id="sidebar" class="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true">
         <!---: Off-canvas menu overlay, show/hide based on off-canvas menu state. -->
-        <div data-transition="{  
-            entering: { cls:'transition-opacity ease-linear duration-300', from:'opacity-0',   to:'opacity-100'}, 
-            leaving:  { cls:'transition-opacity ease-linear duration-300', from:'opacity-100', to:'opacity-0' } 
-        }" data-transition-for="sidebar" class="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true"></div>
+        <div :class="['fixed inset-0 bg-gray-600 bg-opacity-75', transition1]" aria-hidden="true"></div>
     
         <!---: Off-canvas menu, show/hide based on off-canvas menu state. -->
-        <div data-transition="{ 
-            entering: { cls:'transition ease-in-out duration-300 transform', from:'-translate-x-full', to:'translate-x-0'}, 
-            leaving:  { cls:'transition ease-in-out duration-300 transform', from:'translate-x-0',     to:'-translate-x-full' } 
-        }" data-transition-for="sidebar" class="relative flex-1 flex flex-col max-w-sidebar w-full bg-white">
+        <div :class="['relative flex-1 flex flex-col max-w-sidebar w-full bg-white', transition2]">
             <!---: Close button, show/hide based on off-canvas menu state. -->
-            <div data-transition="{  
-                entering: { cls:'ease-in-out duration-300', from:'opacity-0',   to:'opacity-100'}, 
-                leaving:  { cls:'ease-in-out duration-300',from:'opacity-100', to:'opacity-0' } 
-            }" data-transition-for="sidebar" class="absolute top-0 right-0 -mr-12 pt-2">
-                <button type="button" @click="transition('sidebar')" 
+            <div :class="['absolute top-0 right-0 -mr-12 pt-2', transition3]">
+                <button type="button" @click="hide" 
                         class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
                     <span class="sr-only">Close sidebar</span>
                     <!---: Heroicon name: outline/x -->
@@ -108,8 +100,7 @@ const Sidebar = {
             <div class="flex-1 flex flex-col pt-5 pb-4">
                 <SidebarTop class="z-10" />
                 <!---: sm: use top-nav  -->
-                <SidebarNav :on="() => transition('sidebar')"
-                     class="flex-1 flex flex-col fixed top-top-nav w-sidebar h-top-nav overflow-y-auto" />
+                <SidebarNav  class="flex-1 flex flex-col fixed top-top-nav w-sidebar h-top-nav overflow-y-auto" />
             </div>
         </div>
         <div class="flex-shrink-0 w-14">
@@ -126,10 +117,46 @@ const Sidebar = {
         </div>
     </div>    
     `,
-    setup(props) {
+    emits: ['hide'],
+    setup(props, { emit }) {
         const store = inject('store')
         
-        return { store }
+        const transition1 = ref('')
+        const rule1 = {
+            entering: { cls:'transition-opacity ease-linear duration-300', from:'opacity-0',   to:'opacity-100'},
+            leaving:  { cls:'transition-opacity ease-linear duration-300', from:'opacity-100', to:'opacity-0'}
+        }
+
+        const transition2 = ref('')
+        const rule2 = {
+            entering: { cls:'transition ease-in-out duration-300 transform', from:'-translate-x-full', to:'translate-x-0'},
+            leaving:  { cls:'transition ease-in-out duration-300 transform', from:'translate-x-0',     to:'-translate-x-full'}
+        }
+
+        const transition3 = ref('')
+        const rule3 = {
+            entering: { cls:'ease-in-out duration-300', from:'opacity-0',   to:'opacity-100'},
+            leaving:  { cls:'ease-in-out duration-300', from:'opacity-100', to:'opacity-0'}
+        }
+        
+        const { transition } = useUtils()
+
+        function toggle(show) {
+            transition(rule1, transition1, show)
+            transition(rule2, transition2, show)
+            transition(rule3, transition3, show)
+        }
+        
+        function hide() {
+            toggle(false)
+            setTimeout(() => emit('hide'), 200)
+        }
+        
+        onMounted(() => {
+            toggle(true)
+        })
+
+        return { store, transition1, transition2, transition3, hide }
     }
 }
 

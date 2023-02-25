@@ -13,7 +13,8 @@ OnStart=[]
 Components={}
 provides(providers){Object.keys(providers).forEach(k=>this.Providers[k]=providers[k])}
 components(components){Object.keys(components).forEach(k=>this.Components[k]=components[k])}
-component(name,c){this.Components[name]=c}
+component(name,c){if(c){this.Components[name]=c}
+return this.Components[name]}
 directive(name,f){this.Directives[name]=f}
 use(plugin){this.Plugins.push(plugin)}
 build(component,props){const app=this.app=createApp(component,props)

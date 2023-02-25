@@ -410,6 +410,10 @@ let store = {
     /** @param {string} role
      *  @return {boolean} */
     hasRole(role) { return this.auth && this.auth.roles.indexOf(role) >= 0 },
+
+    gridComponentFor(dataModel) {
+        return app.component(dataModel + 'Grid')
+    }
 }
 store = reactive(store)
 export { store }

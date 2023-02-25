@@ -1,3 +1,4 @@
+/**: override's @servicestack/vue `CellFormat` to linkify related results */ 
 import { h, inject } from "vue"
 import ServiceStackVue, { useMetadata } from "@servicestack/vue"
 import { app } from "app"

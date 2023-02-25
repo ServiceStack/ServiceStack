@@ -1,7 +1,7 @@
 import { reactive } from "vue"
 import { JsonServiceClient, map, lastLeftPart, trimEnd, appendQueryString, humanify, queryString } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/vue"
-import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "./core.mjs"
+import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 const { setConfig } = useConfig()
 const { invalidAccessMessage } = useAuth()
@@ -372,6 +372,9 @@ let store = {
     /** @param {string} role
      *  @return {boolean} */
     hasRole(role) { return this.auth && this.auth.roles.indexOf(role) >= 0 },
+    gridComponentFor(dataModel) {
+        return app.component(dataModel + 'Grid')
+    }
 }
 store = reactive(store)
 export { store }
