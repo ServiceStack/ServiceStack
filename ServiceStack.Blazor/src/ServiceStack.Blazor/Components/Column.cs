@@ -92,6 +92,7 @@ public class Column<Model> : UiComponentBase
     public PropertyAccessor PropertyAccessor { get; set; }
     public PropertyInfo? Property => PropertyAccessor?.PropertyInfo;
 
+    public MetadataType? MetadataType { get; set; }
     public MetadataPropertyType? MetadataProperty { get; set; }
 
     public bool IsComputed => PropertyAccessor != null ? TextUtils.IsComputed(PropertyAccessor.PropertyInfo) : MetadataProperty?.Attributes?.Any(x => x.Name == "Computed" || x.Name == "CustomSelect") == true;
@@ -187,17 +188,29 @@ public class Column<Model> : UiComponentBase
                 }
                 else if (value != null)
                 {
-                    var format = MetadataProperty?.Format;
-                    if (!TextUtils.IsComplexType(value.GetType()) && format == null)
+                    if (MetadataProperty?.Ref == null || MetadataType == null)
                     {
-                        builder.AddContent(3, GetFormattedValue(value));
+                        var format = MetadataProperty?.Format;
+                        if (!TextUtils.IsComplexType(value.GetType()) && format == null)
+                        {
+                            builder.AddContent(3, GetFormattedValue(value));
+                        }
+                        else
+                        {
+                            builder.OpenComponent<PreviewFormat>(4);
+                            builder.AddAttribute(5, nameof(PreviewFormat.Value), value);
+                            if (format != null)
+                                builder.AddAttribute(6, nameof(PreviewFormat.Format), format);
+                            builder.CloseComponent();
+                        }
                     }
                     else
                     {
-                        builder.OpenComponent<PreviewFormat>(4);
-                        builder.AddAttribute(5, "Value", value);
-                        if (format != null)
-                            builder.AddAttribute(6, "Format", format);
+                        builder.OpenComponent<CellFormat>(7);
+                        builder.AddAttribute(8, nameof(CellFormat.Type), MetadataType);
+                        builder.AddAttribute(9, nameof(CellFormat.PropType), MetadataProperty);
+                        builder.AddAttribute(10, nameof(CellFormat.ModelValue), rowData);
+                        builder.AddAttribute(11, nameof(CellFormat.Value), value);
                         builder.CloseComponent();
                     }
                 }

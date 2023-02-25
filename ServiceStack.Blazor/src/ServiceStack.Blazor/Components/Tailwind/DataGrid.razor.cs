@@ -185,6 +185,7 @@ public partial class DataGrid<Model> : UiComponentBase
                     {
                         DataGrid = this,
                         LocalStorage = LocalStorage,
+                        MetadataType = MetadataType,
                         PropertyAccessor = propAccessor,
                         MetadataProperty = propAccessor.PropertyInfo.ToMetadataPropertyType(),
                     });

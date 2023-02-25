@@ -7,6 +7,8 @@ public static class ClientConfig
 {
     public static bool SkipEmptyArrays { get; set; } = false;
 
+    public static bool ImplicitRefInfo { get; set; } = true;
+
     public static Func<string, object> EvalExpression { get; set; }
 
     public static void ConfigureTls12()
