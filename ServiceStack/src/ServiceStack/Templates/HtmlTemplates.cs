@@ -11,6 +11,8 @@ namespace ServiceStack.Templates
     /// </summary>
     public static class HtmlTemplates
     {
+        public static string HtmlFormatName { get; set; } = "HtmlFormat.html";
+        
         public static string GetIndexOperationsTemplate()
         {
             return LoadTemplate("IndexOperations.html")
@@ -34,11 +36,10 @@ namespace ServiceStack.Templates
             var appHost = HostContext.AppHost;
             return LoadTemplate("login.html")
                 .Replace("${BaseUrl}", appHost.ResolveStaticBaseUrl())
-                .Replace("${ServiceName}", appHost.ServiceName)
-                ;
+                .Replace("${ServiceName}", appHost.ServiceName);
         }
 
-        public static string GetHtmlFormatTemplate() => LoadTemplate("HtmlFormat.html");
+        public static string GetHtmlFormatTemplate() => LoadTemplate(HtmlFormatName);
 
         public static string GetSvgTemplatePath() => GetTemplatePath("svg.html");
 

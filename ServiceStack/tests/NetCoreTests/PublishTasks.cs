@@ -140,6 +140,12 @@ public class PublishTasks
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
+        FilesTransformer.Defaults(debugMode:false).CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/Templates/")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../Templates")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+
         // copy to modules/locode2
         var moduleOptions = FilesTransformer.Defaults(debugMode: true);
         moduleOptions.FileExtensions["html"].LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
