@@ -32,6 +32,7 @@ public static class ApiHandlers
             throw new ArgumentException(apiPath + " must start with '/'");
         if (!apiPath.EndsWith("/{Request}"))
             throw new ArgumentException(apiPath + " must end with '/{Request}'");
+        var baseApiPath = apiPath.LastLeftPart('/'); 
         var useApiPath = apiPath.LastLeftPart('/') + '/';
         
         return req => {
@@ -39,10 +40,10 @@ public static class ApiHandlers
             if (req.HttpMethod == HttpMethods.Options) return null;
             
             var pathInfo = req.PathInfo;
-            if (pathInfo.StartsWith(useApiPath))
+            if (pathInfo == baseApiPath || pathInfo.StartsWith(useApiPath))
             {
                 // Add support for overriding content type with ext, e.g. .csv
-                var apiName = pathInfo.LastRightPart('/');
+                var apiName = pathInfo == baseApiPath ? "" : pathInfo.LastRightPart('/');
                 if (string.IsNullOrEmpty(apiName))
                 {
                     var feature = HostContext.GetPlugin<PredefinedRoutesFeature>();

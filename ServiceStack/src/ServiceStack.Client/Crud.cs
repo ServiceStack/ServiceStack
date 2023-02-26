@@ -161,6 +161,9 @@ public static class Crud
             ? type.Inherits.FirstGenericArg()
             : type.Implements?.FirstOrDefault(iface => WriteInterfaces.Contains(iface.Name)).FirstGenericArg();
 
+    public static bool IsCrudQuery(Type type) => IsCrudQueryDb(type) || IsCrudQueryData(type);
+    public static bool IsCrudQueryDb(Type type) => type.IsOrHasGenericTypeOf(typeof(QueryDb<>)) || type.IsOrHasGenericTypeOf(typeof(QueryDb<,>));
+    public static bool IsCrudQueryData(Type type) => type.IsOrHasGenericTypeOf(typeof(QueryData<>)) || type.IsOrHasGenericTypeOf(typeof(QueryData<,>));
     public static bool IsCrudCreate(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>));
     public static bool IsCrudUpdate(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>));
     public static bool IsCrudPatch(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>));

@@ -47,7 +47,8 @@ namespace ServiceStack
                 {
                     var tagOps = to.GetOrAdd(tag, _ => new List<ApiDescription>());
                     var resType = op.ResponseType;
-                    tagOps.Add(new ApiDescription {
+
+                    var apiDesc = new ApiDescription {
                         Name = op.Name,
                         Returns = resType != null 
                             ? gen.Type(resType.Name, resType.IsGenericType ? resType.GetGenericArguments().Select(x => x.Name).ToArray() : Array.Empty<string>()) 
@@ -58,7 +59,12 @@ namespace ServiceStack
                             ["api"] = baseUrl.CombineWith("/api/" + op.Name),
                             ["ui"] = baseUrl.CombineWith("/ui/" + op.Name),
                         }
-                    });
+                    };
+                    if (Crud.IsCrudQueryDb(op.RequestType))
+                    {
+                        apiDesc.Links["locode"] = baseUrl.CombineWith("/locode/" + op.Name);
+                    }
+                    tagOps.Add(apiDesc);
                 }
             }
 
