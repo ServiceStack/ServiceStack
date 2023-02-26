@@ -140,11 +140,6 @@ public class PublishTasks
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
-        FilesTransformer.Defaults(debugMode:false).CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/Templates/")),
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../Templates")),
-            cleanTarget: true,
-            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
         // copy to modules/locode2
         var moduleOptions = FilesTransformer.Defaults(debugMode: true);
@@ -154,6 +149,13 @@ public class PublishTasks
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode2")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        
+        // copy to /Templates/HtmlFormat.html
+        moduleOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/Templates/")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../Templates")),
+            cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }
 

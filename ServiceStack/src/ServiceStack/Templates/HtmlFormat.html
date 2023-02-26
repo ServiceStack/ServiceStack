@@ -10,10 +10,8 @@
 <script type="importmap">
 {
     "imports": {
-        "vue": "https://unpkg.com/vue@3.2.47/dist/vue.esm-browser.js",        
-        "@servicestack/vue": "http://localhost:8080/servicestack-vue.mjs",
-        "dev-vue": "../js/vue.mjs",
-        "dev-@servicestack/vue": "../js/servicestack-vue.mjs",
+        "vue": "../js/vue.mjs",
+        "@servicestack/vue": "../js/servicestack-vue.mjs",
         "@servicestack/client": "../js/servicestack-client.mjs",
         "core": "../js/core.mjs"
     }
@@ -53,6 +51,9 @@ window.RequestName = "${RequestName}"
 </div>
 </template>
 <script type="module">
+import { computed, createApp, onMounted, ref } from "vue"
+import { JsonApiClient, $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, ApiResult, HttpMethods, mapGet } from "@servicestack/client"
+import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
 const qs = queryString(location.search)
 const value = globalThis.Dto
 const BaseUrl = globalThis.BaseUrl
@@ -276,7 +277,7 @@ const Form = {
         let client = useClient()
         let loading = computed(() => client.loading.value)
         async function submit(e) {
-
+            /** @type {HTMLFormElement} */
             let form = e.target
             let method = map(model.value?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
             let returnsVoid = map(model.value?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
@@ -407,6 +408,7 @@ const TypeScript = {
     props:['src'],
     setup() {
         const usage = `import { JsonApiClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos'
 const client = JsonApiClient.create('${BaseUrl}')
 const api = await client.api(new Hello({
     //...
@@ -457,6 +459,7 @@ const Mjs = {
 &lt;/script&gt;`
         let mjsImportMapDecoded = mjsImportMap.replaceAll('&lt;','<').replaceAll('&gt;','>')
         const usage = `import { JsonApiClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos.mjs'
 const client = JsonApiClient.create('${BaseUrl}')
 const api = await client.api(new Hello({
     //...
@@ -490,7 +493,10 @@ const Dart = {
     props:['src'],
     setup() {
         const usage = `import 'dart:io';
+import 'dart:typed_data';
+import 'package:servicestack/web_client.dart'
   if (dart.library.io) 'package:servicestack/client.dart';
+import 'package:servicestack/inspect.dart';
 var client = ClientFactory.create('{BASE_URL}');
 var response = await client.send(Hello()
     //...
@@ -524,6 +530,7 @@ const Java = {
     props:['src'],
     setup() {
         const usage = `import net.servicestack.client.*;
+import java.util.Collections;
 JsonServiceClient client = new JsonServiceClient(
     "${BaseUrl}");
 HelloResponse response = client.send(new Hello()
@@ -558,6 +565,7 @@ const Kotlin = {
     props:['src'],
     setup() {
         const usage = `package myapp
+import net.servicestack.client.*
 val client = JsonServiceClient("${BaseUrl}")
 val response = client.send(Hello().apply {
     //...
@@ -635,6 +643,7 @@ const Swift = {
         Version(5,0,0)..&lt;Version(6,0,0)),
 ]`
         const usage = `import Foundation
+import ServiceStack
 let client = JsonServiceClient(baseUrl:"${BaseUrl}")
 let request = Hello()
 //...
