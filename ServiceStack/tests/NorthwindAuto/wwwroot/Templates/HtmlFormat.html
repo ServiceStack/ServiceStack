@@ -1,0 +1,961 @@
+﻿<!DOCTYPE html>
+<html lang="en" style="">
+<head>
+<title>${Title}</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<base href="${BaseUrl}">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/ui.css" rel="stylesheet">
+<script type="importmap">
+{
+    "imports": {
+        "vue": "https://unpkg.com/vue@3.2.47/dist/vue.esm-browser.js",        
+        "@servicestack/vue": "http://localhost:8080/servicestack-vue.mjs",
+        "dev-vue": "../js/vue.mjs",
+        "dev-@servicestack/vue": "../js/servicestack-vue.mjs",
+        "@servicestack/client": "../js/servicestack-client.mjs",
+        "core": "../js/core.mjs"
+    }
+}
+</script>
+<style>
+#header a { text-decoration: underline; font-weight: 600 }
+#header i { font-style: normal; font-weight: 600 }
+</style>
+${MvcIncludes}
+</head>
+<body>
+<script>
+window.BaseUrl = "${BaseUrl}"
+window.ServiceUrl = "${ServiceUrl}"
+window.RequestName = "${RequestName}"
+</script>
+<script>window.RequestDto = ${RequestDto}</script>
+<script>window.Dto = ${Dto}</script>
+
+<div id="app"></div>
+
+<template id="app-template">
+<div class="h-screen flex flex-col">
+    <div v-if="showHeader" id="header" class="flex items-center gap-x-6 bg-gray-50 border-b py-2.5 px-6 sm:px-3.5 sm:before:flex-1">
+        <p class="leading-6 text-gray-700">
+            ${Header}
+        </p>
+        <div class="flex flex-1 justify-end">
+            <button type="button" class="-m-3 p-3 focus-visible:outline-offset-[-4px]" @click="showHeader=false" title="close banner">
+                <span class="sr-only">Dismiss</span>
+                <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                </svg>
+            </button>
+        </div>        
+    </div>
+    <tabs class="flex-grow flex flex-col" :tabs="tabs" tab-class="uppercase" body-class="flex flex-grow"></tabs>
+</div>
+</template>
+
+<script type="module">
+import { computed, createApp, onMounted, ref } from "vue"
+import { JsonApiClient, $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, ApiResult, HttpMethods } from "@servicestack/client"
+import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
+
+const qs = queryString(location.search)
+const value = globalThis.Dto
+const BaseUrl = globalThis.BaseUrl
+const RequestName = globalThis.RequestName
+const client = JsonApiClient.create(BaseUrl)
+let headers = []
+client.responseFilter = res => {
+    headers = Object.entries(res.headers)
+}
+
+const Preview = {
+    template:`
+      <div class="p-4">
+          <div class="absolute flex -mt-3 right-0 items-center">
+            <div class="flex mr-1">
+              <a v-for="(href,format) in formats" :href="href" :class="['mr-2',css.a.indigo]" :title="'view in ' + format">{{format}}</a>
+            </div>
+
+            <div v-if="uiHref" class="flex items-center mr-2">
+              <a title="View in API Explorer" :href="uiHref"
+                 class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 32"><g fill="currentColor"><path d="M27.464 2.314a.501.501 0 0 0-.698-.257L14.86 8.339a.499.499 0 0 0-.233.621l.245.641l-6.873 3.769a.5.5 0 0 0-.222.63l.228.549l-7.299 3.488a.5.5 0 0 0-.246.643l1.498 3.61a.5.5 0 0 0 .629.28l7.625-2.701l.228.549a.5.5 0 0 0 .601.289l7.276-2.097l.218.569a.497.497 0 0 0 .612.299l13-4a.498.498 0 0 0 .317-.663l-5-12.501zM2.7 21.469l-1.134-2.734l6.823-3.261l1.439 3.47L2.7 21.469zm8.491-1.846l-.238-.574l-1.843-4.445l-.238-.573l6.336-3.475l2.374 6.134l.375.981l-6.766 1.952zm8.109-1.238l-.203-.531c-.003-.011-.001-.024-.006-.035l-.618-1.597l-2.754-7.206l11.023-5.815l4.592 11.48L19.3 18.385z"/><path d="M28.964.314a.5.5 0 0 0-.929.371l6 15a.502.502 0 0 0 .651.279a.501.501 0 0 0 .279-.65l-6.001-15z"/><path d="M18 21h-3c-1.14 0-2 .86-2 2v1.315l-5.879 6.859a.5.5 0 1 0 .758.651L13.73 25H16v6.5a.5.5 0 0 0 1 0V25h2.27l5.85 6.825a.497.497 0 0 0 .705.054a.5.5 0 0 0 .054-.705L20 24.315v-1.24C20 21.912 19.122 21 18 21zm1 3h-5v-1c0-.589.411-1 1-1h3c.57 0 1 .462 1 1.075V24z"/></g></svg>
+              </a>
+            </div>
+
+            <div v-if="locodeHref" class="flex items-center mr-1">
+              <a title="View in Locode" :href="locodeHref"
+                 class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M4 10.4V4a1 1 0 0 1 1-1h5V1h4v2h5a1 1 0 0 1 1 1v6.4l1.086.326a1 1 0 0 1 .682 1.2l-1.516 6.068a4.992 4.992 0 0 1-1.902-.272l1.25-5.352L12 10l-7.6 2.37l1.25 5.351a4.992 4.992 0 0 1-1.902.273l-1.516-6.068a1 1 0 0 1 .682-1.2L4 10.4zm2-.6L12 8l6 1.8V5H6v4.8zM4 20a5.978 5.978 0 0 0 4-1.528A5.978 5.978 0 0 0 12 20a5.978 5.978 0 0 0 4-1.528A5.978 5.978 0 0 0 20 20h2v2h-2a7.963 7.963 0 0 1-4-1.07A7.963 7.963 0 0 1 12 22a7.963 7.963 0 0 1-4-1.07A7.963 7.963 0 0 1 4 22H2v-2h2z"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="mt-4">
+            <HtmlFormat :value="Dto" />
+          </div>
+      </div>
+    `,
+    setup() {
+        
+        const { apiOf, Crud } = useMetadata()
+        
+        const op = apiOf(RequestName)
+        
+        const uiHref = combinePaths(document.baseURI, `/ui/${RequestName}?tab=details`) 
+        const locodeHref = Crud.isQuery(op) 
+            ? combinePaths(document.baseURI, `/locode/${RequestName}`)
+            : ''
+        
+        const url = location.href
+        const hasQs = url.includes('?')
+        const formats = {
+            json: hasQs ? appendQueryString(url, { format:'json' }) : `${url}.json`,
+            csv:  hasQs ? appendQueryString(url, { format:'csv' }) : `${url}.csv`,
+            jsv:  hasQs ? appendQueryString(url, { format:'jsv' }) : `${url}.jsv`,
+            xml:  hasQs ? appendQueryString(url, { format:'xml' }) : `${url}.xml`,
+        }
+        
+        return { Dto, formats, uiHref, locodeHref, css }
+    }
+}
+const Json = {
+    template:`
+      <div class="p-4">
+          <CopyIcon v-if="json" :text="json" class="absolute right-4" />
+          <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="json"></code></pre>
+      </div>
+    `,
+    setup() {
+        const json = JSON.stringify(Dto, undefined, 4)
+        return { json }
+    }
+}
+
+const CopyIcon = {
+    template:`
+      <div @click="copy(text)">
+          <div class="cursor-pointer select-none p-1 rounded-md border block border-gray-200 bg-white hover:bg-gray-50">
+            <svg v-if="copied" class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500" viewBox="0 0 24 24"><g fill="none"><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1M8 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M8 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0h2a2 2 0 0 1 2 2v3m2 4H10m0 0l3-3m-3 3l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+          </div>
+      </div>
+    `,
+    props:['text'],
+    setup(props) {
+        const copied = ref(false)
+        function copy(text) {
+            copied.value = true
+            if (typeof navigator != 'undefined') navigator.clipboard.writeText(text)
+            setTimeout(() => copied.value = false, 3000)
+        }
+
+        return { copied, copy, }
+    }
+}
+
+const ApiResponse = {
+    template: `
+    <div class="mt-2 border-t">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-4 pl-2" aria-label="Tabs">
+                <a v-for="(tab,name) in tabs" @click="routes.response = tab" 
+                   :class="[routes.response === tab ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300', 'cursor-pointer whitespace-nowrap py-1 px-1 border-b-2 font-medium text-sm']">
+                    {{name}}
+                </a>
+            </nav>
+        </div>
+    
+        <div v-if="routes.response === ''" class="p-2">
+            <span class="relative z-0 inline-flex shadow-sm rounded-md">
+              <a v-for="(tab,name) in {Pretty:'',Preview:'preview'}" @click="routes.body = tab"
+                  :class="[{ Pretty:'rounded-l-md',Preview:'rounded-r-md -ml-px' }[name], routes.body === tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                {{name}}
+              </a>
+            </span>
+            <div v-if="routes.body === ''" class="pt-2">
+                <CopyIcon v-if="json" :text="json" class="absolute right-4" />
+                <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="json"></code></pre>
+            </div>
+            <div v-else-if="routes.body === 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+              <HtmlFormat :value="api.response || api.error" :fieldAttrs="fieldAttrs" />  
+            </div>
+        </div>
+        <div v-else-if="routes.response === 'cookies'" class="md:p-4">
+            <HtmlFormat v-if="Object.keys(cookies).length" class="mb-4" :value="asKvps(cookies)" :classes="classes" />
+            <Alert>HttpOnly Cookies are not shown</Alert>
+        </div>
+        <div v-else-if="routes.response === 'headers'" class="md:p-4">
+          <HtmlFormat v-if="Object.keys(headers).length" class="mb-4" :value="asKvps(headers)" :classes="classes" />
+        </div>
+    </div>`,
+    props:['api'],
+    setup(props) {
+        const { asKvps } = useMetadata()
+        const json = computed(() => JSON.stringify(props.api.response, null, 4))
+        const response = computed(() => props.api.response || props.api.error)
+        const routes = ref({
+            body: '',
+            response: '',
+        })
+        
+        function fieldAttrs(id) {
+            let useId = id.replace(/\s+/g,'').toLowerCase()
+            return useId === 'stacktrace'
+                ? { 'class': 'whitespace-pre overflow-x-auto' }
+                : {}
+        }
+
+        let cookies = parseCookie(document.cookie)
+
+        const headersLabel = computed(() =>  `Headers (${headers.length || 0})`)
+        const cookiesLabel = computed(() =>  `Cookies (${Object.keys(cookies).length})`)
+        const tabs = computed(() => {
+            let tabs = { Body:'' }
+            tabs[headersLabel.value] = 'headers'
+            tabs[cookiesLabel.value] = 'cookies'
+            return tabs
+        })
+        function classes(type,tag,depth,cls,index) {
+            console.log('classes', arguments)
+            return cls === '-my-2 sm:-mx-6 lg:-mx-8'
+                ? ''
+                : cls=== 'py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8'
+                    ? 'py-2 align-middle inline-block min-w-full'
+                    : cls
+        }
+
+        return {
+            routes,
+            json,
+            response,
+            headers,
+            cookies,
+            asKvps,
+            headersLabel,
+            cookiesLabel,
+            tabs,
+            fieldAttrs,
+            classes,
+        }
+    }
+}
+
+const Form = {
+    components: { ApiResponse },
+    template:`
+        <Alert v-if="!requestType">Could not find metadata for '{{RequestName}}'</Alert>
+        <div v-else class="pt-4 flex flex-col w-full">
+            <div class="flex justify-center w-full">
+              <div :class="[card.panelClass,'sm:w-[50em]']">
+                <form @submit.prevent="submit">
+                  <div :class="card.formClass">
+                    <div>
+                      <h3 :class="card.headingClass">{{ title }}</h3>
+                      <p v-if="requestType?.notes" :class="['notes',card.subHeadingClass]" v-html="requestType?.notes"></p>
+                    </div>
+
+                    <AutoFormFields :modelValue="model" :api="api" />
+
+                  </div>
+                  <div :class="form.buttonsClass">
+                    <div>
+                      <FormLoading v-if="loading" />
+                    </div>
+                    <div class="flex justify-end">
+                      <PrimaryButton type="submit" class="ml-4" :disabled="loading">Submit</PrimaryButton>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <ApiResponse v-if="api.response" :api="api" class="mt-4" />
+        </div>
+    `,
+    setup() {
+        const type = RequestName
+        const { card, form } = css
+
+        const { typeOf, apiOf, createDto, typeProperties, formValues } = useMetadata()
+        
+        const requestApi = apiOf(RequestName)
+        const requestType = typeOf(RequestName)
+        
+        const title = computed(() => requestType?.description || humanize(RequestName))
+
+        const api = ref(new ApiResult({ response:Dto }))
+        const model = ref(createDto(RequestName, RequestDto))
+
+        let client = useClient()
+        let loading = computed(() => client.loading.value)
+
+        async function submit(e) {
+            /** @type {HTMLFormElement} */
+            let form = e.target
+
+            let method = map(model.value?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
+            let returnsVoid = map(model.value?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
+
+            if (HttpMethods.hasRequestBody(method)) {
+                let requestDto = new model.value.constructor()
+                let formData = new FormData(form)
+                if (!returnsVoid) {
+                    api.value = await client.apiForm(requestDto, formData, { jsconfig: 'eccn' })
+                } else {
+                    api.value = await client.apiFormVoid(requestDto, formData, { jsconfig: 'eccn' })
+                }
+            } else {
+                let fieldValues = formValues(form, typeProperties(requestType))
+                let requestDto = new model.value.constructor(fieldValues)
+                if (!returnsVoid) {
+                    api.value = await client.api(requestDto, { jsconfig: 'eccn' })
+                } else {
+                    api.value = await client.apiVoid(requestDto, { jsconfig: 'eccn' })
+                }
+            }
+
+            if (api.value.succeeded) {
+                //form.reset()
+            } else {
+            }
+            
+        }
+        
+        return { RequestName, requestType, type, card, form, submit, title, model, api, loading }
+    }
+}
+
+const CopyLine = {
+    template:`<div class="flex cursor-pointer" @click="copy(text)">
+        <div class="flex-grow bg-gray-700">
+          <div class="pl-4 py-1 text-lg align-middle text-white select-none">{{prefix||''}}{{text}}</div>
+        </div>
+        <div class="flex">
+          <div class="bg-sky-500 text-white p-1 py-1.5">
+            <svg v-if="copied" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <svg v-else class="w-6 h-6" title="copy" fill='none' stroke='white' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
+              <path stroke-linecap='round' stroke-linejoin='round' stroke-width='1' d='M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2'></path>
+            </svg>
+          </div>
+        </div>
+    </div>`,
+    props:['text','prefix'],
+    setup(props) {
+        const copied = ref(false)
+        function copy(text) {
+            copied.value = true
+            if (typeof navigator != 'undefined') navigator.clipboard.writeText(text)
+            setTimeout(() => copied.value = false, 3000)
+        }
+
+        return { copied, copy, }
+    }
+}
+
+const InstallTool = {
+    template:`<h2 class="text-lg p-4">
+        To easily update DTOs for all APIs install the 
+        <em><b>x</b></em> <a class="text-blue-600 underline" href="https://docs.servicestack.net/dotnet-tool">dotnet tool</a>
+    </h2>
+    
+    <CopyLine prefix="$ " text="dotnet tool install --global x" />
+    
+    <h2 class="text-lg p-4">To generate all DTOs for <b>{{BaseUrl}}</b> run:</h2>
+
+    <CopyLine prefix="$ " :text="create" />
+
+    <h2 class="text-lg p-4">Once generated, the DTOs can be updated with:</h2>
+
+    <CopyLine prefix="$ " :text="update" />`,
+    props:['lang'],
+    setup(props) {
+        const create = `x ${props.lang} ${BaseUrl}`
+        const update = `x ${props.lang}`
+        return { BaseUrl, create, update }
+    }
+}
+
+const CSharp = {
+    template:`<div>
+        <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from C#</h2>
+        <p class="text-lg p-4">
+            <b class="mr-2">1.</b> Include <b>ServiceStack.Client</b> package in your projects<em>.csproj</em>
+        </p>
+
+        <CopyLine :text="pkg" />
+
+        <div class="text-lg p-4 flex">
+            <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+            <CopyIcon class="ml-3" :text="src" title="Copy code" />
+        </div>
+        <div class="text-lg p-4">
+            <b class="mr-2">3.</b> Use the API DTOs with the <em>JsonServiceClient</em> or <em>JsonApiClient</em><span class="text-gray-400">(net6+)</span>
+        </div>
+        <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+          <div class="relative">
+            <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+          </div>
+          <pre><code class="language-csharp" v-highlightjs="usage"></code></pre>
+        </div>
+
+        <InstallTool lang="csharp" />
+    </div>`,
+    props:['src'],
+    setup() {
+        const pkg = `<PackageReference Include="ServiceStack.Client" Version="6.*" />`
+        const usage = `using ServiceStack;
+
+var client = new JsonApiClient("${BaseUrl}");
+
+var api = await client.ApiAsync(new Hello {
+    //...
+});
+
+// Quickly inspect response
+Inspect.printDump(api.Response);`
+        return { pkg, usage }
+    }
+}
+const TypeScript = {
+    template:`<div>
+      <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from TypeScript</h2>
+      <p class="text-lg p-4">
+        <b class="mr-2">1.</b> Install <b>@servicestack/client</b> into your projects<em>package.json</em>
+      </p>
+
+      <CopyLine text="npm install @servicestack/client" />
+
+      <div class="text-lg p-4 flex">
+        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+        <CopyIcon class="ml-3" :text="src" title="Copy code" />
+      </div>
+      <div class="text-lg p-4">
+        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+      </div>
+      <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+        <div class="relative">
+          <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+        </div>
+        <pre><code class="language-typescript" v-highlightjs="usage"></code></pre>
+      </div>
+
+      <InstallTool lang="typescript" />
+  </div>`,
+    props:['src'],
+    setup() {
+        const usage = `import { JsonApiClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos'
+
+const client = JsonApiClient.create('${BaseUrl}')
+
+const api = await client.api(new Hello({
+    //...
+}))
+
+Inspect.printDump(api.response)`
+        return { usage }
+    }
+}
+const Mjs = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from a JavaScript Module</h2>
+    <p class="text-lg p-4">
+      <b class="mr-2">1.</b> Save <a class="text-blue-600 underline" href="https://unpkg.com/@servicestack/client@2/dist/servicestack-client.mjs">servicestack-client.mjs</a>
+      to your project
+    </p>
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Define an <a class="text-blue-600 underline" href="https://docs.servicestack.net/javascript-add-servicestack-reference">Import Map</a> referencing its saved location</div>
+    </div>
+    <div class="p-4 bg-gray-50 border-y overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="mjsImportMapDecoded" title="Copy code" />
+      </div>
+      <pre><code class="language-html" v-highlightjs="mjsImportMapDecoded"></code></pre>
+    </div>
+    
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-javascript" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="mjs" />
+    </div>`,
+    props:['src'],
+    setup() {
+        let mjsImportMap = `&lt;script type="importmap"&gt;
+{
+    "imports": {
+        "@servicestack/client": "/js/servicestack-client.mjs"
+    }
+}
+&lt;/script&gt;`
+        let mjsImportMapDecoded = mjsImportMap.replaceAll('&lt;','<').replaceAll('&gt;','>')
+        const usage = `import { JsonApiClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos.mjs'
+
+const client = JsonApiClient.create('${BaseUrl}')
+
+const api = await client.api(new Hello({
+    //...
+}))
+
+Inspect.printDump(api.response)`
+        return { mjsImportMapDecoded, usage }
+    }
+}
+const Dart = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from Dart</h2>
+    <p class="text-lg p-4">
+      <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
+    </p>
+
+    <CopyLine text="servicestack: ^2.0.2" />
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-dart" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="dart" />
+    </div>`,
+    props:['src'],
+    setup() {
+        const usage = `import 'dart:io';
+import 'dart:typed_data';
+import 'package:servicestack/web_client.dart'
+  if (dart.library.io) 'package:servicestack/client.dart';
+import 'package:servicestack/inspect.dart';
+
+var client = ClientFactory.create('{BASE_URL}');
+
+var response = await client.send(Hello()
+    //...
+);
+
+Inspect.printDump(response);`
+        return { usage }
+    }
+}
+const Java = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from Java</h2>
+    <p class="text-lg p-4">
+      <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
+    </p>
+
+    <CopyLine text="implementation 'net.servicestack:client:1.0.49'" />
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-java" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="java" />
+    </div>`,
+    props:['src'],
+    setup() {
+        const usage = `import net.servicestack.client.*;
+import java.util.Collections;
+
+JsonServiceClient client = new JsonServiceClient(
+    "${BaseUrl}");
+
+HelloResponse response = client.send(new Hello()
+    //...
+);
+
+Inspect.printDump(response);`
+        return { usage }
+    }
+}
+const Kotlin = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from Kotlin</h2>
+    <p class="text-lg p-4">
+      <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
+    </p>
+
+    <CopyLine text="implementation 'net.servicestack:client:1.0.49'" />
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-kotlin" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="kotlin" />
+    </div>`,
+    props:['src'],
+    setup() {
+        const usage = `package myapp
+import net.servicestack.client.*
+
+val client = JsonServiceClient("${BaseUrl}")
+
+val response = client.send(Hello().apply {
+    //...
+});
+
+Inspect.printDump(response)`
+        return { usage }
+    }
+}
+const Python = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from Python</h2>
+    <p class="text-lg p-4">
+        <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>requirements.txt</em>
+    </p>
+
+    <CopyLine text="servicestack>=0.1.1" />
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-python" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="python" />
+    </div>`,
+    props:['src'],
+    setup() {
+        const usage = `from servicestack import JsonServiceClient
+from my_app.dtos import *
+
+client = JsonServiceClient('${BaseUrl}')
+
+response = client.send(Hello(
+    #...
+))
+
+printdump(response)`
+        return { usage }
+    }
+}
+const Swift = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from Swift</h2>
+    <p class="text-lg p-4">
+        <b class="mr-2">1.</b> Include <b>ServiceStack</b> package in your projects <em>Package.swift</em>
+    </p>
+
+    <div class="p-4 bg-gray-50 border-y overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="pkg" title="Copy code" />
+      </div>
+      <pre v-html="pkg"></pre>
+    </div>
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-swift" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="swift" />
+    </div>`,
+    props:['src'],
+    setup() {
+        let pkg = `dependencies: [
+    .package(name: "ServiceStack", 
+        url: "https://github.com/ServiceStack/ServiceStack.Swift.git", 
+        Version(5,0,0)..&lt;Version(6,0,0)),
+]`
+        const usage = `import Foundation
+import ServiceStack
+
+let client = JsonServiceClient(baseUrl:"${BaseUrl}")
+
+let request = Hello()
+//...
+let response = try client.send(request)
+
+Inspect.printDump(response)`
+        return { pkg, usage }
+    }
+}
+const VbNet = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from VB.NET</h2>
+    <p class="text-lg p-4">
+      <b class="mr-2">1.</b> Include <b>ServiceStack.Client</b> package in your projects<em>.csproj</em>
+    </p>
+
+    <CopyLine :text="pkg" />
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the <em>JsonServiceClient</em> or <em>JsonApiClient</em><span class="text-gray-400">(net6+)</span>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-vbnet" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="vbnet" />
+    </div>`,
+    props:['src'],
+    setup() {
+        let pkg = `<PackageReference Include="ServiceStack.Client" Version="6.*" />`
+        const usage = `Imports ServiceStack
+
+Dim client = New JsonApiClient("${BaseUrl}")
+
+Dim api = Await client.ApiAsync(New Hello() With {
+    '...
+})
+
+' Quickly inspect response
+Inspect.printDump(api.Response)`
+        return { pkg, usage }
+    }
+}
+const FSharp = {
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from F#</h2>
+    <p class="text-lg p-4">
+      <b class="mr-2">1.</b> Include <b>ServiceStack.Client</b> package in your projects<em>.csproj</em>
+    </p>
+
+    <CopyLine :text="pkg" />
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the <em>JsonServiceClient</em> or <em>JsonApiClient</em><span class="text-gray-400">(net6+)</span>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-fsharp" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="fsharp" />
+    </div>`,
+    props:['src'],
+    setup() {
+        let pkg = `<PackageReference Include="ServiceStack.Client" Version="6.*" />`
+        const usage = `open ServiceStack
+
+let client = new JsonApiClient("${BaseUrl}")
+
+let response = client.Send(new Hello(
+    //...
+))
+
+// Quickly inspect response
+Inspect.printDump(response)`
+        return { pkg, usage }
+    }
+}
+
+const LanguageComponents = { CSharp, TypeScript, Mjs, Dart, Java, Kotlin, Python, Swift, VbNet, FSharp }
+const LangTypes = {
+    CSharp:     ['csharp',     'C#'],
+    TypeScript: ['typescript', 'TypeScript'],
+    Mjs:        ['mjs',        'JS'],
+    Dart:       ['dart',       'Dart'],
+    Java:       ['java',       'Java'],
+    Kotlin:     ['kotlin',     'Kotlin'],
+    Python:     ['python',     'Python'],
+    Swift:      ['swift',      'Swift'],
+    VbNet:      ['vbnet',      'VB'],
+    FSharp:     ['fsharp',     'F#'],
+}
+const Languages = Object.keys(LangTypes).reduce((acc,type) => {
+    const lang = LangTypes[type][0] 
+    acc[lang] = { lang, type, name: LangTypes[type][1], component: LanguageComponents[type] }; 
+    return acc 
+}, {})
+
+const Code = {
+    components: LanguageComponents,
+    template:`<div class="w-full">
+      <nav class="w-full flex space-x-4 pl-2 py-2 border-b bg-white overflow-x-auto" aria-label="Tabs">
+        <a v-for="(x,lang) in Languages" @click="select(lang)"
+           :class="['cursor-pointer select-none', lang === selected ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
+          {{x.name}}
+        </a>
+      </nav>
+      <div class="flex" style="height:calc(100% - 45px)">
+        <div class="flex-1 w-full lg:w-1/2 relative p-2 h-full overflow-x-auto">
+          <div class="absolute right-4 flex flex-col">
+            <div v-if="!showHelp" @click="showHelp=true" class="mb-1">
+              <div class="cursor-pointer p-1 rounded-md border block border-gray-200 bg-white text-gray-500 hover:bg-gray-50">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path d="M11 18h2v-2h-2v2m1-16A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8m0-14a4 4 0 0 0-4 4h2a2 2 0 0 1 2-2a2 2 0 0 1 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z" fill="currentColor" />
+                </svg>
+              </div>
+            </div>
+            <CopyIcon v-if="activeLangSrc" :text="activeLangSrc" title="Copy code" />
+          </div>
+          <pre :key="selected" v-if="activeLangSrc" class=""><code :lang="selected" v-highlightjs="activeLangSrc"></code></pre>
+          <Loading v-else />
+        </div>
+        <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg h-full relative">
+          <CloseButton @close="showHelp=false" />
+          <component v-if="Languages[selected]?.component" :is="Languages[selected]?.component" :src="activeLangSrc" class="" />
+        </div>
+      </div>
+  </div>
+    `,
+    setup() {
+        const { pushState } = useUtils()
+        const { makeDto } = useMetadata()
+        const client = useClient()
+
+        const showHelp = ref(true)
+        const selected = ref('')
+        const activeLangSrc = ref('')
+        const api = ref(new ApiResult())
+        
+        const Cache = {}
+        let cleanSrc = src => src.trim()
+        
+        async function select(lang) {
+            selected.value = lang
+            pushState({ lang: lang === 'csharp' ? undefined : lang })
+            activeLangSrc.value = Cache[lang] || ''
+            if (!activeLangSrc.value) {
+                const typesRequest = `Types${Languages[selected.value].type}`
+                const requestDto = Object.assign(makeDto(`Types${Languages[lang].type}`, {
+                    IncludeTypes: `${RequestName}.*`,
+                    WithoutOptions: true,
+                    MakeVirtual: false,
+                    MakePartial: false,
+                    AddServiceStackTypes: true,
+                }, {
+                    method: 'GET',
+                    createResponse() { return String() },
+                }))
+                api.value = await client.api(requestDto)
+                activeLangSrc.value = ''
+                if (api.value.succeeded && api.value.response) {
+                    activeLangSrc.value = Cache[lang] = cleanSrc(api.value.response)
+                }
+            }
+        }
+        
+        onMounted(() => select(qs.lang || 'csharp'))
+        
+        return { Languages, selected, select, activeLangSrc, showHelp, api }
+    }
+}
+ 
+const App = {
+    template:$1('#app-template'),
+    setup() {
+        const tabs = {
+            preview: Preview,
+            json: Json,
+            form: Form,
+            code: Code,
+        }
+        const showHeader = ref(true)
+
+        function setFavIconSrc(src) {
+            let link = $1("link[rel~='icon']")
+            if (!link) {
+                link = document.createElement('link')
+                link.rel = 'icon'
+                $1('head').appendChild(link)
+            }
+            link.href = src
+        }
+
+        onMounted(() => {
+            const { loadMetadata } = useMetadata()
+            loadMetadata({ olderThan: 60 * 60 * 1000 })
+                .then(server => {
+                    setFavIconSrc(server.ui.brandIcon?.uri || combinePaths(BaseUrl, '/metadata/svg/servicestack.datauri'))
+                })
+        })
+        
+        return { tabs, showHeader }
+    }
+}
+
+const app = createApp(App)
+    .use(ServiceStackVue)
+    .component('RouterLink', ServiceStackVue.component('RouterLink'))
+    .provide('client', client)
+    .directive('highlightjs', (el, binding) => {
+        if (binding.value) {
+            //el.className = ''
+            el.innerHTML = enc(binding.value)
+            globalThis.hljs.highlightElement(el)
+        }
+    })
+
+const components = { Preview, Json, Form, Code, CopyIcon, CopyLine, InstallTool }
+Object.keys(components).forEach(k => app.component(k, components[k]))
+
+app.mount('#app')
+
+</script>
+
+<script src="/js/highlight.js"></script>
+</body>
+</html>

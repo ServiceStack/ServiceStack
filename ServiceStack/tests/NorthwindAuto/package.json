@@ -4,6 +4,7 @@
   "scripts": {
     "ui:dev": "npx tailwindcss -c tailwind.config.js -i index.css -o shared/css/ui.css --watch",
     "ui:build": "npx tailwindcss -c tailwind.config.js -i index.css -o shared/css/ui.css --minify",
+    "ui:css": "npx tailwindcss -c tailwind.config.js -i index.css -o wwwroot/css/ui.css --watch",
     "migrate": "dotnet run --AppTasks=migrate",
     "revert:last": "dotnet run --AppTasks=migrate.revert:last",
     "revert:all": "dotnet run --AppTasks=migrate.revert:all"

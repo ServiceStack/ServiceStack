@@ -54,6 +54,9 @@ public class AppHost : AppHostBase
         }, allowCredentials:true));
 
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
+        // var sharedDir = VirtualFiles.GetDirectory("shared");
+        // memFs.WriteFile("css/ui.css", sharedDir.GetFile("css/ui.css")); 
+        
         var files = VirtualFiles.GetDirectory("custom").GetAllFiles();
         files.Each(file => memFs.WriteFile($"locode/{file.Name}", file));
         GlobalRequestFilters.Add((req, res, dto) => {

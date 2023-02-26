@@ -20,7 +20,7 @@ namespace ServiceStack.Formats
 
         private IAppHost AppHost { get; set; }
         
-        public Dictionary<string, string> PathTemplates { get; set; } = new Dictionary<string, string> {
+        public Dictionary<string, string> PathTemplates { get; set; } = new() {
             { "/" + LocalizedStrings.Auth.Localize(), "/Templates/auth.html" }
         };
         
@@ -125,6 +125,8 @@ namespace ServiceStack.Formats
                 var requestName = req.OperationName ?? dto.GetType().GetOperationName();
 
                 html = ReplaceTokens(ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate(), req)
+                    .Replace("${RequestName}", requestName)
+                    .Replace("${RequestDto}", JsonDataContractSerializer.Instance.SerializeToString(req.Dto)?.HtmlEncodeLite() ?? "null")
                     .Replace("${Dto}", json)
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())

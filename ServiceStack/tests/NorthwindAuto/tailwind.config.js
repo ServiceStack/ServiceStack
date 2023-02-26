@@ -6,6 +6,7 @@ module.exports = {
     './shared/**/*.html', 
     './custom/**/*.html',
     './locode2/**/*.html',
+    './wwwroot/**/*.html',
     '../../src/ServiceStack/js/servicestack-vue.mjs'
   ],
   theme: {
