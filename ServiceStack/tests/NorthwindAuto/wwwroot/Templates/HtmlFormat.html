@@ -57,7 +57,7 @@ window.RequestName = "${RequestName}"
 
 <script type="module">
 import { computed, createApp, onMounted, ref } from "vue"
-import { JsonApiClient, $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, ApiResult, HttpMethods } from "@servicestack/client"
+import { JsonApiClient, $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, ApiResult, HttpMethods, mapGet } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
 
 const qs = queryString(location.search)
@@ -72,7 +72,16 @@ client.responseFilter = res => {
 
 const Preview = {
     template:`
-      <div class="p-4">
+      <div v-if="error" class="p-4">
+          <div>
+            <h3 class="text-2xl text-red-700 mb-3">{{error.errorCode}}</h3>
+            <h3 class="text-red-700 mb-3">{{error.message}}</h3>
+            <pre v-if="error.stackTrace" class="mb-3">{{error.stackTrace}}</pre>
+            <HtmlFormat v-if="error.errors?.length" :value="error.errors" />
+            <HtmlFormat v-if="error.meta" :value="error.meta" />
+          </div>
+      </div>
+      <div v-else class="p-4">
           <div class="absolute flex -mt-3 right-0 items-center">
             <div class="flex mr-1">
               <a v-for="(href,format) in formats" :href="href" :class="['mr-2',css.a.indigo]" :title="'view in ' + format">{{format}}</a>
@@ -93,7 +102,7 @@ const Preview = {
             </div>
           </div>
           <div class="mt-4">
-            <HtmlFormat :value="Dto" />
+            <HtmlFormat v-else :value="Dto" />
           </div>
       </div>
     `,
@@ -103,8 +112,8 @@ const Preview = {
         
         const op = apiOf(RequestName)
         
-        const uiHref = combinePaths(document.baseURI, `/ui/${RequestName}?tab=details`) 
-        const locodeHref = Crud.isQuery(op) 
+        const uiHref = op ? combinePaths(document.baseURI, `/ui/${RequestName}?tab=details`) : '' 
+        const locodeHref = op && Crud.isQuery(op) 
             ? combinePaths(document.baseURI, `/locode/${RequestName}`)
             : ''
         
@@ -117,7 +126,17 @@ const Preview = {
             xml:  hasQs ? appendQueryString(url, { format:'xml' }) : `${url}.xml`,
         }
         
-        return { Dto, formats, uiHref, locodeHref, css }
+        const status = mapGet(Dto, 'responseStatus')
+        const errorCode = status ? mapGet(status, 'errorCode') : null
+        const error = errorCode 
+            ? { errorCode, 
+                message: mapGet(status, 'message'),
+                stackTrace: mapGet(status, 'stackTrace'),
+                errors: mapGet(status, 'errors'),
+                meta: mapGet(status, 'meta'),
+            } : null
+        
+        return { Dto, error, formats, uiHref, locodeHref, css }
     }
 }
 const Json = {
@@ -245,7 +264,7 @@ const ApiResponse = {
 const Form = {
     components: { ApiResponse },
     template:`
-        <Alert v-if="!requestType">Could not find metadata for '{{RequestName}}'</Alert>
+        <div v-if="!requestType" class="w-full"><Alert>Could not find metadata for '{{RequestName}}'</Alert></div>
         <div v-else class="pt-4 flex flex-col w-full">
             <div class="flex justify-center w-full">
               <div :class="[card.panelClass,'sm:w-[50em]']">
@@ -279,7 +298,6 @@ const Form = {
 
         const { typeOf, apiOf, createDto, typeProperties, formValues } = useMetadata()
         
-        const requestApi = apiOf(RequestName)
         const requestType = typeOf(RequestName)
         
         const title = computed(() => requestType?.description || humanize(RequestName))
@@ -832,7 +850,9 @@ const Languages = Object.keys(LangTypes).reduce((acc,type) => {
 
 const Code = {
     components: LanguageComponents,
-    template:`<div class="w-full">
+    template:`
+      <div v-if="!requestType" class="w-full"><Alert>Could not find metadata for '{{RequestName}}'</Alert></div>
+      <div v-else class="w-full">
       <nav class="w-full flex space-x-4 pl-2 py-2 border-b bg-white overflow-x-auto" aria-label="Tabs">
         <a v-for="(x,lang) in Languages" @click="select(lang)"
            :class="['cursor-pointer select-none', lang === selected ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
@@ -863,13 +883,14 @@ const Code = {
     `,
     setup() {
         const { pushState } = useUtils()
-        const { makeDto } = useMetadata()
+        const { typeOf, makeDto } = useMetadata()
         const client = useClient()
 
         const showHelp = ref(true)
         const selected = ref('')
         const activeLangSrc = ref('')
         const api = ref(new ApiResult())
+        const requestType = typeOf(RequestName)
         
         const Cache = {}
         let cleanSrc = src => src.trim()
@@ -900,7 +921,7 @@ const Code = {
         
         onMounted(() => select(qs.lang || 'csharp'))
         
-        return { Languages, selected, select, activeLangSrc, showHelp, api }
+        return { requestType, RequestName, Languages, selected, select, activeLangSrc, showHelp, api }
     }
 }
  

@@ -133,7 +133,13 @@ public class PublishTasks
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../js")),
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
-        
+
+        FilesTransformer.Defaults(debugMode:false).CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/css/")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../css")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+
         // copy to modules/locode2
         var moduleOptions = FilesTransformer.Defaults(debugMode: true);
         moduleOptions.FileExtensions["html"].LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
