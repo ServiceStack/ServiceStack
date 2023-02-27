@@ -293,12 +293,12 @@ const ApiResponse = {
               <HtmlFormat :value="api.response || api.error" :fieldAttrs="fieldAttrs" />  
             </div>
         </div>
-        <div v-else-if="routes.response === 'cookies'" class="md:p-4">
-            <HtmlFormat v-if="Object.keys(cookies).length" class="mb-4" :value="asKvps(cookies)" :classes="classes" />
+        <div v-else-if="routes.response === 'cookies'" class="md:px-4">
+            <HtmlFormat v-if="Object.keys(cookies).length" class="my-2" :value="asKvps(cookies)" />
             <Alert>HttpOnly Cookies are not shown</Alert>
         </div>
-        <div v-else-if="routes.response === 'headers'" class="md:p-4">
-          <HtmlFormat v-if="Object.keys(headers).length" class="mb-4" :value="asKvps(headers)" :classes="classes" />
+        <div v-else-if="routes.response === 'headers'" class="md:px-4">
+          <HtmlFormat v-if="Object.keys(headers).length" class="my-2" :value="asKvps(headers)" />
         </div>
     </div>`,
     props:['api'],
@@ -325,14 +325,6 @@ const ApiResponse = {
             tabs[cookiesLabel.value] = 'cookies'
             return tabs
         })
-        function classes(type,tag,depth,cls,index) {
-            console.log('classes', arguments)
-            return cls === '-my-2 sm:-mx-6 lg:-mx-8'
-                ? ''
-                : cls=== 'py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8'
-                    ? 'py-2 align-middle inline-block min-w-full'
-                    : cls
-        }
         return {
             routes,
             json,
@@ -344,7 +336,6 @@ const ApiResponse = {
             cookiesLabel,
             tabs,
             fieldAttrs,
-            classes,
         }
     }
 }
