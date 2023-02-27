@@ -171,7 +171,10 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="NUnit" Version="3.*" />
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{1D1726E6-AF68-4C2B-A02C-264F70B69D36}</Project>
+      <Name>ServiceStack.Text</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
@@ -179,7 +182,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{A5412707-5CDE-4E9B-9433-2C0EB27699CE}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
