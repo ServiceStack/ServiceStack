@@ -32,6 +32,116 @@ window.RequestName = "${RequestName}"
 </script>
 <script>window.RequestDto = ${RequestDto}</script>
 <script>window.Dto = ${Dto}</script>
+<!--raw-->
+<script>
+window.Usages = {
+    csharp: `using ServiceStack;
+
+var client = new JsonApiClient("${BaseUrl}");
+
+var api = await client.ApiAsync(new Hello {
+    //...
+});
+
+// Quickly inspect response
+Inspect.printDump(api.Response);`,
+    typescript: `import { JsonApiClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos'
+
+const client = JsonApiClient.create('${BaseUrl}')
+
+const api = await client.api(new Hello({
+    //...
+}))
+
+Inspect.printDump(api.response)`,
+    mjs: `import { JsonApiClient, Inspect } from '@servicestack/client'
+import { Hello } from './dtos.mjs'
+
+const client = JsonApiClient.create('${BaseUrl}')
+
+const api = await client.api(new Hello({
+    //...
+}))
+
+Inspect.printDump(api.response)`,
+    dart: `import 'dart:io';
+import 'dart:typed_data';
+import 'package:servicestack/web_client.dart'
+  if (dart.library.io) 'package:servicestack/client.dart';
+import 'package:servicestack/inspect.dart';
+
+var client = ClientFactory.create('${BaseUrl}');
+
+var response = await client.send(Hello(
+    //...
+));
+
+Inspect.printDump(response);`,
+    java: `import net.servicestack.client.*;
+import java.util.Collections;
+
+JsonServiceClient client = new JsonServiceClient(
+    "${BaseUrl}");
+
+HelloResponse response = client.send(new Hello()
+    //...
+);
+
+Inspect.printDump(response);`,
+    kotlin: `package myapp
+import net.servicestack.client.*
+
+val client = JsonServiceClient("${BaseUrl}")
+
+val response = client.send(Hello().apply {
+    //...
+});
+
+Inspect.printDump(response)`,
+    python: `from servicestack import JsonServiceClient
+from my_app.dtos import *
+
+client = JsonServiceClient('${BaseUrl}')
+
+response = client.send(Hello(
+    #...
+))
+
+printdump(response)`,
+    swift: `import Foundation
+import ServiceStack
+
+let client = JsonServiceClient(baseUrl:"${BaseUrl}")
+
+let request = Hello()
+//...
+let response = try client.send(request)
+
+Inspect.printDump(response)`,
+    vbnet: `Imports ServiceStack
+
+Dim client = New JsonApiClient("${BaseUrl}")
+
+Dim api = Await client.ApiAsync(New Hello() With {
+    '...
+})
+
+' Quickly inspect response
+Inspect.printDump(api.Response)`,
+    fsharp: `open ServiceStack
+
+let client = new JsonApiClient("${BaseUrl}")
+
+let response = client.Send(new Hello(
+    //...
+))
+
+// Quickly inspect response
+Inspect.printDump(response)`
+}    
+</script>
+<!--/raw-->
 
 <div id="app"></div>
 
@@ -63,11 +173,13 @@ const qs = queryString(location.search)
 const value = globalThis.Dto
 const BaseUrl = globalThis.BaseUrl
 const RequestName = globalThis.RequestName
+const Usages = globalThis.Usages
 const client = JsonApiClient.create(BaseUrl)
 let headers = []
 client.responseFilter = res => {
     headers = Object.entries(res.headers)
 }
+const Cache = {}
 
 const Preview = {
     template:`
@@ -418,20 +530,9 @@ const CSharp = {
 
         <InstallTool lang="csharp" />
     </div>`,
-    props:['src'],
+    props:['src','usage'],
     setup() {
-        const pkg = `<PackageReference Include="ServiceStack.Client" Version="6.*" />`
-        const usage = `using ServiceStack;
-
-var client = new JsonApiClient("${BaseUrl}");
-
-var api = await client.ApiAsync(new Hello {
-    //...
-});
-
-// Quickly inspect response
-Inspect.printDump(api.Response);`
-        return { pkg, usage }
+        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="6.*" />` }
     }
 }
 const TypeScript = {
@@ -459,20 +560,7 @@ const TypeScript = {
 
       <InstallTool lang="typescript" />
   </div>`,
-    props:['src'],
-    setup() {
-        const usage = `import { JsonApiClient, Inspect } from '@servicestack/client'
-import { Hello } from './dtos'
-
-const client = JsonApiClient.create('${BaseUrl}')
-
-const api = await client.api(new Hello({
-    //...
-}))
-
-Inspect.printDump(api.response)`
-        return { usage }
-    }
+    props:['src','usage']
 }
 const Mjs = {
     template:`<div>
@@ -508,7 +596,7 @@ const Mjs = {
 
     <InstallTool lang="mjs" />
     </div>`,
-    props:['src'],
+    props:['src','usage'],
     setup() {
         let mjsImportMap = `&lt;script type="importmap"&gt;
 {
@@ -517,18 +605,7 @@ const Mjs = {
     }
 }
 &lt;/script&gt;`
-        let mjsImportMapDecoded = mjsImportMap.replaceAll('&lt;','<').replaceAll('&gt;','>')
-        const usage = `import { JsonApiClient, Inspect } from '@servicestack/client'
-import { Hello } from './dtos.mjs'
-
-const client = JsonApiClient.create('${BaseUrl}')
-
-const api = await client.api(new Hello({
-    //...
-}))
-
-Inspect.printDump(api.response)`
-        return { mjsImportMapDecoded, usage }
+        return { mjsImportMapDecoded: mjsImportMap.replaceAll('&lt;','<').replaceAll('&gt;','>') }
     }
 }
 const Dart = {
@@ -556,23 +633,7 @@ const Dart = {
 
     <InstallTool lang="dart" />
     </div>`,
-    props:['src'],
-    setup() {
-        const usage = `import 'dart:io';
-import 'dart:typed_data';
-import 'package:servicestack/web_client.dart'
-  if (dart.library.io) 'package:servicestack/client.dart';
-import 'package:servicestack/inspect.dart';
-
-var client = ClientFactory.create('{BASE_URL}');
-
-var response = await client.send(Hello()
-    //...
-);
-
-Inspect.printDump(response);`
-        return { usage }
-    }
+    props:['src','usage']
 }
 const Java = {
     template:`<div>
@@ -599,21 +660,7 @@ const Java = {
 
     <InstallTool lang="java" />
     </div>`,
-    props:['src'],
-    setup() {
-        const usage = `import net.servicestack.client.*;
-import java.util.Collections;
-
-JsonServiceClient client = new JsonServiceClient(
-    "${BaseUrl}");
-
-HelloResponse response = client.send(new Hello()
-    //...
-);
-
-Inspect.printDump(response);`
-        return { usage }
-    }
+    props:['src','usage']
 }
 const Kotlin = {
     template:`<div>
@@ -640,20 +687,7 @@ const Kotlin = {
 
     <InstallTool lang="kotlin" />
     </div>`,
-    props:['src'],
-    setup() {
-        const usage = `package myapp
-import net.servicestack.client.*
-
-val client = JsonServiceClient("${BaseUrl}")
-
-val response = client.send(Hello().apply {
-    //...
-});
-
-Inspect.printDump(response)`
-        return { usage }
-    }
+    props:['src','usage']
 }
 const Python = {
     template:`<div>
@@ -680,20 +714,7 @@ const Python = {
 
     <InstallTool lang="python" />
     </div>`,
-    props:['src'],
-    setup() {
-        const usage = `from servicestack import JsonServiceClient
-from my_app.dtos import *
-
-client = JsonServiceClient('${BaseUrl}')
-
-response = client.send(Hello(
-    #...
-))
-
-printdump(response)`
-        return { usage }
-    }
+    props:['src','usage']
 }
 const Swift = {
     template:`<div>
@@ -725,24 +746,14 @@ const Swift = {
 
     <InstallTool lang="swift" />
     </div>`,
-    props:['src'],
+    props:['src','usage'],
     setup() {
         let pkg = `dependencies: [
     .package(name: "ServiceStack", 
         url: "https://github.com/ServiceStack/ServiceStack.Swift.git", 
         Version(5,0,0)..&lt;Version(6,0,0)),
 ]`
-        const usage = `import Foundation
-import ServiceStack
-
-let client = JsonServiceClient(baseUrl:"${BaseUrl}")
-
-let request = Hello()
-//...
-let response = try client.send(request)
-
-Inspect.printDump(response)`
-        return { pkg, usage }
+        return { pkg }
     }
 }
 const VbNet = {
@@ -770,20 +781,9 @@ const VbNet = {
 
     <InstallTool lang="vbnet" />
     </div>`,
-    props:['src'],
+    props:['src','usage'],
     setup() {
-        let pkg = `<PackageReference Include="ServiceStack.Client" Version="6.*" />`
-        const usage = `Imports ServiceStack
-
-Dim client = New JsonApiClient("${BaseUrl}")
-
-Dim api = Await client.ApiAsync(New Hello() With {
-    '...
-})
-
-' Quickly inspect response
-Inspect.printDump(api.Response)`
-        return { pkg, usage }
+        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="6.*" />` }
     }
 }
 const FSharp = {
@@ -811,20 +811,9 @@ const FSharp = {
 
     <InstallTool lang="fsharp" />
     </div>`,
-    props:['src'],
+    props:['src','usage'],
     setup() {
-        let pkg = `<PackageReference Include="ServiceStack.Client" Version="6.*" />`
-        const usage = `open ServiceStack
-
-let client = new JsonApiClient("${BaseUrl}")
-
-let response = client.Send(new Hello(
-    //...
-))
-
-// Quickly inspect response
-Inspect.printDump(response)`
-        return { pkg, usage }
+        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="6.*" />` }
     }
 }
 
@@ -875,7 +864,7 @@ const Code = {
         </div>
         <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg h-full relative">
           <CloseButton @close="showHelp=false" />
-          <component v-if="Languages[selected]?.component" :is="Languages[selected]?.component" :src="activeLangSrc" class="" />
+          <component v-if="Languages[selected]?.component" :is="Languages[selected]?.component" :src="activeLangSrc" :usage="Usages[selected]" class="" />
         </div>
       </div>
   </div>
@@ -891,7 +880,6 @@ const Code = {
         const api = ref(new ApiResult())
         const requestType = typeOf(RequestName)
         
-        const Cache = {}
         let cleanSrc = src => src.trim()
         
         async function select(lang) {
@@ -920,7 +908,7 @@ const Code = {
         
         onMounted(() => select(qs.lang || 'csharp'))
         
-        return { requestType, RequestName, Languages, selected, select, activeLangSrc, showHelp, api }
+        return { requestType, RequestName, Languages, Usages, selected, select, activeLangSrc, showHelp, api }
     }
 }
  
