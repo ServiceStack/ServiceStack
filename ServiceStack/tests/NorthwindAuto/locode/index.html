@@ -72,7 +72,7 @@ DEBUG = true /*debug*/
                             </h1>
                         </div>
                         <div class="pt-2 sm:mx-2 lg:mx-4">
-                            <component v-if="store.gridComponentFor(store.opDataModel)" :key="`${store.opDataModel}Grid`" :is="store.gridComponentFor(store.opDataModel)" :type="store.opDataModel"></component>
+                            <component v-if="store.pageComponentFor(store.opDataModel)" :key="`${store.opDataModel}Grid`" :is="store.pageComponentFor(store.opDataModel)" :type="store.opDataModel"></component>
                             <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel">
                                 <template #formfooter="{ form, type, apis, model, id }">
                                     <audit-events v-if="form === 'edit' && canAccessCrudEvents" class="mt-4" :key="id" :type="type" :id="id"></audit-events>

@@ -411,8 +411,8 @@ let store = {
      *  @return {boolean} */
     hasRole(role) { return this.auth && this.auth.roles.indexOf(role) >= 0 },
 
-    gridComponentFor(dataModel) {
-        return app.component(dataModel + 'Grid')
+    pageComponentFor(dataModel) {
+        return app.component(dataModel + 'Page')
     }
 }
 store = reactive(store)

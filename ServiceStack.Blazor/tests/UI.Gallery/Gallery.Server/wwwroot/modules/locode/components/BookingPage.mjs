@@ -2,7 +2,7 @@
 import { app } from "app"
 import { QueryCoupons } from "/types/mjs"
 
-const BookingGrid = {
+const BookingPage = {
     template:/*html*/`
       <div>
           <h1 class="py-8 text-center text-3xl text-indigo-700 font-semibold">Custom Bookings AutoQueryGrid</h1>
@@ -32,4 +32,4 @@ const BookingGrid = {
     }
 }
 
-app.components({ BookingGrid })
+app.components({ BookingPage })
