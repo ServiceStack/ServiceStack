@@ -72,7 +72,8 @@ DEBUG = true /*debug*/
 <script src="../types/js?exportTags=admin,auth&vfx=hash"></script>
 <script>
 Object.assign(window, exports) //import
-/*shared/js:core,Files,Types,createForms,awesomplete */
+/*vfs[]:/js/awesomplete.js*/
+/*shared/js:core,Files,Types,createForms */
 /*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn,inv:false'})?*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth

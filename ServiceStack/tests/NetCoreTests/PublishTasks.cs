@@ -103,10 +103,10 @@ public class PublishTasks
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
-        // copy to modules/locode
+        // copy to modules/locode-v1
         transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode")), 
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode-v1")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode-v1")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
@@ -141,12 +141,12 @@ public class PublishTasks
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
 
-        // copy to modules/locode2
+        // copy to modules/locode
         var moduleOptions = FilesTransformer.Defaults(debugMode: true);
         moduleOptions.FileExtensions["html"].LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
         moduleOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode2")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode2")), 
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
