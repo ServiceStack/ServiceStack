@@ -22,8 +22,4 @@
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="admin-ui\assets" />
-  </ItemGroup>
-
 </Project>

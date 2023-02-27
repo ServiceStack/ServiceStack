@@ -32,4 +32,4 @@ const BookingGrid = {
     }
 }
 
-//app.components({ BookingGrid })
+app.components({ BookingGrid })

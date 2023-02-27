@@ -65,6 +65,8 @@
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="modules\locode" />
+    <Folder Include="modules\locode2" />
     <Folder Include="modules\shared" />
   </ItemGroup>
 
