@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using ServiceStack.IO;
@@ -81,6 +83,13 @@ public class S3VirtualDirectory : AbstractVirtualDirectoryBase
         return matchingFilesInBackingDir;
     }
 
+#if NET6_0_OR_GREATER
+    protected virtual IAsyncEnumerable<S3VirtualFile> GetMatchingFilesInDirAsync(string globPattern, CancellationToken token = default)
+    {
+        return EnumerateFilesAsync(globPattern, token);
+    }
+#endif
+    
     public IEnumerable<S3VirtualFile> EnumerateFiles(string pattern)
     {
         foreach (var file in PathProvider.GetImmediateFiles(DirPath).Where(f => f.Name.Glob(pattern)))
@@ -88,6 +97,16 @@ public class S3VirtualDirectory : AbstractVirtualDirectoryBase
             yield return file;
         }
     }
+
+#if NET6_0_OR_GREATER
+    public async IAsyncEnumerable<S3VirtualFile> EnumerateFilesAsync(string pattern, CancellationToken token=default)
+    {
+        foreach (var file in await PathProvider.GetImmediateFilesAsync(DirPath, token).Where(f => f.Name.Glob(pattern)).ToListAsync(token))
+        {
+            yield return file;
+        }
+    }
+#endif
 
     protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
     {
@@ -136,4 +155,24 @@ public class S3VirtualDirectory : AbstractVirtualDirectoryBase
             && x.DirPath.StartsWith(DirPath)
             && x.Name.Glob(globPattern));
     }
+        
+#if NET6_0_OR_GREATER
+    public virtual async Task<List<S3VirtualFile>> GetAllMatchingFilesAsync(string globPattern, int maxDepth = int.MaxValue, 
+        CancellationToken token = default)
+    {
+        if (IsRoot)
+        {
+            return await PathProvider.EnumerateFilesAsync(token:token).Where(x => 
+                (x.DirPath == null || x.DirPath.CountOccurrencesOf('/') < maxDepth-1)
+                && x.Name.Glob(globPattern)).ToListAsync(token);
+        }
+            
+        return await PathProvider.EnumerateFilesAsync(DirPath, token).Where(x => 
+            x.DirPath != null
+            && x.DirPath.CountOccurrencesOf('/') < maxDepth-1
+            && x.DirPath.StartsWith(DirPath)
+            && x.Name.Glob(globPattern)).ToListAsync(token);
+    }
+#endif
+    
 }
