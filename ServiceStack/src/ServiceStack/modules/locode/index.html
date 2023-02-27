@@ -48,7 +48,7 @@ let DEBUG = false
                 </svg>
             </button>
         </div>
-        <main class="flex-1">
+        <main class="flex-1 overflow-auto">
             <div class="pt-2.5 pb-6">
                 <div class="absolute top-1 right-2 flex">
                     <div v-if="routes.uiHref()" class="flex items-center">
@@ -60,16 +60,15 @@ let DEBUG = false
                     <auth-nav v-if="store.plugins.auth" :auth="store.auth" :logout="store.logout"></auth-nav>
                 </div>
                 <div v-if="store.op">
-                    <div class="w-body md:w-body overflow-auto">
+                    <div>
                         <div class="w-full md:w-sidebar border-b border-gray-200 bg-white flex">
                             <h1 class="flex max-w-screen-sm lg:max-w-screen-md py-2.5 px-4 text-2xl" aria-label="Tabs" :title="store.opName">
                                 {{store.opDesc}}
                             </h1>
                         </div>
-                        <div class="pt-2 pb-4 sm:px-2 lg:px-4">
+                        <div class="pt-2 sm:mx-2 lg:mx-4">
                             <component v-if="store.gridComponentFor(store.opDataModel)" :key="`${store.opDataModel}Grid`" :is="store.gridComponentFor(store.opDataModel)" :type="store.opDataModel"></component>
-                            <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel"
-                                grid2-class="-my-2 -mx-4 sm:-mx-6 lg:-mx-8">
+                            <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel">
                                 <template #formfooter="{ form, type, apis, model, id }">
                                     <audit-events v-if="form === 'edit' && canAccessCrudEvents" class="mt-4" :key="id" :type="type" :id="id"></audit-events>
                                 </template>

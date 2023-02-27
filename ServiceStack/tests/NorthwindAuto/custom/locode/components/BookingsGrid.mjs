@@ -5,8 +5,8 @@ import { QueryCoupons } from "/types/mjs"
 const BookingGrid = {
     template:/*html*/`
       <div>
-          <h1 class="py-2 text-2xl font-semibold">Custom Bookings AutoQueryGrid</h1>
-          <AutoQueryGrid type="Booking" selected-columns="id,name,cost,bookingStartDate,bookingEndDate,discount,createdBy">
+          <h1 class="py-8 text-center text-3xl text-indigo-700 font-semibold">Custom Bookings AutoQueryGrid</h1>
+          <AutoQueryGrid type="Booking" selected-columns="id,name,cost,bookingStartDate,bookingEndDate,discount">
             <template #discount="{ discount }">
               <TextLink v-if="discount" class="flex items-end" @click.stop="showCoupon(discount.id)" :title="discount.id">
                 <Icon class="w-5 h-5 mr-1" type="Coupon" />
