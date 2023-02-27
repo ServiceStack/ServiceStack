@@ -145,10 +145,10 @@ namespace ServiceStack
             new() {Name = "Not Exists", Value = "%IsNull", ValueType = "none"},
         };
 
-        public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode") {
+        public HtmlModule HtmlModuleV1 { get; set; } = new("/modules/locode-v1", "/locode-v1") {
             DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
         };
-        public HtmlModule HtmlModule2 { get; set; } = new("/modules/locode2", "/locode2") {
+        public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode") {
             DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
         };
 
@@ -159,17 +159,19 @@ namespace ServiceStack
         
         public void BeforePluginsLoaded(IAppHost appHost)
         {
-            if (HtmlModule2 != null)
+            if (HtmlModuleV1 != null)
+                appHost.ConfigurePlugin<UiFeature>(feature => feature.HtmlModules.Add(HtmlModuleV1));
+            if (HtmlModule != null)
+            {
                 appHost.ConfigurePlugin<UiFeature>(feature =>
                 {
-                    feature.HtmlModules.Add(HtmlModule2);
-                    HtmlModule2.OnConfigure.Add((_, module) => {
+                    feature.HtmlModules.Add(HtmlModule);
+                    HtmlModule.OnConfigure.Add((_, module) => {
                         module.Handlers.Add(new ScriptModulesHandler("modules"));
                         module.LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
                     });
                 });
-            if (HtmlModule != null)
-                appHost.ConfigurePlugin<UiFeature>(feature => feature.HtmlModules.Add(HtmlModule));
+            }
         }
 
         public void Register(IAppHost appHost)
