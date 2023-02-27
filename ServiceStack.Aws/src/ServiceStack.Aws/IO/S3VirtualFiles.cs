@@ -211,6 +211,15 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
         DeleteFiles(nestedFiles);
     }
 
+#if NET6_0_OR_GREATER
+    public virtual async Task DeleteFolderAsync(string dirPath, CancellationToken token=default)
+    {
+        dirPath = SanitizePath(dirPath);
+        var nestedFiles = await EnumerateFilesAsync(dirPath, token).Select(x => x.FilePath).ToListAsync(token);
+        DeleteFiles(nestedFiles);
+    }
+#endif    
+
     public virtual IEnumerable<S3VirtualFile> EnumerateFiles(string prefix = null)
     {
         var response = AmazonS3.ListObjects(new ListObjectsRequest
@@ -234,10 +243,47 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
         }
     }
 
+#if NET6_0_OR_GREATER
+    public virtual async IAsyncEnumerable<S3VirtualFile> EnumerateFilesAsync(string prefix = null, CancellationToken token = default)
+    {
+        ListObjectsV2Response response = null;
+
+        while (true)
+        {
+            response = await AmazonS3.ListObjectsV2Async(new ListObjectsV2Request {
+                BucketName = BucketName,
+                Prefix = prefix,
+                ContinuationToken = response?.NextContinuationToken
+            }, token);
+
+            foreach (var file in response.S3Objects)
+            {
+                var filePath = SanitizePath(file.Key);
+
+                var dirPath = GetDirPath(filePath);
+                yield return new S3VirtualFile(this, new S3VirtualDirectory(this, dirPath, GetParentDirectory(dirPath)))
+                {
+                    FilePath = filePath,
+                    ContentLength = file.Size,
+                    FileLastModified = file.LastModified,
+                    Etag = file.ETag,
+                };
+            }
+
+            if (!response.IsTruncated)
+                yield break;
+        }
+    }
+#endif
+
     public override IEnumerable<IVirtualFile> GetAllFiles()
     {
         return EnumerateFiles();
     }
+
+#if NET6_0_OR_GREATER
+    public IAsyncEnumerable<S3VirtualFile> GetAllFilesAsync(CancellationToken token=default) => EnumerateFilesAsync(token:token);
+#endif
 
     public virtual IEnumerable<S3VirtualDirectory> GetImmediateDirectories(string fromDirPath)
     {
@@ -252,11 +298,34 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
         return dirPaths.Map(x => new S3VirtualDirectory(this, x, parentDir));
     }
 
+#if NET6_0_OR_GREATER
+    public virtual IAsyncEnumerable<S3VirtualDirectory> GetImmediateDirectoriesAsync(string fromDirPath, CancellationToken token=default)
+    {
+        var dirPaths = EnumerateFilesAsync(fromDirPath, token)
+            .Select(x => x.DirPath)
+            .Distinct()
+            .Select(x => GetImmediateSubDirPath(fromDirPath, x))
+            .Where(x => x != null)
+            .Distinct();
+
+        var parentDir = GetParentDirectory(fromDirPath);
+        return dirPaths.Select(x => new S3VirtualDirectory(this, x, parentDir));
+    }
+#endif
+    
     public virtual IEnumerable<S3VirtualFile> GetImmediateFiles(string fromDirPath)
     {
         return EnumerateFiles(fromDirPath)
             .Where(x => x.DirPath == fromDirPath);
     }
+    
+#if NET6_0_OR_GREATER
+    public virtual IAsyncEnumerable<S3VirtualFile> GetImmediateFilesAsync(string fromDirPath, CancellationToken token=default)
+    {
+        return EnumerateFilesAsync(fromDirPath, token)
+            .Where(x => x.DirPath == fromDirPath);
+    }
+#endif
 
     public virtual string GetDirPath(string filePath)
     {
@@ -313,4 +382,15 @@ public partial class S3VirtualFiles : IS3Client
 
         DeleteFiles(allFilePaths);
     }
+ 
+#if NET6_0_OR_GREATER
+    public virtual async Task ClearBucketAsync(CancellationToken token=default)
+    {
+        var allFilePaths = await EnumerateFilesAsync(token:token)
+            .Select(x => x.FilePath).ToListAsync(token);
+
+        DeleteFiles(allFilePaths);
+    }
+#endif
+    
 }
