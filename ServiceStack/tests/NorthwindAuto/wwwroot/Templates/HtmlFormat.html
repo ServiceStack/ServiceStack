@@ -946,7 +946,7 @@ const App = {
 
         onMounted(() => {
             const { loadMetadata } = useMetadata()
-            loadMetadata({ olderThan: 60 * 60 * 1000 })
+            loadMetadata({ olderThan: location.search.includes('clear=metadata') ? 0 : 60 * 60 * 1000 })
                 .then(server => {
                     setFavIconSrc(server.ui.brandIcon?.uri || combinePaths(BaseUrl, '/metadata/svg/servicestack.datauri'))
                 })
