@@ -65,17 +65,18 @@ namespace ServiceStack
                     typeof(ValidateInclusiveBetweenAttribute),
                     typeof(ValidateExclusiveBetweenAttribute),
                     
-                    typeof(IconAttribute),
-                    typeof(InputAttribute),
-                    typeof(FieldAttribute),
-                    typeof(FieldCssAttribute),
-                    typeof(LocodeCssAttribute),
-                    typeof(ExplorerCssAttribute),
+                    //Already exported in 1st class attrs 
+                    //typeof(IconAttribute),
+                    //typeof(InputAttribute),
+                    //typeof(FieldAttribute),
+                    //typeof(FieldCssAttribute),
+                    //typeof(LocodeCssAttribute),
+                    //typeof(ExplorerCssAttribute),
 
-                    typeof(Intl),
-                    typeof(IntlNumber),
-                    typeof(IntlDateTime),
-                    typeof(IntlRelativeTime),
+                    // typeof(Intl),
+                    // typeof(IntlNumber),
+                    // typeof(IntlDateTime),
+                    // typeof(IntlRelativeTime),
 
                     //typeof(RefAttribute), in Ref
                     //typeof(FormatAttribute), // in Format
