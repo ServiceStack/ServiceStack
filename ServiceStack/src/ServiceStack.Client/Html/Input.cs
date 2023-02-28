@@ -38,6 +38,7 @@ public static class Input
         public const string Select = "select";
         public const string Textarea = "textarea";
         public const string Tag = "tag";
+        public const string Combobox = "combobox";
     }
 
     public static Dictionary<Type, string> TypesMap { get; set; } = new()
