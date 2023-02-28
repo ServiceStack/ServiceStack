@@ -166,7 +166,10 @@ Inspect.printDump(response)`
 
 <script type="module">
 import { computed, createApp, onMounted, ref } from "vue"
-import { JsonApiClient, $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, ApiResult, HttpMethods, mapGet } from "@servicestack/client"
+import {
+    JsonApiClient, ApiResult, HttpMethods,
+    $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, mapGet, leftPart, rightPart
+} from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
 
 const qs = queryString(location.search)
@@ -316,9 +319,6 @@ const ApiResponse = {
             <HtmlFormat v-if="Object.keys(cookies).length" class="my-2" :value="asKvps(cookies)" />
             <Alert>HttpOnly Cookies are not shown</Alert>
         </div>
-        <div v-else-if="routes.response === 'headers'" class="md:px-4">
-          <HtmlFormat v-if="Object.keys(headers).length" class="my-2" :value="asKvps(headers)" />
-        </div>
     </div>`,
     props:['api'],
     setup(props) {
@@ -339,11 +339,9 @@ const ApiResponse = {
 
         let cookies = parseCookie(document.cookie)
 
-        const headersLabel = computed(() =>  `Headers (${headers.length || 0})`)
         const cookiesLabel = computed(() =>  `Cookies (${Object.keys(cookies).length})`)
         const tabs = computed(() => {
             let tabs = { Body:'' }
-            tabs[headersLabel.value] = 'headers'
             tabs[cookiesLabel.value] = 'cookies'
             return tabs
         })
@@ -352,10 +350,8 @@ const ApiResponse = {
             routes,
             json,
             response,
-            headers,
             cookies,
             asKvps,
-            headersLabel,
             cookiesLabel,
             tabs,
             fieldAttrs,
@@ -382,10 +378,15 @@ const Form = {
 
                   </div>
                   <div :class="form.buttonsClass">
-                    <div>
-                      <FormLoading v-if="loading" />
-                    </div>
-                    <div class="flex justify-end">
+                    <div class="flex w-full justify-between">
+                      <div class="flex items-center">
+                        <OutlineButton v-else class="ml-4" type="button" @click="copyApiUrl" title="Copy API URL">
+                          <svg v-if="copiedApiUrl" class="w-5 h-5 mr-1 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                          <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
+                          <span>Copy URL</span>
+                        </OutlineButton>
+                      </div>
+                      <FormLoading v-if="loading" class="ml-4" />
                       <PrimaryButton type="submit" class="ml-4" :disabled="loading">Submit</PrimaryButton>
                     </div>
                   </div>
@@ -400,6 +401,7 @@ const Form = {
         const { card, form } = css
 
         const { typeOf, apiOf, createDto, typeProperties, formValues } = useMetadata()
+        const { copyText } = useUtils()
         
         const requestType = typeOf(RequestName)
         
@@ -407,32 +409,49 @@ const Form = {
 
         const api = ref(new ApiResult({ response:Dto }))
         const model = ref(createDto(RequestName, RequestDto))
+        const method = map(model.value?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
+        const copiedApiUrl = ref(false)
 
-        let client = useClient()
-        let loading = computed(() => client.loading.value)
+        const client = useClient()
+        const loading = computed(() => client.loading.value)
+        
+        function createApiUrl(ext = "json") {
+            const args = model.value
+            const url = `/api/${RequestName}`
+            const absoluteUrl = combinePaths(BaseUrl, appendQueryString(url, { ...args, jsconfig: "eccn,edv"}))
+            const formatUrl = absoluteUrl.indexOf('?') >= 0
+                ? leftPart(absoluteUrl, '?') + "." + ext + "?" + rightPart(absoluteUrl, '?')
+                : absoluteUrl + ".json"
+            return formatUrl
+        }
+        function copyApiUrl() {
+            const apiUrl = createApiUrl("json")
+            copyText(apiUrl)
+            copiedApiUrl.value = true
+            setTimeout(() => copiedApiUrl.value = false, 3000)
+        }
 
         async function submit(e) {
             /** @type {HTMLFormElement} */
-            let form = e.target
+            const form = e.target
 
-            let method = map(model.value?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
-            let returnsVoid = map(model.value?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
+            const returnsVoid = map(model.value?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
 
             if (HttpMethods.hasRequestBody(method)) {
-                let requestDto = new model.value.constructor()
-                let formData = new FormData(form)
+                const requestDto = new model.value.constructor()
+                const formData = new FormData(form)
                 if (!returnsVoid) {
                     api.value = await client.apiForm(requestDto, formData, { jsconfig: 'eccn' })
                 } else {
                     api.value = await client.apiFormVoid(requestDto, formData, { jsconfig: 'eccn' })
                 }
             } else {
-                let fieldValues = formValues(form, typeProperties(requestType))
-                let requestDto = new model.value.constructor(fieldValues)
+                const fieldValues = formValues(form, typeProperties(requestType))
+                const requestDto = new model.value.constructor(fieldValues)
                 if (!returnsVoid) {
-                    api.value = await client.api(requestDto, { jsconfig: 'eccn' })
+                    api.value = await client.api(requestDto, { jsconfig: 'eccn,edv' })
                 } else {
-                    api.value = await client.apiVoid(requestDto, { jsconfig: 'eccn' })
+                    api.value = await client.apiVoid(requestDto, { jsconfig: 'eccn,edv' })
                 }
             }
 
@@ -443,7 +462,7 @@ const Form = {
             
         }
         
-        return { RequestName, requestType, type, card, form, submit, title, model, api, loading }
+        return { RequestName, requestType, type, card, form, submit, title, model, api, loading, method, copiedApiUrl, copyApiUrl }
     }
 }
 
