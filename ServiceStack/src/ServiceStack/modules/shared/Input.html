@@ -6,7 +6,7 @@ App.components({
             input = field.input
         if (!prop && field)
             prop = field.prop
-        const validTypes = 'button,checkbox,color,date,datetime-local,email,file,hidden,image,month,number,radio,range,reset,search,submit,tel,text,time,url,week'.split(',')
+        const validTypes = 'button,checkbox,color,date,datetime-local,email,file,hidden,image,month,number,password,radio,range,reset,search,submit,tel,text,time,url,week'.split(',')
         return {
             $template: '#input-template',
             get input() { return resolve(input) },
