@@ -19,7 +19,7 @@ App.components({
                 return resolve(input.allowableEntries) || (resolve(input.allowableValues)||[]).map(x => ({ key:x, value:x }))
             },
             useType(type) {
-                return validTypes.includes(type) ? type : 'text'
+                return type && validTypes.includes(type.toLowerCase()) ? type.toLowerCase() : 'text'
             },
             /** @param {InputInfo} input */
             useLabel(input) {

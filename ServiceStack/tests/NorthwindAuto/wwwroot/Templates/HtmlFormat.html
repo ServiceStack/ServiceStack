@@ -377,6 +377,7 @@ const Form = {
                       <p v-if="requestType?.notes" :class="['notes',card.subHeadingClass]" v-html="requestType?.notes"></p>
                     </div>
 
+                    <input type="submit" class="hidden">
                     <AutoFormFields :modelValue="model" :api="api" />
 
                   </div>
