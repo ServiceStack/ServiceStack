@@ -236,6 +236,20 @@ public class FilesTransformer
         new RemoveLineWithOnlyWhitespace(Run.Always),
         new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace: true, Run.IgnoreInDebug),
     };
+
+    public static string ModuleHeader(IVirtualFile file)
+    {
+        return "<script type=\"module\">\n"
+             + "import { app } from \"app\"\n";
+    }
+
+    public static string ModuleFooter(IVirtualFile file)
+    {
+        var fileName = file.Name.WithoutExtension();
+        return "if (typeof " + fileName + " != 'undefined') app.components({ " + fileName + " })\n"
+             + "if (typeof install == 'function') install(app)\n"
+             + "</script>";
+    }
 }
 
 public static class FilesTransformerUtils

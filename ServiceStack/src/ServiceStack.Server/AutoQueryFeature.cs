@@ -167,7 +167,6 @@ namespace ServiceStack
                 {
                     feature.HtmlModules.Add(HtmlModule);
                     HtmlModule.OnConfigure.Add((_, module) => {
-                        module.Handlers.Add(new ScriptModulesHandler("modules"));
                         module.LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
                     });
                 });

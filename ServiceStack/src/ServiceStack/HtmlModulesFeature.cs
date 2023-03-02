@@ -39,6 +39,11 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     {
         new FileHandler("file"),
         new FilesHandler("files"),
+        new FilesHandler("module")
+        {
+            Header = FilesTransformer.ModuleHeader,
+            Footer = FilesTransformer.ModuleFooter,
+        },
         new FileHandler("vfs") { VirtualFilesResolver = ctx => HostContext.VirtualFiles },
         new FileHandler("vfs[]") { VirtualFilesResolver = ctx => HostContext.VirtualFileSources },
         new GatewayHandler("gateway"),

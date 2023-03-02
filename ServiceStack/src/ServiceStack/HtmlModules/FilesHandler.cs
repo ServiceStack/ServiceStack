@@ -17,6 +17,8 @@ public class FilesHandler : IHtmlModulesHandler
     public string Name { get; }
     public FilesHandler(string name) => Name = name;
     public Func<HtmlModuleContext,IVirtualPathProvider>? VirtualFilesResolver { get; set; }
+    public Func<IVirtualFile, string>? Header { get; set; }
+    public Func<IVirtualFile, string>? Footer { get; set; }
 
     public Func<string, string> NormalizeVirtualPath { get; set; } = DefaultNormalizeVirtualPath;
 
@@ -63,7 +65,9 @@ public class FilesHandler : IHtmlModulesHandler
                 .OrderBy(file => file.VirtualPath).ToList();
             foreach (var file in sortedFiles)
             {
+                if (Header != null) sb.AppendLine(Header(file));
                 sb.AppendLine(ctx.FileContentsResolver(file));
+                if (Footer != null) sb.AppendLine(Footer(file));
             }
             return StringBuilderCache.ReturnAndFree(sb).AsMemory().ToUtf8();
         });
