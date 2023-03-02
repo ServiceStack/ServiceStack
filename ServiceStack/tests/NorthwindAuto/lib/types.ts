@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2023-02-10 19:00:06
+Date: 2023-02-28 21:42:04
 Version: 6.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -402,7 +402,7 @@ export class InputInfo
     public capture: string;
     public multiple?: boolean;
     public allowableValues: string[];
-    public allowableEntries: KeyValuePair<String,String>[];
+    public allowableEntries: KeyValuePair[];
     public options: string;
     public ignore?: boolean;
     public css: FieldCss;

@@ -1,8 +1,7 @@
 import { inject, onMounted, ref } from "vue"
 import { on } from "@servicestack/client"
 import { useAuth } from "@servicestack/vue"
-import { app } from "app"
-const AuthNav = {
+export const AuthNav = {
     template:/*html*/`
       <div class="ml-3 mt-1 relative bg-gray-50">
           <div v-if="store.auth">
@@ -64,4 +63,3 @@ const AuthNav = {
         }
     }
 }
-app.components({ AuthNav })

@@ -556,7 +556,6 @@ export function createForms(Meta, css, ui) {
         },
         /** @param {InputInfo[]} formLayout
             @param {(args:{id,input:InputInfo,rowClass:string}) => void} [f] */
-        
         getGridInputs(formLayout, f) {
             if (!formLayout) return []
             return formLayout.map(input => this.getGridInput(input, f)).filter(x => !!x)

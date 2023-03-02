@@ -1,8 +1,7 @@
 import { inject, ref } from "vue"
-import { app } from "app"
 import { QueryCoupons } from "/types/mjs"
 
-const BookingPage = {
+export const BookingPage = {
     template:/*html*/`
       <div>
           <h1 class="py-8 text-center text-3xl text-indigo-700 font-semibold">Custom Bookings AutoQueryGrid</h1>
@@ -31,5 +30,3 @@ const BookingPage = {
         return { coupon, showCoupon, close }
     }
 }
-
-app.components({ BookingPage })

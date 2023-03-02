@@ -1,8 +1,7 @@
 import { inject, onMounted, ref } from "vue"
 import { useClient, useFormatters } from "@servicestack/vue"
 import { GetCrudEvents } from "dtos"
-import { app } from "app"
-const AuditEvents = {
+export const AuditEvents = {
     template:/*html*/`
   <div v-if="events.length">
       <div class="flex justify-center">
@@ -107,4 +106,3 @@ const AuditEvents = {
         return { open, events, eventsCount, formatDate, relativeTime, expanded, toggle }
     }
 }
-app.components({ AuditEvents })

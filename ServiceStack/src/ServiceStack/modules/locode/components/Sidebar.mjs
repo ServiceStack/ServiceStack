@@ -1,6 +1,5 @@
 import { inject, onMounted, ref, watch } from "vue"
 import { useUtils } from "@servicestack/vue"
-import { app } from "app"
 import { getIcon } from "core"
 const SidebarNav = {
     template:/*html*/`
@@ -35,27 +34,10 @@ const SidebarNav = {
         }
     }
 }
-const Brand = {
-    template:/*html*/`
-    <div class="flex items-center flex-shrink-0 max-w-sidebar">
-        <a :title="name" v-href="{ $page:'' }"
-           class="text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
-            <Icon v-if="icon" class="brand-icon w-8 h-8 mr-1" :image="icon" alt="logo" />
-            {{name}}
-        </a>
-    </div>
-    `,
-    props: ['icon','name'],
-    setup(props) {
-        const store = inject('store')
-        return { store }
-    }
-}
 const SidebarTop = {
-    components: { Brand },
     template:/*html*/`
     <div>
-      <Brand class="pl-4 pb-3" :icon="server.ui.brandIcon" :name="store.serviceName" />
+      <Brand class="pl-4 pb-3" :icon="server.ui.brandIcon" :name="server.app.serviceName" />
       <div class="bg-white py-1.5 px-3.5">
         <svg class="absolute ml-2.5 mt-2.5 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
@@ -71,7 +53,7 @@ const SidebarTop = {
         return { server, store }
     }
 }
-const Sidebar = {
+export const Sidebar = {
     components: { SidebarNav, SidebarTop },
     template:/*html*/`
     <div id="sidebar" class="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true">
@@ -143,4 +125,3 @@ const Sidebar = {
         return { store, transition1, transition2, transition3, hide }
     }
 }
-app.components({ Sidebar })

@@ -124,7 +124,8 @@ window.config = {
 <script>
 /*files:js/*.js */
 </script>
-<!--modules:components/*.mjs-->
+<!--components:Brand-->
+<!--module:components/*.mjs-->
 <!--file:custom.html-->
 
 <script type="module">
@@ -164,6 +165,7 @@ const App = {
 }
 
 app.build(App).mount('#app')
+app.start()
 
 function styleProperty(name) {
     return document.documentElement.style.getPropertyValue(name)
@@ -175,7 +177,6 @@ function setStyleProperty(props) {
 
 let sidebarWidth = styleProperty('--sidebar-width')
 
-app.start()
 nextTick(() => {
     document.body.classList.remove('loading')
     let max = Math.max(...Array.from($$('#sidebar .nav-item')).map(el => el.clientWidth))

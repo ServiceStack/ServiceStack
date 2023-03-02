@@ -1,7 +1,6 @@
 import { inject } from "vue"
-import { app } from "app"
 
-const Welcome = {
+export const Welcome = {
     template:/*html*/`
     <div class="px-4">
         <div v-if="store.debug">
@@ -83,4 +82,3 @@ const Welcome = {
         return { store, routes, server, login }
     }
 }
-app.components({ Welcome })

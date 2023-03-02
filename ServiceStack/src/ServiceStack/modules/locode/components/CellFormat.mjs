@@ -1,8 +1,7 @@
 import { h, inject } from "vue"
 import ServiceStackVue, { useMetadata } from "@servicestack/vue"
-import { app } from "app"
 import { mapGet } from "@servicestack/client"
-const CellFormat = {
+export const CellFormat = {
     props:['type','propType','modelValue'],
     setup(props) {
         return () => {
@@ -43,4 +42,3 @@ const CellFormat = {
         }
     }
 }
-app.components({ CellFormat })
