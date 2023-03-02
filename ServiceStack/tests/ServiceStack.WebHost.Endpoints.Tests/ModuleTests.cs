@@ -30,14 +30,14 @@ public class ModuleTests
         var componentFiles = ssResources.GetAllMatchingFiles("/modules/ui/components/*.html").ToList();
         Assert.That(componentFiles.Count, Is.GreaterThanOrEqualTo(6));
 
-        var adminUiJsFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/js/*.js").ToList();
-        Assert.That(adminUiJsFiles.Count, Is.GreaterThanOrEqualTo(3));
+        var adminUiJsFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/lib/*.mjs").ToList();
+        Assert.That(adminUiJsFiles.Count, Is.GreaterThanOrEqualTo(2));
 
-        var adminUiCssFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/css/*.css").ToList();
-        Assert.That(adminUiCssFiles.Count, Is.GreaterThanOrEqualTo(1));
+        var adminUiCssFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/components/*.mjs").ToList();
+        Assert.That(adminUiCssFiles.Count, Is.GreaterThanOrEqualTo(6));
 
-        var adminUiHtmlFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/components/*.html").ToList();
-        Assert.That(adminUiHtmlFiles.Count, Is.GreaterThanOrEqualTo(3));
+        var adminUiHtmlFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/*.html").ToList();
+        Assert.That(adminUiHtmlFiles.Count, Is.GreaterThanOrEqualTo(1));
     }
 
     [Test]
