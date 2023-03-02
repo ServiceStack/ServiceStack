@@ -1,15 +1,94 @@
-/*minify:*/
+import { reactive } from "vue"
+import {
+    JsonServiceClient,
+    map,
+    lastLeftPart,
+    trimEnd,
+    appendQueryString,
+    humanify,
+    queryString,
+    enc
+} from "@servicestack/client"
+import ServiceStackVue, { useMetadata, useAuth, useConfig, useUtils } from "@servicestack/vue"
+import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
+import { Authenticate } from "./dtos.mjs"
+
+const { setConfig } = useConfig()
+const { invalidAccessMessage } = useAuth()
+const { Crud, apiOf } = useMetadata()
+
+let BASE_URL = lastLeftPart(trimEnd(document.baseURI, '/'), '/')
+
+export let AppData = {
+    init: false,
+    baseUrl: BASE_URL,
+    /** @type {string|null} */
+    bearerToken: null,
+    /** @type {string|null} */
+    authsecret: null,
+    /** @type {() => void|null} */
+    onRoutesEditChange: null,
+    /** @type {string|null} */
+    lastEditState: null,
+    /** @type {Object<String,any>} */
+    cache: {},
+    /** @type Record<number,string> */
+    HttpErrors: { 401:'Unauthorized', 403:'Forbidden' },
+}
+
+export const app = new App()
+const server = globalThis.Server
+
 /**
- * Execute tailwindui.com transition definition rules
- * @type {Transition}
- * */
-let transition = useTransitions(App, { sidebar: true, redisnew: false })
+ * Create a new `JsonServiceStack` client instance configured with the authenticated user
+ *
+ * @remarks
+ * For typical API requests it's recommended to use the UIs pre-configured **client** instance
+ *
+ * @param {Function} [fn]
+ * @return {JsonServiceClient}
+ */
+export function createClient(fn) {
+    return new JsonServiceClient(BASE_URL).apply(c => {
+        c.bearerToken = AppData.bearerToken
+        c.enableAutoRefreshToken = false
+        if (AppData.authsecret) c.headers.set('authsecret', AppData.authsecret)
+        let apiFmt = server.httpHandlers['ApiHandlers.Json']
+        if (apiFmt)
+            c.basePath = apiFmt.replace('/{Request}', '')
+        if (fn) fn(c)
+    })
+}
+
+/** App's pre-configured `JsonServiceClient` instance for making typed API requests */
+export const client = createClient()
+
+/** @type {Object<String,String>} */
+let qs = queryString(location.search)
+let stateQs = qs.IncludeTypes ? `?IncludeTypes=${qs.IncludeTypes}` : ''
+export function urlWithState(url) {
+    if (!url) return url
+    let alreadyHasState = url.indexOf('IncludeTypes') >= 0
+    let isBuiltinUi = url.indexOf('/ui') >= 0 || url.indexOf('/locode') >= 0 || url.indexOf('/admin-ui') >= 0
+    if (!isBuiltinUi || alreadyHasState) return url
+    return url + (url.indexOf('?') >= 0
+        ? (stateQs ? '&' + stateQs.substring(1) : '')
+        : stateQs)
+}
+
+export const breakpoints = useBreakpoints(app, {
+    handlers: {
+        change({ previous, current }) { console.debug('breakpoints.change', previous, current) } /*debug*/
+    }
+})
+
+
 /**
  * The App's reactive `routes` navigation component used for all App navigation
  * @remarks
  * @type {AdminRoutes & Routes}
  */
-let routes = usePageRoutes(App,{
+export let routes = usePageRoutes(app, {
     page:'admin',
     queryKeys: ('tab,provider,db,schema,table,q,page,sort,new,edit,op,skip,' +
         'show,orderBy,operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,' +
@@ -23,40 +102,54 @@ let routes = usePageRoutes(App,{
         }
     },
 })
+
 /** @param {KeyboardEvent} e */
-function keydown(e) {
-    if (hasModifierKey(e) || isInput(e.target) || this.results.length === 0) return
+export function hasModifierKey(e) {
+    return e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.code === 'MetaLeft' || e.code === 'MetaRight'
+}
+/** Is element an Input control
+ * @param {Element} e */
+let InputTags = 'INPUT,SELECT,TEXTAREA'.split(',')
+export function isInput(e) {
+    return e && InputTags.indexOf(e.tagName) >= 0
+}
+
+export function keydown(e, ctx) {
+    const { unRefs } = useUtils()
+    const { canPrev, canNext, nextSkip, take, results, selected, clearFilters } = unRefs(ctx)
+    if (hasModifierKey(e) || isInput(e.target) || results.length === 0) return
     if (e.key === 'Escape') {
-        this.clearFilters()
+        clearFilters()
         return
     }
-    if (e.key === 'ArrowLeft' && this.canPrev) {
-        routes.to({ skip:this.nextSkip(-this.take) })
+    if (e.key === 'ArrowLeft' && canPrev) {
+        routes.to({ skip:nextSkip(-take) })
         return
-    } else if (e.key === 'ArrowRight' && this.canNext) {
-        routes.to({ skip:this.nextSkip(this.take) })
+    } else if (e.key === 'ArrowRight' && canNext) {
+        routes.to({ skip:nextSkip(take) })
         return
     }
-    let row = this.selected
-    if (!row) return routes.to({ show:map(this.results[0], x => x.id) || '' })
-    let activeIndex = this.results.findIndex(x => x.id === row.id)
+    let row = selected
+    if (!row) return routes.to({ show:map(results[0], x => x.id) || '' })
+    let activeIndex = results.findIndex(x => x.id === row.id)
     let navs = {
         ArrowUp:   activeIndex - 1,
         ArrowDown: activeIndex + 1,
         Home: 0,
-        End: this.results.length -1,
+        End: results.length -1,
     }
     let nextIndex = navs[e.key]
     if (nextIndex != null) {
-        if (nextIndex === -1) nextIndex = this.results.length - 1
-        routes.to({ show: map(this.results[nextIndex % this.results.length], x => x.id) })
+        if (nextIndex === -1) nextIndex = results.length - 1
+        routes.to({ show: map(results[nextIndex % results.length], x => x.id) })
         if (e.key.startsWith('Arrow')) {
             e.preventDefault()
         }
     }
 }
+
 /** Manage users query & filter preferences in the Users browsers localStorage */
-let settings = {
+export let settings = {
     events: {
         /** @param {string} op */
         table(table) { return `settings:table:${table}` },
@@ -81,7 +174,7 @@ let settings = {
         let setting = this.table(table)
         fn(setting)
         localStorage.setItem(`admin/table:${table}`, JSON.stringify(setting))
-        App.events.publish(this.events.table(table), setting)
+        app.events.publish(this.events.table(table), setting)
     },
     /** @param {string} table
      *  @param {Function} fn */
@@ -89,7 +182,7 @@ let settings = {
         let setting = this.lookup(table)
         fn(setting)
         localStorage.setItem(`admin/lookup:${table}`, JSON.stringify(setting))
-        App.events.publish(this.events.lookup(table), setting)
+        app.events.publish(this.events.lookup(table), setting)
     },
     /** @param {string} table
      *  @param {string} name */
@@ -104,7 +197,7 @@ let settings = {
         let setting = this.tableProp(table, name)
         fn(setting)
         localStorage.setItem(`admin/table:${table}.${name}`, JSON.stringify(setting))
-        App.events.publish(this.events.tableProp(table,name), setting)
+        app.events.publish(this.events.tableProp(table,name), setting)
     },
     /** @param {string} table */
     hasPrefs(table) {
@@ -118,27 +211,38 @@ let settings = {
         removeKeys.forEach(k => localStorage.removeItem(k))
     }
 }
+
 /**
  * App's primary reactive store maintaining global functionality for Admin UI
  * @remarks
  * @type {AdminStore}
  */
-let store = App.reactive({
+let store = {
     copied: false,
     filter: '',
-    debug: Server.config.debugMode,
+    debug: server.config.debugMode,
     api: null,
     auth: window.AUTH,
     baseUrl: BASE_URL,
+    allTypes:  [...server.api.operations.map(x => x.request), 
+                ...server.api.operations.map(x => x.response), 
+                ...server.api.types.map(x => x)]
+        .filter(x => x).reduce((acc,x) => { acc[x.name] = x; return acc }, {}),
+
     init() {
         setBodyClass({ page: routes.admin })
     },
-    get adminUsers() { return Server.plugins.adminUsers },
+
+    get adminUsers() { return server.plugins.adminUsers },
+
     /** @param {string|any} id
      *  @return {LinkInfo} */
-    adminLink(id) { return Server.ui.adminLinks.find(x => x.id === id) },
-    get adminLinks() { return Server.ui.adminLinks },
+    adminLink(id) { return server.ui.adminLinks.find(x => x.id === id) },
+
+    get adminLinks() { return server.ui.adminLinks },
+
     get link() { return this.adminLink(routes.admin) },
+
     /** @param {string} url
      *  @return {Promise<any>} */
     cachedFetch(url) {
@@ -162,21 +266,12 @@ let store = App.reactive({
             }
         })
     },
-    SignIn() {
-        return Server.plugins.auth
-        ? SignIn({
-            plugin: Server.plugins.auth,
-            provider:() => routes.provider,
-            login:args => this.login(args),
-            api: () => this.api,
-        })
-        : NoAuth({ message:`${Server.app.serviceName} API Explorer` })
-    },
+
     /** @param {any} args */
     login(args) {
         let provider = routes.provider || 'credentials'
-        let authProvider = Server.plugins.auth.authProviders.find(x => x.name === provider)
-            || Server.plugins.auth.authProviders[0]
+        let authProvider = server.plugins.auth.authProviders.find(x => x.name === provider)
+            || server.plugins.auth.authProviders[0]
         if (!authProvider)
             throw new Error("!authProvider")
         let auth = new Authenticate()
@@ -200,6 +295,7 @@ let store = App.reactive({
                 }
             })
     },
+
     logout() {
         setBodyClass({ auth: this.auth })
         client.api(new Authenticate({ provider: 'logout' }))
@@ -208,14 +304,17 @@ let store = App.reactive({
         this.auth = null
         routes.to({ $page:null })
     },
+
+    /**: v-if doesn't protect against nested access so need to guard against deep NRE access */
     get authRoles() { return this.auth && this.auth.roles || [] },
     get authPermissions() { return this.auth && this.auth.permissions || [] },
     get authProfileUrl() { return this.auth && this.auth.profileUrl },
     get isAdmin() { return this.authRoles.indexOf('Admin') >= 0 },
+
     /** @return {LinkInfo[]} */
     get authLinks() {
         let to = []
-        let roleLinks = this.auth && Server.plugins.auth && Server.plugins.auth.roleLinks || {} 
+        let roleLinks = this.auth && server.plugins.auth && server.plugins.auth.roleLinks || {}
         if (Object.keys(roleLinks).length > 0) {
             this.authRoles.forEach(role => {
                 if (!roleLinks[role]) return;
@@ -224,12 +323,39 @@ let store = App.reactive({
         }
         return to
     },
+
     get displayName() {
         let auth = this.auth
         return auth
             ? auth.displayName || (auth.firstName ? `${auth.firstName} ${auth.lastName}` : null) || auth.userName || auth.email
             : null
     },
+}
+store = reactive(store)
+export { store }
+
+app.subscribe('route:nav', args => store.init())
+
+app.use(ServiceStackVue)
+app.component('RouterLink', ServiceStackVue.component('RouterLink'))
+app.provides({ app, server, client, store, routes, breakpoints, settings })
+app.directive('highlightjs', (el, binding) => {
+    if (binding.value) {
+        //el.className = ''
+        el.innerHTML = enc(binding.value)
+        globalThis.hljs.highlightElement(el)
+    }
 })
-App.events.subscribe('route:nav', args => store.init())
-/*:minify*/
+
+
+setConfig({
+    navigate: (url) => {
+        console.debug('navigate', url)
+        if (url.startsWith('/signin')) {
+            routes.to({ op:'', provider:'', skip:'', preview:'', new:'', edit:'' })
+        } else {
+            location.href = url
+        }
+    }
+})
+

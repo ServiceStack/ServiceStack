@@ -3,144 +3,162 @@
 <head>
 <!--shared:Meta-->
 <base href="">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script>
 let DEBUG = false
 DEBUG = true /*debug*/
 </script>
 <style>
 /*vfs[]:/css/highlight.css*/
-/*vfs[]:/css/awesomplete.css*/
 /*vfs[]:/css/ui.css*/
-/*file:css/app.css */
 /*file:custom.css */
 </style>
 <!--shared:custom-head-->
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script><!--safari-->
+<script type="importmap">
+{
+    "imports": {
+"vue": "https://unpkg.com/vue@3.2.47/dist/vue.esm-browser.js",          
+"@servicestack/vue": "http://localhost:8080/servicestack-vue.mjs",  
+"dev-vue": "../js/vue.mjs",  
+"dev-@servicestack/vue": "../js/servicestack-vue.mjs",
+        "@servicestack/client": "../js/servicestack-client.mjs",
+        "core": "/js/core.mjs",
+        "app": "./lib/app.mjs",
+        "dtos": "./lib/dtos.mjs"
+    }
+}
+</script>
 </head>
 <body class="loading noauth">
 <!--shared:custom-body-->
 
-<div class="when-loading"></div>
+<div id="app"></div>
 
-<div v-scope class="app">
-    
-<div v-if="store.auth && store.isAdmin" class="">
-    <div id="sidebar" class="" v-scope="Sidebar({ store, routes })"></div>
-    <div class="md:pl-64 flex flex-col flex-1 overflow-auto h-screen">
-        <div class="flex">
-            <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
-                <button type="button" @click="transition('sidebar')"
-                        class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                    <span class="sr-only">Open sidebar</span>
-                    <!---: Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-            </div>
-            <main class="flex-1">
-                <div class="py-6">
-                    <div class="mx-auto px-4 sm:px-6 md:px-8">
-                        <h1 class="text-2xl font-semibold text-gray-900">{{store.link.label}}</h1>
-                    </div>
-                    <div class="mx-auto px-4 sm:px-6 md:px-8">
-                        <div class="py-4">
-                            <div v-if="routes.admin === ''" v-scope="Dashboard({ store, routes, client, Meta })"></div>
-                            <div v-else-if="routes.admin === 'validation'" v-scope="Validation({ store, routes, client, Forms })"></div>
-                            <div v-else-if="routes.admin === 'users'" v-scope="AdminUsers({ store, routes, client, Forms })"></div>
-                            <div v-else-if="routes.admin === 'logging'" v-scope="Logging({ store, routes, client, Forms })"></div>
-                            <div v-else-if="routes.admin === 'profiling'" v-scope="Profiling({ store, routes, client, Forms })"></div>
-                            <div v-else-if="routes.admin === 'redis'" v-scope="Redis({ store, routes, client, Forms })"></div>
-                            <div v-else-if="routes.admin === 'database'" v-scope="Database({ store, routes, client, settings, Forms })"></div>
+<template id="app-template">
+<div>
+    <div v-if="store.auth && store.isAdmin" class="">
+        <sidebar v-if="showSidebar" @hide="showSidebar=false"></sidebar>
+        <div class="md:pl-64 flex flex-col flex-1 overflow-auto h-screen">
+            <div class="flex flex-1">
+                <div class="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white">
+                    <button type="button" @click="showSidebar=true"
+                            class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <span class="sr-only">Open sidebar</span>
+                        <!---: Heroicon name: outline/menu -->
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+                <main class="flex-1 overflow-auto">
+                    <div class="py-6">
+                        <div class="mx-auto px-4 sm:px-6 md:px-8">
+                            <h1 class="text-2xl font-semibold text-gray-900">{{store.link.label}}</h1>
+                        </div>
+                        <div class="mx-auto px-4 sm:px-6 md:px-8">
+                            <div class="py-4">
+                                <dashboard v-if="routes.admin === ''"></dashboard>
+                                <validation v-else-if="routes.admin === 'validation'"></validation>
+                                <users v-else-if="routes.admin === 'users'"></users>
+                                <logging v-else-if="routes.admin === 'logging'"></logging>
+                                <profiling v-else-if="routes.admin === 'profiling'"></profiling>
+                                <redis v-else-if="routes.admin === 'redis'"></redis>
+                                <database v-else-if="routes.admin === 'database'"></database>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
     </div>
-</div>
-<div v-else-if="store.auth && !store.isAdmin" class="w-full h-screen flex justify-center items-center">
-    <div class="flex flex-col items-center">
-        <div v-scope="Alert({ message: () => '<b>Admin</b> role required' })"></div>
-        <div class="mt-4">
-            <button type="button" @click="store.logout()"
-                    class="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Logout
-            </button>
-        </div>        
+    <div v-else-if="store.auth && !store.isAdmin" class="w-full h-screen flex justify-center items-center">
+        <div class="flex flex-col items-center">
+            <alert><b>Admin</b> role required</alert>
+            <div class="mt-4">
+                <button type="button" @click="store.logout()"
+                        class="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Logout
+                </button>
+            </div>
+        </div>
     </div>
+    <sign-in v-else-if="server.plugins.auth" title="Sign in to your account" :provider="routes.provider" @login="login"></sign-in>
 </div>
-<div v-else class="w-full" v-scope="store.SignIn()"></div>
-    
-</div>
+</template>
 
-<script src="../js/require.js?vfx=hash"></script>
-<script src="../js/servicestack-client.js?vfx=hash"></script>
-<script src="../types/js?exportTags=admin,auth&vfx=hash"></script>
 <script>
-Object.assign(window, exports) //import
-
-/*vfs[]:/js/awesomplete.js*/
-/*shared/js:core,Files,Types,createForms */
-import { $1, humanify, combinePaths } from "@servicestack/client"
-import { setBodyClass } from "../shared/js/core"
-
-/*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn,inv:false'})?*/
 function loadAuth(auth) {
     window.AUTH = !auth || auth.responseStatus ? null : auth
-    setBodyClass({ auth })
 }
+/*gateway:window.Server=MetadataApp({view:'locode',jsconfig:'eccn,inv:false'})?*/
 </script>
 <script src="../auth?callback=loadAuth&jsconfig=eccn"></script>
-<script src="../js/petite-vue.js?vfx=hash"></script>
 
-<script>
-document.title = Server.app.serviceName
-setFavIcon(Server.ui.brandIcon, combinePaths(Server.app.baseUrl, '/metadata/svg/servicestack.datauri'))
+<script type="module">
+import { useMetadata, useAuth } from "@servicestack/vue"
+import { setFavIcon, setBodyClass } from "core"
+import { humanify } from "@servicestack/client"
 
-/*shared/js:createApp */
-let App = createApp(PetiteVue)
-/*plugins:* */
+const { loadMetadata } = useMetadata()
+const { signIn } = useAuth()
 
-/*files:js/*.js */
+loadMetadata()
+signIn(globalThis.AUTH)
+setBodyClass({ auth:globalThis.AUTH })
+
+document.title = globalThis.Server.app.serviceName
+setFavIcon(globalThis.Server.ui.brandIcon, globalThis.Server.app.baseUrl + '/metadata/svg/servicestack.datauri')
 </script>
 
-<!--shared:Alert,AlertSuccess,Brand,CloseButton,Image,Input,Loading,SignIn,ErrorSummary,PreviewObject,CopyIcon,ApiSelector,ModalDialog,QueryPrefs,FilterColumn-->
-<!--files:components/*.html-->
+<script>
+/*files:js/*.js */
+</script>
+<!--components:Brand,CopyIcon-->
+<!--module:components/*.mjs-->
 <!--file:custom.html-->
 
-<script src="../js/highlight.js?vfx=hash"></script>
-<script>
-App.directive('highlightjs', ({ effect, get, el}) => {
-    effect(() => {
-        let src = get()
-        if (src) {
-            el.className = '' // remove existing stale class
-            el.innerHTML = enc(src)
-            hljs.highlightElement(el)
+<script type="module">
+import { ref, computed, nextTick, inject, onMounted } from "vue"
+import { $1, $$ } from "@servicestack/client"
+import { app } from "app"
+
+const App = {
+    template: $1('#app-template'),
+    setup(props) {
+        const store = inject('store')
+        const routes = inject('routes')
+        const server = inject('server')
+        
+        const showSidebar = ref(true)
+
+        function login(auth) {
+            globalThis.AUTH = store.auth = auth
         }
-    })
-})
+        
+        let sub = null
+        let lastOp = null
+        
+        onMounted(() => {
+            sub = app.events.subscribe('route:nav', args => {
+                // need to refresh to update when navigating to the same op/page 
+                if (args.op && args.op === lastOp) {
+                    // console.log('route:nav', JSON.stringify(args))
+                }
+                lastOp = args.op
+            })
+        })
+        
+        return { store, routes, server, showSidebar, login }
+    }
+}
 
-let allTypes =  [...Server.api.operations.map(x => x.request), ...Server.api.operations.map(x => x.response), ...Server.api.types.map(x => x)]
-    .filter(x => x).reduce((acc,x) => { acc[x.name] = x; return acc }, {})
-
-App.build({
-    Server,
-    app: Server.app,
-    ui: Server.ui,
-    serviceName: Server.app.serviceName,
-    get plugins() { return Server.plugins },
-    allTypes,
-    store,
-    get request() { return this.store.op && this.store.op.request },
-    humanify,
-    resolve,
-}).mount()
-
-$1('.when-loading').appendChild($1('#loading-template').content.cloneNode(true))
-
-App.start()
-App.nextTick(() => document.body.classList.remove('loading'))
+app.build(App).mount('#app')
+app.start()
+</script>
+<script>
+/*vfs[]:/js/highlight.js*/
 </script>
 <script>
 /*file:custom.js */

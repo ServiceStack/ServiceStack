@@ -111,14 +111,6 @@ public class PublishTasks
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
-        // copy to modules/admin-ui
-        transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui")), 
-            cleanTarget: true,
-            ignore: file => IgnoreAdminUiFiles.Contains(file.VirtualPath),
-            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
-
         // copy to modules/shared
         transformOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
@@ -150,7 +142,16 @@ public class PublishTasks
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
-        
+
+        // copy to modules/admin-ui
+        moduleOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui")), 
+            cleanTarget: true,
+            ignore: file => IgnoreAdminUiFiles.Contains(file.VirtualPath),
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+
+
         // copy to /Templates/HtmlFormat.html
         moduleOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/Templates/")),
@@ -263,8 +264,12 @@ public class PublishTasks
         sb.AppendLine(dtos);
         sb.AppendTypeDefinitionFile(filePath:Path.Combine(NetCoreTestsDir, "custom", "types.d.ts"));
 
+        var mjs = baseUrl.CombineWith("/types/mjs").GetStringFromUrl();
+
         Directory.SetCurrentDirectory(ProjectDir);
         File.WriteAllText(Path.GetFullPath("./lib/types.ts"), sb.ToString());
+        
+        File.WriteAllText(Path.GetFullPath("./admin-ui/lib/dtos.mjs"), mjs);
     }
 
     [Test]

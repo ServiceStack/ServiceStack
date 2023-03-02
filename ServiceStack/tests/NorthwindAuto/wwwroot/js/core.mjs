@@ -1,7 +1,18 @@
 /*minify:*/
 import { createApp, reactive } from "vue"
-import { createBus, map, each, leftPart, on, queryString } from "@servicestack/client"
-import { useMetadata } from "@servicestack/vue"
+import {
+    createBus,
+    map,
+    each,
+    leftPart,
+    on,
+    queryString,
+    apiValue,
+    mapGet,
+    isDate,
+    padInt,
+} from "@servicestack/client"
+import { useMetadata, useFormatters } from "@servicestack/vue"
 
 const { typeOfRef } = useMetadata()
 
@@ -57,10 +68,13 @@ export class App {
         this.OnStart.forEach(f => f(this))
     }
 
-    unsubscribe() {
-        if (this.sub) {
-            this.sub.unsubscribe()
-            this.sub = null
+    subscribe(type, callback) {
+        return this.events.subscribe(type, callback)
+    }
+    
+    unsubscribe(sub) {
+        if (sub) {
+            sub.unsubscribe()
         }
     }
 }
@@ -113,7 +127,8 @@ export function usePageRoutes(app, { page, queryKeys, handlers, extend }) {
                 this.set({ [page]:getPage(), ...event.state})
                 publish('init', state(this))
             })
-
+            console.log('routes.start()', page, getPage())
+            
             this.set({ [page]:getPage(), ...(location.search ? queryString(location.search) : {}) })
             publish('init', state(this))
         },
@@ -317,4 +332,164 @@ export function getIcon({op, type}) {
     }
     return defaultIcon
 }
+
+/** Does object have any keys or array any elements 
+ * @param {any|any[]} [obj] */ 
+export function hasItems(obj) {
+    return !obj ? false : typeof obj === 'object'
+        ? Object.keys(obj).length > 0
+        : obj.length
+}
+
+export function indentJson(o, space=4) {
+    return useFormatters().indentJson(o, space)
+}
+export function prettyJson(o) {
+    return useFormatters().prettyJson(o)
+}
+export function scrub(o) {
+    return useFormatters().scrub(o)
+}
+
+/** Get object value from map by (case-insensitive) id and if required convert API value for usage in HTML Inputs
+ * @param {*} o
+ * @param {string} id */
+export function mapGetForInput(o, id) {
+    let ret = apiValue(mapGet(o,id))
+    return isDate(ret)
+        ?  `${ret.getFullYear()}-${padInt(ret.getMonth() + 1)}-${padInt(ret.getDate())}`
+        : ret
+}
+
+export const parseJsv = (() => {
+    function jsvParse(jsv) {
+        if (!jsv) return jsv;
+        if (jsv[0] === '{')
+            return jsvParseObject(jsv);
+        else if (jsv[0] === '[')
+            return jsvParseArray(jsv);
+        else
+            return jsvParseString(jsv);
+    }
+    function jsvParseObject(s) {
+        if (s[0] !== '{')
+            throw "Type definitions should start with a '{', got string starting with: "
+            + s.substr(0, s.length < 50 ? s.length : 50);
+        let k, obj = {};
+        if (s === '{}') return null;
+        for (let ref={i:1}, len = s.length; ref.i < len; ref.i++) {
+            k = jsvEatMapKey(s, ref);
+            ref.i++;
+            let v = jsvEatMapValue(s, ref);
+            obj[k]= jsvParse(v);
+        }
+        return obj;
+    }
+    function jsvParseString(s) {
+        return !s || s[0] !== '"' ? s : s.substr(1, s.length - 2).replace(/""/g, '"');
+    }
+    function jsvEatMapKey(s, ref) {
+        let pos = ref.i;
+        while (s[++ref.i] !== ':' && ref.i < s.length) { }
+        return s.substr(pos, ref.i - pos);
+    }
+    function jsvEatMapValue(s, ref) {
+        let tokPos = ref.i;
+        let sLen = s.length;
+        if (ref.i === sLen) return null;
+        let c = s[ref.i];
+        if (c === ',' || c === '}')
+            return null;
+        let inQ = false;
+        if (c === '[') { //Is List, i.e. [...]
+            let endsToEat = 1;
+            while (++ref.i < sLen && endsToEat > 0) {
+                c = s[ref.i];
+                if (c === '"')
+                    inQ = !inQ;
+                if (inQ)
+                    continue;
+                if (c === '[')
+                    endsToEat++;
+                if (c === ']')
+                    endsToEat--;
+            }
+            return s.substr(tokPos, ref.i - tokPos);
+        }
+        if (c === '{') { //Is Map, i.e. {...}
+            let endsToEat = 1;
+            while (++ref.i < sLen && endsToEat > 0) {
+                c = s[ref.i];
+                if (c === '"')
+                    inQ = !inQ;
+                if (inQ)
+                    continue;
+                if (c === '{')
+                    endsToEat++;
+                if (c === '}')
+                    endsToEat--;
+            }
+            return s.substr(tokPos, ref.i - tokPos);
+        }
+        if (c === '"') { //Is Within Quotes, i.e. "..."
+            while (++ref.i < sLen) {
+                c = s[ref.i];
+                if (c !== '"') continue;
+                let isQuote = ref.i + 1 < sLen && s[ref.i + 1] === '"';
+                ref.i++; //skip quote
+                if (!isQuote) break;
+            }
+            return s.substr(tokPos, ref.i - tokPos);
+        }
+        while (++ref.i < sLen) { //Is Value
+            c = s[ref.i];
+            if (c === ',' || c === '}') break;
+        }
+        return s.substr(tokPos, ref.i - tokPos);
+    }
+    function jsvParseArray(str) {
+        let to = [], s = jsvStripList(str);
+        if (!s) return to;
+        if (s[0] === '{') {
+            let ref = {i:0};
+            do {
+                let v = jsvEatMapValue(s, ref);
+                to.push(jsvParse(v));
+            } while (++ref.i < s.length);
+        } else {
+            for (let ref={i:0}; ref.i < s.length; ref.i++) {
+                let v = jsvEatUntil(s, ref, ',');
+                to.push(jsvParse(v));
+            }
+        }
+        return to;
+    }
+    function jsvStripList(s) {
+        if (!s) return null;
+        return s[0] === '[' ? s.substr(1, s.length - 2) : s;
+    }
+    function jsvEatUntil(s, ref, findChar) {
+        let tokPos = ref.i;
+        let sLen = s.length;
+        if (s[tokPos] !== '"') {
+            ref.i = s.indexOf(findChar, tokPos);
+            if (ref.i === -1) ref.i = sLen;
+            return s.substr(tokPos, ref.i - tokPos);
+        }
+        while (++ref.i < sLen) {
+            if (s[ref.i] === '"') {
+                if (ref.i + 1 >= sLen)
+                    return s.substr(tokPos, ++ref.i - tokPos);
+                if (s[ref.i + 1] === '"')
+                    ref.i++;
+                else if (s[ref.i + 1] === findChar)
+                    return s.substr(tokPos, ++ref.i - tokPos);
+            }
+        }
+        throw "Could not find ending quote";
+    }
+    return jsvParse
+})()
+
+    
 /*:minify*/
