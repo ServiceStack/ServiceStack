@@ -35,28 +35,12 @@ public class AppHost : AppHostBase
             AdminAuthSecret = "secret",
         });
         
-        Plugins.Add(new RequestLogsFeature
-        {
-            RequestLogger = new CsvRequestLogger(
-                new FileSystemVirtualFiles(HostContext.Config.WebHostPhysicalPath),
-                "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
-                "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv",
-                TimeSpan.FromSeconds(1)
-            ),
-            EnableResponseTracking = true,
-            EnableRequestBodyTracking = true,
-            EnableErrorTracking = true
-        });
-
         Plugins.Add(new CorsFeature(new[] {
             "http://localhost:5173", //vite dev
             "https://docs.servicestack.net"
         }, allowCredentials:true));
 
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
-        // var sharedDir = VirtualFiles.GetDirectory("shared");
-        // memFs.WriteFile("css/ui.css", sharedDir.GetFile("css/ui.css")); 
-        
         var files = VirtualFiles.GetDirectory("custom/locode/components").GetAllFiles();
         files.Each(file => memFs.WriteFile($"locode/components/{file.Name}", file));
         VirtualFiles.GetDirectory("custom/locode-v1").GetAllFiles()
@@ -74,15 +58,23 @@ public class AppHost : AppHostBase
                 module.VirtualFiles = appHost.VirtualFiles;
                 module.DirPath = module.DirPath.Replace("/modules", "");
             });
-            feature.Handlers.Cast<SharedFolder>().Each(x => 
-                x.SharedDir = x.SharedDir.Replace("/modules", ""));
+            feature.Handlers.Cast<SharedFolder>().Each(x => {
+                if (x.Header == FilesTransformer.ModuleHeader)
+                {
+                    x.SharedDir = "/wwwroot" + x.SharedDir;
+                }
+                else
+                {
+                    x.SharedDir = x.SharedDir.Replace("/modules", "");
+                }
+            });
         });
             
         // Not needed in `dotnet watch` and in /wwwroot/modules/ui which can use _framework/aspnetcore-browser-refresh.js"
         Plugins.AddIfDebug(new HotReloadFeature
         {
             VirtualFiles = VirtualFiles,
-            DefaultPattern = "*.html;*.js;*.css"
+            DefaultPattern = "*.html;*.js;*.mjs;*.css"
         });
         //Plugins.Add(new PostmanFeature());
 

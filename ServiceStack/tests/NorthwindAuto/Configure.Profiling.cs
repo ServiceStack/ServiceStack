@@ -2,6 +2,7 @@ using Chinook.ServiceModel;
 using MyApp.ServiceInterface;
 using ServiceStack;
 using ServiceStack.Auth;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureProfiling))]
@@ -15,7 +16,15 @@ public class ConfigureProfiling : IHostingStartup
         builder.ConfigureAppHost(
             host => {
                 host.Plugins.AddIfDebug(new RequestLogsFeature {
+                    RequestLogger = new CsvRequestLogger(
+                        new FileSystemVirtualFiles(host.Config.WebHostPhysicalPath),
+                        "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
+                        "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv",
+                        TimeSpan.FromSeconds(1)
+                    ),
                     EnableResponseTracking = true,
+                    EnableRequestBodyTracking = true,
+                    EnableErrorTracking = true
                     // RequestLogFilter = (req, entry) => {
                     //     entry.Meta = new() {
                     //         ["RemoteIp"] = req.RemoteIp,
