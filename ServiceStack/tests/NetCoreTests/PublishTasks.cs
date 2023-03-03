@@ -95,10 +95,10 @@ public class PublishTasks
         
         // modules are copied over as debug versions then minified/cached at runtime on load
         
-        // copy to modules/ui
+        // copy to modules/ui-v1
         transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui-v1")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui-v1")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
@@ -151,7 +151,13 @@ public class PublishTasks
             ignore: file => IgnoreAdminUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
-
+        moduleOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
+            cleanTarget: true,
+            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        
         // copy to /Templates/HtmlFormat.html
         moduleOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/Templates/")),

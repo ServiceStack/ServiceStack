@@ -67,6 +67,7 @@
   <ItemGroup>
     <Folder Include="modules\locode" />
     <Folder Include="modules\shared" />
+    <Folder Include="modules\ui" />
   </ItemGroup>
 
 </Project>

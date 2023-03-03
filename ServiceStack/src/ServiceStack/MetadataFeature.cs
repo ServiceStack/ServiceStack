@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.HtmlModules;
 using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;
 using ServiceStack.Web;
@@ -52,6 +53,10 @@ namespace ServiceStack
             } },
         };
 
+        public HtmlModule HtmlModuleV1 { get; set; } = new("/modules/ui-v1", "/ui-v1") {
+            DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
+        };
+
         public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui") {
             DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
         };
@@ -91,8 +96,18 @@ namespace ServiceStack
 
         public void BeforePluginsLoaded(IAppHost appHost)
         {
-            appHost.ConfigurePlugin<UiFeature>(feature => 
-                feature.HtmlModules.Add(HtmlModule));
+            if (HtmlModuleV1 != null)
+                appHost.ConfigurePlugin<UiFeature>(feature => feature.HtmlModules.Add(HtmlModuleV1));
+            if (HtmlModule != null)
+            {
+                appHost.ConfigurePlugin<UiFeature>(feature =>
+                {
+                    feature.HtmlModules.Add(HtmlModule);
+                    HtmlModule.OnConfigure.Add((_, module) => {
+                        module.LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
+                    });
+                });
+            }
         }
 
         public void Register(IAppHost appHost)
