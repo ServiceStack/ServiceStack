@@ -279,6 +279,7 @@ namespace ServiceStack
         public virtual string OrderByDesc { get; set; }
 
         [DataMember(Order = 5)]
+        [Input(Type = "tag", Options = "{ allowableValues:['total'] }")]
         public virtual string Include { get; set; }
 
         [DataMember(Order = 6)]
