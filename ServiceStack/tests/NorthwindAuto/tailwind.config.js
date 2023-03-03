@@ -1,12 +1,13 @@
 module.exports = {
   content: [
-    './ui/**/*.html',
+    './ui/**/*.{mjs,html}',
     './admin-ui/**/*.{html,mjs}',
     './locode/**/*.{html,mjs}', 
     './shared/**/*.html', 
     './custom/**/*.html',
-    './locode-v1/**/*.html',
     './wwwroot/**/*.{html,mjs}',
+    './locode-v1/**/*.html',
+    './ui-v1/**/*.html',
     '../../src/ServiceStack/js/servicestack-vue.mjs'
   ],
   theme: {

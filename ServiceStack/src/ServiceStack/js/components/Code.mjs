@@ -1,8 +1,8 @@
+// Requires CopyLine, CopyIcon global components & highlightjs directive
 import { ref, onMounted, computed } from "vue"
-import { ApiResult, queryString } from "@servicestack/client"
+import { ApiResult, lastLeftPart, queryString, trimEnd } from "@servicestack/client"
 import { useClient, useMetadata, useUtils } from "@servicestack/vue"
-import CopyIcon from "./CopyIcon.mjs"
-import CopyLine from "./CopyLine.mjs"
+const BaseUrl = globalThis.BaseUrl || globalThis.Server?.app.baseUrl || lastLeftPart(trimEnd(document.baseURI,'/'),'/') 
 const Usages = {
     csharp: `using ServiceStack;
 
@@ -110,7 +110,6 @@ let response = client.Send(new Hello(
 Inspect.printDump(response)`
 }
 const InstallTool = {
-    components: { CopyLine },
     template:`<h2 class="text-lg p-4">
         To easily update DTOs for all APIs install the 
         <em><b>x</b></em> <a class="text-blue-600 underline" href="https://docs.servicestack.net/dotnet-tool">dotnet tool</a>
@@ -127,7 +126,7 @@ const InstallTool = {
         return { BaseUrl, create, update }
     }
 }
-const components = { InstallTool, CopyIcon, CopyLine }
+const components = { InstallTool }
 const CSharp = {
     components,
     template:`<div>
@@ -438,7 +437,7 @@ export const Languages = Object.keys(LangTypes).reduce((acc,type) => {
     return acc
 }, {})
 export const Code = {
-    components: { CopyIcon, ...LanguageComponents },
+    components: LanguageComponents,
     template:`
       <div v-if="!requestType" class="w-full"><Alert>Could not find metadata for '{{RequestName}}'</Alert></div>
       <div v-else class="w-full">

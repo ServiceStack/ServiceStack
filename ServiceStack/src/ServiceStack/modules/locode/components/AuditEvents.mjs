@@ -26,22 +26,22 @@ export const AuditEvents = {
       <div v-if="open" class="flex">
         <ul v-if="events.length" class="divide-y divide-gray-200 border-t w-full">
           <li v-for="x in events" :key="x.id" class="py-4 cursor-pointer" @click="toggle(x.id)">
+            <div class="flex justify-between">
+              <div class="pl-4 uppercase inline-block w-20">{{ x.eventType }}</div>
+              <div>
+                <span :title="'User ' + x.userAuthId">{{ x.userAuthName }}</span>
+              </div>
+              <div>
+                <span :title="formatDate(x.eventDate)">{{ relativeTime(x.eventDate) }}</span>
+                <div class="ml-3 inline-block w-5 align-middle">
+                  <svg v-if="!expanded(x.id)" class="h-5 w-5 flex-none text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
             <div class="flex space-x-3">
               <div class="flex-1 flex flex-col">
-                <div class="flex justify-between">
-                  <div class="pl-4 uppercase inline-block w-20">{{ x.eventType }}</div>
-                  <div>
-                    <span :title="'User ' + x.userAuthId">{{ x.userAuthName }}</span>
-                  </div>
-                  <div>
-                    <span :title="formatDate(x.eventDate)">{{ relativeTime(x.eventDate) }}</span>
-                    <div class="ml-3 inline-block w-5 align-middle">
-                      <svg v-if="!expanded(x.id)" class="h-5 w-5 flex-none text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
                 <div v-if="expanded(x.id)" class="p-4">
                   <table>
                     <tr>
@@ -64,7 +64,9 @@ export const AuditEvents = {
                 </div>
               </div>
               <div class="flex-1">
-                <PreviewFormat v-if="expanded(x.id)" :value="JSON.parse(x.requestBody)" />
+                <div v-if="expanded(x.id)" class="p-4">
+                  <PreviewFormat :value="JSON.parse(x.requestBody)" />
+                </div>
               </div>
             </div>
           </li>
