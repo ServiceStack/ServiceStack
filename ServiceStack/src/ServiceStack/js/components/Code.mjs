@@ -1,4 +1,4 @@
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { ApiResult, queryString } from "@servicestack/client"
 import { useClient, useMetadata, useUtils } from "@servicestack/vue"
 import CopyIcon from "./CopyIcon.mjs"
@@ -463,9 +463,9 @@ export const Code = {
           <pre :key="selected" v-if="activeLangSrc" class=""><code :lang="selected" v-highlightjs="activeLangSrc"></code></pre>
           <Loading v-else />
         </div>
-        <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg h-full relative">
+        <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg h-full relative" style="min-width:585px">
           <CloseButton @close="showHelp=false" />
-          <component v-if="Languages[selected]?.component" :is="Languages[selected]?.component" :src="activeLangSrc" :usage="Usages[selected]" class="" />
+          <component v-if="Languages[selected]?.component" :is="Languages[selected]?.component" :src="activeLangSrc" :usage="usage" class="" />
         </div>
       </div>
   </div>
@@ -483,6 +483,7 @@ export const Code = {
         const activeLangSrc = ref('')
         const api = ref(new ApiResult())
         let cleanSrc = src => src.trim()
+        const usage = computed(() => (Usages[selected.value] || '').replace(/Hello/g,RequestName))
         async function select(lang) {
             selected.value = lang
             pushState({ lang: lang === 'csharp' ? undefined : lang })
@@ -507,7 +508,7 @@ export const Code = {
             }
         }
         onMounted(() => select(qs.lang || 'csharp'))
-        return { requestType, RequestName, Languages, Usages, selected, select, activeLangSrc, showHelp, api }
+        return { requestType, RequestName, Languages, usage, selected, select, activeLangSrc, showHelp, api }
     }
 }
 export default Code
