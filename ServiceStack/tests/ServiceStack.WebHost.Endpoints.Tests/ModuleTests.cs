@@ -27,17 +27,14 @@ public class ModuleTests
         var sharedComponentFiles = ssResources.GetAllMatchingFiles("/modules/shared/*.html").ToList();
         Assert.That(sharedComponentFiles.Count, Is.GreaterThanOrEqualTo(8));
 
-        var componentFiles = ssResources.GetAllMatchingFiles("/modules/ui/components/*.html").ToList();
+        var componentFiles = ssResources.GetAllMatchingFiles("/modules/ui/components/*.mjs").ToList();
         Assert.That(componentFiles.Count, Is.GreaterThanOrEqualTo(6));
 
         var adminUiJsFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/lib/*.mjs").ToList();
         Assert.That(adminUiJsFiles.Count, Is.GreaterThanOrEqualTo(2));
 
-        var adminUiCssFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/components/*.mjs").ToList();
-        Assert.That(adminUiCssFiles.Count, Is.GreaterThanOrEqualTo(6));
-
-        var adminUiHtmlFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/*.html").ToList();
-        Assert.That(adminUiHtmlFiles.Count, Is.GreaterThanOrEqualTo(1));
+        var adminUiMjsFiles = ssResources.GetAllMatchingFiles("/modules/admin-ui/components/*.mjs").ToList();
+        Assert.That(adminUiMjsFiles.Count, Is.GreaterThanOrEqualTo(6));
     }
 
     [Test]
