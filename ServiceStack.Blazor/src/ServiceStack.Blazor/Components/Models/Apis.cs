@@ -14,7 +14,7 @@ public class Apis
     public Type? Delete { get; set; }
     public Type? Save { get; set; }
 
-    static ConcurrentDictionary<string, Type> ApiTyesMap { get; set; } = new();
+    static ConcurrentDictionary<string, Type> ApiTypesMap { get; set; } = new();
     static ConcurrentDictionary<Assembly, bool> loadedAssemblies = new();
     public static void Load(Assembly assembly)
     {
@@ -25,16 +25,16 @@ public class Apis
         var apiTypes = assembly.GetTypes().Where(x => x.HasInterface(typeof(IReturnVoid)) || x.IsOrHasGenericInterfaceTypeOf(typeof(IReturn<>)));
         foreach (var apiType in apiTypes)
         {
-            ApiTyesMap[apiType.Name] = apiType;
+            ApiTypesMap[apiType.Name] = apiType;
         }
     }
-    public static Type? Find(string typeName) => ApiTyesMap.TryGetValue(typeName, out var type) ? type : null;
+    public static Type? Find(string typeName) => ApiTypesMap.TryGetValue(typeName, out var type) ? type : null;
 
     public Apis(Type[] types)
     {
         foreach (var type in types)
         {
-            if (!ApiTyesMap.ContainsKey(type.Name))
+            if (!ApiTypesMap.ContainsKey(type.Name))
             {
                 Load(type.Assembly);
             }
@@ -66,7 +66,7 @@ public class Apis
     public static Apis AutoQuery<T1, T2, T3, T4>() => new Apis(new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) });
     public static Apis AutoQuery<T1, T2, T3, T4, T5>() => new Apis(new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) });
 
-    public QueryBase QueryRequest<Model>() => (Query ?? QueryInto).CreateInstance<QueryBase>();
+    public QueryBase QueryRequest<Model>() => (QueryInto ?? Query).CreateInstance<QueryBase>();
     public IDeleteDb<Model> CreateRequest<Model>() => Create.CreateInstance<IDeleteDb<Model>>();
     public IUpdateDb<Model> UpdateRequest<Model>() => Create.CreateInstance<IUpdateDb<Model>>();
     public IPatchDb<Model> PatchRequest<Model>() => Create.CreateInstance<IPatchDb<Model>>();

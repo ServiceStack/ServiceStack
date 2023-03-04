@@ -132,7 +132,7 @@ namespace ServiceStack
 
         public static bool AllCollectionProperties(MetadataType type) => true;
 
-        public static bool NonAutoQueryCollectionProperties(MetadataType type) => !(type.IsCrud() || type.IsAutoQueryData());
+        public static bool NonAutoQueryCollectionProperties(MetadataType type) => !(type.IsCrud() || type.IsAnyQueryData());
 
         public Func<MetadataType, bool> ShouldInitializeCollection { get; set; } = NonAutoQueryCollectionProperties;
 

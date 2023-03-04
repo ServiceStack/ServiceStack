@@ -225,11 +225,14 @@ public class RefInfo
 {
     [IgnoreDataMember]
     public Type ModelType { get; set; }
+    [IgnoreDataMember]
+    public Type QueryType { get; set; }
 
     public string Model { get; set; }
     public string SelfId { get; set; }
     public string RefId { get; set; }
     public string RefLabel { get; set; }
+    public string QueryApi { get; set; }
 }
 
 [Exclude(Feature.Soap)]
@@ -947,6 +950,12 @@ public static class MetadataTypeExtensions
                metaRef.Namespace.StartsWith("ServiceStack") ||
                metaRef.Name.IndexOfAny(SystemTypeChars) >= 0;
     }
+
+    public static MetadataOperationType FindAutoQueryReturning(this MetadataTypes types, string dataModel)
+    {
+        return types.Operations.FirstOrDefault(x => x.DataModel?.Name == dataModel && Crud.IsQuery(x.Request))
+            ?? types.Operations.FirstOrDefault(x => x.ViewModel?.Name == dataModel && Crud.IsQuery(x.Request));
+    }
 }
 
 [Exclude(Feature.Soap)]
@@ -1527,6 +1536,8 @@ public static class AppMetadataUtils
                     return null;
                 return new RefInfo {
                     ModelType = refAttr.ModelType,
+                    QueryType = refAttr.QueryType,
+                    QueryApi = refAttr.QueryType?.Name,
                     Model = model, 
                     SelfId = refAttr.SelfId, 
                     RefId = refAttr.RefId, 
@@ -1656,6 +1667,8 @@ public static class AppMetadataUtils
                     return null;
                 return new RefInfo {
                     ModelType = refAttr.ModelType,
+                    QueryType = refAttr.QueryType,
+                    QueryApi = refAttr.QueryType?.Name,
                     Model = model, 
                     SelfId = refAttr.SelfId, 
                     RefId = refAttr.RefId, 

@@ -13,5 +13,6 @@ public class RefAttribute : AttributeBase
     public string RefId { get; set; }
     public string RefLabel { get; set; }
     public string SelfId { get; set; }
+    public Type QueryType { get; set; }
     public bool None { get; set; }
 }
