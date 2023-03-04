@@ -19,6 +19,7 @@ export const ApiDetails = {
                   {{opName}}
                 </a>
               </h2>
+        
               <div class="mb-3 pl-4">
                 <div v-for="route in op.routes" class="text-sm text-gray-900">
                     <span v-for="verb in (route.verbs||'').split(',').filter(verb => verb && verb != op.method)"
@@ -29,6 +30,7 @@ export const ApiDetails = {
                   {{predefinedRoute(request.name)}}
                 </div>
               </div>
+        
               <div v-if="op.tags.length > 0" class="mb-3">
                 <span v-for="tag in op.tags" title="tag"
                       class="inline-flex items-center px-2.5 py-0.5 mr-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -96,6 +98,7 @@ export const ApiDetails = {
               </div>
             </div>
           </div>
+        
           <div>
             <div v-for="group in opReferencedTypes(op)">
               <div class="flex flex-col mb-3">
@@ -179,6 +182,7 @@ export const ApiDetails = {
             </div>
           </div>
         </div>
+        
         <div v-if="routes.detailSrc" id="detail-src" class="flex-1 w-full lg:w-1/2 lg:bg-gray-50 lg:shadow-lg overflow-auto md:pb-scroll">
           <div v-if="store.activeDetailSrc">
             <CloseButton button-class="bg-gray-50" @close="routes.to({ detailSrc:'' })" />
@@ -194,7 +198,9 @@ export const ApiDetails = {
         const store = inject('store')
         const routes = inject('routes')
         const breakpoints = inject('breakpoints')
+        
         const { typeOf, typeOfRef, typeProperties, typeName, typeName2 } = useMetadata()
+        
         function addReferencedTypes(allTypesMap, type) {
             if (!type) return
             if (allTypesMap[type.name]) return
@@ -228,11 +234,13 @@ export const ApiDetails = {
         const op = computed(() => store.op)
         const request = computed(() => store.op?.request)
         const opName = computed(() => store.op?.request?.name)
+        
         function predefinedRoute(opName) {
             let apiFmt = server.httpHandlers['ApiHandlers.Json']
                 || (server.plugins.loaded.indexOf('autoroutes') >= 0 ? '/json/reply/{Request}' : '')
             return apiFmt ? apiFmt.replace('{Request}', opName) : ''
         }
+        
         function groupTypes(allTypes) {
             let allTypesMap = {}
             let groups = []
@@ -262,6 +270,7 @@ export const ApiDetails = {
             })
             return groups
         }
+        
         function opReferencedTypes(op) {
             let allTypesMap = {}
             addReferencedTypes(allTypesMap, op.request)
@@ -272,6 +281,7 @@ export const ApiDetails = {
                 .filter(type => !type.isValueType && type.name.toLowerCase() !== 'string')
             return groupTypes(opTypes)
         }
+        
         function inheritedTypes(typeRef) {
             if (!typeRef) return ''
             let types = [typeRef.name]
@@ -282,10 +292,12 @@ export const ApiDetails = {
             }
             return types.join(',')
         }
+        
         function apiDocs(typeName) {
             let name = typeName + 'Docs'
             return app.component(name)
         }
+        
         function isRequired(prop) {
             return prop.isRequired || (prop.isValueType && prop.type !== 'Nullable`1')
         }
@@ -303,5 +315,6 @@ export const ApiDetails = {
             typeName,
             typeName2,
         }
+        
     }
 }

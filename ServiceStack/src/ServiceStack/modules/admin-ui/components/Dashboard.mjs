@@ -176,7 +176,9 @@ export const Dashboard = {
         const server = inject('server')
         const urlApiExplorer = computed(() => urlWithState('../ui'))
         const loading = ref(false)
+        
         const adminFeatures = computed(() => ({ validation:'Validation', users:'Users', logging:'Logging', profiling:'Profiling', database:'Database', redis:'Redis' }))
+        
         function isRegistered(id) {
             return server.ui.adminLinks.some(link => link.id === id)
         }
@@ -189,12 +191,14 @@ export const Dashboard = {
         function statLabel(name) {
             return humanify(name.replace('Total',''))
         }
+        
         let sub = null
         onMounted(async () => {
             sub = app.subscribe('route:nav', args => updated())
             await updated()
         })
         onUnmounted(() => app.unsubscribe(sub))
+        
         return {
             store,
             routes,

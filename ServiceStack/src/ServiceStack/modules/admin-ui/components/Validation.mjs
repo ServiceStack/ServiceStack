@@ -30,16 +30,19 @@ const ApiSelector = {
         const opNames = computed(() => tag.value
             ? server.api.operations.filter(x => x.tags && x.tags.indexOf(tag.value) >= 0).map(op => op.request.name)
             : server.api.operations.map(op => op.request.name))
+        
         function selectTag(newTag) {
             tag.value = tag.value === newTag ? null : newTag
             combo.value?.toggle(true)
         }
+        
         watch(opEntry, () => {
             const op = opEntry.value?.key
             if (op !== routes.op) {
                 routes.to({ op })
             }
         })
+        
         function update() {
             opEntry.value = routes.op ? { key: routes.op, value: routes.op } : null
         }
@@ -51,6 +54,7 @@ const ApiSelector = {
         onUnmounted(() => {
             app.unsubscribe(sub)
         })
+        
         return { routes, server, opNames, combo, opEntry, tag, tags, selectTag }
     }
 }
@@ -82,6 +86,7 @@ const EditValidationRule = {
                             </div>
                         </div>
                     </div>
+        
                     <div class="flex flex-wrap sm:flex-nowrap">
                         <div class="flex-grow mb-3 sm:mb-0">
                             <fieldset :class="gridClass">
@@ -91,6 +96,7 @@ const EditValidationRule = {
                                     <TextInput v-else-if="typeTab==='condition'" id="condition" name="condition" v-model="request.condition" 
                                                label="" :placeholder="conditionValidator" help="Script Expression that must evaluate to true, see: sharpscript.net" :spellcheck="false" />
                                 </div>
+                                
                                 <div v-if="properties" :class="rowClass">
                                     <SelectInput id="field" v-model="request.field" label="" help="" placeholder="The property this rule applies to" 
                                         :values="properties.map(x => x.name)" />
@@ -124,8 +130,10 @@ const EditValidationRule = {
                 </div>
             </div>
         </form>
+        
         <div class="my-8">
             <h4 class="text-xl leading-6 font-medium text-gray-900 mb-3">Quick Select {{isTypeValidator ? 'Type' : 'Property'}} Validator</h4>
+        
             <div v-for="x in validators" :key="x.name + x.paramNames" class="mb-2">
                 <OutlineButton @click="editValidator(x)">
                     {{fmt(x)}}
@@ -185,6 +193,7 @@ const EditValidationRule = {
             request.value.validator = editfmt(v)
             return nextTick(() => focusValidator(`#${id('validator')}`))
         }
+        
         const typesWrapper = {
             'String[]': p => "['" + p + "']",
             'String': p => "'" + p + "'",
@@ -222,9 +231,11 @@ const EditValidationRule = {
                 done(request.value)
             }
         }
+        
         function update() {
             typeTab.value = request.value.condition && !request.value.validator ? 'condition' : 'validator'
         }
+        
         onMounted(update)
         return {
             done,
@@ -255,6 +266,7 @@ const EditValidationRule = {
             submitDelete,
             submit,
         }
+        
     }
 }
 export const Validation = {
@@ -262,10 +274,13 @@ export const Validation = {
     template:/*html*/`
     <section class="">
         <ApiSelector class="mt-4" />
+        
         <ErrorSummary />
+        
         <main class="mt-8 max-w-screen-xl">
           <div v-if="operation" class="flex flex-wrap">
             <div class="md:flex-1 md:w-1/2 md:p-2 pl-0">
+        
               <div class="">
                 <div class="flex mb-2">
                   <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -275,6 +290,7 @@ export const Validation = {
                     Type Validation Rules
                   </h3>
                 </div>
+        
                 <div>
                   <ul role="list" class="divide-y divide-gray-200">
                     <li v-for="x in results.filter(x => x.field == null)" :key="x.id" class="py-4">
@@ -295,6 +311,7 @@ export const Validation = {
                       </div>
                     </li>
                   </ul>
+        
                   <div class="mt-4">
                     <button v-if="!showTypeForm" @click="viewTypeForm()"
                             class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -304,8 +321,10 @@ export const Validation = {
                   </div>
                 </div>
               </div>
+        
             </div>
             <div class="md:flex-1 md:w-1/2 md:p-2 pr-0 mt-4 sm:mt-0">
+        
               <div v-if="hasProperties" class="">
                 <div class="flex mb-2">
                   <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -315,10 +334,12 @@ export const Validation = {
                     Property Validation Rules
                   </h3>
                 </div>
+        
                 <div>
                   <ul role="list" class="divide-y divide-gray-200">
                     <li v-for="x in results.filter(x => x.field != null)" :key="x.id" class="py-4">
                       <EditValidationRule v-if="editPropertyRule==x.id" :type="operation.request" :rule="x" :properties="opProps" :validators="plugin.propertyValidators" @done="handleDone" />
+                      
                       <div v-else class="flex space-x-3">
                         <div>
                           <button @click="viewPropertyForm(x.id)"
@@ -335,6 +356,7 @@ export const Validation = {
                       </div>
                     </li>
                   </ul>
+        
                   <div class="mt-4">
                     <button v-if="!showPropertyForm" @click="viewPropertyForm()"
                             class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -343,9 +365,11 @@ export const Validation = {
                     <EditValidationRule v-else-if="editPropertyRule==null" :type="operation.request" :properties="opProps" :validators="plugin.propertyValidators" @done="handleDone" />
                   </div>
                 </div>
+        
               </div>
             </div>
           </div>
+        
           <div v-if="dataModelOps.length" class="mt-8">
             <h3 class="text-xl leading-6 font-medium text-gray-900">Quick Jump</h3>
             <div class="flex flex-wrap">
@@ -359,12 +383,14 @@ export const Validation = {
             </div>
           </div>
         </main>
+    
     </section>
     `,
     setup() {
         const routes = inject('routes')
         const server = inject('server')
         const client = useClient()
+        
         const { apiOf, findApis, typeProperties } = useMetadata()
         /** @type {Ref<ApiResult<GetValidationRulesResponse>>} */
         const api = ref(new ApiResult())
@@ -384,6 +410,7 @@ export const Validation = {
         const opProps = computed(() => typeProperties(operation.value?.request))
         const hasProperties = computed(() => opProps.value.length > 0)
         const dataModelOps = computed(() => map(operation.value?.dataModel, dataModel => findApis({ dataModel })) || [])
+        
         /** @param {{field:string,validator?:string,condition?:string}} rule */
         async function handleDone(rule) {
             if (rule.field) {
@@ -397,16 +424,19 @@ export const Validation = {
                 await reset()
             }
         }
+        
         /** @param {number|null} ruleId= */
         function viewTypeForm(ruleId) {
             showTypeForm.value = true;
             editTypeRule.value = ruleId;
         }
+        
         /** @param {number|null} ruleId= */
         function viewPropertyForm(ruleId) {
             showPropertyForm.value = true;
             editPropertyRule.value = ruleId;
         }
+        
         async function reset() {
             api.value = new ApiResult()
             showTypeForm.value = showPropertyForm.value = false
@@ -414,6 +444,7 @@ export const Validation = {
             if (!operation.value) return
             api.value = await client.api(new GetValidationRules({type: operation.value.request.name})) 
         }
+        
         async function update() {
             await reset()
         }

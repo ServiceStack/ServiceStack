@@ -139,6 +139,7 @@ let store = {
     auth: window.AUTH,
     /** @type {string} */
     baseUrl: BASE_URL,
+    
     get plugins() { return globalThis.Server.plugins },
     /** @return {string} */
     get useLang() { return routes.lang || 'csharp' },

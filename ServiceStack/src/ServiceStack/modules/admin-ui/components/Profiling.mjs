@@ -309,6 +309,7 @@ export const Profiling = {
         let showTitle = 'traceId,eventType,duration,timestamp'.split(',')
         /** @type {Ref<ApiResult<AdminProfilingResponse>>} */
         const api = ref(new ApiResult())
+        
         async function update() {
             let request = new AdminProfiling()
             if (routes.orderBy)
@@ -333,6 +334,7 @@ export const Profiling = {
                     ? args
                     : selected.value?.arg
         })
+        
         function valueFmt(obj, k) {
             if (obj == null) return ''
             if (k === 'traceId') {
@@ -410,6 +412,7 @@ export const Profiling = {
             document.removeEventListener('keydown', handleKeyDown)
             app.unsubscribe(sub)
         })
+        
         return {
             routes,
             api,

@@ -53,11 +53,13 @@ export const AuthenticateDocs = {
             'OAuth Providers':'oauth',
         }
         const routes = inject('routes')
+        
         function cls(cls) { 
             return 'w-full sm:w-[560px] md:w-[896px]' + (cls ? ' ' + cls : '') 
         }
         const clsVideo = computed(() => cls('h-[315px] sm:h-[315px] md:h-[526px] border-0'))
         function changeTab(e) { routes.to({ doc: e.target.value }) }
+        
         return {
             routes,
             tabs,

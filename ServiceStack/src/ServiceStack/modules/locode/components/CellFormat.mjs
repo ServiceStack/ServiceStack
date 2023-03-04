@@ -12,11 +12,13 @@ export const CellFormat = {
             if (!ref?.model)
                 return hOrig
             const { Apis, isComplexProp } = useMetadata()
+            
             const apis = Apis.forType(ref.model)
             if (!apis.AnyQuery)
                 return hOrig
             const routes = inject('routes')
             const value = mapGet(modelValue, propType.name)
+            
             return h('span', { 
                 'class':'text-blue-600 hover:text-blue-800 cursor-pointer',
                 title:`${ref.model} ${value}`,

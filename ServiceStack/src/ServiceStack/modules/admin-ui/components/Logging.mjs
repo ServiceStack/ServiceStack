@@ -51,6 +51,7 @@ export const Logging = {
           </button>
         </span>
     </div>
+    
     <section>
     <div class="flex flex-col">
       <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -95,6 +96,7 @@ export const Logging = {
         </div>
       </div>
     </div>
+        
     <div v-if="selected" class="relative z-20" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
       <div class="fixed overflow-hidden">
         <div class="absolute overflow-hidden">
@@ -166,8 +168,10 @@ export const Logging = {
                       </div>
                     </div>
                   </div>
+    
                   <!-- Divider container -->
                   <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
+                    
                     <div v-if="selected.requestDto" class="flex overflow-auto">
                       <div class="p-2 relative w-full">
                         <span class="relative z-0 inline-flex shadow-sm rounded-md">
@@ -189,6 +193,7 @@ export const Logging = {
                         </div>
                       </div>
                     </div>
+    
                     <div v-if="selected.responseDto" class="bg-indigo-700 text-white px-3 py-3">
                       <div class="flex items-start justify-between space-x-3">
                         <h2 class="font-medium text-white">Response</h2>
@@ -215,6 +220,7 @@ export const Logging = {
                         </div>
                       </div>
                     </div>
+    
                     <div v-if="hasItems(selectedHeaders)" class="bg-indigo-700 text-white px-3 py-3">
                       <div class="flex items-start justify-between space-x-3">
                         <h2 class="font-medium text-white">HTTP Headers</h2>
@@ -242,6 +248,7 @@ export const Logging = {
                         </tr>
                       </table>
                     </div>
+    
                     <div v-if="hasItems(responseHeaders)" class="bg-indigo-700 text-white px-3 py-3">
                       <div class="flex items-start justify-between space-x-3">
                         <h2 class="font-medium text-white">HTTP Response Headers</h2>
@@ -261,6 +268,7 @@ export const Logging = {
                         </tr>
                       </table>
                     </div>
+    
                     <div v-if="hasItems(selectedCookies)" class="bg-indigo-700 text-white px-3 py-3">
                       <div class="flex items-start justify-between space-x-3">
                         <h2 class="font-medium text-white">Cookies</h2>
@@ -283,6 +291,7 @@ export const Logging = {
                         </tr>
                       </table>
                     </div>
+    
                     <div v-if="hasItems(selectedJwt)" class="bg-indigo-700 text-white px-3 py-3">
                       <div class="flex items-start justify-between space-x-3">
                         <h2 class="font-medium text-white">JWT</h2>
@@ -302,6 +311,7 @@ export const Logging = {
                         </tr>
                       </table>
                     </div>
+    
                     <div v-if="hasItems(selected.meta)" class="bg-indigo-700 text-white px-3 py-3">
                       <div class="flex items-start justify-between space-x-3">
                         <h2 class="font-medium text-white">Meta</h2>
@@ -321,6 +331,7 @@ export const Logging = {
                         </tr>
                       </table>
                     </div>
+    
                   </div>
                 </div>
               </form>
@@ -335,6 +346,7 @@ export const Logging = {
         const routes = inject('routes')
         const server = inject('server')
         const client = useClient()
+        
         function parseJwt(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -349,6 +361,7 @@ export const Logging = {
         let ignoredHeaders = [':method','Cookie']
         let linkFields = 'operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,skip'.split(',')
         let api = ref(new ApiResult())
+        
         function parseObject(o) {
             if (!o) return null
             if (typeof o == 'string') {
@@ -364,6 +377,7 @@ export const Logging = {
             }
             return o
         }
+        
         async function update() {
             let request = new RequestLogs({ take: 100 })
             if (routes.orderBy)
@@ -373,6 +387,7 @@ export const Logging = {
             })
             api.value = await client.api(request)
         }
+        
         function valueFmt(obj, k) {
             if (k === 'requestDuration' && obj === 'PT0S') return ''
             if (k === 'sessionId') {
@@ -394,11 +409,13 @@ export const Logging = {
             }
             return false
         })
+        
         const selected = computed(() => routes.show && results.value.find(x => x.id == routes.show))
         const selectedRequestDtoObj = computed(() => selected.value?.requestDto && parseObject(selected.value.requestDto))
         const selectedRequestDtoJson = computed(() => selected.value?.requestDto && prettyJson(parseObject(selected.value.requestDto)))
         const selectedResponseDtoObj = computed(() => selected.value?.responseDto && parseObject(selected.value.responseDto))
         const selectedResponseDtoJson = computed(() => selected.value?.responseDto && prettyJson(parseObject(selected.value.responseDto)))
+        
         function keyFmt(t) {
             return humanize(toPascalCase(t))
         }
@@ -444,10 +461,12 @@ export const Logging = {
             sub = app.subscribe('route:nav', update)
             await update()
         })
+        
         onUnmounted(() => {
             document.removeEventListener('keydown', handleKeyDown)
             app.unsubscribe(sub)
         })
+        
         return {
             routes,
             parseObject,

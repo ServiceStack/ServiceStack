@@ -53,6 +53,7 @@ const NewKey = {
         let newKey = () => ({ key:'', field:'', score:0, value:'' })
         const modelValue = ref(newKey())
         const api = ref(new ApiResult())
+        
         async function submit() {
             let type = props.type
             let id = modelValue.value.key
@@ -76,9 +77,11 @@ const NewKey = {
             }
         }
         const errorSummary = computed(() => api.value.summaryMessage())
+        
         function done() {
             emit('done', modelValue.value)
         }
+        
         return {
             redisTypes,
             modelValue,
@@ -496,12 +499,15 @@ export const Redis = {
         const apiSave = ref(new ApiResult())
         /** @type {Ref<ApiResult<AdminRedisResponse>>} */
         const apiRelated = ref(new ApiResult())
+        
         const showNew = ref(false)
         const rule1 = {
             entering: { cls:'transition ease-out duration-100', from:'transform opacity-0 scale-95', to:'transform opacity-100 scale-100'},
             leaving:  { cls:'transition ease-in duration-75', from:'transform opacity-100 scale-100', to:'transform opacity-0 scale-95' }
         }
+        
         const { transition } = useUtils()
+        
         const transition1 = ref('')
         watch(showNew, () => {
             transition(rule1, transition1, showNew.value)
@@ -585,16 +591,19 @@ export const Redis = {
         let cloneEndpoint = endpoint => Object.assign({}, { host:'localhost',port:6379,ssl:false,username:'',password:'' }, endpoint)
         const endpoint = ref(cloneEndpoint(plugin.endpoint))
         const editEndpoint = ref(cloneEndpoint(plugin.endpoint))
+        
         /** @param {*?} args
          * @returns {AdminRedis} */
         function createRequest(args) {
             return new AdminRedis(Object.assign({ db: parseInt(db.value) }, args))
         }
+        
         function reset() {
             success.value = false
             apiSave.value = ref(new ApiResult())
             setItemEdit('')
         }
+        
         async function update() {
             reset()
             if (routes.show) {
@@ -629,6 +638,7 @@ export const Redis = {
                 setEndpoint(res.endpoint)
             }
         }
+        
         async function exec() {
             reset()
             let request = createRequest()
@@ -647,6 +657,7 @@ export const Redis = {
          * @returns {*}
          */
         async function send(request, opt) {
+            
             console.log('send', request, opt)
             const api = await client.api(request)
             if (!opt) opt = { id:null, type:null }
@@ -671,12 +682,15 @@ export const Redis = {
             callLog.value.unshift(item)
             return api
         }
+        
         function arrayValue(value) { return value && value.join && value.join(', ') || '' }
         function expanded(id) { return selected.value?.id === id }
         function toggle(row) {
             routes.to({ show: routes.show === row.id ? '' : row.id })
         }
+        
         const txtEdit = ref()
+        
         function resizeEdit() {
             /**@type {HTMLTextAreaElement} */
             let e = txtEdit.value
@@ -688,12 +702,14 @@ export const Redis = {
             itemEdit.value = indentJson(JSON.parse(itemEdit.value))
             nextTick(resizeEdit)
         }
+        
         function handleDone(model) {
             routes.to({ new:'' })
             if (model && model.key) {
                 routes.to({ show: model.key })
             }
         }
+        
         async function save() {
             if (!item.value) return
             let { id, type } = item.value
@@ -720,6 +736,7 @@ export const Redis = {
                 await load(id, type)
             }
         }
+        
         async function del() {
             let { id, type } = item.value
             let request = createRequest({ args: ['DEL', id] })
@@ -730,6 +747,7 @@ export const Redis = {
                 routes.to({ show:'' })
             }
         }
+        
         async function delItem(value) {
             if (!item.value) return
             let { id, type } = item.value
@@ -751,16 +769,19 @@ export const Redis = {
                 load(id, type)
             }
         }
+        
         function setItemEdit(value) {
             itemEdit.value = value || ''
             itemOrig.value = itemEdit.value
             itemField.value = ''
             itemScore.value = 0
         }
+        
         /** @param {string} s */
         function isComplexJson(s) {
             return typeof s == 'string' && map(s.trim(), x => x.startsWith('{') || x.startsWith('['))
         }
+        
         async function call(args, opt, f) {
             let request = createRequest({ args })
             const r = await client.api(request)
@@ -784,6 +805,7 @@ export const Redis = {
                 relatedQuery.value = ''
             }
         }
+        
         function load(id, type) {
             if (id === (item.value?.id)) {
                 setItemEdit(item.value?.result?.text)
@@ -801,6 +823,7 @@ export const Redis = {
                 return call(['HGETALL', id], { id, type }, r => asKeyValues(r))
             }
         }
+        
         async function reconnect() {
             let request = new AdminRedis({ reconnect: editEndpoint.value })
             apiSave.value = new ApiResult({ loading: true })
@@ -811,16 +834,19 @@ export const Redis = {
                 routes.to({ edit:'' })
             }
         }
+        
         function setEndpoint(newEndpoint) {
             if (newEndpoint) {
                 endpoint.value = newEndpoint
                 editEndpoint.value = cloneEndpoint(newEndpoint)
             }
         }
+        
         function inputClass(invalid, cls) {
             return [css.input.base, invalid ? css.input.invalid : css.input.valid, cls].join(' ')
         }
         const errorSummary = computed(() => api.value.summaryMessage())
+        
         const response = computed(() => api.value.response)
         const results = computed(() => api.value.response?.searchResults || [])
         const total = computed(() => api.value.response?.total)

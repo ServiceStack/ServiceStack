@@ -1,5 +1,5 @@
 // Requires CopyLine, CopyIcon global components & highlightjs directive
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, computed, watch } from "vue"
 import { ApiResult, lastLeftPart, queryString, trimEnd } from "@servicestack/client"
 import { useClient, useMetadata, useUtils } from "@servicestack/vue"
 const BaseUrl = globalThis.BaseUrl || globalThis.Server?.app.baseUrl || lastLeftPart(trimEnd(document.baseURI,'/'),'/') 
@@ -50,10 +50,9 @@ Inspect.printDump(response);`,
     java: `import net.servicestack.client.*;
 import java.util.Collections;
 
-JsonServiceClient client = new JsonServiceClient(
-    "${BaseUrl}");
+var client = new JsonServiceClient("${BaseUrl}");
 
-HelloResponse response = client.send(new Hello()
+var response = client.send(new Hello()
     //...
 );
 
@@ -102,19 +101,21 @@ Inspect.printDump(api.Response)`,
 
 let client = new JsonApiClient("${BaseUrl}")
 
-let response = client.Send(new Hello(
+let api = client.Api(new Hello(
     //...
 ))
 
 // Quickly inspect response
-Inspect.printDump(response)`
+Inspect.printDump(api.Response)`
 }
 const InstallTool = {
     template:`<h2 class="text-lg p-4">
         To easily update DTOs for all APIs install the 
         <em><b>x</b></em> <a class="text-blue-600 underline" href="https://docs.servicestack.net/dotnet-tool">dotnet tool</a>
     </h2>
+    
     <CopyLine prefix="$ " text="dotnet tool install --global x" />
+    
     <h2 class="text-lg p-4">To generate all DTOs for <b>{{BaseUrl}}</b> run:</h2>
     <CopyLine prefix="$ " :text="create" />
     <h2 class="text-lg p-4">Once generated, the DTOs can be updated with:</h2>
@@ -197,6 +198,7 @@ const Mjs = {
       </div>
       <pre><code class="language-html" v-highlightjs="mjsImportMapDecoded"></code></pre>
     </div>
+    
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
       <CopyIcon class="ml-3" :text="src" title="Copy code" />
@@ -439,8 +441,8 @@ export const Languages = Object.keys(LangTypes).reduce((acc,type) => {
 export const Code = {
     components: LanguageComponents,
     template:`
-      <div v-if="!requestType" class="w-full"><Alert>Could not find metadata for '{{RequestName}}'</Alert></div>
-      <div v-else class="w-full">
+      <div v-if="!requestType" class="w-full"><Alert>Could not find metadata for '{{op}}'</Alert></div>
+      <div v-else class="w-full h-full">
       <nav class="w-full flex space-x-4 pl-2 py-2 border-b bg-white overflow-x-auto" aria-label="Tabs">
         <a v-for="(x,lang) in Languages" @click="select(lang)"
            :class="['cursor-pointer select-none', lang === selected ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:text-gray-700', 'px-3 py-1 font-medium text-sm rounded-md']">
@@ -462,7 +464,7 @@ export const Code = {
           <pre :key="selected" v-if="activeLangSrc" class=""><code :lang="selected" v-highlightjs="activeLangSrc"></code></pre>
           <Loading v-else />
         </div>
-        <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg h-full relative" style="min-width:585px">
+        <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg relative" style="min-width:585px;max-width:700px">
           <CloseButton @close="showHelp=false" />
           <component v-if="Languages[selected]?.component" :is="Languages[selected]?.component" :src="activeLangSrc" :usage="usage" class="" />
         </div>
@@ -474,23 +476,23 @@ export const Code = {
         const { pushState } = useUtils()
         const { typeOf, makeDto } = useMetadata()
         const client = useClient()
-        const RequestName = props.op
-        const requestType = typeOf(RequestName)
-        const qs = queryString(location.search)
+        const requestType = computed(() => typeOf(props.op))
         const showHelp = ref(true)
         const selected = ref('')
         const activeLangSrc = ref('')
         const api = ref(new ApiResult())
         let cleanSrc = src => src.trim()
-        const usage = computed(() => (Usages[selected.value] || '').replace(/Hello/g,RequestName))
+        
+        const usage = computed(() => (Usages[selected.value] || '').replace(/Hello/g,props.op))
         async function select(lang) {
             selected.value = lang
             pushState({ lang: lang === 'csharp' ? undefined : lang })
-            activeLangSrc.value = Cache[lang] || ''
+            const cacheKey = `${props.op}:${lang}`
+            activeLangSrc.value = Cache[cacheKey] || ''
             if (!activeLangSrc.value) {
                 const typesRequest = `Types${Languages[selected.value].type}`
                 const requestDto = Object.assign(makeDto(typesRequest, {
-                    IncludeTypes: `${RequestName}.*`,
+                    IncludeTypes: `${props.op}.*`,
                     WithoutOptions: true,
                     MakeVirtual: false,
                     MakePartial: false,
@@ -502,12 +504,19 @@ export const Code = {
                 api.value = await client.api(requestDto)
                 activeLangSrc.value = ''
                 if (api.value.succeeded && api.value.response) {
-                    activeLangSrc.value = Cache[lang] = cleanSrc(api.value.response)
+                    activeLangSrc.value = Cache[cacheKey] = cleanSrc(api.value.response)
                 }
             }
         }
-        onMounted(() => select(qs.lang || 'csharp'))
-        return { requestType, RequestName, Languages, usage, selected, select, activeLangSrc, showHelp, api }
+        async function update() {
+            const qs = queryString(location.search)
+            await select(qs.lang || 'csharp')
+        }
+        
+        onMounted(update)
+        watch(() => props.op, update)
+        
+        return { requestType, Languages, usage, selected, select, activeLangSrc, showHelp, api }
     }
 }
 export default Code

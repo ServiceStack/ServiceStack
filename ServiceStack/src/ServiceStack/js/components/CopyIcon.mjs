@@ -13,6 +13,7 @@ const CopyIcon = {
     setup(props) {
         const { copyText } = useUtils()
         const copied = ref(false)
+        
         function copy(text) {
             copied.value = true
             copyText(text)

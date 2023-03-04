@@ -151,6 +151,7 @@ export const Database = {
                     </div>
                 </div>
             </div>
+            
             <FilterViews v-if="open==='filters'" :definitions="definitions" :columns="viewModelColumns" @done="open=''" @change="filtersChanged"  />
             <ErrorSummary class="p-4" />
             <Loading v-if="apiLoading" class="pt-4" />
@@ -158,6 +159,7 @@ export const Database = {
                 <div v-if="showFilters">
                   <FilterColumn :definitions="definitions" :column="filter.column" :topLeft="filter.topLeft" @done="onFilterDone" @save="onFilterSave" />
                 </div>
+              
                 <div ref="refResults" v-if="results.length" class="sm:-ml-2 lg:-ml-4 flex flex-col">
                     <div class="overflow-x-auto pb-4">
                         <div class="py-2 align-middle inline-block min-w-full sm:px-2 lg:px-4">
@@ -200,6 +202,7 @@ export const Database = {
                         <div class="pointer-events-auto w-screen max-w-2xl">
                             <form v-if="selected" class="flex h-full flex-col overflow-y-auto bg-white shadow-xl">
                                 <div class="flex-1">
+                                    
                                     <!-- Header -->
                                     <div class="bg-gray-50 px-4 py-6 sm:px-6">
                                         <div class="flex items-start justify-between space-x-3">
@@ -234,6 +237,7 @@ export const Database = {
                                             </div>
                                         </div>
                                     </div>
+                                    
                                 </div>
                             </form>
                         </div>
@@ -253,6 +257,7 @@ export const Database = {
         const { copyText } = useUtils()
         const { formatValue } = useFormatters()
         const { getPrimaryKeyByProps, isComplexProp } = useMetadata()
+        
         let refreshPrefs = () => settings.table(routes.dbTable())
         let schemaKey = (db,schema) => `${db}.${schema}`
         function refreshFilters() {
@@ -264,6 +269,7 @@ export const Database = {
             }))
             viewModelColumns.value = cols
         }
+            
         let d = (name,value,opt) => (Object.assign({ name, value }, opt))
         let definitions = [
             d("=","%"),
@@ -470,6 +476,7 @@ export const Database = {
             }
             return args
         }
+        
         async function update() {
             skip.value = parseInt(routes.skip) || 0
             if (routes.table) {
@@ -495,6 +502,7 @@ export const Database = {
                 api.value = new ApiResult()
             }
         }
+        
         function clearFilters() {
             routes.to({ show:'' })
         }

@@ -27,6 +27,7 @@ const SidebarNav = {
     setup(props) {
         const store = inject('store')
         const routes = inject('routes')
+        
         return {
             store,
             routes,
@@ -59,6 +60,7 @@ export const Sidebar = {
     <div id="sidebar" class="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true">
         <!---: Off-canvas menu overlay, show/hide based on off-canvas menu state. -->
         <div :class="['fixed inset-0 bg-gray-600 bg-opacity-75', transition1]" aria-hidden="true"></div>
+    
         <!---: Off-canvas menu, show/hide based on off-canvas menu state. -->
         <div :class="['relative flex-1 flex flex-col max-w-sidebar w-full bg-white', transition2]">
             <!---: Close button, show/hide based on off-canvas menu state. -->
@@ -82,6 +84,7 @@ export const Sidebar = {
             <!---: Force sidebar to shrink to fit close icon -->
         </div>
     </div>
+    
     <div class="hidden md:flex w-sidebar md:flex-col md:fixed md:inset-y-0">
         <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
             <div class="flex-1 flex flex-col pt-5 pb-4">
@@ -94,6 +97,7 @@ export const Sidebar = {
     emits: ['hide'],
     setup(props, { emit }) {
         const store = inject('store')
+        
         const transition1 = ref('')
         const rule1 = {
             entering: { cls:'transition-opacity ease-linear duration-300', from:'opacity-0',   to:'opacity-100'},
@@ -109,16 +113,19 @@ export const Sidebar = {
             entering: { cls:'ease-in-out duration-300', from:'opacity-0',   to:'opacity-100'},
             leaving:  { cls:'ease-in-out duration-300', from:'opacity-100', to:'opacity-0'}
         }
+        
         const { transition } = useUtils()
         function toggle(show) {
             transition(rule1, transition1, show)
             transition(rule2, transition2, show)
             transition(rule3, transition3, show)
         }
+        
         function hide() {
             toggle(false)
             setTimeout(() => emit('hide'), 200)
         }
+        
         onMounted(() => {
             toggle(true)
         })

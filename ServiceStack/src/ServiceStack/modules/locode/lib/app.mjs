@@ -199,6 +199,7 @@ export const sideNav = ((Server) => {
     if (alwaysHideTags) {
         sideNav = sideNav.filter(group => alwaysHideTags.indexOf(group.tag) < 0)
     }
+    
     return sideNav
 })(globalThis.Server);
 /** App's primary reactive store maintaining global functionality for Locode Apps
@@ -369,6 +370,7 @@ app.events.subscribe('route:nav', args => store.init())
 app.use(ServiceStackVue)
 app.component('RouterLink', ServiceStackVue.component('RouterLink'))
 app.provides({ app, client, store, routes, breakpoints, settings, server:globalThis.Server })
+           
 setConfig({
     navigate: (url) => {
         console.debug('navigate', url)

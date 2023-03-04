@@ -15,6 +15,7 @@ const ApiResponse = {
                 </a>
             </nav>
         </div>
+    
         <div v-if="routes.response === ''" class="p-2">
             <span class="relative z-0 inline-flex shadow-sm rounded-md">
               <a v-for="(tab,name) in {Pretty:'',Preview:'preview'}" @click="routes.body = tab"
@@ -119,9 +120,11 @@ const AutoForm2 = {
         const dataModel = computed(() => Crud.model(metaType.value))
         const title = computed(() => props.heading || typeOf(typeName.value)?.description ||
             (dataModel.value ? `New ${humanize(dataModel.value)}` : humanize(typeName.value)))
+        
         function newDto() {
             return typeof props.type == 'string' ? createDto(props.type) : props.type ? new props.type() : props.modelValue
         }
+        
         /** @param {SubmitEvent} e */
         async function submit(e) {
             /** @type {HTMLFormElement} */
@@ -197,6 +200,7 @@ export const ApiForm = {
           <AutoForm v-if="showAutoForm && routes.form===''" :type="routes.op" v-model="state.model" class="sm:m-4 max-w-4xl"
                     @success="state.apiResult.response=$event" @error="state.apiResult.error=$event" />
           <div v-if="routes.form==='json'" class="sm:p-4">
+        
             <form @submit.prevent="onJsonFormSubmit" autocomplete="off" class="shadow sm:rounded-md">
               <div class="relative px-4 py-5 bg-white sm:p-6">
                 <fieldset>
@@ -229,6 +233,7 @@ export const ApiForm = {
                 </div>
               </div>
             </form>
+            
           </div>
           <Loading v-if="apiLoading" />
           <ApiResponse v-else-if="state.apiResult?.response" class="mb-8 pb-8" :api="state.apiResult" />
@@ -242,7 +247,9 @@ export const ApiForm = {
         const store = inject("store")
         const routes = inject("routes")
         const server = inject("server")
+        
         const state = ref({})
+        
         function createState(op) {
             let opName = op && op.request && op.request.name
             if (!opName) {
@@ -291,6 +298,7 @@ export const ApiForm = {
             }
         }
         const showAutoForm = ref(true)
+        
         const showForm = computed(() => {
             if (!state.value?.op) return false
             return !state.value.op.requiresAuth || store.auth
@@ -304,6 +312,7 @@ export const ApiForm = {
             }, {})
             state.value.formJson = prettyJson(jsonModel)
         }
+        
         function updateRequestDto(json) {
             if (!state.value?.op) return
             state.value.jsonError = null
@@ -314,6 +323,7 @@ export const ApiForm = {
                 state.value.jsonError = { type:'input', message: `${e}` }
             }
         }
+        
         function onAjaxFormInput(e) {
             if (!state.value.op) return
             state.value.formJson = prettyJson(formValues(e.target.tagName === 'FORM' ? e.target : e.target.form))
@@ -321,6 +331,7 @@ export const ApiForm = {
         function onJsonFormInput(e) {
             updateRequestDto(e.target.value)
         }
+        
         async function onAjaxFormSubmit(e) {
             saveForm(e.target)
             if (HttpMethods.hasRequestBody(state.value.op.method)) {
@@ -329,6 +340,7 @@ export const ApiForm = {
                 await apiSend()
             }
         }
+        
         async function onJsonFormSubmit(e) {
             if (!state.value?.op) return
             try {
@@ -340,12 +352,14 @@ export const ApiForm = {
                 state.value.jsonError = { type:'submit', message: `${e}` }
             }
         }
+        
         async function apiSend() {
             if (!state.value?.op) return
             if (!state.value.requestDto) return
             state.value.jsonError = null
             state.value.apiResult = await client.api(state.value.requestDto)
         }
+        
         async function apiForm(form) {
             if (!state.value?.op) return
             let formData = new FormData(form)
@@ -353,10 +367,13 @@ export const ApiForm = {
             state.value.jsonError = null
             state.value.apiResult = await client.apiForm(state.value.requestDto, formData)
         }
+        
         //watch(state.value.model, () => )
+        
         function login(auth) {
             globalThis.AUTH = store.auth = auth
         }
+        
         const tabs = {'FORM':'','JSON':'json'}
         function update() {
             state.value = OP_STATE[routes.op] || (OP_STATE[routes.op] = createState(store.op))

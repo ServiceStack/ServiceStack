@@ -216,7 +216,7 @@ public class FilesTransformer
         new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
         // Hide dev comments from browser
         new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
-        new RemoveLineWithOnlyWhitespace(Run.Always),
+        // new RemoveLineWithOnlyWhitespace(Run.Always), // removes significant whitespace in docs
     };
 
     // Enable static typing during dev, strip from browser to run

@@ -105,6 +105,7 @@ export const AuditEvents = {
                 events.value = api.response.results
             }
         })
+        
         return { open, events, eventsCount, formatDate, relativeTime, expanded, toggle }
     }
 }

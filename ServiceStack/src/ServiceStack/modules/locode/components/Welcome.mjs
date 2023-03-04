@@ -55,6 +55,7 @@ export const Welcome = {
                         </div>
                     </div>
                 </div>
+    
                 <div v-if="store.authLinks.length" class="ml-3 mb-3 flex">
                     <a v-for="link in store.authLinks" :href="link.href"
                        class="mr-3 inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm md:text-lg font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -62,6 +63,7 @@ export const Welcome = {
                         {{link.label}}
                     </a>
                 </div>
+                
             </div>
         </div>
     </div>
@@ -71,9 +73,11 @@ export const Welcome = {
         const routes = inject('routes')
         /** @type {AppMetadata} */
         const server = inject('server')
+        
         function login(auth) {
             globalThis.AUTH = store.auth = auth 
         }
+        
         return { store, routes, server, login }
     }
 }

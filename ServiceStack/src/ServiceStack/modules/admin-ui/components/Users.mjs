@@ -124,7 +124,9 @@ export const NewUser = {
         const request = ref(init(new AdminCreateUser({ userAuthProperties:{} }), dtoProps))
         const model = ref({ newRole:'', newPermission:'' })
         const api = ref(new ApiResult())
+        
         const loading = computed(() => client.loading.value)
+        
         function isDtoProp(id) { return dtoProps.indexOf(id) >= 0 }
         function addRole() {
             request.value.roles.push(model.value.newRole)
@@ -145,9 +147,11 @@ export const NewUser = {
                     requestDto.userAuthProperties[k] = request.value[k]
                 }
             })
+            
             api.value = await client.api(requestDto, { jsconfig: 'eccn' })
             if (api.value.succeeded) emit('done')
         }
+        
         return {
             routes,
             dtoProps,
@@ -262,10 +266,13 @@ export const EditUser = {
         const origPermissions = ref([])
         const roles = ref([])
         const permissions = ref([])
+        
         const loading = computed(() => client.loading.value)
         const api = ref(new ApiResult())
         const formFields = ref()
+        
         function done() { emit('done') }
+        
         function isDtoProp(id) { return dtoProps.indexOf(id) >= 0 }
         function addRole() {
             roles.value.push(model.value.newRole)
@@ -277,6 +284,7 @@ export const EditUser = {
         }
         const missingRoles = computed(() => ['', ...store.adminUsers.allRoles.filter(x => roles.value.indexOf(x) < 0)])
         const missingPermissions = computed(() => ['', ...store.adminUsers.allPermissions.filter(x => permissions.value.indexOf(x) < 0)])
+        
         async function send(request, success, error) {
             successMessage.value = ''
             api.value = await client.api(request, { jsconfig: 'eccn' })
@@ -286,6 +294,7 @@ export const EditUser = {
                 if (success) success(api.value.response)
             }
         }
+        
         async function changePassword() {
             await send(new AdminUpdateUser({ id:props.id, password:model.value.password }), response => {
                 model.value.password = ''
@@ -318,6 +327,7 @@ export const EditUser = {
             requestDto.removePermissions = origPermissions.value.filter(x => permissions.value.indexOf(x) < 0)
             await send(requestDto, done)
         }
+        
         function bind(response) {
             const requestDto = init(new AdminUpdateUser(), dtoProps)
             const result = response.result
@@ -329,10 +339,12 @@ export const EditUser = {
             permissions.value = mapGet(result, 'permissions') || []
             origPermissions.value = [...permissions.value]
             request.value = toFormValues(requestDto)
+            
             // Hack needed for <AutoFormFields /> to remount itself + bind to updated data
             showForm.value = false
             nextTick(() => showForm.value = true)
         }
+        
         async function update() {
             await send(new AdminGetUser({ id:props.id }), response => bind(response))
         }
@@ -340,10 +352,12 @@ export const EditUser = {
             adminUsersNav = update
             await update()
         })
+        
         const showForm = ref(true)
         function updateRequest(value) {
             console.log('updateRequest', value)
         }
+        
         return {
             routes, 
             request,
@@ -428,6 +442,7 @@ export const Users = {
     </form>
     <NewUser v-if="routes.new" class="mb-3" @done="formSearch" />
     <EditUser v-else-if="routes.edit" class="mb-3" :id="routes.edit" @done="formSearch" />
+    
     <Loading v-if="loading" />
     <div v-else-if="results.length" class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -476,6 +491,7 @@ export const Users = {
         const routes = inject('routes')
         const store = inject('store')
         const client = useClient()
+        
         const request = ref(new AdminQueryUsers({ query:routes.q }))
         /** @type {Ref<ApiResult<AdminQueryUsersResponse>>>} */
         const api = ref(new ApiResult())
@@ -485,21 +501,25 @@ export const Users = {
         const page = computed(() => routes.page ? parseInt(routes.page) : 0)
         const link = computed(() => store.adminLink('users'))
         const loading = computed(() => client.loading.value)
+        
         function onKeyDown(e) {
             if (e.key === 'Escape' && (routes.new || routes.edit)) {
                 routes.to({ new:null, edit:null })
             }
         }
+        
         async function formSearch() {
             routes.to({ new:null, edit:null, page:0, q:request.value.query })
             await search()
         }
+        
         async function search() {
             request.value.orderBy = routes.sort ? routes.sort : null
             request.value.skip = routes.page > 0 ? pageSize * Number(routes.page || 1) : 0
             request.value.take = pageSize
             api.value = await client.api(request.value, { jsconfig: 'eccn' })
         }
+        
         function sortBy(field) {
             return routes.sort === field
                 ? '-' + field
@@ -507,11 +527,13 @@ export const Users = {
                     ? ''
                     : field
         }
+        
         async function update() {
             request.value = new AdminQueryUsers({ query:routes.q })
             await search()
         }
         onMounted(update)
+        
         return {
             client,
             store, 
