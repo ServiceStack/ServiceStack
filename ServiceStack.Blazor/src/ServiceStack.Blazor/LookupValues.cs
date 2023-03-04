@@ -97,7 +97,7 @@ public static class LookupValues
 
     public static async Task FetchAsync(JsonApiClient client, AppMetadata appMetadata, string refModel, string refId, string refLabel, bool isComputed, List<string> lookupIds)
     {
-        var lookupOp = appMetadata.Api.Operations.FirstOrDefault(op => op.Request.IsAutoQuery() && op.DataModel?.Name == refModel);
+        var lookupOp = appMetadata.Api.FindAutoQueryReturning(refModel);
         if (lookupOp != null)
         {
             var modelLookup = Lookup.TryGetValue(refModel, out var map)
