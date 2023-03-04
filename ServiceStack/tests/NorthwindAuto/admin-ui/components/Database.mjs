@@ -220,7 +220,7 @@ export const Database = {
                                                 </h2>
                                             </div>
                                             <div class="flex h-7 items-center">
-                                                <CloseButton @close="toggle(selected)" />
+                                                <CloseButton @close="toggle(selected)" button-class="bg-gray-50" />
                                             </div>
                                         </div>
                                     </div>
