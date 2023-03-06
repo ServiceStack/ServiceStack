@@ -104,6 +104,24 @@ public class AppHost : AppHostBase
             typeof(GetAccessToken)
         };
         Plugins.Add(new ServiceStack.Api.OpenApi.OpenApiFeature());
+
+        ScriptContext.Args[nameof(AppData)] = new AppData
+        {
+            AlphaValues = new() {
+                "Alpha", "Bravo", "Charlie"
+            },
+            AlphaDictionary = new() {
+                ["A"] = "Alpha",
+                ["B"] = "Bravo",
+                ["C"] = "Charlie",
+            },
+            AlphaKeyValuePairs = new()
+            {
+                new("A","Alpha"),
+                new("B","Bravo"),
+                new("C","Charlie"),
+            }, 
+        };
     }
 
     // public override string ResolveLocalizedString(string text, IRequest request = null) => 

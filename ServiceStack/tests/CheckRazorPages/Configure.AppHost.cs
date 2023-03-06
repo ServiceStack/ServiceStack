@@ -26,5 +26,7 @@ public class AppHost : AppHostBase, IHostingStartup
         
         // For TodosService
         Plugins.Add(new AutoQueryDataFeature());
+
+        ScriptContext.Args[nameof(AppData)] = AppData.Instance;
     }
 }
