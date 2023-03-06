@@ -823,7 +823,12 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return "{0}[]".Fmt(TypeAlias(arrParts[0]));
+            {
+                var numberOfDimensions = type.Count(c => c == '[');
+                var arrayDimensions = String.Concat(Enumerable.Range(0, numberOfDimensions).Select(_ => "[]"));
+                
+                return "{0}{1}".Fmt(TypeAlias(arrParts[0]), arrayDimensions);
+            }
 
             TypeAliases.TryGetValue(type, out var typeAlias);
 
