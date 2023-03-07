@@ -8,6 +8,7 @@ const BaseUrl = globalThis.BaseUrl || globalThis.Server?.app.baseUrl || lastLeft
 /*raw:*/
 const Usages = {
     csharp: `using ServiceStack;
+using ServiceStack.Text;
 
 var client = new JsonApiClient("${BaseUrl}");
 
@@ -16,7 +17,7 @@ var api = await client.ApiAsync(new Hello {
 });
 
 // Quickly inspect response
-Inspect.printDump(api.Response);`,
+api.Response.PrintDump();`,
     typescript: `import { JsonApiClient, Inspect } from '@servicestack/client'
 import { Hello } from './dtos'
 
@@ -91,6 +92,7 @@ let response = try client.send(request)
 
 Inspect.printDump(response)`,
     vbnet: `Imports ServiceStack
+Imports ServiceStack.Text
 
 Dim client = New JsonApiClient("${BaseUrl}")
 
@@ -99,8 +101,10 @@ Dim api = Await client.ApiAsync(New Hello() With {
 })
 
 ' Quickly inspect response
-Inspect.printDump(api.Response)`,
+
+api.Response.PrintDump()`,
     fsharp: `open ServiceStack
+open ServiceStack.Text
 
 let client = new JsonApiClient("${BaseUrl}")
 
@@ -109,7 +113,7 @@ let api = client.Api(new Hello(
 ))
 
 // Quickly inspect response
-Inspect.printDump(api.Response)`
+api.Response.PrintDump()`
 }
 /*:raw*/
 
