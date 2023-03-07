@@ -506,6 +506,23 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
         public int CustomMax { get; set; }
         public int CustomCount { get; set; }
     }
+    
+    [Test]
+    [IgnoreDialect(Dialect.MySql, "Does not support LIKE escape sequences")]
+    public void Does_support_LIKE_Escape_Char()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<CustomSql>();
+        db.Insert(new CustomSql { Id = 1, Name = "Jo[h]n" });
+        
+        var results = db.Select<CustomSql>("name LIKE @name", new { name = "Jo\\[h\\]n" });
+        if (!Dialect.AnyPostgreSql.HasFlag(Dialect))
+        {
+            Assert.That(results.Count, Is.EqualTo(0));
+        }
+        results = db.Select<CustomSql>("name LIKE @name ESCAPE '\\'", new { name = "Jo\\[h\\]n" });
+        Assert.That(results.Count, Is.EqualTo(1));
+    }
 
     [Test]
     public void Does_project_Sql_columns()

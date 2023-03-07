@@ -30,6 +30,14 @@ namespace ServiceStack.Caching
 
         public IDbConnectionFactory DbFactory { get; set; }
 
+        public char? LikeEscapeChar
+        {
+            set => LikeEscapeSuffix = value == null
+                ? string.Empty
+                : $" ESCAPE '{value}'";
+        }
+        public string LikeEscapeSuffix { get; set; } = string.Empty;
+
         public T Exec<T>(Func<IDbConnection, T> action)
         {
             using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
@@ -419,7 +427,8 @@ namespace ServiceStack.Caching
             Exec(db => {
                 var dbPattern = pattern.Replace('*', '%');
                 var dialect = db.GetDialectProvider();
-                db.Delete<TCacheEntry>(dialect.GetQuotedColumnName("Id") + " LIKE " + dialect.GetParam("dbPattern"), new { dbPattern });
+                db.Delete<TCacheEntry>(
+                    dialect.GetQuotedColumnName("Id") + " LIKE " + dialect.GetParam("dbPattern") + LikeEscapeSuffix, new { dbPattern });
             });
         }
 
@@ -435,7 +444,7 @@ namespace ServiceStack.Caching
                 var id = dialect.GetQuotedColumnName("Id");
 
                 return db.Column<string>(db.From<TCacheEntry>()
-                    .Where(id + " LIKE {0}", dbPattern));
+                    .Where(id + " LIKE {0}" + LikeEscapeSuffix, dbPattern));
             });
         }
 
