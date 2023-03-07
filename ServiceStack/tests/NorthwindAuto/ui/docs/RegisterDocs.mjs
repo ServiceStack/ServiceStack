@@ -7,9 +7,5 @@ export const RegisterDocs = {
           </p>
           <pre class="my-3"><code v-highlightjs="'Plugins.Add(new RegistrationFeature());'"></code></pre>
       </div>    
-    `,
-    setup() {
-        const highlight = globalThis.hljs.highlight
-        return { highlight }
-    }
+    `
 }
