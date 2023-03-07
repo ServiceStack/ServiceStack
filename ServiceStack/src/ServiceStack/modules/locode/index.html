@@ -21,7 +21,7 @@ let DEBUG = false
 <script type="importmap">
 {
     "imports": {
-        "vue": "../js/vue.mjs",
+        "vue": "../js/vue.mjs",  
         "@servicestack/vue": "../js/servicestack-vue.mjs",
         "@servicestack/client": "../js/servicestack-client.mjs",
         "core": "/js/core.mjs",
@@ -71,6 +71,13 @@ let DEBUG = false
                             <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel">
                                 <template #formfooter="{ form, type, apis, model, id }">
                                     <audit-events v-if="form === 'edit' && canAccessCrudEvents" class="mt-4" :key="id" :type="type" :id="id"></audit-events>
+                                </template>
+                                <template v-if="app.component(`New${store.opDataModel}`)" #createform="{ type, configure, done, save }">
+                                    <component :is="app.component(`New${store.opDataModel}`)" :type="type" :configure="configure" @save="save" @done="done" />
+                                </template>
+                                <template v-if="app.component(`Edit${store.opDataModel}`)" #editform="{ model, type, deleteType, configure, done, save }">
+                                    <component :is="app.component(`Edit${store.opDataModel}`)" :model="model" :type="type" :deleteType="deleteType" 
+                                               :configure="configure" @save="save" @done="done" />
                                 </template>
                             </auto-query-grid>
                         </div>
@@ -122,6 +129,7 @@ import { app } from "app"
 const App = {
     template: $1('#app-template'),
     setup(props) {
+        const app = inject('app')
         const store = inject('store')
         const routes = inject('routes')
         const server = inject('server')
@@ -141,7 +149,7 @@ const App = {
         })
         const canAccessCrudEvents = computed(() => 
             server.plugins.autoQuery.crudEventsServices && store.hasRole(server.plugins.autoQuery.accessRole)) 
-        return { store, routes, grid, showSidebar, canAccessCrudEvents }
+        return { app, store, routes, grid, showSidebar, canAccessCrudEvents }
     }
 }
 app.build(App).mount('#app')

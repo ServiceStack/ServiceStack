@@ -41,6 +41,8 @@ public class AppHost : AppHostBase
         }, allowCredentials:true));
 
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
+
+        memFs.WriteFile("locode/custom.html", VirtualFiles.GetFile("custom/locode/custom.html"));
         var files = VirtualFiles.GetDirectory("custom/locode/components").GetAllFiles();
         files.Each(file => memFs.WriteFile($"locode/components/{file.Name}", file));
         
