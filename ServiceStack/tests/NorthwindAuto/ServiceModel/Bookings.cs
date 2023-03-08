@@ -21,7 +21,8 @@ public class Booking : AuditBase
     public DateTime BookingStartDate { get; set; }
     [IntlRelativeTime]
     public DateTime? BookingEndDate { get; set; }
-    [IntlNumber(Currency = NumberCurrency.USD)]
+    //[IntlNumber(Currency = NumberCurrency.USD)]
+    [Format(FormatMethods.Currency, Options = "{ currency:modelValue.notes||'GBP' }")]
     public decimal Cost { get; set; }
 
     [Ref(Model = nameof(Coupon), RefId = nameof(Coupon.Id), RefLabel = nameof(Coupon.Description))]
@@ -30,6 +31,7 @@ public class Booking : AuditBase
 
     [Reference]
     public Coupon Discount { get; set; }
+    [Format(FormatMethods.Hidden)]
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
 }
@@ -74,7 +76,9 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     [ValidateGreaterThan(0)]
     public decimal Cost { get; set; }
     [Required]
+    [Input(Type="date", Options="{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
     public DateTime BookingStartDate { get; set; }
+    [Input(Type="date", Options="{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
     public DateTime? BookingEndDate { get; set; }
     [Input(Type = "textarea")]
     public string? Notes { get; set; }

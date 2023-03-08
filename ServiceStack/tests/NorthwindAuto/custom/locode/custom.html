@@ -15,3 +15,9 @@
     max-width: 21rem;
 }
 </style>
+
+<script type="module">
+ import { useFormatters } from "@servicestack/vue" // TODO remove import stripping after removing *-v1
+
+const { setFormatters, currency } = useFormatters()
+</script>
