@@ -56,7 +56,7 @@ const ApiResponse = {
                 : {}
         }
 
-        let cookies = parseCookie(document.cookie)
+        let cookies = parseCookie(document.cookie) || {}
 
         const cookiesLabel = computed(() =>  `Cookies (${Object.keys(cookies).length})`)
         const tabs = computed(() => {
@@ -74,126 +74,6 @@ const ApiResponse = {
             cookiesLabel,
             tabs,
             fieldAttrs,
-        }
-    }
-}
-
-const AutoForm2 = {
-    template:/*html*/`
-    <form v-if="metaType" ref="form" @submit.prevent="submit" autocomplete="off" 
-          :class="formClass || 'shadow sm:rounded-md'">
-        <div :class="innerFormClass">
-          <div :class="bodyClass">
-            <div :class="headerClass || 'p-6'">
-              <div v-if="$slots['heading']"><slot name="heading"></slot></div>
-              <h3 v-else :class="headingClass">{{ title }}</h3>
-
-              <div v-if="$slots['subheading']"><slot name="subheading"></slot></div>
-              <p v-else-if="subHeading" :class="subHeadingClass">{{ subHeading }}</p>
-              <p v-else-if="metaType?.notes" :class="['notes',subHeadingClass]" v-html="metaType?.notes"></p>
-            </div>
-
-            <slot name="header"></slot>
-            <ErrorSummary :error="api.error" />
-            <input type="submit" class="hidden">
-            <AutoFormFields :type="type" :modelValue="model" @update:modelValue="update" :api="api" :configureField="configureField" />
-            <slot name="footer"></slot>
-
-          </div>
-          <slot name="buttons">
-            <div :class="buttonsClass">
-              <div>
-                <FormLoading v-if="showLoading && loading" />
-              </div>
-              <div class="flex justify-end">
-                <div></div>
-                <PrimaryButton>{{ submitLabel || 'Submit' }}</PrimaryButton>
-              </div>
-            </div>
-          </slot>
-        </div>
-    </form>
-    `,
-    props:['type','modelValue','jsconfig','heading','subHeading','showLoading','configureField','bodyClass','formClass','innerFormClass','headerClass','buttonsClass','headingClass','subHeadingClass','submitLabel'],
-    emits:['success','error','update:modelValue'],
-    setup(props, { emit }) {
-        const client = useClient()
-
-        const { getTypeName } = useUtils()
-        const { typeOf, typeProperties, Crud, createDto, formValues } = useMetadata()
-
-        const api = ref(props.api || new ApiResult())
-
-        const buttonsClass = computed(() => typeof props.buttonsClass == 'string' ? props.formClass : css.form.buttonsClass)
-        const headingClass = computed(() => typeof props.headingClass == 'string' ? props.formClass : css.card.headingClass)
-        const subHeadingClass = computed(() => typeof props.subHeadingClass == 'string' ? props.subHeadingClass : css.card.subHeadingClass)
-
-        const typeName = computed(() => getTypeName(props.type))
-        const metaType = computed(() => typeOf(typeName.value))
-        const model = ref(props.modelValue || newDto())
-        const loading = computed(() => client.loading.value)
-        const dataModel = computed(() => Crud.model(metaType.value))
-        const title = computed(() => props.heading || typeOf(typeName.value)?.description ||
-            (dataModel.value ? `New ${humanize(dataModel.value)}` : humanize(typeName.value)))
-        
-        function newDto() {
-            return typeof props.type == 'string' ? createDto(props.type) : props.type ? new props.type() : props.modelValue
-        }
-        
-        /** @param {SubmitEvent} e */
-        async function submit(e) {
-            /** @type {HTMLFormElement} */
-            let form = e.target
-
-            const dto = newDto()
-            let method = map(dto?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
-            let returnsVoid = map(dto?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
-            const jsconfig = props.jsconfig || 'eccn,edv'
-
-            if (HttpMethods.hasRequestBody(method)) {
-                let requestDto = new dto.constructor()
-                let formData = new FormData(form)
-                if (!returnsVoid) {
-                    api.value = await client.apiForm(requestDto, formData, { jsconfig })
-                } else {
-                    api.value = await client.apiFormVoid(requestDto, formData, { jsconfig })
-                }
-            } else {
-                let fieldValues = formValues(form, typeProperties(metaType.value))
-                let requestDto = new dto.constructor(fieldValues)
-                if (!returnsVoid) {
-                    api.value = await client.api(requestDto, { jsconfig })
-                } else {
-                    api.value = await client.apiVoid(requestDto, { jsconfig })
-                }
-            }
-
-            if (api.value.succeeded) {
-                //console.debug('success',api.value?.response)
-                emit('success', api.value.response)
-            } else {
-                //console.debug('error',api.value?.error)
-                emit('error', api.value.error)
-            }
-        }
-
-        /** @type {ApiRequest} */
-        function update(newModel) {
-            emit('update:modelValue', newModel)
-        }
-
-        return {
-            api,
-            model,
-            metaType,
-            loading,
-            title,
-            headingClass,
-            subHeadingClass,
-            buttonsClass,
-            update,
-            submit,
-            humanize,
         }
     }
 }

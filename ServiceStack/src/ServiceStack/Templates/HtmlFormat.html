@@ -191,7 +191,7 @@ const ApiResponse = {
                 ? { 'class': 'whitespace-pre overflow-x-auto' }
                 : {}
         }
-        let cookies = parseCookie(document.cookie)
+        let cookies = parseCookie(document.cookie) || {}
         const cookiesLabel = computed(() =>  `Cookies (${Object.keys(cookies).length})`)
         const tabs = computed(() => {
             let tabs = { Body:'' }
