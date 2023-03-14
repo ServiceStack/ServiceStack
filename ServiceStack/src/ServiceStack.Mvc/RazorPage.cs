@@ -35,7 +35,7 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
 {
     public static RazorPageConfig Config { get; set; } = new(); 
     
-    public HttpContext GetHttpContext() => base.HttpContext ?? base.ViewContext.HttpContext;
+    public virtual HttpContext? GetHttpContext() => base.HttpContext ?? base.ViewContext?.HttpContext;
 
     public override ViewContext ViewContext
     {
@@ -45,7 +45,9 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
             base.ViewContext = value;
             if (base.PageContext == null) //can be null
             {
-                var httpCtx = GetHttpContext();
+                var httpCtx = GetHttpContext() ?? new DefaultHttpContext {
+                    RequestServices = HostContext.Container
+                };
                 var actionContext = new ActionContext(httpCtx,
                     httpCtx.GetRouteData(),
                     ViewContext.ActionDescriptor);
@@ -54,11 +56,11 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
         }
     }
 
-    public IHttpRequest HttpRequest
+    public virtual IHttpRequest HttpRequest
     {
         get
         {
-            if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out var oRequest)
+            if (base.ViewContext?.ViewData.TryGetValue(Keywords.IRequest, out var oRequest) == true
                 || GetHttpContext()?.Items.TryGetValue(Keywords.IRequest, out oRequest) == true)
             {
                 if (oRequest is IHttpRequest httpReq)
