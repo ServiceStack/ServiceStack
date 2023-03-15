@@ -85,7 +85,6 @@ public class RazorSsg
     public static async Task PrerenderAsync(ServiceStackHost appHost, IEnumerable<IVirtualFile> razorFiles, string distDir)
     {
         var log = appHost.Resolve<ILogger<RazorSsg>>();
-        log.LogInformation("prerender...");
         
         var razorPages = appHost.Resolve<RazorPagesEngine>();
         foreach (var razorFile in razorFiles)
@@ -115,6 +114,7 @@ public class RazorSsg
                 var toPath = distDir.CombineWith(staticPath);
                 FileSystemVirtualFiles.AssertDirectory(Path.GetDirectoryName(toPath));
                 
+                log.LogInformation("Rendering {0} to {1}", razorFile.VirtualPath, staticPath);
                 await using var fs = File.OpenWrite(toPath);
                 var ctx = CreateHttpContext(appHost, pathInfo: pageRoute ?? staticPath.LastLeftPart('.'));
                 await razorPages.WriteHtmlAsync(fs, viewResult.View, model:null, ctx:ctx);
@@ -127,9 +127,6 @@ public class RazorSsg
             if (renderStaticDef == null) continue;
 
             var modelType = renderStaticDef.GetGenericArguments()[0];
-            log.LogInformation("IRenderStatic {0}, def: {1}", 
-                razorPageType.Name, modelType.Name);
-
             var method = typeof(RazorSsg).GetMethod(nameof(RenderStaticRazorPageAsync));
             var genericMi = method.MakeGenericMethod(modelType);
             var task = (Task) genericMi.Invoke(null, new object[] { appHost, razorFile, distDir });
@@ -153,8 +150,14 @@ public class RazorSsg
         
         var renderStatic = (IRenderStatic<T>)razorPage;
         var pageModels = renderStatic.GetStaticProps(new RenderContext(appHost.Container, razorFile));
-        foreach (var pageModel in pageModels)
+
+        if (pageModels.Count > 0)
         {
+            log.LogInformation("Rendering {0} {1}'s in {2}...", pageModels.Count, typeof(T).Name, razorFile.VirtualPath);            
+        }
+        for (var i = 0; i < pageModels.Count; i++)
+        {
+            var pageModel = pageModels[i];
             string? staticPath = null;
             if (razorPage is IRenderStaticWithPath<T> renderStaticWithPath)
             {
@@ -167,22 +170,26 @@ public class RazorSsg
                 if (result.Matches)
                     staticPath = result.Uri + ".html";
             }
+
             if (staticPath == null)
             {
-                log.LogWarning("Could not resolve static path for {0}, ignoring...", pageRoute ?? razorFile.VirtualPath);
+                log.LogWarning("Could not resolve static path for {0}, ignoring...",
+                    pageRoute ?? razorFile.VirtualPath);
                 return;
             }
-            
+
             viewResult = razorPages.GetView(razorFile.VirtualPath);
             if (!viewResult.Success)
                 return;
-            
+
             var toPath = destDir.CombineWith(staticPath);
             FileSystemVirtualFiles.AssertDirectory(Path.GetDirectoryName(toPath));
+
+            log.LogInformation("Rendering {0}/{1} to {2}", i+1, pageModels.Count, staticPath);
             
             await using var fs = File.OpenWrite(toPath);
             var ctx = CreateHttpContext(appHost, pathInfo: pageRoute ?? staticPath.LastLeftPart('.'));
-            await razorPages.WriteHtmlAsync(fs, viewResult.View, model:pageModel, ctx:ctx);
+            await razorPages.WriteHtmlAsync(fs, viewResult.View, model: pageModel, ctx: ctx);
         }
     }
 }
