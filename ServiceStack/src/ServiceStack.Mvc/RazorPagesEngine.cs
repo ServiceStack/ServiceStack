@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -73,7 +75,15 @@ public class RazorPagesEngine
             if (layout != null)
                 viewData["Layout"] = layout;
 
-            viewData[Keywords.IRequest] = req ?? new ServiceStack.Host.BasicRequest { PathInfo = view.Path };
+            if (req == null)
+            {
+                if (ctx.Items.TryGetValue(Keywords.IRequest, out var oReq))
+                {
+                    req = oReq as IRequest;
+                }
+            }
+            
+            viewData[Keywords.IRequest] = req ?? new Host.BasicRequest { PathInfo = view.Path };
             
             razorPage.PageContext = new PageContext(actionContext)
             {
@@ -114,8 +124,26 @@ public class RazorPagesEngine
             throw ex;
         }
     }
+    
+    public async Task<string> RenderToHtmlAsync(IView? page, PageModel model, CancellationToken token=default)
+    {
+        using var ms = MemoryStreamFactory.GetStream();
+        await WriteHtmlAsync(ms, page, model);
+        ms.Position = 0;
+        var html = Encoding.UTF8.GetString((await ms.ReadFullyAsMemoryAsync(token)).Span);
+        return html;
+    }
+    
+    public string RenderToHtml(IView? page, PageModel? model)
+    {
+        using var ms = MemoryStreamFactory.GetStream();
+        WriteHtmlAsync(ms, page, model).GetAwaiter().GetResult(); // No better way to run Async on Startup
+        ms.Position = 0;
+        var html = Encoding.UTF8.GetString(ms.ReadFullyAsMemory().Span);
+        return html;
+    }
 
-    static ConcurrentDictionary<Type, StaticMethodInvoker> createViewDataCache = new();
+    static readonly ConcurrentDictionary<Type, StaticMethodInvoker> createViewDataCache = new();
     public static ViewDataDictionary CreateViewData(object model)
     {
         var invoker = createViewDataCache.GetOrAdd(model.GetType(), type => {

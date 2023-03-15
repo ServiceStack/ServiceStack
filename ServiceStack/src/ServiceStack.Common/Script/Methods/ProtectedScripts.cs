@@ -1716,7 +1716,7 @@ namespace ServiceStack.Script
         }
         public IgnoreResult Delete(string path)
         {
-            FileSystemVirtualFiles.DeleteDirectoryRecursive(path);
+            FileSystemVirtualFiles.DeleteDirectory(path);
             return IgnoreResult.Value;
         }
         public bool Exists(string path) => Directory.Exists(path);

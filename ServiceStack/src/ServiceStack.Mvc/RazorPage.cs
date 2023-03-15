@@ -56,20 +56,20 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
         }
     }
 
-    public virtual IHttpRequest HttpRequest
+    public virtual IHttpRequest? TryGetHttpRequest()
     {
-        get
+        if (base.ViewContext?.ViewData.TryGetValue(Keywords.IRequest, out var oRequest) == true
+            || GetHttpContext()?.Items.TryGetValue(Keywords.IRequest, out oRequest) == true)
         {
-            if (base.ViewContext?.ViewData.TryGetValue(Keywords.IRequest, out var oRequest) == true
-                || GetHttpContext()?.Items.TryGetValue(Keywords.IRequest, out oRequest) == true)
-            {
-                if (oRequest is IHttpRequest httpReq)
-                    return httpReq;
-            }
-            return AppHostBase.GetOrCreateRequest(HttpContext) as IHttpRequest
-                ?? new BasicHttpRequest();
+            if (oRequest is IHttpRequest httpReq)
+                return httpReq;
         }
+        return null;
     }
+
+    public virtual IHttpRequest HttpRequest => TryGetHttpRequest() 
+        ?? AppHostBase.GetOrCreateRequest(HttpContext) as IHttpRequest
+        ?? new BasicHttpRequest();
 
     public IHttpResponse HttpResponse => (IHttpResponse)HttpRequest.Response;
 

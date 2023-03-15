@@ -713,18 +713,24 @@ public static class RazorViewExtensions
     {
         var req = 
 #if NET6_0_OR_GREATER
-            html.ViewContext.ViewData.Model is ServiceStack.Mvc.RazorPage razorPage ? razorPage.HttpRequest : null ??
+            (html.ViewContext.ViewData.Model as ServiceStack.Mvc.RazorPage)?.TryGetHttpRequest() ??
 #endif 
             html.ViewContext.ViewData[Keywords.IRequest] as IRequest
             ?? html.ViewContext.HttpContext.Items[Keywords.IRequest] as IRequest
+#if NET6_0_OR_GREATER
+            ?? (html.ViewContext.ViewData.Model as ServiceStack.Mvc.RazorPage)?.HttpRequest
+#endif 
             ?? HostContext.AppHost.TryGetCurrentRequest();
         return req;
     }
 
-    public static bool MatchesPath(this IHtmlHelper html, string path, bool exact = false) =>
-        X.Map(html.GetRequest(), req => exact || path.Length <= 1
+    public static bool MatchesPath(this IHtmlHelper html, string path, bool exact = false)
+    {
+        var req = html.GetRequest();
+        return exact || path.Length <= 1
             ? req.PathInfo?.TrimEnd('/').EqualsIgnoreCase(path.TrimEnd('/')) == true
-            : req.PathInfo.TrimEnd('/').StartsWithIgnoreCase(path.TrimEnd('/')));
+            : req.PathInfo?.TrimEnd('/').StartsWithIgnoreCase(path.TrimEnd('/')) == true; 
+    }
 
     public static IResponse GetResponse(this IHtmlHelper htmlHelper) => 
         htmlHelper.GetRequest().Response;
