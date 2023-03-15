@@ -151,6 +151,9 @@ namespace ServiceStack.IO
         
         public static void DeleteDirectory(string path)
         {
+            if (!Directory.Exists(path))
+                return;
+            
             //modified from https://stackoverflow.com/a/1703799/85785
             foreach (var directory in Directory.GetDirectories(path))
             {
