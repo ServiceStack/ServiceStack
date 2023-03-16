@@ -647,6 +647,16 @@ namespace ServiceStack.OrmLite
         public virtual SqlExpression<T> Or(Expression<Func<T, bool>> predicate, params object[] filterParams) => 
             AppendToWhere("OR", predicate, filterParams);
 
+
+        public virtual SqlExpression<T> Exists(ISqlExpression subSelect)
+        {
+            return AppendToWhere("AND", FormatFilter($"EXISTS ({subSelect.ToSelectStatement()})"));
+        }
+        public virtual SqlExpression<T> NotExists(ISqlExpression subSelect)
+        {
+            return AppendToWhere("AND", FormatFilter($"NOT EXISTS ({subSelect.ToSelectStatement()})"));
+        }
+        
         private LambdaExpression originalLambda;
 
         void Reset(string sep = " ", bool useFieldName = true)
