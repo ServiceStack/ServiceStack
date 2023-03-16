@@ -645,4 +645,31 @@ public class SqlExpressionTests : ExpressionsTestBase
         Assert.That(rows.Count, Is.EqualTo(3));
         Assert.That(rows.All(x => x["count"].ConvertTo<int>() == 3));
     }
+
+    [Test]
+    public void Can_use_SqlCustom_in_subselect_condition()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<LetterFrequency>();
+        db.DropAndCreateTable<LetterWeighting>();
+
+        var letters = "A,B,C,D,E".Split(',');
+        var i = 0;
+        letters.Each(letter =>
+        {
+            var id = db.Insert(new LetterFrequency { Letter = letter }, selectIdentity: true);
+            db.Insert(new LetterWeighting { LetterFrequencyId = id, Weighting = ++i * 10 });
+        });
+        db.Insert(new LetterFrequency { Letter = "F" });
+
+        var subQ = db.From<LetterWeighting>(db.TableAlias("b"))
+            .Where<LetterFrequency,LetterWeighting>((a,b) => Sql.TableAlias(a.Id, "a") == Sql.TableAlias(b.LetterFrequencyId, "b"))
+            .Select(Sql.Custom("null"));
+        var q = db.From<LetterFrequency>(db.TableAlias("a"))
+            .UnsafeWhere($"NOT EXISTS ({subQ.ToSelectStatement()})");
+
+        var results = db.Select(q);
+        Assert.That(results.Count, Is.EqualTo(1));
+        Assert.That(results[0].Letter, Is.EqualTo("F"));
+    }
 }
