@@ -662,11 +662,10 @@ public class SqlExpressionTests : ExpressionsTestBase
         });
         db.Insert(new LetterFrequency { Letter = "F" });
 
-        var subQ = db.From<LetterWeighting>(db.TableAlias("b"))
-            .Where<LetterFrequency,LetterWeighting>((a,b) => Sql.TableAlias(a.Id, "a") == Sql.TableAlias(b.LetterFrequencyId, "b"))
-            .Select(Sql.Custom("null"));
         var q = db.From<LetterFrequency>(db.TableAlias("a"))
-            .WhereNotExists(subQ);
+            .WhereNotExists(db.From<LetterWeighting>()
+                .Where<LetterFrequency,LetterWeighting>((a,b) => b.LetterFrequencyId == Sql.TableAlias(a.Id, "a"))
+                .Select(Sql.Custom("null")));
 
         var results = db.Select(q);
         Assert.That(results.Count, Is.EqualTo(1));
