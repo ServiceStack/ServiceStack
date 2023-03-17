@@ -666,7 +666,7 @@ public class SqlExpressionTests : ExpressionsTestBase
             .Where<LetterFrequency,LetterWeighting>((a,b) => Sql.TableAlias(a.Id, "a") == Sql.TableAlias(b.LetterFrequencyId, "b"))
             .Select(Sql.Custom("null"));
         var q = db.From<LetterFrequency>(db.TableAlias("a"))
-            .NotExists(subQ);
+            .WhereNotExists(subQ);
 
         var results = db.Select(q);
         Assert.That(results.Count, Is.EqualTo(1));

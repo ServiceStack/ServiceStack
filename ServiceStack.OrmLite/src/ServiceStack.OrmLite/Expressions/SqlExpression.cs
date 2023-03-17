@@ -648,11 +648,11 @@ namespace ServiceStack.OrmLite
             AppendToWhere("OR", predicate, filterParams);
 
 
-        public virtual SqlExpression<T> Exists(ISqlExpression subSelect)
+        public virtual SqlExpression<T> WhereExists(ISqlExpression subSelect)
         {
             return AppendToWhere("AND", FormatFilter($"EXISTS ({subSelect.ToSelectStatement()})"));
         }
-        public virtual SqlExpression<T> NotExists(ISqlExpression subSelect)
+        public virtual SqlExpression<T> WhereNotExists(ISqlExpression subSelect)
         {
             return AppendToWhere("AND", FormatFilter($"NOT EXISTS ({subSelect.ToSelectStatement()})"));
         }
