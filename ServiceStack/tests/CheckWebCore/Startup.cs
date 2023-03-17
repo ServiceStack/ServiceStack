@@ -120,7 +120,7 @@ namespace CheckWebCore
 
             app.UseServiceStack(new AppHost
             {
-                // PathBase = "/api",
+                PathBase = "/api",
             });
         }
 

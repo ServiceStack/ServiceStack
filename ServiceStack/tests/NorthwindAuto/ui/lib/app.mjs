@@ -1,5 +1,5 @@
 import { reactive } from "vue"
-import { JsonServiceClient, map, lastLeftPart, trimEnd, appendQueryString, enc, queryString } from "@servicestack/client"
+import { JsonServiceClient, combinePaths, lastLeftPart, trimEnd, appendQueryString, enc, queryString } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/vue"
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
@@ -311,6 +311,9 @@ let store = {
             if (src) {
                 resolve(src)
             } else {
+                if (url[0] === '/') {
+                    url = combinePaths(BASE_URL, url)
+                }
                 fetch(url)
                     .then(r => {
                         if (r.ok) return r.text()
