@@ -196,8 +196,6 @@ public static class MimeTypes
 
         switch (fileExt)
         {
-            case "jpeg":
-                return "image/jpeg";
             case "gif":
                 return "image/gif";
             case "png":
@@ -209,7 +207,11 @@ public static class MimeTypes
             case "webp":
                 return "image/webp";
 
+            case "jpeg":
             case "jpg":
+            case "jpe":
+            case "jif":
+            case "jfif":
                 return "image/jpeg";
 
             case "tif":
