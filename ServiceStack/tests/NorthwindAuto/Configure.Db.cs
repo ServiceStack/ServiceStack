@@ -46,6 +46,14 @@ public class ConfigureDb : IHostingStartup
             db.DropAndCreateTable<FileSystemItem>();
             db.DropAndCreateTable<FileSystemFile>();
             
+            db.DropTable<Todo>();
+            
+            if (db.CreateTableIfNotExists<Todo>()) 
+            {
+                db.Insert(new Todo { Text = "Learn" });
+                db.Insert(new Todo { Text = "AutoQuery" });
+            }
+            
             appHost.Resolve<IValidationSource>().InitSchema();
             
             appHost.Plugins.Add(new AdminDatabaseFeature {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Linq;
 using ServiceStack;
 using MyApp.ServiceModel;
@@ -41,3 +42,4 @@ public class TodosServices : Service
 
     public void Delete(DeleteTodos request) => Todos.TryDeleteByIds(request.Ids);
 }
+*/
