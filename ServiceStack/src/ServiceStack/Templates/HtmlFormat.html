@@ -58,9 +58,9 @@ import {
     $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, mapGet, leftPart, rightPart
 } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
-import Code from "/js/components/Code.mjs"
-import CopyIcon from "/js/components/CopyIcon.mjs"
-import CopyLine from "/js/components/CopyLine.mjs"
+import Code from "./js/components/Code.mjs"
+import CopyIcon from "./js/components/CopyIcon.mjs"
+import CopyLine from "./js/components/CopyLine.mjs"
 const qs = queryString(location.search)
 const value = globalThis.Dto
 const BaseUrl = globalThis.BaseUrl
@@ -351,6 +351,6 @@ const components = { Preview, Json, Form, Code, CopyIcon, CopyLine }
 Object.keys(components).forEach(k => app.component(k, components[k]))
 app.mount('#app')
 </script>
-<script src="/js/highlight.js"></script>
+<script src="js/highlight.js"></script>
 </body>
 </html>
