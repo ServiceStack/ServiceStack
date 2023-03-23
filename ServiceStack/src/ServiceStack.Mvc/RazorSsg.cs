@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -52,6 +53,19 @@ public interface IRenderStaticWithPath<T> : IRenderStatic<T> where T : PageModel
 
 public class RazorSsg
 {
+    public static string? GetBaseHref()
+    {
+        var args = Environment.GetCommandLineArgs()
+            .Select(arg => arg.TrimPrefixes("/", "--")).ToList();
+        var argPos = args.IndexOf("BaseHref");
+        var baseHref = (argPos >= 0 && argPos + 1 < args.Count
+            ? args[argPos + 1]
+            : null) ?? Environment.GetEnvironmentVariable("BASE_HREF");
+        return !string.IsNullOrEmpty(baseHref) 
+            ? baseHref 
+            : null;
+    }
+    
     public static async Task<string?> GetPageRouteAsync(IVirtualFile razorFile)
     {
         using var readFs = razorFile.OpenText();
