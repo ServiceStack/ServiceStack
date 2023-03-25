@@ -87,6 +87,10 @@ namespace ServiceStack
                 appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
                 appHost.AddToAppMetadata(metadata => metadata.HttpHandlers["ApiHandlers.Json"] = JsonApiRoute);
             }
+            else
+            {
+                JsonApiRoute = null;
+            }
             
             appHost.CatchAllHandlers.Add(ProcessRequest);
         }

@@ -11,10 +11,10 @@
 <script type="importmap">
 {
     "imports": {
-        "vue": "../js/vue.mjs",  
-        "@servicestack/vue": "../js/servicestack-vue.mjs",
-        "@servicestack/client": "../js/servicestack-client.mjs",
-        "core": "../js/core.mjs"
+        "vue": "./js/vue.mjs",  
+        "@servicestack/vue": "./js/servicestack-vue.mjs",
+        "@servicestack/client": "./js/servicestack-client.mjs",
+        "core": "./js/core.mjs"
     }
 }
 </script>
@@ -32,6 +32,7 @@ window.RequestName = "${RequestName}"
 </script>
 <script>window.RequestDto = ${RequestDto}</script>
 <script>window.Dto = ${Dto}</script>
+<script>window.ServerInfo = ${ServerInfo}</script>
 <div id="app"></div>
 <template id="app-template">
 <div class="h-screen flex flex-col">
@@ -54,7 +55,7 @@ window.RequestName = "${RequestName}"
 <script type="module">
 import { computed, createApp, onMounted, ref } from "vue"
 import {
-    JsonApiClient, ApiResult, HttpMethods,
+    JsonApiClient, JsonServiceClient, ApiResult, HttpMethods,
     $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, mapGet, leftPart, rightPart
 } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
@@ -66,7 +67,10 @@ const value = globalThis.Dto
 const BaseUrl = globalThis.BaseUrl
 const RequestName = globalThis.RequestName
 const Usages = globalThis.Usages
-const client = JsonApiClient.create(BaseUrl)
+const ServerInfo = globalThis.ServerInfo
+const client = ServerInfo.jsonApiRoute === "/api/{Request}"
+    ? JsonApiClient.create(BaseUrl)
+    : new JsonServiceClient(BaseUrl)
 let headers = []
 client.responseFilter = res => {
     headers = Object.entries(res.headers)
