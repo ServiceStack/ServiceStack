@@ -579,7 +579,7 @@ f.Css?.Field ?? (f.Type == Input.Types.Textarea
 f.Type == Input.Types.Hidden ? "hidden" : "") style="width:100%">
 @if (dataModelProp?.Ref != null && f.Type != Input.Types.File)
 {
-<LookupInput MetadataType=@DataModelType Input=@f Model=@ModelDictionary Status=@Api?.Error Change="OnChange" />
+<LookupInput MetadataType=@DataModelType Input=@f Model=@ModelDictionary Status=@Api?.Error />
 }
 else
 {
@@ -644,7 +644,7 @@ else if (ShowToolbar)
 {
 <QueryPrefs Show=@ShowQueryPrefs Columns="ViewModelColumns" Prefs="ApiPrefs" Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
 <div class="pl-1 pt-1 flex flex-wrap">
-<div class="flex pb-1 sm:pb-0">
+<div class="flex mt-1">
 @if (ShowPreferences)
 {
 <button type="button" class="pl-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
@@ -673,7 +673,7 @@ title="Last page" disabled=@(!canLast) @onclick="_ => skipTo(Total)">
 </div>
 @if (ShowPagingInfo)
 {
-<div class="flex pb-1 sm:pb-0">
+<div class="flex mt-1">
 <div class="px-4 text-lg text-black dark:text-white">
 @if (apiLoading)
 {
@@ -695,10 +695,10 @@ else if (Api != null)
 </div>
 </div>
 }
-<div class="flex pb-1 sm:pb-0">
+<div class="flex flex-wrap">
 @if (ShowRefresh)
 {
-<div class="pl-2">
+<div class="pl-2 mt-1">
 <button type="button" @onclick="RefreshAsync" title="Refresh" class=@ToolbarButtonClass>
 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20v-5h-5M4 4v5h5m10.938 2A8.001 8.001 0 0 0 5.07 8m-1.008 5a8.001 8.001  0 0 0 14.868 3" /></svg>
 </button>
@@ -706,7 +706,7 @@ else if (Api != null)
 }
 @if (ShowDownloadCsv)
 {
-<div class="pl-2">
+<div class="pl-2 mt-1">
 <button type="button" @onclick="downloadCsv" title="Download CSV" class=@ToolbarButtonClass>
 <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd" /><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z" /><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z" /></svg>
 <span class="text-green-900 dark:text-green-100">Excel</span>
@@ -715,7 +715,7 @@ else if (Api != null)
 }
 @if (ShowCopyApiUrl)
 {
-<div class="pl-2">
+<div class="pl-2 mt-1">
 <button type="button" @onclick="copyApiUrl" title="Copy API URL" class=@ToolbarButtonClass>
 @if (copiedApiUrl)
 {
@@ -725,13 +725,13 @@ else
 {
 <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
 }
-<span>Copy URL</span>
+<span class="whitespace-nowrap">Copy URL</span>
 </button>
 </div>
 }
 @if (hasPrefs && ShowResetPreferences)
 {
-<div class="pl-2">
+<div class="pl-2 mt-1">
 <button type="button" @onclick="ResetPreferencesAsync" title="Reset Preferences & Filters" class=@ToolbarButtonClass>
 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z" /></svg>
 </button>
@@ -739,7 +739,7 @@ else
 }
 @if (ShowFiltersView && filtersCount > 0)
 {
-<div class="pl-2">
+<div class="pl-2 mt-1">
 <button type="button" @onclick=@(_ => open = open == Features.Filters ? null : Features.Filters) class=@ToolbarButtonClass aria-expanded="false">
 <svg class="flex-none w-5 h-5 mr-2 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
 <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
@@ -764,10 +764,10 @@ else
 }
 @if (ShowNewItem && CreateOp != null)
 {
-<div class="pl-2">
+<div class="pl-2 mt-1">
 <button type="button" @onclick="OnShowNewItem" title=@($"New {typeof(Model).Name}") class=@ToolbarButtonClass>
 <svg class="w-5 h-5 mr-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"></path></svg>
-<span>@($"New {typeof(Model).Name}")</span>
+<span class="whitespace-nowrap">@($"New {typeof(Model).Name}")</span>
 </button>
 </div>
 }
@@ -853,6 +853,20 @@ else
 }
 </ol>
 </nav>
+@if (Label != null)
+{
+<span class="flex" title=@Title>
+@if (Icon != null)
+{
+<Icon Image=@Icon Class="w-5 h-5 mr-1" />
+}
+@Label
+</span>
+}
+else
+{
+<PreviewFormat Format=@PropType?.Format Value=@Value />
+}
 @typeparam TValue
 @inherits CheckboxInputBase<TValue>
 <div class=@ClassNames("relative flex items-start", CssClass())>
@@ -882,8 +896,8 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <input id="confirmDelete" type="checkbox" @bind-value="confirmDelete" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black">
 <label for="confirmDelete" class="mx-1 select-none dark:text-gray-300">@ConfirmLabel</label>
 <button type="button" disabled=@(!confirmDelete) @onclick="OnDelete"
-class=@ClassNames(confirmDelete ? "bg-red-500 hover:bg-red-700" : "bg-red-400 dark:border-red-800 dark:bg-gray-800",
-"inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:ring-offset-black", Class)>
+class=@ClassNames("select-none inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white",
+confirmDelete? "cursor-pointer bg-red-600 dark:bg-red-300 hover:bg-red-700 dark:hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" : "bg-red-400 dark:bg-red-500", Class)>
 @if (ChildContent != null)
 {
 @ChildContent
