@@ -757,11 +757,13 @@ namespace ServiceStack.NativeTypes.Dart
                         {
                             if (sbGeneric.Length > 0)
                                 sbGeneric.Append(',');
-                            sbGeneric.Append("$").Append(arg.TrimStart('\''));
+                            sbGeneric.Append('$').Append(arg.TrimStart('\''));
                         }
                         var genericTypeName = type.Name.LeftPart('`') + '<' + StringBuilderCacheAlt.ReturnAndFree(sbGeneric) + '>';
                         sb.AppendLine($"getTypeName() => \"{genericTypeName}\";");
                     }
+                    if (options?.Op?.Method != null)
+                        sb.AppendLine("getMethod() => '" + options.Op.Method + "';");
 
                     if (isClass)
                     {
