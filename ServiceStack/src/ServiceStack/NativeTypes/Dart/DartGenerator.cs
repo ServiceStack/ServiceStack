@@ -527,6 +527,21 @@ namespace ServiceStack.NativeTypes.Dart
                 var extend = baseClass != null
                     ? " extends " + baseClass
                     : "";
+
+                var verbInterface = options.Op?.Method switch
+                {
+                    HttpMethods.Get => nameof(IGet),
+                    HttpMethods.Post => nameof(IPost),
+                    HttpMethods.Put => nameof(IPut),
+                    HttpMethods.Patch => nameof(IPatch),
+                    HttpMethods.Delete => nameof(IDelete),
+                    HttpMethods.Options => nameof(IOptions),
+                    _ => null
+                };
+                if (verbInterface != null && !interfaces.Contains(verbInterface))
+                {
+                    interfaces.Add(verbInterface);
+                }
                 
                 if (interfaces.Count > 0)
                 {
@@ -762,8 +777,6 @@ namespace ServiceStack.NativeTypes.Dart
                         var genericTypeName = type.Name.LeftPart('`') + '<' + StringBuilderCacheAlt.ReturnAndFree(sbGeneric) + '>';
                         sb.AppendLine($"getTypeName() => \"{genericTypeName}\";");
                     }
-                    if (options?.Op?.Method != null)
-                        sb.AppendLine("getMethod() => '" + options.Op.Method + "';");
 
                     if (isClass)
                     {
