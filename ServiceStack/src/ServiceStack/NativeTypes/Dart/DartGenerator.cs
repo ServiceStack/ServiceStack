@@ -701,7 +701,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.Append(typeNameWithoutGenericArgs + "({");
                             else
                                 sbBody.Append(",");
-                            sbBody.Append($"this.{GetPropertyName(prop)}");
+                            sbBody.Append($"this.{GetSafePropertyName(prop)}");
                             if (!string.IsNullOrEmpty(prop.Value))
                             {
                                 sbBody.Append("=" + prop.Value);
