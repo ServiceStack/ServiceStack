@@ -11,6 +11,7 @@ using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.NativeTypes;
+using ServiceStack.Templates;
 
 namespace ServiceStack.Metadata
 {
@@ -163,17 +164,20 @@ namespace ServiceStack.Metadata
 .types-nav a:hover { color: rgb(55 65 81) }
 .types-nav a.active { background-color: rgb(243 244 246); color: rgb(55 65 81) }
 </style>");
-                var entries = new KeyValuePair<string,string>[] {
-                    new ("csharp", "C#"),
-                    new ("typescript", "TypeScript"),
-                    new ("dart", "Dart"),
-                    new ("java", "Java"),
-                    new ("kotlin", "Kotlin"),
-                    new ("python", "Python"),
-                    new ("swift", "Swift"),
-                    new ("vbnet", "VB.NET"),
-                    new ("fsharp", "F#"),
-                };
+                
+                var entries = HtmlTemplates.ShowLanguages && HostContext.HasPlugin<NativeTypesFeature>() 
+                    ? new KeyValuePair<string,string>[] {
+                        new ("csharp", "C#"),
+                        new ("mjs", "JavaScript"),
+                        new ("typescript", "TypeScript"),
+                        new ("dart", "Dart"),
+                        new ("java", "Java"),
+                        new ("kotlin", "Kotlin"),
+                        new ("python", "Python"),
+                        new ("swift", "Swift"),
+                        new ("vbnet", "VB.NET"),
+                        new ("fsharp", "F#"),
+                    } : Array.Empty<KeyValuePair<string, string>>();
                 sb.AppendLine("<div class=\"types-nav\"><nav class=\"flex space-x-4\">");
                 var queryLang = httpReq.QueryString["lang"];
                 var queryLangName = "";

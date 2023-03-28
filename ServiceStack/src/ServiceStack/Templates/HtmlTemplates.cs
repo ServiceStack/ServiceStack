@@ -12,6 +12,7 @@ namespace ServiceStack.Templates
     public static class HtmlTemplates
     {
         public static string HtmlFormatName { get; set; } = "HtmlFormat.html";
+        public static bool ShowLanguages { get; set; } = true;
         
         public static string GetIndexOperationsTemplate()
         {
