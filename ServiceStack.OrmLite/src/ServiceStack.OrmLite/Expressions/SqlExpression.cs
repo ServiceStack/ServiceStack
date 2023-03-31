@@ -44,6 +44,7 @@ namespace ServiceStack.OrmLite
         public bool UseSelectPropertiesAsAliases { get; set; }
         public bool WhereStatementWithoutWhereString { get; set; }
         public ISet<string> Tags { get; } = new HashSet<string>();
+        public bool AllowEscapeWildcards { get; set; }= true;
 
         protected bool CustomSelect { get; set; }
         protected bool useFieldName = false;
@@ -2989,11 +2990,19 @@ namespace ServiceStack.OrmLite
             if (!IsSqlClass(quotedColName))
                 quotedColName = ConvertToParam(quotedColName);
 
-            var statement = "";
+            string statement;
 
             var arg = args.Count > 0 ? args[0] : null;
-            var wildcardArg = arg != null ? DialectProvider.EscapeWildcards(arg.ToString()) : "";
-            var escapeSuffix = wildcardArg.IndexOf('^') >= 0 ? " escape '^'" : "";
+            string wildcardArg, escapeSuffix = string.Empty;
+            if (AllowEscapeWildcards)
+            {
+                wildcardArg = arg != null ? DialectProvider.EscapeWildcards(arg.ToString()) : string.Empty;
+                escapeSuffix = wildcardArg.IndexOf('^') >= 0 ? " escape '^'" : string.Empty;
+            }
+            else
+            {
+                wildcardArg = arg != null ? arg.ToString() : string.Empty;
+            }
             switch (m.Method.Name)
             {
                 case "Trim":
