@@ -148,6 +148,49 @@ public class RazorSsg
         }
     }
 
+    public static string ResolvePageRoute(string pageRoute, object pageModel)
+    {
+        var to = pageRoute;
+        if (pageRoute.IndexOf('{') >= 0)
+        {
+            var jsExpr = '`' + pageRoute.Replace("{", "${") + '`';
+            var scope = JS.CreateScope(new Dictionary<string, object>(pageModel.ToObjectDictionary(), StringComparer.OrdinalIgnoreCase));
+            var jsResult = JS.eval(jsExpr, scope);
+            to = jsResult.ToString();
+        }
+        return to.EndsWith('/')
+            ? to + "index.html"
+            : to + ".html";
+    }
+
+    public static Func<object, Task>? ResolveOnGetAsync(Type modelType)
+    {
+        var methods = modelType.GetMethods();
+        var miAsync = methods.FirstOrDefault(x => x.Name == "OnGetAsync" && x.GetParameters().Length == 0);
+        if (miAsync != null)
+        {
+            var invoker = miAsync.GetInvoker();
+            return async model =>
+            {
+                var ret = invoker(model, Array.Empty<object>());
+                if (ret is Task task)
+                    await task;
+            };
+        }
+
+        var mi = methods.FirstOrDefault(x => x.Name == "OnGet" && x.GetParameters().Length == 0);
+        if (mi != null)
+        {
+            var actionInvoker = mi.GetActionInvoker();
+            return model => {
+                actionInvoker(model);
+                return Task.CompletedTask;
+            };
+        }
+
+        return null;
+    }
+
     public static async Task RenderStaticRazorPageAsync<T>(ServiceStackHost appHost, IVirtualFile razorFile, string destDir) where T : PageModel
     {
         var log = appHost.Resolve<ILogger<RazorSsg>>();
@@ -169,6 +212,9 @@ public class RazorSsg
         {
             log.LogInformation("Rendering {0} {1}'s in {2}...", pageModels.Count, typeof(T).Name, razorFile.VirtualPath);            
         }
+
+        var onGetAsyncInvoker = ResolveOnGetAsync(typeof(T));
+        
         for (var i = 0; i < pageModels.Count; i++)
         {
             var pageModel = pageModels[i];
@@ -179,10 +225,7 @@ public class RazorSsg
             }
             else if (pageRoute != null)
             {
-                var restRoute = new RestRoute(typeof(T), pageRoute, ServiceStack.HttpMethods.Get, 0);
-                var result = restRoute.Apply(pageModel, ServiceStack.HttpMethods.Get);
-                if (result.Matches)
-                    staticPath = result.Uri + ".html";
+                staticPath = ResolvePageRoute(pageRoute, pageModel);
             }
 
             if (staticPath == null)
@@ -200,6 +243,8 @@ public class RazorSsg
             FileSystemVirtualFiles.AssertDirectory(Path.GetDirectoryName(toPath));
 
             log.LogInformation("Rendering {0}/{1} to {2}", i+1, pageModels.Count, staticPath);
+            if (onGetAsyncInvoker != null)
+                await onGetAsyncInvoker(pageModel);
             
             await using var fs = File.OpenWrite(toPath);
             var ctx = CreateHttpContext(appHost, pathInfo: pageRoute ?? staticPath.LastLeftPart('.'));
