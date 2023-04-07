@@ -39,10 +39,8 @@ namespace CheckCoreApi
 
             app.UseRouting();
 
-            app.UseServiceStack(new AppHost
-            {
-                PathBase = "/api",
-                AppSettings = new NetCoreAppSettings(Configuration)
+            app.UseServiceStack(new AppHost {
+                PathBase = "/backend",
             });
 
 #pragma warning disable CS1998

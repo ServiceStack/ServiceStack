@@ -82,7 +82,8 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            if (appHost.PathBase == null && JsonApiRoute != null && !appHost.VirtualFileSources.DirectoryExists("api"))
+            if ((appHost.PathBase == null || !appHost.PathBase.Contains("api")) 
+                && JsonApiRoute != null && !appHost.VirtualFileSources.DirectoryExists("api"))
             {
                 appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
                 appHost.AddToAppMetadata(metadata => metadata.HttpHandlers["ApiHandlers.Json"] = JsonApiRoute);
