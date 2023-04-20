@@ -31,7 +31,7 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
 
     /// <summary>
     /// Define custom html handlers, e.g:
-    /// &lt;!--shared:Brand,Input--&gt;
+    /// &lt;!--shared:custom-meta--&gt;
     /// &lt;!--file:/path/to/single.html--&gt; or /*file:/path/to/single.txt*/
     /// &lt;!--files:/dir/components/*.html--&gt; or /*files:/dir/*.css*/
     /// </summary>

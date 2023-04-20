@@ -3,14 +3,13 @@ using System;
 using System.IO;
 using System.Linq;
 using ServiceStack.IO;
-using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.HtmlModules;
 
 /// <summary>
 /// Register a shared folder to easily import shared .html components or files  
-/// &lt;!--shared:Brand,Input--&gt; or /*shared:app.css*/
+/// &lt;!--shared:custom-meta--&gt; or /*shared:app.css*/
 /// </summary>
 public class SharedFolder : IHtmlModulesHandler
 {
