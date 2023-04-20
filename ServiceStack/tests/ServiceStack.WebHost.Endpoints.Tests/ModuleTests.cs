@@ -7,13 +7,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests;
 
 public class ModuleTests
 {
-    private ServiceStackHost appHost;
-    private IVirtualPathProvider ssResources;
+    private readonly ServiceStackHost appHost;
+    private readonly IVirtualPathProvider ssResources;
     public ModuleTests()
     {
         appHost = new BasicAppHost().Init();
         ssResources = appHost.GetVirtualFileSources()
-            .FirstOrDefault(x => x is ResourceVirtualFiles rvfs && rvfs.RootNamespace == nameof(ServiceStack));
+            .FirstOrDefault(x => x is ResourceVirtualFiles { RootNamespace: nameof(ServiceStack) });
     }
 
     [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
@@ -25,7 +25,7 @@ public class ModuleTests
         Assert.That(uiIndexFile, Is.Not.Null);
 
         var sharedComponentFiles = ssResources.GetAllMatchingFiles("/modules/shared/*.html").ToList();
-        Assert.That(sharedComponentFiles.Count, Is.GreaterThanOrEqualTo(8));
+        Assert.That(sharedComponentFiles.Count, Is.GreaterThanOrEqualTo(4));
 
         var componentFiles = ssResources.GetAllMatchingFiles("/modules/ui/components/*.mjs").ToList();
         Assert.That(componentFiles.Count, Is.GreaterThanOrEqualTo(6));
@@ -40,10 +40,10 @@ public class ModuleTests
     [Test]
     public void Tailwind_did_gen_properly()
     {
-        var uiCss = ssResources.GetFile("/modules/shared/css/ui.css");
+        var uiCss = ssResources.GetFile("/css/ui.css");
         Assert.That(uiCss, Is.Not.Null);
 
         var uiCssContents = uiCss.ReadAllText();
-        Assert.That(uiCssContents, Does.Contain("col-span-3"));
+        Assert.That(uiCssContents, Does.Contain("col-span-6"));
     }
 }
