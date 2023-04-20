@@ -53,7 +53,6 @@ public class AppHost : AppHostBase
 
         ConfigurePlugin<UiFeature>(feature => {
             Console.WriteLine(@"ConfigurePlugin<UiFeature>...");
-            feature.HtmlModules.Add(new("/modules/forms", "/forms"));
             
             feature.Module.Configure((appHost, module) =>
             {
