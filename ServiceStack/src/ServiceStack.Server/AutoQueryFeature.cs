@@ -145,9 +145,6 @@ namespace ServiceStack
             new() {Name = "Not Exists", Value = "%IsNull", ValueType = "none"},
         };
 
-        public HtmlModule HtmlModuleV1 { get; set; } = new("/modules/locode-v1", "/locode-v1") {
-            DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
-        };
         public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode") {
             DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
         };
@@ -159,8 +156,6 @@ namespace ServiceStack
         
         public void BeforePluginsLoaded(IAppHost appHost)
         {
-            if (HtmlModuleV1 != null)
-                appHost.ConfigurePlugin<UiFeature>(feature => feature.HtmlModules.Add(HtmlModuleV1));
             if (HtmlModule != null)
             {
                 appHost.ConfigurePlugin<UiFeature>(feature =>

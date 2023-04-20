@@ -46,8 +46,6 @@ public class AppHost : AppHostBase
         var files = VirtualFiles.GetDirectory("custom/locode/components").GetAllFiles();
         files.Each(file => memFs.WriteFile($"locode/components/{file.Name}", file));
         
-        VirtualFiles.GetDirectory("custom/locode-v1").GetAllFiles()
-            .Each(file => memFs.WriteFile($"locode-v1/{file.Name}", file));
         GlobalRequestFilters.Add((req, res, dto) => {
             memFs.WriteFile("locode/custom.html", VirtualFiles.GetFile("custom/locode/custom.html"));
             files.Each(file => memFs.WriteFile($"locode/components/{file.Name}", file));
