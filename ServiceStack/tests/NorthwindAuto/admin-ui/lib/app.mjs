@@ -275,12 +275,12 @@ let store = {
         if (!authProvider)
             throw new Error("!authProvider")
         let auth = new Authenticate()
-        bearerToken = authsecret = null
+        AppData.bearerToken = AppData.authsecret = null
         if (authProvider.type === 'Bearer') {
-            bearerToken = client.bearerToken = (args['BearerToken'] || '').trim()
+            AppData.bearerToken = client.bearerToken = (args['BearerToken'] || '').trim()
         } else if (authProvider.type === 'authsecret') {
-            authsecret = (args['authsecret'] || '').trim()
-            client.headers.set('authsecret',authsecret)
+            AppData.authsecret = (args['authsecret'] || '').trim()
+            client.headers.set('authsecret',AppData.authsecret)
         } else {
             auth = new Authenticate({ provider, ...args })
         }
@@ -299,7 +299,7 @@ let store = {
     logout() {
         setBodyClass({ auth: this.auth })
         client.api(new Authenticate({ provider: 'logout' }))
-        authsecret = bearerToken = client.bearerToken = null
+        AppData.authsecret = AppData.bearerToken = client.bearerToken = null
         client.headers.delete('authsecret')
         this.auth = null
         routes.to({ $page:null })
