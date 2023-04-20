@@ -53,10 +53,6 @@ namespace ServiceStack
             } },
         };
 
-        public HtmlModule HtmlModuleV1 { get; set; } = new("/modules/ui-v1", "/ui-v1") {
-            DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
-        };
-
         public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui") {
             DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
         };
@@ -96,8 +92,6 @@ namespace ServiceStack
 
         public void BeforePluginsLoaded(IAppHost appHost)
         {
-            if (HtmlModuleV1 != null)
-                appHost.ConfigurePlugin<UiFeature>(feature => feature.HtmlModules.Add(HtmlModuleV1));
             if (HtmlModule != null)
             {
                 appHost.ConfigurePlugin<UiFeature>(feature =>

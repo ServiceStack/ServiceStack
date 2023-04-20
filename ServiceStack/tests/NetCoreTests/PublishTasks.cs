@@ -94,14 +94,6 @@ public class PublishTasks
             onError: Console.Error.WriteLine);
         
         // modules are copied over as debug versions then minified/cached at runtime on load
-        
-        // copy to modules/ui-v1
-        transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui-v1")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui-v1")), 
-            cleanTarget: true,
-            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
-            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
         // copy to modules/shared
         transformOptions.CopyAll(

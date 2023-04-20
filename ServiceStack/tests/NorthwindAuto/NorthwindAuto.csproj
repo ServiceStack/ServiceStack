@@ -22,4 +22,8 @@
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="requestlogs\" />
+  </ItemGroup>
+
 </Project>
