@@ -34,11 +34,11 @@ namespace ServiceStack.Host
 
             RequestLogFilter?.Invoke(request, entry);
 
-            var key = UrnId.Create<RequestLogEntry>(entry.Id).ToLower();
             var nowScore = CurrentDateFn().ToUnixTime();
 
             using (var trans = redis.CreateTransaction())
             {
+                var key = redis.UrnKey<RequestLogEntry>(entry.Id);
                 trans.QueueCommand(r => r.AddItemToSortedSet(SortedSetKey, key, nowScore));
                 trans.QueueCommand(r => r.Store(entry));
 
