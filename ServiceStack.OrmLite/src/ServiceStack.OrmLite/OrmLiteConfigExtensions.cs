@@ -140,7 +140,7 @@ namespace ServiceStack.OrmLite
                 }
 
                 var isReference = referenceAttr != null || referenceFieldAttr != null;
-                var isIgnored = propertyInfo.HasAttributeCached<IgnoreAttribute>() || isReference;
+                var isIgnored = propertyInfo.HasAttributeCached<IgnoreAttribute>() || isReference || computedAttr != null;
 
                 var isFirst = !isIgnored && i++ == 0;
 
