@@ -1,5 +1,6 @@
 using MyApp.ServiceModel;
 using ServiceStack;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.VirtualPath;
@@ -18,6 +19,10 @@ public class ConfigureDb : IHostingStartup
             var dbFactory = new OrmLiteConnectionFactory(
                 context.Configuration.GetConnectionString("DefaultConnection") ?? ":memory:",
                 SqliteDialect.Provider);
+            // var dbFactory = new OrmLiteConnectionFactory(
+            //     "Server=localhost;Database=ServiceStackDb;UID=root;Password=test;SslMode=none",
+            //     MySqlDialect.Provider);
+            
             services.AddSingleton<IDbConnectionFactory>(dbFactory);
             dbFactory.RegisterConnection("chinook", 
                 context.Configuration.GetConnectionString("ChinookConnection"), SqliteDialect.Provider);
@@ -32,19 +37,25 @@ public class ConfigureDb : IHostingStartup
             using var db = appHost.Resolve<IDbConnectionFactory>().Open();
 
             appHost.AddVirtualFileSources.Add(new FileSystemMapping("profiles", AppHost.ProfilesDir));
-            db.DropTable<Contact>();
-            db.DropTable<Job>();
-            db.DropTable<JobApplication>();
-            db.DropTable<JobApplicationEvent>();
-            db.DropTable<PhoneScreen>();
-            db.DropTable<Interview>();
-            db.DropTable<JobApplicationAttachment>();
             db.DropTable<JobApplicationComment>();
+            db.DropTable<JobApplicationAttachment>();
+            db.DropTable<JobOffer>();
+            db.DropTable<Interview>();
+            db.DropTable<PhoneScreen>();
+            db.DropTable<JobApplicationEvent>();
+            db.DropTable<JobApplication>();
+            db.DropTable<Job>();
+            db.DropTable<Contact>();
+
+            ConfigureAuthRepository.RecreateUsers(appHost.Resolve<IAuthRepository>(), db);
+            
             db.SeedTalent(profilesDir:AppHost.ProfilesDir);
             db.SeedAttachments(appHost, sourceDir:AppHost.TalentBlazorAppDataDir);
             
-            db.DropAndCreateTable<FileSystemItem>();
-            db.DropAndCreateTable<FileSystemFile>();
+            db.DropTable<FileSystemFile>();
+            db.DropTable<FileSystemItem>();
+            db.CreateTable<FileSystemItem>();
+            db.CreateTable<FileSystemFile>();
             
             db.DropTable<Todo>();
             

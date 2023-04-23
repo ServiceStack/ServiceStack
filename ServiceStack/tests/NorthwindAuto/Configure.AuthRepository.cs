@@ -1,3 +1,4 @@
+using System.Data;
 using Bogus;
 using ServiceStack;
 using ServiceStack.Web;
@@ -42,21 +43,29 @@ public class AppUserAuthEvents : AuthEvents
 
 public class ConfigureAuthRepository : IHostingStartup
 {
+    public static void RecreateUsers(IAuthRepository authRepo, IDbConnection db)
+    {
+        db.DropTable<UserAuthDetails>();
+        db.DropTable<UserAuthRole>();
+        db.DropTable<AppUser>();
+        db.CreateTable<AppUser>();
+        db.CreateTable<UserAuthRole>();
+        db.CreateTable<UserAuthDetails>();
+
+        authRepo.InitSchema();
+        CreateUsers(authRepo);
+    }
+    
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services => services.AddSingleton<IAuthRepository>(c =>
             new OrmLiteAuthRepository<AppUser, UserAuthDetails>(c.Resolve<IDbConnectionFactory>()) {
                 UseDistinctRoleTables = true
             }))
         .ConfigureAppHost(appHost => {
-            var authRepo = appHost.Resolve<IAuthRepository>();
-
-            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
-            db.DropTable<AppUser>();
-            db.DropTable<UserAuthDetails>();
-            db.DropTable<UserAuthRole>();
-            authRepo.InitSchema();
-
-            CreateUsers(authRepo);
+            // Executed in Configure.Db
+            //var authRepo = appHost.Resolve<IAuthRepository>();
+            //using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+            //RecreateUsers(authRepo, db);
 
             //Populate with lots of demo users
             // for (var i = 1; i < 102; i++)
@@ -120,7 +129,7 @@ public class ConfigureAuthRepository : IHostingStartup
 
     // Add initial Users to the configured Auth Repository
     public record SeedUser(string Email, string Name, string Password = "p@55wOrd", string[]? Roles = null);
-    public void CreateUsers(IAuthRepository authRepo) => new List<SeedUser>
+    public static void CreateUsers(IAuthRepository authRepo) => new List<SeedUser>
     {
         new("admin@email.com", "Admin User", Roles: new[] { RoleNames.Admin }),
         new("manager@email.com", "The Manager", Roles: new[] { AppRoles.Employee, AppRoles.Manager }),
@@ -129,7 +138,7 @@ public class ConfigureAuthRepository : IHostingStartup
         new("employee2@email.com", "Employee 3", Roles: new[] { AppRoles.Employee }),
     }.ForEach(user => CreateUser(authRepo, user));
     
-    public void CreateUser(IAuthRepository authRepo, SeedUser user)
+    public static void CreateUser(IAuthRepository authRepo, SeedUser user)
     {
         if (authRepo.GetUserAuthByUserName(user.Email) == null)
         {

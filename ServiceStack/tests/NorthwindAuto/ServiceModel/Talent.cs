@@ -33,6 +33,7 @@ public class Contact : AuditBase
     [Format(FormatMethods.LinkPhone)]
     public string Phone { get; set; }
 
+    [StringLength(StringLengthAttribute.MaxText)]
     public string About { get; set; }
 
     [Reference]
@@ -52,6 +53,7 @@ public class Job : AuditBase
     public int SalaryRangeLower { get; set; }
     [IntlNumber(Currency = NumberCurrency.USD)]
     public int SalaryRangeUpper { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
     public string Description { get; set; }
     [Reference]
     public List<JobApplication> Applications { get; set; } = new();
@@ -80,6 +82,7 @@ public class JobApplicationComment : AuditBase
 
     [References(typeof(JobApplication))]
     public int JobApplicationId { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
     public string Comment { get; set; }
 }
 
@@ -140,6 +143,7 @@ public class JobApplicationEvent : AuditBase
     [Reference, Format(FormatMethods.Hidden)]
     public AppUser AppUser { get; set; }
 
+    [StringLength(StringLengthAttribute.MaxText)]
     public string Description { get; set; }
 
     public JobApplicationStatus? Status { get; set; }
@@ -167,6 +171,7 @@ public class PhoneScreen : AuditBase
     public JobApplicationStatus? ApplicationStatus { get; set; }
 
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    [StringLength(StringLengthAttribute.MaxText)]
     public string Notes { get; set; }
 }
 
@@ -192,6 +197,7 @@ public class Interview : AuditBase
     public JobApplicationStatus? ApplicationStatus { get; set; }
 
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    [StringLength(StringLengthAttribute.MaxText)]
     public string Notes { get; set; }
 }
 
@@ -214,6 +220,7 @@ public class JobOffer : AuditBase
     public AppUser AppUser { get; set; }
 
     [Input(Type = "textarea"), FieldCss(Field = "col-span-12 text-center")]
+    [StringLength(StringLengthAttribute.MaxText)]
     public string Notes { get; set; }
 }
 
