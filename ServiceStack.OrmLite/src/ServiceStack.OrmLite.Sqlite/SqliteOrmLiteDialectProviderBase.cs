@@ -47,6 +47,8 @@ namespace ServiceStack.OrmLite.Sqlite
 
         public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
+        public override bool SupportsSchema => false;
+
         public override string ToPostDropTableStatement(ModelDefinition modelDef)
         {
             if (modelDef.RowVersion != null)
@@ -165,7 +167,8 @@ namespace ServiceStack.OrmLite.Sqlite
                 : NamingStrategy.GetSchemaName(schema);
         }
 
-        public override string GetTableName(string table, string schema = null) => GetTableName(table, schema, useStrategy: true);
+        public override string GetTableName(string table, string schema = null) => 
+            GetTableName(table, schema, useStrategy: true);
 
         public override string GetTableName(string table, string schema, bool useStrategy)
         {

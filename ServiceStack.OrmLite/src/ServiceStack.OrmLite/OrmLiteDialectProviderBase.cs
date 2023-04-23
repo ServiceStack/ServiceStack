@@ -189,6 +189,8 @@ namespace ServiceStack.OrmLite
             get => paramNameFilter ?? OrmLiteConfig.ParamNameFilter;
             set => paramNameFilter = value;
         }
+        
+        public virtual bool SupportsSchema => true;
 
         public string DefaultValueFormat = " DEFAULT ({0})";
 

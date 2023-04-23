@@ -58,6 +58,7 @@ namespace ServiceStack.OrmLite
         Func<string, string> ParamNameFilter { get; set; }
         
         Dictionary<string, string> Variables { get; }
+        bool SupportsSchema { get; }
 
         /// <summary>
         /// Quote the string so that it can be used inside an SQL-expression

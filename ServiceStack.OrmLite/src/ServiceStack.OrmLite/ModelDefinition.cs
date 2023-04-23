@@ -46,7 +46,7 @@ namespace ServiceStack.OrmLite
 
         public bool IsInSchema => this.Schema != null;
 
-        public bool HasAutoIncrementId => PrimaryKey != null && PrimaryKey.AutoIncrement;
+        public bool HasAutoIncrementId => PrimaryKey is { AutoIncrement: true };
 
         public bool HasSequenceAttribute => this.FieldDefinitions.Any(x => !x.Sequence.IsNullOrEmpty());
 
