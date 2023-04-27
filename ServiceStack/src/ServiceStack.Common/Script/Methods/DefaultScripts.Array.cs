@@ -241,4 +241,9 @@ public partial class DefaultScripts
         list.Sort();
         return list;
     }
+
+    public object fromEnumFlagsList(IList values, Type enumType) =>
+        EnumUtils.FromEnumFlagsList(enumType, values.ConvertTo<List<string>>());
+    
+    public List<string> toEnumFlagsList(object enumValue) => ((Enum)enumValue).ToEnumFlagsList();
 }
