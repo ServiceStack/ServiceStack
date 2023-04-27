@@ -21,8 +21,11 @@ public partial class AutoCreateForm<Model> : AutoFormBase<Model>
         api = null;
         await TransitionAsync(show: true);
 
-        ModelDictionary = NewModel.ToModelDictionary();
+        ModelDictionary = NewModel != null 
+            ? ModelFilter(NewModel).ToModelDictionary() 
+            : new();
         OriginalModelDictionary = new(ModelDictionary);
         FormLayout ??= MetadataType.CreateFormLayout(ApiType, AppMetadata);
+        ConfigureFormLayout?.Invoke(FormLayout);
     }
 }

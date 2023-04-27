@@ -45,8 +45,9 @@ public partial class AutoEditForm<Model> : AutoFormBase<Model>
         api = deleteApi = null;
         await TransitionAsync(show: true);
 
-        ModelDictionary = Edit.ToModelDictionary();
+        ModelDictionary = ModelFilter(Edit).ToModelDictionary();
         OriginalModelDictionary = new(ModelDictionary);
         FormLayout ??= MetadataType.CreateFormLayout(ApiType, AppMetadata);
+        ConfigureFormLayout?.Invoke(FormLayout);
     }
 }
