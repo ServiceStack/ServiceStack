@@ -49,6 +49,11 @@ public static class FormatMethods
     public const string LinkPhone = "linkTel";
     
     /// <summary>
+    /// Format Enum Flags into expanded enum strings 
+    /// </summary>
+    public const string EnumFlags = "enumFlags";
+    
+    /// <summary>
     /// Hides field from being displayed in search results
     /// </summary>
     public const string Hidden = "hidden";
