@@ -1724,6 +1724,12 @@ namespace ServiceStack
         /// <summary>
         /// Override to intercept MQ Requests
         /// </summary>
+        public virtual object ExecuteMessageInProcess(IMessage mqMessage) => ServiceController.ExecuteMessage(mqMessage, 
+            new BasicRequest(mqMessage, RequestAttributes.InProcess | RequestAttributes.MessageQueue));
+
+        /// <summary>
+        /// Override to intercept MQ Requests
+        /// </summary>
         public virtual object ExecuteMessage(IMessage dto, IRequest req) => ServiceController.ExecuteMessage(dto, req);
 
         /// <summary>
