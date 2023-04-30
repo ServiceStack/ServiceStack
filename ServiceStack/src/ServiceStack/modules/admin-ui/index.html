@@ -78,7 +78,7 @@ let DEBUG = false
             </div>
         </div>
     </div>
-    <sign-in v-else-if="server.plugins.auth" title="Sign in to your account" :provider="routes.provider" @login="login"></sign-in>
+    <sign-in v-else-if="server.plugins.auth" title="Sign in to your account" :provider="routes.provider" @login="store.login($event)"></sign-in>
 </div>
 </template>
 <script>
@@ -117,9 +117,6 @@ const App = {
         const routes = inject('routes')
         const server = inject('server')
         const showSidebar = ref(true)
-        function login(auth) {
-            globalThis.AUTH = store.auth = auth
-        }
         let sub = null
         let lastOp = null
         onMounted(() => {
@@ -131,7 +128,7 @@ const App = {
                 lastOp = args.op
             })
         })
-        return { store, routes, server, showSidebar, login }
+        return { store, routes, server, showSidebar }
     }
 }
 app.build(App).mount('#app')

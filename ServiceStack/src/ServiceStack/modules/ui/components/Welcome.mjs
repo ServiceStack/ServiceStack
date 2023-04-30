@@ -17,7 +17,7 @@ export const Welcome = {
             </div>
         </div>
         <div v-if="!store.auth">
-          <SignIn v-if="server.plugins.auth" title="Sign in to your account" :provider="routes.provider" @login="login" />
+          <SignIn v-if="server.plugins.auth" title="Sign in to your account" :provider="routes.provider" @login="store.login($event)" />
           <h1 v-else class="text-2xl mb-3">Welcome to {{store.serviceName}}</h1>
         </div>
         <div v-else>
@@ -74,10 +74,6 @@ export const Welcome = {
         /** @type {AppMetadata} */
         const server = inject('server')
         
-        function login(auth) {
-            globalThis.AUTH = store.auth = auth 
-        }
-        
-        return { store, routes, server, login }
+        return { store, routes, server }
     }
 }

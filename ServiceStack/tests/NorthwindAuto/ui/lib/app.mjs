@@ -330,43 +330,21 @@ let store = {
         })
     },
 
-    /** @param {any} args
-     *  @param {Function} [$on] */
-    login(args, $on) {
-        let provider = routes.provider || 'credentials'
-        let authProvider = globalThis.Server.plugins.auth.authProviders.find(x => x.name === provider)
-            || globalThis.Server.plugins.auth.authProviders[0]
-        if (!authProvider)
-            throw new Error("!authProvider")
-        let auth = new Authenticate()
+    /** @param {AuthenticateResponse} auth */
+    login(auth) {
+        globalThis.AUTH = this.auth = auth
         AppData.bearerToken = AppData.authsecret = null
-        if (authProvider.type === 'Bearer') {
-            AppData.bearerToken = client.bearerToken = (args['BearerToken'] || '').trim()
-        } else if (authProvider.type === 'authsecret') {
-            AppData.authsecret = (args['authsecret'] || '').trim()
-            client.headers.set('authsecret',AppData.authsecret)
-        } else {
-            auth = new Authenticate({ provider, ...args })
+        if (auth.bearerToken) {
+            AppData.bearerToken = client.bearerToken = auth.bearerToken
         }
-        client.api(auth, { jsconfig: 'eccn' })
-            .then(r => {
-                this.api = r
-                if (r.error && !r.error.message)
-                    r.error.message = AppData.HttpErrors[r.errorCode] || r.errorCode
-                if (this.api.succeeded) {
-                    this.auth = this.api.response
-                    setBodyClass({ auth: this.auth })
-                    if ($on) $on()
-                }
-            })
+        setBodyClass({ auth: this.auth })
     },
 
     logout() {
-        setBodyClass({ auth: this.auth })
+        globalThis.AUTH = this.auth = AppData.authsecret = AppData.bearerToken = client.bearerToken = null
+        setBodyClass({ auth: null })
         client.api(new Authenticate({ provider: 'logout' }))
-        AppData.authsecret = AppData.bearerToken = client.bearerToken = null
         client.headers.delete('authsecret')
-        this.auth = null
         routes.to({ $page:null })
     },
 
