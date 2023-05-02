@@ -43,15 +43,17 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
     Type RefModelType => typeof(object);
 
     [CascadingParameter] public DynamicModalLookup? ModalLookup { get; set; }
+    public DynamicModalLookup? LocalModalLookup { get; set; }
 
     async Task lookup()
     {
         //BlazorUtils.LogDebug($"lookup: {ModalLookup != null}");
 
-        if (ModalLookup == null)
+        var useModalLookup = ModalLookup ?? LocalModalLookup;
+        if (useModalLookup == null)
             return;
 
-        await ModalLookup.OpenAsync(Property.Ref, OnLookupSelected);
+        await useModalLookup.OpenAsync(Property.Ref, OnLookupSelected);
     }
 
     async Task OnLookupSelected(object row)

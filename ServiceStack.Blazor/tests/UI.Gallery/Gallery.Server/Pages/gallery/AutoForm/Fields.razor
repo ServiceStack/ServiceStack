@@ -27,6 +27,8 @@
     List<InputInfo>? FormLayout { get; set; }
     Dictionary<string, object> ModelDictionary { get; set; } = new();
     MetadataType MetadataType => ApiType.ToMetadataType();
+    [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
+    protected DynamicModalLookup? ModalLookup { get; set; }
 
     Booking Edit = Create.Booking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
 
