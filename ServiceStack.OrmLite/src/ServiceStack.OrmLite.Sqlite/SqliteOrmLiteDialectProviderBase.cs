@@ -41,8 +41,6 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         };
     }
 
-    public List<string> ConnectionCommands { get; } = new();
-
     public bool EnableForeignKeys
     {
         get => ConnectionCommands.Contains(SqlitePragmas.EnableForeignKeys);
@@ -160,13 +158,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
             }
         }
 
-        var db = CreateConnection(StringBuilderCache.ReturnAndFree(connString));
-        foreach (var command in ConnectionCommands)
-        {
-            using var cmd = db.CreateCommand();
-            cmd.ExecNonQuery(command);
-        }
-        return db;
+        return CreateConnection(StringBuilderCache.ReturnAndFree(connString));
     }
 
     protected abstract IDbConnection CreateConnection(string connectionString);

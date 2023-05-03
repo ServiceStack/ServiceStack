@@ -787,6 +787,12 @@ namespace ServiceStack.OrmLite.SqlServer
             if (dbConn is OrmLiteConnection ormLiteConn && dbConn.ToDbConnection() is SqlConnection sqlConn)
                 ormLiteConn.ConnectionId = sqlConn.ClientConnectionId;
             
+            foreach (var command in ConnectionCommands)
+            {
+                using var cmd = dbConn.CreateCommand();
+                cmd.ExecNonQuery(command);
+            }
+            
             OnOpenConnection?.Invoke(dbConn);
         }
     }
