@@ -172,6 +172,22 @@ namespace ServiceStack.Text
             return TimeSpan.Parse(offsetString);
         }
 
+        public static string Humanize(this TimeSpan span)
+        {
+            var duration = span.Duration();
+            var secs = duration.Seconds > 0
+                ? $"{span.Seconds:0} second{(span.Seconds == 1 ? string.Empty : "s")}"
+                : string.Empty;
+        
+            var formatted = string.Format("{0}{1}{2}{3}",
+                duration.Days > 0 ? $"{span.Days:0} day{(span.Days == 1 ? string.Empty : "s")}, " : string.Empty,
+                duration.Hours > 0 ? $"{span.Hours:0} hour{(span.Hours == 1 ? string.Empty : "s")}, " : string.Empty,
+                duration.Minutes > 0 ? $"{span.Minutes:0} minute{(span.Minutes == 1 ? string.Empty : "s")}" : string.Empty,
+                secs != string.Empty ? ", " + secs : string.Empty);
+
+            return formatted;
+        }    
+
         public static DateTime ToStableUniversalTime(this DateTime dateTime)
         {
             if (dateTime.Kind == DateTimeKind.Utc)
