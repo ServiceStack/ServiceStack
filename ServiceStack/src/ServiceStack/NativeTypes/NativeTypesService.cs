@@ -171,7 +171,7 @@ public class NativeTypesService : Service
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
         var typesConfig = NativeTypesMetadata.GetConfig(request);
-        var metadataTypes = ResolveMetadataTypes(typesConfig);
+        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
         return metadataTypes;
     }
 
