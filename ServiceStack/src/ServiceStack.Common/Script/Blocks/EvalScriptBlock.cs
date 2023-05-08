@@ -34,7 +34,7 @@ public class EvalScriptBlock : ScriptBlock
         
     public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
     {
-        var argValue = block.Argument.GetJsExpressionAndEvaluate(scope);
+        var argValue = await block.Argument.GetJsExpressionAndEvaluateAsync(scope);
         var args = argValue as Dictionary<string, object> ?? new Dictionary<string, object>();
 
         var format = scope.Context.PageFormats.First().Extension;
