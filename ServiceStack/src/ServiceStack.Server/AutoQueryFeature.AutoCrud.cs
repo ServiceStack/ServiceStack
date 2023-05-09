@@ -678,7 +678,7 @@ namespace ServiceStack
 
             var meta = AutoCrudMetadata.Create(dto.GetType());
             if (meta.SoftDelete)
-                return PartialUpdate<Table>(dto, req);
+                return PartialUpdate<Table>(dto, req, db);
 
             var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
             var feature = HostContext.GetPlugin<AutoQueryFeature>();
@@ -708,7 +708,7 @@ namespace ServiceStack
 
             var meta = AutoCrudMetadata.Create(dto.GetType());
             if (meta.SoftDelete)
-                return await UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch).ConfigAwait();
+                return await UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db).ConfigAwait();
 
             var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
             var feature = HostContext.GetPlugin<AutoQueryFeature>();
