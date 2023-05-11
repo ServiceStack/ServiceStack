@@ -1773,6 +1773,7 @@ public static class AppMetadataUtils
             property.ParamType = apiMember.ParameterType;
             property.DisplayType = apiMember.DataType;
             property.Format ??= new FormatInfo { Method = apiMember.Format };
+            property.Description = apiMember.Description;
         }
 
         var requiredProp = pi.FirstAttribute<RequiredAttribute>();
