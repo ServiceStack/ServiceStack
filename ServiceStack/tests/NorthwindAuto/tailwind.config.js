@@ -1,4 +1,5 @@
 module.exports = {
+  darkMode: 'class',
   content: [
     './ui/**/*.{mjs,html}',
     './admin-ui/**/*.{html,mjs}',
