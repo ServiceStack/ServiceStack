@@ -1345,6 +1345,8 @@ namespace ServiceStack
             return null;
         }
 
+        public virtual string CreateSessionId() => SessionExtensions.CreateRandomSessionId();
+
         public virtual bool HasUi() => HasPlugin<UiFeature>();
 
         public virtual bool ShouldProfileRequest(IRequest req) =>

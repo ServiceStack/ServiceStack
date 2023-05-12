@@ -102,9 +102,7 @@ public static class SessionExtensions
 
     public static string CreateRandomSessionId()
     {
-        if (SessionBytesCache == null)
-            SessionBytesCache = new byte[15];
-
+        SessionBytesCache ??= new byte[15];
         string base64Id;
         do
         {
@@ -112,6 +110,12 @@ public static class SessionExtensions
             base64Id = Convert.ToBase64String(SessionBytesCache);
         } while (Base64StringContainsUrlUnfriendlyChars(base64Id));
         return base64Id;
+    }
+
+    static readonly char[] UrlUnsafeBase64Chars = { '+', '/' };
+    public static bool Base64StringContainsUrlUnfriendlyChars(string base64)
+    {
+        return base64.IndexOfAny(UrlUnsafeBase64Chars) >= 0;
     }
 
     public static void PopulateWithSecureRandomBytes(byte[] bytes)
@@ -138,17 +142,11 @@ public static class SessionExtensions
         return base64Id;
     }
 
-    static readonly char[] UrlUnsafeBase64Chars = { '+', '/' };
-    public static bool Base64StringContainsUrlUnfriendlyChars(string base64)
-    {
-        return base64.IndexOfAny(UrlUnsafeBase64Chars) >= 0;
-    }
-
     public static string CreatePermanentSessionId(this IResponse res, IRequest req) => 
-        CreateSessionId(req, res, SessionFeature.PermanentSessionId, CreateRandomSessionId());
+        CreateSessionId(req, res, SessionFeature.PermanentSessionId, HostContext.AppHost.CreateSessionId());
 
     public static string CreateTemporarySessionId(this IResponse res, IRequest req) => 
-        CreateSessionId(req, res, SessionFeature.SessionId, CreateRandomSessionId());
+        CreateSessionId(req, res, SessionFeature.SessionId, HostContext.AppHost.CreateSessionId());
 
     public static string CreateSessionId(this IRequest req, IResponse res, string sessionKey, string sessionId)
     {
