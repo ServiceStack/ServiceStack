@@ -296,7 +296,7 @@ namespace ServiceStack.Auth
         
         public virtual IAuthSession CreateSessionFromClaims(IRequest req, List<Claim> claims)
         {
-            var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? SessionExtensions.CreateRandomSessionId();
+            var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? HostContext.AppHost.CreateSessionId();
             var session = SessionFeature.CreateNewSession(req, sessionId);
 
             session.AuthProvider = Name;

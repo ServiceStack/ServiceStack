@@ -149,7 +149,7 @@ namespace ServiceStack
     {
         public static IAuthSession CreateNewSession(this IUserAuth user, IRequest httpReq)
         {
-            var sessionId = SessionExtensions.CreateRandomSessionId();
+            var sessionId = HostContext.AppHost.CreateSessionId();
             var newSession = SessionFeature.CreateNewSession(httpReq, sessionId);
             var session = HostContext.AppHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
             session.PopulateSession(user);

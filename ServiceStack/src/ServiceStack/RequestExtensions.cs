@@ -321,7 +321,7 @@ namespace ServiceStack
                 if (validator != null)
                     await validator(userRepo, userAuth).ConfigAwait();
 
-                session = SessionFeature.CreateNewSession(request, SessionExtensions.CreateRandomSessionId());
+                session = SessionFeature.CreateNewSession(request, HostContext.AppHost.CreateSessionId());
                 await session.PopulateSessionAsync(userAuth, userRepo, token).ConfigAwait();
 
                 if (userRepo is IManageRolesAsync manageRoles && session.UserAuthId != null)

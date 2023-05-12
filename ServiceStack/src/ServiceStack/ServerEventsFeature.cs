@@ -263,7 +263,7 @@ namespace ServiceStack
                     ?? "user" + anonUserId;
 
                 var now = DateTime.UtcNow;
-                var subscriptionId = SessionExtensions.CreateRandomSessionId();
+                var subscriptionId = HostContext.AppHost.CreateSessionId();
 
                 //Handle both ?channel=A,B,C or ?channels=A,B,C
                 var channels = new List<string>();
