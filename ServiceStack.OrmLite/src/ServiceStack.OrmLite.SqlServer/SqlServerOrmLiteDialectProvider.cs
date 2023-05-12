@@ -627,7 +627,7 @@ namespace ServiceStack.OrmLite.SqlServer
             if (sql.Length < "SELECT".Length)
                 return sql;
 
-            return selectType + " TOP " + take + sql.Substring(selectType.Length);
+            return sql.Substring(0, sql.IndexOf(selectType)) + selectType + " TOP " + take + sql.Substring(sql.IndexOf(selectType) + selectType.Length);
         }
 
         //SELECT without RowNum and prefer aliases to be able to use in SELECT IN () Reference Queries
