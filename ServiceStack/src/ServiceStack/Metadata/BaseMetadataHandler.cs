@@ -60,9 +60,9 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
         var metadata = HostContext.Metadata;
         if (operationName != null)
         {
-            var allTypes = metadata.GetAllOperationTypes();
-            //var operationType = allTypes.Single(x => x.Name == operationName);
-            var operationType = allTypes.Single(x => x.GetOperationName() == operationName);
+            var operationType = metadata.GetOperationType(operationName);
+            if (operationType == null)
+                throw new Exception("Could not find operation: " + operationName);
             var typeValidationRules = await httpReq.GetAllValidateRulesAsync(operationType.Name).ConfigAwait();
             var op = metadata.GetOperation(operationType).ApplyValidationRules(typeValidationRules);
             var requestMessage = CreateResponse(operationType);
