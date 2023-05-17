@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
@@ -189,6 +190,24 @@ namespace ServiceStack
             xml.AppendLine("</urlset>");
 
             return StringBuilderCache.ReturnAndFree(xml);
+        }
+
+        /// <summary>
+        /// Render static Sitemaps to specified path
+        /// </summary>
+        /// <param name="destDir"></param>
+        public async Task RenderToAsync(string destDir)
+        {
+            var contents = GetSitemapIndex();
+            await File.WriteAllTextAsync(destDir.CombineWith("sitemap.xml"), contents);
+
+            foreach (var sitemap in SitemapIndex)
+            {
+                contents = GetSitemapUrlSet(sitemap.UrlSet);
+                var sitemapPath = destDir.CombineWith(sitemap.AtPath);
+                Path.GetDirectoryName(sitemapPath).AssertDir();
+                await File.WriteAllTextAsync(sitemapPath, contents);
+            }
         }
 
         public class SitemapIndexHandler : HttpAsyncTaskHandler
