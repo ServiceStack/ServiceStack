@@ -188,8 +188,7 @@ namespace ServiceStack
 
             xml.AppendLine("</urlset>");
 
-            var text = StringBuilderCache.ReturnAndFree(xml);
-            return text;
+            return StringBuilderCache.ReturnAndFree(xml);
         }
 
         public class SitemapIndexHandler : HttpAsyncTaskHandler
