@@ -183,7 +183,7 @@ namespace ServiceStack.Text
                 duration.Days > 0 ? $"{span.Days:0} day{(span.Days == 1 ? string.Empty : "s")}, " : string.Empty,
                 duration.Hours > 0 ? $"{span.Hours:0} hour{(span.Hours == 1 ? string.Empty : "s")}, " : string.Empty,
                 duration.Minutes > 0 ? $"{span.Minutes:0} minute{(span.Minutes == 1 ? string.Empty : "s")}" : string.Empty,
-                secs != string.Empty ? ", " + secs : string.Empty);
+                secs != string.Empty ? (span.TotalMinutes > 0 ? ", " : "") + secs : string.Empty);
 
             return formatted;
         }    
