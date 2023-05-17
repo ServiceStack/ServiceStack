@@ -217,8 +217,9 @@ namespace ServiceStack.OrmLite.Tests
         public const int V3 = 3;
         public const int V4 = 4;
         public static readonly int[] Versions = TestConfig.EnvironmentVariableInto("FIREBIRD_VERSION", new[]{ V3, V4 });
-        public static readonly string DefaultConnection = TestConfig.GetConnection(Dialect.Firebird, V3);
+        public static readonly string V3Connection = TestConfig.GetConnection(Dialect.Firebird, V3);
         public static readonly string V4Connection = TestConfig.GetConnection(Dialect.Firebird, V4);
+        public static readonly string DefaultConnection = V4Connection;
         public static string VersionString(int version) => "Firebird " + (version == V3
             ? "v3"
             : version == V4
@@ -292,7 +293,7 @@ namespace ServiceStack.OrmLite.Tests
                 
                     [Tuple.Create(Dialect.Firebird, FirebirdDb.V3)] = EnvironmentVariable(new[]{ "FIREBIRD3_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=/firebird/data/test.gdb;DataSource=127.0.0.1;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;"),
 
-                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V4)] = EnvironmentVariable(new[]{ "FIREBIRD4_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=c:\ormlite-tests\firebird\test.fdb;DataSource=127.0.0.1;Dialect=3;charset=utf8;MinPoolSize=0;MaxPoolSize=100;"),
+                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V4)] = EnvironmentVariable(new[]{ "FIREBIRD4_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=C:\tools\Firebird\data\test.fdb;DataSource=127.0.0.1;Dialect=3;charset=utf8;MinPoolSize=0;MaxPoolSize=100;"),
                 };
             }
             catch (Exception e)
