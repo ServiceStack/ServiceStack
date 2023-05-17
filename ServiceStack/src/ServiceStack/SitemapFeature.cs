@@ -199,14 +199,22 @@ namespace ServiceStack
         public async Task RenderToAsync(string destDir)
         {
             var contents = GetSitemapIndex();
-            await File.WriteAllTextAsync(destDir.CombineWith("sitemap.xml"), contents);
+#if NET6_0_OR_GREATER
+            await File.WriteAllTextAsync(destDir.CombineWith("sitemap.xml"), contents).ConfigAwait();
+#else
+            File.WriteAllText(destDir.CombineWith("sitemap.xml"), contents);
+#endif
 
             foreach (var sitemap in SitemapIndex)
             {
                 contents = GetSitemapUrlSet(sitemap.UrlSet);
                 var sitemapPath = destDir.CombineWith(sitemap.AtPath);
                 Path.GetDirectoryName(sitemapPath).AssertDir();
-                await File.WriteAllTextAsync(sitemapPath, contents);
+#if NET6_0_OR_GREATER
+                await File.WriteAllTextAsync(sitemapPath, contents).ConfigAwait();
+#else
+                File.WriteAllText(sitemapPath, contents);
+#endif
             }
         }
 
