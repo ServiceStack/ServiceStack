@@ -145,7 +145,7 @@ namespace ServiceStack
                 xml.AppendLine(CustomXml.SitemapIndexFooterXml);
 
             xml.AppendLine("</sitemapindex>");
-            return xml.ToString();
+            return StringBuilderCache.ReturnAndFree(xml);
         }
 
         public string GetSitemapUrlSet(List<SitemapUrl> urlSet)
@@ -208,8 +208,7 @@ namespace ServiceStack
 
                 httpRes.ContentType = MimeTypes.Xml;
 
-                var xml = feature.GetSitemapIndex();
-                var text = StringBuilderCache.ReturnAndFree(xml);
+                var text = feature.GetSitemapIndex();
                 await httpRes.EndHttpHandlerRequestAsync(skipClose: true, afterHeaders: r => r.WriteAsync(text));
             }
 
