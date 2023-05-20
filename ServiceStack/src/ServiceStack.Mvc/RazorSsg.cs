@@ -246,8 +246,12 @@ public class RazorSsg
             if (onGetAsyncInvoker != null)
                 await onGetAsyncInvoker(pageModel);
             
+            var pathInfo = pageRoute == null || pageRoute.Contains('{')
+                ? staticPath.LastLeftPart('.')
+                : pageRoute;
+
             await using var fs = File.OpenWrite(toPath);
-            var ctx = CreateHttpContext(appHost, pathInfo: pageRoute ?? staticPath.LastLeftPart('.'));
+            var ctx = CreateHttpContext(appHost, pathInfo:pathInfo);
             await razorPages.WriteHtmlAsync(fs, viewResult.View, model: pageModel, ctx: ctx);
         }
     }
