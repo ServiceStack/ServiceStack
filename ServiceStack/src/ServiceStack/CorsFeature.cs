@@ -43,7 +43,7 @@ namespace ServiceStack
 
         public CorsFeature AppendOriginWhitelist(IEnumerable<string> origins)
         {
-            this.allowOriginWhitelist = new List<string>();
+            this.allowOriginWhitelist ??= new List<string>();
             foreach (var origin in origins)
             {
                 allowOriginWhitelist.AddIfNotExists(origin);
