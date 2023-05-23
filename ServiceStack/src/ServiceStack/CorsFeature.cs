@@ -26,7 +26,7 @@ namespace ServiceStack
 
         private readonly bool allowCredentials;
 
-        private readonly ICollection<string> allowOriginWhitelist;
+        private ICollection<string> allowOriginWhitelist;
 
         public ICollection<string> AllowOriginWhitelist => allowOriginWhitelist;
 
@@ -39,6 +39,16 @@ namespace ServiceStack
             this.allowOriginWhitelist = appSettings.GetList("CorsFeature:allowOriginWhitelist");
             this.allowCredentials = appSettings.Get("CorsFeature:allowCredentials", false);
             this.maxAge = appSettings.Get("CorsFeature:maxAge", DefaultMaxAge);
+        }
+
+        public CorsFeature AppendOriginWhitelist(IEnumerable<string> origins)
+        {
+            this.allowOriginWhitelist = new List<string>();
+            foreach (var origin in origins)
+            {
+                allowOriginWhitelist.AddIfNotExists(origin);
+            }
+            return this;
         }
 
         /// <summary>
