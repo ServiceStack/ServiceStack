@@ -93,7 +93,9 @@ namespace ServiceStack.OrmLite
         int GetValues(IDataReader reader, object[] values);
 
         IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
-
+        
+        ModelDefinition GetTableDefinition(Type modelType);
+        string GetTableName(Type modelType);
         string GetTableName(ModelDefinition modelDef);
 
         string GetTableName(ModelDefinition modelDef, bool useStrategy);
@@ -101,6 +103,7 @@ namespace ServiceStack.OrmLite
         string GetTableName(string table, string schema = null);
         string GetTableName(string table, string schema, bool useStrategy);
 
+        string GetQuotedTableName(Type modelType);
         string GetQuotedTableName(ModelDefinition modelDef);
 
         string GetQuotedTableName(string tableName, string schema=null);
