@@ -368,8 +368,6 @@ namespace ServiceStack.OrmLite
             return NamingStrategy.GetSchemaName(schema);
         }
 
-        public virtual ModelDefinition GetTableDefinition(Type modelType) => modelType.GetModelDefinition(); 
-
         public virtual string GetTableName(Type modelType) => GetTableName(modelType.GetModelDefinition());
 
         public virtual string GetTableName(ModelDefinition modelDef) => 

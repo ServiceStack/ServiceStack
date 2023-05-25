@@ -94,7 +94,6 @@ namespace ServiceStack.OrmLite
 
         IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
         
-        ModelDefinition GetTableDefinition(Type modelType);
         string GetTableName(Type modelType);
         string GetTableName(ModelDefinition modelDef);
 
