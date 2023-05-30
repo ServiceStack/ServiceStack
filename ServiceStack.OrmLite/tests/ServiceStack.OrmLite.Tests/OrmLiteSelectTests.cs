@@ -11,7 +11,7 @@ using ServiceStack.Text;
 namespace ServiceStack.OrmLite.Tests;
 
 [TestFixtureOrmLite]
-public class OrmLiteSelectTests : OrmLiteProvidersTestBase
+public partial class OrmLiteSelectTests : OrmLiteProvidersTestBase
 {
     public OrmLiteSelectTests(DialectContext context) : base(context) { }
 
@@ -439,7 +439,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
 
         Assert.That(rows.Count, Is.EqualTo(1));
     }
-        
+
     public class AccountIntId
     {
         [AutoIncrement]
@@ -458,7 +458,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
         db.DropAndCreateTable<AccountIntId>();
         db.Insert(new AccountIntId { Username = "johnsmith" });
         db.Insert(new AccountIntId { Username = "2-whatever-more-3" });
-            
+
         Assert.That(db.SingleById<AccountIntId>(1).Username, Is.EqualTo("johnsmith"));
         Assert.That(db.SingleById<AccountIntId>(3), Is.Null);
 
@@ -467,16 +467,16 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
         {
             result = db.SingleById<AccountIntId>("");
         }
-        catch {}
+        catch { }
         Assert.That(result, Is.Null);
 
         try
         {
             result = db.SingleById<AccountIntId>("johnsmith2");
         }
-        catch {}
+        catch { }
         Assert.That(result, Is.Null);
-        
+
         Assert.Throws<ArgumentNullException>(() => db.SingleById<AccountIntId>(null));
 
         // Returns Id=2 in Sqlite/MySql
@@ -506,7 +506,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
         public int CustomMax { get; set; }
         public int CustomCount { get; set; }
     }
-    
+
     [Test]
     [IgnoreDialect(Dialect.MySql, "Does not support LIKE escape sequences")]
     public void Does_support_LIKE_Escape_Char()
@@ -514,7 +514,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
         using var db = OpenDbConnection();
         db.DropAndCreateTable<CustomSql>();
         db.Insert(new CustomSql { Id = 1, Name = "Jo[h]n" });
-        
+
         var results = db.Select<CustomSql>("name LIKE @name", new { name = "Jo\\[h\\]n" });
         if (!Dialect.AnyPostgreSql.HasFlag(Dialect))
         {
@@ -568,7 +568,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
         var q = db.From<Tasked>().TagWith(tag);
 
         Debug.Assert(q.Tags.Count == 1);
-        Debug.Assert(q.Tags.ToList()[0]== tag);
+        Debug.Assert(q.Tags.ToList()[0] == tag);
 
         var select = q.ToSelectStatement();
         Debug.Assert(select.Contains(tag));
@@ -627,7 +627,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
 
     public class EscapeWildcardsModel
     {
-        [PrimaryKey,AutoIncrement]
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
         [Index]
@@ -655,7 +655,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
         var sql1 = q.ToMergedParamsSelectStatement();
         Debug.Assert(sql1.Contains("WHERE \"Index\" like '1^_2%' escape '^'"));
         var c1 = db.Count(q);
-        Debug.Assert(c1==2);
+        Debug.Assert(c1 == 2);
         q = db.From<EscapeWildcardsModel>(x =>
             {
                 x.AllowEscapeWildcards = false;
@@ -663,7 +663,7 @@ public class OrmLiteSelectTests : OrmLiteProvidersTestBase
             .Where(x => x.Index.StartsWith("1_2"));
         var sql2 = q.ToMergedParamsSelectStatement();
         Debug.Assert(sql2.Contains("WHERE \"Index\" like '1_2%'"));
-        var c2= db.Count(q);
-        Debug.Assert(c2==3);
+        var c2 = db.Count(q);
+        Debug.Assert(c2 == 3);
     }
 }
