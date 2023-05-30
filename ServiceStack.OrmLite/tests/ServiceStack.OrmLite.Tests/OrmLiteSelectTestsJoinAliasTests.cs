@@ -6,71 +6,59 @@ namespace ServiceStack.OrmLite.Tests;
 
 public partial class OrmLiteSelectTests
 {
-    [Alias("实体_配置")]
     class Channel
     {
-        [Alias("编码"), Index]
         public string Id { get; set; }
-        [Alias("名称")]
         public string Name { get; set; }
-        [Alias("区域编码")]
         public string Area { get; set; }
-        [Alias("类型"), Index]
         public NttType DstType { get; set; }
-        [Alias("删除状态")]
         public int Delete { get; set; }
     }
 
-    [Alias("实体_状态")]
+    [Alias(nameof(BaseResult))]
     class BaseResult
     {
-        [Alias("编码"), PrimaryKey]
+        [ PrimaryKey]
         public string Id { get; set; }
 
-        [Alias("目标编码")]
         public string Code { get; set; }
 
-        [Alias("目标类型")]
         public virtual NttType DstType { get; set; }
 
-        [Alias("状态类型")]
         public string ResultType { get; set; }
 
-        [Alias("检测项类型")]
         public virtual TestType Type { get; set; }
     }
 
+    [Alias(nameof(BaseResult))]
     class VqdStateResult : BaseResult
     {
-        [Alias("丢失")]
-        public int 丢失状态 { get; set; }
-        [Alias("失色")]
-        public int 失色状态 { get; set; }
+        public int Loss { get; set; }
+        public int Color { get; set; }
     }
 
+    [Alias(nameof(BaseResult))]
     class OcrResult : BaseResult
     {
 
     }
 
+    [Alias(nameof(BaseResult))]
     class LinkResult : BaseResult
     {
-        [Alias("文1")]
-        public StateType State { get; set; } = StateType.未知;
+        public StateType State { get; set; } = StateType.Unknow;
     }
 
-    [Alias("框架_区域")]
     class Region
     {
-        [Alias("编码"), StringLength(60), PrimaryKey]
+        [ StringLength(60), PrimaryKey]
         public string Id { get; set; }
-        [Alias("类型")]
         public int Type { get; set; } = 0;
     }
 
     public enum StateType
     {
-        未知 = -1
+        Unknow = -1
     }
 
     enum TestType
@@ -88,9 +76,6 @@ public partial class OrmLiteSelectTests
     [Test]
     public void Can_JoinAlias_In_Expression()
     {
-        // DbFactory.DialectProvider = MySqlDialect.Provider;
-        // DbFactory.ConnectionString = "Server=82.157.15.104;Port=3306;User Id=root;Password=tnT1R*k0+Eku;Database=demo-ormlite;Pooling=true;Allow User Variables=True;SslMode=none;";
-
         using var db = OpenDbConnection();
         db.DropAndCreateTable<Channel>();
         db.DropAndCreateTable<VqdStateResult>();
@@ -128,13 +113,15 @@ public partial class OrmLiteSelectTests
                 y.Type,
                 LinkState = Sql.TableAlias(h.State, "z").ToString(),
                 LinkState1 = h.State.ToString(),
-                z.丢失状态
+                Loss = z.Loss,
+                Color = z.Color,
             });
 
         var p = db.GetDialectProvider();
         var sql = sqlExpression.ToMergedParamsSelectStatement();
-        Assert.AreEqual(true, sql.Contains($"z.{p.GetQuotedColumnName("文1")}"));
-        Assert.AreEqual(true, sql.Contains($"{p.GetQuotedColumnName("h")}.{p.GetQuotedColumnName("文1")}"));
-        Assert.AreEqual(true, sql.Contains($"{p.GetQuotedColumnName("z")}.{p.GetQuotedColumnName("丢失")}"));
+        Assert.AreEqual(true, sql.Contains($"z.{p.GetQuotedColumnName("State")}"));
+        Assert.AreEqual(true, sql.Contains($"{p.GetQuotedColumnName("h")}.{p.GetQuotedColumnName("State")}"));
+        Assert.AreEqual(true, sql.Contains($"{p.GetQuotedColumnName("z")}.{p.GetQuotedColumnName("Loss")}"));
+        Assert.AreEqual(true, sql.Contains($"{p.GetQuotedColumnName("z")}.{p.GetQuotedColumnName("Color")}"));
     }
 }
