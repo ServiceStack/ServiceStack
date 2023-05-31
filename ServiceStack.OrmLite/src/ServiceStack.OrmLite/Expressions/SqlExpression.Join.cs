@@ -224,7 +224,14 @@ namespace ServiceStack.OrmLite
             return this;
         }
 
+        /// <summary>
+        /// Hold the <see cref="TableOptions"/> for each Join and clear them at the end of the Join
+        /// </summary>
         private TableOptions joinAlias;
+        /// <summary>
+        /// If <see cref="UseJoinTypeAsAliases"/> is enabled, record the <see cref="TableOptions"/> set for different types each time Join
+        /// </summary>
+        private Dictionary<ModelDefinition,TableOptions> joinAliases;
 
         protected virtual SqlExpression<T> InternalJoin(string joinType, Expression joinExpr, ModelDefinition sourceDef, ModelDefinition targetDef, TableOptions options = null)
         {
@@ -243,6 +250,13 @@ namespace ServiceStack.OrmLite
                     joinFormat = null;
                     options.ModelDef = targetDef;
                     joinAlias = options;
+
+                    if (UseJoinTypeAsAliases)
+                    {
+                        joinAliases ??= new Dictionary<ModelDefinition,TableOptions>();
+                        //If join multiple times and set different TableOptions, only the last setting will be used
+                        joinAliases[targetDef]=options;
+                    }
                 }
             } 
             

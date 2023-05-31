@@ -42,6 +42,7 @@ namespace ServiceStack.OrmLite
         public int? Offset { get; set; }
         public bool PrefixFieldWithTableName { get; set; }
         public bool UseSelectPropertiesAsAliases { get; set; }
+        public bool UseJoinTypeAsAliases { get; set; }
         public bool WhereStatementWithoutWhereString { get; set; }
         public ISet<string> Tags { get; } = new HashSet<string>();
         public bool AllowEscapeWildcards { get; set; }= true;
@@ -2065,8 +2066,7 @@ namespace ServiceStack.OrmLite
             OnVisitMemberType(modelType);
 
             var tableDef = modelType.GetModelDefinition();
-
-            var tableAlias = GetTableAlias(m);
+            var tableAlias = GetTableAlias(m, tableDef);
             var columnName = tableAlias == null
                 ? GetQuotedColumnName(tableDef, m.Member.Name)
                 : GetQuotedColumnName(tableDef, tableAlias, m.Member.Name);
@@ -2077,7 +2077,7 @@ namespace ServiceStack.OrmLite
             return new PartialSqlString(columnName);
         }
 
-        protected virtual string GetTableAlias(MemberExpression m)
+        protected virtual string GetTableAlias(MemberExpression m, ModelDefinition tableDef)
         {
             if (originalLambda == null)
                 return null;
@@ -2098,6 +2098,11 @@ namespace ServiceStack.OrmLite
 
                 if (pe.Type == joinType && pe.Name == joinParamName)
                     return joinAlias.Alias;
+            }
+
+            if (UseJoinTypeAsAliases && joinAliases != null && joinAliases.TryGetValue(tableDef, out var tableOptions))
+            {
+                return tableOptions.Alias;
             }
 
             return null;
