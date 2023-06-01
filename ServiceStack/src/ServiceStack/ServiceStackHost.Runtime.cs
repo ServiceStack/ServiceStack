@@ -1350,7 +1350,8 @@ namespace ServiceStack
         public virtual bool HasUi() => HasPlugin<UiFeature>();
 
         public virtual bool ShouldProfileRequest(IRequest req) =>
-            Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestBefore);
+            Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestBefore)
+            && HasPlugin<ProfilingFeature>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void OnAfterAwait(IRequest req,
