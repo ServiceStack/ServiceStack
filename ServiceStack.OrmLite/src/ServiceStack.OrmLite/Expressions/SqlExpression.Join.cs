@@ -69,10 +69,8 @@ namespace ServiceStack.OrmLite
         public SqlExpression<T> Join<Target>(Expression<Func<T, Target, bool>> joinExpr, JoinFormatDelegate joinFormat) => 
             InternalJoin("INNER JOIN", joinExpr, joinFormat ?? throw new ArgumentNullException(nameof(joinFormat)));
 
-        public SqlExpression<T> Join<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("INNER JOIN", joinExpr);
-        }
+        public SqlExpression<T> Join<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null) => 
+            InternalJoin("INNER JOIN", joinExpr);
 
         public SqlExpression<T> Join<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr, JoinFormatDelegate joinFormat) => 
             InternalJoin("INNER JOIN", joinExpr, joinFormat);
@@ -80,80 +78,60 @@ namespace ServiceStack.OrmLite
         public SqlExpression<T> Join<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr, TableOptions options) => 
             InternalJoin("INNER JOIN", joinExpr, options);
 
-        public SqlExpression<T> Join(Type sourceType, Type targetType, Expression joinExpr = null)
-        {
-            return InternalJoin("INNER JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition());
-        }
+        public SqlExpression<T> Join(Type sourceType, Type targetType, Expression joinExpr = null) => 
+            InternalJoin("INNER JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition());
 
-        public SqlExpression<T> LeftJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("LEFT JOIN", joinExpr);
-        }
+        public SqlExpression<T> Join(Type sourceType, Type targetType, Expression joinExpr, TableOptions options) => 
+            InternalJoin("INNER JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition(), options);
 
+        public SqlExpression<T> LeftJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null) => 
+            InternalJoin("LEFT JOIN", joinExpr);
         public SqlExpression<T> LeftJoin<Target>(Expression<Func<T, Target, bool>> joinExpr, JoinFormatDelegate joinFormat) => 
             InternalJoin("LEFT JOIN", joinExpr, joinFormat ?? throw new ArgumentNullException(nameof(joinFormat)));
-
         public SqlExpression<T> LeftJoin<Target>(Expression<Func<T, Target, bool>> joinExpr, TableOptions options) => 
             InternalJoin("LEFT JOIN", joinExpr, options ?? throw new ArgumentNullException(nameof(options)));
-
-        public SqlExpression<T> LeftJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("LEFT JOIN", joinExpr);
-        }
-
+        public SqlExpression<T> LeftJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null) => 
+            InternalJoin("LEFT JOIN", joinExpr);
         public SqlExpression<T> LeftJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr, JoinFormatDelegate joinFormat) => 
             InternalJoin("LEFT JOIN", joinExpr, joinFormat);
-
         public SqlExpression<T> LeftJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr, TableOptions options) => 
             InternalJoin("LEFT JOIN", joinExpr, options);
+        public SqlExpression<T> LeftJoin(Type sourceType, Type targetType, Expression joinExpr = null) => 
+            InternalJoin("LEFT JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition());
+        public SqlExpression<T> LeftJoin(Type sourceType, Type targetType, Expression joinExpr, TableOptions options) => 
+            InternalJoin("LEFT JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition(), options);
 
-        public SqlExpression<T> LeftJoin(Type sourceType, Type targetType, Expression joinExpr = null)
-        {
-            return InternalJoin("LEFT JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition());
-        }
-
-        public SqlExpression<T> RightJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("RIGHT JOIN", joinExpr);
-        }
-
+        
+        public SqlExpression<T> RightJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null) => 
+            InternalJoin("RIGHT JOIN", joinExpr);
         public SqlExpression<T> RightJoin<Target>(Expression<Func<T, Target, bool>> joinExpr, JoinFormatDelegate joinFormat) => 
             InternalJoin("RIGHT JOIN", joinExpr, joinFormat ?? throw new ArgumentNullException(nameof(joinFormat)));
 
         public SqlExpression<T> RightJoin<Target>(Expression<Func<T, Target, bool>> joinExpr, TableOptions options) => 
             InternalJoin("RIGHT JOIN", joinExpr, options ?? throw new ArgumentNullException(nameof(options)));
-
-        public SqlExpression<T> RightJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("RIGHT JOIN", joinExpr);
-        }
-
+        public SqlExpression<T> RightJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null) => 
+            InternalJoin("RIGHT JOIN", joinExpr);
         public SqlExpression<T> RightJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr, JoinFormatDelegate joinFormat) => 
             InternalJoin("RIGHT JOIN", joinExpr, joinFormat);
-
         public SqlExpression<T> RightJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr, TableOptions options) => 
             InternalJoin("RIGHT JOIN", joinExpr, options);
+        public SqlExpression<T> RightJoin(Type sourceType, Type targetType, Expression joinExpr = null) => 
+            InternalJoin("RIGHT JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition());
+        public SqlExpression<T> RightJoin(Type sourceType, Type targetType, Expression joinExpr, TableOptions options) => 
+            InternalJoin("RIGHT JOIN", joinExpr, sourceType.GetModelDefinition(), targetType.GetModelDefinition(), options);
 
-        public SqlExpression<T> FullJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("FULL JOIN", joinExpr);
-        }
+        public SqlExpression<T> FullJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null) => 
+            InternalJoin("FULL JOIN", joinExpr);
+        public SqlExpression<T> FullJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null) => 
+            InternalJoin("FULL JOIN", joinExpr);
 
-        public SqlExpression<T> FullJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("FULL JOIN", joinExpr);
-        }
+        
+        public SqlExpression<T> CrossJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null) => 
+            InternalJoin("CROSS JOIN", joinExpr);
+        public SqlExpression<T> CrossJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null) => 
+            InternalJoin("CROSS JOIN", joinExpr);
 
-        public SqlExpression<T> CrossJoin<Target>(Expression<Func<T, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("CROSS JOIN", joinExpr);
-        }
-
-        public SqlExpression<T> CrossJoin<Source, Target>(Expression<Func<Source, Target, bool>> joinExpr = null)
-        {
-            return InternalJoin("CROSS JOIN", joinExpr);
-        }
-
+        
         protected SqlExpression<T> InternalJoin<Source, Target>(string joinType, Expression<Func<Source, Target, bool>> joinExpr, JoinFormatDelegate joinFormat) =>
             InternalJoin(joinType, joinExpr, joinFormat != null ? new TableOptions { JoinFormat = joinFormat } : null);
 
