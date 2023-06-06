@@ -897,7 +897,7 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <label for="confirmDelete" class="mx-1 select-none dark:text-gray-300">@ConfirmLabel</label>
 <button type="button" disabled=@(!confirmDelete) @onclick="OnDelete"
 class=@ClassNames("select-none inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white",
-confirmDelete? "cursor-pointer bg-red-600 dark:bg-red-300 hover:bg-red-700 dark:hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" : "bg-red-400 dark:bg-red-500", Class)>
+confirmDelete? "cursor-pointer bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" : "bg-red-400", Class)>
 @if (ChildContent != null)
 {
 @ChildContent
@@ -1259,6 +1259,8 @@ role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/sv
 }
 @inherits TextInputBase
 @implements IHasJsonApiClient
+@if (AppMetadata != null)
+{
 <div class=@ClassNames("lookup-field", FieldClass)>
 <input type="hidden" name=@Input.Id value=@Value />
 @if (!string.IsNullOrEmpty(UseLabel))
@@ -1281,8 +1283,7 @@ role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/sv
 {
 <div class="mt-1 relative">
 <button type="button" class="lookup flex relative w-full bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-@onclick="lookup"
-aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+@onclick="lookup" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
 <span class="w-full inline-flex truncate">
 <span class="text-blue-700 dark:text-blue-300 flex cursor-pointer">
 <Icon class="mr-1 w-5 h-5" Image=@Icon />
@@ -1302,7 +1303,7 @@ else if (ErrorFieldMessage != null)
 <p class="mt-2 text-sm text-red-500" id=@($"{Input.Id}-error")>@ErrorFieldMessage</p>
 }
 </div>
-@code {
+<DynamicModalLookup @ref="LocalModalLookup" AppMetadata=@AppMetadata />
 }
 @inherits UiComponentBase
 <div @onclick="Close" id=@Id aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
