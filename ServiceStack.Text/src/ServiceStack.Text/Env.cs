@@ -121,7 +121,7 @@ namespace ServiceStack.Text
 
         public static string VersionString { get; set; }
 
-        public static decimal ServiceStackVersion = 6.81m;
+        public static decimal ServiceStackVersion = 6.90m;
 
         public static bool IsLinux { get; set; }
 
