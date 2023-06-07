@@ -122,6 +122,18 @@ namespace ServiceStack
         /// Whether to wrap JS scripts in an Immediately-Invoked Function Expression
         /// </summary>
         public bool IIFE { get; set; }
+        /// <summary>
+        /// Whether to "async" load script (default false)
+        /// </summary>
+        public bool Async { get; set; }
+        /// <summary>
+        /// Whether to "defer" loading script (default false)
+        /// </summary>
+        public bool Defer { get; set; }
+        /// <summary>
+        /// Whether script should be loaded as a "module" (default false)
+        /// </summary>
+        public bool Module { get; set; }
     }
 
     public class TextDumpOptions
@@ -231,7 +243,8 @@ namespace ServiceStack
         public static string NavClass { get; set; } = "nav";
         public static string NavItemClass { get; set; } = "nav-item";
         public static string NavLinkClass { get; set; } = "nav-link";
-        
+        public static string ActiveClass { get; set; } = "active";
+
         public static string ChildNavItemClass { get; set; } = "nav-item dropdown";
         public static string ChildNavLinkClass { get; set; } = "nav-link dropdown-toggle";
         public static string ChildNavMenuClass { get; set; } = "dropdown-menu";
@@ -322,7 +335,8 @@ namespace ServiceStack
         public string NavClass { get; set; } = NavDefaults.NavClass;
         public string NavItemClass { get; set; } = NavDefaults.NavItemClass;
         public string NavLinkClass { get; set; } = NavDefaults.NavLinkClass;
-        
+        public string ActiveClass { get; set; } = NavDefaults.ActiveClass;
+
         public string ChildNavItemClass { get; set; } = NavDefaults.ChildNavItemClass;
         public string ChildNavLinkClass { get; set; } = NavDefaults.ChildNavLinkClass;
         public string ChildNavMenuClass { get; set; } = NavDefaults.ChildNavMenuClass;
@@ -339,6 +353,17 @@ namespace ServiceStack
         public static void Load(IAppSettings settings) => ViewUtils.Load(settings);
 
         public static List<NavItem> GetNavItems(string key) => ViewUtils.GetNavItems(key);
+    }
+
+    public static class When
+    {
+        public static string Development => "dev";
+        public static string Production => "prod";
+        public static string IsAuthenticated => "auth";
+        public static string HasRole(string role) => $"role:{role}";
+        public static string HasPermission(string perm) => $"perm:{perm}";
+        public static string HasScope(string scope) => $"scope:{scope}";
+        public static string HasClaim(string claim) => $"claim:{claim}";
     }
 
     /// <summary>
@@ -1225,7 +1250,11 @@ namespace ServiceStack
             var assetExt = "js";
             var outFile = options.OutputTo ?? (options.Minify 
                   ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
-            var htmlTagFmt = "<script src=\"{0}\"></script>";
+            var modifiers = "";
+            if (options.Module) modifiers += " type=\"module\"";
+            if (options.Async) modifiers += " async";
+            if (options.Defer) modifiers += " defer";
+            var htmlTagFmt = "<script src=\"{0}\"" + modifiers + "></script>";
 
             return BundleAsset(filterName, 
                 webVfs, 

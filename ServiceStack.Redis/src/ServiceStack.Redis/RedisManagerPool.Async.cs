@@ -7,27 +7,26 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public partial class RedisManagerPool
+    : IRedisClientsManagerAsync
 {
-    public partial class RedisManagerPool
-        : IRedisClientsManagerAsync
+    ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetCacheClientAsync(CancellationToken token)
+        => new RedisClientManagerCacheClient(this).AsValueTaskResult<ICacheClientAsync>();
+
+    ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetClientAsync(CancellationToken token)
+        => GetClient(true).AsValueTaskResult<IRedisClientAsync>();
+
+    ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetReadOnlyCacheClientAsync(CancellationToken token)
+        => new RedisClientManagerCacheClient(this) { ReadOnly = true }.AsValueTaskResult<ICacheClientAsync>();
+
+    ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetReadOnlyClientAsync(CancellationToken token)
+        => GetClient(true).AsValueTaskResult<IRedisClientAsync>();
+
+    ValueTask IAsyncDisposable.DisposeAsync()
     {
-        ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetCacheClientAsync(CancellationToken token)
-            => new RedisClientManagerCacheClient(this).AsValueTaskResult<ICacheClientAsync>();
-
-        ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetClientAsync(CancellationToken token)
-            => GetClient(true).AsValueTaskResult<IRedisClientAsync>();
-
-        ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetReadOnlyCacheClientAsync(CancellationToken token)
-            => new RedisClientManagerCacheClient(this) { ReadOnly = true }.AsValueTaskResult<ICacheClientAsync>();
-
-        ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetReadOnlyClientAsync(CancellationToken token)
-            => GetClient(true).AsValueTaskResult<IRedisClientAsync>();
-
-        ValueTask IAsyncDisposable.DisposeAsync()
-        {
-            Dispose();
-            return default;
-        }
+        Dispose();
+        return default;
     }
 }

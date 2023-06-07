@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -125,7 +126,7 @@ namespace ServiceStack.NativeTypes
                 if (predicate != null && !predicate(op))
                     return true;
 
-                if (!meta.IsVisible(req, op) && exportTags.All(tag => op.Tags?.Any(x => x.Name == tag) != true))
+                if (!meta.IsVisible(req, op) && exportTags.All(tag => op.Tags?.Any(x => x == tag) != true))
                     return true;
 
                 if (skipTypes.Contains(op.RequestType))
@@ -157,7 +158,7 @@ namespace ServiceStack.NativeTypes
                     RequiresAnyRole = operation.RequiresAnyRole.NullIfEmpty(),
                     RequiredPermissions = operation.RequiredPermissions.NullIfEmpty(),
                     RequiresAnyPermission = operation.RequiresAnyPermission.NullIfEmpty(),
-                    Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x.Name) : null,
+                    Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x) : null,
                     Ui = operation.LocodeCss == null && operation.ExplorerCss == null && operation.FormLayout == null 
                         ? null 
                         : new ApiUiInfo {
@@ -932,60 +933,63 @@ namespace ServiceStack.NativeTypes
                 if (metaTypes.Count == 1)
                 {
                     var metaType = metaTypes[0];
-                    if (metaType.Inherits != null)
+                    AddType(metaType);
+                }
+            }
+
+            void AddType(MetadataType type)
+            {
+                if (type.Inherits != null)
+                {
+                    Add(type.Inherits.Name);
+                    foreach (var genericArg in type.Inherits.GenericArgs.Safe())
                     {
-                        Add(metaType.Inherits.Name);
-                        foreach (var genericArg in metaType.Inherits.GenericArgs.Safe())
-                        {
-                            Add(genericArg);
-                        }
+                        Add(genericArg);
                     }
-                    foreach (var iface in metaType.Implements.Safe())
+                }
+                foreach (var iface in type.Implements.Safe())
+                {
+                    if (!iface.IsSystemOrServiceStackType())
                     {
-                        if (!iface.IsSystemOrServiceStackType())
-                        {
-                            Add(iface.Name);
-                        }
+                        Add(iface.Name);
                     }
-                    foreach (var pi in metaType.Properties.Safe())
+                }
+                AddAttributes(type.Attributes);
+
+                foreach (var pi in type.Properties.Safe())
+                {
+                    Add(pi.Type);
+
+                    foreach (var genericArg in pi.GenericArgs.Safe())
                     {
-                        Add(pi.Type);
-                        foreach (var genericArg in pi.GenericArgs.Safe())
-                        {
-                            Add(genericArg);
-                        }
+                        Add(genericArg);
                     }
+
+                    AddAttributes(pi.Attributes);
                 }
             }
             
-            if (type.Inherits != null)
+            void AddAttributes(List<MetadataAttribute> attrs)
             {
-                Add(type.Inherits.Name);
+                foreach (var attr in attrs.Safe())
+                {
+                    foreach (var arg in attr.ConstructorArgs.Safe().Union(attr.Args.Safe()))
+                    {
+                        if (arg.Type == nameof(Type) && arg.Value.IsTypeValue())
+                        {
+                            Add(arg.Value.ExtractTypeName());
+                        }
+                    }
+                }
+            }
 
-                foreach (var genericArg in type.Inherits.GenericArgs.Safe())
-                {
-                    Add(genericArg);
-                }
-            }
-            foreach (var iface in type.Implements.Safe())
-            {
-                if (!iface.IsSystemOrServiceStackType())
-                {
-                    Add(iface.Name);
-                }
-            }
-            foreach (var pi in type.Properties.Safe())
-            {
-                Add(pi.Type);
-
-                foreach (var genericArg in pi.GenericArgs.Safe())
-                {
-                    Add(genericArg);
-                }
-            }
+            AddType(type);
 
             return to;
         }
+
+        internal static bool IsTypeValue(this string value) => value?.StartsWith("typeof(") == true;
+        internal static string ExtractTypeName(this string value) => value.Substring(7, value.Length - 8).LastRightPart('.');
 
         public static bool IgnoreSystemType(this MetadataType type)
         {
@@ -1158,21 +1162,42 @@ namespace ServiceStack.NativeTypes
                     .Select(o => o.Request)
                     .ToList();
 
-                var includeSet = includedMetadataTypes
-                    .Where(x => x.RequestType?.ReturnType != null)
-                    .Select(x => x.RequestType.ReturnType.Name)
-                    .ToSet();
-
-                var includedResponses = metadata.Operations
-                    .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
-                    .Select(o => o.Response)
-                    .ToList();
-                includedResponses.ForEach(x => includeSet.Add(x.Name));
-
                 var includedTypeNames = includedMetadataTypes
                     .Where(x => x.Implements?.Length > 0)
                     .SelectMany(x => x.Implements.Select(i => i.Name))
                     .ToSet();
+
+                // Ignore generic response types, e.g. QueryResponse`1
+                var includeSet = new HashSet<string>();
+                includedMetadataTypes
+                    .Where(x => x.RequestType?.ReturnType != null)
+                    .ForEach(x => {
+                        if (x.RequestType.ReturnType.GenericArgs.IsEmpty())
+                        {
+                            includeSet.Add(x.RequestType.ReturnType.Name);
+                        }
+                        else
+                        {
+                            includedTypeNames.Add(x.RequestType.ReturnType.Name);
+                            x.RequestType.ReturnType.GenericArgs.ForEach(x => includeSet.Add(x));
+                        }                         
+                    });
+
+                metadata.Operations
+                    .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
+                    .Select(o => o.Response)
+                    .ForEach(x => {
+                        if (x.GenericArgs.IsEmpty())
+                        {
+                            includeSet.Add(x.Name);
+                        }
+                        else
+                        {
+                            includedTypeNames.Add(x.Name);
+                            x.GenericArgs.ForEach(x => includeSet.Add(x));
+                        }
+                    });
+
                 foreach (var op in includedMetadataOperations)
                 {
                     if (op.ReturnType != null)

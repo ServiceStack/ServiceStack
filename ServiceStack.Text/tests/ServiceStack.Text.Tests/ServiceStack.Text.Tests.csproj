@@ -28,8 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="protobuf-net" Version="3.0.101" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />

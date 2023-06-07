@@ -22,6 +22,7 @@ namespace ServiceStack
         public const string OpenApi = "openapi";
         public const string Postman = "postman";
         public const string PredefinedRoutes = "autoroutes";
+        public const string CleanUrls = "cleanurls";
         public const string ProtoBuf = "protobuf";
         public const string Razor = "razor";
         public const string Register = "register";

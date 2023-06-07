@@ -97,6 +97,15 @@ namespace ServiceStack.Aws.Sqs
             get => sqsMqMessageFactory.QueueManager.DisableBuffering;
             set => sqsMqMessageFactory.QueueManager.DisableBuffering = value;
         }
+        
+        /// <summary>
+        /// Set the AWS Account Identifier of the AWS Account that owns the SQS queue.
+        /// </summary>
+        public string AwsQueueOwnerAccountId
+        {
+            get => sqsMqMessageFactory.QueueManager.AwsQueueOwnerAccountId;
+            set => sqsMqMessageFactory.QueueManager.AwsQueueOwnerAccountId = value;
+        }
 
         /// <summary>
         /// Execute global transformation or custom logic before a request is processed.
@@ -178,7 +187,7 @@ namespace ServiceStack.Aws.Sqs
                                        Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx,
                                        int noOfThreads, int? retryCount = null,
                                        int? visibilityTimeoutSeconds = null, int? receiveWaitTimeSeconds = null,
-                                       bool? disableBuffering = null)
+                                       bool? disableBuffering = null, string? awsQueueOwnerAccountId = null)
         {
             var type = typeof(T);
 
@@ -201,7 +210,8 @@ namespace ServiceStack.Aws.Sqs
                 ThreadCount = noOfThreads,
                 VisibilityTimeout = visibilityTimeoutSeconds ?? this.VisibilityTimeout,
                 ReceiveWaitTime = receiveWaitTimeSeconds ?? this.ReceiveWaitTime,
-                DisableBuffering = disableBuffering ?? this.DisableBuffering
+                DisableBuffering = disableBuffering ?? this.DisableBuffering,
+                AwsQueueOwnerAccountId = awsQueueOwnerAccountId ?? this.AwsQueueOwnerAccountId
             };
 
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, handlerMap.Count);

@@ -37,6 +37,12 @@ namespace MyApp
                         },
                         TypeFilter = (type, req) =>
                         {
+                            if (type.IsCrudCreateOrUpdate())
+                            {
+                                type.Properties?.Where(p => p.Name is "Notes" or "Description")
+                                    .Each(p => p.AddAttribute(new InputAttribute { Type = Input.Types.Textarea }));
+                            }
+                            
                             if (type.IsCrudCreateOrUpdate("Employee"))
                             {
                                 type.Property("PhotoPath")

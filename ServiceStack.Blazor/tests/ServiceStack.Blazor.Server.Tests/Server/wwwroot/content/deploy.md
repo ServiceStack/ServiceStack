@@ -41,20 +41,12 @@ docker-compose -f ~/nginx-proxy-compose.yml up -d
 
 This will run an nginx reverse proxy along with a companion container that will watch for additional containers in the same docker network and attempt to initialize them with valid TLS certificates.
 
-## GitHub Repository setup
-This template pushes the API server dockerized application to GitHub Container Repository. To do this, you will first need to [create a Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) specifically for use by `release.yml` GitHub Actions.
-
-This token will need to have access to `write:packages` to the GitHub Package Registry, which includes the GitHub Container Registry.
-
-The first time the `release.yml` process successfully runs and creates your GitHub Container Repository for your project, you then have the option to [upgrade the workflow to use GITHUB_TOKEN](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-ghcrio) replacing the `CR_PAT`. 
-
 ### GitHub Actions secrets
 
-The `release.yml` assumes 5 secrets have been set:
+The `release.yml` uses the following secrets.
 
 | Required Secrets | Description |
 | -- | -- |
-| `CR_PAT` | GitHub Personal Token with read/write access to packages |
 | `DEPLOY_API` | Hostname used to SSH deploy .NET App to, this can either be an IP address or subdomain with A record pointing to the server |
 | `DEPLOY_USERNAME` | Username to log in with via SSH e.g, **ubuntu**, **ec2-user**, **root** |
 | `DEPLOY_KEY` | SSH private key used to remotely access deploy .NET App |
@@ -68,7 +60,13 @@ To also enable deploying static assets to a CDN:
 
 These secrets can use the [GitHub CLI](https://cli.github.com/manual/gh_secret_set) for ease of creation. Eg, using the GitHub CLI the following can be set.
 
-<img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/actions/gh-secrets.png" style="min-width:700px">
+```bash
+gh secret set DEPLOY_API -b"<DEPLOY_API>"
+gh secret set DEPLOY_USERNAME -b"<DEPLOY_USERNAME>"
+gh secret set DEPLOY_KEY < key.pem # DEPLOY_KEY
+gh secret set LETSENCRYPT_EMAIL -b"<LETSENCRYPT_EMAIL>"
+gh secret set DEPLOY_CDN -b"<DEPLOY_CDN>"
+```
 
 These secrets are used to populate variables within GitHub Actions and other configuration files.
 
@@ -83,7 +81,37 @@ The Host Server `.csproj` includes post build instructions populated by GitHub A
 by first copying the generated `index.html` home page into `404.html` in order to enable full page reloads to use Blazor's App 
 client routing:
 
-<img src="https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/actions/msbuild-deploy.png" style="min-width:938px">
+```xml
+<PropertyGroup>
+    <ClientDir>$(MSBuildProjectDirectory)/../MyApp.Client</ClientDir>
+    <WwwRoot>$(ClientDir)/wwwroot</WwwRoot>
+</PropertyGroup>
+
+<!-- Populated in release.yml with GitHub Actions secrets -->
+<Target Name="DeployApi" AfterTargets="Build" Condition="$(DEPLOY_API) != ''">
+    <Exec Command="echo DEPLOY_API=$(DEPLOY_API)" />
+
+    <!-- Update Production settings with DEPLOY_API Blazor UI should use  -->
+    <WriteLinesToFile File="$(WwwRoot)/appsettings.Production.json" 
+        Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/appsettings.Production.json).Replace('{DEPLOY_API}',$(DEPLOY_API)))" 
+        Overwrite="true" Encoding="UTF-8" />
+
+    <!-- 404.html SPA fallback (supported by GitHub Pages, Cloudflare & Netlify CDNs) -->
+    <Copy SourceFiles="$(WwwRoot)/index.html" 
+        DestinationFiles="$(WwwRoot)/wwwroot/404.html" />
+
+    <!-- define /api proxy routes (supported by Cloudflare or Netlify CDNs)  -->
+    <WriteLinesToFile File="$(WwwRoot)/_redirects" 
+        Lines="$([System.IO.File]::ReadAllText($(WwwRoot)/_redirects).Replace('{DEPLOY_API}',$(DEPLOY_API)))" 
+        Overwrite="true" Encoding="UTF-8" />
+</Target>
+<Target Name="DeployCdn" AfterTargets="Build" Condition="$(DEPLOY_CDN) != ''">
+    <Exec Command="echo DEPLOY_CDN=$(DEPLOY_CDN)" />
+
+    <!-- Define custom domain name that CDN should use -->
+    <Exec Condition="$(DEPLOY_CDN) != ''" Command="echo $(DEPLOY_CDN) &gt; $(WwwRoot)/CNAME" />
+</Target>
+```
 
 Whilst the `_redirects` file is a convention supported by many [popular Jamstack CDNs](https://jamstack.wtf/#deployment)
 that sets up a new rule that proxies `/api*` requests to where the production .NET App is deployed to in order 

@@ -16,40 +16,36 @@ using System.Globalization;
 using System.Linq;
 using ServiceStack.Text;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public partial class RedisClient
+    : IRedisClient
 {
-    public partial class RedisClient
-        : IRedisClient
+    public IEnumerable<SlowlogItem> GetSlowlog(int? numberOfRecords = null)
     {
-        public IEnumerable<SlowlogItem> GetSlowlog(int? numberOfRecords = null)
+        var data = Slowlog(numberOfRecords);
+        return ParseSlowlog(data);
+    }
+
+    private static SlowlogItem[] ParseSlowlog(object[] data)
+    {
+        var list = new SlowlogItem[data.Length];
+        for (int i = 0; i < data.Length; i++)
         {
-            var data = Slowlog(numberOfRecords);
-            return ParseSlowlog(data);
+            var log = (object[])data[i];
+
+            var arguments = ((object[])log[3]).OfType<byte[]>()
+                .Select(t => t.FromUtf8Bytes())
+                .ToArray();
+
+
+            list[i] = new SlowlogItem(
+                int.Parse((string)log[0], CultureInfo.InvariantCulture),
+                int.Parse((string)log[1], CultureInfo.InvariantCulture).FromUnixTime(),
+                int.Parse((string)log[2], CultureInfo.InvariantCulture),
+                arguments
+            );
         }
-
-        private static SlowlogItem[] ParseSlowlog(object[] data)
-        {
-            var list = new SlowlogItem[data.Length];
-            for (int i = 0; i < data.Length; i++)
-            {
-                var log = (object[])data[i];
-
-                var arguments = ((object[])log[3]).OfType<byte[]>()
-                    .Select(t => t.FromUtf8Bytes())
-                    .ToArray();
-
-
-                list[i] = new SlowlogItem(
-                    Int32.Parse((string)log[0], CultureInfo.InvariantCulture),
-                    DateTimeExtensions.FromUnixTime(Int32.Parse((string)log[1], CultureInfo.InvariantCulture)),
-                    Int32.Parse((string)log[2], CultureInfo.InvariantCulture),
-                    arguments
-                    );
-            }
-
-            return list;
-        }
-
-
+        return list;
     }
 }

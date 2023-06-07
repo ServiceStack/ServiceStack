@@ -1,44 +1,43 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ServiceStack.Redis.Pipeline
+namespace ServiceStack.Redis.Pipeline;
+
+public partial class RedisPipelineCommand
 {
-    public partial class RedisPipelineCommand
+    private readonly RedisNativeClient client;
+    private int cmdCount;
+
+    public RedisPipelineCommand(RedisNativeClient client)
     {
-        private readonly RedisNativeClient client;
-        private int cmdCount;
+        this.client = client;
+    }
 
-        public RedisPipelineCommand(RedisNativeClient client)
+    public void WriteCommand(params byte[][] cmdWithBinaryArgs)
+    {
+        client.WriteAllToSendBuffer(cmdWithBinaryArgs);
+        cmdCount++;
+    }
+
+    public List<long> ReadAllAsInts()
+    {
+        var results = new List<long>();
+        while (cmdCount-- > 0)
         {
-            this.client = client;
+            results.Add(client.ReadLong());
         }
 
-        public void WriteCommand(params byte[][] cmdWithBinaryArgs)
-        {
-            client.WriteAllToSendBuffer(cmdWithBinaryArgs);
-            cmdCount++;
-        }
+        return results;
+    }
 
-        public List<long> ReadAllAsInts()
-        {
-            var results = new List<long>();
-            while (cmdCount-- > 0)
-            {
-                results.Add(client.ReadLong());
-            }
+    public bool ReadAllAsIntsHaveSuccess()
+    {
+        var allResults = ReadAllAsInts();
+        return allResults.All(x => x == RedisNativeClient.Success);
+    }
 
-            return results;
-        }
-
-        public bool ReadAllAsIntsHaveSuccess()
-        {
-            var allResults = ReadAllAsInts();
-            return allResults.All(x => x == RedisNativeClient.Success);
-        }
-
-        public void Flush()
-        {
-            client.FlushAndResetSendBuffer();
-        }
+    public void Flush()
+    {
+        client.FlushAndResetSendBuffer();
     }
 }

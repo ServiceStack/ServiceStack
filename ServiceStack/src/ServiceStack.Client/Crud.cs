@@ -76,16 +76,36 @@ public static class Crud
     /// <summary>
     /// Is AutoQuery Request DTO 
     /// </summary>
-    public static bool IsCrudRead(this MetadataType type) => type.IsAutoQuery();
+    public static bool IsCrudRead(this MetadataType type) => type.IsAnyQuery();
     /// <summary>
-    /// Is AutoQuery Request DTO 
+    /// Is AutoQuery QueryDb`1 Request DTO 
     /// </summary>
-    public static bool IsAutoQuery(this MetadataType type) =>
+    public static bool IsQuery(this MetadataType type) =>
+        type.Inherits is { Name: "QueryDb`1" };
+    /// <summary>
+    /// Is AutoQuery Into QueryDb`2 Request DTO 
+    /// </summary>
+    public static bool IsQueryInto(this MetadataType type) =>
+        type.Inherits is { Name: "QueryDb`2" };
+    /// <summary>
+    /// Is Any AutoQuery Request DTO 
+    /// </summary>
+    public static bool IsAnyQuery(this MetadataType type) =>
         type.Inherits is { Name: "QueryDb`1" or "QueryDb`2" };
     /// <summary>
+    /// Is AutoQuery QueryData`1 Request DTO 
+    /// </summary>
+    public static bool IsQueryData(this MetadataType type) =>
+        type.Inherits is { Name: "QueryData`1" };
+    /// <summary>
+    /// Is AutoQuery QueryData`2 Request DTO 
+    /// </summary>
+    public static bool IsQueryDataInto(this MetadataType type) =>
+        type.Inherits is { Name: "QueryData`2" };
+    /// <summary>
     /// Is AutoQuery Request DTO 
     /// </summary>
-    public static bool IsAutoQueryData(this MetadataType type) =>
+    public static bool IsAnyQueryData(this MetadataType type) =>
         type.Inherits is { Name: "QueryData`1" or "QueryData`2" };
     /// <summary>
     /// Is Crud Request DTO 
@@ -110,7 +130,7 @@ public static class Crud
     /// Is AutoQuery Request DTO for Data Model 
     /// </summary>
     public static bool IsAutoQuery(this MetadataType type, string model) =>
-        type.IsAutoQuery() && type.Inherits.FirstGenericArg() == model;
+        type.IsAnyQuery() && type.Inherits.FirstGenericArg() == model;
 
     /// <summary>
     /// Is ICreateDb or ISaveDb Crud Request DTO 
@@ -161,6 +181,9 @@ public static class Crud
             ? type.Inherits.FirstGenericArg()
             : type.Implements?.FirstOrDefault(iface => WriteInterfaces.Contains(iface.Name)).FirstGenericArg();
 
+    public static bool IsCrudQuery(Type type) => IsCrudQueryDb(type) || IsCrudQueryData(type);
+    public static bool IsCrudQueryDb(Type type) => type.IsOrHasGenericTypeOf(typeof(QueryDb<>)) || type.IsOrHasGenericTypeOf(typeof(QueryDb<,>));
+    public static bool IsCrudQueryData(Type type) => type.IsOrHasGenericTypeOf(typeof(QueryData<>)) || type.IsOrHasGenericTypeOf(typeof(QueryData<,>));
     public static bool IsCrudCreate(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>));
     public static bool IsCrudUpdate(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>));
     public static bool IsCrudPatch(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>));

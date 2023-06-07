@@ -489,6 +489,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
             OnNewDone();
 
         ShowQueryPrefs = false;
+        ModalLookup?.CloseModal();
         StateHasChanged();
     }
 

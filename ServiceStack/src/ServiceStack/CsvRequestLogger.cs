@@ -154,7 +154,7 @@ namespace ServiceStack
             lock (semaphore)
             {
                 logs.Add(entry);
-                if (response.IsErrorResponse())
+                if (entry.ErrorResponse != null)
                 {
                     errorLogs.Add(entry);
                 }

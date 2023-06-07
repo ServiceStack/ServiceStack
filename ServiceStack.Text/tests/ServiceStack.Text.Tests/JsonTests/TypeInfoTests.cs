@@ -6,6 +6,7 @@ namespace ServiceStack.Text.Tests.JsonTests
 {
     public class TypeInfoTests
     {
+        [Serializable]
         class MyClass : IComparable
         {
             public int CompareTo(object obj)

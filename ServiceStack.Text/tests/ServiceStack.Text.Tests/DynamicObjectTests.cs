@@ -9,6 +9,7 @@ namespace ServiceStack.Text.Tests
     public class DynamicObjectTests
         : TestBase
     {
+        [Serializable]
         public class UrlStatus
         {
             public int Status { get; set; }

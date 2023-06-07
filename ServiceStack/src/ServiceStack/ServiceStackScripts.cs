@@ -807,65 +807,10 @@ namespace ServiceStack
                 return (HashSet<string>)oAttrs;
                 
             var authSession = request.GetSession();
-            var attrs = new HashSet<string>();
-            if (authSession?.IsAuthenticated == true)
-            {
-                attrs.Add("auth");
-                
-                if (HostContext.HasValidAuthSecret(request))
-                    attrs.Add(RoleNames.Admin);
+            var attrs = authSession?.GetUserAttributes(request) ?? new HashSet<string> {
+                HostContext.DebugMode ? When.Development : When.Production
+            };
 
-                var roles = authSession.Roles;
-                var permissions = authSession.Permissions;
-                
-                if (roles.IsEmpty() && permissions.IsEmpty())
-                {
-                    var authRepo = HostContext.AppHost.GetAuthRepository(request);
-                    using (authRepo as IDisposable)
-                    {
-                        if (authRepo is IManageRoles manageRoles)
-                        {
-                            manageRoles.GetRolesAndPermissions(authSession.UserAuthId, out var iroles, out var ipermissions);
-                            roles = iroles.ToList();
-                            permissions = ipermissions.ToList();
-                        }
-                    }
-                }
-                
-                if (roles != null)
-                {
-                    foreach (var role in roles)
-                    {
-                        attrs.Add("role:" + role);
-                    }
-                }
-                if (permissions != null)
-                {
-                    foreach (var perm in permissions)
-                    {
-                        attrs.Add("perm:" + perm);
-                    }
-                }
-                
-                if (authSession is IAuthSessionExtended extended)
-                {
-                    if (extended.Scopes != null)
-                    {
-                        foreach (var item in extended.Scopes)
-                        {
-                            attrs.Add("scope:" + item);
-                        }
-                    }
-                }
-                var claims = request.GetClaims();
-                if (claims != null)
-                {
-                    foreach (var claim in claims)
-                    {
-                        attrs.Add("claim:" + claim);
-                    }
-                }
-            }
             request.Items[Keywords.Attributes] = attrs;
             
             return attrs;            

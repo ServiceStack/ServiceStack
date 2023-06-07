@@ -15,41 +15,40 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+internal partial class RedisClientHash
+    : IRedisHashAsync
 {
-    internal partial class RedisClientHash
-        : IRedisHashAsync
-    {
-        private IRedisClientAsync AsyncClient => client;
+    private IRedisClientAsync AsyncClient => client;
 
-        ValueTask IRedisHashAsync.AddAsync(KeyValuePair<string, string> item, CancellationToken token)
-            => AsyncClient.SetEntryInHashAsync(hashId, item.Key, item.Value, token).Await();
+    ValueTask IRedisHashAsync.AddAsync(KeyValuePair<string, string> item, CancellationToken token)
+        => AsyncClient.SetEntryInHashAsync(hashId, item.Key, item.Value, token).Await();
 
-        ValueTask IRedisHashAsync.AddAsync(string key, string value, CancellationToken token)
-            => AsyncClient.SetEntryInHashAsync(hashId, key, value, token).Await();
+    ValueTask IRedisHashAsync.AddAsync(string key, string value, CancellationToken token)
+        => AsyncClient.SetEntryInHashAsync(hashId, key, value, token).Await();
 
-        ValueTask<bool> IRedisHashAsync.AddIfNotExistsAsync(KeyValuePair<string, string> item, CancellationToken token)
-            => AsyncClient.SetEntryInHashIfNotExistsAsync(hashId, item.Key, item.Value, token);
+    ValueTask<bool> IRedisHashAsync.AddIfNotExistsAsync(KeyValuePair<string, string> item, CancellationToken token)
+        => AsyncClient.SetEntryInHashIfNotExistsAsync(hashId, item.Key, item.Value, token);
 
-        ValueTask IRedisHashAsync.AddRangeAsync(IEnumerable<KeyValuePair<string, string>> items, CancellationToken token)
-            => AsyncClient.SetRangeInHashAsync(hashId, items, token);
+    ValueTask IRedisHashAsync.AddRangeAsync(IEnumerable<KeyValuePair<string, string>> items, CancellationToken token)
+        => AsyncClient.SetRangeInHashAsync(hashId, items, token);
 
-        ValueTask IRedisHashAsync.ClearAsync(CancellationToken token)
-            => new ValueTask(AsyncClient.RemoveAsync(hashId, token));
+    ValueTask IRedisHashAsync.ClearAsync(CancellationToken token)
+        => new ValueTask(AsyncClient.RemoveAsync(hashId, token));
 
-        ValueTask<bool> IRedisHashAsync.ContainsKeyAsync(string key, CancellationToken token)
-            => AsyncClient.HashContainsEntryAsync(hashId, key, token);
+    ValueTask<bool> IRedisHashAsync.ContainsKeyAsync(string key, CancellationToken token)
+        => AsyncClient.HashContainsEntryAsync(hashId, key, token);
 
-        ValueTask<int> IRedisHashAsync.CountAsync(CancellationToken token)
-            => AsyncClient.GetHashCountAsync(hashId, token).AsInt32();
+    ValueTask<int> IRedisHashAsync.CountAsync(CancellationToken token)
+        => AsyncClient.GetHashCountAsync(hashId, token).AsInt32();
 
-        IAsyncEnumerator<KeyValuePair<string, string>> IAsyncEnumerable<KeyValuePair<string, string>>.GetAsyncEnumerator(CancellationToken token)
-            => AsyncClient.ScanAllHashEntriesAsync(hashId).GetAsyncEnumerator(token); // note: we're using HSCAN here, not HGETALL
+    IAsyncEnumerator<KeyValuePair<string, string>> IAsyncEnumerable<KeyValuePair<string, string>>.GetAsyncEnumerator(CancellationToken token)
+        => AsyncClient.ScanAllHashEntriesAsync(hashId, token: token).GetAsyncEnumerator(token); // note: we're using HSCAN here, not HGETALL
 
-        ValueTask<long> IRedisHashAsync.IncrementValueAsync(string key, int incrementBy, CancellationToken token)
-            => AsyncClient.IncrementValueInHashAsync(hashId, key, incrementBy, token);
+    ValueTask<long> IRedisHashAsync.IncrementValueAsync(string key, int incrementBy, CancellationToken token)
+        => AsyncClient.IncrementValueInHashAsync(hashId, key, incrementBy, token);
 
-        ValueTask<bool> IRedisHashAsync.RemoveAsync(string key, CancellationToken token)
-            => AsyncClient.RemoveEntryFromHashAsync(hashId, key, token);
-    }
+    ValueTask<bool> IRedisHashAsync.RemoveAsync(string key, CancellationToken token)
+        => AsyncClient.RemoveEntryFromHashAsync(hashId, key, token);
 }

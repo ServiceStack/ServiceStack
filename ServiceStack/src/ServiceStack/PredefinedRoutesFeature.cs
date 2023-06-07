@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Host.Handlers;
+using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.Web;
 #if NETFX
 using System.Web;
 #else
@@ -21,13 +24,73 @@ namespace ServiceStack
             get => JsonApiRoute == null;
             set => JsonApiRoute = value ? null : JsonApiRoute;
         }
-        
+
+        public Func<IRequest, Dictionary<string, List<ApiDescription>>> ApiIndex { get; set; } = DefaultApiIndex;
+
+        public static Dictionary<string, List<ApiDescription>> DefaultApiIndex(IRequest req)
+        {
+            var opNames = HostContext.Metadata.GetOperationNamesForMetadata(req.RequestAttributes);
+            var to = new Dictionary<string, List<ApiDescription>>();
+            var other = "other";
+            var defaultTags = new List<string> { other };
+            var baseUrl = req.GetBaseUrl();
+            var gen = new CSharpGenerator(new MetadataTypesConfig());
+
+            foreach (var opName in opNames)
+            {
+                var opType = HostContext.Metadata.GetOperationType(opName);
+                var op = HostContext.Metadata.GetOperation(opType);
+                if (op == null) continue;
+                
+                var tags = op.Tags?.Count > 0 ? op.Tags : defaultTags;
+                foreach (var tag in tags)
+                {
+                    var tagOps = to.GetOrAdd(tag, _ => new List<ApiDescription>());
+                    var resType = op.ResponseType;
+
+                    var apiDesc = new ApiDescription {
+                        Name = op.Name,
+                        Returns = resType != null 
+                            ? gen.Type(resType.Name, resType.IsGenericType ? resType.GetGenericArguments().Select(x => x.Name).ToArray() : Array.Empty<string>()) 
+                            : null,
+                        Description = op.Description,
+                        Notes = op.Notes,
+                        Links = new() {
+                            ["api"] = baseUrl.CombineWith("/api/" + op.Name),
+                            ["ui"] = baseUrl.CombineWith("/ui/" + op.Name),
+                        }
+                    };
+                    if (Crud.IsCrudQueryDb(op.RequestType))
+                    {
+                        apiDesc.Links["locode"] = baseUrl.CombineWith("/locode/" + op.Name);
+                    }
+                    tagOps.Add(apiDesc);
+                }
+            }
+
+            // Use 'apis' if not using any custom tags
+            if (to.Keys.Any(x => x != TagNames.Auth && x != TagNames.Admin && x != other))
+            {
+                if (to.TryRemove(other, out var apis))
+                {
+                    to["apis"] = apis;
+                }
+            }
+            
+            return to;
+        }
+
         public void Register(IAppHost appHost)
         {
-            if (appHost.PathBase == null && JsonApiRoute != null && !appHost.VirtualFileSources.DirectoryExists("api"))
+            if ((appHost.PathBase == null || !appHost.PathBase.Contains("api")) 
+                && JsonApiRoute != null && !appHost.VirtualFileSources.DirectoryExists("api"))
             {
                 appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
                 appHost.AddToAppMetadata(metadata => metadata.HttpHandlers["ApiHandlers.Json"] = JsonApiRoute);
+            }
+            else
+            {
+                JsonApiRoute = null;
             }
             
             appHost.CatchAllHandlers.Add(ProcessRequest);

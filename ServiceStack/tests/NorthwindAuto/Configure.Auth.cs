@@ -43,7 +43,7 @@ public class ConfigureAuth : IHostingStartup
                         AuthKeyBase64 = appSettings.GetString("AuthKeyBase64") ?? "cARl12kvS/Ra4moVBIaVsrWwTpXYuZ0mZf/gNLUhDW5=",
                     },
                     new ApiKeyAuthProvider(appSettings),
-                    new CustomCredentialsProvider(appSettings),
+                    //new CustomCredentialsProvider(appSettings),
                     
                     new FacebookAuthProvider(appSettings),
                     new GoogleAuthProvider(appSettings),
@@ -60,8 +60,8 @@ public class ConfigureAuth : IHostingStartup
                 // }
             });
             
-            appHost.GetPlugin<MetadataFeature>().AfterAppMetadataFilters.Add((req,meta) =>
-                meta.Plugins.Auth.AuthProviders.RemoveAll(x => x.Name == "credentials"));
+            // appHost.GetPlugin<MetadataFeature>().AfterAppMetadataFilters.Add((req,meta) =>
+            //     meta.Plugins.Auth.AuthProviders.RemoveAll(x => x.Name == "credentials"));
 
             appHost.Plugins.Add(new RegistrationFeature()); //Enable /register Service
 

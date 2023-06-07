@@ -271,15 +271,19 @@ namespace ServiceStack
         public virtual int? Take { get; set; }
 
         [DataMember(Order = 3)]
+        [Input(Type = "tag", Options = "{ allowableValues:$dataModelFields }")]
         public virtual string OrderBy { get; set; }
 
         [DataMember(Order = 4)]
+        [Input(Type = "tag", Options = "{ allowableValues:$dataModelFields }")]
         public virtual string OrderByDesc { get; set; }
 
         [DataMember(Order = 5)]
+        [Input(Type = "tag", Options = "{ allowableValues:['total'] }")]
         public virtual string Include { get; set; }
 
         [DataMember(Order = 6)]
+        [Input(Type = "tag", Options = "{ allowableValues:$dataModelFields }"), FieldCss(Field = "col-span-12")]
         public virtual string Fields { get; set; }
 
         [DataMember(Order = 7)]

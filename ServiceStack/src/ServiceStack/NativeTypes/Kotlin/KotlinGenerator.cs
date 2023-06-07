@@ -435,7 +435,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 }
 
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && Config.InitializeCollections,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections && feature.ShouldInitializeCollection(type),
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
@@ -476,7 +476,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                     var initProp = initCollections && !prop.GenericArgs.IsEmpty() &&
-                                   (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
+                        (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
 
                     sb.Emit(prop, Lang.Kotlin);
                     PrePropertyFilter?.Invoke(sb, prop, type);
@@ -572,11 +572,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
-            if (value.StartsWith("typeof("))
+            if (value.IsTypeValue())
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
-                return typeNameOnly + ".class";
+                return value.ExtractTypeName() + ".class";
             }
 
             return value;

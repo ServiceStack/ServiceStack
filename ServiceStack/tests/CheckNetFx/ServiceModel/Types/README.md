@@ -1,0 +1,1 @@
+As part of our [Physical Project Structure](https://docs.servicestack.net/physical-project-structure) convention we recommend maintaining any shared non Request/Response DTOs in the `ServiceModel.Types` namespace.

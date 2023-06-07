@@ -31,10 +31,22 @@ public static class BlazorUtils
             BlazorConfig.Instance.GetLog()?.LogInformation(message);
     }
 
+    public static void Log(string message, params object[] args)
+    {
+        if (BlazorConfig.Instance.EnableLogging)
+            BlazorConfig.Instance.GetLog()?.LogInformation(message, args);
+    }
+
     public static void LogDebug(string message)
     {
         if (BlazorConfig.Instance.EnableVerboseLogging)
             BlazorConfig.Instance.GetLog()?.LogDebug(message);
+    }
+
+    public static void LogDebug(string message, params object[] args)
+    {
+        if (BlazorConfig.Instance.EnableVerboseLogging)
+            BlazorConfig.Instance.GetLog()?.LogDebug(message, args);
     }
 
     public static string FormatValue(object? value) => 
@@ -119,8 +131,24 @@ public static class BlazorUtils
             await BlazorConfig.Instance.OnApiErrorAsync(requestDto, apiError);
     }
 
+    public static IServiceGateway StartRequest(this IServiceGateway client)
+    {
+        return !BlazorConfig.Instance.IsWasm && client is ICloneServiceGateway cloneable
+            ? cloneable.Clone()
+            : client;
+    }
+
+    public static IServiceGatewayFormAsync StartRequest(this IServiceGatewayFormAsync client)
+    {
+        return !BlazorConfig.Instance.IsWasm && client is ICloneServiceGateway cloneable
+            ? (IServiceGatewayFormAsync) cloneable.Clone()
+            : client;
+    }
+
+
     public static async Task<ApiResult<TResponse>> ManagedApiAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> request)
     {
+        client = client.StartRequest();
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
         var log = BlazorConfig.Instance.GetLog();
@@ -149,6 +177,7 @@ public static class BlazorUtils
 
     public static async Task<ApiResult<EmptyResponse>> ManagedApiAsync(this IServiceGateway client, IReturnVoid request)
     {
+        client = client.StartRequest();
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
         var log = BlazorConfig.Instance.GetLog();
@@ -177,6 +206,7 @@ public static class BlazorUtils
 
     public static async Task<IHasErrorStatus> ManagedApiAsync<Model>(this IServiceGateway client, object request)
     {
+        client = client.StartRequest();
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
         var log = BlazorConfig.Instance.GetLog();
@@ -205,6 +235,7 @@ public static class BlazorUtils
 
     public static async Task<ApiResult<Model>> ManagedApiFormAsync<Model>(this IServiceGatewayFormAsync client, object requestDto, MultipartFormDataContent formData)
     {
+        client = client.StartRequest();
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
         var log = BlazorConfig.Instance.GetLog();
@@ -233,6 +264,7 @@ public static class BlazorUtils
 
     public static async Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this IServiceGateway client)
     {
+        client = client.StartRequest();
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
         var log = BlazorConfig.Instance.GetLog();
@@ -262,6 +294,7 @@ public static class BlazorUtils
 
     public static async Task<TResponse> ManagedSendAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> request)
     {
+        client = client.StartRequest();
         Stopwatch? sw = null;
         var config = BlazorConfig.Instance;
         var log = BlazorConfig.Instance.GetLog();

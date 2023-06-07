@@ -3,20 +3,21 @@ using System;
 using System.IO;
 using System.Linq;
 using ServiceStack.IO;
-using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.HtmlModules;
 
 /// <summary>
 /// Register a shared folder to easily import shared .html components or files  
-/// &lt;!--shared:Brand,Input--&gt; or /*shared:app.css*/
+/// &lt;!--shared:custom-meta--&gt; or /*shared:app.css*/
 /// </summary>
 public class SharedFolder : IHtmlModulesHandler
 {
     public string Name { get; }
     public string SharedDir { get; set; }
     public string DefaultExt { get; }
+    public Func<IVirtualFile, string>? Header { get; set; }
+    public Func<IVirtualFile, string>? Footer { get; set; }
     public SharedFolder(string name, string sharedDir, string defaultExt)
     {
         if (string.IsNullOrEmpty(defaultExt))
@@ -45,7 +46,9 @@ public class SharedFolder : IHtmlModulesHandler
                         .OrderBy(file => file.VirtualPath).ToList();
                     foreach (var file in files)
                     {
+                        if (Header != null) sb.AppendLine(Header(file));
                         sb.AppendLine(ctx.FileContentsResolver(file));
+                        if (Footer != null) sb.AppendLine(Footer(file));
                     }
                 }
                 else
@@ -54,7 +57,9 @@ public class SharedFolder : IHtmlModulesHandler
                     if (file == null)
                         throw new FileNotFoundException($"File '{path}' does not exist in {ctx.VirtualFiles}", path);
                     
+                    if (Header != null) sb.AppendLine(Header(file));
                     sb.AppendLine(ctx.FileContentsResolver(file));
+                    if (Footer != null) sb.AppendLine(Footer(file));
                 }
             }
 

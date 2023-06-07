@@ -18,3 +18,14 @@ public class FormatAttribute : AttributeBase
     public FormatAttribute(){}
     public FormatAttribute(string method) => Method = method;
 }
+
+/// <summary>
+/// Format Enum Flags into expanded enum strings 
+/// </summary>
+public class FormatEnumFlags : FormatAttribute
+{
+    public FormatEnumFlags(string type) : base(FormatMethods.EnumFlags)
+    {
+        Options = "{type:'" + type + "'}";
+    }
+}

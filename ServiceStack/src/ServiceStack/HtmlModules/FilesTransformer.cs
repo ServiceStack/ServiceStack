@@ -189,6 +189,15 @@ public class FilesTransformer
         }
     }
     
+    public static List<HtmlModuleLine> HtmlModuleLineTransformers { get; } = new()
+    {
+        new RemoveLineEndingWith(new[]{ "/*debug*/", "<!--debug-->" }, ignoreWhiteSpace:true, Run.IgnoreInDebug),
+        // Hide dev comments from browser
+        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always),
+    };
+
     public static List<HtmlModuleLine> HtmlLineTransformers { get; } = new()
     {
         // Enable static typing during dev, strip from browser to run
@@ -199,6 +208,15 @@ public class FilesTransformer
         new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
         new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
         new RemoveLineWithOnlyWhitespace(Run.Always),
+    };
+
+    // Enable static typing during dev, strip from browser to run
+    public static List<HtmlModuleLine> MjsLineTransformers { get; } = new()
+    {
+        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
+        // Hide dev comments from browser
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+        // new RemoveLineWithOnlyWhitespace(Run.Always), // removes significant whitespace in docs
     };
 
     // Enable static typing during dev, strip from browser to run
@@ -218,6 +236,20 @@ public class FilesTransformer
         new RemoveLineWithOnlyWhitespace(Run.Always),
         new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace: true, Run.IgnoreInDebug),
     };
+
+    public static string ModuleHeader(IVirtualFile file)
+    {
+        return "<script type=\"module\">\n"
+             + "import { app } from \"app\"\n";
+    }
+
+    public static string ModuleFooter(IVirtualFile file)
+    {
+        var fileName = file.Name.WithoutExtension();
+        return "if (typeof " + fileName + " != 'undefined') app.components({ " + fileName + " })\n"
+             + "if (typeof install == 'function') install(app)\n"
+             + "</script>";
+    }
 }
 
 public static class FilesTransformerUtils
@@ -254,6 +286,17 @@ public static class FilesTransformerUtils
                         new RemoveBlock("/**", "*/", Run.IgnoreInDebug),
                     },
                     LineTransformers = FilesTransformer.JsLineTransformers.ToList(),
+                },
+                ["mjs"] = new FileTransformerOptions
+                {
+                    BlockTransformers = {
+                        new RawBlock("/*raw:*/", "/*:raw*/", Run.Always),
+                        new MinifyBlock("/*minify:*/", "/*:minify*/", Minifiers.JavaScript, Run.IgnoreInDebug) {
+                            LineTransformers = FilesTransformer.MjsLineTransformers.ToList()
+                        },
+                        new RemoveBlock("/**", "*/", Run.IgnoreInDebug),
+                    },
+                    LineTransformers = FilesTransformer.MjsLineTransformers.ToList(),
                 },
                 ["css"] = new FileTransformerOptions
                 {

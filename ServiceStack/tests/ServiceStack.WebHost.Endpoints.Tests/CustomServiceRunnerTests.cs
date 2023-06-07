@@ -82,8 +82,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new CustomRunner { Id = 1 });
 
             Assert.That(response.Id, Is.EqualTo(1));
-            Assert.That(response.ServiceName, Is.EqualTo(typeof(CustomRunnerService).Name));
-            Assert.That(response.RequestName, Is.EqualTo(typeof(CustomRunner).Name));
+            Assert.That(response.ServiceName, Is.EqualTo(nameof(CustomRunnerService)));
+            Assert.That(response.RequestName, Is.EqualTo(nameof(CustomRunner)));
         }
     }
 }

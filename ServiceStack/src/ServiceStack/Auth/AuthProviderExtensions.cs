@@ -189,7 +189,7 @@ namespace ServiceStack.Auth
 
             if (passwordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out needsRehash))
             {
-                needsRehash = HostContext.Config.UseSaltedHash;
+                needsRehash = HostContext.Config.UseSaltedHash || needsRehash;
                 return true;
             }
 

@@ -21,21 +21,21 @@ namespace ServiceStack
             this.Meta = new Dictionary<string, string>();
         }
 
-        [DataMember(Order = 01)] public string ReferrerUrl { get; set; }
-        [DataMember(Order = 02)] public string Id { get; set; }
-        [DataMember(Order = 03)] public string UserAuthId { get; set; }
+        [DataMember(Order = 01)] public virtual string ReferrerUrl { get; set; }
+        [DataMember(Order = 02)] public virtual string Id { get; set; }
+        [DataMember(Order = 03)] public virtual string UserAuthId { get; set; }
         /// <summary>
         /// User chosen Username when available or Email
         /// </summary>
-        [DataMember(Order = 04)] public string UserAuthName { get; set; }
-        [DataMember(Order = 05)] public string UserName { get; set; }
+        [DataMember(Order = 04)] public virtual string UserAuthName { get; set; }
+        [DataMember(Order = 05)] public virtual string UserName { get; set; }
         [DataMember(Order = 06)] public string TwitterUserId { get; set; }
         [DataMember(Order = 07)] public string TwitterScreenName { get; set; }
         [DataMember(Order = 08)] public string FacebookUserId { get; set; }
         [DataMember(Order = 09)] public string FacebookUserName { get; set; }
         [DataMember(Order = 10)] public string FirstName { get; set; }
         [DataMember(Order = 11)] public string LastName { get; set; }
-        [DataMember(Order = 12)] public string DisplayName { get; set; }
+        [DataMember(Order = 12)] public virtual string DisplayName { get; set; }
         [DataMember(Order = 13)] public string Company { get; set; }
         [DataMember(Order = 14)] public string Email { get; set; }
         [DataMember(Order = 15)] public string PrimaryEmail { get; set; }
@@ -58,16 +58,16 @@ namespace ServiceStack
         [DataMember(Order = 32)] public string RequestTokenSecret { get; set; }
         [DataMember(Order = 33)] public DateTime CreatedAt { get; set; }
         [DataMember(Order = 34)] public DateTime LastModified { get; set; }
-        [DataMember(Order = 35)] public List<string> Roles { get; set; }
-        [DataMember(Order = 36)] public List<string> Permissions { get; set; }
-        [DataMember(Order = 37)] public bool IsAuthenticated { get; set; }
-        [DataMember(Order = 38)] public bool FromToken { get; set; }
-        [DataMember(Order = 39)] public string ProfileUrl { get; set; } //Avatar
+        [DataMember(Order = 35)] public virtual List<string> Roles { get; set; }
+        [DataMember(Order = 36)] public virtual List<string> Permissions { get; set; }
+        [DataMember(Order = 37)] public virtual bool IsAuthenticated { get; set; }
+        [DataMember(Order = 38)] public virtual bool FromToken { get; set; }
+        [DataMember(Order = 39)] public virtual string ProfileUrl { get; set; } //Avatar
         [DataMember(Order = 40)] public string Sequence { get; set; }
         [DataMember(Order = 41)] public long Tag { get; set; }
-        [DataMember(Order = 42)] public string AuthProvider { get; set; }
-        [DataMember(Order = 43)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
-        [DataMember(Order = 44)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 42)] public virtual string AuthProvider { get; set; }
+        [DataMember(Order = 43)] public virtual List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 44)] public virtual Dictionary<string, string> Meta { get; set; }
         
         //Claims https://docs.microsoft.com/en-us/previous-versions/windows-identity-foundation/ee727097(v=msdn.10)
         [DataMember(Order = 45)] public List<string> Audiences { get; set; }
@@ -87,9 +87,9 @@ namespace ServiceStack
         [DataMember(Order = 57)] public string SecurityStamp { get; set; }
         [DataMember(Order = 58)] public string Type { get; set; }
         
-        [DataMember(Order = 59)] public string RecoveryToken { get; set; }
-        [DataMember(Order = 60)] public int? RefId { get; set; }
-        [DataMember(Order = 61)] public string RefIdStr { get; set; }
+        [DataMember(Order = 59)] public virtual string RecoveryToken { get; set; }
+        [DataMember(Order = 60)] public virtual int? RefId { get; set; }
+        [DataMember(Order = 61)] public virtual string RefIdStr { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
@@ -361,6 +361,71 @@ namespace ServiceStack
         public virtual IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) => null;
         public virtual Task<IHttpResult> ValidateAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo,
             CancellationToken token = default) => ((IHttpResult)null).InTask();
+
+        public virtual HashSet<string> GetUserAttributes(IRequest request)
+        {
+            var attrs = new HashSet<string> {
+                HostContext.DebugMode ? When.Development : When.Production
+            };
+
+            if (IsAuthenticated)
+            {
+                attrs.Add(When.IsAuthenticated);
+                
+                if (HostContext.HasValidAuthSecret(request))
+                    attrs.Add(RoleNames.Admin);
+
+                var roles = Roles;
+                var permissions = Permissions;
+                
+                if (roles.IsEmpty() && permissions.IsEmpty())
+                {
+                    var authRepo = HostContext.AppHost.GetAuthRepository(request);
+                    using (authRepo as IDisposable)
+                    {
+                        if (authRepo is IManageRoles manageRoles)
+                        {
+                            manageRoles.GetRolesAndPermissions(UserAuthId, out var managedRoles, out var managedPerms);
+                            roles = managedRoles.ToList();
+                            permissions = managedPerms.ToList();
+                        }
+                    }
+                }
+                if (roles != null)
+                {
+                    foreach (var role in roles)
+                    {
+                        attrs.Add(When.HasRole(role));
+                    }
+                }
+                if (permissions != null)
+                {
+                    foreach (var perm in permissions)
+                    {
+                        attrs.Add(When.HasPermission(perm));
+                    }
+                }
+                if (this is IAuthSessionExtended extended)
+                {
+                    if (extended.Scopes != null)
+                    {
+                        foreach (var item in extended.Scopes)
+                        {
+                            attrs.Add(When.HasScope(item));
+                        }
+                    }
+                }
+                var claims = request.GetClaims();
+                if (claims != null)
+                {
+                    foreach (var claim in claims)
+                    {
+                        attrs.Add(When.HasClaim(claim.ToString()));
+                    }
+                }
+            }
+            return attrs;
+        }
     }
 
     public class WebSudoAuthUserSession : AuthUserSession, IWebSudoAuthSession

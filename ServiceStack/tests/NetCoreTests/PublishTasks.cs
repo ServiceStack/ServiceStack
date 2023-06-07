@@ -40,6 +40,39 @@ public class PublishTasks
         ToModulesDir.Print();
     }
 
+    [Test]
+    public void Update_js()
+    {
+        Directory.SetCurrentDirectory(NetCoreTestsDir);
+
+        var jsFiles = new Dictionary<string, string>
+        {
+            ["servicestack-client.js"] = "../../../../servicestack-client/dist/servicestack-client.min.js",
+            ["servicestack-client.mjs"] = "../../../../servicestack-client/dist/servicestack-client.min.mjs",
+            ["servicestack-vue.mjs"] = "../../../../servicestack-vue/dist/servicestack-vue.min.mjs",
+            ["vue.mjs"] = "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js",
+        };
+
+        var jsDir = "../../src/ServiceStack/js";
+
+        foreach (var jsFile in jsFiles)
+        {
+            var toFile = Path.GetFullPath(jsDir.CombineWith(jsFile.Key));
+            if (jsFile.Value.StartsWith("https://"))
+            {
+                $"GET {jsFile.Value}".Print();
+                var js = jsFile.Value.GetStringFromUrl();
+                File.WriteAllText(toFile, js);
+            }
+            else
+            {
+                var fromFile = Path.GetFullPath(jsFile.Value);
+                $"COPY {fromFile} {toFile}".Print();
+                File.Copy(fromFile, toFile, overwrite:true);
+            }
+        }
+    }
+
     /*  publish.bat:
         call npm run ui:build 
         RD /q /s ..\..\src\ServiceStack\modules\ui 
@@ -60,34 +93,72 @@ public class PublishTasks
             onOut:   Console.WriteLine, 
             onError: Console.Error.WriteLine);
         
-        // copy to modules/ui
+        // modules are copied over as debug versions then minified/cached at runtime on load
+
+        // copy to modules/shared
         transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")),
             cleanTarget: true,
-            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
-        
+
+        // copy to js
+        // gets served as a static file so need to copy prod version to /js
+        FilesTransformer.Defaults(debugMode:false).CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/js")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../js")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+
+        FilesTransformer.Defaults(debugMode:false).CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/css/")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../css")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+
+
         // copy to modules/locode
-        transformOptions.CopyAll(
+        var moduleOptions = FilesTransformer.Defaults(debugMode: true);
+        moduleOptions.FileExtensions["html"].LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
+        moduleOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode")), 
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode")), 
             cleanTarget: true,
             ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
-        
+
         // copy to modules/admin-ui
-        transformOptions.CopyAll(
+        moduleOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui")), 
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui")), 
             cleanTarget: true,
             ignore: file => IgnoreAdminUiFiles.Contains(file.VirtualPath),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
-        // copy to modules/shared
-        transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("shared")),
-            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("shared")),
+        moduleOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
+            cleanTarget: true,
+            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        
+        // copy to /Templates/HtmlFormat.html
+        moduleOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/Templates/")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../Templates")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+    }
+
+    [Test]
+    public void Copy_mjs()
+    {
+        Directory.SetCurrentDirectory(ProjectDir);
+
+        // copy to js
+        FilesTransformer.Defaults(debugMode: false).CopyAll(
+            source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/js")),
+            target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../js")),
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }
@@ -154,6 +225,7 @@ public class PublishTasks
             var dbFactory = new OrmLiteConnectionFactory(":memory:",
                 SqliteDialect.Provider);
             container.AddSingleton<IDbConnectionFactory>(dbFactory);
+            container.AddSingleton<IAuthRepository>(c => new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
 
             container.AddSingleton<ICrudEvents>(c =>
                 new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
@@ -182,8 +254,12 @@ public class PublishTasks
         sb.AppendLine(dtos);
         sb.AppendTypeDefinitionFile(filePath:Path.Combine(NetCoreTestsDir, "custom", "types.d.ts"));
 
+        var mjs = baseUrl.CombineWith("/types/mjs").GetStringFromUrl();
+
         Directory.SetCurrentDirectory(ProjectDir);
         File.WriteAllText(Path.GetFullPath("./lib/types.ts"), sb.ToString());
+        
+        File.WriteAllText(Path.GetFullPath("./admin-ui/lib/dtos.mjs"), mjs);
     }
 
     [Test]

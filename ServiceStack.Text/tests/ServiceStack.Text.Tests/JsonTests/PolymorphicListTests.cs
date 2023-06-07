@@ -12,12 +12,12 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Text.Tests.JsonTests
 {
-    public interface ICat
+    public interface ICat : IRuntimeSerializable
     {
         string Name { get; set; }
     }
 
-    public interface IDog
+    public interface IDog : IRuntimeSerializable
     {
         string Name { get; set; }
     }
@@ -76,13 +76,13 @@ namespace ServiceStack.Text.Tests.JsonTests
         }
     }
 
-    public interface ITerm { }
+    public interface ITerm : IRuntimeSerializable { }
 
     public class FooTerm : ITerm { }
 
-    public class Terms : IEnumerable<ITerm>
+    public class Terms : IEnumerable<ITerm>, IRuntimeSerializable
     {
-        private readonly List<ITerm> _list = new List<ITerm>();
+        private readonly List<ITerm> _list = new();
 
         public Terms()
             : this(Enumerable.Empty<ITerm>())
@@ -426,7 +426,7 @@ namespace ServiceStack.Text.Tests.JsonTests
             }
         }
 
-        public class Pets
+        public class Pets : IRuntimeSerializable
         {
             public ICat Cat { get; set; }
             public IDog Dog { get; set; }
@@ -547,7 +547,7 @@ namespace ServiceStack.Text.Tests.JsonTests
         }
     }
 
-    public abstract class PolymorphicBase
+    public abstract class PolymorphicBase : IRuntimeSerializable
     {
         public int id { get; set; }
     }

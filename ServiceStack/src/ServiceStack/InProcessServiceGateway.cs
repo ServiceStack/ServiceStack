@@ -566,8 +566,23 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 }
 
 #if NET6_0_OR_GREATER
-public partial class InProcessServiceGateway : IServiceGatewayFormAsync
+public partial class InProcessServiceGateway : IServiceGatewayFormAsync, ICloneServiceGateway
 {
+    public IServiceGateway Clone()
+    {
+        if (Request is ICloneable cloneable)
+        {
+            var ret = new InProcessServiceGateway((IRequest)cloneable.Clone());
+            // Need to retain cookies reference to preserve auth in Blazor Server
+            if (ret.Request is GatewayRequest httpReq)
+            {
+                httpReq.Cookies = Request.Cookies;
+            }
+            return ret;
+        }
+        return this;
+    }
+
     public async Task<TResponse> SendFormAsync<TResponse>(object requestDto, System.Net.Http.MultipartFormDataContent formData, CancellationToken token = default)
     {
         var holdDto = req.Dto;

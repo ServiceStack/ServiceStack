@@ -25,6 +25,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     public static ILog log = LogManager.GetLogger(typeof(JsonHttpClient));
 
     public static Func<HttpMessageHandler> GlobalHttpMessageHandlerFactory { get; set; }
+    public static Action<JsonHttpClient,HttpMessageHandler>? HttpMessageHandlerFilter { get; set; }
     public HttpMessageHandler HttpMessageHandler { get; set; }
 
     public HttpClient HttpClient { get; set; }
@@ -189,14 +190,16 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
             
         var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
 
-        var client = new HttpClient(handler, disposeHandler: HttpMessageHandler == null) { BaseAddress = baseUri };
+        var client = HttpClient = new HttpClient(handler, disposeHandler: HttpMessageHandler == null) { BaseAddress = baseUri };
+
+        HttpMessageHandlerFilter?.Invoke(this, handler);
 
         if (BearerToken != null)
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
         else if (AlwaysSendBasicAuthHeader)
             AddBasicAuth(client);
 
-        return HttpClient = client;
+        return client;
     }
 
     public void AddHeader(string name, string value)
@@ -530,18 +533,15 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
             var bytes = GetResponseBytes(response);
             if (bytes != null)
             {
-                if (string.IsNullOrEmpty(contentType) || contentType.MatchesContentType(MimeTypes.Json))
+                serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                if (contentType.MatchesContentType(MimeTypes.Json) || 
+                    (string.IsNullOrEmpty(contentType) && !string.IsNullOrEmpty(serviceEx.ResponseBody) && serviceEx.ResponseBody.AsSpan().TrimStart().StartsWith("{")))
                 {
                     var stream = MemoryStreamFactory.GetStream(bytes);
-                    serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                     serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
 
                     if (stream.CanRead)
                         stream.Dispose(); //alt ms throws when you dispose twice
-                }
-                else
-                {
-                    serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                 }
             }
         }

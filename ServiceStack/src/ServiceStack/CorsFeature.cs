@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Configuration;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Web;
 
@@ -25,11 +26,30 @@ namespace ServiceStack
 
         private readonly bool allowCredentials;
 
-        private readonly ICollection<string> allowOriginWhitelist;
+        private ICollection<string> allowOriginWhitelist;
 
         public ICollection<string> AllowOriginWhitelist => allowOriginWhitelist;
 
         public bool AutoHandleOptionsRequests { get; set; }
+        
+        public CorsFeature(IAppSettings appSettings)
+        {
+            this.allowedHeaders = appSettings.Get("CorsFeature:allowedHeaders", DefaultHeaders);
+            this.allowedMethods = appSettings.Get("CorsFeature:allowedMethods", DefaultMethods);
+            this.allowOriginWhitelist = appSettings.GetList("CorsFeature:allowOriginWhitelist");
+            this.allowCredentials = appSettings.Get("CorsFeature:allowCredentials", false);
+            this.maxAge = appSettings.Get("CorsFeature:maxAge", DefaultMaxAge);
+        }
+
+        public CorsFeature AppendOriginWhitelist(IEnumerable<string> origins)
+        {
+            this.allowOriginWhitelist ??= new List<string>();
+            foreach (var origin in origins)
+            {
+                allowOriginWhitelist.AddIfNotExists(origin);
+            }
+            return this;
+        }
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.

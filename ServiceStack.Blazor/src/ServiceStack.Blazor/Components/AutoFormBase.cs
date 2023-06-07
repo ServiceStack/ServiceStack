@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using ServiceStack.Text;
 
 namespace ServiceStack.Blazor.Components;
 
@@ -40,6 +41,8 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
     [Parameter] public EventCallback<ResponseStatus> Error { get; set; }
 
     [Parameter] public List<InputInfo>? FormLayout { get; set; }
+    [Parameter] public Action<Model>? ConfigureModel { get; set; }
+    [Parameter] public Action<List<InputInfo>>? ConfigureFormLayout { get; set; }
 
     [CascadingParameter] public AppMetadata? AppMetadata { get; set; }
     protected MetadataType? metadataType;
@@ -52,6 +55,13 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
 
     protected abstract string Title { get; }
     protected virtual string? Notes => ApiType.FirstAttribute<NotesAttribute>()?.Notes;
+
+    protected virtual Model ModelFilter(Model model)
+    {
+        if (ConfigureModel != null)
+            ConfigureModel(model);
+        return model;
+    }
 
     protected async Task OnDone()
     {
@@ -81,10 +91,11 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
         {
             try
             {
+                //BlazorUtils.LogDebug("OnSave(): {0} => {1}", OriginalModelDictionary.Dump(), ModelDictionary.Dump());
                 var pk = MetadataType.Properties.GetPrimaryKey();
-
                 var formData = new MultipartFormDataContent();
                 var reset = new List<string>();
+
                 foreach (var entry in ModelDictionary)
                 {
                     if (entry.Value is InputFileChangeEventArgs e)
@@ -137,6 +148,8 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
                 {
                     formData.AddParam("reset", string.Join(',', reset));
                 }
+
+                //BlazorUtils.LogDebug("ApiFormAsync({0}): {1}", request.Dump(), formDataParams.Dump());
 
                 api = await ApiFormAsync<Model>(request, formData);
             }

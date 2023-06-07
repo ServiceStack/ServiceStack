@@ -4,40 +4,39 @@ using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
-namespace ServiceStack.Metadata
+namespace ServiceStack.Metadata;
+
+public class CustomMetadataHandler
+    : BaseMetadataHandler
 {
-    public class CustomMetadataHandler
-        : BaseMetadataHandler
+    private new static readonly ILog Log = LogManager.GetLogger(typeof(CustomMetadataHandler));
+
+    public CustomMetadataHandler(string contentType, string format)
     {
-        private new static readonly ILog Log = LogManager.GetLogger(typeof(CustomMetadataHandler));
+        base.ContentType = contentType;
+        base.ContentFormat = format;
+    }
 
-        public CustomMetadataHandler(string contentType, string format)
+    public override Format Format => base.ContentFormat.ToFormat();
+
+    protected override string CreateMessage(Type dtoType)
+    {
+        try
         {
-            base.ContentType = contentType;
-            base.ContentFormat = format;
+            var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
+
+            using var ms = MemoryStreamFactory.GetStream();
+            HostContext.ContentTypes.SerializeToStreamAsync(
+                new BasicRequest { ContentType = this.ContentType }, requestObj, ms).Wait();
+
+            return ms.ReadToEnd();
         }
-
-        public override Format Format => base.ContentFormat.ToFormat();
-
-        protected override string CreateMessage(Type dtoType)
+        catch (Exception ex)
         {
-            try
-            {
-                var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
+            var error = $"Error serializing type '{dtoType.GetOperationName()}' with custom format '{this.ContentFormat}'";
+            Log.Error(error, ex);
 
-                using var ms = MemoryStreamFactory.GetStream();
-                HostContext.ContentTypes.SerializeToStreamAsync(
-                    new BasicRequest { ContentType = this.ContentType }, requestObj, ms).Wait();
-
-                return ms.ReadToEnd();
-            }
-            catch (Exception ex)
-            {
-                var error = $"Error serializing type '{dtoType.GetOperationName()}' with custom format '{this.ContentFormat}'";
-                Log.Error(error, ex);
-
-                return $"{{Unable to show example output for type '{dtoType.GetOperationName()}' using the custom '{this.ContentFormat}' filter}}{ex.Message}";
-            }
+            return $"{{Unable to show example output for type '{dtoType.GetOperationName()}' using the custom '{this.ContentFormat}' filter}}{ex.Message}";
         }
     }
 }

@@ -38,6 +38,7 @@ public static class Input
         public const string Select = "select";
         public const string Textarea = "textarea";
         public const string Tag = "tag";
+        public const string Combobox = "combobox";
     }
 
     public static Dictionary<Type, string> TypesMap { get; set; } = new()
@@ -215,7 +216,7 @@ public static class Input
 
     public static string[]? GetEnumValues(Type enumType)
     {
-        if (!enumType.IsEnum) return null;
+        if (enumType is not { IsEnum: true }) return null;
         GetEnumEntries(enumType, out var entries);
         return entries.Select(x => x.Value).ToArray();
     }

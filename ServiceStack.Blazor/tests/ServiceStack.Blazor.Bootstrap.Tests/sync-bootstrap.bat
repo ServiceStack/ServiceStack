@@ -9,6 +9,9 @@ MOVE MyApp.Client.csproj %TO%\
 RD /q /s %NetCoreTemplates%\blazor-wasm\MyApp\wwwroot\modules\
 XCOPY /Y /E /H /C /I Server\modules %NetCoreTemplates%\blazor-wasm\MyApp\wwwroot\modules\
 
+RD /q /s %NetCoreTemplates%\blazor-wasm\MyApp\wwwroot\js\
+XCOPY /Y /E /H /C /I Server\js %NetCoreTemplates%\blazor-wasm\MyApp\wwwroot\js\
+
 COPY Server\*.cs %NetCoreTemplates%\blazor-wasm\MyApp\
 COPY Server\Migrations\*.cs %NetCoreTemplates%\blazor-wasm\MyApp\Migrations\
 COPY ServiceModel\*.cs %NetCoreTemplates%\blazor-wasm\MyApp.ServiceModel\

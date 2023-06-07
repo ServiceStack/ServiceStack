@@ -47,11 +47,6 @@ namespace ServiceStack
             return Provider;
         }
 
-        public override string ReadAllText(string filePath)
-        {
-            return File.ReadAllText(filePath);
-        }
-
         public override string ToInvariantUpper(char value)
         {
             return value.ToString(CultureInfo.InvariantCulture).ToUpper();
@@ -63,41 +58,6 @@ namespace ServiceStack
                    && type.IsGenericType && type.Name.Contains("AnonymousType")
                    && (type.Name.StartsWith("<>", StringComparison.Ordinal) || type.Name.StartsWith("VB$", StringComparison.Ordinal))
                    && (type.Attributes & TypeAttributes.NotPublic) == TypeAttributes.NotPublic;
-        }
-
-        public override bool FileExists(string filePath)
-        {
-            return File.Exists(filePath);
-        }
-
-        public override bool DirectoryExists(string dirPath)
-        {
-            return Directory.Exists(dirPath);
-        }
-
-        public override void CreateDirectory(string dirPath)
-        {
-            Directory.CreateDirectory(dirPath);
-        }
-
-        public override string[] GetFileNames(string dirPath, string searchPattern = null)
-        {
-            if (!Directory.Exists(dirPath))
-                return TypeConstants.EmptyStringArray;
-
-            return searchPattern != null
-                ? Directory.GetFiles(dirPath, searchPattern)
-                : Directory.GetFiles(dirPath);
-        }
-
-        public override string[] GetDirectoryNames(string dirPath, string searchPattern = null)
-        {
-            if (!Directory.Exists(dirPath))
-                return TypeConstants.EmptyStringArray;
-
-            return searchPattern != null
-                ? Directory.GetDirectories(dirPath, searchPattern)
-                : Directory.GetDirectories(dirPath);
         }
 
         public const string AppSettingsKey = "servicestack:license";
@@ -138,21 +98,6 @@ namespace ServiceStack
             {
                 LicenseUtils.RegisterLicense(licenceKeyText);
             }
-        }
-
-        public override string GetEnvironmentVariable(string name)
-        {
-            return Environment.GetEnvironmentVariable(name);
-        }
-
-        public override void WriteLine(string line)
-        {
-            Console.WriteLine(line);
-        }
-
-        public override void WriteLine(string format, params object[] args)
-        {
-            Console.WriteLine(format, args);
         }
 
         public override async Task WriteAndFlushAsync(Stream stream, byte[] bytes)
@@ -214,11 +159,6 @@ namespace ServiceStack
             webReq.Headers.Add(name, value);
         }
 
-        public override Assembly[] GetAllAssemblies()
-        {
-            return AppDomain.CurrentDomain.GetAssemblies();
-        }
-
         public override Type FindType(string typeName, string assemblyName)
         {
             var binPath = AssemblyUtils.GetAssemblyBinPath(Assembly.GetExecutingAssembly());
@@ -245,16 +185,6 @@ namespace ServiceStack
         {
             var assemblyUri = new Uri(source.Assembly.EscapedCodeBase);
             return assemblyUri.LocalPath;
-        }
-
-        public override string GetAsciiString(byte[] bytes, int index, int count)
-        {
-            return Encoding.ASCII.GetString(bytes, index, count);
-        }
-
-        public override byte[] GetAsciiBytes(string str)
-        {
-            return Encoding.ASCII.GetBytes(str);
         }
 
         public override bool InSameAssembly(Type t1, Type t2)
@@ -371,19 +301,6 @@ namespace ServiceStack
             return null;
         }
 
-        public override void InitHttpWebRequest(HttpWebRequest httpReq,
-            long? contentLength = null, bool allowAutoRedirect = true, bool keepAlive = true)
-        {
-            httpReq.UserAgent = Env.ServerUserAgent;
-            httpReq.AllowAutoRedirect = allowAutoRedirect;
-            httpReq.KeepAlive = keepAlive;
-
-            if (contentLength != null)
-            {
-                httpReq.ContentLength = contentLength.Value;
-            }
-        }
-
         public override void CloseStream(Stream stream)
         {
             stream.Close();
@@ -420,31 +337,6 @@ namespace ServiceStack
             if (timeout.HasValue) req.Timeout = (int)timeout.Value.TotalMilliseconds;
             if (userAgent != null) req.UserAgent = userAgent;
             if (preAuthenticate.HasValue) req.PreAuthenticate = preAuthenticate.Value;
-        }
-
-        public override void SetUserAgent(HttpWebRequest httpReq, string value)
-        {
-            httpReq.UserAgent = value;
-        }
-
-        public override void SetContentLength(HttpWebRequest httpReq, long value)
-        {
-            httpReq.ContentLength = value;
-        }
-
-        public override void SetAllowAutoRedirect(HttpWebRequest httpReq, bool value)
-        {
-            httpReq.AllowAutoRedirect = value;
-        }
-
-        public override void SetKeepAlive(HttpWebRequest httpReq, bool value)
-        {
-            httpReq.KeepAlive = value;
-        }
-
-        public override string GetStackTrace()
-        {
-            return Environment.StackTrace;
         }
 
         public override DataContractAttribute GetWeakDataContract(Type type)

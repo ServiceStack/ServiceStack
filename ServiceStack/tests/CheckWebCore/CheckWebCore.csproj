@@ -33,4 +33,7 @@
     <Folder Include="wwwroot\css" />
     <Folder Include="wwwroot\modules\admin-ui\components" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\OperationControl.html" />
+  </ItemGroup>
 </Project>

@@ -1,12 +1,33 @@
 ﻿@page
 @model ErrorModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = Model.Status switch {
+        404 => "Not Found",
+        403 => "Forbidden",
+        _ => "Error."
+    };
+    ViewData["Message"] = Model.Status switch {
+        404 => "This page does not exist.",
+        403 => "You do not have access to this page.",
+        _ => "An error occurred while processing your request."
+    };
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<h1 class="text-danger">Error @(Model.Code ?? Model.Status.ToString()).</h1>
+<h2 class="text-danger">@ViewData["Message"]</h2>
 
+@if (Model.Role != null)
+{
+    <p> 
+        Requires <strong>@Model.Role</strong> Role
+    </p>
+}
+@if (Model.Permission != null)
+{
+    <p> 
+        Requires <strong>@Model.Permission</strong> Permission
+    </p>
+}
 @if (Model.ShowRequestId)
 {
     <p>

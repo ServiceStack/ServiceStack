@@ -14,7 +14,7 @@ public class Apis
     public Type? Delete { get; set; }
     public Type? Save { get; set; }
 
-    static ConcurrentDictionary<string, Type> ApiTyesMap { get; set; } = new();
+    static ConcurrentDictionary<string, Type> ApiTypesMap { get; set; } = new();
     static ConcurrentDictionary<Assembly, bool> loadedAssemblies = new();
     public static void Load(Assembly assembly)
     {
@@ -25,16 +25,16 @@ public class Apis
         var apiTypes = assembly.GetTypes().Where(x => x.HasInterface(typeof(IReturnVoid)) || x.IsOrHasGenericInterfaceTypeOf(typeof(IReturn<>)));
         foreach (var apiType in apiTypes)
         {
-            ApiTyesMap[apiType.Name] = apiType;
+            ApiTypesMap[apiType.Name] = apiType;
         }
     }
-    public static Type? Find(string typeName) => ApiTyesMap.TryGetValue(typeName, out var type) ? type : null;
+    public static Type? Find(string typeName) => ApiTypesMap.TryGetValue(typeName, out var type) ? type : null;
 
     public Apis(Type[] types)
     {
         foreach (var type in types)
         {
-            if (!ApiTyesMap.ContainsKey(type.Name))
+            if (!ApiTypesMap.ContainsKey(type.Name))
             {
                 Load(type.Assembly);
             }

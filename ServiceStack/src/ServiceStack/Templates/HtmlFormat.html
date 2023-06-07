@@ -1,375 +1,360 @@
-﻿<!doctype html>
-<html lang="en-us">
+<!doctype html>
+<html lang="en" style="">
 <head>
 <title>${Title}</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<style type="text/css">
-BODY, H1, H2, H3, H4, H5, H6, DL, DT, DD {
-  margin: 0;
-  padding: 0;
-  color: #444;
-  font: 13px/15px Arial, Verdana, Helvetica;
-}
-H1 {
-  text-align: center;
-  font: 24px Helvetica, Verdana, Arial;
-  padding: 20px 0 10px 0;
-  background: #FBFBFB;
-  border-bottom: solid 1px #fff;
-}
-#lnks {
-  border-top: solid 1px #dfdfdf;
-  border-bottom: solid 1px #dfdfdf;
-  margin: 0 0 10px 0;
-  padding: 5px;
-  background: #f1f1f1;
-  line-height: 20px;
-  text-align: center;
-}
-#lnks B {
-  padding: 0 3px;
-}
-#body {
-  padding: 20px;
-}
-H1 B {
-  font-weight: normal;
-  color: #069;
-}
-H1 A {
-  color: #0E8F13;
-  text-decoration: underline;
-}
-H1 I {
-  font-style: normal;
-  color: #0E8F13;
-}
-A {
-  color: #337ab7;
-  text-decoration: none;
-}
-A:hover {
-  text-decoration: underline;
-}
-.ib {
-    position: relative;
-    display: -moz-inline-box;
-    display: inline-block;
-}
-* html .ib {
-    display: inline;
-}
-*:first-child + html .ib {
-    display: inline;
-}
-TABLE {
-  border-collapse:collapse;
-  border: solid 1px #ccc;
-  clear: left;
-}
-TH {
-  text-align: left;
-  padding: 4px 8px;
-  text-shadow: #fff 1px 1px -1px;
-  background: #f1f1f1;
-  white-space:nowrap;
-  cursor:pointer;
-  font-weight: bold;
-}
-TH, TD, TD DT, TD DD {
-  font-size: 13px;
-  font-family: Arial;
-}
-TD {
-  padding: 8px 8px 0 8px;
-  vertical-align: top;
-}
-DL {
-  clear: left;
-}
-DT {
-  margin: 10px 0 5px 0;
-  font: bold 18px Helvetica, Verdana, Arial;
-  min-width: 200px;
-  overflow: hidden;
-  clear: left;
-  float: left;
-  display:block;
-  white-space:nowrap;
-}
-DD {
-  margin: 5px 10px;
-  font: 18px Arial;
-  padding: 2px;
-  display: block;
-  float: left;
-}
-DL DL DT { 
-  font: bold 16px Arial;
-}
-DL DL DD {
-  font: 16px Arial;
-}
-HR {
-    display:none;
-}
-TD DL HR
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<base href="${BaseUrl}">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/ui.css" rel="stylesheet">
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script><!--safari-->
+<script type="importmap">
 {
-    display:block;
-    padding: 0;
-    clear: left;
-    border: none;
+    "imports": {
+        "vue": "./js/vue.mjs",  
+        "@servicestack/vue": "./js/servicestack-vue.mjs",
+        "@servicestack/client": "./js/servicestack-client.mjs",
+        "core": "./js/core.mjs"
+    }
 }
-TD DL
-{
-    padding: 4px;
-    margin: 0;
-    height:100%;
-    max-width: 700px;
-}
-DL TD DL DT {
-  padding: 2px;
-  margin: 0 10px 0 0;
-  font-weight: bold;
-  font-size: 13px;
-  width: 120px;
-  overflow: hidden;
-  clear: left;
-  float: left;
-  display:block;
-}
-DL TD DL DD {  
-  margin: 0;
-  padding: 2px;
-  font-size: 13px;
-  display: block;
-  float: left;
-}
-TBODY>TR:last-child>TD {
-  padding: 8px;
-}
-THEAD
-{
-  -webkit-user-select:none;
-  -moz-user-select:none;
-}
-.desc, .asc {
-  background-color: #FAFAD2;
-}
-.desc {
-  background-color: #D4EDC9;
-}
-TH B {
-  display:block;
-  float:right;
-  margin: 0 0 0 5px;
-  width: 0;
-  height: 0;
-
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #ccc;
-  border-bottom: none;
-}
-.asc B {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #333;
-  border-bottom: none;
-}
-.desc B {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 5px solid #333;
-  border-top: none;
-}
-#show-json {
-  display:none;
-}
-#mask {  
-  display: none;
-  position:absolute;
-  top:0;
-  left:0;
-  height:100%;
-  width:100%; 
-  background: rgba(0,0,0,0.7);
-  z-index: 1;
-}
-.show-json #show-json, .show-json #mask {
-  display:block;
-}
-#show-json {
-  position: absolute;
-  left: 50%;
-  margin: 0 0 0 -350px;
-  border: solid 4px #ccc;
-  padding: 10px 20px;
-  background: #fff;
-  text-align: center;
-  float: left;  
-  z-index: 2;
-}
-H3 {
-  font-size: 18px;
-  margin: 0 0 10px 0;
-}
-#show-json TEXTAREA {
-  width: 750px;
-  height: 400px;
-  overflow:visible;
-  display: block;
-}
-#show-json BUTTON {
-  margin: 10px 0 0 0;
-  padding: 5px 10px;
-  clear: left;
-}
+</script>
+<style>
+#header a { text-decoration: underline; font-weight: 600 }
+#header i { font-style: normal; font-weight: 600 }
 </style>
 ${MvcIncludes}
 </head>
 <body>
-
-<div id="mask"></div>
-
-<h1>${Header}</h1>
-
-<div id="lnks">
-  <a href="javascript:showJson()">view json datasource</a>
-  <b>from original url:</b>
-  <a href="${ServiceUrl}">${ServiceUrl}</a>
-  <b>in other formats:</b>
-  <a href="${ServiceUrl}format=json">json</a>
-  <a href="${ServiceUrl}format=xml">xml</a>
-  <a href="${ServiceUrl}format=csv">csv</a>
-  <a href="${ServiceUrl}format=jsv">jsv</a>
-</div>
-
-<div id="body">
-  
-  <div id="show-json">
-    <h3>This reports json data source</h3>
-    <textarea></textarea>
-    <button onclick="doc.body.className=null;">Close Window</button>
-  </div>
-  
-  <div id="content"></div>
-
-</div>
-
-<script>    !window.JSON && document.write(unescape('%3Cscript src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"%3E%3C/script%3E'))</script>
-
 <script>
-
-let doc = document, win = window,
-    $ = function(id) { return doc.getElementById(id); },
-    $$ = function(sel) { return doc.getElementsByTagName(sel); },
-    $each = function(fn) { for (let i=0,len=this.length; i<len; i++) fn(i, this[i], this); }
-
-$.each = function(arr, fn) { $each.call(arr, fn); }
-
-let splitCase = function (t) { return typeof t != 'string' ? t : titleCase(t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')); },
-    titleCase = function (s) { return s.replace(/\w\S*/g, function (t) { return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase(); }); },
-    uniqueKeys = function(m){ let h={}; for (let i=0,len=m.length; i<len; i++) for (let k in m[i]) if (show(k)) h[k] = k; return h; },
-    keys = function(o){ let a=[]; for (let k in o) if (show(k)) a.push(k); return a; }
-let tbls = []
-
-function val(m) {
-  if (m == null) return ''
-  if (typeof m == 'number') return num(m)
-  if (typeof m == 'string') return str(m)
-  if (typeof m == 'boolean') return m ? 'true' : 'false'
-  return m.length ? arr(m) : obj(m)
-}
-function num(m) { return m }
-let sdfmt = location.hash.indexOf('show=') >=0 && location.hash.indexOf('fulldates') >= 0 ? dmft : dmfthm
-function str(m){ return m.substr(0,6) === '/Date(' ? sdfmt(date(m)) : m.substr(0,4) === 'http' ? shref(m) : m }
-function sfmt(s) { return humanize ? splitCase(s) : s }
-function shref(s) { return humanize ? '<a href="' + s + '">' + s + '</a>' : s }
-function date(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])) }
-function pad(d) { return d < 10 ? '0'+d : d }
-function dmft(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) }
-function dmfthm(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()) }
-function show(k) { return typeof k != 'string' || k.substr(0,2) !== '__' }
-function obj(m) {
-  let sb = '<dl>'
-  for (let k in m) if (show(k)) sb += '<dt class="ib">' + sfmt(k) + '</dt><dd>' + val(m[k]) + '</dd>'
-  sb += '</dl>'
-  return sb
-}
-function arr(m) {
-  if (typeof m[0] == 'string' || typeof m[0] == 'number') return m.join(', ')
-  let id=tbls.length, h=uniqueKeys(m)
-  let sb = '<table id="tbl-' + id + '"><caption></caption><thead><tr>'
-  tbls.push(m)
-  let i=0
-  for (let k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + sfmt(k) + '</th>'
-  sb += '</tr></thead><tbody>' + makeRows(h,m) + '</tbody></table>'
-  return sb
-}
-
-function makeRows(h,m) {
-  let sb = ''
-  for (let r=0,len=m.length; r<len; r++) {
-    let row = m[r]
-    if (!row) continue
-    sb += '<tr>'
-    for (let k in h) if (show(k)) sb += '<td>' + val(row[k]) + '</td>'
-    sb += '</tr>'
-  }
-  return sb
-}
-
-let model = ${Dto},
-    txt = $$('TEXTAREA')[0],
-    humanize = ${Humanize} && location.hash.indexOf('dehumanize') === -1,
-    isIE = /msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)
-
-$("content").innerHTML = val(model)
-txt.innerHTML=JSON.stringify(model)
-
-function showJson(){ doc.body.className='show-json'; txt.select(); txt.focus(); }
-
-doc.onclick = function(e) {
-    let el = e.target || e.srcElement, cls = el.className
-    e = e || window.event
-    if (el.tagName === 'B') el = el.parentNode
-    if (el.tagName !== 'TH') return
-    el.className = cls === 'asc' ? 'desc' : (cls === 'desc' ? null : 'asc')
-    $.each($$('TH'), function(i,th){ if (th === el) return; th.className = null; })
-    clearSel()
-    let ids=el.id.split('-'), tId=ids[1], cId=ids[2]
-	if (!tbls[tId]) return
-    let tbl=tbls[tId].slice(0), h=uniqueKeys(tbl), col=keys(h)[cId], tbody=el.parentNode.parentNode.nextSibling
-    if (!el.className){ setTableBody(tbody, makeRows(h,tbls[tId])); return }
-    let d=el.className==='asc'?1:-1
-    tbl.sort(function(a,b){ return cmp(a[col],b[col]) * d; })
-    setTableBody(tbody, makeRows(h,tbl))
-}
-
-function setTableBody(tbody, html) {
-  if (!isIE) { tbody.innerHTML = html; return }
-  let temp = tbody.ownerDocument.createElement('div')
-  temp.innerHTML = '<table>' + html + '</table>'
-  tbody.parentNode.replaceChild(temp.firstChild.firstChild, tbody)
-}
-
-function clearSel() {
-  if (doc.selection && doc.selection.empty) doc.selection.empty()
-  else if(win.getSelection) {
-    let sel=win.getSelection()
-    if (sel && sel.removeAllRanges) sel.removeAllRanges()
-  }
-}
-
-function cmp(v1, v2){
-  let f1=parseFloat(v1), f2=parseFloat(v2)
-  if (!isNaN(f1) && !isNaN(f2)) { v1=f1; v2=f2 }
-  if (typeof v1 == 'string' && v1.substr(0,6) === '/Date(') { v1=date(v1); v2=date(v2) }
-  if (v1 === v2) return 0
-  return v1 > v2 ? 1 : -1
-}
-
+window.BaseUrl = "${BaseUrl}"
+window.ServiceUrl = "${ServiceUrl}"
+window.RequestName = "${RequestName}"
 </script>
+<script>window.RequestDto = ${RequestDto}</script>
+<script>window.Dto = ${Dto}</script>
+<script>window.ServerInfo = ${ServerInfo}</script>
+<div id="app"></div>
+<template id="app-template">
+<div class="h-screen flex flex-col">
+    <div v-if="showHeader" id="header" class="flex items-center gap-x-6 bg-gray-50 border-b py-2.5 px-6 sm:px-3.5 sm:before:flex-1">
+        <p class="leading-6 text-gray-700">
+            ${Header}
+        </p>
+        <div class="flex flex-1 justify-end">
+            <button type="button" class="-m-3 p-3 focus-visible:outline-offset-[-4px]" @click="showHeader=false" title="close banner">
+                <span class="sr-only">Dismiss</span>
+                <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                </svg>
+            </button>
+        </div>        
+    </div>
+    <tabs class="flex-grow flex flex-col" :tabs="tabs" tab-class="uppercase" body-class="flex flex-grow"></tabs>
+</div>
+</template>
+<script type="module">
+import { computed, createApp, onMounted, ref } from "vue"
+import {
+    JsonApiClient, JsonServiceClient, ApiResult, HttpMethods,
+    $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, mapGet, leftPart, rightPart
+} from "@servicestack/client"
+import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
+import Code from "./js/components/Code.mjs"
+import CopyIcon from "./js/components/CopyIcon.mjs"
+import CopyLine from "./js/components/CopyLine.mjs"
+const qs = queryString(location.search)
+const value = globalThis.Dto
+const BaseUrl = globalThis.BaseUrl
+const RequestName = globalThis.RequestName
+const Usages = globalThis.Usages
+const ServerInfo = globalThis.ServerInfo
+const client = ServerInfo.jsonApiRoute === "/api/{Request}"
+    ? JsonApiClient.create(BaseUrl)
+    : new JsonServiceClient(BaseUrl)
+let headers = []
+client.responseFilter = res => {
+    headers = Object.entries(res.headers)
+}
+const Cache = {}
+const Preview = {
+    template:`
+      <div v-if="error" class="p-4">
+          <div>
+            <h3 class="text-2xl text-red-700 mb-3">{{error.errorCode}}</h3>
+            <h3 class="text-red-700 mb-3">{{error.message}}</h3>
+            <pre v-if="error.stackTrace" class="mb-4">{{error.stackTrace}}</pre>
+            <HtmlFormat v-if="error.errors?.length" :value="error.errors" class="mb-4" />
+            <HtmlFormat v-if="error.meta" :value="error.meta" />
+          </div>
+      </div>
+      <div v-else class="p-4">
+          <div class="absolute flex -mt-3 right-0 items-center">
+            <div class="flex mr-1">
+              <a v-for="(href,format) in formats" :href="href" :class="['mr-2',css.a.indigo]" :title="'view in ' + format">{{format}}</a>
+            </div>
+            <div v-if="uiHref" class="flex items-center mr-2">
+              <a title="View in API Explorer" :href="uiHref"
+                 class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 32"><g fill="currentColor"><path d="M27.464 2.314a.501.501 0 0 0-.698-.257L14.86 8.339a.499.499 0 0 0-.233.621l.245.641l-6.873 3.769a.5.5 0 0 0-.222.63l.228.549l-7.299 3.488a.5.5 0 0 0-.246.643l1.498 3.61a.5.5 0 0 0 .629.28l7.625-2.701l.228.549a.5.5 0 0 0 .601.289l7.276-2.097l.218.569a.497.497 0 0 0 .612.299l13-4a.498.498 0 0 0 .317-.663l-5-12.501zM2.7 21.469l-1.134-2.734l6.823-3.261l1.439 3.47L2.7 21.469zm8.491-1.846l-.238-.574l-1.843-4.445l-.238-.573l6.336-3.475l2.374 6.134l.375.981l-6.766 1.952zm8.109-1.238l-.203-.531c-.003-.011-.001-.024-.006-.035l-.618-1.597l-2.754-7.206l11.023-5.815l4.592 11.48L19.3 18.385z"/><path d="M28.964.314a.5.5 0 0 0-.929.371l6 15a.502.502 0 0 0 .651.279a.501.501 0 0 0 .279-.65l-6.001-15z"/><path d="M18 21h-3c-1.14 0-2 .86-2 2v1.315l-5.879 6.859a.5.5 0 1 0 .758.651L13.73 25H16v6.5a.5.5 0 0 0 1 0V25h2.27l5.85 6.825a.497.497 0 0 0 .705.054a.5.5 0 0 0 .054-.705L20 24.315v-1.24C20 21.912 19.122 21 18 21zm1 3h-5v-1c0-.589.411-1 1-1h3c.57 0 1 .462 1 1.075V24z"/></g></svg>
+              </a>
+            </div>
+            <div v-if="locodeHref" class="flex items-center mr-1">
+              <a title="View in Locode" :href="locodeHref"
+                 class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M4 10.4V4a1 1 0 0 1 1-1h5V1h4v2h5a1 1 0 0 1 1 1v6.4l1.086.326a1 1 0 0 1 .682 1.2l-1.516 6.068a4.992 4.992 0 0 1-1.902-.272l1.25-5.352L12 10l-7.6 2.37l1.25 5.351a4.992 4.992 0 0 1-1.902.273l-1.516-6.068a1 1 0 0 1 .682-1.2L4 10.4zm2-.6L12 8l6 1.8V5H6v4.8zM4 20a5.978 5.978 0 0 0 4-1.528A5.978 5.978 0 0 0 12 20a5.978 5.978 0 0 0 4-1.528A5.978 5.978 0 0 0 20 20h2v2h-2a7.963 7.963 0 0 1-4-1.07A7.963 7.963 0 0 1 12 22a7.963 7.963 0 0 1-4-1.07A7.963 7.963 0 0 1 4 22H2v-2h2z"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="mt-4">
+            <HtmlFormat :value="Dto" />
+          </div>
+      </div>
+    `,
+    setup() {
+        const { apiOf, Crud } = useMetadata()
+        const op = apiOf(RequestName)
+        const uiHref = op ? combinePaths(document.baseURI, `/ui/${RequestName}?tab=details`) : '' 
+        const locodeHref = op && Crud.isQuery(op) 
+            ? combinePaths(document.baseURI, `/locode/${RequestName}`)
+            : ''
+        const url = location.href
+        const hasQs = url.includes('?')
+        const formats = {
+            json: hasQs ? appendQueryString(url, { format:'json' }) : `${url}.json`,
+            csv:  hasQs ? appendQueryString(url, { format:'csv' }) : `${url}.csv`,
+            jsv:  hasQs ? appendQueryString(url, { format:'jsv' }) : `${url}.jsv`,
+            xml:  hasQs ? appendQueryString(url, { format:'xml' }) : `${url}.xml`,
+        }
+        const status = mapGet(Dto, 'responseStatus')
+        const errorCode = status ? mapGet(status, 'errorCode') : null
+        const error = errorCode 
+            ? { errorCode, 
+                message: mapGet(status, 'message'),
+                stackTrace: mapGet(status, 'stackTrace'),
+                errors: mapGet(status, 'errors'),
+                meta: mapGet(status, 'meta'),
+            } : null
+        return { Dto, error, formats, uiHref, locodeHref, css }
+    }
+}
+const Json = {
+    template:`
+      <div class="p-4">
+          <CopyIcon v-if="json" :text="json" class="absolute right-4" />
+          <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="json"></code></pre>
+      </div>
+    `,
+    setup() {
+        const json = JSON.stringify(Dto, undefined, 4)
+        return { json }
+    }
+}
+const ApiResponse = {
+    template: `
+    <div class="mt-2 border-t">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-4 pl-2" aria-label="Tabs">
+                <a v-for="(tab,name) in tabs" @click="routes.response = tab" 
+                   :class="[routes.response === tab ? 'border-indigo-500 text-indigo-600' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300', 'cursor-pointer whitespace-nowrap py-1 px-1 border-b-2 font-medium text-sm']">
+                    {{name}}
+                </a>
+            </nav>
+        </div>
+        <div v-if="routes.response === ''" class="p-2">
+            <span class="relative z-0 inline-flex shadow-sm rounded-md">
+              <a v-for="(tab,name) in {Pretty:'',Preview:'preview'}" @click="routes.body = tab"
+                  :class="[{ Pretty:'rounded-l-md',Preview:'rounded-r-md -ml-px' }[name], routes.body === tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                {{name}}
+              </a>
+            </span>
+            <div v-if="routes.body === ''" class="pt-2">
+                <CopyIcon v-if="json" :text="json" class="absolute right-4" />
+                <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="json"></code></pre>
+            </div>
+            <div v-else-if="routes.body === 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+              <HtmlFormat :value="api.response || api.error" :fieldAttrs="fieldAttrs" />  
+            </div>
+        </div>
+        <div v-else-if="routes.response === 'cookies'" class="md:px-4">
+            <HtmlFormat v-if="Object.keys(cookies).length" class="my-2" :value="asKvps(cookies)" />
+            <Alert>HttpOnly Cookies are not shown</Alert>
+        </div>
+    </div>`,
+    props:['api'],
+    setup(props) {
+        const { asKvps } = useMetadata()
+        const json = computed(() => JSON.stringify(props.api.response, null, 4))
+        const response = computed(() => props.api.response || props.api.error)
+        const routes = ref({
+            body: '',
+            response: '',
+        })
+        function fieldAttrs(id) {
+            let useId = id.replace(/\s+/g,'').toLowerCase()
+            return useId === 'stacktrace'
+                ? { 'class': 'whitespace-pre overflow-x-auto' }
+                : {}
+        }
+        let cookies = parseCookie(document.cookie) || {}
+        const cookiesLabel = computed(() =>  `Cookies (${Object.keys(cookies).length})`)
+        const tabs = computed(() => {
+            let tabs = { Body:'' }
+            tabs[cookiesLabel.value] = 'cookies'
+            return tabs
+        })
+        return {
+            routes,
+            json,
+            response,
+            cookies,
+            asKvps,
+            cookiesLabel,
+            tabs,
+            fieldAttrs,
+        }
+    }
+}
+const Form = {
+    components: { ApiResponse },
+    template:`
+        <div v-if="!requestType" class="w-full"><Alert>Could not find metadata for '{{RequestName}}'</Alert></div>
+        <div v-else class="pt-4 flex flex-col w-full">
+            <div class="flex justify-center w-full">
+              <div :class="[card.panelClass,'sm:w-[50em]']">
+                <form @submit.prevent="submit">
+                  <div :class="card.formClass">
+                    <div>
+                      <h3 :class="card.headingClass">{{ title }}</h3>
+                      <p v-if="requestType?.notes" :class="['notes',card.subHeadingClass]" v-html="requestType?.notes"></p>
+                    </div>
+                    <input type="submit" class="hidden">
+                    <AutoFormFields :modelValue="model" :api="api" />
+                  </div>
+                  <div :class="form.buttonsClass">
+                    <div class="flex w-full justify-between">
+                      <div class="flex items-center">
+                        <OutlineButton v-else class="ml-4" type="button" @click="copyApiUrl" title="Copy API URL">
+                          <svg v-if="copiedApiUrl" class="w-5 h-5 mr-1 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                          <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
+                          <span>Copy URL</span>
+                        </OutlineButton>
+                      </div>
+                      <FormLoading v-if="loading" class="ml-4" />
+                      <PrimaryButton type="submit" class="ml-4" :disabled="loading">Submit</PrimaryButton>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <ApiResponse v-if="api.response" :api="api" class="mt-4" />
+        </div>
+    `,
+    setup() {
+        const type = RequestName
+        const { card, form } = css
+        const { typeOf, apiOf, createDto, typeProperties, formValues } = useMetadata()
+        const { copyText } = useUtils()
+        const requestType = typeOf(RequestName)
+        const title = computed(() => requestType?.description || humanize(RequestName))
+        const api = ref(new ApiResult({ response:Dto }))
+        const model = ref(createDto(RequestName, RequestDto))
+        const method = map(model.value?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
+        const copiedApiUrl = ref(false)
+        const client = useClient()
+        const loading = computed(() => client.loading.value)
+        function createApiUrl(ext = "json") {
+            const args = model.value
+            const url = `/api/${RequestName}`
+            const absoluteUrl = combinePaths(BaseUrl, appendQueryString(url, { ...args, jsconfig: "eccn,edv"}))
+            const formatUrl = absoluteUrl.indexOf('?') >= 0
+                ? leftPart(absoluteUrl, '?') + "." + ext + "?" + rightPart(absoluteUrl, '?')
+                : absoluteUrl + ".json"
+            return formatUrl
+        }
+        function copyApiUrl() {
+            const apiUrl = createApiUrl("json")
+            copyText(apiUrl)
+            copiedApiUrl.value = true
+            setTimeout(() => copiedApiUrl.value = false, 3000)
+        }
+        async function submit(e) {
+            /** @type {HTMLFormElement} */
+            const form = e.target
+            const returnsVoid = map(model.value?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
+            if (HttpMethods.hasRequestBody(method)) {
+                const requestDto = new model.value.constructor()
+                const formData = new FormData(form)
+                if (!returnsVoid) {
+                    api.value = await client.apiForm(requestDto, formData, { jsconfig: 'eccn' })
+                } else {
+                    api.value = await client.apiFormVoid(requestDto, formData, { jsconfig: 'eccn' })
+                }
+            } else {
+                const fieldValues = formValues(form, typeProperties(requestType))
+                const requestDto = new model.value.constructor(fieldValues)
+                if (!returnsVoid) {
+                    api.value = await client.api(requestDto, { jsconfig: 'eccn,edv' })
+                } else {
+                    api.value = await client.apiVoid(requestDto, { jsconfig: 'eccn,edv' })
+                }
+            }
+            if (api.value.succeeded) {
+                //form.reset()
+            } else {
+            }
+        }
+        return { RequestName, requestType, type, card, form, submit, title, model, api, loading, method, copiedApiUrl, copyApiUrl }
+    }
+}
+const App = {
+    template:$1('#app-template'),
+    setup() {
+        const tabs = {
+            preview: Preview,
+            json: Json,
+            form: Form,
+            code: {
+                template: `<Code :op="op"/>`,
+                setup() {
+                    return { op: RequestName }
+                }
+            },
+        }
+        const showHeader = ref(true)
+        function setFavIconSrc(src) {
+            let link = $1("link[rel~='icon']")
+            if (!link) {
+                link = document.createElement('link')
+                link.rel = 'icon'
+                $1('head').appendChild(link)
+            }
+            link.href = src
+        }
+        onMounted(() => {
+            const { loadMetadata } = useMetadata()
+            loadMetadata({ olderThan: location.search.includes('clear=metadata') ? 0 : 60 * 60 * 1000 })
+                .then(server => {
+                    setFavIconSrc(server.ui.brandIcon?.uri || combinePaths(BaseUrl, '/metadata/svg/servicestack.datauri'))
+                })
+        })
+        return { tabs, showHeader }
+    }
+}
+const app = createApp(App)
+    .use(ServiceStackVue)
+    .component('RouterLink', ServiceStackVue.component('RouterLink'))
+    .provide('client', client)
+    .directive('highlightjs', (el, binding) => {
+        if (binding.value) {
+            //el.className = ''
+            el.innerHTML = enc(binding.value)
+            globalThis.hljs.highlightElement(el)
+        }
+    })
+const components = { Preview, Json, Form, Code, CopyIcon, CopyLine }
+Object.keys(components).forEach(k => app.component(k, components[k]))
+app.mount('#app')
+</script>
+<script src="js/highlight.js"></script>
 </body>
 </html>

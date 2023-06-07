@@ -1,1 +1,1 @@
-/**: override /modules/admin-ui/custom.js */
+/**: override /modules/locode/custom.js */

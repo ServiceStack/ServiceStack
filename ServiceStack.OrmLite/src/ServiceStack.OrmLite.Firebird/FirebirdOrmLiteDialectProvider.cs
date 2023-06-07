@@ -31,6 +31,8 @@ namespace ServiceStack.OrmLite.Firebird
 
         internal long LastInsertId { get; set; }
 
+        public override bool SupportsSchema => false;
+
         public FirebirdOrmLiteDialectProvider() : this(false) { }
 
         public FirebirdOrmLiteDialectProvider(bool compactGuid)

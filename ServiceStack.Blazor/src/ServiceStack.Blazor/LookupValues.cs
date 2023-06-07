@@ -10,18 +10,26 @@ public static class LookupValues
 {
     static Dictionary<string, Dictionary<string, Dictionary<string, string>>> Lookup = new();
 
-    public static async Task<string?> GetOrFetchValueAsync(JsonApiClient client, AppMetadata appMetadata, string model, string id, string label, bool isComputed)
+    public static async Task<string?> GetOrFetchValueAsync(JsonApiClient client, AppMetadata appMetadata, string model, string id, string label, bool isComputed, string idValue)
     {
-        var value = GetValue(model, id, label);
+        var value = GetValue(model, idValue, label);
         if (value != null)
             return value;
 
-        await FetchAsync(client, appMetadata, model, id, label, isComputed, new List<string> { id });
-        return GetValue(model, id, label);
+        await FetchAsync(client, appMetadata, model, id, label, isComputed, new List<string> { idValue });
+        return GetValue(model, idValue, label);
     }
 
     public static string? GetValue(string model, string id, string label)
     {
+        if (string.IsNullOrEmpty(model))
+            throw new ArgumentNullException(nameof(model));
+        if (string.IsNullOrEmpty(id))
+            throw new ArgumentNullException(nameof(id));
+        if (string.IsNullOrEmpty(label))
+            throw new ArgumentNullException(nameof(label));
+
+        label = label.ToLower();
         return Lookup.TryGetValue(model, out var modelLookup)
             ? modelLookup.TryGetValue(id, out var idLookup)
                 ? idLookup.TryGetValue(label, out var value)
@@ -33,12 +41,21 @@ public static class LookupValues
 
     public static void SetValue(string model, string id, string label, string value)
     {
+        if (string.IsNullOrEmpty(model))
+            throw new ArgumentNullException(nameof(model));
+        if (string.IsNullOrEmpty(id))
+            throw new ArgumentNullException(nameof(id));
+        if (string.IsNullOrEmpty(label))
+            throw new ArgumentNullException(nameof(label));
+
+        label = label.ToLower();
         var modelLookup = Lookup.TryGetValue(model, out var map)
             ? map
             : Lookup[model] = new();
         var idLookup = modelLookup.TryGetValue(id, out var idMap)
             ? idMap
             : modelLookup[id] = new();
+        
         idLookup[label] = value;
         BlazorUtils.Log($"SetValue({model},{id},{label}) = {value}");
     }
@@ -71,7 +88,7 @@ public static class LookupValues
                     continue;
                 }
                 var isComputed = prop.Attributes?.Any(x => x.Name == "Computed") == true
-                    || dataModel.Properties?.FirstOrDefault(x => x.Name == refLabel)?.Attributes?.Any(x => x.Name == "Computed") == true;
+                    || dataModel.Properties?.FirstOrDefault(x => x.Name.EqualsIgnoreCase(refLabel))?.Attributes?.Any(x => x.Name == "Computed") == true;
 
                 await FetchAsync(client, appMetadata, refModel, refId, refLabel, isComputed, lookupIds);
             }
@@ -80,7 +97,7 @@ public static class LookupValues
 
     public static async Task FetchAsync(JsonApiClient client, AppMetadata appMetadata, string refModel, string refId, string refLabel, bool isComputed, List<string> lookupIds)
     {
-        var lookupOp = appMetadata.Api.Operations.FirstOrDefault(op => op.Request.IsAutoQuery() && op.DataModel?.Name == refModel);
+        var lookupOp = appMetadata.Api.FindAutoQueryReturning(refModel);
         if (lookupOp != null)
         {
             var modelLookup = Lookup.TryGetValue(refModel, out var map)
@@ -113,7 +130,7 @@ public static class LookupValues
             var requestType = lookupOp.Request.Type ??= Apis.Find(lookupOp.Request.Name);
             if (requestType == null)
             {
-                BlazorUtils.Log($"Couldn't find AutoQuery API Type for {lookupOp.Request.Name}");
+                BlazorUtils.LogError("Couldn't find AutoQuery API Type for {0}", lookupOp.Request.Name);
                 return;
             }
 
@@ -126,7 +143,7 @@ public static class LookupValues
                 var response = await client.SendAsync(responseType, requestDto);
                 var lookupResults = response.ToObjectDictionary()["Results"] as System.Collections.IEnumerable;
 
-                BlazorUtils.Log($"Querying {requestType.Name} {queryArgs.Dump()} -> {EnumerableUtils.Count(lookupResults)}");
+                BlazorUtils.LogDebug("Querying {0} {1} -> {2}", requestType.Name, queryArgs.Dump(), EnumerableUtils.Count(lookupResults));
 
                 foreach (var obj in lookupResults.OrEmpty())
                 {
@@ -134,22 +151,23 @@ public static class LookupValues
                     var id = result.GetIgnoreCase(refId).ConvertTo<string>();
                     var val = result.GetIgnoreCase(refLabel);
 
+                    refLabel = refLabel.ToLower();
                     var modelLookupLabels = modelLookup.TryGetValue(id, out var idMap)
                         ? idMap
                         : modelLookup[id] = new();
                     modelLookupLabels[refLabel] = val.ConvertTo<string>();
-                    BlazorUtils.Log($"SetFetch({refModel},{id},{refLabel}) = {modelLookupLabels[refLabel]}");
+                    BlazorUtils.LogDebug("SetFetch({0},{1},{2}) = {3}", refModel, id, refLabel, modelLookupLabels[refLabel]);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                BlazorUtils.Log($"Failed to call {requestDto.GetType().Name} -> {responseType?.Name}");
+                BlazorUtils.LogError(ex, "Failed to call {0} -> {1}", requestDto.GetType().Name, responseType?.Name ?? "");
                 return;
             }
         }
         else
         {
-            BlazorUtils.Log($"Couldn't find AutoQuery API for {refModel}");
+            BlazorUtils.LogError("Couldn't find AutoQuery API for {0}", refModel);
             return;
         }
     }

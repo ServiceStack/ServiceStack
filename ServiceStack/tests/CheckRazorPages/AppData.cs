@@ -6,6 +6,8 @@ namespace MyApp;
 
 public class AppData
 {
+    internal static readonly AppData Instance = new();
+
     public Dictionary<string, string> Colors = new() {
         {"#ffa4a2", "Red"},
         {"#b2fab4", "Green"},
@@ -20,9 +22,7 @@ public class AppData
 
 public static class AppDataExtensions
 {
-    internal static readonly AppData Instance = new();
-
-    public static Dictionary<string, string> ContactColors(this IHtmlHelper html) => Instance.Colors;
-    public static List<KeyValuePair<string, string>> ContactTitles(this IHtmlHelper html) => Instance.Titles;
-    public static List<string> ContactGenres(this IHtmlHelper html) => Instance.FilmGenres;
+    public static Dictionary<string, string> ContactColors(this IHtmlHelper html) => AppData.Instance.Colors;
+    public static List<KeyValuePair<string, string>> ContactTitles(this IHtmlHelper html) => AppData.Instance.Titles;
+    public static List<string> ContactGenres(this IHtmlHelper html) => AppData.Instance.FilmGenres;
 }

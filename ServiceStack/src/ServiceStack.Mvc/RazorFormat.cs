@@ -40,32 +40,9 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     public string Id { get; set; } = Plugins.Razor;
     public static ILog log = LogManager.GetLogger(typeof(RazorFormat));
 
-    public string DefaultLayout { get; set; } = "_Layout";
-    public string DefaultPage { get; set; } = "default.cshtml";
-    public string ForbiddenRedirect { get; set; }
-    public string ForbiddenPartial { get; set; }
+    public static string DefaultLayout { get; set; } = "_Layout";
 
     public List<string> ViewLocations { get; set; }
-
-    private bool razorPages;
-    public bool RazorPages
-    {
-        get => razorPages;
-        set
-        {
-            razorPages = value;
-            if (razorPages)
-            {
-                PagesPath = "~/Pages";
-                DefaultPage = "Index.cshtml";
-            }
-            else
-            {
-                PagesPath = "~/View/Pages";
-                DefaultPage = "default.cshtml";
-            }
-        }
-    }
 
     public string PagesPath { get; set; } = "~/Views/Pages";
 
@@ -92,7 +69,8 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public void Register(IAppHost appHost)
     {
-        ViewLocations ??= GetDefaultViewLocations(appHost.VirtualFiles);
+        if (ViewLocations == null)
+            ViewLocations = GetDefaultViewLocations(appHost.VirtualFiles);
 
         appHost.CatchAllHandlers.Add(CatchAllHandler);
         appHost.ViewEngines.Add(this);
@@ -114,25 +92,21 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         var viewEngineResult = GetPageFromPathInfo(pathInfo);
 
         return viewEngineResult != null
-            ? (viewEngineResult.View as RazorView)?.RazorPage is RazorPage //allow RazorPages through
-                ? HttpHandlerFactory.PassThruHttpHandler
-                : new RazorHandler(viewEngineResult)
+            ? new RazorHandler(viewEngineResult)
             : null;
     }
 
     public ViewEngineResult GetPageFromPathInfo(string pathInfo)
     {
-        var origPath = pathInfo;
-        var isDir = pathInfo.EndsWith("/"); 
-        if (isDir)
-            pathInfo += DefaultPage;
+        if (pathInfo.EndsWith("/"))
+            pathInfo += "default.cshtml";
 
         var viewPath = "~/wwwroot".CombineWith(pathInfo);
         if (!viewPath.EndsWith(".cshtml"))
             viewPath += ".cshtml";
 
         var viewEngineResult = ViewEngine.GetView("", viewPath, 
-            isMainPage: viewPath == "~/wwwroot/" + DefaultPage);
+            isMainPage: viewPath == "~/wwwroot/default.cshtml");
 
         if (!viewEngineResult.Success)
         {
@@ -141,14 +115,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                 viewPath += ".cshtml";
 
             viewEngineResult = ViewEngine.GetView("", viewPath,
-                isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
-
-            if (!viewEngineResult.Success && RazorPages && !isDir)
-            {
-                viewPath = PagesPath.CombineWith(origPath + "/" + DefaultPage);
-                viewEngineResult = ViewEngine.GetView("", viewPath,
-                    isMainPage: viewPath == $"{PagesPath}/{DefaultPage}");
-            }
+                isMainPage: viewPath == $"{PagesPath}/default.cshtml");
         }
 
         return viewEngineResult.Success 
@@ -361,7 +328,8 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             }
         }
 
-        viewData ??= CreateViewData(dto);
+        if (viewData == null)
+            viewData = CreateViewData(dto);
 
         if (routingArgs != null)
         {
@@ -395,40 +363,31 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     public ViewEngineResult FindView(IEnumerable<string> viewNames, out Dictionary<string, object> routingArgs)
     {
         routingArgs = null;
+        const string execPath = "";
         foreach (var viewName in viewNames)
         {
-            var ret = FindView(viewName, out routingArgs);
-            if (ret != null)
-                return ret;
-        }
-
-        return null;
-    }
-
-    public ViewEngineResult FindView(string viewName, out Dictionary<string, object> routingArgs)
-    {
-        routingArgs = null;
-        const string execPath = "";
-        if (viewName.StartsWith("/"))
-        {
-            var viewEngineResult = GetPageFromPathInfo(viewName);
-            if (viewEngineResult?.Success == true)
-                return viewEngineResult;
-
-            viewEngineResult = GetRoutingPage(viewName, out routingArgs);
-            if (viewEngineResult?.Success == true)
-                return viewEngineResult;
-        }
-        else
-        {
-            foreach (var location in ViewLocations)
+            if (viewName.StartsWith("/"))
             {
-                var viewPath = location.CombineWith(viewName) + ".cshtml";
-                var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
+                var viewEngineResult = GetPageFromPathInfo(viewName);                
+                if (viewEngineResult?.Success == true)
+                    return viewEngineResult;
+        
+                viewEngineResult = GetRoutingPage(viewName, out routingArgs);                
                 if (viewEngineResult?.Success == true)
                     return viewEngineResult;
             }
+            else
+            {
+                foreach (var location in ViewLocations)
+                {
+                    var viewPath = location.CombineWith(viewName) + ".cshtml";
+                    var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
+                    if (viewEngineResult?.Success == true)
+                        return viewEngineResult;
+                }
+            }
         }
+
         return null;
     }
 
@@ -458,11 +417,11 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         var razorView = view as RazorView;
         try
         {
-            var httpCtx = ((HttpRequest)req.OriginalRequest).HttpContext;
-            var actionContext = new ActionContext(httpCtx,
+            var actionContext = new ActionContext(
+                ((HttpRequest) req.OriginalRequest).HttpContext,
                 new RouteData(),
                 new ActionDescriptor());
-            
+
             var sw = new StreamWriter(stream); // don't dispose of stream so other middleware can re-read / filter it
             {
                 viewData ??= CreateViewData((object)null);
@@ -476,8 +435,6 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                     viewData["Layout"] = layout;
 
                 viewData[Keywords.IRequest] = req;
-                if (razorView.RazorPage is RazorPage razorPage)
-                    PopulateRazorPageContext(httpCtx, razorPage, viewData, actionContext);
 
                 var viewContext = new ViewContext(
                     actionContext,
@@ -513,35 +470,6 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             await req.Response.WriteErrorBody(ex).ConfigAwait();
         }
     }
-
-    internal static void PopulateRazorPageContext(HttpContext httpCtx, RazorPage razorPage, ViewDataDictionary viewData, ActionContext actionContext = null)
-    {
-        // var urlHelperFactory = httpCtx.RequestServices.GetRequiredService<IUrlHelperFactory>();
-        // var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
-        var viewDataProp = razorPage.GetType().GetProperty("ViewData");
-        if (viewDataProp == null)
-            return;
-        var modelType = viewData.Model?.GetType() ?? viewDataProp.PropertyType.FirstGenericArg();
-        var pagModel = viewData.Model ?? modelType.CreateInstance();
-        var invoker = createViewDataCache.GetOrAdd(modelType, type => {
-            var mi = typeof(RazorFormat).GetStaticMethod(nameof(CreateViewData)).MakeGenericMethod(type);
-            var invoker = mi.GetStaticInvoker();
-            return invoker;
-        });
-        var pageViewData = invoker(pagModel) as ViewDataDictionary;
-        foreach (var entry in viewData)
-        {
-            pageViewData[entry.Key] = entry.Value;
-        }
-
-        razorPage.PageContext = new PageContext(actionContext)
-        {
-            ViewData = pageViewData,
-            RouteData = httpCtx.GetRouteData(),
-            HttpContext = httpCtx,
-        };
-    }
-    static ConcurrentDictionary<Type, StaticMethodInvoker> createViewDataCache = new();
 
     public async Task<ReadOnlyMemory<char>> RenderToHtmlAsync(IView view, object model = null, string layout = null)
     {
@@ -584,8 +512,6 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                     viewData["Layout"] = layout;
 
                 viewData[Keywords.IRequest] = req ?? new Host.BasicRequest { PathInfo = view.Path };
-                if (razorView.RazorPage is RazorPage razorPage)
-                    PopulateRazorPageContext(ctx, razorPage, viewData, actionContext);
 
                 var viewContext = new ViewContext(
                     actionContext,
@@ -736,16 +662,31 @@ public class RazorHandler : ServiceStackHandlerBase
 
 public static class RazorViewExtensions
 {
+    internal static HtmlString NullJson = new("null");
+
     public static HtmlString AsRawJson<T>(this T model)
     {
-        var json = !Equals(model, default(T)) ? model.ToJson() : "null";
-        return new HtmlString(json);
+        var json = !Equals(model, default(T)) 
+            ? model.ToJson() 
+            : null;
+        return json != null ? new HtmlString(json) : NullJson;
     }
 
     public static HtmlString AsRaw<T>(this T model)
     {
         return new HtmlString(
-            (model != null ? model : default(T))?.ToString());
+            (model != null ? model : default)?.ToString());
+    }
+
+    public static async Task<HtmlString> ApiAsJsonAsync<TResponse>(this IHtmlHelper html, IReturn<TResponse> request)
+    {
+        return (await html.Gateway().ApiAsync(request)).Response.AsRawJson();
+    }
+
+    public static async Task<HtmlString> ApiResultsAsJsonAsync<T>(this IHtmlHelper html, IReturn<QueryResponse<T>> request)
+    {
+        var api = await html.Gateway().ApiAsync(request).ConfigAwait();
+        return api.Response?.Results?.AsRawJson() ?? NullJson;
     }
 
     public static string GetErrorHtml(ResponseStatus responseStatus)
@@ -770,11 +711,25 @@ public static class RazorViewExtensions
 
     public static IRequest GetRequest(this IHtmlHelper html)
     {
-        var req = html.ViewContext.ViewData.Model is RazorPage razorPage ? razorPage.HttpRequest : null
-            ?? html.ViewContext.ViewData[Keywords.IRequest] as IRequest
+        var req = 
+#if NET6_0_OR_GREATER
+            (html.ViewContext.ViewData.Model as ServiceStack.Mvc.RazorPage)?.TryGetHttpRequest() ??
+#endif 
+            html.ViewContext.ViewData[Keywords.IRequest] as IRequest
             ?? html.ViewContext.HttpContext.Items[Keywords.IRequest] as IRequest
+#if NET6_0_OR_GREATER
+            ?? (html.ViewContext.ViewData.Model as ServiceStack.Mvc.RazorPage)?.HttpRequest
+#endif 
             ?? HostContext.AppHost.TryGetCurrentRequest();
         return req;
+    }
+
+    public static bool MatchesPath(this IHtmlHelper html, string path, bool exact = false)
+    {
+        var req = html.GetRequest();
+        return exact || path.Length <= 1
+            ? req.PathInfo?.TrimEnd('/').EqualsIgnoreCase(path.TrimEnd('/')) == true
+            : req.PathInfo?.TrimEnd('/').StartsWithIgnoreCase(path.TrimEnd('/')) == true; 
     }
 
     public static IResponse GetResponse(this IHtmlHelper htmlHelper) => 
@@ -1075,7 +1030,7 @@ public static class RazorViewExtensions
             return;
 
         RedirectUnauthenticated(req, redirect);
-        if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+        if (HostContext.HasPlugin<RazorFormat>())
             throw new StopExecutionException();
     }
 
@@ -1100,7 +1055,7 @@ public static class RazorViewExtensions
     internal static async Task RedirectToAsync(this IRequest req, string path)
     {
         await req.RedirectToAsyncInternalAsync(path);
-        if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+        if (HostContext.HasPlugin<RazorFormat>()) 
             throw new StopExecutionException();
     }
 
@@ -1150,7 +1105,7 @@ public static class RazorViewExtensions
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+            if (HostContext.HasPlugin<RazorFormat>()) 
                 throw new StopExecutionException();
         }
     }
@@ -1179,7 +1134,7 @@ public static class RazorViewExtensions
                     
             var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
             await req.Response.WriteToResponse(req, error).ConfigAwait();
-            if (!HostContext.GetPlugin<RazorFormat>().RazorPages) 
+            if (HostContext.HasPlugin<RazorFormat>()) 
                 throw new StopExecutionException();
         }
     }
@@ -1255,7 +1210,7 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
     public void ApplyRequestFilters(object requestDto)
     {
         HostContext.ApplyRequestFiltersAsync(Request, Response, requestDto).Wait();
-        if (Response.IsClosed)
+        if (Response.IsClosed && HostContext.HasPlugin<RazorFormat>())
             throw new StopExecutionException();
     }
 
@@ -1397,359 +1352,6 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
     public Task AssertPermissionAsync(string permission, string message = null, string redirect = null) =>
         Request.AssertPermissionAsync(permission: permission, message: message, redirect: redirect);
 }
-
-// View Page to support ASP.Net Razor Pages
-public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDisposable
-{
-    public HttpContext GetHttpContext() => base.HttpContext ?? base.ViewContext.HttpContext;
-
-    public override ViewContext ViewContext
-    {
-        get => base.ViewContext;
-        set
-        {
-            base.ViewContext = value;
-            if (base.PageContext == null)
-            {
-                var httpCtx = GetHttpContext();
-                var actionContext = new ActionContext(httpCtx,
-                    httpCtx.GetRouteData(),
-                    ViewContext.ActionDescriptor);
-                RazorFormat.PopulateRazorPageContext(httpCtx, this, value.ViewData, actionContext);
-            }
-        }
-    }
-
-    public IHttpRequest HttpRequest
-    {
-        get
-        {
-            if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out var oRequest)
-                || GetHttpContext()?.Items.TryGetValue(Keywords.IRequest, out oRequest) == true)
-                return (IHttpRequest)oRequest;
-
-            return AppHostBase.GetOrCreateRequest(HttpContext) as IHttpRequest;
-        }
-    }
-
-    public IHttpResponse HttpResponse => (IHttpResponse)HttpRequest.Response;
-
-    public string GetLayout(string defaultLayout) => ViewContext.ViewData["Layout"] as string ?? defaultLayout;
-
-    public bool IsError => ModelError != null || GetErrorStatus() != null;
-
-    public object ModelError { get; set; }
-
-    public bool IsPostBack => this.HttpRequest.Verb == HttpMethods.Post;
-
-    public ResponseStatus GetErrorStatus()
-    {
-        var errorStatus = this.HttpRequest.GetItem(Keywords.ErrorStatus);
-        return errorStatus as ResponseStatus
-               ?? GetResponseStatus(ModelError);
-    }
-
-    private static ResponseStatus GetResponseStatus(object response)
-    {
-        if (response == null)
-            return null;
-
-        if (response is ResponseStatus status)
-            return status;
-
-        if (response is IHasResponseStatus hasResponseStatus)
-            return hasResponseStatus.ResponseStatus;
-
-        var propertyInfo = response.GetType().GetProperty("ResponseStatus");
-        return propertyInfo?.GetProperty(response) as ResponseStatus;
-    }
-
-    public HtmlString GetErrorMessage()
-    {
-        var errorStatus = GetErrorStatus();
-        return errorStatus == null ? null : new HtmlString(errorStatus.Message);
-    }
-
-    public HtmlString GetAbsoluteUrl(string virtualPath)
-    {
-        return new HtmlString(AppHost.ResolveAbsoluteUrl(virtualPath, HttpRequest));
-    }
-
-    public void ApplyRequestFilters(object requestDto)
-    {
-        HostContext.ApplyRequestFiltersAsync(HttpRequest, HttpResponse, requestDto).Wait();
-        if (HttpResponse.IsClosed)
-            throw new StopExecutionException();
-    }
-
-    public HtmlString GetErrorHtml()
-    {
-        return new HtmlString(RazorViewExtensions.GetErrorHtml(GetErrorStatus()) ?? "");
-    }
-
-    public string PathBase => AppHost.Config.PathBase;
-    public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
-    public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
-
-    public IAppHost AppHost => ServiceStackHost.Instance;
-
-    public bool DebugMode => HostContext.DebugMode;
-
-    public virtual TPlugin GetPlugin<TPlugin>() where TPlugin : class, IPlugin =>
-        HostContext.AppHost.GetPlugin<TPlugin>();
-
-    private IServiceStackProvider provider;
-    public virtual IServiceStackProvider ServiceStackProvider => provider ??= new ServiceStackProvider(HttpRequest);
-
-    public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
-
-    public virtual IHttpRequest ServiceStackRequest => ServiceStackProvider.Request;
-
-    public virtual IHttpResponse ServiceStackResponse => ServiceStackProvider.Response;
-
-    public virtual ICacheClient Cache => ServiceStackProvider.Cache;
-
-    public virtual ICacheClientAsync CacheAsync => ServiceStackProvider.CacheAsync;
-
-    public virtual IDbConnection Db => ServiceStackProvider.Db;
-
-    public virtual IRedisClient Redis => ServiceStackProvider.Redis;
-
-    public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => ServiceStackProvider.GetRedisAsync();
-
-    public virtual IMessageProducer MessageProducer => ServiceStackProvider.MessageProducer;
-
-    public virtual IAuthRepository AuthRepository => ServiceStackProvider.AuthRepository;
-
-    public virtual IAuthRepositoryAsync AuthRepositoryAsync => ServiceStackProvider.AuthRepositoryAsync;
-
-    public virtual ISessionFactory SessionFactory => ServiceStackProvider.SessionFactory;
-
-    public virtual Caching.ISession SessionBag => ServiceStackProvider.SessionBag;
-
-    public virtual Caching.ISessionAsync SessionBagAsync => ServiceStackProvider.SessionBagAsync;
-
-    public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
-
-    public virtual IAuthSession GetSession(bool reload = false) => ServiceStackProvider.GetSession(reload);
-
-    public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token = default) =>
-        ServiceStackProvider.GetSessionAsync(reload, token);
-
-    public virtual IAuthSession UserSession => GetSession();
-
-    public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
-
-    public virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token = default) =>
-        ServiceStackProvider.SessionAsAsync<TUserSession>(token);
-
-    public virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null,
-        CancellationToken token = default) =>
-        ServiceStackProvider.Request.SaveSessionAsync(session, expiresIn, token);
-
-    public virtual void ClearSession() => ServiceStackProvider.ClearSession();
-
-    public virtual Task ClearSessionAsync(CancellationToken token = default) =>
-        ServiceStackProvider.ClearSessionAsync(token);
-
-    public virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
-
-    public virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
-
-    public virtual object ForwardRequestToServiceStack(IRequest request = null) =>
-        ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
-
-    public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
-
-    public void Dispose()
-    {
-        if (provider == null)
-            return;
-
-        provider?.Dispose();
-        provider = null;
-        EndServiceStackRequest();
-    }
-
-    public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(HttpRequest);
-
-    public bool RenderErrorIfAny()
-    {
-        var html = GetErrorHtml(GetErrorStatus());
-        if (html == null)
-            return false;
-
-        WriteLiteral(html);
-
-        return true;
-    }
-
-    private string GetErrorHtml(ResponseStatus responseStatus)
-    {
-        if (responseStatus == null) return null;
-
-        var stackTrace = responseStatus.StackTrace != null
-            ? "<pre>" + responseStatus.StackTrace + "</pre>"
-            : "";
-
-        var html = @"
-            <div id=""error-response"" class=""alert alert-danger"">
-                <h4>" +
-                   responseStatus.ErrorCode + ": " +
-                   responseStatus.Message + @"
-                </h4>" +
-                   stackTrace +
-                   "</div>";
-        return html;
-    }
-
-    public async Task RedirectIfNotAuthenticatedAsync(string redirect = null)
-    {
-        var req = HttpRequest;
-        if ((await req.GetSessionAsync()).IsAuthenticated)
-            return;
-
-        req.RedirectUnauthenticated(redirect);
-    }
-
-    public async Task RedirectToAsync(string path)
-    {
-        await HttpRequest.RedirectToAsyncInternalAsync(path).ConfigAwait();
-    }
-}
-
-#if NET6_0_OR_GREATER
-public static class RazorPageHtmlExtensions
-{
-    public static string GetReturnUrl(this IHtmlHelper html) => html.GetRequest().GetReturnUrl() ?? "/";
-    public static RazorPage GetRazorPage(this IHtmlHelper html) => html.ViewContext?.ViewData?.Model as RazorPage;
-
-    public static async Task<bool> IsAuthenticatedAsync(this IHtmlHelper html) =>
-        (await html.GetRequest().GetSessionAsync().ConfigAwait()).IsAuthenticated;
-    
-    public static async Task<bool> EnsureAuthenticatedAsync(this IHtmlHelper html, string redirect = null)
-    {
-        var req = html.GetRequest();
-        var session = await req.GetSessionAsync().ConfigAwait();
-        if (!session.IsAuthenticated)
-        {
-            req.RedirectUnauthenticated(redirect);
-            return false;
-        }
-        return true;
-    }
-
-    public static async Task<bool> HasRoleAsync(this IHtmlHelper html, string role)
-    {
-        var req = html.GetRequest();
-        var session = await req.GetSessionAsync().ConfigAwait();
-        if (!session.IsAuthenticated)
-            return false;
-        return await session.HasRoleAsync(role, req.TryResolve<IAuthRepositoryAsync>()).ConfigAwait();
-    }
-    
-    public static async Task<bool> EnsureRoleAsync(this IHtmlHelper html, string role, string message = null, string redirect = null)
-    {
-        var req = html.GetRequest();
-        var session = await req.GetSessionAsync().ConfigAwait();
-        if (!session.IsAuthenticated)
-        {
-            req.RedirectUnauthenticated(redirect);
-            return false;
-        }
-
-        if (!await session.HasRoleAsync(role, req.TryResolve<IAuthRepositoryAsync>()))
-        {
-            if (redirect != null)
-            {
-                await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
-                return false;
-            }
-
-            var feature = HostContext.GetPlugin<RazorFormat>();
-            if (feature.ForbiddenRedirect != null)
-            {
-                var url = feature.ForbiddenRedirect.AddQueryParam("role", role);
-                await req.RedirectToAsyncInternalAsync(url).ConfigAwait();
-            }
-            else if (feature.ForbiddenPartial != null)
-            {
-                message ??= $"Missing Role {role}";
-                await html.RenderPartialAsync(feature.ForbiddenPartial, message).ConfigAwait();
-            }
-            else
-            {
-                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
-                await req.Response.WriteToResponse(req, error).ConfigAwait();
-            }
-            return false;
-        }
-        return true;
-    }
-    
-    public static async Task<bool> HasPermissionAsync(this IHtmlHelper html, string role)
-    {
-        var req = html.GetRequest();
-        var session = await req.GetSessionAsync().ConfigAwait();
-        if (!session.IsAuthenticated)
-            return false;
-        return await session.HasPermissionAsync(role, req.TryResolve<IAuthRepositoryAsync>()).ConfigAwait();
-    }
-    
-    public static async Task<bool> EnsurePermissionAsync(this IHtmlHelper html, string permission, string message = null, string redirect = null) 
-    {
-        var page = (RazorPage)html.ViewContext.ViewData.Model;
-        var req = page.HttpRequest;
-        var session = await req.GetSessionAsync().ConfigAwait();
-        if (!session.IsAuthenticated)
-        {
-            await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
-            return false;
-        }
-
-        if (!await session.HasPermissionAsync(permission, req.TryResolve<IAuthRepositoryAsync>()))
-        {
-            if (redirect != null)
-            {
-                await page.RedirectToAsync(redirect).ConfigAwait();
-                return false;
-            }
-
-            var feature = HostContext.GetPlugin<RazorFormat>();
-            if (feature.ForbiddenRedirect != null)
-            {
-                var url = feature.ForbiddenRedirect.AddQueryParam("permission", permission);
-                await req.RedirectToAsyncInternalAsync(redirect).ConfigAwait();
-            }
-            else if (feature.ForbiddenPartial != null)
-            {
-                message ??= $"Missing Permission {permission}";
-                await html.RenderPartialAsync(feature.ForbiddenPartial, message).ConfigAwait();
-            }
-            else
-            {
-                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
-                await req.Response.WriteToResponse(req, error).ConfigAwait();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public static IHtmlContent ImportMap(this IHtmlHelper html, Dictionary<string, (string Dev, string Prod)> importMaps)
-    {
-        var map = new Dictionary<string, object>();
-        var imports = new Dictionary<string, object> { ["imports"] = map };
-        var isDev = HostContext.AppHost.IsDevelopmentEnvironment();
-        foreach (var importMap in importMaps)
-        {
-            map[importMap.Key] = isDev ? importMap.Value.Dev : importMap.Value.Prod;
-        }
-        var script = $"<script type=\"importmap\">\n{imports.ToJson().IndentJson()}\n</script>";
-        return html.Raw(script);
-    }
-}
-#endif
 
 
 #endif

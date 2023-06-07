@@ -185,7 +185,77 @@ namespace ServiceStack.NativeTypes.Dart
             nameof(StringsResponse),
             nameof(AuditBase),
         };
-        
+
+        public static HashSet<string> ReservedWords { get; set; } = new[]
+        {
+            "int",
+            "double",
+            "bool",
+            "abstract",
+            "else",
+            "import",
+            "show",
+            "as",
+            "enum",
+            "in",
+            "static",
+            "assert",
+            "export",
+            "interface",
+            "super",
+            "async",
+            "extends",
+            "is",
+            "switch",
+            "await",
+            "extension",
+            "late",
+            "sync",
+            "break",
+            "external",
+            "library",
+            "this",
+            "case",
+            "factory",
+            "mixin",
+            "throw",
+            "catch",
+            "false",
+            "new",
+            "true",
+            "class",
+            "final",
+            "null",
+            "try",
+            "const",
+            "finally",
+            "on",
+            "typedef",
+            "continue",
+            "for",
+            "operator",
+            "var",
+            "covariant",
+            "Function",
+            "part",
+            "void",
+            "default",
+            "get",
+            "required",
+            "while",
+            "deferred",
+            "hide",
+            "rethrow",
+            "with",
+            "do",
+            "if",
+            "return",
+            "yield",
+            "dynamic",
+            "implements",
+            "set",
+        }.ToSet();
+
         public static TypeFilterDelegate TypeFilter { get; set; }
 
         public static Func<DartGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
@@ -527,6 +597,21 @@ namespace ServiceStack.NativeTypes.Dart
                 var extend = baseClass != null
                     ? " extends " + baseClass
                     : "";
+
+                var verbInterface = options.Op?.Method switch
+                {
+                    HttpMethods.Get => nameof(IGet),
+                    HttpMethods.Post => nameof(IPost),
+                    HttpMethods.Put => nameof(IPut),
+                    HttpMethods.Patch => nameof(IPatch),
+                    HttpMethods.Delete => nameof(IDelete),
+                    HttpMethods.Options => nameof(IOptions),
+                    _ => null
+                };
+                if (verbInterface != null && !interfaces.Contains(verbInterface))
+                {
+                    interfaces.Add(verbInterface);
+                }
                 
                 if (interfaces.Count > 0)
                 {
@@ -616,7 +701,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.Append(typeNameWithoutGenericArgs + "({");
                             else
                                 sbBody.Append(",");
-                            sbBody.Append($"this.{GetPropertyName(prop)}");
+                            sbBody.Append($"this.{GetSafePropertyName(prop)}");
                             if (!string.IsNullOrEmpty(prop.Value))
                             {
                                 sbBody.Append("=" + prop.Value);
@@ -654,7 +739,7 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         var propType = GetPropertyType(prop);
                         var jsonName = prop.Name.PropertyStyle();
-                        var propName = GetPropertyName(prop);
+                        var propName = GetSafePropertyName(prop);
                         if (UseTypeConversion(prop))
                         {
                             bool registerType = true;
@@ -715,7 +800,7 @@ namespace ServiceStack.NativeTypes.Dart
                             }
     
                             var propType = GetPropertyType(prop);
-                            var propName = GetPropertyName(prop);
+                            var propName = GetSafePropertyName(prop);
                             var jsonName = propName.PropertyStyle();
                             if (UseTypeConversion(prop))
                             {
@@ -757,7 +842,7 @@ namespace ServiceStack.NativeTypes.Dart
                         {
                             if (sbGeneric.Length > 0)
                                 sbGeneric.Append(',');
-                            sbGeneric.Append("$").Append(arg.TrimStart('\''));
+                            sbGeneric.Append('$').Append(arg.TrimStart('\''));
                         }
                         var genericTypeName = type.Name.LeftPart('`') + '<' + StringBuilderCacheAlt.ReturnAndFree(sbGeneric) + '>';
                         sb.AppendLine($"getTypeName() => \"{genericTypeName}\";");
@@ -921,7 +1006,7 @@ namespace ServiceStack.NativeTypes.Dart
 
                     sb.Emit(prop, Lang.Dart);
                     PrePropertyFilter?.Invoke(sb, prop, type);
-                    sb.AppendLine($"{propType}? {GetPropertyName(prop)};");
+                    sb.AppendLine($"{propType}? {GetSafePropertyName(prop)};");
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
@@ -998,11 +1083,10 @@ namespace ServiceStack.NativeTypes.Dart
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
-            if (value.StartsWith("typeof("))
+            if (value.IsTypeValue())
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
-                return "typeof(" + typeNameOnly + ")";
+                return "typeof(" + value.ExtractTypeName() + ")";
             }
 
             return value;
@@ -1304,6 +1388,14 @@ namespace ServiceStack.NativeTypes.Dart
         public string GetPropertyName(string name) => name.SafeToken().PropertyStyle(); 
         public string GetPropertyName(MetadataPropertyType prop) => 
             prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
+
+        public string GetSafePropertyName(MetadataPropertyType prop)
+        {
+            var propName = GetPropertyName(prop);
+            if (ReservedWords.Contains(propName))
+                return char.ToUpper(propName[0]) + propName.Substring(1);
+            return propName;
+        }
     }
     
     public static class DartGeneratorExtensions

@@ -28,14 +28,15 @@ namespace ServiceStack.Host.Handlers
 
             AssertOperationExists(operationName, requestType);
 
-            using (Profiler.Current.Step("Deserialize Request"))
-            {
-                var requestDto = GetCustomRequestFromBinder(req, requestType)
-                    ?? (await DeserializeHttpRequestAsync(requestType, req, HandlerContentType).ConfigAwait()
-                    ?? requestType.CreateInstance());
+            using var step = Profiler.Current.Step("Deserialize Request");
+            var requestDto = GetCustomRequestFromBinder(req, requestType)
+                 ?? (await DeserializeHttpRequestAsync(requestType, req, HandlerContentType).ConfigAwaitNetCore()
+                     ?? requestType.CreateInstance());
 
-                return await appHost.ApplyRequestConvertersAsync(req, requestDto).ConfigAwait();
-            }
+            HostContext.AppHost.OnAfterAwait(req);
+            var ret = await appHost.ApplyRequestConvertersAsync(req, requestDto).ConfigAwaitNetCore();
+            HostContext.AppHost.OnAfterAwait(req);
+            return ret;
         }
 
         public override bool RunAsAsync() => true;
@@ -52,18 +53,22 @@ namespace ServiceStack.Host.Handlers
                 httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 
                 var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
 
-                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
+                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
                 if (httpRes.IsClosed)
                     return;
 
                 httpReq.RequestAttributes |= HandlerAttributes;
 
                 var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
                 if (httpRes.IsClosed)
                     return;
 
-                await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwait();
+                await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
             }
             //sync with RestHandler
             catch (TaskCanceledException)
@@ -79,8 +84,8 @@ namespace ServiceStack.Host.Handlers
                 }
                 else
                 {
-                    await HandleException(httpReq, httpRes, operationName, 
-                        await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception ?? ex).ConfigAwait();
+                    var useEx = await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception ?? ex;
+                    await HandleException(httpReq, httpRes, operationName, useEx).ConfigAwait();
                 }
             }
         }

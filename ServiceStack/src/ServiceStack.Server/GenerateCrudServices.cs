@@ -97,6 +97,9 @@ namespace ServiceStack
         
         public Action<GenerateMissingServicesContext> GenerateMissingServicesFilter { get; set; }
 
+        /// <summary>
+        /// Filter to modify the `TableSchema` used by AutoGen to generate data models
+        /// </summary>
         public Action<List<TableSchema>> TableSchemasFilter { get; set; }
 
         public static Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
@@ -413,23 +416,28 @@ namespace ServiceStack
             }
         }
 
-        private static readonly CustomAttributeBuilder CodegenAttrBuilder = new CustomAttributeBuilder(
+        private static readonly CustomAttributeBuilder CodegenAttrBuilder = new(
             typeof(System.CodeDom.Compiler.GeneratedCodeAttribute)
                 .GetConstructors().First(x => x.GetParameters().Length == 2),
+            
             new object[]{ "ServiceStack", Env.VersionString },
-            new PropertyInfo[0], TypeConstants.EmptyObjectArray);
+            Array.Empty<PropertyInfo>(), TypeConstants.EmptyObjectArray);
 
         private static readonly ConstructorInfo DataContractCtor = typeof(System.Runtime.Serialization.DataContractAttribute)
             .GetConstructor(Type.EmptyTypes);
         private static readonly ConstructorInfo DataMemberCtor = typeof(System.Runtime.Serialization.DataMemberAttribute)
             .GetConstructor(Type.EmptyTypes);
-        private static readonly CustomAttributeBuilder DefaultDataContractCtorBuilder = new CustomAttributeBuilder(
+        private static readonly CustomAttributeBuilder DefaultDataContractCtorBuilder = new(
             DataContractCtor,
             TypeConstants.EmptyObjectArray,
             Array.Empty<PropertyInfo>(), TypeConstants.EmptyObjectArray);
         private static readonly Attribute dataContractAttr = new DataContractAttribute();
         private static readonly Attribute dataMemberAttr = new DataMemberAttribute();
 
+        public static List<Type> AddInterfaceTypes { get; set; } = new()
+        {
+            typeof(IRuntimeSerializable)
+        };
 
         private static Type CreateOrGetType(ModuleBuilder dynModule, MetadataType metaType, 
             List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, 
@@ -455,7 +463,7 @@ namespace ServiceStack
                 baseType = baseType.MakeGenericType(argTypes.ToArray());
             }
 
-            var interfaceTypes = new List<Type>();
+            var interfaceTypes = new List<Type>(AddInterfaceTypes);
             var returnMarker = metaType.RequestType?.ReturnType;
             if (returnMarker != null && returnMarker.Name != "QueryResponse`1")
             {
@@ -988,13 +996,18 @@ namespace ServiceStack
                 }
             }
 
+            var log = LogManager.GetLogger(typeof(GenerateCrudServices));
+
             var typesToGenerateMap = new Dictionary<string, TableSchema>();
             var typesToGenerateSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var result in results)
             {
                 var keysCount = result.Columns?.Count(x => x.IsKey) ?? 0;
                 if (keysCount != 1) // Only support tables with 1 PK
+                {
+                    log.WarnFormat("Ignoring table '{0}' with multiple primary keys", result.Name);
                     continue;
+                }
                 
                 typesToGenerateMap[result.Name] = result;
                 typesToGenerateSet.Add(StringUtils.SnakeCaseToPascalCase(result.Name));

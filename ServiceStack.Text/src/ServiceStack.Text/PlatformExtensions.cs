@@ -642,8 +642,7 @@ namespace ServiceStack
             if (!type.IsGenericTypeDefinition)
                 throw new ArgumentException(type.FullName + " is not a Generic Type Definition");
 
-            if (argTypes == null)
-                argTypes = TypeConstants.EmptyTypeArray;
+            argTypes ??= TypeConstants.EmptyTypeArray;
 
             var sb = StringBuilderThreadStatic.Allocate()
                 .Append(type.FullName);

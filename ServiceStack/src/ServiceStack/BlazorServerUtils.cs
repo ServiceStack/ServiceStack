@@ -112,7 +112,12 @@ public static class BlazorServerUtils
 
     public static GatewayRequest ToGatewayRequest(this HostState hostState)
     {
-        var to = GatewayRequest.Create(new BasicHttpRequest());
+        var to = GatewayRequest.Create(new BasicHttpRequest
+        {
+            AbsoluteUri = hostState.AbsoluteUri,
+            RawUrl = hostState.AbsoluteUri,
+            PathInfo = "/",
+        });
         to.Items[Keywords.Session] = hostState.Session.FromAuthUserSession();
         foreach (var cookie in hostState.Cookies)
         {
@@ -134,7 +139,10 @@ public class BlazorServerClientFactory : IClientFactory
         Gateway = gateway;
     }
     public JsonApiClient GetClient() => HostState.ConfigureClient(Client);
-    public IServiceGateway GetGateway() => Gateway;
+    public IServiceGateway GetGateway()
+    {
+        return Gateway;
+    }
 }
 
 public interface IGatewayRequestFactory
@@ -166,11 +174,13 @@ public class HostState
     public AuthUserSession? Session { get; set; }
     public List<JsCookie> Cookies { get; protected set; } = new();
     public string? CookiesHeader { get; protected set; }
+    public string? AbsoluteUri { get; protected set; }
     public virtual void Load(InitialHostState? hostState)
     {
         if (hostState != null)
         {
             Session = hostState.Session;
+            AbsoluteUri = hostState.AbsoluteUri;
             Load(hostState.Cookies);
         }
     }

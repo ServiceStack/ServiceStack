@@ -17,9 +17,6 @@ namespace ServiceStack.Text.Common
         internal static bool IsWritingDynamic = false;
 
         [ThreadStatic]
-        internal static bool IsRuntimeType = false;
-
-        [ThreadStatic]
         internal static bool QueryStringMode = false;
 
         [ThreadStatic]
@@ -28,15 +25,15 @@ namespace ServiceStack.Text.Common
         [ThreadStatic]
         internal static bool IsCsv = false;
 
+        [ThreadStatic]
+        internal static Type DeclaringType;
 
         [ThreadStatic]
-        internal static HashSet<Type> InSerializerFns = new HashSet<Type>();
+        internal static HashSet<Type> InSerializerFns = new();
 
         internal static void RegisterSerializer<T>()
         {
-            if (InSerializerFns == null)
-                InSerializerFns = new HashSet<Type>();
-
+            InSerializerFns ??= new HashSet<Type>();
             InSerializerFns.Add(typeof(T));
         }
 

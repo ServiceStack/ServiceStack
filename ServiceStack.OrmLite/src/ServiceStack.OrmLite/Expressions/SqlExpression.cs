@@ -42,8 +42,10 @@ namespace ServiceStack.OrmLite
         public int? Offset { get; set; }
         public bool PrefixFieldWithTableName { get; set; }
         public bool UseSelectPropertiesAsAliases { get; set; }
+        public bool UseJoinTypeAsAliases { get; set; }
         public bool WhereStatementWithoutWhereString { get; set; }
         public ISet<string> Tags { get; } = new HashSet<string>();
+        public bool AllowEscapeWildcards { get; set; }= true;
 
         protected bool CustomSelect { get; set; }
         protected bool useFieldName = false;
@@ -647,6 +649,16 @@ namespace ServiceStack.OrmLite
         public virtual SqlExpression<T> Or(Expression<Func<T, bool>> predicate, params object[] filterParams) => 
             AppendToWhere("OR", predicate, filterParams);
 
+
+        public virtual SqlExpression<T> WhereExists(ISqlExpression subSelect)
+        {
+            return AppendToWhere("AND", FormatFilter($"EXISTS ({subSelect.ToSelectStatement()})"));
+        }
+        public virtual SqlExpression<T> WhereNotExists(ISqlExpression subSelect)
+        {
+            return AppendToWhere("AND", FormatFilter($"NOT EXISTS ({subSelect.ToSelectStatement()})"));
+        }
+        
         private LambdaExpression originalLambda;
 
         void Reset(string sep = " ", bool useFieldName = true)
@@ -2054,8 +2066,7 @@ namespace ServiceStack.OrmLite
             OnVisitMemberType(modelType);
 
             var tableDef = modelType.GetModelDefinition();
-
-            var tableAlias = GetTableAlias(m);
+            var tableAlias = GetTableAlias(m, tableDef);
             var columnName = tableAlias == null
                 ? GetQuotedColumnName(tableDef, m.Member.Name)
                 : GetQuotedColumnName(tableDef, tableAlias, m.Member.Name);
@@ -2066,7 +2077,7 @@ namespace ServiceStack.OrmLite
             return new PartialSqlString(columnName);
         }
 
-        protected virtual string GetTableAlias(MemberExpression m)
+        protected virtual string GetTableAlias(MemberExpression m, ModelDefinition tableDef)
         {
             if (originalLambda == null)
                 return null;
@@ -2087,6 +2098,11 @@ namespace ServiceStack.OrmLite
 
                 if (pe.Type == joinType && pe.Name == joinParamName)
                     return joinAlias.Alias;
+            }
+
+            if (UseJoinTypeAsAliases && joinAliases != null && joinAliases.TryGetValue(tableDef, out var tableOptions))
+            {
+                return tableOptions.Alias;
             }
 
             return null;
@@ -2979,11 +2995,19 @@ namespace ServiceStack.OrmLite
             if (!IsSqlClass(quotedColName))
                 quotedColName = ConvertToParam(quotedColName);
 
-            var statement = "";
+            string statement;
 
             var arg = args.Count > 0 ? args[0] : null;
-            var wildcardArg = arg != null ? DialectProvider.EscapeWildcards(arg.ToString()) : "";
-            var escapeSuffix = wildcardArg.IndexOf('^') >= 0 ? " escape '^'" : "";
+            string wildcardArg, escapeSuffix = string.Empty;
+            if (AllowEscapeWildcards)
+            {
+                wildcardArg = arg != null ? DialectProvider.EscapeWildcards(arg.ToString()) : string.Empty;
+                escapeSuffix = wildcardArg.IndexOf('^') >= 0 ? " escape '^'" : string.Empty;
+            }
+            else
+            {
+                wildcardArg = arg != null ? arg.ToString() : string.Empty;
+            }
             switch (m.Method.Name)
             {
                 case "Trim":

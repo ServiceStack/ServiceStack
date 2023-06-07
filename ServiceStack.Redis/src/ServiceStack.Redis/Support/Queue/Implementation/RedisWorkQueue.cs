@@ -1,45 +1,48 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Text;
 
+namespace ServiceStack.Redis.Support.Queue.Implementation;
 
-namespace ServiceStack.Redis.Support.Queue.Implementation
+/// <summary>
+/// distributed work item queue
+/// </summary>
+public class RedisWorkQueue<T>
 {
-    /// <summary>
-    /// distributed work item queue
-    /// </summary>
-    public class RedisWorkQueue<T>
+    protected readonly RedisNamespace queueNamespace;
+    protected string pendingWorkItemIdQueue;
+    protected string workQueue;
+    protected readonly PooledRedisClientManager clientManager;
+
+    public RedisWorkQueue(int maxReadPoolSize, int maxWritePoolSize, string host, int port)
+        : this(maxReadPoolSize, maxWritePoolSize, host, port, null) { }
+
+    public RedisWorkQueue(int maxReadPoolSize, int maxWritePoolSize, string host, int port, string queueName)
     {
-        protected readonly RedisNamespace queueNamespace;
-        protected string pendingWorkItemIdQueue;
-        protected string workQueue;
-        protected readonly PooledRedisClientManager clientManager;
+        var qname = queueName ?? typeof(T) + "_Shared_Work_Queue";
+        queueNamespace = new RedisNamespace(qname);
+        pendingWorkItemIdQueue = queueNamespace.GlobalCacheKey("PendingWorkItemIdQueue");
+        workQueue = queueNamespace.GlobalCacheKey("WorkQueue");
 
-        public RedisWorkQueue(int maxReadPoolSize, int maxWritePoolSize, string host, int port)
-            : this(maxReadPoolSize, maxWritePoolSize, host, port, null) { }
-
-        public RedisWorkQueue(int maxReadPoolSize, int maxWritePoolSize, string host, int port, string queueName)
+        var poolConfig = new RedisClientManagerConfig
         {
-            var qname = queueName ?? typeof(T) + "_Shared_Work_Queue";
-            queueNamespace = new RedisNamespace(qname);
-            pendingWorkItemIdQueue = queueNamespace.GlobalCacheKey("PendingWorkItemIdQueue");
-            workQueue = queueNamespace.GlobalCacheKey("WorkQueue");
+            MaxReadPoolSize = maxReadPoolSize,
+            MaxWritePoolSize = maxWritePoolSize
+        };
 
-            var poolConfig = new RedisClientManagerConfig
+        var masters = new[] { host + ":" + port };
+        clientManager = new PooledRedisClientManager(masters, 
+            TypeConstants.EmptyStringArray, 
+            poolConfig) 
+        {
+            RedisResolver = new RedisResolver(masters, TypeConstants.EmptyStringArray)
             {
-                MaxReadPoolSize = maxReadPoolSize,
-                MaxWritePoolSize = maxWritePoolSize
-            };
+                ClientFactory = config => new SerializingRedisClient(config)
+            }
+        };
+    }
 
-            clientManager = new PooledRedisClientManager(new[] { host + ":" + port }, 
-                TypeConstants.EmptyStringArray, 
-                poolConfig) {
-                RedisResolver = new RedisResolver { ClientFactory = config => new SerializingRedisClient(config) }
-            };
-        }
-
-        public void Dispose()
-        {
-            clientManager.Dispose();
-        }
+    public void Dispose()
+    {
+        clientManager.Dispose();
     }
 }

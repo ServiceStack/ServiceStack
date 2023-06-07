@@ -81,7 +81,7 @@ namespace ServiceStack.Auth
                 var httpParams = HttpUtils.HasRequestBody(httpRequest.Verb)
                     ? httpRequest.QueryString
                     : httpRequest.FormData;
-                Log.Error($"OAuth2 Error callback. {httpParams}");
+                Log.ErrorFormat($"OAuth2 Error callback. {0}", httpParams.Dump());
                 return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }
         

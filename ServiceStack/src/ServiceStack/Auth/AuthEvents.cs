@@ -88,7 +88,7 @@ namespace ServiceStack.Auth
         public virtual Task OnLogoutAsync(IRequest httpReq, IAuthSession session, IServiceBase authService, CancellationToken token = default) => TypeConstants.EmptyTask;
     }
 
-    public class MultiAuthEvents : IAuthEvents
+    public class MultiAuthEvents : IAuthEvents, IAuthEventsAsync
     {
         public MultiAuthEvents(IEnumerable<IAuthEvents> authEvents=null)
         {

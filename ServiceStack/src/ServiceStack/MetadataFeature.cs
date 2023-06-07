@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.HtmlModules;
 using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;
 using ServiceStack.Web;
@@ -91,8 +92,16 @@ namespace ServiceStack
 
         public void BeforePluginsLoaded(IAppHost appHost)
         {
-            appHost.ConfigurePlugin<UiFeature>(feature => 
-                feature.HtmlModules.Add(HtmlModule));
+            if (HtmlModule != null)
+            {
+                appHost.ConfigurePlugin<UiFeature>(feature =>
+                {
+                    feature.HtmlModules.Add(HtmlModule);
+                    HtmlModule.OnConfigure.Add((_, module) => {
+                        module.LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
+                    });
+                });
+            }
         }
 
         public void Register(IAppHost appHost)
@@ -244,6 +253,7 @@ namespace ServiceStack
             var config = appHost.Config;
             var response = new AppMetadata
             {
+                Date = DateTime.UtcNow,
                 App = config.AppInfo ?? new AppInfo(),
                 Ui = uiFeature?.Info,
                 Config = new ConfigInfo {
@@ -261,6 +271,7 @@ namespace ServiceStack
 
             response.App.BaseUrl ??= req.GetBaseUrl();
             response.App.ServiceName ??= appHost.ServiceName;
+            response.App.ApiVersion ??= config.ApiVersion;
             response.App.JsTextCase ??= $"{Text.JsConfig.TextCase}";
 
             if (uiFeature?.PreserveAttributesNamed != null && view is "locode" or "explorer" or "admin-ui")

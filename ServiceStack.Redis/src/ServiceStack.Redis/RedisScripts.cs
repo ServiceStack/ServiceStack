@@ -4,234 +4,232 @@ using System.Linq;
 using System.Collections.Generic;
 using ServiceStack.Script;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public class RedisSearchCursorResult
 {
-    public class RedisSearchCursorResult
-    {
-        public int Cursor { get; set; }
-        public List<RedisSearchResult> Results { get; set; }
-    }
+    public int Cursor { get; set; }
+    public List<RedisSearchResult> Results { get; set; }
+}
 
-    public class RedisSearchResult
-    {
-        public string Id { get; set; }
-        public string Type { get; set; }
-        public long Ttl { get; set; }
-        public long Size { get; set; }
-    }
+public class RedisSearchResult
+{
+    public string Id { get; set; }
+    public string Type { get; set; }
+    public long Ttl { get; set; }
+    public long Size { get; set; }
+}
 
-    [Obsolete("Use RedisScripts")]
-    public class TemplateRedisFilters : RedisScripts {}
+[Obsolete("Use RedisScripts")]
+public class TemplateRedisFilters : RedisScripts {}
     
-    public class RedisScripts : ScriptMethods
-    {
-        private const string RedisConnection = "__redisConnection";
+public class RedisScripts : ScriptMethods
+{
+    private const string RedisConnection = "__redisConnection";
         
-        private IRedisClientsManager redisManager;
-        public IRedisClientsManager RedisManager
-        {
-            get => redisManager ?? (redisManager = Context.Container.Resolve<IRedisClientsManager>());
-            set => redisManager = value;
-        }
+    private IRedisClientsManager redisManager;
+    public IRedisClientsManager RedisManager
+    {
+        get => redisManager ??= Context.Container.Resolve<IRedisClientsManager>();
+        set => redisManager = value;
+    }
 
-        T exec<T>(Func<IRedisClient, T> fn, ScriptScopeContext scope, object options)
+    T exec<T>(Func<IRedisClient, T> fn, ScriptScopeContext scope, object options)
+    {
+        try
         {
-            try
+            if ((options is Dictionary<string, object> obj && obj.TryGetValue("connectionString", out var oRedisConn))
+                || scope.PageResult.Args.TryGetValue(RedisConnection, out oRedisConn))
             {
-                if ((options is Dictionary<string, object> obj && obj.TryGetValue("connectionString", out var oRedisConn))
-                    || scope.PageResult.Args.TryGetValue(RedisConnection, out oRedisConn))
-                {
-                    using (var redis = new RedisClient((string)oRedisConn))
-                    {
-                        return fn(redis);
-                    }
-                }
+                using var redis = new RedisClient((string)oRedisConn);
+                return fn(redis);
+            }
                 
-                using (var redis = RedisManager.GetClient())
-                {
-                    return fn(redis);
-                }
-            }
-            catch (Exception ex)
+            using (var redis = RedisManager.GetClient())
             {
-                throw new StopFilterExecutionException(scope, options, ex);
+                return fn(redis);
             }
         }
-
-        public IgnoreResult useRedis(ScriptScopeContext scope, string redisConnection)
+        catch (Exception ex)
         {
-            if (redisConnection == null)
-                scope.PageResult.Args.Remove(RedisConnection);
-            else
-                scope.PageResult.Args[RedisConnection] = redisConnection;
-
-            return IgnoreResult.Value;
+            throw new StopFilterExecutionException(scope, options, ex);
         }
+    }
 
-        static readonly Dictionary<string, int> cmdArgCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
-            { "SET", 3 }
-        };
+    public IgnoreResult useRedis(ScriptScopeContext scope, string redisConnection)
+    {
+        if (redisConnection == null)
+            scope.PageResult.Args.Remove(RedisConnection);
+        else
+            scope.PageResult.Args[RedisConnection] = redisConnection;
 
-        List<string> parseCommandString(string cmd)
+        return IgnoreResult.Value;
+    }
+
+    static readonly Dictionary<string, int> cmdArgCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
+        { "SET", 3 }
+    };
+
+    List<string> parseCommandString(string cmd)
+    {
+        var args = new List<string>();
+        var lastPos = 0;
+        for (var i = 0; i < cmd.Length; i++)
         {
-            var args = new List<string>();
-            var lastPos = 0;
-            for (var i = 0; i < cmd.Length; i++)
+            var c = cmd[i];
+            if (c is '{' or '[')
             {
-                var c = cmd[i];
-                if (c == '{' || c == '[')
-                {
-                    break; //stop splitting args if value is complex type
-                }
-                if (c == ' ')
-                {
-                    var arg = cmd.Substring(lastPos, i - lastPos);
-                    args.Add(arg);
-                    lastPos = i + 1;
-
-                    //if we've reached the command args count, capture the rest of the body as the last arg
-                    if (cmdArgCounts.TryGetValue(args[0], out int argCount) && args.Count == argCount - 1)
-                        break;
-                }
+                break; //stop splitting args if value is complex type
             }
-            args.Add(cmd.Substring(lastPos));
-            return args;
-        }
+            if (c == ' ')
+            {
+                var arg = cmd.Substring(lastPos, i - lastPos);
+                args.Add(arg);
+                lastPos = i + 1;
 
-        object toObject(RedisText r)
+                //if we've reached the command args count, capture the rest of the body as the last arg
+                if (cmdArgCounts.TryGetValue(args[0], out int argCount) && args.Count == argCount - 1)
+                    break;
+            }
+        }
+        args.Add(cmd.Substring(lastPos));
+        return args;
+    }
+
+    object toObject(RedisText r)
+    {
+        if (r == null)
+            return null;
+
+        if (r.Children != null && r.Children.Count > 0)
         {
-            if (r == null)
+            var to = new List<object>();
+            for (var i = 0; i < r.Children.Count; i++)
+            {
+                var child = r.Children[i];
+                var value = child.Text ?? toObject(child);
+                to.Add(value);
+            }
+            return to;
+        }
+        return r.Text;
+    }
+
+    public object redisCall(ScriptScopeContext scope, object redisCommand) => redisCall(scope, redisCommand, null);
+    public object redisCall(ScriptScopeContext scope, object redisCommand, object options)
+    {
+        if (redisCommand == null)
+            return null;
+
+        List<string> args;
+        if (redisCommand is string cmd)
+        {
+            if (string.IsNullOrEmpty(cmd))
                 return null;
 
-            if (r.Children != null && r.Children.Count > 0)
+            args = parseCommandString(cmd);
+        }
+        else if (redisCommand is IEnumerable e && !(e is IDictionary))
+        {
+            args = new List<string>();
+            foreach (var arg in e)
             {
-                var to = new List<object>();
-                for (var i = 0; i < r.Children.Count; i++)
-                {
-                    var child = r.Children[i];
-                    var value = child.Text ?? toObject(child);
-                    to.Add(value);
-                }
-                return to;
+                if (arg == null) continue;
+                args.Add(arg.ToString());
             }
-            return r.Text;
+        }
+        else
+            throw new NotSupportedException($"redisCall expects a string or an object args but received a {redisCommand.GetType().Name} instead.");
+
+        var objParams = args.Select(x => (object)x).ToArray();
+        var redisText = exec(r => r.Custom(objParams), scope, options);
+        var result = toObject(redisText);
+        return result;
+    }
+
+    public List<RedisSearchResult> redisSearchKeys(ScriptScopeContext scope, string query) => redisSearchKeys(scope, query, null);
+    public List<RedisSearchResult> redisSearchKeys(ScriptScopeContext scope, string query, object options)
+    {
+        var json = redisSearchKeysAsJson(scope, query, options);
+        const string noResult = "{\"cursor\":0,\"results\":{}}";
+        if (json == noResult)
+            return new List<RedisSearchResult>();
+
+        var searchResults = json.FromJson<RedisSearchCursorResult>();
+        return searchResults.Results;
+    }
+
+    public Dictionary<string, string> redisInfo(ScriptScopeContext scope) => redisInfo(scope, null);
+    public Dictionary<string, string> redisInfo(ScriptScopeContext scope, object options) => exec(r => r.Info, scope, options);
+
+    public string redisConnectionString(ScriptScopeContext scope) => exec(r => $"{r.Host}:{r.Port}?db={r.Db}", scope, null);
+
+    public Dictionary<string, object> redisConnection(ScriptScopeContext scope) => exec(r => new Dictionary<string, object>
+    {
+        { "host", r.Host },
+        { "port", r.Port },
+        { "db", r.Db },
+    }, scope, null);
+
+    public string redisToConnectionString(ScriptScopeContext scope, object connectionInfo) => redisToConnectionString(scope, connectionInfo, null);
+    public string redisToConnectionString(ScriptScopeContext scope, object connectionInfo, object options)
+    {
+        var connectionString = connectionInfo as string;
+        if (connectionString != null)
+            return connectionString;
+
+        if (connectionInfo is IDictionary<string, object> d)
+        {
+            var host = (d.TryGetValue("host", out object h) ? h as string : null) ?? "localhost";
+            var port = d.TryGetValue("port", out object p) ? DynamicInt.Instance.ConvertFrom(p) : 6379;
+            var db = d.TryGetValue("db", out object oDb) ? DynamicInt.Instance.ConvertFrom(oDb) : 0;
+
+            connectionString = $"{host}:{port}?db={db}";
+
+            if (d.TryGetValue("password", out object password))
+                connectionString += "&password=" + password.ToString().UrlEncode();
         }
 
-        public object redisCall(ScriptScopeContext scope, object redisCommand) => redisCall(scope, redisCommand, null);
-        public object redisCall(ScriptScopeContext scope, object redisCommand, object options)
-        {
-            if (redisCommand == null)
-                return null;
+        return connectionString;
+    }
 
-            List<string> args;
-            if (redisCommand is string cmd)
+    public string redisChangeConnection(ScriptScopeContext scope, object newConnection) => redisChangeConnection(scope, newConnection, null);
+    public string redisChangeConnection(ScriptScopeContext scope, object newConnection, object options)
+    {
+        try
+        {
+            var connectionString = redisToConnectionString(scope, newConnection, options);
+            if (connectionString == null)
+                throw new NotSupportedException(nameof(redisChangeConnection) + " expects a String or an ObjectDictionary but received: " + (newConnection?.GetType().Name ?? "null"));
+
+            using (var testConnection = new RedisClient(connectionString))
             {
-                if (string.IsNullOrEmpty(cmd))
-                    return null;
-
-                args = parseCommandString(cmd);
+                testConnection.Ping();
             }
-            else if (redisCommand is IEnumerable e && !(e is IDictionary))
-            {
-                args = new List<string>();
-                foreach (var arg in e)
-                {
-                    if (arg == null) continue;
-                    args.Add(arg.ToString());
-                }
-            }
-            else
-                throw new NotSupportedException($"redisCall expects a string or an object args but received a {redisCommand.GetType().Name} instead.");
 
-            var objParams = args.Select(x => (object)x).ToArray();
-            var redisText = exec(r => r.Custom(objParams), scope, options);
-            var result = toObject(redisText);
-            return result;
-        }
-
-        public List<RedisSearchResult> redisSearchKeys(ScriptScopeContext scope, string query) => redisSearchKeys(scope, query, null);
-        public List<RedisSearchResult> redisSearchKeys(ScriptScopeContext scope, string query, object options)
-        {
-            var json = redisSearchKeysAsJson(scope, query, options);
-            const string noResult = "{\"cursor\":0,\"results\":{}}";
-            if (json == noResult)
-                return new List<RedisSearchResult>();
-
-            var searchResults = json.FromJson<RedisSearchCursorResult>();
-            return searchResults.Results;
-        }
-
-        public Dictionary<string, string> redisInfo(ScriptScopeContext scope) => redisInfo(scope, null);
-        public Dictionary<string, string> redisInfo(ScriptScopeContext scope, object options) => exec(r => r.Info, scope, options);
-
-        public string redisConnectionString(ScriptScopeContext scope) => exec(r => $"{r.Host}:{r.Port}?db={r.Db}", scope, null);
-
-        public Dictionary<string, object> redisConnection(ScriptScopeContext scope) => exec(r => new Dictionary<string, object>
-        {
-            { "host", r.Host },
-            { "port", r.Port },
-            { "db", r.Db },
-        }, scope, null);
-
-        public string redisToConnectionString(ScriptScopeContext scope, object connectionInfo) => redisToConnectionString(scope, connectionInfo, null);
-        public string redisToConnectionString(ScriptScopeContext scope, object connectionInfo, object options)
-        {
-            var connectionString = connectionInfo as string;
-            if (connectionString != null)
-                return connectionString;
-
-            if (connectionInfo is IDictionary<string, object> d)
-            {
-                var host = (d.TryGetValue("host", out object h) ? h as string : null) ?? "localhost";
-                var port = d.TryGetValue("port", out object p) ? DynamicInt.Instance.ConvertFrom(p) : 6379;
-                var db = d.TryGetValue("db", out object oDb) ? DynamicInt.Instance.ConvertFrom(oDb) : 0;
-
-                connectionString = $"{host}:{port}?db={db}";
-
-                if (d.TryGetValue("password", out object password))
-                    connectionString += "&password=" + password.ToString().UrlEncode();
-            }
+            ((IRedisFailover)RedisManager).FailoverTo(connectionString);
 
             return connectionString;
         }
-
-        public string redisChangeConnection(ScriptScopeContext scope, object newConnection) => redisChangeConnection(scope, newConnection, null);
-        public string redisChangeConnection(ScriptScopeContext scope, object newConnection, object options)
+        catch (Exception ex)
         {
-            try
-            {
-                var connectionString = redisToConnectionString(scope, newConnection, options);
-                if (connectionString == null)
-                    throw new NotSupportedException(nameof(redisChangeConnection) + " expects a String or an ObjectDictionary but received: " + (newConnection?.GetType().Name ?? "null"));
-
-                using (var testConnection = new RedisClient(connectionString))
-                {
-                    testConnection.Ping();
-                }
-
-                ((IRedisFailover)RedisManager).FailoverTo(connectionString);
-
-                return connectionString;
-            }
-            catch (Exception ex)
-            {
-                throw new StopFilterExecutionException(scope, options ?? newConnection as IDictionary<string,object>, ex);
-            }
+            throw new StopFilterExecutionException(scope, options ?? newConnection as IDictionary<string,object>, ex);
         }
+    }
 
-        public string redisSearchKeysAsJson(ScriptScopeContext scope, string query, object options)
+    public string redisSearchKeysAsJson(ScriptScopeContext scope, string query, object options)
+    {
+        if (string.IsNullOrEmpty(query))
+            return null;
+
+        try
         {
-            if (string.IsNullOrEmpty(query))
-                return null;
+            var args = scope.AssertOptions(nameof(redisSearchKeys), options);
+            var limit = args.TryGetValue("limit", out object value)
+                ? value.ConvertTo<int>()
+                : scope.GetValue("redis.search.limit") ?? 100;
 
-            try
-            {
-                var args = scope.AssertOptions(nameof(redisSearchKeys), options);
-                var limit = args.TryGetValue("limit", out object value)
-                    ? value.ConvertTo<int>()
-                    : scope.GetValue("redis.search.limit") ?? 100;
-
-                const string LuaScript = @"
+            const string LuaScript = @"
 local limit = tonumber(ARGV[2])
 local pattern = ARGV[1]
 local cursor = tonumber(ARGV[3])
@@ -273,15 +271,14 @@ end
 cursorAttrs['results'] = keyAttrs
 return cjson.encode(cursorAttrs)";
 
-                var json = exec(r => r.ExecCachedLua(LuaScript, sha1 =>
-                    r.ExecLuaShaAsString(sha1, query, limit.ToString(), "0")), scope, options);
+            var json = exec(r => r.ExecCachedLua(LuaScript, sha1 =>
+                r.ExecLuaShaAsString(sha1, query, limit.ToString(), "0")), scope, options);
 
-                return json;
-            }
-            catch (Exception ex)
-            {
-                throw new StopFilterExecutionException(scope, options, ex);
-            }
+            return json;
+        }
+        catch (Exception ex)
+        {
+            throw new StopFilterExecutionException(scope, options, ex);
         }
     }
 }

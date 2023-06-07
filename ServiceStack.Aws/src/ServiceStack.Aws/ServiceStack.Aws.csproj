@@ -21,7 +21,7 @@
     <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,10 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="3.7.101.1" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.100.29" />
-    <PackageReference Include="AWSSDK.S3" Version="3.7.101.29" />
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.100.29" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.107.2" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.103.17" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.104.28" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.102.16" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

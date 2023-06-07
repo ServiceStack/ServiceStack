@@ -9,8 +9,7 @@ internal delegate IMessage MessageFactoryDelegate(object body);
 
 public static class MessageFactory
 {
-    static readonly Dictionary<Type, MessageFactoryDelegate> CacheFn
-        = new Dictionary<Type, MessageFactoryDelegate>();
+    static readonly Dictionary<Type, MessageFactoryDelegate> CacheFn = new();
 
     public static IMessage Create(object response)
     {
@@ -38,6 +37,7 @@ public static class MessageFactory
     }
 }
 
+[Serializable]
 public class Message : IMessage
 {
     public Guid Id { get; set; }
@@ -90,5 +90,4 @@ public class Message<T>
     {
         return $"CreatedDate={this.CreatedDate}, Id={this.Id:N}, Type={typeof(T).Name}, Retry={this.RetryAttempts}";
     }
-
 }

@@ -41,20 +41,12 @@ docker-compose -f ~/nginx-proxy-compose.yml up -d
 
 This will run an nginx reverse proxy along with a companion container that will watch for additional containers in the same docker network and attempt to initialize them with valid TLS certificates.
 
-## GitHub Repository setup
-This template pushes the API server dockerized application to GitHub Container Repository. To do this, you will first need to [create a Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) specifically for use by `release.yml` GitHub Actions.
-
-This token will need to have access to `write:packages` to the GitHub Package Registry, which includes the GitHub Container Registry.
-
-The first time the `release.yml` process successfully runs and creates your GitHub Container Repository for your project, you then have the option to [upgrade the workflow to use GITHUB_TOKEN](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-ghcrio) replacing the `CR_PAT`. 
-
 ### GitHub Actions secrets
 
-The `release.yml` assumes 5 secrets have been set:
+The `release.yml` uses the following secrets.
 
 | Required Secrets | Description |
 | -- | -- |
-| `CR_PAT` | GitHub Personal Token with read/write access to packages |
 | `DEPLOY_API` | Hostname used to SSH deploy .NET App to, this can either be an IP address or subdomain with A record pointing to the server |
 | `DEPLOY_USERNAME` | Username to log in with via SSH e.g, **ubuntu**, **ec2-user**, **root** |
 | `DEPLOY_KEY` | SSH private key used to remotely access deploy .NET App |
@@ -69,7 +61,6 @@ To also enable deploying static assets to a CDN:
 These secrets can use the [GitHub CLI](https://cli.github.com/manual/gh_secret_set) for ease of creation. Eg, using the GitHub CLI the following can be set.
 
 ```bash
-gh secret set CR_PAT -b"<CR_PAT>"
 gh secret set DEPLOY_API -b"<DEPLOY_API>"
 gh secret set DEPLOY_USERNAME -b"<DEPLOY_USERNAME>"
 gh secret set DEPLOY_KEY < key.pem # DEPLOY_KEY

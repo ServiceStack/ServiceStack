@@ -26,6 +26,7 @@ public class AppUser : IUserAuth
     public string JobArea { get; set; }
     public string Location { get; set; }
     public int Salary { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
     public string About { get; set; }
     public bool IsArchived { get; set; }
     public DateTime? ArchivedDate { get; set; }

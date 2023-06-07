@@ -1,6 +1,7 @@
 using System;
 using ServiceStack.Web;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Text;
 
 namespace ServiceStack;
 
@@ -31,6 +32,7 @@ public static class ApiHandlers
             throw new ArgumentException(apiPath + " must start with '/'");
         if (!apiPath.EndsWith("/{Request}"))
             throw new ArgumentException(apiPath + " must end with '/{Request}'");
+        var baseApiPath = apiPath.LastLeftPart('/'); 
         var useApiPath = apiPath.LastLeftPart('/') + '/';
         
         return req => {
@@ -38,10 +40,25 @@ public static class ApiHandlers
             if (req.HttpMethod == HttpMethods.Options) return null;
             
             var pathInfo = req.PathInfo;
-            if (pathInfo.StartsWith(useApiPath))
+            if (pathInfo == baseApiPath || pathInfo.StartsWith(useApiPath))
             {
                 // Add support for overriding content type with ext, e.g. .csv
-                var apiName = pathInfo.LastRightPart('/');
+                var apiName = pathInfo == baseApiPath ? "" : pathInfo.LastRightPart('/');
+                if (string.IsNullOrEmpty(apiName))
+                {
+                    var feature = HostContext.GetPlugin<PredefinedRoutesFeature>();
+                    if (feature?.ApiIndex != null)
+                    {
+                        var ret = feature.ApiIndex(req);
+                        return new CustomActionHandlerAsync(async (req, res) =>
+                        {
+                            res.ContentType = contentType;
+                            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
+                            await serializer(req, ret, req.Response.OutputStream).ConfigAwait();
+                        });
+                    }
+                }
+                
                 var useContentType = contentType;
                 var useRequestAttrs = requestAttributes;
                 var useFeature = feature;

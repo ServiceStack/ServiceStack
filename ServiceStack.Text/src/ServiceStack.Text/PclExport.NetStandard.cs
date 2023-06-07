@@ -54,47 +54,6 @@ namespace ServiceStack
             this.DirSep = Path.DirectorySeparatorChar;
         }
 
-        public override string ReadAllText(string filePath)
-        {
-            using var reader = File.OpenText(filePath);
-            return reader.ReadToEnd();
-        }
-
-        public override bool FileExists(string filePath)
-        {
-            return File.Exists(filePath);
-        }
-
-        public override bool DirectoryExists(string dirPath)
-        {
-            return Directory.Exists(dirPath);
-        }
-
-        public override void CreateDirectory(string dirPath)
-        {
-            Directory.CreateDirectory(dirPath);
-        }
-
-        public override string[] GetFileNames(string dirPath, string searchPattern = null)
-        {
-            if (!Directory.Exists(dirPath))
-                return TypeConstants.EmptyStringArray;
-
-            return searchPattern != null
-                ? Directory.GetFiles(dirPath, searchPattern)
-                : Directory.GetFiles(dirPath);
-        }
-
-        public override string[] GetDirectoryNames(string dirPath, string searchPattern = null)
-        {
-            if (!Directory.Exists(dirPath))
-                return TypeConstants.EmptyStringArray;
-
-            return searchPattern != null
-                ? Directory.GetDirectories(dirPath, searchPattern)
-                : Directory.GetDirectories(dirPath);
-        }
-
         public const string AppSettingsKey = "servicestack:license";
         public const string EnvironmentKey = "SERVICESTACK_LICENSE";
 
@@ -132,36 +91,6 @@ namespace ServiceStack
             return Provider;
         }
 
-        public override string GetEnvironmentVariable(string name) => Environment.GetEnvironmentVariable(name);
-
-        public override void WriteLine(string line) => Console.WriteLine(line);
-
-        public override void WriteLine(string format, params object[] args) => Console.WriteLine(format, args);
-
-        public override void AddCompression(WebRequest webReq)
-        {
-            try
-            {
-                var httpReq = (HttpWebRequest)webReq;
-                httpReq.Headers[HttpRequestHeader.AcceptEncoding] = "gzip,deflate";
-                httpReq.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            }
-            catch (Exception ex)
-            {
-                Tracer.Instance.WriteError(ex);
-            }
-        }
-
-        public override void AddHeader(WebRequest webReq, string name, string value)
-        {
-            webReq.Headers[name] = value;
-        }
-
-        public override Assembly[] GetAllAssemblies()
-        {
-            return AppDomain.CurrentDomain.GetAssemblies();
-        }
-
         public override string GetAssemblyCodeBase(Assembly assembly)
         {
             var dll = typeof(PclExport).Assembly;
@@ -179,17 +108,7 @@ namespace ServiceStack
             var assemblyUri = new Uri(codeBase);
             return assemblyUri.LocalPath;
         }
-
-        public override string GetAsciiString(byte[] bytes, int index, int count)
-        {
-            return System.Text.Encoding.ASCII.GetString(bytes, index, count);
-        }
-
-        public override byte[] GetAsciiBytes(string str)
-        {
-            return System.Text.Encoding.ASCII.GetBytes(str);
-        }
-
+        
         public override bool InSameAssembly(Type t1, Type t2)
         {
             return t1.Assembly == t2.Assembly;
@@ -250,96 +169,7 @@ namespace ServiceStack
 
             return result;
         }
-        public override void SetUserAgent(HttpWebRequest httpReq, string value)
-        {
-            try
-            {
-                httpReq.UserAgent = value;
-            }
-            catch (Exception e) // API may have been removed by Xamarin's Linker
-            {
-                Tracer.Instance.WriteError(e);
-            }
-        }
 
-        public override void SetContentLength(HttpWebRequest httpReq, long value)
-        {
-            try
-            {
-                httpReq.ContentLength = value;
-            }
-            catch (Exception e) // API may have been removed by Xamarin's Linker
-            {
-                Tracer.Instance.WriteError(e);
-            }
-        }
-
-        public override void SetAllowAutoRedirect(HttpWebRequest httpReq, bool value)
-        {
-            try
-            {
-                httpReq.AllowAutoRedirect = value;
-            }
-            catch (Exception e) // API may have been removed by Xamarin's Linker
-            {
-                Tracer.Instance.WriteError(e);
-            }
-        }
-
-        public override void SetKeepAlive(HttpWebRequest httpReq, bool value)
-        {
-            try
-            {
-                httpReq.KeepAlive = value;
-            }
-            catch (Exception e) // API may have been removed by Xamarin's Linker
-            {
-                Tracer.Instance.WriteError(e);
-            }
-        }
-
-        public override void InitHttpWebRequest(HttpWebRequest httpReq,
-            long? contentLength = null, bool allowAutoRedirect = true, bool keepAlive = true)
-        {
-            httpReq.UserAgent = Env.ServerUserAgent;
-            httpReq.AllowAutoRedirect = allowAutoRedirect;
-            httpReq.KeepAlive = keepAlive;
-
-            if (contentLength != null)
-            {
-                SetContentLength(httpReq, contentLength.Value);
-            }
-        }
-
-        public override void Config(HttpWebRequest req,
-            bool? allowAutoRedirect = null,
-            TimeSpan? timeout = null,
-            TimeSpan? readWriteTimeout = null,
-            string userAgent = null,
-            bool? preAuthenticate = null)
-        {
-            try
-            {
-                //req.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
-                if (allowAutoRedirect.HasValue) 
-                    req.AllowAutoRedirect = allowAutoRedirect.Value;
-
-                if (userAgent != null)
-                    req.UserAgent = userAgent;
-
-                if (readWriteTimeout.HasValue) req.ReadWriteTimeout = (int) readWriteTimeout.Value.TotalMilliseconds;
-                if (timeout.HasValue) req.Timeout = (int) timeout.Value.TotalMilliseconds;
-
-                if (preAuthenticate.HasValue)
-                    req.PreAuthenticate = preAuthenticate.Value;
-            }
-            catch (Exception ex)
-            {
-                Tracer.Instance.WriteError(ex);
-            }
-        }
-        
-        public override string GetStackTrace() => Environment.StackTrace;
 
         public static void InitForAot()
         {

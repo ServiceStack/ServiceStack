@@ -3,7 +3,7 @@ using ServiceStack;
 
 namespace MyApp.ServiceModel;
 
-[Tag("hello"), Tag("todos"), Tag("auth")]
+[Tag("hello"), Tag("auth")]
 [Route("/greet/{Name}")]
 public class Greet : IReturn<HelloResponse>
 {

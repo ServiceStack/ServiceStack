@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Runtime.Serialization;
+using NUnit.Framework;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.Text.Tests
@@ -13,6 +14,11 @@ namespace ServiceStack.Text.Tests
     [TestFixture]
     public class MessagingTests : TestBase
     {
+        public MessagingTests()
+        {
+            JsConfig.AllowRuntimeTypeInTypes.Add(typeof(Message).FullName);
+        }
+
         [Test]
         public void Can_serialize_IMessage_into_typed_Message()
         {

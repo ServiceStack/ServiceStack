@@ -3,7 +3,8 @@ namespace MyApp.ServiceModel;
 
 public class AppData
 {
-    public static AppData Instance { get; } = new();
-
-    public string[] Currencies => NumberCurrency.All;
+    public string[] Currencies { get; set; }
+    public List<string> AlphaValues { get; set; }
+    public Dictionary<string, string> AlphaDictionary { get; set; }
+    public List<KeyValuePair<string, string>> AlphaKeyValuePairs { get; set; }
 }

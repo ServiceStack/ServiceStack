@@ -849,7 +849,7 @@ namespace ServiceStack.Auth
         {
             AssertJwtPayloadIsValid(jwtPayload);
 
-            var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
+            var sessionId = jwtPayload.GetValue("jid", HostContext.AppHost.CreateSessionId);
             var session = SessionFeature.CreateNewSession(req, sessionId);
 
             session.AuthProvider = Name;

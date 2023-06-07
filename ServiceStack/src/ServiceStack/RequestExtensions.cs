@@ -321,7 +321,7 @@ namespace ServiceStack
                 if (validator != null)
                     await validator(userRepo, userAuth).ConfigAwait();
 
-                session = SessionFeature.CreateNewSession(request, SessionExtensions.CreateRandomSessionId());
+                session = SessionFeature.CreateNewSession(request, HostContext.AppHost.CreateSessionId());
                 await session.PopulateSessionAsync(userAuth, userRepo, token).ConfigAwait();
 
                 if (userRepo is IManageRolesAsync manageRoles && session.UserAuthId != null)
@@ -344,11 +344,13 @@ namespace ServiceStack
             return newId;
         }
 
+        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
         public static TimeSpan GetElapsed(this IRequest req)
         {
             var oLong = req.GetItem(Keywords.RequestDuration);
-            return oLong is long timestamp
-                ? TimeSpan.FromTicks(Stopwatch.GetTimestamp() - timestamp)
+            var currentTimestamp = Stopwatch.GetTimestamp();
+            return oLong is long startTimestamp
+                ? new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp))) 
                 : TimeSpan.Zero;
         }
 

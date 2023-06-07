@@ -31,7 +31,7 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
 
     /// <summary>
     /// Define custom html handlers, e.g:
-    /// &lt;!--shared:Brand,Input--&gt;
+    /// &lt;!--shared:custom-meta--&gt;
     /// &lt;!--file:/path/to/single.html--&gt; or /*file:/path/to/single.txt*/
     /// &lt;!--files:/dir/components/*.html--&gt; or /*files:/dir/*.css*/
     /// </summary>
@@ -39,6 +39,11 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     {
         new FileHandler("file"),
         new FilesHandler("files"),
+        new FilesHandler("module")
+        {
+            Header = FilesTransformer.ModuleHeader,
+            Footer = FilesTransformer.ModuleFooter,
+        },
         new FileHandler("vfs") { VirtualFilesResolver = ctx => HostContext.VirtualFiles },
         new FileHandler("vfs[]") { VirtualFilesResolver = ctx => HostContext.VirtualFileSources },
         new GatewayHandler("gateway"),
@@ -109,6 +114,10 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
             component.Feature = this;
             component.VirtualFiles ??= VirtualFiles;
             component.FileContentsResolver ??= FileContentsResolver;
+            foreach (var configure in component.OnConfigure)
+            {
+                configure(appHost, component);
+            }
             foreach (var configure in OnConfigure)
             {
                 configure(appHost, component);
@@ -178,7 +187,8 @@ public class HtmlModule
 
     public string IndexFile { get; set; } = "index.html";
     public List<string> PublicPaths { get; set; } = new() {
-        "/assets"
+        "/assets",
+        "/lib",
     };
 
     public List<string> DynamicPageQueryStrings { get; set; } = new();
@@ -192,6 +202,8 @@ public class HtmlModule
     /// File resolver to use to read file contents
     /// </summary>
     public Func<IVirtualFile, string>? FileContentsResolver { get; set; }
+    
+    public List<Action<IAppHost, HtmlModule>> OnConfigure { get; set; } = new();
 
     public HtmlModule(string dirPath, string? basePath=null)
     {
@@ -371,7 +383,15 @@ public class HtmlModule
                 {
                     var file = VirtualFiles.GetFile(DirPath + req.PathInfo.Substring(BasePath.Length));
                     return file != null
-                        ? new StaticFileHandler(file)
+                        ? new StaticFileHandler(file) {
+                            Filter = appHost.Config.DebugMode
+                                ? (request, response, file) => {
+                                    response.AddHeader(HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate");
+                                    response.AddHeader(HttpHeaders.Pragma, "no-cache");
+                                    response.AddHeader(HttpHeaders.Expires, "0");
+                                }
+                                : null
+                        }
                         : new NotFoundHttpHandler();
                 }
             }

@@ -1589,6 +1589,8 @@ namespace ServiceStack
         /// </summary>
         public virtual string GetBaseUrl(IRequest httpReq)
         {
+            if (httpReq is GatewayRequest gatewayRequest && gatewayRequest.OriginalRequest is not BasicHttpRequest)
+                httpReq = gatewayRequest.OriginalRequest as IRequest ?? gatewayRequest;
             var useHttps = UseHttps(httpReq);
             var baseUrl = HostContext.Config.WebHostUrl;
             if (baseUrl != null)
@@ -1718,6 +1720,12 @@ namespace ServiceStack
         /// Override to intercept MQ Requests
         /// </summary>
         public virtual object ExecuteMessage(IMessage mqMessage) => ServiceController.ExecuteMessage(mqMessage, new BasicRequest(mqMessage));
+
+        /// <summary>
+        /// Override to intercept MQ Requests
+        /// </summary>
+        public virtual object ExecuteMessageInProcess(IMessage mqMessage) => ServiceController.ExecuteMessage(mqMessage, 
+            new BasicRequest(mqMessage, RequestAttributes.InProcess | RequestAttributes.MessageQueue));
 
         /// <summary>
         /// Override to intercept MQ Requests

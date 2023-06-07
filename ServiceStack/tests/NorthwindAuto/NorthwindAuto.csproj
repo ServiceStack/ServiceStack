@@ -23,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="admin-ui\assets" />
-    <Folder Include="wwwroot\mjs" />
+    <Folder Include="requestlogs\" />
   </ItemGroup>
 
 </Project>

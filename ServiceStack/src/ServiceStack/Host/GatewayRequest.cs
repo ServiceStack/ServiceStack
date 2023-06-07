@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host;
 
-public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest
+public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, ICloneable
 {
     public GatewayRequest() : this(null) {}
 
@@ -16,7 +16,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest
             RequestAttributes.None | RequestAttributes.LocalSubnet | RequestAttributes.Http)
         : base(requestDto, requestAttributes)
     {
-        Response = new BasicHttpResponse(this);
+        Response = HttpResponse = new BasicHttpResponse(this);
     }
     
     public IHttpResponse HttpResponse { get; set; }
@@ -33,8 +33,8 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest
     public string? XRealIp { get; set; }
     public string? Accept { get; set; }
 
-    private object dto;
-    public override object Dto
+    private object? dto;
+    public override object? Dto
     {
         get => dto;
         set
@@ -48,40 +48,60 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest
         }
     }
 
-    public static GatewayRequest Create(IRequest hostReq)
+    public void Clear()
     {
-        if (hostReq is GatewayRequest gatewayRequest)
+        FormData.Clear();
+        QueryString.Clear();
+        Items.Clear();
+    }
+    
+    public static GatewayRequest Create(IRequest req)
+    {
+        if (req is GatewayRequest gatewayRequest)
             return gatewayRequest;
-        var httpReq = hostReq as IHttpRequest;
+        
+        var ret = FromRequest(req);
+        ret.SetInProcessRequest();
+        return ret;
+    }
+
+    static GatewayRequest FromRequest(IRequest req)
+    {
+        var httpReq = req as IHttpRequest;
         var ret = new GatewayRequest
         {
-            PathInfo = hostReq.PathInfo,
-            OriginalRequest = hostReq.OriginalRequest,
+            OriginalRequest = req,
+            Verb = req.Verb,
             QueryString = new(),
             FormData = new(),
-            Headers = hostReq.Headers.Clone(),
-            Cookies = new Dictionary<string, Cookie>(hostReq.Cookies),
-            Items = new(hostReq.Items),
-            RawUrl = hostReq.RawUrl,
-            Verb = hostReq.Verb,
-            UserAgent = hostReq.UserAgent,
-            RemoteIp = hostReq.RemoteIp,
-            UserHostAddress = hostReq.UserHostAddress,
-            AcceptTypes = hostReq.AcceptTypes,
+            Headers = req.Headers.Clone(),
+            Cookies = new Dictionary<string, Cookie>(req.Cookies),
+            Items = new(req.Items),
+            UserAgent = req.UserAgent,
+            RemoteIp = req.RemoteIp,
+            UserHostAddress = req.UserHostAddress,
+            AcceptTypes = req.AcceptTypes,
             IsSecureConnection = true,
-            HttpMethod = httpReq?.HttpMethod ?? hostReq.Verb,
+            HttpMethod = httpReq?.HttpMethod ?? req.Verb,
             XForwardedFor = httpReq?.XForwardedFor,
             XForwardedPort = httpReq?.XForwardedPort,
             XForwardedProtocol = httpReq?.XForwardedProtocol,
             XRealIp = httpReq?.XRealIp,
             Accept = httpReq?.Accept,
         };
-        ret.SetInProcessRequest();
+        ret.PathInfo = req.PathInfo ?? ret.PathInfo;
+        ret.AbsoluteUri = req.AbsoluteUri ?? ret.AbsoluteUri;
+        ret.RawUrl = req.RawUrl ?? ret.RawUrl;
         return ret;
     }
 
     // Need to create copy of Request DTO in InProc gateway otherwise client mutations can impact service impls
     public T Convert<T>(T value) => value.CreateCopy();
+
+    public object Clone()
+    {
+        return FromRequest(this.OriginalRequest as IHttpRequest ?? this);
+    }
 }
 
 public class GatewayResponse : BasicResponse, IHttpResponse

@@ -297,6 +297,8 @@ Files = (function () {
         return ext && web.indexOf(ext) >= 0;
     }
 
+    function toAppUrl(url) { return url }
+
     function filePathUri(path) {
         if (!path) return null
         let ext = getExt(path)

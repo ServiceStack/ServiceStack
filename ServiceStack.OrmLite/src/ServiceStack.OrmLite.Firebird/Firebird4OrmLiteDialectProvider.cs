@@ -185,7 +185,7 @@ namespace ServiceStack.OrmLite.Firebird
                 if (ShouldReturnOnInsert(modelDef, fieldDef))
                 {
                     if (sbReturningColumns.Length > 0)
-                        sbReturningColumns.Append(",");
+                        sbReturningColumns.Append(',');
                     sbReturningColumns.Append(GetQuotedColumnName(fieldDef.FieldName));
                 }
 
@@ -194,15 +194,15 @@ namespace ServiceStack.OrmLite.Firebird
                     continue;
 
                 if (sbColumnNames.Length > 0)
-                    sbColumnNames.Append(",");
+                    sbColumnNames.Append(',');
                 if (sbColumnValues.Length > 0)
-                    sbColumnValues.Append(",");
+                    sbColumnValues.Append(',');
 
                 try
                 {
                     sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
 
-                    // in FB4 only use 'next value for' if the fielddef has a sequence explicitly.
+                    // in FB4 only use 'next value for' if the FieldDef has a sequence explicitly.
                     if (fieldDef.AutoIncrement && !string.IsNullOrEmpty(fieldDef.Sequence))
                     {
                         EnsureAutoIncrementSequence(modelDef, fieldDef);

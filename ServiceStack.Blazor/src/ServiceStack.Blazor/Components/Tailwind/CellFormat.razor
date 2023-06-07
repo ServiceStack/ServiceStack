@@ -1,0 +1,14 @@
+﻿@if (Label != null)
+{
+    <span class="flex" title=@Title>
+        @if (Icon != null)
+        {
+            <Icon Image=@Icon Class="w-5 h-5 mr-1" />
+        }
+        @Label
+    </span>
+}
+else
+{
+    <PreviewFormat Format=@PropType?.Format Value=@Value />
+}

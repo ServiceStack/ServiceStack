@@ -1,9 +1,8 @@
-namespace ServiceStack.Metadata
+namespace ServiceStack.Metadata;
+
+internal enum XsdTypeNames
 {
-    internal enum XsdTypeNames
-    {
-        WcfTypes = 0,
-        ServiceTypes = 1,
-        WcfCollectionTypes = 2,
-    }
+    WcfTypes = 0,
+    ServiceTypes = 1,
+    WcfCollectionTypes = 2,
 }

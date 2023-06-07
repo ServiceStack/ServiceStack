@@ -13,18 +13,17 @@
 using ServiceStack.Model;
 using System;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public partial class RedisClient
 {
-    public partial class RedisClient
+    internal partial class RedisClientLists
+        : IHasNamed<IRedisListAsync>
     {
-        internal partial class RedisClientLists
-            : IHasNamed<IRedisListAsync>
+        IRedisListAsync IHasNamed<IRedisListAsync>.this[string listId]
         {
-            IRedisListAsync IHasNamed<IRedisListAsync>.this[string listId]
-            {
-                get => new RedisClientList(client, listId);
-                set => throw new NotSupportedException();
-            }
+            get => new RedisClientList(client, listId);
+            set => throw new NotSupportedException();
         }
     }
 }

@@ -177,6 +177,8 @@ namespace ServiceStack.OrmLite
 
         public Action<IDbConnection> OnOpenConnection { get; set; }
 
+        public List<string> ConnectionCommands { get; } = new();
+
         public string ParamString { get; set; } = "@";
 
         public INamingStrategy NamingStrategy { get; set; } = new OrmLiteDefaultNamingStrategy();
@@ -189,6 +191,8 @@ namespace ServiceStack.OrmLite
             get => paramNameFilter ?? OrmLiteConfig.ParamNameFilter;
             set => paramNameFilter = value;
         }
+        
+        public virtual bool SupportsSchema => true;
 
         public string DefaultValueFormat = " DEFAULT ({0})";
 
@@ -364,6 +368,8 @@ namespace ServiceStack.OrmLite
             return NamingStrategy.GetSchemaName(schema);
         }
 
+        public virtual string GetTableName(Type modelType) => GetTableName(modelType.GetModelDefinition());
+
         public virtual string GetTableName(ModelDefinition modelDef) => 
             GetTableName(modelDef.ModelName, modelDef.Schema, useStrategy:true);
 
@@ -387,6 +393,8 @@ namespace ServiceStack.OrmLite
                 : QuoteIfRequired(table);
         }
 
+        public virtual string GetQuotedTableName(Type modelType) => GetQuotedTableName(modelType.GetModelDefinition());
+        
         public virtual string GetQuotedTableName(ModelDefinition modelDef)
         {
             return GetQuotedTableName(modelDef.ModelName, modelDef.Schema);
@@ -569,6 +577,12 @@ namespace ServiceStack.OrmLite
         {
             if (dbConn is OrmLiteConnection ormLiteConn)
                 ormLiteConn.ConnectionId = Guid.NewGuid();
+            
+            foreach (var command in ConnectionCommands)
+            {
+                using var cmd = dbConn.CreateCommand();
+                cmd.ExecNonQuery(command);
+            }
             
             OnOpenConnection?.Invoke(dbConn);
         }

@@ -1,5 +1,14 @@
 module.exports = {
-  content: ['./ui/**/*.html', './admin-ui/**/*.html', './locode/**/*.html', './shared/**/*.html', './custom/**/*.html'],
+  darkMode: 'class',
+  content: [
+    './ui/**/*.{mjs,html}',
+    './admin-ui/**/*.{html,mjs}',
+    './locode/**/*.{html,mjs}', 
+    './shared/**/*.html', 
+    './custom/**/*.html',
+    './wwwroot/**/*.{html,mjs}',
+    '../../src/ServiceStack/js/servicestack-vue.mjs'
+  ],
   theme: {
     extend: {},
   },

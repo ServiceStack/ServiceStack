@@ -1,20 +1,19 @@
 using System;
 using System.Threading;
 
-namespace ServiceStack.Redis.Support.Locking
+namespace ServiceStack.Redis.Support.Locking;
+
+public class ReaderWriterLockingStrategy : ILockingStrategy
 {
-    public class ReaderWriterLockingStrategy : ILockingStrategy
+    private readonly ReaderWriterLockSlim lockObject = new();
+
+    public IDisposable ReadLock()
     {
-        private readonly ReaderWriterLockSlim lockObject = new ReaderWriterLockSlim();
+        return new ReadLock(lockObject);
+    }
 
-        public IDisposable ReadLock()
-        {
-            return new ReadLock(lockObject);
-        }
-
-        public IDisposable WriteLock()
-        {
-            return new WriteLock(lockObject);
-        }
+    public IDisposable WriteLock()
+    {
+        return new WriteLock(lockObject);
     }
 }

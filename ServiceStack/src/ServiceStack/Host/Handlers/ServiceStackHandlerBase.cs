@@ -77,34 +77,42 @@ namespace ServiceStack.Host.Handlers
                     taskResponse.Start();
                 }
 
-                await taskResponse.ConfigAwait();
+                await taskResponse.ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
                 var taskResult = taskResponse.GetResult();
 
                 if (taskResult is Task[] taskResults)
                 {
-                    var batchResponse = await HandleAsyncBatchResponse(taskResults).ConfigAwait();
-                    await HandleResponseNext(httpReq, httpRes, batchResponse).ConfigAwait();
+                    var batchResponse = await HandleAsyncBatchResponse(taskResults).ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(httpReq);
+                    await HandleResponseNext(httpReq, httpRes, batchResponse).ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(httpReq);
                     return;
                 }
 
                 if (taskResult is Task subTask)
                 {
-                    await subTask.ConfigAwait();
+                    await subTask.ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(httpReq);
                     taskResult = subTask.GetResult();
                 }
 
-                await HandleResponseNext(httpReq, httpRes, taskResult).ConfigAwait();
+                await HandleResponseNext(httpReq, httpRes, taskResult).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
             }
             else
             {
                 if (response is Task[] taskResults)
                 {
-                    var batchResponse = await HandleAsyncBatchResponse(taskResults).ConfigAwait();
-                    await HandleResponseNext(httpReq, httpRes, batchResponse).ConfigAwait();
+                    var batchResponse = await HandleAsyncBatchResponse(taskResults).ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(httpReq);
+                    await HandleResponseNext(httpReq, httpRes, batchResponse).ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(httpReq);
                     return;
                 }
 
-                await HandleResponseNext(httpReq, httpRes, response).ConfigAwait();
+                await HandleResponseNext(httpReq, httpRes, response).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(httpReq);
             }
         }
 
@@ -114,16 +122,18 @@ namespace ServiceStack.Host.Handlers
             var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
 
             UpdateResponseContentType(httpReq, response);
-            response = await appHost.ApplyResponseConvertersAsync(httpReq, response).ConfigAwait();
+            response = await appHost.ApplyResponseConvertersAsync(httpReq, response).ConfigAwaitNetCore();
+            HostContext.AppHost.OnAfterAwait(httpReq);
 
-            await appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response).ConfigAwait();
+            await appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response).ConfigAwaitNetCore();
+            HostContext.AppHost.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;
 
             if (httpReq.ResponseContentType.Contains("jsv") &&
                 !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
             {
-                await WriteDebugResponse(httpRes, response).ConfigAwait();
+                await WriteDebugResponse(httpRes, response);
                 return;
             }
 
@@ -133,7 +143,7 @@ namespace ServiceStack.Host.Handlers
                 return;
             }
 
-            await httpRes.WriteToResponse(httpReq, response).ConfigAwait();
+            await httpRes.WriteToResponse(httpReq, response);
         }
 
         private static async Task<object[]> HandleAsyncBatchResponse(Task[] taskResults)

@@ -21,13 +21,4 @@
       <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\assets\css\bootstrap.min.css" />
-      <_ContentIncludedByDefault Remove="wwwroot\assets\css\default.css" />
-      <_ContentIncludedByDefault Remove="wwwroot\assets\js\bootstrap.min.js" />
-      <_ContentIncludedByDefault Remove="wwwroot\assets\js\default.mjs" />
-      <_ContentIncludedByDefault Remove="wwwroot\assets\js\dtos.mjs" />
-      <_ContentIncludedByDefault Remove="wwwroot\assets\js\servicestack-client.min.mjs" />
-    </ItemGroup>
-
 </Project>

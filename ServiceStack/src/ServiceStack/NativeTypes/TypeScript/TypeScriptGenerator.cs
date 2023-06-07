@@ -685,11 +685,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
-            if (value.StartsWith("typeof("))
+            if (value.IsTypeValue())
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
-                return "typeof(" + typeNameOnly + ")";
+                return "typeof(" + value.ExtractTypeName() + ")";
             }
 
             return value;
@@ -824,7 +823,12 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return "{0}[]".Fmt(TypeAlias(arrParts[0]));
+            {
+                var numberOfDimensions = type.Count(c => c == '[');
+                var arrayDimensions = String.Concat(Enumerable.Range(0, numberOfDimensions).Select(_ => "[]"));
+                
+                return "{0}{1}".Fmt(TypeAlias(arrParts[0]), arrayDimensions);
+            }
 
             TypeAliases.TryGetValue(type, out var typeAlias);
 

@@ -88,10 +88,13 @@ namespace ServiceStack
             return null;
         }
 
-        public static bool IsOrHasGenericInterfaceTypeOf(this Type type, Type genericTypeDefinition)
+        public static bool IsOrHasGenericInterfaceTypeOf(this Type type, Type genericTypeDefinition) =>
+            type.IsOrHasGenericTypeOf(genericTypeDefinition);
+
+        public static bool IsOrHasGenericTypeOf(this Type type, Type genericTypeDefinition)
         {
-            return (type.GetTypeWithGenericTypeDefinitionOf(genericTypeDefinition) != null)
-                || (type == genericTypeDefinition);
+            return type.GetTypeWithGenericTypeDefinitionOf(genericTypeDefinition) != null
+                   || type == genericTypeDefinition;
         }
 
         public static Type GetTypeWithGenericTypeDefinitionOf(this Type type, Type genericTypeDefinition)
@@ -348,7 +351,7 @@ namespace ServiceStack
             return true;
         }
 
-        static Dictionary<Type, EmptyCtorDelegate> ConstructorMethods = new Dictionary<Type, EmptyCtorDelegate>();
+        static Dictionary<Type, EmptyCtorDelegate> ConstructorMethods = new();
         public static EmptyCtorDelegate GetConstructorMethod(Type type)
         {
             if (ConstructorMethods.TryGetValue(type, out var emptyCtorFn)) 
@@ -360,16 +363,16 @@ namespace ServiceStack
             do
             {
                 snapshot = ConstructorMethods;
-                newCache = new Dictionary<Type, EmptyCtorDelegate>(ConstructorMethods);
-                newCache[type] = emptyCtorFn;
-
+                newCache = new Dictionary<Type, EmptyCtorDelegate>(ConstructorMethods) {
+                    [type] = emptyCtorFn
+                };
             } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref ConstructorMethods, newCache, snapshot), snapshot));
+                         Interlocked.CompareExchange(ref ConstructorMethods, newCache, snapshot), snapshot));
 
             return emptyCtorFn;
         }
 
-        static Dictionary<string, EmptyCtorDelegate> TypeNamesMap = new Dictionary<string, EmptyCtorDelegate>();
+        static Dictionary<string, EmptyCtorDelegate> TypeNamesMap = new();
         public static EmptyCtorDelegate GetConstructorMethod(string typeName)
         {
             if (TypeNamesMap.TryGetValue(typeName, out var emptyCtorFn)) 

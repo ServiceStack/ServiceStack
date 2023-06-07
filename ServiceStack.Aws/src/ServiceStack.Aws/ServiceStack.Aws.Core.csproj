@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.Core.csproj" />
-    <PackageReference Include="AWSSDK.Core" Version="3.7.101.1" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.107.2" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.0.94" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.4" />
     <PackageReference Include="AWSSDK.SQS" Version="3.7.1.36" />

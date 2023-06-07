@@ -11,6 +11,7 @@ namespace ServiceStack.Aws.Sqs
         int DefaultReceiveWaitTime { get; set; }
         int DefaultVisibilityTimeout { get; set; }
         bool DisableBuffering { get; set; }
+        string AwsQueueOwnerAccountId { get; set; }
         ConcurrentDictionary<string, SqsQueueDefinition> QueueNameMap { get; }
         IAmazonSQS SqsClient { get; }
 

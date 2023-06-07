@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
@@ -51,6 +52,11 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         new SharedFolder("shared", "/modules/shared", ".html"),
         new SharedFolder("shared/js", "/modules/shared/js", ".js"),
         new SharedFolder("plugins", "/modules/shared/plugins", ".js"),
+        new SharedFolder("components", "/js/components", ".mjs")
+        {
+            Header = FilesTransformer.ModuleHeader,
+            Footer = FilesTransformer.ModuleFooter,
+        },
     };
 
     public HtmlModulesFeature Module { get; } = new HtmlModulesFeature {
@@ -151,6 +157,10 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         if (AdminHtmlModule != null && AdminUi != AdminUiFeature.None)
         {
             HtmlModules.Add(AdminHtmlModule);
+            AdminHtmlModule.OnConfigure.Add((_, module) => {
+                module.LineTransformers = FilesTransformer.HtmlModuleLineTransformers.ToList();
+            });
+            
             AddAdminLink(AdminUiFeature.None, DashboardLink);
             appHost.RegisterService(typeof(AdminDashboardService));
         }

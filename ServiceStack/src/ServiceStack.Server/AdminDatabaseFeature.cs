@@ -153,9 +153,15 @@ public class AdminDatabaseService : Service
 
         using var db = HostContext.AppHost.GetDbConnection(request.Db is null or "main" ? null : request.Db);
         var dialect = db.GetDialectProvider();
-
         var schema = request.Schema == "default" ? null : request.Schema;
-        var table = dialect.GetQuotedTableName(request.Table, schema);
+
+        var supportsMultiDb = !dialect.GetType().Name.StartsWith("Sqlite");
+        var table = dialect.SupportsSchema
+            ? dialect.GetQuotedTableName(request.Table, schema)
+            : supportsMultiDb //schema is db when !SupportsSchema 
+                ? dialect.GetQuotedName(schema) + "." + dialect.GetQuotedTableName(request.Table)
+                : dialect.GetQuotedTableName(request.Table);
+        
         var sb = StringBuilderCache.Allocate().AppendLine();
         var fields = request.Fields.IsEmpty()
             ? "*"

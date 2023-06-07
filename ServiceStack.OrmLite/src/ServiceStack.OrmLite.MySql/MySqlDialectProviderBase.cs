@@ -51,6 +51,8 @@ namespace ServiceStack.OrmLite.MySql
             };
         }
 
+        public override bool SupportsSchema => false;
+
         public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
         public static HashSet<string> ReservedWords = new HashSet<string>(new[]

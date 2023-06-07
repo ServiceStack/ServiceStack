@@ -404,7 +404,7 @@ namespace ServiceStack.NativeTypes.FSharp
         {
             var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
-            if (Config.InitializeCollections && prop.IsCollection())
+            if (Config.InitializeCollections && prop.IsCollection() && feature.ShouldInitializeCollection(type))
             {
                 return prop.IsArray()
                     ? "[||]" 
@@ -476,11 +476,10 @@ namespace ServiceStack.NativeTypes.FSharp
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
-            if (value.StartsWith("typeof("))
+            if (value.IsTypeValue())
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
-                return "typeof<" + typeNameOnly + ">";
+                return "typeof<" + value.ExtractTypeName() + ">";
             }
 
             return value;

@@ -109,9 +109,6 @@
 
     [Parameter] public EventCallback<Dictionary<string,object>> done { get; set; }
 
-    [Parameter]
-    public string? @class { get; set; }
-
     AdminCreateUser request = new() {
        Roles = new(),
        Permissions = new(),

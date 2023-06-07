@@ -27,6 +27,7 @@ using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Runtime.CompilerServices;
 #if NETFX
 using System.Web;
 #endif
@@ -43,7 +44,7 @@ namespace ServiceStack
         {
             foreach (var converter in RequestConvertersArray)
             {
-                requestDto = await converter(req, requestDto).ConfigAwait() ?? requestDto;
+                requestDto = await converter(req, requestDto).ConfigAwaitNetCore() ?? requestDto;
                 if (req.Response.IsClosed)
                     return requestDto;
             }
@@ -58,7 +59,7 @@ namespace ServiceStack
         {
             foreach (var converter in ResponseConvertersArray)
             {
-                responseDto = await converter(req, responseDto).ConfigAwait() ?? responseDto;
+                responseDto = await converter(req, responseDto).ConfigAwaitNetCore() ?? responseDto;
                 if (req.Response.IsClosed)
                     return responseDto;
             }
@@ -83,7 +84,7 @@ namespace ServiceStack
             
             foreach (var authProvider in AuthenticateService.AuthWithRequestProviders.Safe())
             {
-                await authProvider.PreAuthenticateAsync(httpReq, httpRes).ConfigAwait();
+                await authProvider.PreAuthenticateAsync(httpReq, httpRes).ConfigAwaitNetCore();
                 if (httpRes.IsClosed)
                     return;
             }
@@ -137,29 +138,29 @@ namespace ServiceStack
             if (res.IsClosed)
                 return;
 
-            using (Profiler.Current.Step("Executing Request Filters Async"))
+            using var step = Profiler.Current.Step("Executing Request Filters Async");
+            if (!req.IsMultiRequest())
             {
-                if (!req.IsMultiRequest())
-                {
-                    await ApplyRequestFiltersSingleAsync(req, res, requestDto).ConfigAwait();
-                    return;
-                }
-
-                var dtos = (IEnumerable)requestDto;
-                var i = 0;
-
-                foreach (var dto in dtos)
-                {
-                    req.Items[Keywords.AutoBatchIndex] = i;
-                    await ApplyRequestFiltersSingleAsync(req, res, dto).ConfigAwait();
-                    if (res.IsClosed)
-                        return;
-
-                    i++;
-                }
-
-                req.Items.Remove(Keywords.AutoBatchIndex);
+                await ApplyRequestFiltersSingleAsync(req, res, requestDto).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(req);
+                return;
             }
+
+            var dtos = (IEnumerable)requestDto;
+            var i = 0;
+
+            foreach (var dto in dtos)
+            {
+                req.Items[Keywords.AutoBatchIndex] = i;
+                await ApplyRequestFiltersSingleAsync(req, res, dto).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(req);
+                if (res.IsClosed)
+                    return;
+
+                i++;
+            }
+
+            req.Items.Remove(Keywords.AutoBatchIndex);
         }
 
         /// <summary>
@@ -175,9 +176,14 @@ namespace ServiceStack
                 var attribute = attributes[i];
                 Container.AutoWire(attribute);
                 if (attribute is IHasRequestFilter filterSync)
+                {
                     filterSync.RequestFilter(req, res, requestDto);
+                }
                 else if (attribute is IHasRequestFilterAsync filterAsync)
-                    await filterAsync.RequestFilterAsync(req, res, requestDto).ConfigAwait();
+                {
+                    await filterAsync.RequestFilterAsync(req, res, requestDto).ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(req);
+                }
 
                 Release(attribute);
                 if (res.IsClosed) 
@@ -207,7 +213,8 @@ namespace ServiceStack
             
             foreach (var requestFilter in GlobalRequestFiltersAsyncArray)
             {
-                await requestFilter(req, res, requestDto).ConfigAwait();
+                await requestFilter(req, res, requestDto).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(req);
                 if (res.IsClosed) 
                     return;
             }
@@ -217,11 +224,16 @@ namespace ServiceStack
             {
                 var attribute = attributes[i];
                 Container.AutoWire(attribute);
-                
+
                 if (attribute is IHasRequestFilter filterSync)
+                {
                     filterSync.RequestFilter(req, res, requestDto);
+                }
                 else if (attribute is IHasRequestFilterAsync filterAsync)
-                    await filterAsync.RequestFilterAsync(req, res, requestDto).ConfigAwait();
+                {
+                    await filterAsync.RequestFilterAsync(req, res, requestDto).ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(req);
+                }
 
                 Release(attribute);
                 if (res.IsClosed) 
@@ -249,30 +261,30 @@ namespace ServiceStack
             if (res.IsClosed)
                 return;
 
-            using (Profiler.Current.Step("Executing Request Filters Async"))
+            using var step = Profiler.Current.Step("Executing Request Filters Async");
+            var batchResponse = req.IsMultiRequest() ? response as IEnumerable : null;
+            if (batchResponse == null)
             {
-                var batchResponse = req.IsMultiRequest() ? response as IEnumerable : null;
-                if (batchResponse == null)
-                {
-                    await ApplyResponseFiltersSingleAsync(req, res, response).ConfigAwait();
-                    return;
-                }
-
-                var i = 0;
-
-                foreach (var dto in batchResponse)
-                {
-                    req.Items[Keywords.AutoBatchIndex] = i;
-
-                    await ApplyResponseFiltersSingleAsync(req, res, dto).ConfigAwait();
-                    if (res.IsClosed)
-                        return;
-
-                    i++;
-                }
-
-                req.Items.Remove(Keywords.AutoBatchIndex);
+                await ApplyResponseFiltersSingleAsync(req, res, response).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(req);
+                return;
             }
+
+            var i = 0;
+
+            foreach (var dto in batchResponse)
+            {
+                req.Items[Keywords.AutoBatchIndex] = i;
+
+                await ApplyResponseFiltersSingleAsync(req, res, dto).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(req);
+                if (res.IsClosed)
+                    return;
+
+                i++;
+            }
+
+            req.Items.Remove(Keywords.AutoBatchIndex);
         }
 
         /// <summary>
@@ -292,11 +304,16 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    
+
                     if (attribute is IHasResponseFilter filterSync)
+                    {
                         filterSync.ResponseFilter(req, res, response);
+                    }
                     else if (attribute is IHasResponseFilterAsync filterAsync)
-                        await filterAsync.ResponseFilterAsync(req, res, response).ConfigAwait();
+                    {
+                        await filterAsync.ResponseFilterAsync(req, res, response).ConfigAwaitNetCore();
+                        HostContext.AppHost.OnAfterAwait(req);
+                    }
 
                     Release(attribute);
                     if (res.IsClosed) 
@@ -330,7 +347,8 @@ namespace ServiceStack
 
             foreach (var responseFilter in GlobalResponseFiltersAsyncArray)
             {
-                await responseFilter(req, res, response).ConfigAwait();
+                await responseFilter(req, res, response).ConfigAwaitNetCore();
+                HostContext.AppHost.OnAfterAwait(req);
                 if (res.IsClosed) 
                     return;
             }
@@ -342,11 +360,16 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    
+
                     if (attribute is IHasResponseFilter filterSync)
+                    {
                         filterSync.ResponseFilter(req, res, response);
+                    }
                     else if (attribute is IHasResponseFilterAsync filterAsync)
-                        await filterAsync.ResponseFilterAsync(req, res, response).ConfigAwait();
+                    {
+                        await filterAsync.ResponseFilterAsync(req, res, response).ConfigAwaitNetCore();
+                        HostContext.AppHost.OnAfterAwait(req);
+                    }
 
                     Release(attribute);
                     if (res.IsClosed) 
@@ -1045,9 +1068,10 @@ namespace ServiceStack
                 throw new ArgumentNullException(nameof(req));
 
             var factory = Container.TryResolve<IServiceGatewayFactory>();
-            return factory != null ? factory.GetServiceGateway(req) 
+            var ret = factory != null ? factory.GetServiceGateway(req) 
                 : Container.TryResolve<IServiceGateway>()
                 ?? new InProcessServiceGateway(GatewayRequest.Create(req));
+            return ret;
         }
 
         /// <summary>
@@ -1124,17 +1148,17 @@ namespace ServiceStack
         /// <summary>
         /// Override to intercept auto HTML Page Response
         /// </summary>
-        public virtual async Task WriteAutoHtmlResponseAsync(IRequest request, object response, string html, Stream outputStream)
+        public virtual async Task WriteAutoHtmlResponseAsync(IRequest req, object response, string html, Stream outputStream)
         {
             if (!Config.EnableAutoHtmlResponses)
             {
-                request.ResponseContentType = Config.DefaultContentType
+                req.ResponseContentType = Config.DefaultContentType
                     ?? Config.PreferredContentTypesArray[0];
 
-                if (request.ResponseContentType.MatchesContentType(MimeTypes.Html))
-                    request.ResponseContentType = Config.PreferredContentTypesArray.First(x => !x.MatchesContentType(MimeTypes.Html));
+                if (req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+                    req.ResponseContentType = Config.PreferredContentTypesArray.First(x => !x.MatchesContentType(MimeTypes.Html));
 
-                await request.Response.WriteToResponse(request, response).ConfigAwait();
+                await req.Response.WriteToResponse(req, response).ConfigAwait();
                 return;
             }
 
@@ -1321,10 +1345,29 @@ namespace ServiceStack
             return null;
         }
 
+        public virtual string CreateSessionId() => SessionExtensions.CreateRandomSessionId();
+
         public virtual bool HasUi() => HasPlugin<UiFeature>();
 
         public virtual bool ShouldProfileRequest(IRequest req) =>
-            Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestBefore);
+            Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestBefore)
+            && HasPlugin<ProfilingFeature>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual void OnAfterAwait(IRequest req,
+            [System.Runtime.CompilerServices.CallerFilePath] string file = "",
+            [System.Runtime.CompilerServices.CallerLineNumber] long line = 0,
+            [System.Runtime.CompilerServices.CallerMemberName] string member = "")
+        {
+#if NETFX
+            if (!Log.IsDebugEnabled) return;
+            if (HttpContext.Current == null && req is ServiceStack.Host.AspNet.AspNetRequest aspReq)
+            {
+                Log.DebugFormat("HttpContext.Current == null at {0} in {1}:line {2}",
+                    member, file, line);
+            }
+#endif
+        }
     }
 
 }

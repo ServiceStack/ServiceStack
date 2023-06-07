@@ -10,21 +10,20 @@
 // Licensed under the same terms of ServiceStack.
 //
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public class RedisResponseException
+	: RedisException
 {
-	public class RedisResponseException
-		: RedisException
+	public RedisResponseException(string message)
+		: base(message)
 	{
-		public RedisResponseException(string message)
-			: base(message)
-		{
-		}
-
-		public RedisResponseException(string message, string code) : base(message)
-		{
-			Code = code;
-		}
-
-		public string Code { get; private set; }
 	}
+
+	public RedisResponseException(string message, string code) : base(message)
+	{
+		Code = code;
+	}
+
+	public string Code { get; private set; }
 }

@@ -28,6 +28,8 @@ public partial class DynamicModalLookup : UiComponentBase
         StateHasChanged();
     }
 
+    public void CloseModal() => close();
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -44,7 +46,7 @@ public partial class DynamicModalLookup : UiComponentBase
 
     public async Task OpenAsync(RefInfo? refInfo, Func<object, Task> callback)
     {
-        BlazorUtils.Log($"OpenAsync {refInfo.Dump()}, Initialized: {ModalLookup != null}");
+        //BlazorUtils.Log($"OpenAsync {refInfo.Dump()}, Initialized: {ModalLookup != null}");
         ModalLookup?.Reset();
 
         Show = true;
@@ -67,16 +69,14 @@ public partial class DynamicModalLookup : UiComponentBase
         public Type RequestType { get; }
         public Type ComponentType { get; }
         public MetadataType MetadataType { get; }
-        public MetadataOperationType QueryApi { get; }
         public Apis Apis { get; }
         public AttributeBuilder RowSelectedBuilder { get; }
-        public Context(Type modelType, Type requestType, Type componentType, MetadataType metadataType, MetadataOperationType queryApi, Apis apis, AttributeBuilder rowSelectedBuilder)
+        public Context(Type modelType, Type requestType, Type componentType, MetadataType metadataType, Apis apis, AttributeBuilder rowSelectedBuilder)
         {
             ModelType = modelType;
             RequestType = requestType;
             ComponentType = componentType;
             MetadataType = metadataType;
-            QueryApi = queryApi;
             Apis = apis;
             RowSelectedBuilder = rowSelectedBuilder;
         }
@@ -99,24 +99,32 @@ public partial class DynamicModalLookup : UiComponentBase
             BlazorUtils.LogError($"Could not find Type {RefInfo!.Model}");
             return null;
         }
-        var queryOp = AppMetadata?.Api.Operations.FirstOrDefault(x => x.DataModel?.Name == RefInfo.Model && Crud.IsAutoQuery(x.Request));
-        if (queryOp == null)
-        {
-            BlazorUtils.LogError($"Could not find Api Type for {RefInfo!.Model}");
-            return null;
-        }
 
-        var requestType = queryOp.Request.Type ??= Apis.Find(queryOp.Request.Name);
+        var requestType = RefInfo.QueryType ?? 
+            (RefInfo.QueryApi != null
+                ? Apis.Find(RefInfo.QueryApi)
+                : null);
         if (requestType == null)
         {
-            BlazorUtils.LogError($"Could not find Query Api Type for {queryOp.Request.Name}");
-            return null;
+            var queryOp = AppMetadata?.Api.FindAutoQueryReturning(RefInfo.Model);
+            if (queryOp == null)
+            {
+                BlazorUtils.LogError($"Could not find Api Type for {RefInfo!.Model}");
+                return null;
+            }
+
+            requestType = queryOp.Request.Type ??= Apis.Find(queryOp.Request.Name);
+            if (requestType == null)
+            {
+                BlazorUtils.LogError($"Could not find Query Api Type for {queryOp.Request.Name}");
+                return null;
+            }
         }
 
         var genericDef = requestType.GetTypeWithGenericTypeDefinitionOfAny(typeof(QueryDb<>), typeof(QueryDb<,>));
         if (genericDef == null)
         {
-            BlazorUtils.LogError($"Could not find generic QueryDb<> Type for {requestType?.Name} from {queryOp.Request.Type} [{RefInfo.Model}]");
+            BlazorUtils.LogError($"Could not find generic QueryDb<> Type for {requestType?.Name} [{RefInfo.Model}]");
             return null;
         }
 
@@ -126,7 +134,7 @@ public partial class DynamicModalLookup : UiComponentBase
 
         var genericEventDef = typeof(EventCallbackBuilder<>).MakeGenericType(modelType);
         var rowSelectedBuilder = (AttributeBuilder)genericEventDef.GetConstructors().First().Invoke(new object[] { this.RowSelected });
-        return cache[cacheKey] = new Context(modelType, requestType, componentType, metadataType, queryOp, apis, rowSelectedBuilder);
+        return cache[cacheKey] = new Context(modelType, requestType, componentType, metadataType, apis, rowSelectedBuilder);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

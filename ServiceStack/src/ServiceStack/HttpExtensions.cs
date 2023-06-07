@@ -133,8 +133,10 @@ namespace ServiceStack
                 HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, httpRes.Dto, req.GetElapsed());
             }
 
-            if (!skipClose && !httpRes.IsClosed) 
+            if (!skipClose && !httpRes.IsClosed)
+            {
                 await httpRes.CloseAsync().ConfigAwait();
+            }
 
             HostContext.CompleteRequest(req);
         }

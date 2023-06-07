@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.NativeTypes;
 
 namespace ServiceStack
@@ -63,17 +65,18 @@ namespace ServiceStack
                     typeof(ValidateInclusiveBetweenAttribute),
                     typeof(ValidateExclusiveBetweenAttribute),
                     
-                    typeof(IconAttribute),
-                    typeof(InputAttribute),
-                    typeof(FieldAttribute),
-                    typeof(FieldCssAttribute),
-                    typeof(LocodeCssAttribute),
-                    typeof(ExplorerCssAttribute),
+                    //Already exported in 1st class attrs 
+                    //typeof(IconAttribute),
+                    //typeof(InputAttribute),
+                    //typeof(FieldAttribute),
+                    //typeof(FieldCssAttribute),
+                    //typeof(LocodeCssAttribute),
+                    //typeof(ExplorerCssAttribute),
 
-                    typeof(Intl),
-                    typeof(IntlNumber),
-                    typeof(IntlDateTime),
-                    typeof(IntlRelativeTime),
+                    // typeof(Intl),
+                    // typeof(IntlNumber),
+                    // typeof(IntlDateTime),
+                    // typeof(IntlRelativeTime),
 
                     //typeof(RefAttribute), in Ref
                     //typeof(FormatAttribute), // in Format
@@ -126,7 +129,12 @@ namespace ServiceStack
                 },
             };
         }
-        
+
+        public static bool AllCollectionProperties(MetadataType type) => true;
+
+        public static bool NonAutoQueryCollectionProperties(MetadataType type) => !(type.IsCrud() || type.IsAnyQueryData());
+
+        public Func<MetadataType, bool> ShouldInitializeCollection { get; set; } = NonAutoQueryCollectionProperties;
 
         public void ExportAttribute<T>(Func<Attribute, MetadataAttribute> converter) =>
             ExportAttribute(typeof(T), converter);

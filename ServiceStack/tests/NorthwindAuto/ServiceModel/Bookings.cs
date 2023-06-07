@@ -7,14 +7,13 @@ using ServiceStack.DataAnnotations;
 
 namespace MyApp.ServiceModel;
 
-[Icon(Svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='currentColor' fill-rule='evenodd' d='M8 4h8V2h2v2h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V2h2v2ZM5 8v12h14V8H5Zm2 3h2v2H7v-2Zm4 0h2v2h-2v-2Zm4 0h2v2h-2v-2Zm0 4h2v2h-2v-2Zm-4 0h2v2h-2v-2Zm-4 0h2v2H7v-2Z'/></svg>")]
+[Icon(Svg = Icons.Booking)]
 [Description("Booking Details")]
 [Notes("Captures a Persons Name & Room Booking information")]
 public class Booking : AuditBase
 {
     [AutoIncrement]
     public int Id { get; set; }
-
     public string Name { get; set; } = string.Empty;
     public RoomType RoomType { get; set; }
     public int RoomNumber { get; set; }
@@ -22,12 +21,19 @@ public class Booking : AuditBase
     public DateTime BookingStartDate { get; set; }
     [IntlRelativeTime]
     public DateTime? BookingEndDate { get; set; }
-    [IntlNumber(Currency = NumberCurrency.USD)]
+    //[IntlNumber(Currency = NumberCurrency.USD)]
+    [Format(FormatMethods.Currency, Options = "{ currency:modelValue.notes||'GBP' }")]
     public decimal Cost { get; set; }
+
+    [Ref(Model = nameof(Coupon), RefId = nameof(Coupon.Id), RefLabel = nameof(Coupon.Description))]
+    [References(typeof(Coupon))]
+    public string? CouponId { get; set; }
+
+    [Reference]
+    public Coupon Discount { get; set; }
+    [Format(FormatMethods.Hidden)]
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
-    [Computed, IntlRelativeTime]
-    public TimeSpan TimeAgo => DateTime.UtcNow - this.BookingStartDate;
 }
 
 public enum RoomType
@@ -39,7 +45,7 @@ public enum RoomType
     Suite,
 }
 
-[Tag("Bookings"), Description("Find Bookings")]
+[Tag("bookings"), Description("Find Bookings")]
 [Notes("Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/nhc4MZufkcM'>C# Bookings App from Scratch</a>")]
 [Route("/bookings", "GET")]
 [Route("/bookings/{Id}", "GET")]
@@ -54,7 +60,7 @@ public class QueryBookings : QueryDb<Booking>
 // [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), Template = SqlTemplate.IsNotNull)]
 // public class DeletedBookings : QueryDb<Booking> {}
 
-[Tag("Bookings"), Description("Create a new Booking")]
+[Tag("bookings"), Description("Create a new Booking")]
 [LocodeCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-8 gap-2", Form = "border overflow-hidden max-w-screen-lg")]
 [ExplorerCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-6 gap-8", Form = "border border-indigo-500 overflow-hidden max-w-screen-lg")]
 [Route("/bookings", "POST")]
@@ -69,64 +75,96 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     public int RoomNumber { get; set; }
     [ValidateGreaterThan(0)]
     public decimal Cost { get; set; }
+    [Required]
+    [Input(Type="date", Options="{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
     public DateTime BookingStartDate { get; set; }
-    [FieldCss(Label = "text-green-800", Input = "bg-green-100")]
+    [Input(Type="date", Options="{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
     public DateTime? BookingEndDate { get; set; }
-    [Input(Type = "textarea"), FieldCss(Field="col-span-12 text-center", Input = "bg-green-100")]
+    [Input(Type = "textarea")]
     public string? Notes { get; set; }
+    public string? CouponId { get; set; }
 }
 
-[Tag("Bookings"), Description("Update an existing Booking")]//, QueryStyles(Rows="col-span-12 sm:col-span-4")
-[LocodeCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-6 gap-8", Form = "border border-indigo-500 overflow-hidden max-w-screen-lg")]
-[ExplorerCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-8 gap-2", Form = "border overflow-hidden max-w-screen-lg")]
-[ValidateHasRole("Manager")]
-[AutoApply(Behavior.AuditModify)]
-[Field(nameof(BookingEndDate), LabelCss = "text-gray-800", InputCss = "bg-gray-100")]
-[Field(nameof(Notes), Type = "textarea", FieldCss="col-span-12 text-center", InputCss = "bg-gray-100")]
-#if true
+[Tag("bookings"), Description("Update an existing Booking")]
+[Notes("Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/nhc4MZufkcM'>C# Bookings App from Scratch</a>")]
 [Route("/booking/{Id}", "PATCH")]
+[ValidateHasRole("Employee")]
+[AutoApply(Behavior.AuditModify)]
 public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 {
     public int Id { get; set; }
-    [ValidateNotNull]
     public string? Name { get; set; }
     public RoomType? RoomType { get; set; }
     [ValidateGreaterThan(0)]
     public int? RoomNumber { get; set; }
-    [ValidateGreaterThan(0), AllowReset]
+    [ValidateGreaterThan(0)]
     public decimal? Cost { get; set; }
     public DateTime? BookingStartDate { get; set; }
     public DateTime? BookingEndDate { get; set; }
+    [Input(Type = "textarea")]
     public string? Notes { get; set; }
+    public string? CouponId { get; set; }
     public bool? Cancelled { get; set; }
 }
-#else
-[Route("/booking/{Id}", "PUT")]
-public class UpdateBooking : IUpdateDb<Booking>, IReturn<IdResponse>
-{
-    public int Id { get; set; }
-    [Description("Name this Booking is for"), ValidateNotEmpty]
-    public string Name { get; set; } = string.Empty;
-    public RoomType RoomType { get; set; }
-    [ValidateGreaterThan(0)]
-    public int RoomNumber { get; set; }
-    [ValidateGreaterThan(0)]
-    public decimal Cost { get; set; }
-    public DateTime BookingStartDate { get; set; }
-    public DateTime? BookingEndDate { get; set; }
-    public string? Notes { get; set; }
-    public bool? Cancelled { get; set; }
-}
-#endif
 
-[Field(nameof(CreatedBy), Type = "textarea", FieldCss="col-span-12 text-center", InputCss = "bg-gray-100")]
-public class UpdateBooking2 : AuditBase {}
-
-[Tag("Bookings"), Description("Delete a Booking")]
+[Tag("bookings"), Description("Delete a Booking")]
 [Route("/booking/{Id}", "DELETE")]
-[ValidateHasRole("Admin")]
+[ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
 {
     public int Id { get; set; }
+}
+
+
+[Description("Discount Coupons")]
+[Icon(Svg = Icons.Coupon)]
+public class Coupon
+{
+    public string Id { get; set; }
+    public string Description { get; set; }
+    public int Discount { get; set; }
+    public DateTime ExpiryDate { get; set; }
+}
+
+[Tag("bookings"), Description("Find Coupons")]
+[Route("/coupons", "GET")]
+public class QueryCoupons : QueryDb<Coupon>
+{
+    public string Id { get; set; }
+}
+
+[Tag("bookings")]
+[Route("/coupons", "POST")]
+[ValidateHasRole("Employee")]
+public class CreateCoupon : ICreateDb<Coupon>, IReturn<IdResponse>
+{
+    [ValidateNotEmpty]
+    public string Description { get; set; }
+    [ValidateGreaterThan(0)]
+    public int Discount { get; set; }
+    [ValidateNotNull]
+    public DateTime ExpiryDate { get; set; }
+}
+
+[Tag("bookings")]
+[Route("/coupons/{Id}", "PATCH")]
+[ValidateHasRole("Employee")]
+public class UpdateCoupon : IPatchDb<Coupon>, IReturn<IdResponse>
+{
+    public string Id { get; set; }
+    [ValidateNotEmpty]
+    public string? Description { get; set; }
+    [ValidateNotNull, ValidateGreaterThan(0)]
+    public int? Discount { get; set; }
+    [ValidateNotNull]
+    public DateTime? ExpiryDate { get; set; }
+}
+
+[Tag("bookings"), Description("Delete a Coupon")]
+[Route("/coupons/{Id}", "DELETE")]
+[ValidateHasRole("Manager")]
+public class DeleteCoupon : IDeleteDb<Coupon>, IReturnVoid
+{
+    public string Id { get; set; }
 }

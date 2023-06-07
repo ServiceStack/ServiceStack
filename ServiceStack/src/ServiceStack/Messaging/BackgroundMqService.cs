@@ -492,6 +492,7 @@ namespace ServiceStack.Messaging
 
         private long totalOutQMessagesAdded = 0;
         private long totalDlQMessagesAdded = 0;
+        public string[] QueueNames { get; }
         
         public BackgroundMqCollection(BackgroundMqClient mqClient, IMessageHandlerFactory handlerFactory, int threadCount, int outQMaxSize)
         {
@@ -505,6 +506,13 @@ namespace ServiceStack.Messaging
                 { QueueNames<T>.Priority, new BlockingCollection<IMessage>() },
                 { QueueNames<T>.Dlq, new BlockingCollection<IMessage>() },
                 { QueueNames<T>.Out, new BlockingCollection<IMessage>() },
+            };
+            QueueNames = new[]
+            {
+                QueueNames<T>.In,
+                QueueNames<T>.Priority,
+                QueueNames<T>.Dlq,
+                QueueNames<T>.Out,
             };
         }
 
@@ -640,7 +648,20 @@ namespace ServiceStack.Messaging
 
             return to;
         }
-        
+
+        public List<IMessage> GetQueueMessages(string queueName)
+        {
+            var to = new List<IMessage>();
+            if (queueMap.TryGetValue(queueName, out var mq))
+            {
+                foreach (var msg in mq)
+                {
+                    to.Add(msg);
+                }
+            }
+            return to;
+        }
+
         //Called when AppHost is disposing
         public void Dispose()
         {

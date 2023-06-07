@@ -74,7 +74,6 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public EventCallback<IdResponse> done { get; set; }
-    [Parameter] public string? @class { get; set; }
 
     // Hide Error Summary Messages for Visible Fields which displays contextual validation errors
     string[] VisibleFields => new[] {

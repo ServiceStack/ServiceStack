@@ -666,15 +666,16 @@ namespace ServiceStack.Text
             get => ReflectionExtensions.IgnoreAttributesNamed;
         }
 
-        public static HashSet<string> AllowRuntimeTypeWithAttributesNamed { get; set; }
+        public static HashSet<string> AllowRuntimeTypeWithAttributesNamed { get; set; } = new();
 
-        public static HashSet<string> AllowRuntimeTypeWithInterfacesNamed { get; set; }
+        public static HashSet<string> AllowRuntimeTypeWithInterfacesNamed { get; set; } = new();
 
-        public static HashSet<string> AllowRuntimeTypeInTypes { get; set; }
+        public static HashSet<string> AllowRuntimeTypeInTypes { get; set; } = new();
 
-        public static HashSet<string> AllowRuntimeTypeInTypesWithNamespaces { get; set; }
+        public static HashSet<string> AllowRuntimeTypeInTypesWithNamespaces { get; set; } = new();
 
         public static Func<Type, bool> AllowRuntimeType { get; set; }
+        public static bool AllowRuntimeInterfaces { get; set; }
 
         public static void Reset()
         {
@@ -700,10 +701,11 @@ namespace ServiceStack.Text
             __uniqueTypes = new HashSet<Type>();
 
             //Called when writing each string, too expensive to maintain as scoped config
-            
+            AllowRuntimeInterfaces = true;
             AllowRuntimeType = null;
             AllowRuntimeTypeWithAttributesNamed = new HashSet<string>
             {
+                nameof(SerializableAttribute),
                 nameof(DataContractAttribute),
                 nameof(RuntimeSerializableAttribute),
             };
@@ -712,18 +714,21 @@ namespace ServiceStack.Text
                 "IConvertible",
                 "ISerializable",
                 "IRuntimeSerializable",
-                "IMeta",
                 "IReturn`1",
                 "IReturnVoid",
+                "IVerb",
+                "ICrud",
+                "IMeta",
+                "IAuthTokens",
+                "IHasResponseStatus",
+                "IHasId`1",
             };
             AllowRuntimeTypeInTypesWithNamespaces = new HashSet<string>
             {
+                "ServiceStack.Auth",
                 "ServiceStack.Messaging",
             };
-            AllowRuntimeTypeInTypes = new HashSet<string>
-            {
-                "ServiceStack.RequestLogEntry"
-            };
+            AllowRuntimeTypeInTypes = new();
             PlatformExtensions.ClearRuntimeAttributes();
             ReflectionExtensions.Reset();
             JsState.Reset();
@@ -741,7 +746,7 @@ namespace ServiceStack.Text
             methodInfo.Invoke(null, null);
         }
 
-        internal static HashSet<Type> __uniqueTypes = new HashSet<Type>();
+        internal static HashSet<Type> __uniqueTypes = new();
         internal static int __uniqueTypesCount = 0;
 
         internal static void AddUniqueType(Type type)

@@ -18,6 +18,10 @@ namespace ServiceStack
 
             var httpResult = response as IHttpResult;
             var src = httpResult != null ? httpResult.Response : response;
+            if (httpResult != null)
+            {
+                res.StatusCode = (int)httpResult.StatusCode;
+            }
             if (src == null)
             {
                 var concreteResult = response as HttpResult;

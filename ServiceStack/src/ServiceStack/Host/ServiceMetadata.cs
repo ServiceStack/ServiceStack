@@ -58,16 +58,24 @@ namespace ServiceStack.Host
             var restrictTo = requestType.FirstAttribute<RestrictAttribute>()
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
 
-            var reqFilterAttrs = new[] { requestType, serviceType }
-                .SelectMany(x => x.AllAttributes().OfType<IRequestFilterBase>()).ToList();
-            var resFilterAttrs = (responseType != null ? new[] { responseType, serviceType } : new[] { serviceType })
-                .SelectMany(x => x.AllAttributes().OfType<IResponseFilterBase>()).ToList();
+            var reqAttrs = requestType.AllAttributes();
+            var svcAttrs = serviceType.AllAttributes();
+            var resAttrs = responseType?.AllAttributes();
+
+            var reqFilterAttrs = new[] { reqAttrs, svcAttrs }
+                .SelectMany(x => x.OfType<IRequestFilterBase>()).ToList();
+            var resFilterAttrs = (resAttrs != null ? new[] { resAttrs, svcAttrs } : new[] { svcAttrs })
+                .SelectMany(x => x.OfType<IResponseFilterBase>()).ToList();
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
             var actions = serviceType.GetRequestActions(requestType);
             var actionUpperNames = actions.Select(x => x.NameUpper).Distinct().ToList();
             authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
-            var tagAttrs = requestType.AllAttributes<TagAttribute>().ToList();
+            var tagNames = reqAttrs.OfType<TagAttribute>().Map(x => x.Name);
+            var description = reqAttrs.OfType<DescriptionAttribute>().FirstOrDefault()?.Description
+                ?? reqAttrs.OfType<System.ComponentModel.DescriptionAttribute>().FirstOrDefault()?.Description
+                ?? reqAttrs.OfType<ApiMemberAttribute>().FirstOrDefault()?.Description;
+            var notes = reqAttrs.OfType<NotesAttribute>()?.FirstOrDefault()?.Notes;
 
             var operation = new Operation
             {
@@ -88,7 +96,9 @@ namespace ServiceStack.Host
                 RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequestPropertyAttributes = requestType.GetPublicProperties().SelectMany(x => x.AllAttributes()).Map(x => x.GetType()).ToSet(),
-                Tags = tagAttrs,
+                Tags = tagNames,
+                Description = description,
+                Notes = notes,
                 LocodeCss = X.Map(requestType.FirstAttribute<LocodeCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
                 ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
             };
@@ -157,10 +167,10 @@ namespace ServiceStack.Host
         }
 
         public List<Operation> GetOperationsByTag(string tag) => 
-            Operations.Where(x => x.Tags.Any(t => t.Name == tag)).ToList();
+            Operations.Where(x => x.Tags.Any(t => t== tag)).ToList();
 
         public List<Operation> GetOperationsByTags(string[] tags) => 
-            Operations.Where(x => x.Tags.Any(t => Array.IndexOf(tags, t.Name) >= 0)).ToList();
+            Operations.Where(x => x.Tags.Any(t => Array.IndexOf(tags, t) >= 0)).ToList();
 
         public Operation? GetOperation(Type? requestType)
         {
@@ -239,11 +249,15 @@ namespace ServiceStack.Host
                 .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
-        public List<string> GetOperationNamesForMetadata(IRequest httpReq, Format format)
+        public List<string> GetOperationNamesForMetadata(Format format) => 
+            GetOperationNamesForMetadata(format.ToRequestAttribute());
+
+        public List<string> GetOperationNamesForMetadata(RequestAttributes reqAttrs)
         {
-            var formatRequestAttr = format.ToRequestAttribute();
+            var allowAttrs = reqAttrs.ToAllowedFlagsSet();
             return Operations
-                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) && x.RestrictTo.CanShowTo(formatRequestAttr) || x.RequestType.ForceInclude())
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) &&
+                            (x.RestrictTo == null || x.RestrictTo!.CanShowTo(allowAttrs) || x.RequestType.ForceInclude()))
                 .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
@@ -796,12 +810,13 @@ namespace ServiceStack.Host
         public List<string>? RequiresAnyRole { get; set; }
         public List<string>? RequiredPermissions { get; set; }
         public List<string>? RequiresAnyPermission { get; set; }
-        public List<TagAttribute>? Tags { get; set; }
+        public List<string>? Tags { get; set; }
+        public string? Description { get; set; }
+        public string? Notes { get; set; }
         public ApiCss? LocodeCss { get; set; } 
         public ApiCss? ExplorerCss { get; set; } 
         public List<InputInfo>? FormLayout { get; set; }
         public HashSet<Type>? RequestPropertyAttributes { get; set; }
-
         public List<ITypeValidator>? RequestTypeValidationRules { get; private set; }
         public List<IValidationRule>? RequestPropertyValidationRules { get; private set; }
 
@@ -824,6 +839,8 @@ namespace ServiceStack.Host
             RequestPropertyValidationRules = RequestPropertyValidationRules?.ToList(),
             RequestPropertyAttributes = RequestPropertyAttributes,
             Tags = Tags?.ToList(),
+            Description = Description,
+            Notes = Notes,
             LocodeCss = LocodeCss,
             ExplorerCss = ExplorerCss,
             FormLayout = FormLayout,
@@ -961,7 +978,7 @@ namespace ServiceStack.Host
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.Map(x => x.Path),
-                Tags = operation.Tags.Map(x => x.Name),
+                Tags = operation.Tags.Map(x => x),
             };
 
             if (operation.RestrictTo != null)

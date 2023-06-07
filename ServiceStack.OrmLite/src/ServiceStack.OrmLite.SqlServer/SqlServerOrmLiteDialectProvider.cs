@@ -627,7 +627,7 @@ namespace ServiceStack.OrmLite.SqlServer
             if (sql.Length < "SELECT".Length)
                 return sql;
 
-            return selectType + " TOP " + take + sql.Substring(selectType.Length);
+            return sql.Substring(0, sql.IndexOf(selectType)) + selectType + " TOP " + take + sql.Substring(sql.IndexOf(selectType) + selectType.Length);
         }
 
         //SELECT without RowNum and prefer aliases to be able to use in SELECT IN () Reference Queries
@@ -786,6 +786,12 @@ namespace ServiceStack.OrmLite.SqlServer
         {
             if (dbConn is OrmLiteConnection ormLiteConn && dbConn.ToDbConnection() is SqlConnection sqlConn)
                 ormLiteConn.ConnectionId = sqlConn.ClientConnectionId;
+            
+            foreach (var command in ConnectionCommands)
+            {
+                using var cmd = dbConn.CreateCommand();
+                cmd.ExecNonQuery(command);
+            }
             
             OnOpenConnection?.Invoke(dbConn);
         }

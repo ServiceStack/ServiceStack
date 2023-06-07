@@ -121,7 +121,7 @@ namespace ServiceStack.Text
 
         public static string VersionString { get; set; }
 
-        public static decimal ServiceStackVersion = 6.51m;
+        public static decimal ServiceStackVersion = 6.90m;
 
         public static bool IsLinux { get; set; }
 
@@ -321,22 +321,20 @@ namespace ServiceStack.Text
         /// Only .ConfigAwait(false) in .NET Core as loses HttpContext.Current in NETFX/ASP.NET
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConfiguredTaskAwaitable ConfigAwaitNetCore(this Task task) =>
 #if NETCORE
-            task.ConfigureAwait(false);
+        public static ConfiguredTaskAwaitable ConfigAwaitNetCore(this Task task) => task.ConfigureAwait(false);
 #else
-            task.ConfigureAwait(true);
+        public static Task ConfigAwaitNetCore(this Task task) => task;
 #endif
 
         /// <summary>
         /// Only .ConfigAwait(false) in .NET Core as loses HttpContext.Current in NETFX/ASP.NET
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConfiguredTaskAwaitable<T> ConfigAwaitNetCore<T>(this Task<T> task) =>
 #if NETCORE
-            task.ConfigureAwait(false);
+        public static ConfiguredTaskAwaitable<T> ConfigAwaitNetCore<T>(this Task<T> task) => task.ConfigureAwait(false);
 #else
-            task.ConfigureAwait(true);
+        public static Task<T> ConfigAwaitNetCore<T>(this Task<T> task) => task;
 #endif
 
 #if NETCORE

@@ -138,6 +138,7 @@ public static class HttpHeaders
     public const string Date = "Date";
     public const string Host = "Host";
     public const string UserAgent = "User-Agent";
+    public const string XAccelBuffering = "X-Accel-Buffering";
 
     public static HashSet<string> RestrictedHeaders = new(StringComparer.OrdinalIgnoreCase)
     {

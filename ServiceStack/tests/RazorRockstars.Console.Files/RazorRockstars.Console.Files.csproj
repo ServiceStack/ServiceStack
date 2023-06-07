@@ -367,7 +367,7 @@
     <PackageReference Include="EntityFramework" Version="6.3.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
-    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="SharpCompress" Version="0.29.0" />
     <PackageReference Include="Snappy.NET" Version="1.1.1.8" />
     <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.113.3" />
@@ -375,7 +375,7 @@
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.Encoding" Version="4.3.0" />

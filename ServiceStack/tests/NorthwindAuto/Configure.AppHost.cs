@@ -34,32 +34,48 @@ public class AppHost : AppHostBase
             DebugMode = true,
             AdminAuthSecret = "secret",
         });
+        
+        Plugins.Add(new CorsFeature(new[] {
+            "http://localhost:5173", //vite dev
+            "https://docs.servicestack.net"
+        }, allowCredentials:true));
 
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
-        var files = VirtualFiles.GetDirectory("custom").GetAllFiles();
-        files.Each(file => memFs.WriteFile($"locode/{file.Name}", file));
+
+        memFs.WriteFile("locode/custom.html", VirtualFiles.GetFile("custom/locode/custom.html"));
+        var files = VirtualFiles.GetDirectory("custom/locode/components").GetAllFiles();
+        files.Each(file => memFs.WriteFile($"locode/components/{file.Name}", file));
+        
         GlobalRequestFilters.Add((req, res, dto) => {
-            files.Each(file => memFs.WriteFile($"locode/{file.Name}", file));
+            memFs.WriteFile("locode/custom.html", VirtualFiles.GetFile("custom/locode/custom.html"));
+            files.Each(file => memFs.WriteFile($"locode/components/{file.Name}", file));
         });
 
         ConfigurePlugin<UiFeature>(feature => {
             Console.WriteLine(@"ConfigurePlugin<UiFeature>...");
-            feature.HtmlModules.Add(new("/modules/forms", "/forms"));
             
             feature.Module.Configure((appHost, module) =>
             {
                 module.VirtualFiles = appHost.VirtualFiles;
                 module.DirPath = module.DirPath.Replace("/modules", "");
             });
-            feature.Handlers.Cast<SharedFolder>().Each(x => 
-                x.SharedDir = x.SharedDir.Replace("/modules", ""));
+            feature.Handlers.Cast<SharedFolder>().Each(x => {
+                if (x.Header == FilesTransformer.ModuleHeader)
+                {
+                    x.SharedDir = "/wwwroot" + x.SharedDir;
+                }
+                else
+                {
+                    x.SharedDir = x.SharedDir.Replace("/modules", "");
+                }
+            });
         });
             
         // Not needed in `dotnet watch` and in /wwwroot/modules/ui which can use _framework/aspnetcore-browser-refresh.js"
         Plugins.AddIfDebug(new HotReloadFeature
         {
             VirtualFiles = VirtualFiles,
-            DefaultPattern = "*.html;*.js;*.css"
+            DefaultPattern = "*.html;*.js;*.mjs;*.css"
         });
         //Plugins.Add(new PostmanFeature());
 
@@ -88,6 +104,24 @@ public class AppHost : AppHostBase
             typeof(GetAccessToken)
         };
         Plugins.Add(new ServiceStack.Api.OpenApi.OpenApiFeature());
+
+        ScriptContext.Args[nameof(AppData)] = new AppData
+        {
+            AlphaValues = new() {
+                "Alpha", "Bravo", "Charlie"
+            },
+            AlphaDictionary = new() {
+                ["A"] = "Alpha",
+                ["B"] = "Bravo",
+                ["C"] = "Charlie",
+            },
+            AlphaKeyValuePairs = new()
+            {
+                new("A","Alpha"),
+                new("B","Bravo"),
+                new("C","Charlie"),
+            }, 
+        };
     }
 
     // public override string ResolveLocalizedString(string text, IRequest request = null) => 

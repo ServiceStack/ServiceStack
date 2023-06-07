@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Host;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.HtmlModules;
 
@@ -12,6 +14,8 @@ public class GatewayHandler : IHtmlModulesHandler
 {
     public string Name { get; }
     public GatewayHandler(string name) => Name = name;
+
+    public Func<IRequest, IServiceGateway> ServiceGatewayFactory { get; set; } = req => new InProcessServiceGateway(req);
 
     public ReadOnlyMemory<byte> Execute(HtmlModuleContext ctx, string args)
     {
@@ -43,7 +47,8 @@ public class GatewayHandler : IHtmlModulesHandler
             
             var requestDto = ctx.AppHost.Metadata.CreateRequestDto(requestType, dtoArgs);
             var responseType = ctx.AppHost.Metadata.GetResponseTypeByRequest(requestType);
-            var gateway = ctx.AppHost.GetServiceGateway(ctx.Request);
+            // Blazor Server returns Empty GatewayRequest without BaseUrl info
+            var gateway = ServiceGatewayFactory?.Invoke(ctx.Request) ?? ctx.AppHost.GetServiceGateway(ctx.Request);
 
             var jsconfig = (dtoArgs as Dictionary<string, object>)?.TryGetValue(Keywords.JsConfig, out var oJsconfig) == true
                 ? oJsconfig as string

@@ -1,8 +1,7 @@
 ﻿using System;
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public interface IRedisSentinel : IDisposable
 {
-    public interface IRedisSentinel : IDisposable
-    {
-        IRedisClientsManager Start();
-    }
+    IRedisClientsManager Start();
 }

@@ -21,6 +21,7 @@
 .max-w-sidebar { max-width: var(--sidebar-width); }
 .h-top-nav { height: calc(100vh - var(--sm-nav-height) - var(--top-nav-height)) }
 .h-sub-nav { height: calc(100vh - var(--sm-nav-height) - var(--top-nav-height) - var(--sub-nav-height)) }
+.pt-top-nav { padding-top: calc(var(--sm-nav-height) + var(--top-nav-height)) }
 .w-body { width: 100vw }
 @media (min-width: 768px) {
     .md\:w-sidebar { width: var(--sidebar-width) }

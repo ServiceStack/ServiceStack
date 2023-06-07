@@ -17,8 +17,11 @@ public class Booking : AuditBase
     public string Name { get; set; }
     public RoomType RoomType { get; set; }
     public int RoomNumber { get; set; }
+    [IntlDateTime(DateStyle.Long)]
     public DateTime BookingStartDate { get; set; }
+    [IntlRelativeTime]
     public DateTime? BookingEndDate { get; set; }
+    [IntlNumber(Currency = NumberCurrency.USD)]
     public decimal Cost { get; set; }
 
     [Ref(Model=nameof(Coupon), RefId=nameof(Coupon.Id), RefLabel=nameof(Coupon.Description))]

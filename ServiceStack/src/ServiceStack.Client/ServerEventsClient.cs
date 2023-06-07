@@ -216,6 +216,68 @@ namespace ServiceStack
             this.NamedReceivers = new ConcurrentDictionary<string, ServerEventCallback>();
         }
 
+#if NET6_0_OR_GREATER
+        public async Task<ServerEventsClient> StartAsync(CancellationToken token = default)
+        {
+            if (log.IsDebugEnabled)
+                log.DebugFormat("StartAsync()");
+
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+                throw new ObjectDisposedException(GetType().Name + " has been disposed");
+
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+                return this;
+
+            if (Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopped) == WorkerStatus.Stopped ||
+                Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopping) == WorkerStatus.Stopping)
+            {
+                Interlocked.Increment(ref timesStarted);
+
+                httpClient = new HttpClient(HttpClientHandlerFactory(ServiceClient), disposeHandler:true);
+                httpClient.Timeout = Timeout.InfiniteTimeSpan;
+                
+                var httpReq = new HttpRequestMessage(HttpMethod.Get, EventStreamUri)
+                    .With(c => c.Accept = MimeTypes.Json);
+
+                EventStreamRequestFilter?.Invoke(httpReq);
+                if (AllRequestFilters != null)
+                {
+                    AllRequestFilters(httpReq);
+                    if (ServiceClient is JsonApiClient apiClient)
+                        apiClient.RequestFilter = AllRequestFilters;
+                }
+
+                var httpRes = await httpClient.SendAsync(httpReq, HttpCompletionOption.ResponseHeadersRead, token).ConfigAwait();
+                httpRes.EnsureSuccessStatusCode();
+                var stream = await httpRes.Content.ReadAsStreamAsync(token).ConfigAwait();
+
+                buffer = new byte[BufferSize];
+                cancel = new CancellationTokenSource();
+
+                //maintain existing tcs so reconnecting is transparent
+                if (connectTcs == null || connectTcs.Task.IsCompleted)
+                    connectTcs = new TaskCompletionSource<ServerEventConnect>();
+                if (commandTcs == null || commandTcs.Task.IsCompleted)
+                    commandTcs = new TaskCompletionSource<ServerEventCommand>();
+                if (heartbeatTcs == null || heartbeatTcs.Task.IsCompleted)
+                    heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
+                if (messageTcs == null || messageTcs.Task.IsCompleted)
+                    messageTcs = new TaskCompletionSource<ServerEventMessage>();
+
+                LastPulseAt = DateTime.UtcNow;
+                if (log.IsDebugEnabled)
+                    log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
+
+                if (Interlocked.CompareExchange(ref status, WorkerStatus.Started, WorkerStatus.Starting) != WorkerStatus.Starting)
+                    return this;
+
+                ProcessResponse(stream);
+            }
+
+            return this;
+        }
+#endif
+        
         public ServerEventsClient Start()
         {
             if (log.IsDebugEnabled)
@@ -323,6 +385,16 @@ namespace ServiceStack
 
             return connectTcs.Task;
         }
+
+#if NET6_0_OR_GREATER
+        public Task<ServerEventConnect> ConnectAsync()
+        {
+            if (!HasClient())
+                _ = StartAsync();
+
+            return connectTcs.Task;
+        }
+#endif
 
         private TaskCompletionSource<ServerEventCommand> commandTcs;
         public Task<ServerEventCommand> WaitForNextCommand()
@@ -550,6 +622,23 @@ namespace ServiceStack
                     .ContinueWith(task =>
                     {
                         SleepBackOffMultiplier(Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0))
+#if NET6_0_OR_GREATER
+                            .ContinueWith(async t =>
+                            {
+                                await t.ObserveTaskExceptions();
+                                if (IsStopped)
+                                    return;
+                                try
+                                {
+                                    await StartAsync();
+                                    OnReconnect?.Invoke();
+                                }
+                                catch (Exception ex)
+                                {
+                                    OnExceptionReceived(ex);
+                                }
+                            });
+#else
                             .ContinueWith(t =>
                             {
                                 t.ObserveTaskExceptions();
@@ -565,6 +654,7 @@ namespace ServiceStack
                                     OnExceptionReceived(ex);
                                 }
                             });
+#endif
                     });
             }
             catch (Exception ex)
@@ -573,7 +663,7 @@ namespace ServiceStack
             }
         }
 
-        readonly Random rand = new Random(Environment.TickCount);
+        readonly Random rand = new(Environment.TickCount);
         private Task SleepBackOffMultiplier(int continuousErrorsCount)
         {
             if (continuousErrorsCount <= 1)
@@ -679,8 +769,7 @@ namespace ServiceStack
             if (line == null) 
                 return;
 
-            if (currentMsg == null)
-                currentMsg = new ServerEventMessage();
+            currentMsg ??= new ServerEventMessage();
 
             var label = line.LeftPart(':');
             var data = line.RightPart(':');

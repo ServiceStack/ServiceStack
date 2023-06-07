@@ -152,10 +152,10 @@ namespace ServiceStack
                 return HttpResult.Redirect(url);
             }
 
-            var id = SessionExtensions.CreateRandomSessionId();
+            var id = HostContext.AppHost.CreateSessionId();
             var ret = new PostmanCollection
             {
-                info = new PostmanCollectionInfo()
+                info = new PostmanCollectionInfo
                 {
                     version = "1",
                     name = HostContext.AppHost.ServiceName,

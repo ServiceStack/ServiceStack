@@ -23,6 +23,10 @@ public class AppHost : AppHostBase, IHostingStartup
             "http://localhost:5000",
             "https://localhost:5001",
             "https://localhost:7142",
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:8080",
+            "https://docs.servicestack.net",
             "https://" + Environment.GetEnvironmentVariable("DEPLOY_CDN")
         }, allowCredentials: true));
 
@@ -48,7 +52,27 @@ public class AppHost : AppHostBase, IHostingStartup
             EnableRequestBodyTracking = true,
         });
         Plugins.AddIfDebug(new ProfilingFeature());
-        ScriptContext.Args["AppData"] = AppData.Instance;
+
+
+        ScriptContext.Args[nameof(AppData)] = new AppData
+        {
+            Currencies = NumberCurrency.All,
+            AlphaValues = new() {
+                "Alpha", "Bravo", "Charlie"
+            },
+            AlphaDictionary = new()
+            {
+                ["A"] = "Alpha",
+                ["B"] = "Bravo",
+                ["C"] = "Charlie",
+            },
+            AlphaKeyValuePairs = new()
+            {
+                new("A","Alpha"),
+                new("B","Bravo"),
+                new("C","Charlie"),
+            },
+        };
     }
 
     public void Configure(IWebHostBuilder builder) => builder

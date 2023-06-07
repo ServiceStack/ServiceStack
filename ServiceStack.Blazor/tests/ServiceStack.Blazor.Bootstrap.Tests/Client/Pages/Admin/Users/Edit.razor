@@ -16,7 +16,10 @@
         <ErrorSummary Status=@getUserApi.Error Except=@VisibleFields />
         <ErrorSummary Status=@updateUserApi.Error Except=@VisibleFields />
         <ErrorSummary Status=@deleteUserApi.Error Except=@VisibleFields />
-        <AlertSuccess Message=@successMessage />
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <AlertSuccess Message=@successMessage />
+        }
     </div>
     <div class="row">
         <div class="col col-7 sm:px-1">
@@ -146,9 +149,6 @@
 
     [Parameter, EditorRequired]
     public string? Id { get; set; }
-
-    [Parameter]
-    public string? @class { get; set; }
 
     AdminUpdateUser request = new() {
        AddRoles = new(),

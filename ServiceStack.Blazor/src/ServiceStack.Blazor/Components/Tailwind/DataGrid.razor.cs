@@ -138,9 +138,28 @@ public partial class DataGrid<Model> : UiComponentBase
 
 
     readonly List<Column<Model>> columns = new();
-    public IEnumerable<Column<Model>> VisibleColumns => SelectedColumns?.Count > 0
-        ? columns.Where(c => SelectedColumns.Contains(c.Name))
-        : columns;
+    public IEnumerable<Column<Model>> VisibleColumns
+    {
+        get
+        {
+            var ret = SelectedColumns?.Count > 0
+                ? columns.Where(c => SelectedColumns.Contains(c.Name))
+                : columns;
+
+            var hiddenColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var col in columns)
+            {
+                if (col?.MetadataProperty?.Format?.Method == FormatMethods.Hidden)
+                    hiddenColumns.Add(col.Name);
+            }
+            if (hiddenColumns.Count > 0)
+            {
+                return ret.Where(x => !hiddenColumns.Contains(x.Name));
+            }
+
+            return ret;
+        }
+    }
 
     public List<Column<Model>> GetColumns() => columns;
 
@@ -166,6 +185,7 @@ public partial class DataGrid<Model> : UiComponentBase
                     {
                         DataGrid = this,
                         LocalStorage = LocalStorage,
+                        MetadataType = MetadataType,
                         PropertyAccessor = propAccessor,
                         MetadataProperty = propAccessor.PropertyInfo.ToMetadataPropertyType(),
                     });

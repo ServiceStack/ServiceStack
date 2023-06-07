@@ -142,15 +142,18 @@ namespace ServiceStack.IO
 #if NETCORE
             // Doesn't properly recursively delete nested dirs/files on .NET Core (win at least)
             if (Directory.Exists(realPath))
-                DeleteDirectoryRecursive(realPath);
+                DeleteDirectory(realPath);
 #else
             if (Directory.Exists(realPath))
                 Directory.Delete(realPath, recursive: true);
 #endif
         }
         
-        public static void DeleteDirectoryRecursive(string path)
+        public static void DeleteDirectory(string path)
         {
+            if (!Directory.Exists(path))
+                return;
+            
             //modified from https://stackoverflow.com/a/1703799/85785
             foreach (var directory in Directory.GetDirectories(path))
             {
@@ -160,7 +163,7 @@ namespace ServiceStack.IO
                     File.SetAttributes(file, FileAttributes.Normal);
                 }
 
-                DeleteDirectoryRecursive(directory);
+                DeleteDirectory(directory);
             }
 
             try
@@ -176,6 +179,31 @@ namespace ServiceStack.IO
                 Directory.Delete(path, true);
             }
         }
+        
+        public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+        {
+            if (string.Equals(source.FullName, target.FullName, StringComparison.CurrentCultureIgnoreCase))
+                return;
+
+            // Check if the target directory exists, if not, create it.
+            if (!Directory.Exists(target.FullName))
+            {
+                Directory.CreateDirectory(target.FullName);
+            }
+
+            // Copy each file into it's new directory.
+            foreach (var file in source.GetFiles())
+            {
+                file.CopyTo(Path.Combine(target.ToString(), file.Name), true);
+            }
+
+            // Copy each subdirectory using recursion.
+            foreach (var sourceSubDir in source.GetDirectories())
+            {
+                var nextTargetSubDir = target.CreateSubdirectory(sourceSubDir.Name);
+                CopyAll(sourceSubDir, nextTargetSubDir);
+            }
+        }        
 
         public static string AssertDirectory(string dirPath, int timeoutMs=1000)
         {
@@ -200,7 +228,7 @@ namespace ServiceStack.IO
         {
             if (Directory.Exists(dirPath))
             {
-                DeleteDirectoryRecursive(dirPath);
+                DeleteDirectory(dirPath);
             }
             AssertDirectory(dirPath, timeoutMs);
         }

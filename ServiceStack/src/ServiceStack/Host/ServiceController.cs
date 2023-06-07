@@ -474,11 +474,11 @@ namespace ServiceStack.Host
             }
         }
 
-        private async Task<object> ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequest request, object requestDto)
+        private async Task<object> ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequest req, object requestDto)
         {
             try
             {
-                InjectRequestContext(service, request);
+                InjectRequestContext(service, req);
 
                 object response = null;
 
@@ -498,17 +498,19 @@ namespace ServiceStack.Host
                 
                 try
                 {
-                    requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
+                    requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, req, req.Response);
 
-                    if (request.Dto == null) // Don't override existing batched DTO[]
-                        request.Dto = requestDto;
+                    // Don't override existing batched DTO[]
+                    req.Dto ??= requestDto;
 
                     //Executes the service and returns the result
-                    response = await serviceExec(request, requestDto).ConfigAwait();
+                    response = await serviceExec(req, requestDto).ConfigAwaitNetCore();
+                    HostContext.AppHost.OnAfterAwait(req);
 
-                    response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
+                    response = appHost.OnPostExecuteServiceFilter(service, response, req, req.Response);
 
-                    return await ReleaseAsync(response).ConfigAwait();
+                    var ret = await ReleaseAsync(response).ConfigAwait();
+                    return ret;
                 }
                 catch (Exception)
                 {

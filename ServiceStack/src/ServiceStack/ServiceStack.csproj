@@ -22,7 +22,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <EmbeddedResource Include="Templates\*.*;modules\**\*.*;js\*.*;css\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    <EmbeddedResource Include="Templates\*.*;modules\**\*.*;js\**\*.*;css\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
@@ -58,14 +58,14 @@
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="modules\locode" />
     <Folder Include="modules\shared" />
+    <Folder Include="modules\ui" />
   </ItemGroup>
 
 </Project>

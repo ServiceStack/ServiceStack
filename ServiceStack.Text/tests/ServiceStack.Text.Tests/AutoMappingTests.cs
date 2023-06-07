@@ -1751,5 +1751,35 @@ public class PropertyExpressionTests
         var y = x.ConvertTo<RecordStruct2>();
         Assert.That(x.Value, Is.EqualTo(y.Value));
     }
-   
+
+    class NullableSource
+    {
+        public int NonNullableId { get; set; }
+        public int? NullableIdNonMatchingUnderlyingType { get; set; }
+        public int? NullableIdMatchingUnderlyingType { get; set; }
+        public DateTime? DateTime { get; set; }
+    }
+    class NullableTarget
+    {
+        public int NonNullableId { get; set; }
+        public long? NullableIdNonMatchingUnderlyingType { get; set; }
+        public int? NullableIdMatchingUnderlyingType { get; set; }
+        public DateTime? NullableDateTime { get; set; }
+        public DateTime DateTime { get; set; }
+        public DateTime TargetOnlyDateTime { get; set; }
+    }
+
+    [Test]
+    public void Does_convert_nullables_of_different_types()
+    {
+        var source = new NullableSource();
+        var target = source.ConvertTo<NullableTarget>();
+        
+        Assert.That(target.NonNullableId, Is.EqualTo(default(int)));
+        Assert.That(target.NullableIdNonMatchingUnderlyingType, Is.Null);
+        Assert.That(target.NullableIdMatchingUnderlyingType, Is.Null);
+        Assert.That(target.NullableDateTime, Is.Null);
+        Assert.That(target.DateTime, Is.EqualTo(default(DateTime)));
+        Assert.That(target.TargetOnlyDateTime, Is.EqualTo(default(DateTime)));
+    }
 }

@@ -3,73 +3,69 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public static class RedisDataInfoExtensions
 {
-    public static class RedisDataInfoExtensions
+    public static string ToJsonInfo(this RedisText redisText)
     {
-        public static String ToJsonInfo(this RedisText redisText)
+        var source = redisText.GetResult();
+        return Parse(source);
+    }
+
+    private static string Parse(string source)
+    {
+        var result = new Dictionary<string, Dictionary<string, string>>();
+        var section = new Dictionary<string, string>();
+
+        var rows = SplitRows(source);
+
+        foreach (var row in rows)
         {
-            var source = redisText.GetResult();
-            return Parse(source);
-        }
-
-        #region Private
-
-        private static String Parse(String source)
-        {
-            var result = new Dictionary<String, Dictionary<String, String>>();
-            var section = new Dictionary<String, String>();
-
-            var rows = SplitRows(source);
-
-            foreach (var row in rows)
+            if (row.IndexOf("#", StringComparison.Ordinal) == 0)
             {
-                if (row.IndexOf("#", StringComparison.Ordinal) == 0)
+                var name = ParseSection(row);
+                section = new Dictionary<string, string>();
+                result.Add(name, section);
+            }
+            else
+            {
+                var pair = ParseKeyValue(row);
+                if (pair.HasValue)
                 {
-                    var name = ParseSection(row);
-                    section = new Dictionary<String, String>();
-                    result.Add(name, section);
-                }
-                else
-                {
-                    var pair = ParseKeyValue(row);
-                    if (pair.HasValue)
-                    {
-                        section.Add(pair.Value.Key, pair.Value.Value);
-                    }
+                    section.Add(pair.Value.Key, pair.Value.Value);
                 }
             }
-
-            return JsonSerializer.SerializeToString(result);
         }
 
-        private static IEnumerable<String> SplitRows(String source)
+        return JsonSerializer.SerializeToString(result);
+    }
+
+    private static string[] CRLF = { "\r\n" };
+    private static IEnumerable<string> SplitRows(string source)
+    {
+        return source.Split(CRLF, StringSplitOptions.None).Where(n => !string.IsNullOrWhiteSpace(n));
+    }
+
+    private static string ParseSection(string source)
+    {
+        return (source.IndexOf("#", StringComparison.Ordinal) == 0)
+            ? source.Trim('#').Trim()
+            : string.Empty;
+    }
+
+    private static KeyValuePair<string, string>? ParseKeyValue(string source)
+    {
+        KeyValuePair<string, string>? result = null;
+
+        var divider = source.IndexOf(":", StringComparison.Ordinal);
+        if (divider > 0)
         {
-            return source.Split(new[] { "\r\n" }, StringSplitOptions.None).Where(n => !String.IsNullOrWhiteSpace(n));
+            var name = source.Substring(0, divider);
+            var value = source.Substring(divider + 1);
+            result = new KeyValuePair<string, string>(name.Trim(), value.Trim());
         }
 
-        private static String ParseSection(String source)
-        {
-            return (source.IndexOf("#", StringComparison.Ordinal) == 0)
-                ? source.Trim('#').Trim()
-                : String.Empty;
-        }
-
-        private static KeyValuePair<String, String>? ParseKeyValue(String source)
-        {
-            KeyValuePair<String, String>? result = null;
-
-            var devider = source.IndexOf(":", StringComparison.Ordinal);
-            if (devider > 0)
-            {
-                var name = source.Substring(0, devider);
-                var value = source.Substring(devider + 1);
-                result = new KeyValuePair<String, String>(name.Trim(), value.Trim());
-            }
-
-            return result;
-        }
-
-        #endregion Private
+        return result;
     }
 }
