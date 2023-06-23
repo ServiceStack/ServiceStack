@@ -390,7 +390,7 @@ public class BlazorServerAuthenticationStateProvider : AuthenticationStateProvid
                     new() {
                         Name = SessionFeature.PermanentSessionId,
                         Value = apiReq.GetPermanentSessionId(),
-                        Expires = DateTime.UtcNow.AddYears(20).ToString("R"),
+                        Expires = Cookies.PermanentCookieExpiry.ToString("R"),
                     },
                     new() {
                         Name = SessionFeature.SessionOptionsKey,

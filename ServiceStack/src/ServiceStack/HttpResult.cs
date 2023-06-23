@@ -177,12 +177,12 @@ namespace ServiceStack
 
         public void SetPermanentCookie(string name, string value)
         {
-            SetCookie(name, value, DateTime.UtcNow.AddYears(20), null);
+            SetCookie(name, value, ServiceStack.Host.Cookies.PermanentCookieExpiry, null);
         }
 
         public void SetPermanentCookie(string name, string value, string path)
         {
-            SetCookie(name, value, DateTime.UtcNow.AddYears(20), path);
+            SetCookie(name, value, ServiceStack.Host.Cookies.PermanentCookieExpiry, path);
         }
 
         public void SetSessionCookie(string name, string value)
