@@ -1080,7 +1080,7 @@ namespace ServiceStack
             return filePart.Glob(filePattern);
         }
 
-        private static readonly Regex InvalidCharsRegex = new(@"[^a-z0-9\s-]", RegexOptions.Compiled);
+        private static readonly Regex InvalidCharsRegex = new(@"[^a-z0-9\s-_]", RegexOptions.Compiled);
         private static readonly Regex SpacesRegex = new(@"\s", RegexOptions.Compiled);
         private static readonly Regex CollapseHyphensRegex = new("-+", RegexOptions.Compiled);
         private static readonly Regex RemoveNonAsciiRegex = new(@"[^\u0000-\u007F]+", RegexOptions.Compiled);
