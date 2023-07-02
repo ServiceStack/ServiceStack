@@ -104,6 +104,7 @@ namespace ServiceStack
                     "jspm_packages/**/*.json", //JSPM
                     ".well-known/**/*",        //LetsEncrypt
                 },
+                IgnorePathInfoPrefixes = new(),
                 ForbiddenPaths = new(),
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
@@ -235,6 +236,7 @@ namespace ServiceStack
             this.CompressFilesWithExtensions = instance.CompressFilesWithExtensions;
             this.CompressFilesLargerThanBytes = instance.CompressFilesLargerThanBytes;
             this.AllowFilePaths = instance.AllowFilePaths;
+            this.IgnorePathInfoPrefixes = instance.IgnorePathInfoPrefixes;
             this.ForbiddenPaths = instance.ForbiddenPaths;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
@@ -321,6 +323,10 @@ namespace ServiceStack
         public long? CompressFilesLargerThanBytes { get; set; }
         public List<string> ForbiddenPaths { get; set; }
         public List<string> AllowFilePaths { get; set; }
+        /// <summary>
+        /// Ignore handling requests with matching /path/info prefixes 
+        /// </summary>
+        public List<string> IgnorePathInfoPrefixes { get; set; }
 
         public string WebHostUrl { get; set; }
         public string WebHostPhysicalPath { get; set; }

@@ -1283,6 +1283,18 @@ namespace ServiceStack
             {
                 TaskScheduler.UnobservedTaskException += this.HandleUnobservedTaskException;
             }
+
+            if (config.IgnorePathInfoPrefixes.Count > 0)
+            {
+                RawHttpHandlers.Add(httpReq => {
+                    foreach (var path in config.IgnorePathInfoPrefixes)
+                    {
+                        if (httpReq.PathInfo.StartsWith(path))
+                            return HttpHandlerFactory.NotFoundHttpHandler;
+                    }
+                    return null;
+                });
+            }
         }
 
         private void HandleUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
