@@ -34,16 +34,16 @@ namespace ServiceStack
             {
                 WsdlServiceNamespace = DefaultWsdlNamespace,
                 ApiVersion = "1.0",
-                EmbeddedResourceSources = new List<Assembly>(),
+                EmbeddedResourceSources = new(),
                 EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
-                EmbeddedResourceTreatAsFiles = new HashSet<string>(),
+                EmbeddedResourceTreatAsFiles = new(),
                 EnableAccessRestrictions = true,
                 EnableAutoHtmlResponses = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
                 HandlerFactoryPath = ServiceStackPath,
                 MetadataRedirectPath = null,
                 DefaultContentType = null,
-                PreferredContentTypes = new List<string> {
+                PreferredContentTypes = new() {
                     MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv
                 },
                 AllowJsonpRequests = true,
@@ -51,7 +51,7 @@ namespace ServiceStack
                 BufferSyncSerializers = Env.IsNetCore3,
                 DebugMode = false,
                 StrictMode = Env.StrictMode,
-                DefaultDocuments = new List<string> {
+                DefaultDocuments = new() {
                     "default.htm",
                     "default.html",
                     "default.cshtml",
@@ -61,12 +61,12 @@ namespace ServiceStack
                     "default.aspx",
                     "default.ashx",
                 },
-                GlobalResponseHeaders = new Dictionary<string, string> {
+                GlobalResponseHeaders = new() {
                     { HttpHeaders.Vary, "Accept" },
                     { HttpHeaders.XPoweredBy, Env.ServerUserAgent },
                 },
                 IsMobileRegex = new Regex("Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune", RegexOptions.Compiled),
-                RequestRules = new Dictionary<string, Func<IHttpRequest, bool>> {
+                RequestRules = new() {
                     {"AcceptsHtml", req => req.Accept?.IndexOf(MimeTypes.Html, StringComparison.Ordinal) >= 0 },
                     {"AcceptsJson", req => req.Accept?.IndexOf(MimeTypes.Json, StringComparison.Ordinal) >= 0 },
                     {"AcceptsXml", req => req.Accept?.IndexOf(MimeTypes.Xml, StringComparison.Ordinal) >= 0 },
@@ -87,10 +87,10 @@ namespace ServiceStack
                         return !string.IsNullOrEmpty(beforeLast) && int.TryParse(beforeLast.LastRightPart('/'), out _);
                     }},
                 },
-                IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                IgnoreFormatsInMetadata = new(StringComparer.OrdinalIgnoreCase)
                 {
                 },
-                AllowFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                AllowFileExtensions = new(StringComparer.OrdinalIgnoreCase)
                 {
                     "js", "ts", "tsx", "jsx", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",
                     "jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg", "webp", "jif", "jfif", "jpe",
@@ -99,34 +99,33 @@ namespace ServiceStack
                     "xls", "xla", "xlsx", "xltx", "doc", "dot", "docx", "dotx", "ppt", "pps", "ppa", "pptx", "potx", 
                     "wasm", "proto", "cer", "crt", "webmanifest", "mjs", "cjs", 
                 },
-                CompressFilesWithExtensions = new HashSet<string>(),
-                AllowFilePaths = new List<string>
-                {
+                CompressFilesWithExtensions = new(),
+                AllowFilePaths = new() {
                     "jspm_packages/**/*.json", //JSPM
                     ".well-known/**/*",        //LetsEncrypt
                 },
-                ForbiddenPaths = new List<string>(),
+                ForbiddenPaths = new(),
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
                 EnableFeatures = Feature.All,
                 WriteErrorsToResponse = true,
                 DisposeDependenciesAfterUse = true,
                 LogUnobservedTaskExceptions = true,
-                HtmlReplaceTokens = new Dictionary<string, string>(),
-                AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
+                HtmlReplaceTokens = new(),
+                AddMaxAgeForStaticMimeTypes = new() {
                     { "image/gif", TimeSpan.FromHours(1) },
                     { "image/png", TimeSpan.FromHours(1) },
                     { "image/jpeg", TimeSpan.FromHours(1) },
                 },
-                AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Json, },
-                RouteNamingConventions = new List<RouteNamingConventionDelegate> {
+                AppendUtf8CharsetOnContentTypes = new() { MimeTypes.Json },
+                RouteNamingConventions = new() {
                     RouteNamingConvention.WithRequestDtoName,
                     RouteNamingConvention.WithMatchingAttributes,
                     RouteNamingConvention.WithMatchingPropertyNames
                 },
-                MapExceptionToStatusCode = new Dictionary<Type, int>(),
+                MapExceptionToStatusCode = new(),
                 UseSaltedHash = false,
-                FallbackPasswordHashers = new List<IPasswordHasher>(),
+                FallbackPasswordHashers = new(),
                 UseSameSiteCookies = null,
                 UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true
                 UseHttpOnlyCookies = true,
@@ -143,7 +142,7 @@ namespace ServiceStack
                 RedirectToDefaultDocuments = false,
                 RedirectDirectoriesToTrailingSlashes = true,
                 StripApplicationVirtualPath = false,
-                ScanSkipPaths = new List<string> {
+                ScanSkipPaths = new() {
                     "obj/",
                     "bin/",
                     "node_modules/",
@@ -158,7 +157,7 @@ namespace ServiceStack
                 {
                     { "/metadata/", "/metadata" },
                 },
-                IgnoreWarningsOnPropertyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                IgnoreWarningsOnPropertyNames = new(StringComparer.OrdinalIgnoreCase) {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
                     Keywords.IgnorePlaceHolder, Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, 
                     Keywords.SessionState, Keywords.Version, Keywords.Version, Keywords.VersionAbbr, Keywords.VersionFxAbbr,
@@ -181,8 +180,8 @@ namespace ServiceStack
                     UserAuthName = Keywords.AuthSecret,
                     AuthProvider = Keywords.AuthSecret,
                     IsAuthenticated = true,
-                    Roles = new List<string> { Configuration.RoleNames.Admin },
-                    Permissions = new List<string>(),
+                    Roles = new() { Configuration.RoleNames.Admin },
+                    Permissions = new(),
                     UserAuthId = "0",
                 },
 #if !NETCORE
