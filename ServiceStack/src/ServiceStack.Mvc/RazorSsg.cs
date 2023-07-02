@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -156,17 +157,24 @@ public class RazorSsg
             var modelType = renderStaticDef.GetGenericArguments()[0];
             var method = typeof(RazorSsg).GetMethod(nameof(RenderStaticRazorPageAsync));
             var genericMi = method.MakeGenericMethod(modelType);
-            var task = (Task) genericMi.Invoke(null, new object[] { appHost, razorFile, distDir });
+            var task = (Task) genericMi.Invoke(null, new object[] { appHost, razorFile, distDir })!;
             await task;
         }
     }
+
+    private static readonly Regex RouteConstraintsRegex = new(":[^}]+", RegexOptions.Multiline);
 
     public static string ResolvePageRoute(string pageRoute, object pageModel)
     {
         var to = pageRoute;
         if (pageRoute.IndexOf('{') >= 0)
         {
-            var jsExpr = '`' + pageRoute.Replace("{", "${") + '`';
+            var jsExpr = pageRoute.Replace("*", "").Replace("?", "");
+            if (jsExpr.IndexOf(':') >= 0)
+            {
+                jsExpr = RouteConstraintsRegex.Replace(jsExpr,"");
+            }
+            jsExpr = '`' + jsExpr.Replace("{", "${") + '`';
             var scope = JS.CreateScope(new Dictionary<string, object>(pageModel.ToObjectDictionary(), StringComparer.OrdinalIgnoreCase));
             var jsResult = JS.eval(jsExpr, scope);
             to = jsResult.ToString();

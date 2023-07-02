@@ -26,6 +26,7 @@ public class SsgTests
     [Test]
     public void Can_resolve_custom_route()
     {
+        Assert.That(RazorSsg.ResolvePageRoute("/test/{slug:int}", new TestPageModel()), Is.EqualTo("/test/index.html"));
         Assert.That(RazorSsg.ResolvePageRoute("/test", new TestPageModel()), Is.EqualTo("/test.html"));
         Assert.That(RazorSsg.ResolvePageRoute("/test/{Slug}", new TestPageModel { Slug = "foo" }), Is.EqualTo("/test/foo.html"));
         Assert.That(RazorSsg.ResolvePageRoute("/test/{slug}", new TestPageModel { Slug = "foo" }), Is.EqualTo("/test/foo.html"));
@@ -33,6 +34,12 @@ public class SsgTests
         Assert.That(RazorSsg.ResolvePageRoute("/test/{Slug}_{Page}", new TestPageModel { Slug = "foo", Page = 2 }), Is.EqualTo("/test/foo_2.html"));
         Assert.That(RazorSsg.ResolvePageRoute("/test/{slug}_{page}", new TestPageModel { Slug = "foo", Page = 2 }), Is.EqualTo("/test/foo_2.html"));
         Assert.That(RazorSsg.ResolvePageRoute("/test/{slug}_{page}/", new TestPageModel { Slug = "foo", Page = 2 }), Is.EqualTo("/test/foo_2/index.html"));
+        Assert.That(RazorSsg.ResolvePageRoute("/test/{**slug}", new TestPageModel()), Is.EqualTo("/test/index.html"));
+        Assert.That(RazorSsg.ResolvePageRoute("/test/{*slug}", new TestPageModel()), Is.EqualTo("/test/index.html"));
+        Assert.That(RazorSsg.ResolvePageRoute("/test/{slug?}", new TestPageModel()), Is.EqualTo("/test/index.html"));
+        Assert.That(RazorSsg.ResolvePageRoute("/test/{**slug}", new TestPageModel { Slug = "foo" }), Is.EqualTo("/test/foo.html"));
+        Assert.That(RazorSsg.ResolvePageRoute("/test/{**slug}", new TestPageModel { Slug = "foo/bar" }), Is.EqualTo("/test/foo/bar.html"));
+        Assert.That(RazorSsg.ResolvePageRoute("/test/{**slug}", new TestPageModel { Slug = "foo/bar/baz" }), Is.EqualTo("/test/foo/bar/baz.html"));
     }
     
     public class TestGet : PageModel
