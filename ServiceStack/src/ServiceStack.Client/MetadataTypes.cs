@@ -1891,6 +1891,15 @@ public static class AppMetadataUtils
         var genericArgs = propType.IsGenericType
             ? propType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
             : null;
+        
+        if (genericArgs == null && typeof(IEnumerable).IsAssignableFrom(propType))
+        {
+            var elType = propType.GetCollectionType();
+            return elType?.IsGenericType == true
+                ? elType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
+                : null;
+        }
+
         return genericArgs;
     }
 

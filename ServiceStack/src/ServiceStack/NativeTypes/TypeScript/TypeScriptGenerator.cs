@@ -774,6 +774,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                 string cooked = null;
                 if (type == "Nullable`1")
                     cooked = "{0}?".Fmt(GenericArg(genericArgs[0]));
+                else if (type == "Nullable`1[]")
+                    cooked = GenericArg(genericArgs[0]) + "[]";
                 else if (ArrayTypes.Contains(type))
                     cooked = "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 else if (DictionaryTypes.Contains(type))

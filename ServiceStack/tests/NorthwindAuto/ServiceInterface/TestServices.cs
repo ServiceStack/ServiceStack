@@ -38,6 +38,7 @@ public class AllTypes : IReturn<AllTypes>
     public Dictionary<string, string> StringMap { get; set; }
     public Dictionary<int, string> IntStringMap { get; set; }
     public SubType SubType { get; set; }
+    public byte?[] NullableBytes { get; set; }
 }
 
 [Tag("Test")]

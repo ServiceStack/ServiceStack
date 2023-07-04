@@ -616,6 +616,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             {
                 if (type == "Nullable`1")
                     return /*@Nullable*/ GenericArg(genericArgs[0]);
+                if (type == "Nullable`1[]")
+                    return $"ArrayList<{GenericArg(genericArgs[0])}>";
                 if (ArrayTypes.Contains(type))
                     return $"ArrayList<{GenericArg(genericArgs[0])}>".StripNullable();
                 if (DictionaryTypes.Contains(type))

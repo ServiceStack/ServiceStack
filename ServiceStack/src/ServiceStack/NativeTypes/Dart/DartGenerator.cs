@@ -1139,6 +1139,8 @@ namespace ServiceStack.NativeTypes.Dart
             {
                 if (type == "Nullable`1")
                     return GenericArg(genericArgs[0]);
+                if (type == "Nullable`1[]")
+                    return $"List<{GenericArg(genericArgs[0])}?>";
                 if (ArrayTypes.Contains(type))
                     return $"List<{GenericArg(genericArgs[0])}>".StripNullable();
                 if (DictionaryTypes.Contains(type))

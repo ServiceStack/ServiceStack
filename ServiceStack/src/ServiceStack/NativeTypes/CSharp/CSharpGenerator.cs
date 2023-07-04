@@ -608,8 +608,13 @@ namespace ServiceStack.NativeTypes.CSharp
 
             if (genericArgs != null)
             {
-                if (type == "Nullable`1")
-                    return $"{TypeAlias(genericArgs[0], includeNested: includeNested)}?";
+                if (type.StartsWith("Nullable`1"))
+                {
+                    var nullableType = $"{TypeAlias(genericArgs[0], includeNested: includeNested)}?";
+                    return type.IndexOf('[') == -1
+                        ? nullableType
+                        : nullableType + "[]";
+                }
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)

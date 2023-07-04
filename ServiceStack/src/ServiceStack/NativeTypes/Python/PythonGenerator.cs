@@ -881,13 +881,9 @@ namespace ServiceStack.NativeTypes.Python
             if (genericArgs != null)
             {
                 if (ArrayTypes.Contains(type))
-                {
                     cooked = $"List[{GenericArg(genericArgs[0])}]".StripNullable();
-                }
                 if (DictionaryTypes.Contains(type))
-                {
                     cooked = $"Dict[{GenericArg(genericArgs[0])},{GenericArg(genericArgs[1])}]";
-                }
             }
             
             if (cooked == null)
@@ -924,6 +920,8 @@ namespace ServiceStack.NativeTypes.Python
                 string cooked = null;
                 if (type == "Nullable`1")
                     cooked = $"Optional[{GenericArg(genericArgs[0])}]";
+                else if (type == "Nullable`1[]")
+                    cooked = $"List[Optional[{GenericArg(genericArgs[0])}]]";
                 else if (ArrayTypes.Contains(type))
                     cooked = $"List[{GenericArg(genericArgs[0])}]".StripNullable();
                 else if (DictionaryTypes.Contains(type))
