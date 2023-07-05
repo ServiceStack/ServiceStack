@@ -28,6 +28,7 @@ public class AppHost : AppHostBase, IHostingStartup
             "http://localhost:8080",
             "https://docs.servicestack.net",
             "https://servicestack.net",
+            "https://razor-press.web-templates.io",
             "https://" + Environment.GetEnvironmentVariable("DEPLOY_CDN")
         }, allowCredentials: true));
 
