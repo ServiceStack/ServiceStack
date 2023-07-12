@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -320,6 +321,14 @@ namespace ServiceStack.OrmLite.MySql
 		  "YEAR_MONTH",
 		  "ZEROFILL",
         }, StringComparer.OrdinalIgnoreCase);
+
+        public override void Init(string connectionString)
+        {
+	        if (connectionString.ToLower().Contains("allowloadlocalinfile=true"))
+	        {
+		        AllowLoadLocalInfile = true;
+	        }
+        }
 
         public override string GetLoadChildrenSubSelect<From>(SqlExpression<From> expr)
         {

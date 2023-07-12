@@ -33,6 +33,9 @@ namespace ServiceStack.OrmLite.Converters
 
         public override object ToDbValue(Type fieldType, object value)
         {
+            if (value == null)
+                return null;
+            
             var dateTime = (DateTime)value;
             if (DateStyle == DateTimeKind.Utc && dateTime.Kind == DateTimeKind.Local)
             {

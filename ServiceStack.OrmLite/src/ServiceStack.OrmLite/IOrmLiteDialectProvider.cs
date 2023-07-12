@@ -10,9 +10,11 @@
 //
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -21,6 +23,14 @@ namespace ServiceStack.OrmLite
 {
     public interface IOrmLiteDialectProvider
     {
+        /// <summary>
+        /// Configure Provider with connection string options 
+        /// </summary>
+        void Init(string connectionString);
+        
+        /// <summary>
+        /// Register custom value type converter  
+        /// </summary>
         void RegisterConverter<T>(IOrmLiteConverter converter);
 
         /// <summary>
@@ -134,6 +144,11 @@ namespace ServiceStack.OrmLite
             int? rows = null,
             ISet<string> tags=null);
 
+        string ToInsertRowSql<T>(T obj, ICollection<string> insertFields = null);
+        string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string> insertFields = null);
+
+        void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null);
+        
         string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null);
 
         void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string> insertFields = null, Func<FieldDefinition,bool> shouldInclude=null);

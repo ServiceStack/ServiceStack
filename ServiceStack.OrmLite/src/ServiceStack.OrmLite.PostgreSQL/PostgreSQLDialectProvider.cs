@@ -291,6 +291,135 @@ namespace ServiceStack.OrmLite.PostgreSQL
                    sql.StartsWith("WITH ", StringComparison.OrdinalIgnoreCase);
         }
 
+        public override void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
+        {
+            config ??= new();
+            if (config.Mode == BulkInsertMode.Sql)
+            {
+                base.BulkInsert(db, objs, config);
+                return;
+            }
+	        
+            var pgConn = (NpgsqlConnection)db.ToDbConnection();
+	        
+            var modelDef = ModelDefinition<T>.Definition;
+
+            var sb = StringBuilderCache.Allocate()
+                .Append($"COPY {GetTableName(modelDef)} (");
+            
+            var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields);
+            var i = 0;
+            foreach (var fieldDef in fieldDefs)
+            {
+                if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                    continue;
+
+                if (i++ > 0)
+                    sb.Append(",");
+
+                sb.Append(NamingStrategy.GetColumnName(fieldDef.FieldName));
+            }
+            sb.Append(") FROM STDIN (FORMAT BINARY)");
+
+            var copyCmd = StringBuilderCache.ReturnAndFree(sb);
+            using var writer = pgConn.BeginBinaryImport(copyCmd);
+
+            foreach (var obj in objs)
+            {
+                writer.StartRow();
+                foreach (var fieldDef in fieldDefs)
+                {
+                    if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                        continue;
+
+                    var value = fieldDef.AutoId
+                        ? GetInsertDefaultValue(fieldDef)
+                        : fieldDef.GetValue(obj);
+
+                    var converter = GetConverterBestMatch(fieldDef);
+                    var dbValue = converter.ToDbValue(fieldDef.FieldType, value);
+                    if (dbValue is float f)
+                        dbValue = (double)f;
+
+                    if (dbValue is null or DBNull)
+                    {
+                        writer.WriteNull();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var dbType = GetNpgsqlDbType(fieldDef);
+                            if (dbType == NpgsqlDbType.Text && dbValue is not string && dbValue is not char)
+                            {
+                                dbValue = StringSerializer.SerializeToString(dbValue);
+                            } 
+                            writer.Write(dbValue, dbType);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                    }
+                }
+            }
+            writer.Complete();
+        }
+
+        public NpgsqlDbType GetNpgsqlDbType(FieldDefinition fieldDef)
+        {
+            var converter = GetConverterBestMatch(fieldDef);
+
+            var columnDef = fieldDef.CustomFieldDefinition ?? converter.ColumnDefinition;
+            return columnDef switch
+            {
+                "json" => NpgsqlDbType.Json,
+                "jsonb" => NpgsqlDbType.Jsonb,
+                "hstore" => NpgsqlDbType.Hstore,
+                "text[]" => NpgsqlDbType.Array | NpgsqlDbType.Text,
+                "short[]" => NpgsqlDbType.Array | NpgsqlDbType.Smallint,
+                "integer[]" => NpgsqlDbType.Array | NpgsqlDbType.Integer,
+                "bigint[]" => NpgsqlDbType.Array | NpgsqlDbType.Bigint,
+                "real[]" => NpgsqlDbType.Array | NpgsqlDbType.Real,
+                "double precision[]" => NpgsqlDbType.Array | NpgsqlDbType.Double,
+                "double numeric[]" => NpgsqlDbType.Array | NpgsqlDbType.Numeric,
+                "timestamp[]" => NpgsqlDbType.Array | NpgsqlDbType.Timestamp,
+                "timestamp with time zone[]" => NpgsqlDbType.Array | NpgsqlDbType.TimestampTz,
+                _ => converter.DbType switch
+                {
+                    DbType.Boolean => NpgsqlDbType.Boolean,
+                    DbType.SByte => NpgsqlDbType.Smallint,
+                    DbType.UInt16 => NpgsqlDbType.Smallint,
+                    DbType.Byte => NpgsqlDbType.Integer,
+                    DbType.Int16 => NpgsqlDbType.Integer,
+                    DbType.Int32 => NpgsqlDbType.Integer,
+                    DbType.UInt32 => NpgsqlDbType.Integer,
+                    DbType.Int64 => NpgsqlDbType.Bigint,
+                    DbType.UInt64 => NpgsqlDbType.Bigint,
+                    DbType.Single => NpgsqlDbType.Double,
+                    DbType.Double => NpgsqlDbType.Double,
+                    DbType.Decimal => NpgsqlDbType.Numeric,
+                    DbType.VarNumeric => NpgsqlDbType.Numeric,
+                    DbType.Currency => NpgsqlDbType.Money,
+                    DbType.Guid => NpgsqlDbType.Uuid,
+                    DbType.String => NpgsqlDbType.Text,
+                    DbType.AnsiString => NpgsqlDbType.Text,
+                    DbType.StringFixedLength => NpgsqlDbType.Text,
+                    DbType.AnsiStringFixedLength => NpgsqlDbType.Text,
+                    DbType.Xml => NpgsqlDbType.Text,
+                    DbType.Object => NpgsqlDbType.Text,
+                    DbType.Binary => NpgsqlDbType.Bytea,
+                    DbType.DateTime => NpgsqlDbType.TimestampTz,
+                    DbType.DateTimeOffset => NpgsqlDbType.TimestampTz,
+                    DbType.DateTime2 => NpgsqlDbType.Timestamp,
+                    DbType.Date => NpgsqlDbType.Date,
+                    DbType.Time => NpgsqlDbType.Time,
+                    _ => throw new AggregateException($"Unknown NpgsqlDbType for {fieldDef.FieldType} {fieldDef.Name}")
+                }
+            };
+        }
+        
         protected override bool ShouldSkipInsert(FieldDefinition fieldDef) => 
             fieldDef.ShouldSkipInsert() || fieldDef.AutoId;
 
@@ -638,7 +767,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
             return "; " + SelectIdentitySql;
         }
         
-        public Dictionary<Type,NpgsqlDbType> TypesMap { get; } = new Dictionary<Type, NpgsqlDbType>
+        public Dictionary<Type,NpgsqlDbType> TypesMap { get; } = new()
         {
             [typeof(bool)] = NpgsqlDbType.Boolean,
             [typeof(short)] = NpgsqlDbType.Smallint,
