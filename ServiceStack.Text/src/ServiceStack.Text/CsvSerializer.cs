@@ -428,7 +428,10 @@ namespace ServiceStack.Text
             {
                 WriteCacheFn = GetWriteFn();
                 ReadCacheFn = GetReadFn();
-                Properties = WriteType<T, JsvTypeSerializer>.PropertyWriters.Select(x => (x.propertyName, x.PropertyType)).ToArray();
+
+                var writers = WriteType<T, JsvTypeSerializer>.PropertyWriters;
+                if (writers != null)
+                    Properties = writers.Select(x => (x.propertyName, x.PropertyType)).ToArray();
             }
         }
 
