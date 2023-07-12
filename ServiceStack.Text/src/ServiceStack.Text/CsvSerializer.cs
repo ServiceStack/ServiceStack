@@ -249,12 +249,23 @@ namespace ServiceStack.Text
             CsvReader<T>.ReadObjectRow(null);
             CsvReader<T>.ReadStringDictionary(null);
         }
+
+        public static (string PropertyName, Type PropertyType)[] PropertiesFor<T>() => CsvSerializer<T>.Properties;
+        public static (string PropertyName, Type PropertyType)[] PropertiesFor(Type type)
+        {
+            var genericType = typeof(CsvSerializer<>).MakeGenericType(type);
+            var pi = genericType.GetProperty("Properties", BindingFlags.Public | BindingFlags.Static);
+            var ret = ((string PropertyName, Type PropertyType)[]) pi!.GetValue(null, null);
+            return ret;
+        }
     }
 
     public static class CsvSerializer<T>
     {
         private static readonly WriteObjectDelegate WriteCacheFn;
         private static readonly ParseStringDelegate ReadCacheFn;
+
+        public static (string PropertyName, Type PropertyType)[] Properties { get; } = Array.Empty<(string PropertyName, Type PropertyType)>(); 
 
         public static WriteObjectDelegate WriteFn()
         {
@@ -417,6 +428,7 @@ namespace ServiceStack.Text
             {
                 WriteCacheFn = GetWriteFn();
                 ReadCacheFn = GetReadFn();
+                Properties = WriteType<T, JsvTypeSerializer>.PropertyWriters.Select(x => (x.propertyName, x.PropertyType)).ToArray();
             }
         }
 

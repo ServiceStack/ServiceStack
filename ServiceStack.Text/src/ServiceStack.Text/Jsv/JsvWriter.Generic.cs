@@ -12,9 +12,9 @@ namespace ServiceStack.Text.Jsv
 {
     public static class JsvWriter
     {
-        public static readonly JsWriter<JsvTypeSerializer> Instance = new JsWriter<JsvTypeSerializer>();
+        public static readonly JsWriter<JsvTypeSerializer> Instance = new();
 
-        private static Dictionary<Type, WriteObjectDelegate> WriteFnCache = new Dictionary<Type, WriteObjectDelegate>();
+        private static Dictionary<Type, WriteObjectDelegate> WriteFnCache = new();
 
         internal static void RemoveCacheFn(Type forType)
         {
@@ -46,11 +46,10 @@ namespace ServiceStack.Text.Jsv
                 do
                 {
                     snapshot = WriteFnCache;
-                    newCache = new Dictionary<Type, WriteObjectDelegate>(WriteFnCache);
-                    newCache[type] = writeFn;
-
-                } while (!ReferenceEquals(
-                    Interlocked.CompareExchange(ref WriteFnCache, newCache, snapshot), snapshot));
+                    newCache = new Dictionary<Type, WriteObjectDelegate>(WriteFnCache) {
+                        [type] = writeFn
+                    };
+                } while (!ReferenceEquals(Interlocked.CompareExchange(ref WriteFnCache, newCache, snapshot), snapshot));
 
                 return writeFn;
             }
