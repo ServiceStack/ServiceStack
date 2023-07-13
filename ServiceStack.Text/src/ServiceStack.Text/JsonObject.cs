@@ -142,7 +142,9 @@ namespace ServiceStack.Text
         /// </summary>
         public string GetUnescaped(string key)
         {
-            return base[key];
+            return base.TryGetValue(key, out var value)
+                ? value
+                : null;
         }
 
         /// <summary>
@@ -150,7 +152,9 @@ namespace ServiceStack.Text
         /// </summary>
         public string Child(string key)
         {
-            return base[key];
+            return base.TryGetValue(key, out var value)
+                ? value
+                : null;
         }
 
         /// <summary>
