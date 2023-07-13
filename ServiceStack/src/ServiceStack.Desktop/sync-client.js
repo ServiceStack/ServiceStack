@@ -22,7 +22,8 @@ Object.keys(files).forEach(dir => {
         if (!fs.existsSync(toDir)) {
             fs.mkdirSync(toDir, { recursive: true })
         }
-        httpDownload(url, toFile, 5)
+        //httpDownload(url, toFile, 5) //started hanging
+        fetchDownload(url, toFile, 5)
     })
 })
 
@@ -49,4 +50,21 @@ function httpDownload(url, toFile, retries) {
             file.on('finish', () => file.close())
         }
     }).on('error', retry)
+}
+
+function fetchDownload(url, toFile, retries) {
+    (async () => {
+        for (let i=retries; i>=0; --i) {
+            try {
+                let r = await fetch(url)
+                if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+                let txt = await r.text()
+                console.log(`writing ${url} to ${toFile}`)
+                fs.writeFileSync(toFile, txt)
+                return
+            } catch (e) {
+                console.log(`get ${url} failed: ${e}${i > 0 ? `, ${i} retries remaining...` : ''}`)
+            }
+        }
+    })()
 }
