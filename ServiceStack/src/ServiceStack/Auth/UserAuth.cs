@@ -496,7 +496,7 @@ namespace ServiceStack.Auth
                     case JwtClaimTypes.Permissions:
                     case "Permissions":
                         var jsonPerms = jsonObj != null
-                            ? jsonObj.GetUnescaped("perms") ?? jsonObj.GetUnescaped("Perms")
+                            ? jsonObj.GetUnescaped("perms") ?? jsonObj.GetUnescaped("Perms") ?? jsonObj.GetUnescaped("Permissions")
                             : entry.Value;
                         session.Permissions = jsonPerms.FromJson<List<string>>();
                         break;
