@@ -204,7 +204,7 @@ namespace ServiceStack
         public static HashAlgorithm GetHashAlgorithm(string hashAlgorithm)
         {
             return hashAlgorithm switch {
-                "SHA1" => SHA1.Create(),
+                "SHA1" => TextConfig.CreateSha(),
                 "SHA256" => SHA256.Create(),
                 "SHA512" => SHA512.Create(),
                 _ => throw new NotSupportedException(hashAlgorithm)
