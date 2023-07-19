@@ -49,7 +49,7 @@ namespace ServiceStack
             var mi = type.GetMethod("Configure");
             if (mi != null)
             {
-                mi.Invoke(null, new object[0]);
+                mi.Invoke(null, Array.Empty<object>());
             }
 
             return true;
@@ -59,7 +59,7 @@ namespace ServiceStack
         {
             Instance = instance ?? Instance;
 
-            if (Instance != null && Instance.EmptyTask == null)
+            if (Instance is { EmptyTask: null })
             {
                 var tcs = new TaskCompletionSource<object>();
                 tcs.SetResult(null);
