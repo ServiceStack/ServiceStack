@@ -237,7 +237,7 @@ namespace ServiceStack
                 var key = VerifyLicenseKeyText(licenseKeyText);
                 ValidateLicenseKey(key);
             }
-            catch (PlatformNotSupportedException)
+            catch (PlatformNotSupportedException pex)
             {
                 // Allow usage in environments like dotnet script
                 __setActivatedLicense(new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie }));
@@ -268,6 +268,8 @@ namespace ServiceStack
                     }
                     catch (Exception exFallback)
                     {
+                        Tracer.Instance.WriteWarning(ex.ToString());
+
                         if (exFallback is FileNotFoundException or FileLoadException or BadImageFormatException) 
                             throw;
 
@@ -722,56 +724,54 @@ namespace ServiceStack
         private static System.Security.Cryptography.RSAParameters ExtractFromXml(string xml)
         {
             var csp = new System.Security.Cryptography.RSAParameters();
-            using (var reader = System.Xml.XmlReader.Create(new StringReader(xml)))
+            using var reader = System.Xml.XmlReader.Create(new StringReader(xml));
+            while (reader.Read())
             {
-                while (reader.Read())
+                if (reader.NodeType != System.Xml.XmlNodeType.Element)
+                    continue;
+
+                var elName = reader.Name;
+                if (elName == "RSAKeyValue")
+                    continue;
+
+                do {
+                    reader.Read();
+                } while (reader.NodeType != System.Xml.XmlNodeType.Text && reader.NodeType != System.Xml.XmlNodeType.EndElement);
+
+                if (reader.NodeType == System.Xml.XmlNodeType.EndElement)
+                    continue;
+
+                var value = reader.Value;
+                switch (elName)
                 {
-                    if (reader.NodeType != System.Xml.XmlNodeType.Element)
-                        continue;
-
-                    var elName = reader.Name;
-                    if (elName == "RSAKeyValue")
-                        continue;
-
-                    do {
-                        reader.Read();
-                    } while (reader.NodeType != System.Xml.XmlNodeType.Text && reader.NodeType != System.Xml.XmlNodeType.EndElement);
-
-                    if (reader.NodeType == System.Xml.XmlNodeType.EndElement)
-                        continue;
-
-                    var value = reader.Value;
-                    switch (elName)
-                    {
-                        case "Modulus":
-                            csp.Modulus = Convert.FromBase64String(value);
-                            break;
-                        case "Exponent":
-                            csp.Exponent = Convert.FromBase64String(value);
-                            break;
-                        case "P":
-                            csp.P = Convert.FromBase64String(value);
-                            break;
-                        case "Q":
-                            csp.Q = Convert.FromBase64String(value);
-                            break;
-                        case "DP":
-                            csp.DP = Convert.FromBase64String(value);
-                            break;
-                        case "DQ":
-                            csp.DQ = Convert.FromBase64String(value);
-                            break;
-                        case "InverseQ":
-                            csp.InverseQ = Convert.FromBase64String(value);
-                            break;
-                        case "D":
-                            csp.D = Convert.FromBase64String(value);
-                            break;
-                    }
+                    case "Modulus":
+                        csp.Modulus = Convert.FromBase64String(value);
+                        break;
+                    case "Exponent":
+                        csp.Exponent = Convert.FromBase64String(value);
+                        break;
+                    case "P":
+                        csp.P = Convert.FromBase64String(value);
+                        break;
+                    case "Q":
+                        csp.Q = Convert.FromBase64String(value);
+                        break;
+                    case "DP":
+                        csp.DP = Convert.FromBase64String(value);
+                        break;
+                    case "DQ":
+                        csp.DQ = Convert.FromBase64String(value);
+                        break;
+                    case "InverseQ":
+                        csp.InverseQ = Convert.FromBase64String(value);
+                        break;
+                    case "D":
+                        csp.D = Convert.FromBase64String(value);
+                        break;
                 }
-
-                return csp;
             }
+
+            return csp;
         }
 #endif
         
@@ -844,7 +844,7 @@ namespace ServiceStack
 
         public static bool VerifySha1Data(this System.Security.Cryptography.RSACryptoServiceProvider RSAalg, byte[] unsignedData, byte[] encryptedData)
         {
-            using var sha = System.Security.Cryptography.SHA1.Create();
+            using var sha = TextConfig.CreateSha();
             return RSAalg.VerifyData(unsignedData, sha, encryptedData);
         }        
     }
