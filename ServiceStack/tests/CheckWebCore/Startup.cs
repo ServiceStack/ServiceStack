@@ -120,7 +120,7 @@ namespace CheckWebCore
 
             app.UseServiceStack(new AppHost
             {
-                PathBase = "/test",
+                //PathBase = "/test",
             });
         }
 
@@ -153,7 +153,8 @@ namespace CheckWebCore
             
             // enable server-side rendering, see: https://sharpscript.net
             Plugins.Add(new SharpPagesFeature {
-                ScriptMethods = { new CustomScriptMethods() }
+                ScriptMethods = { new CustomScriptMethods() },
+                EnableHotReload = false,
             }); 
             
             Plugins.Add(new ServerEventsFeature());
