@@ -168,52 +168,62 @@ public class Migrator
             var migrationStartAt = DateTime.UtcNow;
 
             var descFmt = AppTasks.GetDescFmt(nextRun);
-            Log.Info($"Running {nextRun.Name}{descFmt}...");
-            
-            var migration = new Migration
+            var namedConnections = nextRun.AllAttributes<NamedConnectionAttribute>().Select(x => x.Name ?? null).ToArray();
+            if (namedConnections.Length == 0)
             {
-                Name = nextRun.Name,
-                Description = AppTasks.GetDesc(nextRun),
-                CreatedDate = DateTime.UtcNow,
-                ConnectionString = OrmLiteUtils.MaskPassword(((OrmLiteConnectionFactory)DbFactory).ConnectionString),
-                NamedConnection = nextRun.FirstAttribute<NamedConnectionAttribute>()?.Name,
-            };
-            var id = db.Insert(migration, selectIdentity:true);
-
-            var instance = Run(DbFactory, nextRun, x => x.Up());
-            migrationsRun.Add(instance);
-            Log.Info(instance.Log);
-
-            if (instance.Error == null)
-            {
-                Log.Info($"Completed {nextRun.Name}{descFmt} in {(DateTime.UtcNow - migrationStartAt).TotalSeconds:N3}s" +
-                         Environment.NewLine);
-
-                // Record completed migration run in DB
-                db.UpdateOnly(() => new Migration
-                {
-                    Log = instance.Log,
-                    CompletedDate = DateTime.UtcNow,
-                }, where: x => x.Id == id);
-                remainingMigrations.Remove(nextRun);
+                namedConnections = new string?[] { null };
             }
-            else
-            {
-                var e = instance.Error;
-                Log.Error(e.Message, e);
-                    
-                // Save Error in DB
-                db.UpdateOnly(() => new Migration
-                {
-                    Log = instance.Log,
-                    ErrorCode = e.GetType().Name,
-                    ErrorMessage = e.Message,
-                    ErrorStackTrace = e.StackTrace,
-                }, where: x => x.Id == id);
 
-                if (throwIfError)
-                    throw instance.Error;
-                return new AppTaskResult(migrationsRun);
+            foreach (var namedConnection in namedConnections)
+            {
+                var namedDesc = namedConnection == null ? "" : $" ({namedConnection})";
+                Log.Info($"Running {nextRun.Name}{descFmt}{namedDesc}...");
+            
+                var migration = new Migration
+                {
+                    Name = nextRun.Name,
+                    Description = AppTasks.GetDesc(nextRun),
+                    CreatedDate = DateTime.UtcNow,
+                    ConnectionString = OrmLiteUtils.MaskPassword(((OrmLiteConnectionFactory)DbFactory).ConnectionString),
+                    NamedConnection = namedConnection,
+                };
+                var id = db.Insert(migration, selectIdentity:true);
+
+                var instance = Run(DbFactory, nextRun, x => x.Up(), namedConnection);
+                migrationsRun.Add(instance);
+                Log.Info(instance.Log);
+
+                if (instance.Error == null)
+                {
+                    Log.Info($"Completed {nextRun.Name}{descFmt} in {(DateTime.UtcNow - migrationStartAt).TotalSeconds:N3}s" +
+                             Environment.NewLine);
+
+                    // Record completed migration run in DB
+                    db.UpdateOnly(() => new Migration
+                    {
+                        Log = instance.Log,
+                        CompletedDate = DateTime.UtcNow,
+                    }, where: x => x.Id == id);
+                    remainingMigrations.Remove(nextRun);
+                }
+                else
+                {
+                    var e = instance.Error;
+                    Log.Error(e.Message, e);
+                    
+                    // Save Error in DB
+                    db.UpdateOnly(() => new Migration
+                    {
+                        Log = instance.Log,
+                        ErrorCode = e.GetType().Name,
+                        ErrorMessage = e.Message,
+                        ErrorStackTrace = e.StackTrace,
+                    }, where: x => x.Id == id);
+
+                    if (throwIfError)
+                        throw instance.Error;
+                    return new AppTaskResult(migrationsRun);
+                }
             }
         }
 
@@ -340,28 +350,38 @@ public class Migrator
             
                 var migrationStartAt = DateTime.UtcNow;
 
-                var descFmt = AppTasks.GetDescFmt(nextRun);
-                Log.Info($"Reverting {nextRun.Name}{descFmt}...");
-
-                var instance = Run(DbFactory, nextRun, x => x.Down());
-                migrationsRun.Add(instance);
-                Log.Info(instance.Log);
-
-                if (instance.Error == null)
+                var namedConnections = nextRun.AllAttributes<NamedConnectionAttribute>().Select(x => x.Name ?? null).ToArray();
+                if (namedConnections.Length == 0)
                 {
-                    Log.Info($"Completed revert of {nextRun.Name}{descFmt} in {(DateTime.UtcNow - migrationStartAt).TotalSeconds:N3}s" +
-                             Environment.NewLine);
-
-                    // Remove completed migration revert from DB
-                    db.Delete<Migration>(x => x.Name == nextRun.Name);
+                    namedConnections = new string?[] { null };
                 }
-                else
+
+                foreach (var namedConnection in namedConnections)
                 {
-                    Log.Error(instance.Error.Message, instance.Error);
-                    if (throwIfError)
-                        throw instance.Error;
+                    var descFmt = AppTasks.GetDescFmt(nextRun);
+                    var namedDesc = namedConnection == null ? "" : $" ({namedConnection})";
+                    Log.Info($"Reverting {nextRun.Name}{descFmt}{namedDesc}...");
+
+                    var instance = Run(DbFactory, nextRun, x => x.Down(), namedConnection);
+                    migrationsRun.Add(instance);
+                    Log.Info(instance.Log);
+
+                    if (instance.Error == null)
+                    {
+                        Log.Info($"Completed revert of {nextRun.Name}{descFmt} in {(DateTime.UtcNow - migrationStartAt).TotalSeconds:N3}s" +
+                                 Environment.NewLine);
+
+                        // Remove completed migration revert from DB
+                        db.Delete<Migration>(x => x.Name == nextRun.Name && x.NamedConnection == namedConnection);
+                    }
+                    else
+                    {
+                        Log.Error(instance.Error.Message, instance.Error);
+                        if (throwIfError)
+                            throw instance.Error;
                     
-                    return new AppTaskResult(migrationsRun);
+                        return new AppTaskResult(migrationsRun);
+                    }
                 }
 
                 if (migrationName == nextRun.Name)
@@ -389,13 +409,11 @@ public class Migrator
     public static AppTaskResult Up(IDbConnectionFactory dbFactory, Type[] migrationTypes) =>
         RunAll(dbFactory, migrationTypes, x => x.Up());
 
-    public static MigrationBase Run(IDbConnectionFactory dbFactory, Type nextRun, Action<MigrationBase> migrateAction)
+    public static MigrationBase Run(IDbConnectionFactory dbFactory, Type nextRun, Action<MigrationBase> migrateAction, string? namedConnection = null)
     {
         var holdFilter = OrmLiteConfig.BeforeExecFilter;
         var instance = nextRun.CreateInstance<MigrationBase>();
         OrmLiteConfig.BeforeExecFilter = dbCmd => instance.MigrationLog.AppendLine(dbCmd.GetDebugString());
-
-        var namedConnection = nextRun.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
         IDbConnection? useDb = null;
         IDbTransaction? trans = null;

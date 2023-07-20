@@ -2,7 +2,7 @@ using System;
 
 namespace ServiceStack
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class NamedConnectionAttribute : AttributeBase
     {
         public string Name { get; set; }

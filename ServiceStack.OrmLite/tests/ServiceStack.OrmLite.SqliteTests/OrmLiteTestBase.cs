@@ -18,7 +18,7 @@ namespace ServiceStack.OrmLite.Tests
 	{
 		protected virtual string ConnectionString { get; set; }
 
-        private OrmLiteConnectionFactory DbFactory;
+		protected OrmLiteConnectionFactory DbFactory;
 
 		protected virtual string GetFileConnectionString()
 		{
