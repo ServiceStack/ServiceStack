@@ -174,6 +174,8 @@ public class Migrator
                 namedConnections = new string?[] { null };
             }
 
+            var failedExceptions = new List<Exception>();
+
             foreach (var namedConnection in namedConnections)
             {
                 var namedDesc = namedConnection == null ? "" : $" ({namedConnection})";
@@ -220,10 +222,20 @@ public class Migrator
                         ErrorStackTrace = e.StackTrace,
                     }, where: x => x.Id == id);
 
-                    if (throwIfError)
-                        throw instance.Error;
-                    return new AppTaskResult(migrationsRun);
+                    failedExceptions.Add(instance.Error);
                 }
+            }
+
+            if (failedExceptions.Count > 0)
+            {
+                if (throwIfError)
+                {
+                    if (failedExceptions.Count > 1)
+                        throw new AggregateException(failedExceptions);
+                    
+                    throw failedExceptions.First();
+                }
+                return new AppTaskResult(migrationsRun);
             }
         }
 
@@ -356,6 +368,8 @@ public class Migrator
                     namedConnections = new string?[] { null };
                 }
 
+                var failedExceptions = new List<Exception>();
+
                 foreach (var namedConnection in namedConnections)
                 {
                     var descFmt = AppTasks.GetDescFmt(nextRun);
@@ -377,11 +391,20 @@ public class Migrator
                     else
                     {
                         Log.Error(instance.Error.Message, instance.Error);
-                        if (throwIfError)
-                            throw instance.Error;
-                    
-                        return new AppTaskResult(migrationsRun);
+                        failedExceptions.Add(instance.Error);
                     }
+                }
+
+                if (failedExceptions.Count > 0)
+                {
+                    if (throwIfError)
+                    {
+                        if (failedExceptions.Count > 1)
+                            throw new AggregateException(failedExceptions);
+                    
+                        throw failedExceptions.First();
+                    }
+                    return new AppTaskResult(migrationsRun);
                 }
 
                 if (migrationName == nextRun.Name)
