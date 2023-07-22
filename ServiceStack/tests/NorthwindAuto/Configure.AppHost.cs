@@ -14,10 +14,10 @@ namespace MyApp;
 
 public class AppHost : AppHostBase
 {
-    public static string TalentBlazorDir = "C:\\src\\netcore\\TalentBlazor\\TalentBlazor";
-    public static string TalentBlazorAppDataDir = TalentBlazorDir + "\\App_Data";
-    public static string TalentBlazorWwwRootDir = TalentBlazorDir + "\\wwwroot";
-    public static string ProfilesDir = $"{TalentBlazorWwwRootDir}\\profiles";
+    public static string TalentBlazorDir = "../../../../../netcore/TalentBlazor/TalentBlazor";
+    public static string TalentBlazorAppDataDir = TalentBlazorDir + "/App_Data";
+    public static string TalentBlazorWwwRootDir = TalentBlazorDir + "/wwwroot";
+    public static string ProfilesDir = $"{TalentBlazorWwwRootDir}/profiles";
         
     public AppHost() : base("My App", typeof(MyServices).Assembly) { }
 
