@@ -11,36 +11,15 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // var summary = BenchmarkRunner.Run<BulkInserts>();
-        var instance = new BulkInserts();
-        instance.Setup();
-        instance.IterationSetup();
-        instance.BatchInsertsOptimized(10);
+        var summary = BenchmarkRunner.Run<BulkInserts>();
+        // var instance = new BulkInserts {
+        //     Database = Database.SqlServer
+        // };
+        // instance.Setup();
+        // instance.IterationSetup();
+        // instance.BatchInsertsOptimized(10);
     }
 }
-
-/*
-public class Md5VsSha256
-{
-    private const int N = 10000;
-    private readonly byte[] data;
-
-    private readonly SHA256 sha256 = SHA256.Create();
-    private readonly MD5 md5 = MD5.Create();
-
-    public Md5VsSha256()
-    {
-        data = new byte[N];
-        new Random(42).NextBytes(data);
-    }
-
-    [Benchmark]
-    public byte[] Sha256() => sha256.ComputeHash(data);
-
-    [Benchmark]
-    public byte[] Md5() => md5.ComputeHash(data);
-}
-*/
 
 public enum Database
 {
@@ -48,6 +27,7 @@ public enum Database
     Sqlite,
     PostgreSQL,
     MySql,
+    MySqlConnector,
     SqlServer,
 }
 
@@ -59,13 +39,17 @@ public class Contact
     public int Age { get; set; }
 }
 
+[CsvMeasurementsExporter]
+[RPlotExporter]
 public class BulkInserts
 {
-    // [Params(Database.Memory, Database.Sqlite, Database.PostgreSQL, Database.MySql, Database.SqlServer)]
-    [Params(Database.MySql)]
+    [Params(Database.Memory, Database.Sqlite, Database.PostgreSQL, Database.MySql, Database.MySqlConnector, Database.SqlServer)]
+    // [Params(Database.SqlServer)]
     public Database Database;
 
     IDbConnectionFactory dbFactory;
+    const int MaxContacts = 100000;
+    private Contact[] Contacts; 
 
     [GlobalSetup]
     public void Setup()
@@ -74,17 +58,28 @@ public class BulkInserts
 
         dbFactory.RegisterConnection($"{Database.Sqlite}", "db.sqlite", SqliteDialect.Provider);
 
-        dbFactory.RegisterConnection($"{Database.PostgreSQL}", 
+        dbFactory.RegisterConnection($"{Database.PostgreSQL}", Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ??
             "Server=localhost;User Id=postgres;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
             PostgreSqlDialect.Provider);
 
-        dbFactory.RegisterConnection($"{Database.MySql}", 
-            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+        dbFactory.RegisterConnection($"{Database.MySql}", Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ??
+            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true",
             MySqlDialect.Provider);
+        MySqlDialect.Instance.AllowLoadLocalInfile = true;
 
-        dbFactory.RegisterConnection($"{Database.SqlServer}", 
-            "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;",
+        dbFactory.RegisterConnection($"{Database.MySqlConnector}", Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ??
+            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true",
+            MySqlConnectorDialect.Provider);
+
+        dbFactory.RegisterConnection($"{Database.SqlServer}", Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ??
+            "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;",
             SqlServer2012Dialect.Provider);
+
+        Contacts = new Contact[MaxContacts];
+        for (var i = 0; i < MaxContacts; i++)
+        {
+            Contacts[i] = CreateContact(i);
+        }
     }
 
     [IterationSetup]
@@ -108,44 +103,41 @@ public class BulkInserts
         _ => dbFactory.OpenDbConnection($"{database}"),
     };
 
-    Contact CreateContact(int i) => 
-        new Contact { Id = i + 1, FirstName = "First" + i, LastName = "Last" + i, Age = i % 100 };
+    Contact CreateContact(int i) => new() { Id = i + 1, FirstName = "First" + i, LastName = "Last" + i, Age = i % 100 };
 
     // [Benchmark]
-    // [Arguments(100)]
-    // [Arguments(1000)]
+    [Arguments(100)]
+    [Arguments(1000)]
     public void SingleInserts(int n)
     {
         using var db = GetConnection(Database);
         for (var i = 0; i<n; i++)
         {
-            db.Insert(CreateContact(i));
+            db.Insert(Contacts[i]);
         }
     }
 
-    // [Benchmark]
-    // [Arguments(100)]
-    // [Arguments(1000)]
-    // [Arguments(10000)]
-    // [Arguments(100000)]
-    //[Arguments(1000000)]
+    [Benchmark]
+    [Arguments(1000)]
+    [Arguments(10000)]
+    [Arguments(100000)]
+    [Arguments(1000000)]
     public void BatchInserts(int n)
     {
         using var db = GetConnection(Database);
-        var contacts = n.Times(CreateContact);
+        var contacts = Contacts.Take(n);
         db.BulkInsert(contacts, new BulkInsertConfig { Mode = BulkInsertMode.Sql });
     }
 
-    [Benchmark]
-    // [Arguments(100)]
+    // [Benchmark]
     [Arguments(1000)]
-    // [Arguments(10000)]
-    // [Arguments(100000)]
-    // [Arguments(1000000)]
+    [Arguments(10000)]
+    [Arguments(100000)]
+    [Arguments(1000000)]
     public void BatchInsertsOptimized(int n)
     {
         using var db = GetConnection(Database);
-        var contacts = n.Times(CreateContact);
+        var contacts = Contacts.Take(n);
         db.BulkInsert(contacts, new BulkInsertConfig { Mode = BulkInsertMode.Binary });
     }
 }
