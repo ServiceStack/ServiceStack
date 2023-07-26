@@ -1,132 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F709A373-6FD5-4415-B2ED-2520EA7CC568}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CheckHttpListener</RootNamespace>
+    <TargetFramework>net472</TargetFramework>
+    <DebugType>portable</DebugType>
     <AssemblyName>CheckHttpListener</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <PackageId>CheckHttpListener</PackageId>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <None Include="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IntegrationTests.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestInfoTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj">
-      <Project>{d5d2dc52-558a-4371-8d8e-a08c0f754a0b}</Project>
-      <Name>ServiceStack.OrmLite.Sqlite</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
-      <Project>{cec1251e-5d68-4b1f-a851-bbda04fb030b}</Project>
-      <Name>ServiceStack.OrmLite</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj">
-      <Project>{a7070566-eee2-46d3-b8bf-a2c79873d267}</Project>
-      <Name>ServiceStack.Text</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
-      <Project>{5e258282-86a6-4780-ab25-5e458f2e6f70}</Project>
-      <Name>ServiceStack.Api.OpenApi</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
-      <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj">
-      <Project>{c05de4a1-84c5-481b-8bd4-c837a1303b01}</Project>
-      <Name>ServiceStack.HttpClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
-      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
-      <Name>ServiceStack.Server</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\Check.ServiceInterface\Check.ServiceInterface.csproj" />
     <ProjectReference Include="..\Check.ServiceModel\Check.ServiceModel.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="default.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dir\index.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dir\sub\index.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="js\jquery-1.7.1.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.2" />
@@ -138,12 +42,21 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <DefineConstants>$(DefineConstants);NETFX</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
+  </ItemGroup>
 </Project>
