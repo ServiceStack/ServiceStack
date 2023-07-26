@@ -46,6 +46,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public DateTime DateOfBirth { get; set; }
         public DateTime? DateDied { get; set; }
         public LivingStatus LivingStatus { get; set; }
+
+        protected bool Equals(Rockstar other)
+        {
+            return Id == other.Id && 
+                   FirstName == other.FirstName && 
+                   LastName == other.LastName && 
+                   Age == other.Age && 
+                   DateOfBirth.Equals(other.DateOfBirth) && 
+                   Nullable.Equals(DateDied, other.DateDied) && 
+                   LivingStatus == other.LivingStatus;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Rockstar)obj);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, FirstName, LastName, Age, DateOfBirth, DateDied, (int)LivingStatus);
+        }
     }
 
     public class RockstarStatus
