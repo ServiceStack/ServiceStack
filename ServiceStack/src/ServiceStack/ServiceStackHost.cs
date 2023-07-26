@@ -178,6 +178,7 @@ namespace ServiceStack
                 new PreProcessRequest(),
                 new HtmlFormat(),
                 new CsvFormat(),
+                new JsonlFormat(),
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
                 new NativeTypesFeature(),

@@ -19,6 +19,7 @@ public static class MimeTypes
     public const string Jsv = "application/jsv";
     public const string JsvText = "text/jsv";
     public const string Csv = "text/csv";
+    public const string Jsonl = "text/jsonl";
     public const string Pdf = "application/pdf";
     public const string ProtoBuf = "application/x-protobuf";
     public const string JavaScript = "text/javascript";
