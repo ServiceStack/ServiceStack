@@ -130,7 +130,7 @@ namespace ServiceStack.Text
 
         public static T DeserializeFromStream<T>(Stream stream)
         {
-            if (stream == null) return default(T);
+            if (stream == null) return default;
             using var reader = new StreamReader(stream, UseEncoding);
             return DeserializeFromString<T>(reader.ReadToEnd());
         }
