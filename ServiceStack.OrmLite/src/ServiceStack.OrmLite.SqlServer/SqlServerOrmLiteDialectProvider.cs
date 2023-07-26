@@ -156,6 +156,10 @@ namespace ServiceStack.OrmLite.SqlServer
             var sql = $"CREATE SCHEMA [{GetSchemaName(schemaName)}]";
             return sql;
         }
+        
+        public override string ToCreateSavePoint(string name) => $"SAVE TRANSACTION {name}";
+        public override string ToReleaseSavePoint(string name) => null;
+        public override string ToRollbackSavePoint(string name) => $"ROLLBACK TRANSACTION {name}";
 
         public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
         {

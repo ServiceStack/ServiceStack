@@ -1738,6 +1738,10 @@ namespace ServiceStack.OrmLite
             return "";
         }
 
+        public virtual string ToCreateSavePoint(string name) => $"SAVEPOINT {name}";
+        public virtual string ToReleaseSavePoint(string name) => $"RELEASE SAVEPOINT {name}";
+        public virtual string ToRollbackSavePoint(string name) => $"ROLLBACK TO SAVEPOINT {name}";
+
         public virtual List<string> SequenceList(Type tableType) => new List<string>();
 
         public virtual Task<List<string>> SequenceListAsync(Type tableType, CancellationToken token = default) => new List<string>().InTask();

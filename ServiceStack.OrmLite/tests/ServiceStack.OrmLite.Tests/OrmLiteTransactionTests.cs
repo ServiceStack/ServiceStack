@@ -1,5 +1,7 @@
 using System;
 using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.DataAnnotations;
@@ -296,4 +298,95 @@ public class OrmLiteTransactionTests : OrmLiteProvidersTestBase
         Assert.That(rows.Count, Is.EqualTo(0));
     }
 
+    [Test]
+    public void Can_create_and_restore_to_SavePoint()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<ModelWithIdAndName>();
+        db.Insert(new ModelWithIdAndName { Id = 1, Name = "Foo" });
+
+        using (var trans = db.OpenTransaction())
+        {
+            try
+            {
+                db.Insert(new ModelWithIdAndName { Id = 2, Name = "Bar" });
+
+                var firstSavePoint = trans.SavePoint("FirstSavePoint");
+                
+                db.UpdateOnly(() => new ModelWithIdAndName { Name = "Baz" }, where: x => x.Id == 1);
+
+                Assert.That(db.SingleById<ModelWithIdAndName>(1).Name, Is.EqualTo("Baz"));
+
+                firstSavePoint.Rollback();
+
+                Assert.That(db.SingleById<ModelWithIdAndName>(1).Name, Is.EqualTo("Foo"));
+
+                var secondSavePoint = trans.SavePoint("SecondSavePoint");
+                
+                db.UpdateOnly(() => new ModelWithIdAndName { Name = "Qux" }, where: x => x.Id == 1);
+
+                Assert.That(db.SingleById<ModelWithIdAndName>(1).Name, Is.EqualTo("Qux"));
+
+                secondSavePoint.Release();
+                
+                db.Insert(new ModelWithIdAndName { Id = 3, Name = "Qux" });
+
+                trans.Commit();
+            }
+            catch (Exception e)
+            {
+                trans.Rollback();
+            }
+        }
+
+        var rows = db.Select<ModelWithIdAndName>();
+        Assert.That(rows.Count, Is.EqualTo(3));
+        Assert.That(rows.First(x => x.Id == 1).Name, Is.EqualTo("Qux"));
+    }
+    
+    [Test]
+    public async Task Can_create_and_restore_to_SavePoint_Async()
+    {
+        using var db = await OpenDbConnectionAsync();
+        db.DropAndCreateTable<ModelWithIdAndName>();
+        await db.InsertAsync(new ModelWithIdAndName { Id = 1, Name = "Foo" });
+
+        using (var trans = db.OpenTransaction())
+        {
+            try
+            {
+                await db.InsertAsync(new ModelWithIdAndName { Id = 2, Name = "Bar" });
+
+                var firstSavePoint = await trans.SavePointAsync("FirstSavePoint");
+                
+                await db.UpdateOnlyAsync(() => new ModelWithIdAndName { Name = "Baz" }, where: x => x.Id == 1);
+
+                Assert.That(db.SingleById<ModelWithIdAndName>(1).Name, Is.EqualTo("Baz"));
+
+                await firstSavePoint.RollbackAsync();
+
+                Assert.That((await db.SingleByIdAsync<ModelWithIdAndName>(1)).Name, Is.EqualTo("Foo"));
+
+                var secondSavePoint = await trans.SavePointAsync("SecondSavePoint");
+                
+                await db.UpdateOnlyAsync(() => new ModelWithIdAndName { Name = "Qux" }, where: x => x.Id == 1);
+
+                Assert.That((await db.SingleByIdAsync<ModelWithIdAndName>(1)).Name, Is.EqualTo("Qux"));
+
+                await secondSavePoint.ReleaseAsync();
+                
+                await db.InsertAsync(new ModelWithIdAndName { Id = 3, Name = "Qux" });
+
+                trans.Commit();
+            }
+            catch (Exception e)
+            {
+                trans.Rollback();
+            }
+        }
+
+        var rows = await db.SelectAsync<ModelWithIdAndName>();
+        Assert.That(rows.Count, Is.EqualTo(3));
+        Assert.That(rows.First(x => x.Id == 1).Name, Is.EqualTo("Qux"));
+    }
 }
