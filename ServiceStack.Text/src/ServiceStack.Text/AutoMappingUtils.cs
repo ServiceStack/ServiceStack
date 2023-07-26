@@ -1170,7 +1170,8 @@ namespace ServiceStack
                     var fromValue = assignmentEntry.GetValueFn(from);
 
                     if (valuePredicate != null
-                        && fromType == toType) // don't short-circuit nullable <-> non-null values
+                        && (fromType == toType
+                            || Nullable.GetUnderlyingType(fromType) == toType)) // don't short-circuit nullable <-> non-null values
                     {
                         if (!valuePredicate(fromValue, fromMember.PropertyInfo.PropertyType)) 
                             continue;
