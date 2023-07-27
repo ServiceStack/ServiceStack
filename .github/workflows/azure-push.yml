@@ -2,7 +2,7 @@ name: Azure Publish
 on: workflow_dispatch
 
 env:
-  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/ServiceStack/_packaging/pre-release/nuget/v3/index.json
+  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/ServiceStack/_packaging/pre_release/nuget/v3/index.json
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
         run: |
           ls -1 | grep .nupkg$ | sed -e "s/^\(.*\)\.\([0-9]\.[0-9]\.[0-9]\).*$/\1 \2/" | while read line
           do 
-            dotnet nuget delete ${line} --source ${{ env.AZURE_ARTIFACTS_FEED_URL }} --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} 
+            dotnet nuget delete ${line} --source ${{ env.AZURE_ARTIFACTS_FEED_URL }} --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} --non-interactive
           done
 
       - name: Push to GitHub
