@@ -1,9 +1,5 @@
 name: Push a NuGet package to Azure Artifacts
-
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
 
 env:
   AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/ServiceStack/_packaging/pre-release/nuget/v3/index.json
