@@ -40,7 +40,7 @@ jobs:
         run: |
           ls -1 | grep .nupkg$ | sed -e "s/^\(.*\)\.\([0-9]\.[0-9]\.[0-9]\).*$/\1 \2/" | while read line
           do 
-            dotnet nuget delete ${line} --source ${{ env.AZURE_ARTIFACTS_FEED_URL }} --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} --non-interactive
+            dotnet nuget delete ${line} --source ${{ env.AZURE_ARTIFACTS_FEED_URL }} --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} --non-interactive || true
           done
 
       - name: Push to GitHub
