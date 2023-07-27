@@ -19,7 +19,7 @@ jobs:
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: myget-pack.yml
+          workflow: azure-pack.yml
           # workflow_conclusion: success
           name: ServiceStack Packages
           commit: ${{ github.sha }}
