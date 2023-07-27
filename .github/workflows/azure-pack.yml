@@ -1,4 +1,4 @@
-﻿name: A MyGet Pack
+﻿name: Azure Pack
 
 on: workflow_dispatch
 
@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 jobs:
-  myget-push:
+  azure-pack:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
