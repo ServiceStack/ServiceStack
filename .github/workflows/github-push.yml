@@ -32,7 +32,6 @@ jobs:
           export number_of_packages=$(ls -1 | wc -l)
           echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
           
-          
       - name: Clear packages
         working-directory: ./build/staging
         shell: bash
