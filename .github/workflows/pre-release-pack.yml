@@ -1,4 +1,4 @@
-﻿name: Azure Pack
+﻿name: A Pre Release Pack
 
 on: workflow_dispatch
 
@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 jobs:
-  azure-pack:
+  pre-release-pack:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

@@ -1,8 +1,8 @@
-name: Azure Publish
+name: A Feedz Publish
 on: workflow_dispatch
 
 env:
-  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/ServiceStack/_packaging/pre_release/nuget/v3/index.json
+  FEED_URL: https://f.feedz.io/servicestack/pre-release/nuget/index.json
 
 jobs:
   build:
@@ -32,7 +32,7 @@ jobs:
           cd staging
           export number_of_packages=$(ls -1 | wc -l)
           echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
-          dotnet nuget add source ${{ env.AZURE_ARTIFACTS_FEED_URL }} -n pre-release -u pre-release -p ${{ secrets.AZURE_DEVOPS_TOKEN }} --store-password-in-clear-text
+          dotnet nuget add source ${{ env.FEED_URL }} -n pre-release -u pre-release -p ${{ secrets.FEEDZ_TOKEN }} --store-password-in-clear-text
 
       - name: Clear packages
         working-directory: ./build/staging
@@ -40,7 +40,7 @@ jobs:
         run: |
           ls -1 | grep .nupkg$ | sed -e "s/^\(.*\)\.\([0-9]\.[0-9]\.[0-9]\).*$/\1 \2/" | while read line
           do 
-            dotnet nuget delete ${line} --source ${{ env.AZURE_ARTIFACTS_FEED_URL }} --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} --non-interactive || true
+            dotnet nuget delete ${line} --source ${{ env.FEED_URL }} --api-key ${{ secrets.FEEDZ_TOKEN }} --non-interactive || true
           done
 
       - name: Push to GitHub
@@ -49,7 +49,7 @@ jobs:
           # Check if more than 73 packages 
           if [[ ${number_of_packages} -gt 73 ]]; then
             echo "Publishing to Azure Artifacts"
-            dotnet nuget push '*.nupkg' --source ${{ env.AZURE_ARTIFACTS_FEED_URL }} --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} --skip-duplicate
+            dotnet nuget push '*.nupkg' --source ${{ env.FEED_URL }} --api-key ${{ secrets.FEEDZ_TOKEN }} --skip-duplicate
           else
             echo 'Less files than expected, skipping push'
             exit 1
