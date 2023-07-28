@@ -138,6 +138,6 @@ public class BulkInserts
     {
         using var db = GetConnection(Database);
         var contacts = Contacts.Take(n);
-        db.BulkInsert(contacts, new BulkInsertConfig { Mode = BulkInsertMode.Binary });
+        db.BulkInsert(contacts, new BulkInsertConfig { Mode = BulkInsertMode.Optimized });
     }
 }

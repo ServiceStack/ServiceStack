@@ -6,7 +6,7 @@ namespace ServiceStack.OrmLite;
 
 public enum BulkInsertMode
 {
-    Binary,
+    Optimized,
     Csv,
     Sql,
 }
