@@ -49,7 +49,6 @@ public class BulkInserts
 
     IDbConnectionFactory dbFactory;
     const int MaxContacts = 1000000;
-    private const string DatabaseName = "test";
     private Contact[] Contacts; 
 
     [GlobalSetup]
@@ -76,10 +75,6 @@ public class BulkInserts
             "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;",
             SqlServer2012Dialect.Provider);
 
-        // CreatePostgresDatabase(DatabaseName);
-        // CreateMySqlDatabase(DatabaseName);
-        // CreateSqlServerDatabase(DatabaseName);
-
         Contacts = new Contact[MaxContacts];
         for (var i = 0; i < MaxContacts; i++)
         {
@@ -87,40 +82,6 @@ public class BulkInserts
         }
     }
     
-    public void CreatePostgresDatabase(string dbName)
-    {
-        using var db = GetConnection(Database.PostgreSQL);
-        db.ExecuteSql("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";");
-        db.ExecuteSql("CREATE EXTENSION IF NOT EXISTS hstore");
-        db.ExecuteSql("CREATE EXTENSION IF NOT EXISTS pgcrypto");
-        // To avoid "Too many connections" issues during full test.
-        db.ExecuteSql("ALTER SYSTEM SET max_connections = 500;");
-
-        if (db.Scalar<int>($"SELECT 1 FROM pg_database WHERE datname = '{dbName}'") != 1)
-        {
-            db.ExecuteSql($"CREATE DATABASE {dbName};");
-        }
-    }
-
-    public void CreateMySqlDatabase(string dbName)
-    {
-        using var db = GetConnection(Database.MySql);
-        db.ExecuteSql($"CREATE DATABASE IF NOT EXISTS `{dbName}`");
-    }
-        
-    public void CreateSqlServerDatabase(string dbName)
-    {
-        // Create unique db per fixture to avoid conflicts when testing dialects
-        // uses COMPATIBILITY_LEVEL set to each version 
-
-        using var db = GetConnection(Database.SqlServer);
-        var createSqlDb = $@"If(db_id(N'{dbName}') IS NULL)
-        BEGIN
-            CREATE DATABASE {dbName};
-        END";
-        db.ExecuteSql(createSqlDb);
-    }    
-
     [IterationSetup]
     public void IterationSetup()
     {
@@ -146,7 +107,7 @@ public class BulkInserts
 
     [Benchmark]
     [Arguments(100)]
-    // [Arguments(1000)]
+    [Arguments(1000)]
     public void SingleInserts(int n)
     {
         using var db = GetConnection(Database);
@@ -156,7 +117,7 @@ public class BulkInserts
         }
     }
 
-    // [Benchmark]
+    [Benchmark]
     [Arguments(1000)]
     [Arguments(10000)]
     [Arguments(100000)]
@@ -168,7 +129,7 @@ public class BulkInserts
         db.BulkInsert(contacts, new BulkInsertConfig { Mode = BulkInsertMode.Sql });
     }
 
-    // [Benchmark]
+    [Benchmark]
     [Arguments(1000)]
     [Arguments(10000)]
     [Arguments(100000)]
