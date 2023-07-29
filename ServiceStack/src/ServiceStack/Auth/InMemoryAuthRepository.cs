@@ -43,7 +43,7 @@ namespace ServiceStack.Auth
             }
 
             internal readonly List<T> Items = new();
-            internal int Sequence = 1;
+            internal int Sequence = 0;
 
             public void Clear()
             {
