@@ -117,7 +117,7 @@ public class BulkInserts
         }
     }
 
-    // [Benchmark]
+    [Benchmark]
     [Arguments(1000)]
     [Arguments(10000)]
     [Arguments(100000)]
@@ -131,8 +131,8 @@ public class BulkInserts
 
     [Benchmark]
     [Arguments(1000)]
-    // [Arguments(10000)]
-    // [Arguments(100000)]
+    [Arguments(10000)]
+    [Arguments(100000)]
     // [Arguments(1000000)]
     public void BatchInsertsOptimized(int n)
     {
