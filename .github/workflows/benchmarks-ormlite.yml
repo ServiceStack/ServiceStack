@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
   benchmark-ormlite:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres
