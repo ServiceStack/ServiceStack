@@ -26,12 +26,11 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        public static readonly InMemoryAuthRepository<TUserAuth, TUserAuthDetails> Instance = 
-            new InMemoryAuthRepository<TUserAuth, TUserAuthDetails>();
+        public static readonly InMemoryAuthRepository<TUserAuth, TUserAuthDetails> Instance = new();
 
         public Dictionary<string, HashSet<string>> Sets { get; set; }
         public Dictionary<string, Dictionary<string, string>> Hashes { get; set; }
-        internal List<IClearable> TrackedTypes = new List<IClearable>();
+        internal List<IClearable> TrackedTypes = new();
 
         internal class TypedData<T> : IClearable
         {
@@ -44,7 +43,7 @@ namespace ServiceStack.Auth
             }
 
             internal readonly List<T> Items = new();
-            internal int Sequence = 0;
+            internal int Sequence = 1;
 
             public void Clear()
             {
