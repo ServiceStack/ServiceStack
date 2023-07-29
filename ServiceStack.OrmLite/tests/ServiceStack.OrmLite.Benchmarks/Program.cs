@@ -76,9 +76,9 @@ public class BulkInserts
             "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;",
             SqlServer2012Dialect.Provider);
 
-        CreatePostgresDatabase(DatabaseName);
-        CreateMySqlDatabase(DatabaseName);
-        CreateSqlServerDatabase(DatabaseName);
+        // CreatePostgresDatabase(DatabaseName);
+        // CreateMySqlDatabase(DatabaseName);
+        // CreateSqlServerDatabase(DatabaseName);
 
         Contacts = new Contact[MaxContacts];
         for (var i = 0; i < MaxContacts; i++)

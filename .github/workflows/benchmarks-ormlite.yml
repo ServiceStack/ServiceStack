@@ -35,6 +35,14 @@ jobs:
         ports:
           - 3306:3306
     steps:
+      - name: Create PostgreSQL Database
+        run: |
+          apt-get update
+          apt-get install -y postgresql-client mysql-client sqlcmd
+          PGPASSWORD=p@55wOrd psql -U postgres -tc "SELECT 'CREATE DATABASE test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'test')"
+          mysql --password=p@55wOrd --user root -e "CREATE DATABASE test"
+          sqlcmd -U sa -P p@55wOrd -Q "CREATE DATABASE test"
+
       - uses: actions/checkout@v2
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
