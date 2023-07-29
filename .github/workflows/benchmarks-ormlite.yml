@@ -1,0 +1,55 @@
+﻿name: Benchmark OrmLite 
+
+on: workflow_dispatch
+
+jobs:
+  benchmark-ormlite:
+    runs-on: ubuntu-20.04
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: p@55wOrd
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: p@55wOrd
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: p@55wOrd
+          MYSQL_DATABASE: test
+        ports:
+          - 3306:3306
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0'
+          include-prerelease: true
+
+      - name: Build
+        working-directory: ServiceStack.OrmLite/build
+        run: dotnet build ./build.proj
+
+      - name: Env setup
+        run: |
+          echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
+
+      - name: Benchmark OrmLite
+        working-directory: ServiceStack.OrmLite/tests/ServiceStack.OrmLite.Benchmarks
+        run: dotnet run -c Release
