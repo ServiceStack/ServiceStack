@@ -106,7 +106,7 @@ public class BulkInserts
     Contact CreateContact(int i) => new() { Id = i + 1, FirstName = "First" + i, LastName = "Last" + i, Age = i % 100 };
 
     [Benchmark]
-    [Arguments(100)]
+    // [Arguments(100)]
     [Arguments(1000)]
     public void SingleInserts(int n)
     {
@@ -117,7 +117,7 @@ public class BulkInserts
         }
     }
 
-    [Benchmark]
+    // [Benchmark]
     [Arguments(1000)]
     [Arguments(10000)]
     [Arguments(100000)]
@@ -131,8 +131,8 @@ public class BulkInserts
 
     [Benchmark]
     [Arguments(1000)]
-    [Arguments(10000)]
-    [Arguments(100000)]
+    // [Arguments(10000)]
+    // [Arguments(100000)]
     // [Arguments(1000000)]
     public void BatchInsertsOptimized(int n)
     {
