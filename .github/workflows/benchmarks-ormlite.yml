@@ -40,7 +40,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client mysql-client sqlcmd
           PGPASSWORD=p@55wOrd psql -h localhost -U postgres -tc "SELECT 'CREATE DATABASE test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'test')"
-          mysql --password=p@55wOrd --user root -e "CREATE DATABASE test"
+          mysql --host=localhost --password=p@55wOrd --user root -e "CREATE DATABASE test"
           sqlcmd -U sa -P p@55wOrd -Q "CREATE DATABASE test"
 
       - uses: actions/checkout@v2
