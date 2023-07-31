@@ -131,10 +131,11 @@ const Preview = {
         const url = location.href
         const hasQs = url.includes('?')
         const formats = {
-            json: hasQs ? appendQueryString(url, { format:'json' }) : `${url}.json`,
-            csv:  hasQs ? appendQueryString(url, { format:'csv' }) : `${url}.csv`,
-            jsv:  hasQs ? appendQueryString(url, { format:'jsv' }) : `${url}.jsv`,
-            xml:  hasQs ? appendQueryString(url, { format:'xml' }) : `${url}.xml`,
+            json:  hasQs ? appendQueryString(url, { format:'json' })  : `${url}.json`,
+            csv:   hasQs ? appendQueryString(url, { format:'csv' })   : `${url}.csv`,
+            jsonl: hasQs ? appendQueryString(url, { format:'jsonl' }) : `${url}.jsonl`,
+            jsv:   hasQs ? appendQueryString(url, { format:'jsv' })   : `${url}.jsv`,
+            xml:   hasQs ? appendQueryString(url, { format:'xml' })   : `${url}.xml`,
         }
         
         const status = mapGet(Dto, 'responseStatus')
