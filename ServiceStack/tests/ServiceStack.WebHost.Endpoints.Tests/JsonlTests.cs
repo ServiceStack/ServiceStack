@@ -67,10 +67,10 @@ public class JsonlTests
         const string BaseUrl = "https://blazor-gallery.servicestack.net";
         var url = BaseUrl.CombineWith("albums.jsonl");
         await using var stream = await url.GetStreamFromUrlAsync();
-        await foreach (var row in stream.ReadLinesAsync())
+        await foreach (var line in stream.ReadLinesAsync())
         {
-            var dto = row.FromJson<Album>();
-            dto.PrintDump();
+            var row = line.FromJson<Album>();
+            row.PrintDump();
         }
     }
 #endif
