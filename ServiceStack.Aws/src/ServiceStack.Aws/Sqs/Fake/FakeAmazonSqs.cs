@@ -57,6 +57,11 @@ public class FakeAmazonSqs : IAmazonSQS
         throw new NotImplementedException();
     }
 
+    public CancelMessageMoveTaskResponse CancelMessageMoveTask(CancelMessageMoveTaskRequest request)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<CancelMessageMoveTaskResponse> CancelMessageMoveTaskAsync(CancelMessageMoveTaskRequest request,
         CancellationToken cancellationToken = new CancellationToken())
     {
@@ -488,6 +493,11 @@ public class FakeAmazonSqs : IAmazonSQS
         throw new NotImplementedException();
     }
 
+    public ListMessageMoveTasksResponse ListMessageMoveTasks(ListMessageMoveTasksRequest request)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<ListMessageMoveTasksResponse> ListMessageMoveTasksAsync(ListMessageMoveTasksRequest request,
         CancellationToken cancellationToken = new CancellationToken())
     {
@@ -789,6 +799,11 @@ public class FakeAmazonSqs : IAmazonSQS
     public Task<SetQueueAttributesResponse> SetQueueAttributesAsync(SetQueueAttributesRequest request, CancellationToken token = default(CancellationToken))
     {
         return SetQueueAttributes(request).AsTaskResult();
+    }
+
+    public StartMessageMoveTaskResponse StartMessageMoveTask(StartMessageMoveTaskRequest request)
+    {
+        throw new NotImplementedException();
     }
 
     public Task<StartMessageMoveTaskResponse> StartMessageMoveTaskAsync(StartMessageMoveTaskRequest request,
