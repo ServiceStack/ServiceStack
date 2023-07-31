@@ -51,6 +51,20 @@ namespace ServiceStack
             }
         }
 
+#if NET6_0_OR_GREATER || NETSTANDARD2_0        
+        public static async IAsyncEnumerable<string> ReadLinesAsync(this Stream stream)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            using var reader = new StreamReader(stream);
+            while (await reader.ReadLineAsync() is { } line)
+            {
+                yield return line;
+            }
+        }
+#endif
+        
         /// <summary>
         /// @jonskeet: Collection of utility methods which operate on streams.
         /// r285, February 26th 2009: http://www.yoda.arachsys.com/csharp/miscutil/

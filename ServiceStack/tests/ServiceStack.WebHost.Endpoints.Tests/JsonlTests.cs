@@ -1,6 +1,8 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
 
@@ -50,5 +52,27 @@ public class JsonlTests
         var fromJsonl = JsonlSerializer.DeserializeFromString<Rockstar>(jsonl);
         Assert.That(fromJsonl, Is.EqualTo(rockstar));
     }
+
+#if NET6_0_OR_GREATER
+    public class Album
+    {
+        public long AlbumId { get; set; }
+        public string Title { get; set; }
+        public long ArtistId { get; set; }
+    }
+
+    [Explicit("Integration"), Test]
+    public async Task Can_parse_with_StringReader()
+    {
+        const string BaseUrl = "https://blazor-gallery.servicestack.net";
+        var url = BaseUrl.CombineWith("albums.jsonl");
+        await using var stream = await url.GetStreamFromUrlAsync();
+        await foreach (var row in stream.ReadLinesAsync())
+        {
+            var dto = row.FromJson<Album>();
+            dto.PrintDump();
+        }
+    }
+#endif
     
 }
