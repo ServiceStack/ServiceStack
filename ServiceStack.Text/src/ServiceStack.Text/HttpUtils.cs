@@ -55,7 +55,7 @@ public static partial class HttpUtils
         return url + prefix + key + "=" + (encode ? val.UrlEncode() : val);
     }
 
-    public static string AddQueryParams(this string url, Dictionary<string, string> args)
+    public static string AddQueryParams(this string url, Dictionary<string, object> args)
     {
         var sb = StringBuilderCache.Allocate()
             .Append(url);
@@ -67,12 +67,12 @@ public static partial class HttpUtils
                 continue;
 
             sb.Append(i++ == 0 && url.IndexOf('?') == -1 ? '?' : '&');
-            sb.Append($"{entry.Key.UrlEncode()}={entry.Value.UrlEncode()}");
+            sb.Append($"{entry.Key.UrlEncode()}={entry.Value.ConvertTo<string>().UrlEncode()}");
         }
         return StringBuilderCache.ReturnAndFree(sb);
     }
     
-    public static string AddQueryParams(this string url, NameValueCollection queryParams)
+    public static string AddNameValueCollection(this string url, NameValueCollection queryParams)
     {
         var sb = StringBuilderCache.Allocate()
             .Append(url);
