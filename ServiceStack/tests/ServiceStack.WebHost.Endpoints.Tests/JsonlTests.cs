@@ -65,13 +65,25 @@ public class JsonlTests
     public async Task Can_parse_with_StringReader()
     {
         const string BaseUrl = "https://blazor-gallery.servicestack.net";
-        var url = BaseUrl.CombineWith("albums.jsonl");
+        var url = BaseUrl.CombineWith("albums.jsonl").AddQueryParam("take", 10);
         await using var stream = await url.GetStreamFromUrlAsync();
         await foreach (var line in stream.ReadLinesAsync())
         {
             var row = line.FromJson<Album>();
             row.PrintDump();
         }
+    }
+
+    [Explicit("Integration"), Test]
+    public async Task Can_serialize_jsonl_from_string()
+    {
+        const string BaseUrl = "https://blazor-gallery.servicestack.net";
+        var url = BaseUrl.CombineWith("albums.jsonl").AddQueryParam("take", 10);
+        var jsonl = await url.GetStringFromUrlAsync();
+        var albums = JsonlSerializer.DeserializeFromString<List<Album>>(jsonl);
+        albums.PrintDump();
+        JsonlSerializer.SerializeToString(albums).Print();
+        Assert.That(albums.Count, Is.EqualTo(10));
     }
 #endif
     
