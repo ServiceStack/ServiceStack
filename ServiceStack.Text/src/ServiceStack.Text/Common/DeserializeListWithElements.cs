@@ -67,11 +67,10 @@ namespace ServiceStack.Text.Common
 
             const int startQuotePos = 1;
             const int endQuotePos = 2;
-            var ret = value[0] == JsWriter.ListStartChar
+            var val = value[0] == JsWriter.ListStartChar
                     ? value.Slice(startQuotePos, value.Length - endQuotePos)
                     : value;
-            var val = ret.AdvancePastWhitespace();
-            if (val.Length == 0)
+            if (val.Length == 0 || val.AdvancePastWhitespace().Length == 0)
                 return TypeConstants.EmptyStringSpan;
             return val;
         }
