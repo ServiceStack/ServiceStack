@@ -39,8 +39,9 @@ public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
     [DataMember(Order = 17)] public string AccessToken { get; set; }
     [DataMember(Order = 18)] public string AccessTokenSecret { get; set; }
     [DataMember(Order = 19)] public string scope { get; set; }
+    [DataMember(Order = 20)] public string ReturnUrl { get; set; }
 
-    [DataMember(Order = 20)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 21)] public Dictionary<string, string> Meta { get; set; }
 }
 
 [DataContract]

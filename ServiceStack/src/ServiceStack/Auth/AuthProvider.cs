@@ -114,6 +114,7 @@ namespace ServiceStack.Auth
 
             var session = await service.GetSessionAsync(token: token).ConfigAwait();
             var referrerUrl = service.Request.GetReturnUrl()
+                ?? request.ReturnUrl 
                 ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
                 ?? service.Request.GetHeader("Referer").NotLogoutUrl()
