@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -103,15 +102,12 @@ namespace ServiceStack
         /// </summary>
         public Action<List<TableSchema>> TableSchemasFilter { get; set; }
         
-        /// <summary>
-        /// Override which tables to generate APIs for from a 'schema'  
-        /// </summary>
-        public Func<IDbConnection, string, List<string>> GetTableNames { get; set; }
+        public GetTableNamesDelegate GetTableNames { get; set; }
         
         /// <summary>
         /// Override which table columns to generate APIs for from a 'table' and 'schema'  
         /// </summary>
-        public Func<IDbConnection, string, string, ColumnSchema[]> GetTableColumns { get; set; }
+        public GetTableColumnsDelegate GetTableColumns { get; set; }
 
 
         public static Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
