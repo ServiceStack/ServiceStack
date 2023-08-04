@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using ServiceStack.Data;
 using ServiceStack.NativeTypes;
@@ -90,6 +91,8 @@ namespace ServiceStack
         void Register(IAppHost appHost);
         List<Type> GenerateMissingServices(AutoQueryFeature feature);
         Action<List<TableSchema>> TableSchemasFilter { get; set; }
+        Func<IDbConnection, string, List<string>> GetTableNames { get; set; }
+        Func<IDbConnection, string, string, ColumnSchema[]> GetTableColumns { get; set; }
     }
 
     public static class CrudUtils
