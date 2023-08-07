@@ -50,16 +50,14 @@ namespace ServiceStack.OrmLite.Legacy
                 yield break;
             }
 
-            using (var reader = dbCmd.ExecReader(dbCmd.CommandText))
+            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+            var indexCache = reader.GetIndexFieldsCache(ModelDefinition<T>.Definition, dialectProvider);
+            var values = new object[reader.FieldCount];
+            while (reader.Read())
             {
-                var indexCache = reader.GetIndexFieldsCache(ModelDefinition<T>.Definition, dialectProvider);
-                var values = new object[reader.FieldCount];
-                while (reader.Read())
-                {
-                    var row = OrmLiteUtils.CreateInstance<T>();
-                    row.PopulateWithSqlReader(dialectProvider, reader, indexCache, values);
-                    yield return row;
-                }
+                var row = OrmLiteUtils.CreateInstance<T>();
+                row.PopulateWithSqlReader(dialectProvider, reader, indexCache, values);
+                yield return row;
             }
         }
 

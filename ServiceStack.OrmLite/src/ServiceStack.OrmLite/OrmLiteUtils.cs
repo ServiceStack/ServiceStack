@@ -34,8 +34,7 @@ namespace ServiceStack.OrmLite
         internal const string AsyncRequiresNet45Error = "Async support is only available in .NET 4.5 builds";
 
         const int maxCachedIndexFields = 10000;
-        private static readonly Dictionary<IndexFieldsCacheKey, Tuple<FieldDefinition, int, IOrmLiteConverter>[]> indexFieldsCache 
-            = new Dictionary<IndexFieldsCacheKey, Tuple<FieldDefinition, int, IOrmLiteConverter>[]>(maxCachedIndexFields);
+        private static readonly Dictionary<IndexFieldsCacheKey, Tuple<FieldDefinition, int, IOrmLiteConverter>[]> indexFieldsCache = new(maxCachedIndexFields);
 
         internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteUtils));
 
@@ -608,6 +607,17 @@ namespace ServiceStack.OrmLite
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
+        public static string[] GetFieldNames(this IDataReader reader)
+        {
+            var fields = new string[reader.FieldCount];
+            int count = reader.FieldCount;
+            for (int i = 0; i < count; i++)
+            {
+                fields[i] = reader.GetName(i);
+            }
+            return fields;
+        }
+
         public static Tuple<FieldDefinition, int, IOrmLiteConverter>[] GetIndexFieldsCache(this IDataReader reader, 
             ModelDefinition modelDefinition, 
             IOrmLiteDialectProvider dialect, 
@@ -617,7 +627,7 @@ namespace ServiceStack.OrmLite
         {
             var end = endPos.GetValueOrDefault(reader.FieldCount);
             var cacheKey = (startPos == 0 && end == reader.FieldCount && onlyFields == null)
-                            ? new IndexFieldsCacheKey(reader, modelDefinition, dialect)
+                            ? new IndexFieldsCacheKey(reader.GetFieldNames(), modelDefinition, dialect)
                             : null;
 
             Tuple<FieldDefinition, int, IOrmLiteConverter>[] value;
