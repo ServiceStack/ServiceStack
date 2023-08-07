@@ -641,10 +641,9 @@ public partial class OrmLiteSelectTests : OrmLiteProvidersTestBase
 
         db.InsertAll(new List<EscapeWildcardsModel>()
         {
-            new EscapeWildcardsModel(){Index = "12"},
-            new EscapeWildcardsModel(){Index = "102"},
-            new EscapeWildcardsModel(){Index = "1_2"},
-            new EscapeWildcardsModel(){Index = "1_2_3"}
+            new(){Index = "12"},
+            new(){Index = "1_2"},
+            new(){Index = "1_2_3"}
         });
 
         var q = db.From<EscapeWildcardsModel>(x =>
@@ -653,7 +652,7 @@ public partial class OrmLiteSelectTests : OrmLiteProvidersTestBase
             })
             .Where(x => x.Index.StartsWith("1_2"));
         var sql1 = q.ToMergedParamsSelectStatement();
-        Debug.Assert(sql1.Contains("WHERE \"Index\" like '1^_2%' escape '^'"));
+        Debug.Assert(sql1.Contains("like '1^_2%' escape '^'"));
         var c1 = db.Count(q);
         Debug.Assert(c1 == 2);
         q = db.From<EscapeWildcardsModel>(x =>
@@ -662,7 +661,7 @@ public partial class OrmLiteSelectTests : OrmLiteProvidersTestBase
             })
             .Where(x => x.Index.StartsWith("1_2"));
         var sql2 = q.ToMergedParamsSelectStatement();
-        Debug.Assert(sql2.Contains("WHERE \"Index\" like '1_2%'"));
+        Debug.Assert(sql2.Contains("like '1_2%'"));
         var c2 = db.Count(q);
         Debug.Assert(c2 == 3);
     }

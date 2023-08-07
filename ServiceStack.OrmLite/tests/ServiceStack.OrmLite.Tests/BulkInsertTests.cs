@@ -17,6 +17,7 @@ public class BulkInsertTests : OrmLiteTestBase
         var dbFactory = new OrmLiteConnectionFactory(
             "Server=localhost;Database=test;UID=root;Password=test;SslMode=none;AllowLoadLocalInfile=true", 
             MySqlDialect.Provider);
+        MySqlDialect.Instance.AllowLoadLocalInfile = true;
         
         using var db = await dbFactory.OpenDbConnectionAsync();
         
