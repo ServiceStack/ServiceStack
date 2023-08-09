@@ -33,8 +33,8 @@ namespace ServiceStack.OrmLite
     {
         internal const string AsyncRequiresNet45Error = "Async support is only available in .NET 4.5 builds";
 
-        const int maxCachedIndexFields = 10000;
-        private static readonly Dictionary<IndexFieldsCacheKey, Tuple<FieldDefinition, int, IOrmLiteConverter>[]> indexFieldsCache = new(maxCachedIndexFields);
+        public static int MaxCachedIndexFields { get; set; } = 1000;
+        private static readonly Dictionary<IndexFieldsCacheKey, Tuple<FieldDefinition, int, IOrmLiteConverter>[]> indexFieldsCache = new();
 
         internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteUtils));
 
@@ -705,8 +705,9 @@ namespace ServiceStack.OrmLite
                 {
                     if (indexFieldsCache.TryGetValue(cacheKey, out value))
                         return value;
-                    if (indexFieldsCache.Count < maxCachedIndexFields)
-                        indexFieldsCache.Add(cacheKey, result);
+                    if (indexFieldsCache.Count >= MaxCachedIndexFields)
+                        indexFieldsCache.Clear();
+                    indexFieldsCache.Add(cacheKey, result);
                 }
             }
 
