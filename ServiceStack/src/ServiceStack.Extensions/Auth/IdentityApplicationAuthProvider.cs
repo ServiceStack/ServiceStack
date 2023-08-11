@@ -65,6 +65,11 @@ namespace ServiceStack.Auth
         /// </summary>
         public Action<IAuthSession, ClaimsPrincipal, IRequest>? PopulateSessionFilter { get; set; }
 
+        /// <summary>
+        /// Run Async custom filter after session is restored from ClaimsPrincipal
+        /// </summary>
+        public Func<IAuthSession, ClaimsPrincipal, IRequest, Task>? PopulateSessionFilterAsync { get; set; }
+
         public IdentityApplicationAuthProvider(string? authenticationScheme=null)
         {
             AuthenticationScheme = authenticationScheme ?? IdentityConstants.ApplicationScheme;
@@ -167,6 +172,9 @@ namespace ServiceStack.Auth
                 session.Email = session.UserAuthName;
             
             PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
+            
+            if (PopulateSessionFilterAsync != null)
+                await PopulateSessionFilterAsync(session, claimsPrincipal, req);
             
             session.OnCreated(req);
 

@@ -87,7 +87,7 @@ namespace ServiceStack.Auth
         public Action<IAuthSession, JsonObject, IRequest> PopulateSessionFilter { get; set; }
 
         /// <summary>
-        /// Run custom filter after session is restored from a JWT Token
+        /// Run Async custom filter after session is restored from a JWT Token
         /// </summary>
         public Func<IAuthSession, JsonObject, IRequest, Task> PopulateSessionFilterAsync { get; set; }
 
