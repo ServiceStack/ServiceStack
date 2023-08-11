@@ -31,6 +31,11 @@ namespace ServiceStack
         public ICollection<string> AllowOriginWhitelist => allowOriginWhitelist;
 
         public bool AutoHandleOptionsRequests { get; set; }
+
+        public CustomActionHandler EmitGlobalHeadersHandler { get; set; } = 
+            new CustomActionHandler((httpReq, httpRes) => {
+                httpRes.EndRequest(); //PreRequestFilters already written in CustomActionHandler
+            });
         
         public CorsFeature(IAppSettings appSettings)
         {
@@ -113,15 +118,9 @@ namespace ServiceStack
             if (AutoHandleOptionsRequests)
             {
                 //Handles Request and closes Response after emitting global HTTP Headers
-                var emitGlobalHeadersHandler = new CustomActionHandler(
-                    (httpReq, httpRes) =>
-                    {
-                        httpRes.EndRequest(); //PreRequestFilters already written in CustomActionHandler
-                    });
-
                 appHost.RawHttpHandlers.Add(httpReq =>
                     httpReq.HttpMethod == HttpMethods.Options
-                        ? emitGlobalHeadersHandler
+                        ? EmitGlobalHeadersHandler
                         : null);
             }
         }

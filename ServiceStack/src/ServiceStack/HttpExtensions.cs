@@ -155,7 +155,7 @@ namespace ServiceStack
         /// </summary>
         public static void EndRequestWithNoContent(this IResponse httpRes)
         {
-            var headOrOptions = httpRes.Request.Verb == HttpMethods.Head || httpRes.Request.Verb == HttpMethods.Options;
+            var headOrOptions = httpRes.Request.Verb is HttpMethods.Head or HttpMethods.Options;
             if (!headOrOptions && !httpRes.HasStarted)
             {
                 if (HostContext.Config == null || HostContext.Config.Return204NoContentForEmptyResponse)

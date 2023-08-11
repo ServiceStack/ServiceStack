@@ -170,7 +170,7 @@ namespace ServiceStack
             return hasAttr;
         }
 
-        private static readonly ConcurrentDictionary<Tuple<MemberInfo,Type>, bool> hasAttributeOfCache = new ConcurrentDictionary<Tuple<MemberInfo,Type>, bool>();
+        private static readonly ConcurrentDictionary<Tuple<MemberInfo,Type>, bool> hasAttributeOfCache = new();
         public static bool HasAttributeOfCached<T>(this MemberInfo memberInfo)
         {
             var key = new Tuple<MemberInfo,Type>(memberInfo, typeof(T));
