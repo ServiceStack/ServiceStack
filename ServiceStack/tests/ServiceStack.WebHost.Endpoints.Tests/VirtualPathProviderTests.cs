@@ -5,7 +5,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Cloud.Storage.V1;
 using NUnit.Framework;
+using ServiceStack.GoogleCloud;
 using ServiceStack.IO;
 using ServiceStack.Testing;
 using ServiceStack.Text;
@@ -13,6 +15,16 @@ using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Ignore("Integration Tests")]
+    public class GoogleCloudVirtualFilesTests : VirtualPathProviderTests
+    {
+        public override IVirtualPathProvider GetPathProvider()
+        {
+            var client = StorageClient.Create();
+            return new GoogleCloudVirtualFiles(client, "servicestack-tests");
+        }
+    }
+
     public class FileSystemVirtualPathProviderTests : AppendVirtualFilesTests
     {
         private static string RootDir = "~/App_Data/files".MapProjectPath();

@@ -129,6 +129,11 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.GoogleCloud -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.GoogleCloud/ServiceStack.GoogleCloud.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
     <!-- ServiceStack.Desktop -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Desktop/ServiceStack.Desktop.csproj"
              Targets="Build;Pack"

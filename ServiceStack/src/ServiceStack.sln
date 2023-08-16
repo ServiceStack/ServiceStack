@@ -117,6 +117,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Sqlite
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServer.Data", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer.Data\ServiceStack.OrmLite.SqlServer.Data.csproj", "{EA4329E1-DE1C-425E-8CBE-68606C782F8E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.GoogleCloud", "ServiceStack.GoogleCloud\ServiceStack.GoogleCloud.csproj", "{9BC27168-EFF8-4142-9013-774B7ADFD97B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -697,6 +699,18 @@ Global
 		{EA4329E1-DE1C-425E-8CBE-68606C782F8E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EA4329E1-DE1C-425E-8CBE-68606C782F8E}.Release|x86.ActiveCfg = Release|Any CPU
 		{EA4329E1-DE1C-425E-8CBE-68606C782F8E}.Release|x86.Build.0 = Release|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Debug|x86.Build.0 = Debug|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|x86.ActiveCfg = Release|Any CPU
+		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
