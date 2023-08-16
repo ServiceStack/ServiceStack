@@ -232,6 +232,11 @@ namespace ServiceStack.Text
             ms.Write(source);
             return ms;
         }
+
+        public override void WriteUtf8ToStream(string contents, Stream stream)
+        {
+            stream.Write(ToUtf8(contents).Span);
+        }
     }    
 }
 

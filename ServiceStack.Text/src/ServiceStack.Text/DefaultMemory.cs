@@ -625,6 +625,12 @@ namespace ServiceStack.Text
         public override MemoryStream ToMemoryStream(ReadOnlySpan<byte> source) => 
             MemoryStreamFactory.GetStream(source.ToArray());
 
+        public override void WriteUtf8ToStream(string contents, Stream stream)
+        {
+            var bytes = ToUtf8Bytes(contents.AsSpan());
+            stream.Write(bytes, 0, bytes.Length);
+        }
+
         private static Guid ParseGeneralStyleGuid(ReadOnlySpan<char> value, out int len)
         {
             var buf = value;
