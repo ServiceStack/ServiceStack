@@ -47,7 +47,6 @@
     <PackageReference Include="MongoDB.Driver" Version="2.20.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.20.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
@@ -59,6 +58,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <PackageReference Include="System.Linq.Async" Version="5.1.0" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
@@ -66,5 +66,6 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 </Project>
