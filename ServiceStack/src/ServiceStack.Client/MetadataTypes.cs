@@ -415,7 +415,7 @@ public class InputInfo : IMeta
     public string Autofocus  { get; set; }
     public string Min { get; set; }
     public string Max { get; set; }
-    public int? Step { get; set; }
+    public string Step { get; set; }
     public int? MinLength { get; set; }
     public int? MaxLength { get; set; }
     public string Accept  { get; set; }
@@ -1134,7 +1134,7 @@ public static class AppMetadataUtils
             Required = input.Required.NullIfFalse(),
             Min = input.Min,
             Max = input.Max,
-            Step = input.Step.NullIfMinValue(),
+            Step = input.Step,
             MinLength = input.MinLength.NullIfMinValue(),
             MaxLength = input.MaxLength.NullIfMinValue(),
             Accept = input.Accept,

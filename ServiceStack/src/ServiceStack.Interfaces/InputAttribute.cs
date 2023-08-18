@@ -43,7 +43,7 @@ public class InputAttributeBase : MetadataAttributeBase
     public string Autofocus  { get; set; }
     public string Min { get; set; }
     public string Max { get; set; }
-    public int Step { get; set; } = int.MinValue;
+    public string Step { get; set; }
     public int MinLength { get; set; } = int.MinValue;
     public int MaxLength { get; set; } = int.MinValue;
     public string Accept  { get; set; }
