@@ -1119,7 +1119,9 @@ public partial class RedisClient
         if (AssertServerVersionNumber() >= 2812)
         {
             var text = base.Role();
-            var roleName = text.Children[0].Text;
+            var roleName = text.Children?[0]?.Text;
+            if (string.IsNullOrEmpty(roleName))
+                Log("Invalid ROLE Response: {0}", text.ToString());
             return ToServerRole(roleName);
         }
 
