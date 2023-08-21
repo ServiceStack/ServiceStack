@@ -12,7 +12,7 @@ public class RedisText
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Text");
+        sb.AppendLine(Text);
         if (Children is { Count: > 0 })
         {
             sb.Append('[');
