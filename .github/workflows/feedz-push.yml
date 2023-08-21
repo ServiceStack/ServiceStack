@@ -38,7 +38,7 @@ jobs:
         working-directory: ./build/staging
         shell: bash
         run: |
-          ls -1 | grep .nupkg$ | sed -e "s/^\(.*\)\.\([0-9]\.[0-9]\.[0-9]\).*$/\1 \2/" | while read line
+          ls -1 | grep .nupkg$ | sed -E 's/(.*)\.([0-9]+\.[0-9]+\.[0-9]+).nupkg$/\1 \2/' | while read line
           do 
             dotnet nuget delete ${line} --source ${{ env.FEED_URL }} --api-key ${{ secrets.FEEDZ_TOKEN }} --non-interactive || true
           done
