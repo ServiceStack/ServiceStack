@@ -997,6 +997,43 @@ namespace ServiceStack
             return to;
         }
 
+        public static bool IsDefaultValue(object value) =>
+            value == null || value.Equals(value.GetType().GetDefaultValue());
+
+        public static bool HasNonDefaultValues(this IDictionary map, string[] ignoreKeys = null) =>
+            AnyValues(map, (key,value) => (ignoreKeys == null || !ignoreKeys.Contains(key))
+                && !IsDefaultValue(value));
+        
+        public static bool AnyValues(this IDictionary map, Func<string, object, bool> match)
+        {
+            foreach (var key in map.Keys)
+            {
+                var value = map[key];
+                var keyString = key as string ?? key.ConvertTo<string>();
+                if (!match(keyString, value))
+                    continue;
+                return true;
+            }
+            return false;
+        }
+
+        public static Dictionary<string, object> WithoutDefaultValues(this IDictionary map, string[] ignoreKeys = null) =>
+            WithValues(map, (key,value) => (ignoreKeys == null || !ignoreKeys.Contains(key)) && !IsDefaultValue(value));
+
+        public static Dictionary<string, object> WithValues(this IDictionary map, Func<string, object, bool> match)
+        {
+            var to = new Dictionary<string, object>();
+            foreach (var key in map.Keys)
+            {
+                var value = map[key];
+                var keyString = key as string ?? key.ConvertTo<string>();
+                if (!match(keyString, value))
+                    continue;
+                to[keyString] = value;
+            }
+            return to;
+        }
+
         public static IEnumerable ShallowClone(this IEnumerable xs)
         {
             if (xs == null)
