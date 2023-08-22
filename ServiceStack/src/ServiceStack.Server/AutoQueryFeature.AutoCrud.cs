@@ -1006,14 +1006,14 @@ namespace ServiceStack
             return false;
         }
 
-        private Dictionary<string, object> CreateDtoValues(IRequest req, object dto, bool skipDefaults = false)
+        public Dictionary<string, object> CreateDtoValues(IRequest req, object dto, bool skipDefaults = false)
         {
             var meta = AutoCrudMetadata.Create(dto.GetType());
             var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
             return dtoValues;
         }
-        
-        private Task<Dictionary<string, object>> CreateDtoValuesAsync(IRequest req, object dto, bool skipDefaults = false)
+
+        public Task<Dictionary<string, object>> CreateDtoValuesAsync(IRequest req, object dto, bool skipDefaults = false)
         {
             var meta = AutoCrudMetadata.Create(dto.GetType());
             var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
