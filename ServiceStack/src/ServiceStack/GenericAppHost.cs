@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using Funq;
 using ServiceStack.Host;
-using ServiceStack.NetCore;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -56,7 +55,7 @@ public static class GenericAppHostExtensions
     public static Microsoft.Extensions.Hosting.IHost UseServiceStack(this Microsoft.Extensions.Hosting.IHost host, GenericAppHost appHost)
     {
         appHost.Host = host;
-        appHost.Container.Adapter = new NetCoreContainerAdapter(host.Services);
+        appHost.Container.Adapter = new NetCore.NetCoreContainerAdapter(host.Services);
         appHost.Init();
         return host;
     }
