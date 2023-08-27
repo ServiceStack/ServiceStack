@@ -56,6 +56,15 @@ public static class GenericAppHostExtensions
     {
         appHost.Host = host;
         appHost.Container.Adapter = new NetCore.NetCoreContainerAdapter(host.Services);
+       
+        var logFactory = host.Services.Resolve<Microsoft.Extensions.Logging.ILoggerFactory>();
+        if (logFactory != null)
+        {
+            NetCore.NetCoreLogFactory.FallbackLoggerFactory = logFactory;
+            if (Logging.LogManager.LogFactory.IsNullOrNullLogFactory())
+                Logging.LogManager.LogFactory = new NetCore.NetCoreLogFactory(logFactory);
+        }
+        
         appHost.Init();
         return host;
     }
