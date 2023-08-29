@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Configuration;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -115,7 +116,9 @@ namespace ServiceStack
     {
         public static T Resolve<T>(this IResolver container)
         {
-            var ret = container.TryResolve<T>();
+            var ret = container is IRequest req
+                ? req.TryResolve<T>()
+                : container.TryResolve<T>();
             if (ret == null)
                 throw new Exception($"Error trying to resolve Service '{typeof(T).Name}' or one of its autowired dependencies.");
                 
