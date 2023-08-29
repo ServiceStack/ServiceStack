@@ -1,9 +1,8 @@
-﻿namespace ServiceStack
+﻿namespace ServiceStack;
+
+public class ConnectionInfo
 {
-    public class ConnectionInfo
-    {
-        public string NamedConnection { get; set; }
-        public string ConnectionString { get; set; }
-        public string ProviderName { get; set; }
-    }
+    public string NamedConnection { get; set; }
+    public string ConnectionString { get; set; }
+    public string ProviderName { get; set; }
 }

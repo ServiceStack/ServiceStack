@@ -8,115 +8,114 @@ using System.IO;
 using System.Linq;
 using ServiceStack.IO;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public static class VirtualPathUtils
 {
-    public static class VirtualPathUtils
+    public static Stack<string> TokenizeVirtualPath(this string str, IVirtualPathProvider pathProvider)
     {
-        public static Stack<string> TokenizeVirtualPath(this string str, IVirtualPathProvider pathProvider)
-        {
-            if (pathProvider == null)
-                throw new ArgumentNullException(nameof(pathProvider));
+        if (pathProvider == null)
+            throw new ArgumentNullException(nameof(pathProvider));
 
-            return TokenizeVirtualPath(str, pathProvider.VirtualPathSeparator);
+        return TokenizeVirtualPath(str, pathProvider.VirtualPathSeparator);
+    }
+
+    public static Stack<string> TokenizeVirtualPath(this string str, string virtualPathSeparator)
+    {
+        if (string.IsNullOrEmpty(str))
+            return new Stack<string>();
+
+        var tokens = str.Split(new[] { virtualPathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+        return new Stack<string>(tokens.Reverse());
+    }
+
+    public static Stack<string> TokenizeResourcePath(this string str, char pathSeparator = '.')
+    {
+        if (string.IsNullOrEmpty(str))
+            return new Stack<string>();
+
+        var n = str.Count(c => c == pathSeparator);
+        var tokens = str.Split(new[] { pathSeparator }, n);
+
+        return new Stack<string>(tokens.Reverse());
+    }
+
+    public static IEnumerable<IGrouping<string, string[]>> GroupByFirstToken(this IEnumerable<string> resourceNames, char pathSeparator = '.')
+    {
+        return resourceNames.Select(n => n.Split(new[] { pathSeparator }, 2))
+            .GroupBy(t => t[0]);
+    }
+
+    public static byte[] ReadAllBytes(this IVirtualFile file)
+    {
+        using var stream = file.OpenRead();
+        var bytes = stream.ReadFully();
+        return bytes;
+    }
+
+    public static bool Exists(this IVirtualNode node)
+    {
+        return node != null;
+    }
+
+    public static bool IsFile(this IVirtualNode node)
+    {
+        return node is IVirtualFile;
+    }
+
+    public static bool IsDirectory(this IVirtualNode node)
+    {
+        return node is IVirtualDirectory;
+    }
+
+    public static IVirtualNode GetVirtualNode(this IVirtualPathProvider pathProvider, string virtualPath)
+    {
+        return (IVirtualNode)pathProvider.GetFile(virtualPath)
+               ?? pathProvider.GetDirectory(virtualPath);
+    }
+
+    public static IVirtualFile GetDefaultDocument(this IVirtualDirectory dir, List<string> defaultDocuments)
+    {
+        foreach (var defaultDoc in defaultDocuments)
+        {
+            var defaultFile = dir.GetFile(defaultDoc);
+            if (defaultFile == null) continue;
+
+            return defaultFile;
         }
 
-        public static Stack<string> TokenizeVirtualPath(this string str, string virtualPathSeparator)
-        {
-            if (string.IsNullOrEmpty(str))
-                return new Stack<string>();
+        return null;
+    }
 
-            var tokens = str.Split(new[] { virtualPathSeparator }, StringSplitOptions.RemoveEmptyEntries);
-            return new Stack<string>(tokens.Reverse());
-        }
+    public static TimeSpan MaxRetryOnExceptionTimeout { get; } = TimeSpan.FromSeconds(10);
 
-        public static Stack<string> TokenizeResourcePath(this string str, char pathSeparator = '.')
-        {
-            if (string.IsNullOrEmpty(str))
-                return new Stack<string>();
-
-            var n = str.Count(c => c == pathSeparator);
-            var tokens = str.Split(new[] { pathSeparator }, n);
-
-            return new Stack<string>(tokens.Reverse());
-        }
-
-        public static IEnumerable<IGrouping<string, string[]>> GroupByFirstToken(this IEnumerable<string> resourceNames, char pathSeparator = '.')
-        {
-            return resourceNames.Select(n => n.Split(new[] { pathSeparator }, 2))
-                .GroupBy(t => t[0]);
-        }
-
-        public static byte[] ReadAllBytes(this IVirtualFile file)
-        {
-            using var stream = file.OpenRead();
-            var bytes = stream.ReadFully();
-            return bytes;
-        }
-
-        public static bool Exists(this IVirtualNode node)
-        {
-            return node != null;
-        }
-
-        public static bool IsFile(this IVirtualNode node)
-        {
-            return node is IVirtualFile;
-        }
-
-        public static bool IsDirectory(this IVirtualNode node)
-        {
-            return node is IVirtualDirectory;
-        }
-
-        public static IVirtualNode GetVirtualNode(this IVirtualPathProvider pathProvider, string virtualPath)
-        {
-            return (IVirtualNode)pathProvider.GetFile(virtualPath)
-                ?? pathProvider.GetDirectory(virtualPath);
-        }
-
-        public static IVirtualFile GetDefaultDocument(this IVirtualDirectory dir, List<string> defaultDocuments)
-        {
-            foreach (var defaultDoc in defaultDocuments)
-            {
-                var defaultFile = dir.GetFile(defaultDoc);
-                if (defaultFile == null) continue;
-
-                return defaultFile;
-            }
-
-            return null;
-        }
-
-        public static TimeSpan MaxRetryOnExceptionTimeout { get; } = TimeSpan.FromSeconds(10);
-
-        internal static void SleepBackOffMultiplier(this int i)
-        {
-            var nextTryMs = (2 ^ i) * 50;
+    internal static void SleepBackOffMultiplier(this int i)
+    {
+        var nextTryMs = (2 ^ i) * 50;
 #if NETCORE
-            System.Threading.Tasks.Task.Delay(nextTryMs).Wait();
+        System.Threading.Tasks.Task.Delay(nextTryMs).Wait();
 #elif NETFX
             System.Threading.Thread.Sleep(nextTryMs);
 #endif
-        }
+    }
         
-        static readonly HashSet<char> InvalidFileNameChars = new(Path.GetInvalidFileNameChars()) { ':' };
+    static readonly HashSet<char> InvalidFileNameChars = new(Path.GetInvalidFileNameChars()) { ':' };
 
-        public static string SafeFileName(string uri) => new(uri.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
+    public static string SafeFileName(string uri) => new(uri.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
 
-        public static bool IsValidFileName(string path) => !string.IsNullOrEmpty(path) && path.All(c => !InvalidFileNameChars.Contains(c));
+    public static bool IsValidFileName(string path) => !string.IsNullOrEmpty(path) && path.All(c => !InvalidFileNameChars.Contains(c));
 
-        public static bool IsValidFilePath(string path)
+    public static bool IsValidFilePath(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return false;
+        foreach (var c in path)
         {
-            if (string.IsNullOrEmpty(path))
+            if (c == '/') 
+                continue;
+            if (InvalidFileNameChars.Contains(c)) 
                 return false;
-            foreach (var c in path)
-            {
-                if (c == '/') 
-                    continue;
-                if (InvalidFileNameChars.Contains(c)) 
-                    return false;
-            }
-            return true;
         }
+        return true;
     }
 }
