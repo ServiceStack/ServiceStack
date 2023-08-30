@@ -511,7 +511,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
                 if (layout != null)
                     viewData["Layout"] = layout;
 
-                viewData[Keywords.IRequest] = req ?? new Host.BasicRequest { PathInfo = view.Path };
+                viewData[Keywords.IRequest] = req ?? new Host.BasicHttpRequest { PathInfo = view.Path };
 
                 var viewContext = new ViewContext(
                     actionContext,
