@@ -10,7 +10,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.Html;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Auth
@@ -32,14 +31,6 @@ namespace ServiceStack.Auth
 
         public JwtAuthProvider(IAppSettings appSettings) : base(appSettings)
         {
-            Label = "JWT";
-            FormLayout = new() {
-                new InputInfo(nameof(IHasBearerToken.BearerToken), Input.Types.Textarea) {
-                    Label = "JWT",
-                    Placeholder = "JWT Bearer Token",
-                    Required = true,
-                },
-            };
         }
 
         public override void Init(IAppSettings appSettings = null)

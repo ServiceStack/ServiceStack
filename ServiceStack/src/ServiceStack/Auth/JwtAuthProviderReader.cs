@@ -351,6 +351,15 @@ namespace ServiceStack.Auth
 
         public virtual void Init(IAppSettings appSettings = null)
         {
+            Label = "JWT";
+            FormLayout = new() {
+                new InputInfo(nameof(IHasBearerToken.BearerToken), Html.Input.Types.Textarea) {
+                    Label = "JWT",
+                    Placeholder = "JWT Bearer Token",
+                    Required = true,
+                },
+            };
+            
             RequireSecureConnection = true;
             EncryptPayload = false;
             HashAlgorithm = "HS256";
