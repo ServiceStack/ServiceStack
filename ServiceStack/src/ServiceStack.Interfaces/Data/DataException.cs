@@ -3,13 +3,12 @@
 
 using System;
 
-namespace ServiceStack.Data
+namespace ServiceStack.Data;
+
+public class DataException : Exception
 {
-    public class DataException : Exception
-    {
-        public DataException() { }
-        public DataException(string message) : base(message) { }
-        public DataException(string message, Exception innerException)
-            : base(message, innerException) { }
-    }
+    public DataException() { }
+    public DataException(string message) : base(message) { }
+    public DataException(string message, Exception innerException)
+        : base(message, innerException) { }
 }

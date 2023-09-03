@@ -1,7 +1,6 @@
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+public interface IServiceGatewayFactory
 {
-    public interface IServiceGatewayFactory
-    {
-        IServiceGateway GetServiceGateway(IRequest request);
-    }
+    IServiceGateway GetServiceGateway(IRequest request);
 }

@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public interface IOneWayClient
 {
-    public interface IOneWayClient
-    {
-        void SendOneWay(object requestDto);
+    void SendOneWay(object requestDto);
 
-        void SendOneWay(string relativeOrAbsoluteUri, object requestDto);
+    void SendOneWay(string relativeOrAbsoluteUri, object requestDto);
 
-        void SendAllOneWay(IEnumerable<object> requests);
-    }
+    void SendAllOneWay(IEnumerable<object> requests);
 }

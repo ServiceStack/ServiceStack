@@ -1,9 +1,8 @@
-﻿namespace ServiceStack.Redis
+﻿namespace ServiceStack.Redis;
+
+public enum RedisClientType
 {
-    public enum RedisClientType
-    {
-        Normal,
-        Slave,
-        PubSub,
-    }
+    Normal,
+    Slave,
+    PubSub,
 }

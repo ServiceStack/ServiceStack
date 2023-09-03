@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿namespace ServiceStack;
 
-namespace ServiceStack
+public interface IUrlFilter
 {
-    public interface IUrlFilter
-    {
-        string ToUrl(string absoluteUrl);
-    }
+    string ToUrl(string absoluteUrl);
 }

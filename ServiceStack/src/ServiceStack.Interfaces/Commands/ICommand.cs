@@ -1,10 +1,9 @@
 //Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-namespace ServiceStack.Commands
+namespace ServiceStack.Commands;
+
+public interface ICommand<ReturnType>
 {
-    public interface ICommand<ReturnType>
-    {
-        ReturnType Execute();
-    }
+    ReturnType Execute();
 }

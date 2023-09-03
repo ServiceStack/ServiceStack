@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+public interface IHasHeaders
 {
-    public interface IHasHeaders
-    {
-        Dictionary<string, string> Headers { get; }
-    }
+    Dictionary<string, string> Headers { get; }
 }

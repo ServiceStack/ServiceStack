@@ -1,12 +1,11 @@
 using System.Threading.Tasks;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+public interface IServiceExecutor
 {
-    public interface IServiceExecutor
-    {
-        /// <summary>
-        /// Executes the DTO request under the supplied request context.
-        /// </summary>
-        Task<object> ExecuteAsync(object requestDto, IRequest request);
-    }
+    /// <summary>
+    /// Executes the DTO request under the supplied request context.
+    /// </summary>
+    Task<object> ExecuteAsync(object requestDto, IRequest request);
 }

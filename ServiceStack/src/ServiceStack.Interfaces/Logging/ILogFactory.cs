@@ -1,20 +1,19 @@
 using System;
 
-namespace ServiceStack.Logging
+namespace ServiceStack.Logging;
+
+/// <summary>
+/// Factory to create ILog instances
+/// </summary>
+public interface ILogFactory
 {
     /// <summary>
-    /// Factory to create ILog instances
+    /// Gets the logger.
     /// </summary>
-    public interface ILogFactory
-    {
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        ILog GetLogger(Type type);
+    ILog GetLogger(Type type);
 
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        ILog GetLogger(string typeName);
-    }
+    /// <summary>
+    /// Gets the logger.
+    /// </summary>
+    ILog GetLogger(string typeName);
 }

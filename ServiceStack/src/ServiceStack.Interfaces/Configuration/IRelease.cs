@@ -1,7 +1,6 @@
-﻿namespace ServiceStack.Configuration
+﻿namespace ServiceStack.Configuration;
+
+public interface IRelease
 {
-    public interface IRelease
-    {
-        void Release(object instance);
-    }
+    void Release(object instance);
 }

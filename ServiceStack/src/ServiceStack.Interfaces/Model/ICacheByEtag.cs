@@ -1,10 +1,9 @@
 //Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-namespace ServiceStack.Model
+namespace ServiceStack.Model;
+
+public interface ICacheByEtag
 {
-    public interface ICacheByEtag
-    {
-        string Etag { get; }
-    }
+    string Etag { get; }
 }

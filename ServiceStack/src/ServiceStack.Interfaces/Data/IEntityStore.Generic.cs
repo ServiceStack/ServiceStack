@@ -5,30 +5,29 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ServiceStack.Data
+namespace ServiceStack.Data;
+
+/// <summary>
+/// For providers that want a cleaner API with a little more perf
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public interface IEntityStore<T>
 {
-    /// <summary>
-    /// For providers that want a cleaner API with a little more perf
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface IEntityStore<T>
-    {
-        T GetById(object id);
+    T GetById(object id);
 
-        IList<T> GetByIds(IEnumerable ids);
+    IList<T> GetByIds(IEnumerable ids);
 
-        IList<T> GetAll();
+    IList<T> GetAll();
 
-        T Store(T entity);
+    T Store(T entity);
 
-        void StoreAll(IEnumerable<T> entities);
+    void StoreAll(IEnumerable<T> entities);
 
-        void Delete(T entity);
+    void Delete(T entity);
 
-        void DeleteById(object id);
+    void DeleteById(object id);
 
-        void DeleteByIds(IEnumerable ids);
+    void DeleteByIds(IEnumerable ids);
 
-        void DeleteAll();
-    }
+    void DeleteAll();
 }

@@ -1,8 +1,7 @@
-namespace ServiceStack.IO
+namespace ServiceStack.IO;
+
+public interface IEndpoint
 {
-    public interface IEndpoint
-    {
-        string Host { get; }
-        int Port { get; }
-    }
+    string Host { get; }
+    int Port { get; }
 }

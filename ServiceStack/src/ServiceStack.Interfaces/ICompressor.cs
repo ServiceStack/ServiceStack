@@ -1,7 +1,6 @@
-﻿namespace ServiceStack
+﻿namespace ServiceStack;
+
+public interface ICompressor
 {
-    public interface ICompressor
-    {
-        string Compress(string source);
-    }
+    string Compress(string source);
 }

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 
-namespace ServiceStack.Model
-{
-    public interface IHasNamedList<T> : IHasNamed<IList<T>> { }
-}
+namespace ServiceStack.Model;
+
+public interface IHasNamedList<T> : IHasNamed<IList<T>> { }

@@ -1,18 +1,17 @@
 using System;
 using System.IO;
 
-namespace ServiceStack.Caching
+namespace ServiceStack.Caching;
+
+[Obsolete("Use GZipCompressor and IStreamCompressor")]
+public interface IGZipProvider
 {
-    [Obsolete("Use GZipCompressor and IStreamCompressor")]
-    public interface IGZipProvider
-    {
-        byte[] GZip(string text);
-        byte[] GZip(byte[] bytes);
+    byte[] GZip(string text);
+    byte[] GZip(byte[] bytes);
 
-        string GUnzip(byte[] gzBuffer);
-        byte[] GUnzipBytes(byte[] gzBuffer);
+    string GUnzip(byte[] gzBuffer);
+    byte[] GUnzipBytes(byte[] gzBuffer);
 
-        Stream GZipStream(Stream outputStream);
-        Stream GUnzipStream(Stream gzStream);
-    }
+    Stream GZipStream(Stream outputStream);
+    Stream GUnzipStream(Stream gzStream);
 }

@@ -5,24 +5,23 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ServiceStack.Data
+namespace ServiceStack.Data;
+
+public interface IEntityStore : IDisposable
 {
-    public interface IEntityStore : IDisposable
-    {
-        T GetById<T>(object id);
+    T GetById<T>(object id);
 
-        IList<T> GetByIds<T>(ICollection ids);
+    IList<T> GetByIds<T>(ICollection ids);
 
-        T Store<T>(T entity);
+    T Store<T>(T entity);
 
-        void StoreAll<TEntity>(IEnumerable<TEntity> entities);
+    void StoreAll<TEntity>(IEnumerable<TEntity> entities);
 
-        void Delete<T>(T entity);
+    void Delete<T>(T entity);
 
-        void DeleteById<T>(object id);
+    void DeleteById<T>(object id);
 
-        void DeleteByIds<T>(ICollection ids);
+    void DeleteByIds<T>(ICollection ids);
 
-        void DeleteAll<TEntity>();
-    }
+    void DeleteAll<TEntity>();
 }

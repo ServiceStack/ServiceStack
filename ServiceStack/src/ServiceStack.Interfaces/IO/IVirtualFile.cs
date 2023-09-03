@@ -2,36 +2,35 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.IO
+namespace ServiceStack.IO;
+
+public interface IVirtualFile : IVirtualNode
 {
-    public interface IVirtualFile : IVirtualNode
-    {
-        IVirtualPathProvider VirtualPathProvider { get; }
+    IVirtualPathProvider VirtualPathProvider { get; }
 
-        /// <summary>
-        /// The file extension without '.' prefix
-        /// </summary>
-        string Extension { get; }
+    /// <summary>
+    /// The file extension without '.' prefix
+    /// </summary>
+    string Extension { get; }
 
-        string GetFileHash();
+    string GetFileHash();
 
-        Stream OpenRead();
-        StreamReader OpenText();
-        string ReadAllText();
+    Stream OpenRead();
+    StreamReader OpenText();
+    string ReadAllText();
 
-        /// <summary>
-        /// Returns ReadOnlyMemory&lt;byte&gt; for binary files or
-        /// ReadOnlyMemory&lt;char&gt; for text files   
-        /// </summary>
-        object GetContents();
+    /// <summary>
+    /// Returns ReadOnlyMemory&lt;byte&gt; for binary files or
+    /// ReadOnlyMemory&lt;char&gt; for text files   
+    /// </summary>
+    object GetContents();
 
-        long Length { get; }
+    long Length { get; }
 
-        /// <summary>
-        /// Refresh file stats for this node if supported
-        /// </summary>
-        void Refresh();
+    /// <summary>
+    /// Refresh file stats for this node if supported
+    /// </summary>
+    void Refresh();
 
-        Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default);
-    }
+    Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default);
 }

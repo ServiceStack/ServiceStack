@@ -3,10 +3,9 @@
 
 using System;
 
-namespace ServiceStack.Model
+namespace ServiceStack.Model;
+
+public interface ICacheByDateModified
 {
-    public interface ICacheByDateModified
-    {
-        DateTime? LastModified { get; }
-    }
+    DateTime? LastModified { get; }
 }

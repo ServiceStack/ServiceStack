@@ -1,19 +1,18 @@
 using System;
 
-namespace ServiceStack.DataAnnotations
-{
-    /// <summary>
-    /// Decorate any type or property with custom metadata
-    /// </summary>
-    public class MetaAttribute : AttributeBase
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
+namespace ServiceStack.DataAnnotations;
 
-        public MetaAttribute(string name, string value)
-        {
-            Name = name;
-            Value = value;
-        }
+/// <summary>
+/// Decorate any type or property with custom metadata
+/// </summary>
+public class MetaAttribute : AttributeBase
+{
+    public string Name { get; set; }
+    public string Value { get; set; }
+
+    public MetaAttribute(string name, string value)
+    {
+        Name = name;
+        Value = value;
     }
 }

@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace ServiceStack.IO
+namespace ServiceStack.IO;
+
+public interface IVirtualNode
 {
-    public interface IVirtualNode
-    {
-        IVirtualDirectory Directory { get; }
-        string Name { get; }
-        string VirtualPath { get; }
-        string RealPath { get; }
-        bool IsDirectory { get; }
-        DateTime LastModified { get; }
-    }
+    IVirtualDirectory Directory { get; }
+    string Name { get; }
+    string VirtualPath { get; }
+    string RealPath { get; }
+    bool IsDirectory { get; }
+    DateTime LastModified { get; }
 }

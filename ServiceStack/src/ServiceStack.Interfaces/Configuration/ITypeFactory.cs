@@ -1,9 +1,8 @@
 using System;
 
-namespace ServiceStack.Configuration
+namespace ServiceStack.Configuration;
+
+public interface ITypeFactory
 {
-    public interface ITypeFactory
-    {
-        object CreateInstance(IResolver resolver, Type type);
-    }
+    object CreateInstance(IResolver resolver, Type type);
 }

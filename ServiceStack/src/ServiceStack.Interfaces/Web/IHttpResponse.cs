@@ -3,24 +3,23 @@
 
 using System.Net;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+/// <summary>
+/// A thin wrapper around ASP.NET or HttpListener's HttpResponse
+/// </summary>
+public interface IHttpResponse : IResponse
 {
+    ICookies Cookies { get; }
+
     /// <summary>
-    /// A thin wrapper around ASP.NET or HttpListener's HttpResponse
+    /// Adds a new Set-Cookie instruction to Response
     /// </summary>
-    public interface IHttpResponse : IResponse
-    {
-        ICookies Cookies { get; }
+    /// <param name="cookie"></param>
+    void SetCookie(Cookie cookie);
 
-        /// <summary>
-        /// Adds a new Set-Cookie instruction to Response
-        /// </summary>
-        /// <param name="cookie"></param>
-        void SetCookie(Cookie cookie);
-
-        /// <summary>
-        /// Removes all pending Set-Cookie instructions 
-        /// </summary>
-        void ClearCookies();
-    }
+    /// <summary>
+    /// Removes all pending Set-Cookie instructions 
+    /// </summary>
+    void ClearCookies();
 }

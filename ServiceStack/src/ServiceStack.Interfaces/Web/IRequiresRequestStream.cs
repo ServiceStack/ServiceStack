@@ -1,15 +1,14 @@
 using System.IO;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+/// <summary>
+/// Implement on Request DTOs that need access to the raw Request Stream
+/// </summary>
+public interface IRequiresRequestStream
 {
     /// <summary>
-    /// Implement on Request DTOs that need access to the raw Request Stream
+    /// The raw Http Request Input Stream
     /// </summary>
-    public interface IRequiresRequestStream
-    {
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        Stream RequestStream { get; set; }
-    }
+    Stream RequestStream { get; set; }
 }
