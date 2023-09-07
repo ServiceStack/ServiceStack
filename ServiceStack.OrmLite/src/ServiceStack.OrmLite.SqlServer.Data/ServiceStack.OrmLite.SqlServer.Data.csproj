@@ -69,15 +69,6 @@
     <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2016Expression.cs">
       <Link>SqlServer2016Expression.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2016OrmLiteDialectProvider.cs">
-      <Link>SqlServer2016OrmLiteDialectProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2017OrmLiteDialectProvider.cs">
-      <Link>SqlServer2017OrmLiteDialectProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServer2019OrmLiteDialectProvider.cs">
-      <Link>SqlServer2019OrmLiteDialectProvider.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerDialect.cs">
       <Link>SqlServerDialect.cs</Link>
     </Compile>
@@ -86,6 +77,9 @@
     </Compile>
     <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerOrmLiteDialectProvider.cs">
       <Link>SqlServerOrmLiteDialectProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerOrmLiteDialectProviderVersions.cs">
+      <Link>SqlServerOrmLiteDialectProviderVersions.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.OrmLite.SqlServer\SqlServerTableHint.cs">
       <Link>SqlServerTableHint.cs</Link>
