@@ -28,8 +28,8 @@ public static class SqlServer2014Dialect
 
 public static class SqlServer2016Dialect
 {
-    public static IOrmLiteDialectProvider Provider => SqlServerOrmLiteDialectProviderVersions.Instance;
-    public static SqlServerOrmLiteDialectProviderVersions Instance => SqlServerOrmLiteDialectProviderVersions.Instance;
+    public static IOrmLiteDialectProvider Provider => SqlServer2016OrmLiteDialectProvider.Instance;
+    public static SqlServer2016OrmLiteDialectProvider Instance => SqlServer2016OrmLiteDialectProvider.Instance;
 }
 
 public static class SqlServer2017Dialect
