@@ -9,9 +9,9 @@ public class TypeScriptPlugin : IScriptPlugin
 
 public class TypeScriptMethods : ScriptMethods
 {
-    public IRawString tsUnionStrings(IEnumerable<string> strings) => 
-        new RawString(string.Join(" | ", strings.Map(x => $"'{x}'")));
+    public RawString tsUnionStrings(IEnumerable<string> strings) => new(
+        StringUtils.Join(" | ", strings.Map(x => $"'{x}'"), lineBreak:108, linePrefix:"        "));
 
-    public IRawString tsUnionTypes(IEnumerable<string> strings) => 
-        new RawString(string.Join(" | ", strings));
+    public RawString tsUnionTypes(IEnumerable<string> strings) => new(
+        StringUtils.Join(" | ", strings, lineBreak:108, linePrefix:"        "));
 }

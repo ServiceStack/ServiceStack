@@ -31,6 +31,28 @@ public class TextNode
 
 public static class StringUtils
 {
+    public static string Join(string delimiter, IEnumerable<string> values, int lineBreak=120, string linePrefix="")
+    {
+        var sb = StringBuilderCache.Allocate();
+        var lastLine = 0;
+        foreach (var value in values)
+        {
+            if (sb.Length > 0)
+            {
+                sb.Append(delimiter);
+                if (sb.Length + value.Length > lastLine + lineBreak)
+                {
+                    sb.AppendLine();
+                    lastLine = sb.Length;
+                    sb.Append(linePrefix);
+                }
+            }
+            sb.Append(value);
+        }
+        var text = StringBuilderCache.ReturnAndFree(sb);
+        return text;
+    }
+
     public static List<Command> ParseCommands(this string commandsString)
     {
         return commandsString.AsMemory().ParseCommands(',');
