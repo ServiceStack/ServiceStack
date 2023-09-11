@@ -13,8 +13,8 @@ namespace ServiceStack.OrmLite
 
         public OrmLiteCommand(OrmLiteConnection dbConn, IDbCommand dbCmd)
         {
-            this.dbConn = dbConn;
-            this.dbCmd = dbCmd;
+            this.dbConn = dbConn ?? throw new ArgumentNullException(nameof(dbConn));
+            this.dbCmd = dbCmd ?? throw new ArgumentNullException(nameof(dbCmd));
             this.DialectProvider = dbConn.GetDialectProvider();
         }
 
