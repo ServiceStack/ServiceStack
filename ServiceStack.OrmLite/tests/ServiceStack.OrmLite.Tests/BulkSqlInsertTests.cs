@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Tests.Shared;
 using ServiceStack.Text;
 
@@ -143,5 +144,4 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         var dbRows = db.Select<PersonWithAutoId>();
         Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
     }
-
 }

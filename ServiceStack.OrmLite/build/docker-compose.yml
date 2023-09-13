@@ -1,0 +1,89 @@
+version: "3.9"
+services:
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports:
+      - 48303:5432
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Test!tesT
+      MSSQL_PID: Developer
+    ports:
+      - 48501:1433
+  mysql:
+    image: mysql:8.0.28
+    environment:
+      MYSQL_ROOT_PASSWORD: Test!tesT
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_AUTH_PLUGIN: mysql_native_password
+    ports:
+      - 48205:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=Test!tesT"]
+      interval: 5s
+      retries: 20
+#  firebird:
+#    image: jacobalberty/firebird:v4.0.0
+#    environment:
+#      ISC_PASSWORD: Test!tesT
+#      FIREBIRD_USER: test
+#      FIREBIRD_PASSWORD: Test!tesT
+#      FIREBIRD_DATABASE: test.gdb
+#      EnableLegacyClientAuth: true
+#    ports:
+#      - 48101:3050
+
+  test-run-mysql:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      ORMLITE_DIALECT: MySql
+      MYSQL_CONNECTION: Server=mysql;Port=3306;Database=test;UID=root;Password=Test!tesT
+      SERVICESTACK_LICENSE: 
+    volumes:
+      - ../../:/servicestack
+    working_dir: /servicestack/ServiceStack.OrmLite/tests
+    command: ["dotnet", "test", "--framework", "net6.0", "./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj"]
+    
+  test-run-postgres:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ORMLITE_DIALECT: PostgreSQL
+      POSTGRES_CONNECTION: Host=postgres;Port=5432;Database=test;User ID=test;Password=test;
+      SERVICESTACK_LICENSE: 
+    volumes:
+      - ../../:/servicestack
+    working_dir: /servicestack/ServiceStack.OrmLite/tests
+    command: ["dotnet", "test", "--framework", "net6.0", "./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj"]
+
+  test-run-sqlserver:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ORMLITE_DIALECT: SqlServer
+      SQLSERVER_CONNECTION: Server=sqlserver,1433;Database=test;User ID=SA;Password=Test!tesT;
+      SERVICESTACK_LICENSE: 
+    volumes:
+      - ../../:/servicestack
+    working_dir: /servicestack/ServiceStack.OrmLite/tests
+    command: ["dotnet", "test", "--framework", "net6.0", "./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj"]
+    
+    
