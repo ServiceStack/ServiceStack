@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Tests.Shared;
 using ServiceStack.Text;
 
@@ -121,4 +122,24 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         dbRows.PrintDump();
         Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
     }
+
+    [Test]
+    public void Can_BulkInsert_Sql_With_Attributes()
+    {
+        using var db = OpenDbConnection();
+        var dtos = new List<MyDTO> {
+            new() { Date = DateTime.UtcNow },
+            new() { Date = DateTime.UtcNow },
+        };
+        db.BulkInsert(dtos, new BulkInsertConfig { Mode = BulkInsertMode.Sql });
+    }
+}
+
+public class MyDTO
+{
+    [AutoIncrement]
+    [PrimaryKey]
+    public int Id { get; set; }
+
+    public DateTime Date { get; set; }
 }
