@@ -119,6 +119,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.GoogleCloud", "ServiceStack.GoogleCloud\ServiceStack.GoogleCloud.csproj", "{9BC27168-EFF8-4142-9013-774B7ADFD97B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.AI", "ServiceStack.AI\ServiceStack.AI.csproj", "{FD05BFC2-6199-4D74-8400-7DA720710F0F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -711,6 +713,18 @@ Global
 		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|x86.ActiveCfg = Release|Any CPU
 		{9BC27168-EFF8-4142-9013-774B7ADFD97B}.Release|x86.Build.0 = Release|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Debug|x86.Build.0 = Debug|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Release|x86.ActiveCfg = Release|Any CPU
+		{FD05BFC2-6199-4D74-8400-7DA720710F0F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
