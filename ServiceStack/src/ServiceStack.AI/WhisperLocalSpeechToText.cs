@@ -43,7 +43,11 @@ public class WhisperLocalSpeechToText : ISpeechToText
         var jsonFile = processInfo.WorkingDirectory.CombineWith(fileName.LastLeftPart('.') + ".json");
         if (File.Exists(jsonFile))
         {
+#if NET6_0_OR_GREATER
             json = await File.ReadAllTextAsync(jsonFile, token);
+#else
+            json = File.ReadAllText(jsonFile);
+#endif            
             var obj = (Dictionary<string,object>) JSON.parse(json);
             text = obj.TryGetValue("text", out var oText)
                 ? oText as string

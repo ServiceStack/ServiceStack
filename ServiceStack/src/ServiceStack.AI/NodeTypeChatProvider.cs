@@ -10,7 +10,11 @@ public class NodeTypeChat : ITypeChat
         var schemaPath = request.SchemaPath
             ?? Path.GetTempFileName();
         
+#if NET6_0_OR_GREATER
         await File.WriteAllTextAsync(schemaPath, request.Schema, token);
+#else
+        File.WriteAllText(schemaPath, request.Schema);
+#endif            
         var scriptPath = request.ScriptPath ?? "typechat.mjs";
 
         var shellRequest = request.UserMessage.Replace('"', '\'');

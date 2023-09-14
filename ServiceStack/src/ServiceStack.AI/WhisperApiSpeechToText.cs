@@ -24,7 +24,8 @@ public class WhisperApiSpeechToText : ISpeechToText, IRequireVirtualFiles
         // body.Headers.Add("OpenAI-Organization", "");
 
         var response = await client.PostAsync(new Uri("https://api.openai.com/v1/audio/transcriptions"), body, token);
-        var resBody = await response.ReadToEndAsync();
+        var resBody = await response.Content.ReadAsStringAsync();
+        
         string? text = null;
         if (response.IsSuccessStatusCode)
         {
