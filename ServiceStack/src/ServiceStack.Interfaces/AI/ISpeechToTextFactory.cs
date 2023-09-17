@@ -20,11 +20,14 @@ public interface ISpeechToTextFactory
 public class SpeechToTextFactory : ISpeechToTextFactory
 {
     public Dictionary<string, ISpeechToText> Providers { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Func<string, ISpeechToText>? Resolve { get; set; }
     
     public ISpeechToText Get(string name)
     {
         if (Providers.TryGetValue(name, out var provider))
             return provider;
-        throw new NotSupportedException($"No ISpeechToText provider was registered for '{name}'");
+        
+        return Resolve?.Invoke(name)
+               ?? throw new NotSupportedException($"No ISpeechToText provider was registered for '{name}'");
     }
 }

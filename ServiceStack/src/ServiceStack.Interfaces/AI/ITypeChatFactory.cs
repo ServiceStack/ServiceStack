@@ -20,11 +20,14 @@ public interface ITypeChatFactory
 public class TypeChatFactory : ITypeChatFactory
 {
     public Dictionary<string, ITypeChat> Providers { get; } = new(StringComparer.OrdinalIgnoreCase);
-    
+    public Func<string, ITypeChat>? Resolve { get; set; }
+
     public ITypeChat Get(string name)
     {
         if (Providers.TryGetValue(name, out var provider))
             return provider;
-        throw new NotSupportedException($"No ITypeChat provider was registered for '{name}'");
+        
+        return Resolve?.Invoke(name)
+               ?? throw new NotSupportedException($"No ITypeChat provider was registered for '{name}'");
     }
 }
