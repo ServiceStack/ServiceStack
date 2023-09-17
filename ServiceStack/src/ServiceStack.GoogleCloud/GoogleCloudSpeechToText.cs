@@ -100,6 +100,9 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
         var request = new RecognizeRequest {
             Recognizer = $"projects/{Config.Project}/locations/{Config.Location}/recognizers/{recognizer}",
         };
+        if (recognizer == "_")
+            request.Config = Config.RecognitionConfig;
+        
         if (VirtualFiles is null or GoogleCloudVirtualFiles)
         {
             request.Uri = $"gs://{Config.Bucket}".CombineWith(recordingPath);
