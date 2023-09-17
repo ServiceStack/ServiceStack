@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,5 +10,5 @@ public interface IPhraseWeightsProvider
     /// <summary>
     /// Get Phrases and their Weights to use
     /// </summary>
-    Task<IEnumerable<(string,int)>> GetPhraseWeights(CancellationToken token = default);
+    Task<IEnumerable<(string,int)>> GetPhraseWeightsAsync(CancellationToken token = default);
 }

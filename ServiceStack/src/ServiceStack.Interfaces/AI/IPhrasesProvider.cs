@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,5 +10,5 @@ public interface IPhrasesProvider
     /// <summary>
     /// Get Phrases to use
     /// </summary>
-    Task<IEnumerable<string>> GetPhrases(CancellationToken token = default);
+    Task<IEnumerable<string>> GetPhrasesAsync(CancellationToken token = default);
 }

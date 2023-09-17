@@ -1,7 +1,31 @@
-﻿using System.Threading;
+﻿#nullable enable
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServiceStack.AI;
+
+/// <summary>
+/// Abstraction to implement a TypeChat TypeScript Schema LLM provider
+/// </summary>
+public interface ITypeChat
+{
+    /// <summary>
+    /// Uses LLM provider to translates a TypeChat message instruction asynchronously.
+    /// </summary>
+    /// <param name="request">The TypeChat request to translate.</param>
+    /// <param name="token">A cancellation token to cancel the operation (optional).</param>
+    /// <returns>A task representing the asynchronous operation that returns a <see cref="TypeChatResponse"/>.</returns>
+    Task<TypeChatResponse> TranslateMessageAsync(TypeChatRequest request, CancellationToken token = default);
+}
+
+/// <summary>
+/// The kind of Response to expect, an action to execute or a JSON message
+/// </summary>
+public enum TypeChatTranslator
+{
+    Json,
+    Program,
+}
 
 /// <summary>
 /// Request to process a TypeChat Request
@@ -61,22 +85,18 @@ public class TypeChatRequest
     public string? WorkingDirectory { get; set; }
 }
 
+/// <summary>
+/// The result of an executed TypeChat request
+/// </summary>
 public class TypeChatResponse
 {
     /// <summary>
     /// JSON Response from a TypeChat Provider
     /// </summary>
     public string Result { get; set; }
-    public ResponseStatus ResponseStatus { get; set; }
-}
 
-public interface ITypeChat
-{
-    Task<TypeChatResponse> TranslateMessageAsync(TypeChatRequest request, CancellationToken token = default);
-}
-
-public enum TypeChatTranslator
-{
-    Json,
-    Program,
+    /// <summary>
+    /// Error Information if transcription was unsuccessful
+    /// </summary>
+    public ResponseStatus? ResponseStatus { get; set; }
 }
