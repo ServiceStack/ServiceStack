@@ -16,9 +16,9 @@ public interface ISpeechToText
     Task InitAsync(InitSpeechToText config, CancellationToken token = default);
     
     /// <summary>
-    /// Transcribe the UserRequest and return a JSON API Result
+    /// Transcribe the Audio at recordingPath and return a JSON API Result
     /// </summary>
-    Task<TranscriptResult> TranscribeAsync(string request, CancellationToken token = default);
+    Task<TranscriptResult> TranscribeAsync(string recordingPath, CancellationToken token = default);
 }
 
 /// <summary>
