@@ -44,6 +44,7 @@
     <Reference Include="System.Net" />
     <PackageReference Include="System.Linq.Async" Version="5.1.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
+    <PackageReference Include="System.Text.Json" Version="7.0.3" />    
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

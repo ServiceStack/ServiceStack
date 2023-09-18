@@ -120,13 +120,21 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
             {
                 var path = url.RightPart(Config.Bucket);
                 var file = VirtualFiles.GetFile(path);
+#if NET6_0_OR_GREATER
                 await using var fs = file.OpenRead();
+#else
+                using var fs = file.OpenRead();
+#endif
                 ms = await fs.CopyToNewMemoryStreamAsync();
             }
 
             if (ms == null)
             {
+#if NET6_0_OR_GREATER
                 await using var resultStream = await url.GetStreamFromUrlAsync(token:token);
+#else
+                using var resultStream = await url.GetStreamFromUrlAsync(token:token);
+#endif
                 ms = await resultStream.CopyToNewMemoryStreamAsync();
             }
             ms.Position = 0;
