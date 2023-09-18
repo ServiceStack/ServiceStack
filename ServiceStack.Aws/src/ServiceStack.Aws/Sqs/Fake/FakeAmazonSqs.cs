@@ -832,6 +832,11 @@ public class FakeAmazonSqs : IAmazonSQS
         throw new NotImplementedException();
     }
 
+    public Amazon.Runtime.Endpoints.Endpoint DetermineServiceOperationEndpoint(AmazonWebServiceRequest request)
+    {
+        throw new NotImplementedException();
+    }
+
     public ISQSPaginatorFactory Paginators { get; }
 
     public string AuthorizeS3ToSendMessage(string queueUrl, string bucket)
