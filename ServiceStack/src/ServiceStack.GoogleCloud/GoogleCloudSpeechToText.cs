@@ -23,14 +23,14 @@ public class GoogleCloudSpeechConfig
 
 public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
 {
-    GoogleCloudSpeechConfig Config { get; }
     SpeechClient SpeechClient { get; }
+    GoogleCloudSpeechConfig Config { get; }
     public IVirtualFiles? VirtualFiles { get; set; }
 
-    public GoogleCloudSpeechToText(GoogleCloudSpeechConfig config, SpeechClient speechClient)
+    public GoogleCloudSpeechToText(SpeechClient speechClient, GoogleCloudSpeechConfig config)
     {
-        Config = config;
         SpeechClient = speechClient;
+        Config = config;
     }
 
     public async Task InitAsync(InitSpeechToText config, CancellationToken token = default)
