@@ -1,7 +1,6 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using ServiceStack.Aws;
-using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using System;
@@ -9,7 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BlazorDiffusion;
+namespace ServiceStack.IO;
 
 /// <summary>
 /// Custom S3VirtualFiles to work around compatibility issues with Cloudflare R2 services
