@@ -136,6 +136,16 @@ namespace ServiceStack
             }
             return false;
         }
+
+        public static IVirtualFile AssertFile(this IVirtualPathProvider vfs, string path)
+        {
+            if (vfs == null)
+                throw new ArgumentNullException(nameof(vfs));
+            var file = vfs.GetFile(path);
+            if (file == null)
+                throw new FileNotFoundException($"File does not exist {vfs.GetType().Name}:{path}");
+            return file;
+        }
         
         public static IVirtualDirectory[] GetAllRootDirectories(this IVirtualPathProvider vfs) => vfs is MultiVirtualFiles mvfs
             ? mvfs.ChildProviders.Select(x => x.RootDirectory).ToArray()

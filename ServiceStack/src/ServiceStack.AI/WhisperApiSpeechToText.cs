@@ -12,7 +12,7 @@ public class WhisperApiSpeechToText : ISpeechToText, IRequireVirtualFiles
         if (VirtualFiles == null)
             throw new ArgumentNullException(nameof(VirtualFiles));
         
-        var file = VirtualFiles.GetFile(recordingPath);
+        var file = VirtualFiles.AssertFile(recordingPath);
         
         var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", Environment.GetEnvironmentVariable("OPENAI_API_KEY")!);

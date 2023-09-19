@@ -109,9 +109,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
         }
         else
         {
-            var file = VirtualFiles.GetFile(recordingPath);
-            if (file == null)
-                throw new FileNotFoundException($"File not found {VirtualFiles.GetType().Name}:{recordingPath}");
+            var file = VirtualFiles.AssertFile(recordingPath);
 #if NET6_0_OR_GREATER
             await using var fileStream = file.OpenRead();
 #else
