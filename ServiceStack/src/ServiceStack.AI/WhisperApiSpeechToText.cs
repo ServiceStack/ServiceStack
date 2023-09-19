@@ -22,10 +22,9 @@ public class WhisperApiSpeechToText : ISpeechToText, IRequireVirtualFiles
             .AddParam("language", "en")
             .AddParam("response_format", "json")
             .AddFile("file", file);
-        // body.Headers.Add("OpenAI-Organization", "");
 
         var response = await client.PostAsync(new Uri("https://api.openai.com/v1/audio/transcriptions"), body, token).ConfigAwait();
-        var resBody = await response.Content.ReadAsStringAsync(token).ConfigAwait();
+        var resBody = await response.Content.ReadAsStringAsync().ConfigAwait();
         
         string? text = null;
         if (response.IsSuccessStatusCode)
