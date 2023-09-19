@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{DCEE435D
 		..\build\build.proj = ..\build\build.proj
 		ServiceStack.Azure\ServiceStack.Azure.Core.csproj = ServiceStack.Azure\ServiceStack.Azure.Core.csproj
 		Directory.Build.props = Directory.Build.props
-		..\build\build-core.proj = ..\build\build-core.proj
 		..\tests\Directory.Build.props = ..\tests\Directory.Build.props
 	EndProjectSection
 EndProject
