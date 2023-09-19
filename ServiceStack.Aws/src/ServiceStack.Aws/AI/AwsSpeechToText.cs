@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Amazon.TranscribeService;
 using Amazon.TranscribeService.Model;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.AI;
 
@@ -50,7 +51,7 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
         {
             await Client.DeleteVocabularyAsync(new DeleteVocabularyRequest {
                 VocabularyName = Config.VocabularyName,
-            }, token);
+            }, token).ConfigAwait();
         }
         catch (Exception ignoreNonExistingVocabulary) {}
         
@@ -58,7 +59,7 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
             LanguageCode = language,
             VocabularyName = Config.VocabularyName,
             Phrases = phrases,
-        }, token);
+        }, token).ConfigAwait();
 
         var vocabularyState = response.VocabularyState;
 
@@ -66,7 +67,7 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
         {
             var vocabulary = await Client.GetVocabularyAsync(new GetVocabularyRequest {
                 VocabularyName = Config.VocabularyName
-            }, token);
+            }, token).ConfigAwait();
             if (vocabulary.VocabularyState == VocabularyState.FAILED)
                 throw new Exception(vocabulary.FailureReason);
             
@@ -100,7 +101,7 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
         request.Media.MediaFileUri ??= $"https://{Config.Bucket}.s3.amazonaws.com".CombineWith(recordingPath);
         request.MediaFormat = new(recordingPath.LastRightPart('.'));
         
-        var jobResponse = await Client.StartTranscriptionJobAsync(request, token);
+        var jobResponse = await Client.StartTranscriptionJobAsync(request, token).ConfigAwait();
         var job = jobResponse.TranscriptionJob;
         
         while (job.TranscriptionJobStatus != TranscriptionJobStatus.COMPLETED
@@ -108,7 +109,7 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
         {
             job = (await Client.GetTranscriptionJobAsync(new GetTranscriptionJobRequest {
                 TranscriptionJobName = job.TranscriptionJobName
-            }, token)).TranscriptionJob;
+            }, token).ConfigAwait()).TranscriptionJob;
             await Task.Delay(Config.Delay, token);
         }
 
@@ -119,26 +120,26 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
             if (VirtualFiles is S3VirtualFiles)
             {
                 var path = url.RightPart(Config.Bucket);
-                var file = VirtualFiles.GetFile(path);
+                var file = VirtualFiles.AssertFile(path);
 #if NET6_0_OR_GREATER
                 await using var fs = file.OpenRead();
 #else
                 using var fs = file.OpenRead();
 #endif
-                ms = await fs.CopyToNewMemoryStreamAsync();
+                ms = await fs.CopyToNewMemoryStreamAsync().ConfigAwait();
             }
 
             if (ms == null)
             {
 #if NET6_0_OR_GREATER
-                await using var resultStream = await url.GetStreamFromUrlAsync(token:token);
+                await using var resultStream = await url.GetStreamFromUrlAsync(token:token).ConfigAwait();
 #else
-                using var resultStream = await url.GetStreamFromUrlAsync(token:token);
+                using var resultStream = await url.GetStreamFromUrlAsync(token:token).ConfigAwait();
 #endif
-                ms = await resultStream.CopyToNewMemoryStreamAsync();
+                ms = await resultStream.CopyToNewMemoryStreamAsync().ConfigAwait();
             }
             ms.Position = 0;
-            var obj = await JsonDocument.ParseAsync(ms, cancellationToken:token);
+            var obj = await JsonDocument.ParseAsync(ms, cancellationToken:token).ConfigAwait();
 
             var results = obj.RootElement
                 .GetProperty("results");
@@ -159,7 +160,7 @@ public class AwsSpeechToText : ISpeechToText, IRequireVirtualFiles
                 : 0;
             
             ms.Position = 0;
-            var json = await ms.ReadToEndAsync();
+            var json = await ms.ReadToEndAsync().ConfigAwait();
             result.ApiResponse = json;
             return result;
         }

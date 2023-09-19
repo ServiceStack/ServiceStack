@@ -1,4 +1,5 @@
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.AI;
 
@@ -23,8 +24,8 @@ public class WhisperApiSpeechToText : ISpeechToText, IRequireVirtualFiles
             .AddFile("file", file);
         // body.Headers.Add("OpenAI-Organization", "");
 
-        var response = await client.PostAsync(new Uri("https://api.openai.com/v1/audio/transcriptions"), body, token);
-        var resBody = await response.Content.ReadAsStringAsync();
+        var response = await client.PostAsync(new Uri("https://api.openai.com/v1/audio/transcriptions"), body, token).ConfigAwait();
+        var resBody = await response.Content.ReadAsStringAsync(token).ConfigAwait();
         
         string? text = null;
         if (response.IsSuccessStatusCode)

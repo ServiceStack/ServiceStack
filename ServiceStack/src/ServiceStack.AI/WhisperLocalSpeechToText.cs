@@ -33,7 +33,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
         var sbError = StringBuilderCacheAlt.Allocate();
         await ProcessUtils.RunAsync(processInfo, TimeoutMs,
             onOut: data => sb.AppendLine(data),
-            onError: data => sbError.AppendLine(data));
+            onError: data => sbError.AppendLine(data)).ConfigAwait();
         
         var stdout = StringBuilderCache.ReturnAndFree(sb);
         var stderr = StringBuilderCacheAlt.ReturnAndFree(sbError);
@@ -44,7 +44,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
         if (File.Exists(jsonFile))
         {
 #if NET6_0_OR_GREATER
-            json = await File.ReadAllTextAsync(jsonFile, token);
+            json = await File.ReadAllTextAsync(jsonFile, token).ConfigAwait();
 #else
             json = File.ReadAllText(jsonFile);
 #endif            

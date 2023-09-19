@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.AI;
 
@@ -36,7 +37,7 @@ public class AzureSpeechToText : ISpeechToText, IRequireVirtualFiles
             _ => AudioStreamContainerFormat.ANY 
         });
 
-        var file = VirtualFiles.GetFile(recordingPath);
+        var file = VirtualFiles.AssertFile(recordingPath);
 #if NET6_0_OR_GREATER
         await using var stream = file.OpenRead();
 #else        
@@ -48,7 +49,7 @@ public class AzureSpeechToText : ISpeechToText, IRequireVirtualFiles
             format));
 
         using var recognizer = new SpeechRecognizer(Config, audioInput);
-        var speechResult = await recognizer.RecognizeOnceAsync();
+        var speechResult = await recognizer.RecognizeOnceAsync().ConfigAwait();
 
         switch (speechResult.Reason)
         {

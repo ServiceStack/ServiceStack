@@ -2,6 +2,7 @@
 using Google.Protobuf;
 using ServiceStack.AI;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.GoogleCloud;
 
@@ -42,7 +43,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
                 await SpeechClient.DeletePhraseSetAsync(new DeletePhraseSetRequest
                 {
                     PhraseSetName = new PhraseSetName(Config.Project, Config.Location, Config.PhraseSetId)
-                });
+                }).ConfigAwait();
             }
             catch (Exception ignoreNonExistingPhraseSet) {}
 
@@ -57,7 +58,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
                         config.PhraseWeights.Map(x => new PhraseSet.Types.Phrase { Value = x.Key, Boost = x.Value })
                     }
                 }
-            });        
+            }).ConfigAwait();
         }
         
         try
@@ -65,7 +66,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
             await SpeechClient.DeleteRecognizerAsync(new DeleteRecognizerRequest
             {
                 RecognizerName = new RecognizerName(Config.Project, Config.Location, Config.RecognizerId)
-            });
+            }).ConfigAwait();
         }
         catch (Exception ignoreNonExistingRecognizer) {}
 
@@ -90,7 +91,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
             }
         }
 
-        await SpeechClient.CreateRecognizerAsync(request);
+        await SpeechClient.CreateRecognizerAsync(request).ConfigAwait();
     }
 
     public async Task<TranscriptResult> TranscribeAsync(string recordingPath, CancellationToken token = default)
@@ -118,7 +119,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
             request.Content = await ByteString.FromStreamAsync(fileStream, token);
         }
 
-        var response = await SpeechClient.RecognizeAsync(request);
+        var response = await SpeechClient.RecognizeAsync(request).ConfigAwait();
         var alt = response.Results.Count > 0 && response.Results[0].Alternatives.Count > 0
             ? response.Results[0].Alternatives[0]
             : null;
