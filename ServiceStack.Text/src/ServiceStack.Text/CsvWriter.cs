@@ -123,10 +123,13 @@ public static class CsvWriter
 {
     public static bool HasAnyEscapeChars(string value)
     {
-        return !string.IsNullOrEmpty(value) 
-               && (CsvConfig.EscapeStrings.Any(value.Contains)
-                   || value[0] == JsWriter.ListStartChar
-                   || value[0] == JsWriter.MapStartChar);
+        if (string.IsNullOrEmpty(value)) return false;
+        foreach (var escapeString in CsvConfig.EscapeStrings)
+        {
+            if (value.Contains(escapeString))
+                return true;
+        }
+        return value[0] is JsWriter.ListStartChar or JsWriter.MapStartChar;
     }
 
     internal static void WriteItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
