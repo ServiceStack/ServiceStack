@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.Text.Common;
+using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.Text;
 
@@ -15,9 +16,13 @@ internal class CsvDictionaryWriter
         if (writer == null) return; //AOT
 
         var ranOnce = false;
+        var itemSep = CsvConfig.ItemSeperatorString;
         foreach (var field in row)
         {
-            CsvWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+            if (ranOnce)
+                writer.Write(itemSep);
+            else
+                ranOnce = true;
 
             writer.Write(field.ToCsvField());
         }
@@ -29,9 +34,13 @@ internal class CsvDictionaryWriter
         if (writer == null) return; //AOT
 
         var ranOnce = false;
+        var itemSep = CsvConfig.ItemSeperatorString;
         foreach (var field in row)
         {
-            CsvWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+            if (ranOnce)
+                writer.Write(itemSep);
+            else
+                ranOnce = true;
 
             writer.Write(field.ToCsvField());
         }
@@ -98,10 +107,7 @@ internal class CsvDictionaryWriter
         {
             foreach (var key in record.Keys)
             {
-                if (!allKeys.Contains(key))
-                {
-                    allKeys.Add(key);
-                }
+                allKeys.Add(key);
             }
             cachedRecords.Add(record);
         }
@@ -114,7 +120,7 @@ internal class CsvDictionaryWriter
         foreach (var cachedRecord in cachedRecords)
         {
             var fullRecord = headers.ConvertAll(header => 
-                cachedRecord.ContainsKey(header) ? cachedRecord[header] : null);
+                cachedRecord.TryGetValue(header, out var value) ? value : null);
             WriteRow(writer, fullRecord);
         }
     }
@@ -335,7 +341,7 @@ public class CsvWriter<T>
             
         var itemSep = CsvConfig.ItemSeperatorString;
         var rowSep = CsvConfig.RowSeparatorString;
-        var safeCulture = CultureInfo.InvariantCulture.Equals(CultureInfo.CurrentCulture);
+        var jsvSerializer = JsvTypeSerializer.Instance;
         
         if (!CsvConfig<T>.OmitHeaders && headers.Count > 0)
         {
@@ -370,35 +376,68 @@ public class CsvWriter<T>
                     ranOnce = true;
                 
                 var value = propGetter(record);
-                if (value != null)
+                if (value == null) continue;
+                
+                var valueType = value.GetType();
+                if (JsConfig.HasSerializeFn.Contains(valueType))
                 {
-                    var valueType = value.GetType();
+                    writer.Write((value as string ?? TypeSerializer.SerializeToString(value).StripQuotes()).ToCsvField());
+                }
+                else if (valueType.IsEnum)
+                {
+                    jsvSerializer.WriteEnum(writer, value);
+                }
+                else
+                {
                     switch (valueType.GetTypeCode())
                     {
                         case TypeCode.Boolean:
-                        case TypeCode.Byte:
-                        case TypeCode.SByte:
-                        case TypeCode.Int16:
-                        case TypeCode.Int32:
-                        case TypeCode.Int64:
-                        case TypeCode.UInt16:
-                        case TypeCode.UInt32:
-                        case TypeCode.UInt64:
-                            writer.Write(valueType.IsEnum 
-                                ? TypeSerializer.SerializeToString(value) 
-                                : value.ToString());
+                            writer.Write((bool)value);
                             break;
+                        case TypeCode.Byte:
+                            writer.Write((byte)value);
+                            break;
+                        case TypeCode.SByte:
+                            writer.Write((sbyte)value);
+                            break;
+                        case TypeCode.Int16:
+                            writer.Write((short)value);
+                            break;
+                        case TypeCode.Int32:
+                            writer.Write((int)value);
+                            break;
+                        case TypeCode.Int64:
+                            writer.Write((long)value);
+                            break;
+                        case TypeCode.UInt16:
+                            writer.Write((ushort)value);
+                            break;
+                        case TypeCode.UInt32:
+                            writer.Write((uint)value);
+                            break;
+                        case TypeCode.UInt64:
+                            writer.Write((ulong)value);
+                            break;
+                        case TypeCode.Single:
+                            jsvSerializer.WriteFloat(writer, value);
+                            break;
+                        case TypeCode.Double:
+                            jsvSerializer.WriteDouble(writer, value);
+                            break;
+                        case TypeCode.Decimal:
+                            jsvSerializer.WriteDecimal(writer, value);
+                            break;
+                        case TypeCode.Char:
+                            writer.Write((char)value);
+                            break;
+                        case TypeCode.Empty:
+                        case TypeCode.Object:
+                        case TypeCode.DBNull:
+                        case TypeCode.String:
+                        case TypeCode.DateTime:
                         default:
-                            if (safeCulture && valueType.GetTypeCode() is TypeCode.Single or TypeCode.Double or TypeCode.Decimal)
-                            {
-                                writer.Write(value.ToString());
-                            }
-                            else
-                            {
-                                var strValue = value as string 
-                                    ?? TypeSerializer.SerializeToString(value).StripQuotes();
-                                writer.Write(strValue.ToCsvField());
-                            }
+                            var strValue = value as string ?? TypeSerializer.SerializeToString(value).StripQuotes();
+                            writer.Write(strValue.ToCsvField());
                             break;
                     }
                 }
