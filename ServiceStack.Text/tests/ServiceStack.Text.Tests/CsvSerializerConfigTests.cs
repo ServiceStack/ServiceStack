@@ -28,8 +28,8 @@ namespace ServiceStack.Text.Tests
 
             var maps = new List<Dictionary<string, object>>()
             {
-                new Dictionary<string,object> { {"Id", "1"}, {"Name", "Value"} },
-                new Dictionary<string,object> { {"Id", "2"}, {"Name", "Value|Escaped"} },
+                new() { {"Id", "1"}, {"Name", "Value"} },
+                new() { {"Id", "2"}, {"Name", "Value|Escaped"} },
             };
 
             csv = maps.ToCsv();

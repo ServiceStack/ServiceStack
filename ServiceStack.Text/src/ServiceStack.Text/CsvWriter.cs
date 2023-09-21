@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -332,12 +333,19 @@ public class CsvWriter<T>
             }
         }
             
+        var itemSep = CsvConfig.ItemSeperatorString;
+        var rowSep = CsvConfig.RowSeparatorString;
+        var safeCulture = CultureInfo.InvariantCulture.Equals(CultureInfo.CurrentCulture);
+        
         if (!CsvConfig<T>.OmitHeaders && headers.Count > 0)
         {
             var ranOnce = false;
             foreach (var header in headers)
             {
-                CsvWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+                if (ranOnce)
+                    writer.Write(itemSep);
+                else
+                    ranOnce = true;
 
                 writer.Write(header);
             }
@@ -351,21 +359,51 @@ public class CsvWriter<T>
             return;
         }
 
-        var row = new string[headers.Count];
         foreach (var record in recordsList)
         {
-            for (var i = 0; i < propGetters.Count; i++)
+            var ranOnce = false;
+            foreach (var propGetter in propGetters)
             {
-                var propGetter = propGetters[i];
-                var value = propGetter(record) ?? "";
-
-                var strValue = value is string s
-                    ? s
-                    : TypeSerializer.SerializeToString(value).StripQuotes();
-
-                row[i] = strValue;
+                if (ranOnce)
+                    writer.Write(itemSep);
+                else
+                    ranOnce = true;
+                
+                var value = propGetter(record);
+                if (value != null)
+                {
+                    var valueType = value.GetType();
+                    switch (valueType.GetTypeCode())
+                    {
+                        case TypeCode.Boolean:
+                        case TypeCode.Byte:
+                        case TypeCode.SByte:
+                        case TypeCode.Int16:
+                        case TypeCode.Int32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt16:
+                        case TypeCode.UInt32:
+                        case TypeCode.UInt64:
+                            writer.Write(valueType.IsEnum 
+                                ? TypeSerializer.SerializeToString(value) 
+                                : value.ToString());
+                            break;
+                        default:
+                            if (safeCulture && valueType.GetTypeCode() is TypeCode.Single or TypeCode.Double or TypeCode.Decimal)
+                            {
+                                writer.Write(value.ToString());
+                            }
+                            else
+                            {
+                                var strValue = value as string 
+                                    ?? TypeSerializer.SerializeToString(value).StripQuotes();
+                                writer.Write(strValue.ToCsvField());
+                            }
+                            break;
+                    }
+                }
             }
-            WriteRow(writer, row);
+            writer.Write(rowSep);
         }
     }
 
@@ -392,9 +430,13 @@ public class CsvWriter<T>
         if (writer == null) return; //AOT
 
         var ranOnce = false;
+        var itemSep = CsvConfig.ItemSeperatorString;
         foreach (var field in row)
         {
-            CsvWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+            if (ranOnce)
+                writer.Write(itemSep);
+            else
+                ranOnce = true;
 
             writer.Write(field.ToCsvField());
         }
