@@ -214,7 +214,7 @@ namespace ServiceStack.Text.Jsv
             if (Equals(floatVal, float.MaxValue) || Equals(floatVal, float.MinValue))
                 writer.Write(floatVal.ToString("r", cultureInfo ?? CultureInfo.InvariantCulture));
             else
-                writer.Write(floatVal.ToString("r", cultureInfo ?? CultureInfo.InvariantCulture));
+                writer.Write(floatVal.ToString(cultureInfo ?? CultureInfo.InvariantCulture));
         }
 
         public void WriteDouble(TextWriter writer, object doubleValue)
