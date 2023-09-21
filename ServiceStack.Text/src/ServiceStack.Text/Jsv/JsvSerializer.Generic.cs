@@ -4,57 +4,55 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using ServiceStack.Text.Common;
 
-namespace ServiceStack.Text.Jsv
+namespace ServiceStack.Text.Jsv;
+
+internal class JsvSerializer<T>
 {
-    internal class JsvSerializer<T>
+    Dictionary<Type, ParseStringDelegate> DeserializerCache = new();
+
+    public T DeserializeFromString(string value, Type type)
     {
-        Dictionary<Type, ParseStringDelegate> DeserializerCache = new Dictionary<Type, ParseStringDelegate>();
+        if (DeserializerCache.TryGetValue(type, out var parseFn)) return (T)parseFn(value);
 
-        public T DeserializeFromString(string value, Type type)
+        var genericType = typeof(T).MakeGenericType(type);
+        var mi = genericType.GetMethodInfo("DeserializeFromString", new[] { typeof(string) });
+        parseFn = (ParseStringDelegate)mi.MakeDelegate(typeof(ParseStringDelegate));
+
+        Dictionary<Type, ParseStringDelegate> snapshot, newCache;
+        do
         {
-            if (DeserializerCache.TryGetValue(type, out var parseFn)) return (T)parseFn(value);
+            snapshot = DeserializerCache;
+            newCache = new Dictionary<Type, ParseStringDelegate>(DeserializerCache);
+            newCache[type] = parseFn;
 
-            var genericType = typeof(T).MakeGenericType(type);
-            var mi = genericType.GetMethodInfo("DeserializeFromString", new[] { typeof(string) });
-            parseFn = (ParseStringDelegate)mi.MakeDelegate(typeof(ParseStringDelegate));
+        } while (!ReferenceEquals(
+                     Interlocked.CompareExchange(ref DeserializerCache, newCache, snapshot), snapshot));
 
-            Dictionary<Type, ParseStringDelegate> snapshot, newCache;
-            do
-            {
-                snapshot = DeserializerCache;
-                newCache = new Dictionary<Type, ParseStringDelegate>(DeserializerCache);
-                newCache[type] = parseFn;
+        return (T)parseFn(value);
+    }
 
-            } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref DeserializerCache, newCache, snapshot), snapshot));
+    public T DeserializeFromString(string value)
+    {
+        if (typeof(T) == typeof(string)) return (T)(object)value;
 
-            return (T)parseFn(value);
-        }
+        return (T)JsvReader<T>.Parse(value);
+    }
 
-        public T DeserializeFromString(string value)
-        {
-            if (typeof(T) == typeof(string)) return (T)(object)value;
+    public void SerializeToWriter(T value, TextWriter writer)
+    {
+        JsvWriter<T>.WriteObject(writer, value);
+    }
 
-            return (T)JsvReader<T>.Parse(value);
-        }
+    public string SerializeToString(T value)
+    {
+        if (value == null) return null;
+        if (value is string) return value as string;
 
-        public void SerializeToWriter(T value, TextWriter writer)
-        {
-            JsvWriter<T>.WriteObject(writer, value);
-        }
-
-        public string SerializeToString(T value)
-        {
-            if (value == null) return null;
-            if (value is string) return value as string;
-
-            var writer = StringWriterThreadStatic.Allocate();
-            JsvWriter<T>.WriteObject(writer, value);
-            return StringWriterThreadStatic.ReturnAndFree(writer);
-        }
+        var writer = StringWriterThreadStatic.Allocate();
+        JsvWriter<T>.WriteObject(writer, value);
+        return StringWriterThreadStatic.ReturnAndFree(writer);
     }
 }
