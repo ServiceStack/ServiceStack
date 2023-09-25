@@ -9,6 +9,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
     public string? WhisperPath { get; set; }
     public string? WorkingDirectory { get; set; }
     public int TimeoutMs { get; set; } = 120 * 1000;
+    public Func<ProcessStartInfo, ProcessStartInfo>? ProcessFilter { get; set; } = p => p.ConvertToCmdExec();
 
     public Task InitAsync(InitSpeechToText config, CancellationToken token = default) => Task.CompletedTask;
 
@@ -26,8 +27,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
             FileName = whisperPath,
             Arguments = $"{WhisperArgs} {fileName}",
         };
-        if (Env.IsWindows)
-            processInfo = processInfo.ConvertToCmdExec();
+        processInfo = ProcessFilter?.Invoke(processInfo).ConvertToCmdExec() ?? processInfo;
 
         var sb = StringBuilderCache.Allocate();
         var sbError = StringBuilderCacheAlt.Allocate();
