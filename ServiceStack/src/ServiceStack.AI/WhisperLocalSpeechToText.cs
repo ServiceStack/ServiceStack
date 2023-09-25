@@ -28,7 +28,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
             Arguments = $"{WhisperArgs} {fileName}",
             UseShellExecute = true, // required for Environment Variables to be set
         };
-        processInfo = ProcessFilter?.Invoke(processInfo).ConvertToCmdExec() ?? processInfo;
+        processInfo = ProcessFilter?.Invoke(processInfo) ?? processInfo;
 
         var sb = StringBuilderCache.Allocate();
         var sbError = StringBuilderCacheAlt.Allocate();

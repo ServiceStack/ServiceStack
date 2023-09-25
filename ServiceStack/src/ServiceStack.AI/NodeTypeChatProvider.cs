@@ -27,7 +27,7 @@ public class NodeTypeChat : ITypeChat
             Arguments = $"{scriptPath} {request.TypeChatTranslator} ./{schemaPath} \"{shellRequest}\"",
             UseShellExecute = true,
         };
-        processInfo = ProcessFilter?.Invoke(processInfo).ConvertToCmdExec() ?? processInfo;
+        processInfo = ProcessFilter?.Invoke(processInfo) ?? processInfo;
         
         var sb = StringBuilderCache.Allocate();
         var sbError = StringBuilderCacheAlt.Allocate();
