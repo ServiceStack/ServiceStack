@@ -5,6 +5,14 @@ namespace ServiceStack.AI;
 
 public class NodeTypeChat : ITypeChat
 {
+    public List<string> SetEnvironmentVariables { get; set; } = new()
+    {
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "AZURE_OPENAI_API_KEY",
+        "AZURE_OPENAI_ENDPOINT",
+    };
+    
     public async Task<TypeChatResponse> TranslateMessageAsync(TypeChatRequest request, CancellationToken token = default)
     {
         var schemaPath = request.SchemaPath
@@ -27,6 +35,15 @@ public class NodeTypeChat : ITypeChat
         if (Env.IsWindows)
             processInfo = processInfo.ConvertToCmdExec();
 
+        foreach (var key in SetEnvironmentVariables)
+        {
+            var val = Environment.GetEnvironmentVariable(key);
+            if (!string.IsNullOrEmpty(val))
+            {
+                processInfo.Environment[key] = val;
+            }
+        }
+        
         var sb = StringBuilderCache.Allocate();
         var sbError = StringBuilderCacheAlt.Allocate();
         await ProcessUtils.RunAsync(processInfo, request.NodeProcessTimeoutMs,
