@@ -5,7 +5,7 @@ namespace ServiceStack.AI;
 
 public class NodeTypeChat : ITypeChat
 {
-    public Func<ProcessStartInfo, ProcessStartInfo>? ProcessFilter { get; set; } = p => p.ConvertToCmdExec();
+    public Func<ProcessStartInfo, ProcessStartInfo>? ProcessFilter { get; set; }
         
     public async Task<TypeChatResponse> TranslateMessageAsync(TypeChatRequest request, CancellationToken token = default)
     {
@@ -25,6 +25,7 @@ public class NodeTypeChat : ITypeChat
             WorkingDirectory = request.WorkingDirectory ?? Environment.CurrentDirectory,
             FileName = request.NodePath,
             Arguments = $"{scriptPath} {request.TypeChatTranslator} ./{schemaPath} \"{shellRequest}\"",
+            UseShellExecute = true,
         };
         processInfo = ProcessFilter?.Invoke(processInfo).ConvertToCmdExec() ?? processInfo;
         

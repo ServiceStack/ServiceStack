@@ -9,7 +9,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
     public string? WhisperPath { get; set; }
     public string? WorkingDirectory { get; set; }
     public int TimeoutMs { get; set; } = 120 * 1000;
-    public Func<ProcessStartInfo, ProcessStartInfo>? ProcessFilter { get; set; } = p => p.ConvertToCmdExec();
+    public Func<ProcessStartInfo, ProcessStartInfo>? ProcessFilter { get; set; }
 
     public Task InitAsync(InitSpeechToText config, CancellationToken token = default) => Task.CompletedTask;
 
@@ -26,6 +26,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
             WorkingDirectory = WorkingDirectory ?? Environment.CurrentDirectory.CombineWith(relativePath.LastLeftPart('/')),
             FileName = whisperPath,
             Arguments = $"{WhisperArgs} {fileName}",
+            UseShellExecute = true, // required for Environment Variables to be set
         };
         processInfo = ProcessFilter?.Invoke(processInfo).ConvertToCmdExec() ?? processInfo;
 
