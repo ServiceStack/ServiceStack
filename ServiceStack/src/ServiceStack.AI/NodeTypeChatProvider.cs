@@ -25,7 +25,6 @@ public class NodeTypeChat : ITypeChat
             WorkingDirectory = request.WorkingDirectory ?? Environment.CurrentDirectory,
             FileName = request.NodePath,
             Arguments = $"{scriptPath} {request.TypeChatTranslator} ./{schemaPath} \"{shellRequest}\"",
-            UseShellExecute = true,
         };
         processInfo = ProcessFilter?.Invoke(processInfo) ?? processInfo;
         

@@ -26,7 +26,6 @@ public class WhisperLocalSpeechToText : ISpeechToText
             WorkingDirectory = WorkingDirectory ?? Environment.CurrentDirectory.CombineWith(relativePath.LastLeftPart('/')),
             FileName = whisperPath,
             Arguments = $"{WhisperArgs} {fileName}",
-            UseShellExecute = true, // required for Environment Variables to be set
         };
         processInfo = ProcessFilter?.Invoke(processInfo) ?? processInfo;
 
