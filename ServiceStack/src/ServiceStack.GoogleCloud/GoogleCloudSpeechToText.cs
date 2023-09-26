@@ -6,29 +6,13 @@ using ServiceStack.Text;
 
 namespace ServiceStack.GoogleCloud;
 
-public class GoogleCloudSpeechConfig
-{
-    public string Project { get; set; } 
-    public string Location { get; set; }
-    public string Bucket { get; set; }
-    public string? PhraseSetId { get; set; }
-    public string? RecognizerId { get; set; }
-
-    public RecognitionConfig RecognitionConfig { get; set; } = new()
-    {
-        AutoDecodingConfig = new AutoDetectDecodingConfig(),
-        LanguageCodes = { "en-US", "en-AU" },
-        Model = "latest_short",
-    };
-}
-
 public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
 {
     SpeechClient SpeechClient { get; }
-    GoogleCloudSpeechConfig Config { get; }
+    GoogleCloudConfig Config { get; }
     public IVirtualFiles? VirtualFiles { get; set; }
 
-    public GoogleCloudSpeechToText(SpeechClient speechClient, GoogleCloudSpeechConfig config)
+    public GoogleCloudSpeechToText(SpeechClient speechClient, GoogleCloudConfig config)
     {
         SpeechClient = speechClient;
         Config = config;
@@ -76,7 +60,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
             RecognizerId = Config.RecognizerId,
             Recognizer = new Recognizer
             {
-                DefaultRecognitionConfig = Config.RecognitionConfig.Clone(),
+                DefaultRecognitionConfig = Config.ToRecognitionConfig(),
             },
         };
         if (Config.PhraseSetId != null)
@@ -102,7 +86,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
             Recognizer = $"projects/{Config.Project}/locations/{Config.Location}/recognizers/{recognizer}",
         };
         if (recognizer == "_")
-            request.Config = Config.RecognitionConfig;
+            request.Config = Config.ToRecognitionConfig();
         
         if (VirtualFiles is null or GoogleCloudVirtualFiles)
         {
