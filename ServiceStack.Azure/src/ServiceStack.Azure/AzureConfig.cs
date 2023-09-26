@@ -15,9 +15,11 @@ public class AzureConfig
 
     public SpeechConfig ToSpeechConfig(Action<SpeechConfig>? configure=null)
     {
+#if NET6_0_OR_GREATER        
         ArgumentNullException.ThrowIfNull(SpeechKey, nameof(SpeechKey));
         ArgumentNullException.ThrowIfNull(SpeechRegion, nameof(SpeechRegion));
         ArgumentNullException.ThrowIfNull(SpeechRecognitionLanguage, nameof(SpeechRecognitionLanguage));
+#endif
         
         var to = SpeechConfig.FromSubscription(SpeechKey, SpeechRegion);
         to.SpeechRecognitionLanguage = SpeechRecognitionLanguage;

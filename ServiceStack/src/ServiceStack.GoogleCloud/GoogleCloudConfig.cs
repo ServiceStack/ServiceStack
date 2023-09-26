@@ -14,9 +14,11 @@ public class GoogleCloudConfig
 
     public GoogleCloudConfig ToSpeechToTextConfig(Action<GoogleCloudConfig>? configure=null)
     {
+#if NET6_0_OR_GREATER        
         ArgumentNullException.ThrowIfNull(Project, nameof(Project));
         ArgumentNullException.ThrowIfNull(Location, nameof(Location));
         ArgumentNullException.ThrowIfNull(Bucket, nameof(Bucket));
+#endif
 
         var to = Clone();
         configure?.Invoke(to);
