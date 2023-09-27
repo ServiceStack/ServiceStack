@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MyApp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="ServiceStack" />
+    <Using Include="ServiceStack.Blazor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bogus" Version="34.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.1.23421.29" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
+    <ProjectReference Include="..\Gallery.Unified.Client\Gallery.Unified.Client.csproj" />
+  </ItemGroup>
+
+</Project>

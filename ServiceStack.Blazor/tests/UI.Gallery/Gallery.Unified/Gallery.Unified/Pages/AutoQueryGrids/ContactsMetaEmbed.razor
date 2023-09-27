@@ -1,0 +1,34 @@
+﻿@page "/grid/contacts-meta/embed"
+@layout ExampleLayout
+
+<div class="absolute top-4 right-4 flex justify-end">
+    <DarkModeToggle />
+</div>
+
+<AutoQueryGrid TableStyle="TableStyle.FullWidth" Model="Contact" Prefs="ApiPrefs.Create(13)"
+    Apis="Apis.AutoQuery<QueryContacts,CreateContact,UpdateContact,DeleteContact>()">
+    <Columns>
+        <Column Field="(Contact x) => x.Id" />
+        <Column Field="(Contact x) => x.DisplayName" />
+        <Column Field="(Contact x) => x.ProfileUrl">
+            <Template>
+                <Icon class="w-8 h-8 rounded-full" src=@context.ProfileUrl />
+            </Template>
+        </Column>
+        <Column Field="(Contact x) => x.SalaryExpectation" Format="C" />
+        <Column Field="(Contact x) => x.JobType" />
+        <Column Field="(Contact x) => x.Email">
+            <Template>
+                <TextLink href=@($"mailto:{context.Email}")>@context.Email</TextLink>
+            </Template>
+        </Column>
+        <Column Field="(Contact x) => x.Applications">
+            <Template>
+                <TextLink class="flex" href=@($"/grid/job-applications/embed?ContactId={context.Id}")>
+                    <Icon class="w-5 h-5 mr-1" Image=typeof(JobApplication).GetIcon() />
+                    @TextUtils.Pluralize("Application", context.Applications)
+                </TextLink>
+            </Template>
+        </Column>
+    </Columns>
+</AutoQueryGrid>

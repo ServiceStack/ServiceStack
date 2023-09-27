@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <RootNamespace>MyApp.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Pages\**" />
+    <Content Remove="Pages\**" />
+    <EmbeddedResource Remove="Pages\**" />
+    <None Remove="Pages\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="ServiceStack" />
+    <Using Include="ServiceStack.Blazor" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.30.4" />
+    <PackageReference Include="Blazor.Extensions.Logging" Version="2.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-rc.1.23419.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0-rc.1.23421.29" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.1.23421.29" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.1.23421.29" PrivateAssets="all" />
+    <PackageReference Include="System.Net.Http.Json" Version="8.0.0-rc.1.23419.4" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\css\app.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\css\markdown.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\css\typography.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\1.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\2.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\3.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\4.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\5.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\6.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\7.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\8.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\9.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\angelina-litvin-52R7t7x8CPI-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\art-hauntington-jzY0KRJopEI-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\askar-ulzhabayev-mOnHNBhyjgM-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\charles-etoroma-95UF6LXe-Lo-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\christopher-campbell-rDEOVtE7vOs-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\de-andre-bush-baeDx6LuSt4-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\engin-akyurt-ljkKZUU6AkQ-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\engin-akyurt-UJavPBeDsT8-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\hisu-lee-u6LGX2VMOP4-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\janko-ferlic-mIs_QHS1ht8-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\joel-mott-LaK153ghdig-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\joseph-gonzalez-iFgRcqHznqg-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\luke-braswell-oYFv-_JKsVk-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\mateus-campos-felipe-JoM_lC1WAnE-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\omid-armin-VS4Bg3tWWcI-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\peter-john-manlapig-KRBHTbLTMDs-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\reza-biazar-eSjmZW97cH8-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\roman-holoschchuk-O-98kcPe0P8-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\takashi-miyazaki-93-nUbomATA-unsplash.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\1.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\2.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\3.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\4.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\5.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\6.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\7.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\8.jpg" />
+    <_ContentIncludedByDefault Remove="wwwroot\profiles\users\9.jpg" />
+  </ItemGroup>
+
+</Project>

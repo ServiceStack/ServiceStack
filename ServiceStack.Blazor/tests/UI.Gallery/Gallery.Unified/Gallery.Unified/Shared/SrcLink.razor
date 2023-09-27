@@ -1,0 +1,26 @@
+@if (IconClass != null)
+{
+    <a href=@href class=@CssUtils.ClassNames("mr-3 text-gray-400 hover:text-gray-500 no-underline", @class)>
+        <span class=@CssUtils.ClassNames(IconClass, "text-base w-5 h-5 inline-flex text-purple-800 align-text-top mr-1")></span>
+        @href.LastRightPart('/')</a>
+}
+else
+{
+    <a href=@href class=@CssUtils.ClassNames("mr-3 text-gray-400 hover:text-gray-500 no-underline", @class)>
+        <img src=@IconSrc class="w-5 h-5 inline-flex text-purple-800 mr-1">@href.LastRightPart('/')</a>
+}
+
+@code {
+    // Demonstrates how a parent component can supply parameters
+    [Parameter, EditorRequired]
+    public string? href { get; set; }
+
+    [Parameter]
+    public string? @class { get; set; }
+
+    [Parameter]
+    public string? IconClass { get; set; }
+
+    [Parameter]
+    public string? IconSrc { get; set; }
+}

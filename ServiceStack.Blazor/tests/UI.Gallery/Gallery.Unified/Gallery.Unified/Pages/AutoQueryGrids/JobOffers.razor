@@ -1,0 +1,15 @@
+﻿@page "/grid/job-offers"
+@attribute [Authorize]
+
+<Breadcrumbs class="mb-8">
+    <Breadcrumb href="/grid">
+        AutoQuery APIs
+    </Breadcrumb>
+    <Breadcrumb>
+        Job Offers
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="JobOffer" Apis="Apis.AutoQuery<QueryJobOffers,CreateJobOffer,UpdateJobOffer>()" />
+
+<ExampleCode Title="Source Code" Path="/AutoQueryGrids/JobOffers.razor" />

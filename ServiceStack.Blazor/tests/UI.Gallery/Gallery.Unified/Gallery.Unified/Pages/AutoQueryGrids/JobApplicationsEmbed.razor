@@ -1,0 +1,9 @@
+﻿@page "/grid/job-applications/embed"
+@layout ExampleLayout
+
+<div class="absolute top-4 right-4 flex justify-end">
+    <DarkModeToggle />
+</div>
+
+<AutoQueryGrid TableStyle="TableStyle.FullWidth" Model="JobApplication" 
+    Apis="Apis.AutoQuery<QueryJobApplications,CreateJobApplication,UpdateJobApplication,DeleteJobApplication>()" />
