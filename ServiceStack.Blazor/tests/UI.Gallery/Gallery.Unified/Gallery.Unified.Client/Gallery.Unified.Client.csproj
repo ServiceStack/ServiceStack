@@ -11,7 +11,78 @@
 
   <ItemGroup>
     <Compile Remove="Pages\**" />
+    <Compile Include="Pages\AutoQueryGrids\ContactsMeta.razor.cs" />
     <Content Remove="Pages\**" />
+    <Content Include="Pages\AllTypesTest.razor" />
+    <Content Include="Pages\AutoQueryGrids\Bookings.razor" />
+    <Content Include="Pages\AutoQueryGrids\BookingsAuto.razor" />
+    <Content Include="Pages\AutoQueryGrids\Contacts.razor" />
+    <Content Include="Pages\AutoQueryGrids\ContactsMeta.razor" />
+    <Content Include="Pages\AutoQueryGrids\ContactsMetaEmbed.razor" />
+    <Content Include="Pages\AutoQueryGrids\Coupons.razor" />
+    <Content Include="Pages\AutoQueryGrids\Index.razor" />
+    <Content Include="Pages\AutoQueryGrids\Interviews.razor" />
+    <Content Include="Pages\AutoQueryGrids\JobApplicationComments.razor" />
+    <Content Include="Pages\AutoQueryGrids\JobApplicationEvents.razor" />
+    <Content Include="Pages\AutoQueryGrids\JobApplications.razor" />
+    <Content Include="Pages\AutoQueryGrids\JobApplicationsEmbed.razor" />
+    <Content Include="Pages\AutoQueryGrids\JobOffers.razor" />
+    <Content Include="Pages\AutoQueryGrids\Jobs.razor" />
+    <Content Include="Pages\AutoQueryGrids\PhoneScreens.razor" />
+    <Content Include="Pages\BookingsCrud\Create.razor" />
+    <Content Include="Pages\BookingsCrud\Edit.razor" />
+    <Content Include="Pages\BookingsCrud\Index.razor" />
+    <Content Include="Pages\CallHello.razor" />
+    <Content Include="Pages\CallHelloSecure.razor" />
+    <Content Include="Pages\Counter.razor" />
+    <Content Include="Pages\Docs.razor" />
+    <Content Include="Pages\FetchData.razor" />
+    <Content Include="Pages\gallery\Alerts\AlertChildContent.razor" />
+    <Content Include="Pages\gallery\Alerts\AlertHtmlMessage.razor" />
+    <Content Include="Pages\gallery\Alerts\AlertSuccessMessage.razor" />
+    <Content Include="Pages\gallery\Alerts\ErrorSummaryMessage.razor" />
+    <Content Include="Pages\gallery\AutoForm\Edit.razor" />
+    <Content Include="Pages\gallery\AutoForm\EditCard.razor" />
+    <Content Include="Pages\gallery\AutoForm\EditCardEmbed.razor" />
+    <Content Include="Pages\gallery\AutoForm\Fields.razor" />
+    <Content Include="Pages\gallery\AutoForm\New.razor" />
+    <Content Include="Pages\gallery\AutoForm\NewCard.razor" />
+    <Content Include="Pages\gallery\AutoQueryGrid\Coupons.razor" />
+    <Content Include="Pages\gallery\AutoQueryGrid\Crud.razor" />
+    <Content Include="Pages\gallery\AutoQueryGrid\ReadOnly.razor" />
+    <Content Include="Pages\gallery\AutoQueryGrid\Responsive.razor" />
+    <Content Include="Pages\gallery\AutoQueryGrid\TableStyles.razor" />
+    <Content Include="Pages\gallery\DataGrid\Custom.razor" />
+    <Content Include="Pages\gallery\DataGrid\Default.razor" />
+    <Content Include="Pages\gallery\DataGrid\Responsive.razor" />
+    <Content Include="Pages\gallery\DataGrid\TableStyles.razor" />
+    <Content Include="Pages\gallery\examples\AlertExamples.razor" />
+    <Content Include="Pages\gallery\examples\ApiReference.razor" />
+    <Content Include="Pages\gallery\examples\AutoFormExamples.razor" />
+    <Content Include="Pages\gallery\examples\AutoQueryGridExamples.razor" />
+    <Content Include="Pages\gallery\examples\DataGridExamples.razor" />
+    <Content Include="Pages\gallery\examples\FormatExamples.razor" />
+    <Content Include="Pages\gallery\examples\InputExamples.razor" />
+    <Content Include="Pages\gallery\examples\NavigationExamples.razor" />
+    <Content Include="Pages\gallery\examples\_Imports.razor" />
+    <Content Include="Pages\gallery\Format\HtmlFormatExamples.razor" />
+    <Content Include="Pages\gallery\Format\PreviewFormatExamples.razor" />
+    <Content Include="Pages\gallery\Index.razor" />
+    <Content Include="Pages\gallery\IndexEmpty.razor" />
+    <Content Include="Pages\gallery\Inputs\AutocompleteExamples.razor" />
+    <Content Include="Pages\gallery\Inputs\BookingsForm.razor" />
+    <Content Include="Pages\gallery\Inputs\TagInputExamples.razor" />
+    <Content Include="Pages\gallery\Navigation\BreadcrumbExamples.razor" />
+    <Content Include="Pages\gallery\Navigation\ButtonExamples.razor" />
+    <Content Include="Pages\gallery\Navigation\ButtonStyleExamples.razor" />
+    <Content Include="Pages\gallery\Navigation\LinkExamples.razor" />
+    <Content Include="Pages\gallery\Navigation\NavListExamples.razor" />
+    <Content Include="Pages\gallery\_Imports.razor" />
+    <Content Include="Pages\Index.razor" />
+    <Content Include="Pages\Profile.razor" />
+    <Content Include="Pages\SignIn.razor" />
+    <Content Include="Pages\SignUp.razor" />
+    <Content Include="Pages\TodoMvc.razor" />
     <EmbeddedResource Remove="Pages\**" />
     <None Remove="Pages\**" />
   </ItemGroup>
@@ -31,13 +102,6 @@
     <PackageReference Include="System.Net.Http.Json" Version="8.0.0-rc.1.23419.4" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
-    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,6 +145,100 @@
     <_ContentIncludedByDefault Remove="wwwroot\profiles\users\7.jpg" />
     <_ContentIncludedByDefault Remove="wwwroot\profiles\users\8.jpg" />
     <_ContentIncludedByDefault Remove="wwwroot\profiles\users\9.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Pages\AllTypesTest.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\Bookings.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\BookingsAuto.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\Contacts.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\ContactsMeta.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\ContactsMetaEmbed.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\Coupons.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\Index.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\Interviews.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\JobApplicationComments.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\JobApplicationEvents.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\JobApplications.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\JobApplicationsEmbed.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\JobOffers.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\Jobs.razor" />
+    <AdditionalFiles Include="Pages\AutoQueryGrids\PhoneScreens.razor" />
+    <AdditionalFiles Include="Pages\BookingsCrud\Create.razor" />
+    <AdditionalFiles Include="Pages\BookingsCrud\Edit.razor" />
+    <AdditionalFiles Include="Pages\BookingsCrud\Index.razor" />
+    <AdditionalFiles Include="Pages\CallHello.razor" />
+    <AdditionalFiles Include="Pages\CallHelloSecure.razor" />
+    <AdditionalFiles Include="Pages\Counter.razor" />
+    <AdditionalFiles Include="Pages\Docs.razor" />
+    <AdditionalFiles Include="Pages\FetchData.razor" />
+    <AdditionalFiles Include="Pages\gallery\Alerts\AlertChildContent.razor" />
+    <AdditionalFiles Include="Pages\gallery\Alerts\AlertHtmlMessage.razor" />
+    <AdditionalFiles Include="Pages\gallery\Alerts\AlertSuccessMessage.razor" />
+    <AdditionalFiles Include="Pages\gallery\Alerts\ErrorSummaryMessage.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoForm\Edit.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoForm\EditCard.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoForm\EditCardEmbed.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoForm\Fields.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoForm\New.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoForm\NewCard.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoQueryGrid\Coupons.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoQueryGrid\Crud.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoQueryGrid\ReadOnly.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoQueryGrid\Responsive.razor" />
+    <AdditionalFiles Include="Pages\gallery\AutoQueryGrid\TableStyles.razor" />
+    <AdditionalFiles Include="Pages\gallery\DataGrid\Custom.razor" />
+    <AdditionalFiles Include="Pages\gallery\DataGrid\Default.razor" />
+    <AdditionalFiles Include="Pages\gallery\DataGrid\Responsive.razor" />
+    <AdditionalFiles Include="Pages\gallery\DataGrid\TableStyles.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\AlertExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\ApiReference.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\AutoFormExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\AutoQueryGridExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\DataGridExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\FormatExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\InputExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\NavigationExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\examples\_Imports.razor" />
+    <AdditionalFiles Include="Pages\gallery\Format\HtmlFormatExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Format\PreviewFormatExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Index.razor" />
+    <AdditionalFiles Include="Pages\gallery\IndexEmpty.razor" />
+    <AdditionalFiles Include="Pages\gallery\Inputs\AutocompleteExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Inputs\BookingsForm.razor" />
+    <AdditionalFiles Include="Pages\gallery\Inputs\TagInputExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Navigation\BreadcrumbExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Navigation\ButtonExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Navigation\ButtonStyleExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Navigation\LinkExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\Navigation\NavListExamples.razor" />
+    <AdditionalFiles Include="Pages\gallery\_Imports.razor" />
+    <AdditionalFiles Include="Pages\Index.razor" />
+    <AdditionalFiles Include="Pages\Profile.razor" />
+    <AdditionalFiles Include="Pages\SignIn.razor" />
+    <AdditionalFiles Include="Pages\SignUp.razor" />
+    <AdditionalFiles Include="Pages\TodoMvc.razor" />
+    <AdditionalFiles Include="Shared\CloseButton.razor" />
+    <AdditionalFiles Include="Shared\EmptyLayout.razor" />
+    <AdditionalFiles Include="Shared\ExampleCode.razor" />
+    <AdditionalFiles Include="Shared\ExampleLayout.razor" />
+    <AdditionalFiles Include="Shared\FormatValue.razor" />
+    <AdditionalFiles Include="Shared\FormLoading.razor" />
+    <AdditionalFiles Include="Shared\GettingStarted.razor" />
+    <AdditionalFiles Include="Shared\Header.razor" />
+    <AdditionalFiles Include="Shared\MainLayout.razor" />
+    <AdditionalFiles Include="Shared\NavPageLink.razor" />
+    <AdditionalFiles Include="Shared\ShellCommand.razor" />
+    <AdditionalFiles Include="Shared\Sidebar.razor" />
+    <AdditionalFiles Include="Shared\SrcLink.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
   </ItemGroup>
 
 </Project>

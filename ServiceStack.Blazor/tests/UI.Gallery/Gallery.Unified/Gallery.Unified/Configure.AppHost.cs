@@ -24,6 +24,7 @@ public class AppHost : AppHostBase, IHostingStartup
             "https://localhost:5001",
             "https://localhost:5002",
             "https://localhost:7142",
+            "https://localhost:7086",
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:8080",

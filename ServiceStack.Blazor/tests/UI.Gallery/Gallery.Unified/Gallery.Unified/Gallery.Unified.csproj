@@ -29,4 +29,77 @@
     <ProjectReference Include="..\Gallery.Unified.Client\Gallery.Unified.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Pages\AllTypesTest.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\Bookings.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\BookingsAuto.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\Contacts.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\ContactsMeta.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\ContactsMetaEmbed.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\Coupons.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\Index.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\Interviews.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\JobApplicationComments.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\JobApplicationEvents.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\JobApplications.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\JobApplicationsEmbed.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\JobOffers.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\Jobs.razor" />
+    <_ContentIncludedByDefault Remove="Pages\AutoQueryGrids\PhoneScreens.razor" />
+    <_ContentIncludedByDefault Remove="Pages\BookingsCrud\Create.razor" />
+    <_ContentIncludedByDefault Remove="Pages\BookingsCrud\Edit.razor" />
+    <_ContentIncludedByDefault Remove="Pages\BookingsCrud\Index.razor" />
+    <_ContentIncludedByDefault Remove="Pages\CallHello.razor" />
+    <_ContentIncludedByDefault Remove="Pages\CallHelloSecure.razor" />
+    <_ContentIncludedByDefault Remove="Pages\Counter.razor" />
+    <_ContentIncludedByDefault Remove="Pages\Docs.razor" />
+    <_ContentIncludedByDefault Remove="Pages\FetchData.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Alerts\AlertChildContent.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Alerts\AlertHtmlMessage.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Alerts\AlertSuccessMessage.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Alerts\ErrorSummaryMessage.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoForm\Edit.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoForm\EditCard.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoForm\EditCardEmbed.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoForm\Fields.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoForm\New.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoForm\NewCard.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoQueryGrid\Coupons.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoQueryGrid\Crud.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoQueryGrid\ReadOnly.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoQueryGrid\Responsive.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\AutoQueryGrid\TableStyles.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\DataGrid\Custom.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\DataGrid\Default.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\DataGrid\Responsive.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\DataGrid\TableStyles.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\AlertExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\ApiReference.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\AutoFormExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\AutoQueryGridExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\DataGridExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\FormatExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\InputExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\NavigationExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\examples\_Imports.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Format\HtmlFormatExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Format\PreviewFormatExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Index.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\IndexEmpty.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Inputs\AutocompleteExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Inputs\BookingsForm.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Inputs\TagInputExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Navigation\BreadcrumbExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Navigation\ButtonExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Navigation\ButtonStyleExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Navigation\LinkExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\Navigation\NavListExamples.razor" />
+    <_ContentIncludedByDefault Remove="Pages\gallery\_Imports.razor" />
+    <_ContentIncludedByDefault Remove="Pages\Index.razor" />
+    <_ContentIncludedByDefault Remove="Pages\Profile.razor" />
+    <_ContentIncludedByDefault Remove="Pages\SignIn.razor" />
+    <_ContentIncludedByDefault Remove="Pages\SignUp.razor" />
+    <_ContentIncludedByDefault Remove="Pages\TodoMvc.razor" />
+  </ItemGroup>
+
 </Project>
