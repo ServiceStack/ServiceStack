@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.Components.Web;
 using Blazor.Extensions.Logging;
-using ServiceStack.Blazor;
-using MyApp.Client;
+using MyApp.Data;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddLogging(c => c
@@ -12,6 +10,7 @@ builder.Services.AddLogging(c => c
 
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();
+builder.Services.AddSingleton<WeatherForecastService>();
 
 // Use / for local or CDN resources
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
