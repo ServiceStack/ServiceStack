@@ -1067,12 +1067,13 @@ namespace ServiceStack.Extensions.Tests
 
             client.Send(createRequest);
             
-            using var db = appHost.GetDbConnection();
-
-            ExecUtils.RetryUntilTrue(() => 
-                    db.Exists<RockstarAudit>(x => x.FirstName == nameof(CreateRockstarAuditMqToken)),
+            ExecUtils.RetryUntilTrue(() => {
+                    using var db = appHost.GetDbConnection();
+                    return db.Exists<RockstarAudit>(x => x.FirstName == nameof(CreateRockstarAuditMqToken));
+                },
                 TimeSpan.FromSeconds(2));
 
+            using var db = appHost.GetDbConnection();
             var result = db.Single<RockstarAudit>(x => x.FirstName == nameof(CreateRockstarAuditMqToken));
             Assert.That(result.Id, Is.GreaterThan(0));
             Assert.That(result.FirstName, Is.EqualTo(nameof(CreateRockstarAuditMqToken)));
