@@ -164,3 +164,48 @@ COPY Gallery.Wasm\Gallery.Wasm.Client\package.json Gallery.Unified\Gallery.Unifi
 COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.config.js Gallery.Unified\Gallery.Unified\
 COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.input.css Gallery.Unified\Gallery.Unified\
 COPY Gallery.Wasm\Gallery.Wasm.Client\_Imports.razor Gallery.Unified\Gallery.Unified\
+
+REM ========================================================================
+REM Sync Gallery.Unified to NetCoreApps project
+REM ========================================================================
+
+
+REM Update BlazorGalleryUnified from Gallery.Unified
+SET TO=..\..\..\..\..\BlazorGalleryUnified
+
+REM Move the existing Gallery.Unified.Client.csproj file to the current directory
+MOVE %TO%\Gallery.Unified.Client\Gallery.Unified.Client.csproj .
+
+REM Remove the existing Gallery.Unified.Client directory
+RD /q /s %TO%\Gallery.Unified.Client
+
+REM Copy Gallery.Unified.Client files to BlazorGalleryUnified
+XCOPY /Y /E /H /C /I Gallery.Unified\Gallery.Unified.Client %TO%\Gallery.Unified.Client
+
+REM Move Gallery.Unified.Client.csproj back to the Gallery.Unified.Client directory
+MOVE Gallery.Unified.Client.csproj %TO%\Gallery.Unified.Client\
+
+REM Move the existing Gallery.Unified.csproj file to the current directory
+MOVE %TO%\Gallery.Unified\Gallery.Unified.csproj .
+
+REM Remove the existing Gallery.Unified directory
+RD /q /s %TO%\Gallery.Unified
+
+REM Copy Gallery.Unified files to BlazorGalleryUnified
+XCOPY /Y /E /H /C /I Gallery.Unified\Gallery.Unified %TO%\Gallery.Unified
+
+REM Move Gallery.Unified.csproj back to the Gallery.Unified directory
+MOVE Gallery.Unified.csproj %TO%\Gallery.Unified\
+
+REM Move the existing Gallery.Unified.Tests.csproj file to the current directory
+MOVE %TO%\Gallery.Unified.Tests\Gallery.Unified.Tests.csproj .
+
+REM Remove the existing Gallery.Unified.Tests directory
+RD /q /s %TO%\Gallery.Unified.Tests
+
+REM Copy Gallery.Unified.Tests files to BlazorGalleryUnified
+XCOPY /Y /E /H /C /I Gallery.Unified\Gallery.Unified.Tests %TO%\Gallery.Unified.Tests
+
+REM Move Gallery.Unified.Tests.csproj back to the Gallery.Unified.Tests directory
+MOVE Gallery.Unified.Tests.csproj %TO%\Gallery.Unified.Tests\
+
