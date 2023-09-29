@@ -1,6 +1,5 @@
-@* @attribute [Authorize(Roles="Employee")] *@
-@* @inherits AppAuthComponentBase *@
-@inherits AppComponentBase
+@attribute [Authorize(Roles="Employee")]
+@inherits AppAuthComponentBase
 
 <form @onsubmit="submit">
 <CascadingValue Value=@api.Error>

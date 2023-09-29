@@ -104,20 +104,20 @@ RD /q /s %TO%\Gallery.Unified.Client\ServiceModel
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\ServiceModel %TO%\Gallery.Unified.Client\ServiceModel
 
 REM Temp move of App.razor
-MOVE %TO%\Gallery.Unified\Components\App.razor %TO%\Gallery.Unified
+MOVE %TO%\Gallery.Unified.Client\App.razor %TO%\Gallery.Unified
 
 REM Remove and copy Pages
-RD /q /s %TO%\Gallery.Unified\Pages
-XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\Pages %TO%\Gallery.Unified\Pages
-DEL %TO%\Gallery.Unified\Pages\*.cshtml
+RD /q /s %TO%\Gallery.Unified.Client\Pages
+XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\Pages %TO%\Gallery.Unified.Client\Pages
+DEL %TO%\Gallery.Unified\Pages.Client\*.cshtml
 
 REM Move back
-MOVE %TO%\Gallery.Unified\App.razor %TO%\Gallery.Unified\Components\Gallery.Unified
+MOVE %TO%\Gallery.Unified\App.razor %TO%\Gallery.Unified.Client\App.razor
 
 REM Remove and copy Shared
-RD /q /s %TO%\Gallery.Unified\Shared
-XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\Shared %TO%\Gallery.Unified\Shared
-DEL %TO%\Gallery.Unified\Shared\*.cshtml
+RD /q /s %TO%\Gallery.Unified.Client\Shared
+XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\Shared %TO%\Gallery.Unified.Client\Shared
+DEL %TO%\Gallery.Unified.Client\Shared\*.cshtml
 
 REM Remove and copy CSS
 RD /q /s %TO%\Gallery.Unified\wwwroot\css

@@ -1,7 +1,6 @@
 @page "/hello-secure"
-@* @attribute [Authorize()] *@
-@* @inherits AppAuthComponentBase *@
-@inherits AppComponentBase
+@attribute [Authorize()]
+@inherits AppAuthComponentBase
 
 <h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
     Call HelloSecure
@@ -19,7 +18,7 @@
 </form>
 
 @if (api.Succeeded) {
-    @* <div class="mt-4 text-gray-400">@User!.GetDisplayName() says:</div> *@
+    <div class="mt-4 text-gray-400">@User!.GetDisplayName() says:</div>
     <h3 class="text-2xl text-green-600 mt-4">@api.Response!.Result</h3>
 }
 
