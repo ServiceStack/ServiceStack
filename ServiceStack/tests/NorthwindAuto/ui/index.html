@@ -100,8 +100,9 @@ import { setFavIcon, setBodyClass } from "core"
 import { humanify } from "@servicestack/client"
 
 const { loadMetadata } = useMetadata()
-const { signIn } = useAuth()
+const { signIn, toAuth } = useAuth()
 
+globalThis.AUTH = toAuth(globalThis.AUTH)
 loadMetadata()
 signIn(globalThis.AUTH)
 setBodyClass({ auth:globalThis.AUTH })
