@@ -87,6 +87,9 @@ REM ========================================================================
 REM Set the destination folder for Gallery.Unified
 SET TO=Gallery.Unified
 
+REM Create a temp directory
+MD TempDir
+
 REM Remove and copy App_Data
 RD /q /s %TO%\Gallery.Unified\App_Data
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm\App_Data %TO%\Gallery.Unified\App_Data
@@ -106,18 +109,39 @@ XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\ServiceModel %TO%\Gallery.
 REM Temp move of App.razor
 MOVE %TO%\Gallery.Unified.Client\App.razor %TO%\Gallery.Unified
 
+COPY %TO%\Gallery.Unified.Client\Pages\SignIn.razor TempDir\
+COPY %TO%\Gallery.Unified.Client\Pages\SignUp.razor TempDir\
+COPY %TO%\Gallery.Unified.Client\Pages\Profile.razor TempDir\
+
 REM Remove and copy Pages
 RD /q /s %TO%\Gallery.Unified.Client\Pages
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\Pages %TO%\Gallery.Unified.Client\Pages
 DEL %TO%\Gallery.Unified\Pages.Client\*.cshtml
 
+MOVE TempDir\SignIn.razor %TO%\Gallery.Unified.Client\Pages\
+MOVE TempDir\SignUp.razor %TO%\Gallery.Unified.Client\Pages\
+MOVE TempDir\Profile.razor %TO%\Gallery.Unified.Client\Pages\
+
 REM Move back
 MOVE %TO%\Gallery.Unified\App.razor %TO%\Gallery.Unified.Client\App.razor
+
+REM Copy the files to exclude to the temp directory
+COPY %TO%\Gallery.Unified.Client\Shared\Header.razor TempDir\
+COPY %TO%\Gallery.Unified.Client\Shared\MainLayout.razor TempDir\
+COPY %TO%\Gallery.Unified.Client\Shared\Sidebar.razor TempDir\
 
 REM Remove and copy Shared
 RD /q /s %TO%\Gallery.Unified.Client\Shared
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\Shared %TO%\Gallery.Unified.Client\Shared
 DEL %TO%\Gallery.Unified.Client\Shared\*.cshtml
+
+REM Move the excluded files back from the temp directory to Gallery.Unified.Client
+MOVE TempDir\Header.razor %TO%\Gallery.Unified.Client\Shared\
+MOVE TempDir\MainLayout.razor %TO%\Gallery.Unified.Client\Shared\
+MOVE TempDir\Sidebar.razor %TO%\Gallery.Unified.Client\Shared\
+
+REM Delete the temp directory
+RD /q /s TempDir
 
 REM Remove and copy CSS
 RD /q /s %TO%\Gallery.Unified\wwwroot\css
