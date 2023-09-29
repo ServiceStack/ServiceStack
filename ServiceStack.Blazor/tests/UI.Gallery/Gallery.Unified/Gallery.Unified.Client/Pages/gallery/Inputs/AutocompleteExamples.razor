@@ -11,7 +11,7 @@
             <div class="grid grid-cols-6 gap-6">
                 
                 <div class="col-span-12">
-                    <Autocomplete autocomplete="contact" T="Contact" Options="allContacts" @bind-Value="simple" Label="Single Contact"
+                    <Autocomplete T="Contact" Options="allContacts" @bind-Value="simple" Label="Single Contact"
                         Match="(x, value) => x!.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase)"
                         placeholder="Select Contact">
                         <Item>
@@ -21,7 +21,7 @@
                 </div>
                 
                 <div class="col-span-12">
-                    <Autocomplete autocomplete="contact" T="Contact" Options="allContacts" @bind-Value="contact" Label="Single Contact with Icon"
+                    <Autocomplete T="Contact" Options="allContacts" @bind-Value="contact" Label="Single Contact with Icon"
                         Match="(x, value) => x!.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase)"
                         placeholder="Select Contact">
                         <Item>
