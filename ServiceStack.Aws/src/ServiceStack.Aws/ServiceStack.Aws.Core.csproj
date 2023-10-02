@@ -20,11 +20,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.Core.csproj" />
-    <PackageReference Include="AWSSDK.Core" Version="3.7.202.10" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.201.12" />
-    <PackageReference Include="AWSSDK.S3" Version="3.7.203.16" />
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.42" />
-    <PackageReference Include="AWSSDK.TranscribeService" Version="3.7.201.39" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.202.17" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.202.3" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.205.3" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.49" />
+    <PackageReference Include="AWSSDK.TranscribeService" Version="3.7.201.46" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
