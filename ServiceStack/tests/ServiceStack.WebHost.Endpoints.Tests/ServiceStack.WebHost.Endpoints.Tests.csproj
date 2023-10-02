@@ -46,7 +46,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
@@ -66,7 +66,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.9" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.11" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="App_Data\customers.json">
