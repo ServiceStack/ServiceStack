@@ -198,6 +198,7 @@ DEL %TO%\Gallery.Unified.Client\wwwroot\_redirects
 DEL %TO%\Gallery.Unified.Client\wwwroot\CNAME
 DEL %TO%\Gallery.Unified.Client\wwwroot\content\prerender.md
 DEL %TO%\Gallery.Unified.Client\wwwroot\index.html
+RD %TO%\Gallery.Unified.Client\Data
 
 
 REM Delete the temp directory
