@@ -235,7 +235,6 @@ namespace ServiceStack.OrmLite.SqlServer
         public override string GetDropForeignKeyConstraints(ModelDefinition modelDef)
         {
             //TODO: find out if this should go in base class?
-
             var sb = StringBuilderCache.Allocate();
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {

@@ -13,4 +13,9 @@ public class Migration1004 : MigrationBase
     {
         Db.AddColumn<Booking>(booking => booking.IsLocked);
     }
+
+    public override void Down()
+    {
+        Db.DropColumn<Booking>(booking => booking.IsLocked);
+    }
 }

@@ -544,6 +544,9 @@ namespace ServiceStack.OrmLite.MySql
             // https://mariadb.com/kb/en/library/create-database/
             return $"SELECT 1";
         }
+        
+        public override string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
+	        $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP FOREIGN KEY {GetQuotedName(foreignKeyName)};";
 
         public override string GetColumnDefinition(FieldDefinition fieldDef)
         {

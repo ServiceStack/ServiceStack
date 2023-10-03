@@ -19,6 +19,7 @@ namespace ServiceStack.OrmLite.Tests
             dbConn.DropTable<TypeWithOnDeleteNoAction>();
             dbConn.DropTable<TypeWithOnDeleteCascade>();
             dbConn.DropTable<TypeWithSimpleForeignKey>();
+            dbConn.DropTable<TypeWithNoForeignKeyInitially>();
             dbConn.DropTable<ReferencedType>();
 
             dbConn.CreateTable<ReferencedType>();
@@ -121,6 +122,22 @@ namespace ServiceStack.OrmLite.Tests
 
             OrmLiteConfig.SkipForeignKeys = false;
         }
+        
+        
+        [Test]
+        [IgnoreDialect(Tests.Dialect.Sqlite, "Not supported in sqlite")]
+        public void CanAddForeignKey()
+        {
+            using var db = OpenDbConnection();
+            db.DropAndCreateTable<TypeWithNoForeignKeyInitially>();
+            db.AddForeignKey<TypeWithNoForeignKeyInitially, ReferencedType>(
+                field: t => t.RefId, 
+                foreignField: tr => tr.Id,
+                onUpdate: OnFkOption.NoAction, 
+                onDelete: OnFkOption.Cascade, 
+                "FK_ADDED");
+            db.DropForeignKey<TypeWithNoForeignKeyInitially>("FK_ADDED");
+        }
     }
 
     public class ReferencedType
@@ -191,4 +208,13 @@ namespace ServiceStack.OrmLite.Tests
         [ForeignKey(typeof(ReferencedType), OnDelete = "SET NULL")]
         public int? RefId { get; set; }
     }
+    
+    public class TypeWithNoForeignKeyInitially
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        public int? RefId { get; set; }
+    }
+    
 }

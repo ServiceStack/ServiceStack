@@ -1821,6 +1821,9 @@ namespace ServiceStack.OrmLite
                    $"{GetForeignKeyOnUpdateClause(new ForeignKeyConstraint(typeof(T), onUpdate: FkOptionToString(onUpdate)))};";
         }
 
+        public virtual string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
+
         public virtual string ToCreateIndexStatement<T>(Expression<Func<T, object>> field, string indexName = null, bool unique = false)
         {
             var sourceDef = ModelDefinition<T>.Definition;

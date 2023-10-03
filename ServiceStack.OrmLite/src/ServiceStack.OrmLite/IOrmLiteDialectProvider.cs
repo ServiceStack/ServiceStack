@@ -260,6 +260,8 @@ public interface IOrmLiteDialectProvider
         OnFkOption onUpdate,
         OnFkOption onDelete,
         string foreignKeyName = null);
+
+    string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName);
         
     string ToCreateIndexStatement<T>(Expression<Func<T,object>> field, string indexName=null, bool unique=false);
 
