@@ -107,8 +107,7 @@ RD /q /s %TO%\Gallery.Unified.Client\ServiceModel
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\ServiceModel %TO%\Gallery.Unified.Client\ServiceModel
 
 REM Temp move of App.razor
-MOVE %TO%\Gallery.Unified.Client\App.razor %TO%\Gallery.Unified
-
+COPY %TO%\Gallery.Unified.Client\App.razor .\TempDir
 COPY %TO%\Gallery.Unified.Client\Pages\SignIn.razor TempDir\
 COPY %TO%\Gallery.Unified.Client\Pages\SignUp.razor TempDir\
 COPY %TO%\Gallery.Unified.Client\Pages\Profile.razor TempDir\
@@ -118,12 +117,13 @@ RD /q /s %TO%\Gallery.Unified.Client\Pages
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\Pages %TO%\Gallery.Unified.Client\Pages
 DEL %TO%\Gallery.Unified\Pages.Client\*.cshtml
 
+REM Move back
 MOVE TempDir\SignIn.razor %TO%\Gallery.Unified.Client\Pages\
 MOVE TempDir\SignUp.razor %TO%\Gallery.Unified.Client\Pages\
 MOVE TempDir\Profile.razor %TO%\Gallery.Unified.Client\Pages\
+MOVE TempDir\Gallery.Unified\App.razor %TO%\Gallery.Unified.Client\App.razor
 
-REM Move back
-MOVE %TO%\Gallery.Unified\App.razor %TO%\Gallery.Unified.Client\App.razor
+COPY %TO%\Gallery.Unified.Client\appsettings* .TempDir\
 
 REM Copy the files to exclude to the temp directory
 COPY %TO%\Gallery.Unified.Client\Shared\Header.razor TempDir\
@@ -139,31 +139,21 @@ REM Move the excluded files back from the temp directory to Gallery.Unified.Clie
 MOVE TempDir\Header.razor %TO%\Gallery.Unified.Client\Shared\
 MOVE TempDir\MainLayout.razor %TO%\Gallery.Unified.Client\Shared\
 MOVE TempDir\Sidebar.razor %TO%\Gallery.Unified.Client\Shared\
+MOVE TempDir\appsettings* %TO%\Gallery.Unified.Client\
 
 REM Delete the temp directory
 RD /q /s TempDir
 
-REM Remove and copy CSS
-RD /q /s %TO%\Gallery.Unified\wwwroot\css
-XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\wwwroot\css %TO%\Gallery.Unified\wwwroot\css
+REM Remove and copy wwwroot
+RD /q /s %TO%\Gallery.Unified.Client\wwwroot
+XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\wwwroot %TO%\Gallery.Unified.Client\wwwroot
 
-REM Remove and copy img
-RD /q /s %TO%\Gallery.Unified\wwwroot\img
-XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\wwwroot\img %TO%\Gallery.Unified\wwwroot\img
-
-REM Remove and copy profiles
-RD /q /s %TO%\Gallery.Unified\wwwroot\profiles
-XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\wwwroot\profiles %TO%\Gallery.Unified\wwwroot\profiles
-
-REM Remove and copy tailwind
-RD /q /s %TO%\Gallery.Unified\wwwroot\tailwind
-XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\wwwroot\tailwind %TO%\Gallery.Unified\wwwroot\tailwind
 
 REM Copy specific files to Gallery.Unified.Client
-COPY Gallery.Wasm\Gallery.Wasm.Client\package.json Gallery.Unified\Gallery.Unified\
-COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.config.js Gallery.Unified\Gallery.Unified\
-COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.input.css Gallery.Unified\Gallery.Unified\
-COPY Gallery.Wasm\Gallery.Wasm.Client\_Imports.razor Gallery.Unified\Gallery.Unified\
+COPY Gallery.Wasm\Gallery.Wasm.Client\package.json %TO%\Gallery.Unified.Client\
+COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.config.js %TO%\Gallery.Unified.Client\
+COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.input.css %TO%\Gallery.Unified.Client\
+COPY Gallery.Wasm\Gallery.Wasm.Client\_Imports.razor %TO%\Gallery.Unified.Client\
 
 REM ========================================================================
 REM Sync Gallery.Unified to NetCoreApps project
@@ -171,10 +161,20 @@ REM ========================================================================
 
 
 REM Update BlazorGalleryUnified from Gallery.Unified
-SET TO=..\..\..\..\..\BlazorGalleryUnified
+SET TO=..\..\..\..\..\NetCoreApps\BlazorGalleryUnified
+
+MD TempDir1
+MD TempDir1\Pages
+MD TempDir1\Shared
+MD TempDir1\wwwroot
 
 REM Move the existing Gallery.Unified.Client.csproj file to the current directory
-MOVE %TO%\Gallery.Unified.Client\Gallery.Unified.Client.csproj .
+MOVE %TO%\Gallery.Unified.Client\Gallery.Unified.Client.csproj .\TempDir1
+MOVE %TO%\Gallery.Unified.Client\Program.cs .\TempDir1
+MOVE %TO%\Gallery.Unified.Client\_Imports.razor .\TempDir1
+MOVE %TO%\Gallery.Unified.Client\Pages\_Imports.razor .\TempDir1\Pages\
+MOVE %TO%\Gallery.Unified.Client\Shared\Routes.razor .\TempDir1\Shared\
+MOVE %TO%\Gallery.Unified.Client\wwwroot\appsettings* .\TempDir1\wwwroot\
 
 REM Remove the existing Gallery.Unified.Client directory
 RD /q /s %TO%\Gallery.Unified.Client
@@ -183,29 +183,21 @@ REM Copy Gallery.Unified.Client files to BlazorGalleryUnified
 XCOPY /Y /E /H /C /I Gallery.Unified\Gallery.Unified.Client %TO%\Gallery.Unified.Client
 
 REM Move Gallery.Unified.Client.csproj back to the Gallery.Unified.Client directory
-MOVE Gallery.Unified.Client.csproj %TO%\Gallery.Unified.Client\
+MOVE .\TempDir1\Gallery.Unified.Client.csproj %TO%\Gallery.Unified.Client\
+MOVE .\TempDir1\Program.cs %TO%\Gallery.Unified.Client\
+MOVE .\TempDir1\_Imports.razor %TO%\Gallery.Unified.Client\
+MOVE .\TempDir1\Pages\_Imports.razor %TO%\Gallery.Unified.Client\Pages\
+MOVE .\TempDir1\Shared\Routes.razor %TO%\Gallery.Unified.Client\Shared\
+MOVE .\TempDir1\wwwroot\appsettings* %TO%\Gallery.Unified.Client\wwwroot\
 
-REM Move the existing Gallery.Unified.csproj file to the current directory
-MOVE %TO%\Gallery.Unified\Gallery.Unified.csproj .
+DEL %TO%\Gallery.Unified.Client\wwwroot\appsettings.Production.json
+DEL %TO%\Gallery.Unified.Client\wwwroot\.nojekyll
+DEL %TO%\Gallery.Unified.Client\wwwroot\_headers
+DEL %TO%\Gallery.Unified.Client\wwwroot\_redirects
+DEL %TO%\Gallery.Unified.Client\wwwroot\CNAME
+DEL %TO%\Gallery.Unified.Client\wwwroot\content\prerender.md
+DEL %TO%\Gallery.Unified.Client\wwwroot\index.html
 
-REM Remove the existing Gallery.Unified directory
-RD /q /s %TO%\Gallery.Unified
 
-REM Copy Gallery.Unified files to BlazorGalleryUnified
-XCOPY /Y /E /H /C /I Gallery.Unified\Gallery.Unified %TO%\Gallery.Unified
-
-REM Move Gallery.Unified.csproj back to the Gallery.Unified directory
-MOVE Gallery.Unified.csproj %TO%\Gallery.Unified\
-
-REM Move the existing Gallery.Unified.Tests.csproj file to the current directory
-MOVE %TO%\Gallery.Unified.Tests\Gallery.Unified.Tests.csproj .
-
-REM Remove the existing Gallery.Unified.Tests directory
-RD /q /s %TO%\Gallery.Unified.Tests
-
-REM Copy Gallery.Unified.Tests files to BlazorGalleryUnified
-XCOPY /Y /E /H /C /I Gallery.Unified\Gallery.Unified.Tests %TO%\Gallery.Unified.Tests
-
-REM Move Gallery.Unified.Tests.csproj back to the Gallery.Unified.Tests directory
-MOVE Gallery.Unified.Tests.csproj %TO%\Gallery.Unified.Tests\
-
+REM Delete the temp directory
+RD /q /s TempDir1
