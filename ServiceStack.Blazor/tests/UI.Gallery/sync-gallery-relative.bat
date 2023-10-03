@@ -141,19 +141,20 @@ MOVE TempDir\MainLayout.razor %TO%\Gallery.Unified.Client\Shared\
 MOVE TempDir\Sidebar.razor %TO%\Gallery.Unified.Client\Shared\
 MOVE TempDir\appsettings* %TO%\Gallery.Unified.Client\
 
-REM Delete the temp directory
-RD /q /s TempDir
+COPY %TO%\Gallery.Unified.Client\wwwroot\appsettings* .\TempDir\
 
 REM Remove and copy wwwroot
 RD /q /s %TO%\Gallery.Unified.Client\wwwroot
 XCOPY /Y /E /H /C /I Gallery.Wasm\Gallery.Wasm.Client\wwwroot %TO%\Gallery.Unified.Client\wwwroot
 
-
+MOVE TempDir\appsettings* %TO%\Gallery.Unified.Client\wwwroot\
 REM Copy specific files to Gallery.Unified.Client
 COPY Gallery.Wasm\Gallery.Wasm.Client\package.json %TO%\Gallery.Unified.Client\
 COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.config.js %TO%\Gallery.Unified.Client\
 COPY Gallery.Wasm\Gallery.Wasm.Client\tailwind.input.css %TO%\Gallery.Unified.Client\
-COPY Gallery.Wasm\Gallery.Wasm.Client\_Imports.razor %TO%\Gallery.Unified.Client\
+
+REM Delete the temp directory
+RD /q /s TempDir
 
 REM ========================================================================
 REM Sync Gallery.Unified to NetCoreApps project
