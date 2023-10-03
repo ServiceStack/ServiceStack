@@ -7,6 +7,13 @@ namespace ServiceStack.OrmLite.Sqlite
     {
         public static SqliteOrmLiteDialectProvider Instance = new();
 
+        public SqliteOrmLiteDialectProvider()
+        {
+#if NETFX
+            ConnectionStringFilter = sb => sb.Append("Version=3;New=True;Compress=True");
+#endif
+        }
+
         protected override IDbConnection CreateConnection(string connectionString)
         {
             return new SQLiteConnection(connectionString);
