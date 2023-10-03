@@ -129,6 +129,7 @@ REM Copy the files to exclude to the temp directory
 COPY %TO%\Gallery.Unified.Client\Shared\Header.razor TempDir\
 COPY %TO%\Gallery.Unified.Client\Shared\MainLayout.razor TempDir\
 COPY %TO%\Gallery.Unified.Client\Shared\Sidebar.razor TempDir\
+COPY %TO%\Gallery.Unified.Client\Shared\Routes.razor TempDir\
 
 REM Remove and copy Shared
 RD /q /s %TO%\Gallery.Unified.Client\Shared
@@ -139,6 +140,7 @@ REM Move the excluded files back from the temp directory to Gallery.Unified.Clie
 MOVE TempDir\Header.razor %TO%\Gallery.Unified.Client\Shared\
 MOVE TempDir\MainLayout.razor %TO%\Gallery.Unified.Client\Shared\
 MOVE TempDir\Sidebar.razor %TO%\Gallery.Unified.Client\Shared\
+MOVE TempDir\Routes.razor %TO%\Gallery.Unified.Client\Shared\
 MOVE TempDir\appsettings* %TO%\Gallery.Unified.Client\
 
 COPY %TO%\Gallery.Unified.Client\wwwroot\appsettings* .\TempDir\
@@ -198,7 +200,6 @@ DEL %TO%\Gallery.Unified.Client\wwwroot\_redirects
 DEL %TO%\Gallery.Unified.Client\wwwroot\CNAME
 DEL %TO%\Gallery.Unified.Client\wwwroot\content\prerender.md
 DEL %TO%\Gallery.Unified.Client\wwwroot\index.html
-RD %TO%\Gallery.Unified.Client\Data
 
 
 REM Delete the temp directory
