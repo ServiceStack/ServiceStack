@@ -538,7 +538,8 @@ public static class DateTimeSerializer
 
         var offset = timeZone.FromTimeOffsetString();
         var date = unixTime.FromUnixTimeMs();
-        return new DateTimeOffset(date.Ticks, offset);
+        var dateWithOffset = new DateTimeOffset(date).ToOffset(offset);
+        return dateWithOffset;
     }
 
     /// <summary>
@@ -671,11 +672,11 @@ public static class DateTimeSerializer
             return;
         }
 
-        var timestamp = dateTimeOffset.Ticks.ToUnixTimeMs();
         var offset = dateTimeOffset.Offset == TimeSpan.Zero
             ? null
             : dateTimeOffset.Offset.ToTimeOffsetString();
 
+        var timestamp = dateTimeOffset.ToUniversalTime().Ticks.ToUnixTimeMs();
         writer.Write(EscapedWcfJsonPrefix);
         writer.Write(timestamp);
         if (offset != null)

@@ -5,7 +5,7 @@ import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 
 const { setConfig } = useConfig()
-const { invalidAccessMessage } = useAuth()
+const { invalidAccessMessage, toAuth } = useAuth()
 const { Crud, apiOf } = useMetadata()
 
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI, '/'), '/')
@@ -324,7 +324,7 @@ let store = {
 
     /** @param {AuthenticateResponse} auth */
     login(auth) {
-        globalThis.AUTH = this.auth = auth
+        globalThis.AUTH = this.auth = toAuth(auth)
         AppData.bearerToken = AppData.authsecret = null
         if (auth.bearerToken) {
             AppData.bearerToken = client.bearerToken = auth.bearerToken
