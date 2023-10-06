@@ -107,11 +107,14 @@ export const ApiDetails = {
                 <component v-if="apiDocs(group[0].typeName)" :is="apiDocs(group[0].typeName)" />
                 <div v-else-if="group[0]">
                   <h2 v-if="group[0].type.description" class="my-3 text-gray-700 text-2xl text-center">
-                    {{group[0].type.description}}</h2>
+                    {{group[0].type.description}}
+                  </h2>
                   <div v-if="group[0].type.notes"
                        class="notes mb-3 text-gray-700 bg-gray-50 p-4 text-center rounded"
                        v-html="group[0].type.notes"></div>
-                  <h3 class="font-medium text-gray-500 text-center my-3">{{ group[0].typeName }}</h3>
+                  <h3 :id="group[0].typeName" v-hash="group[0].typeName" class="font-medium text-gray-500 text-center my-3">
+                    {{ group[0].typeName }}
+                  </h3>
                 </div>
                 <div class="">
                   <div class="py-2 align-middle inline-block min-w-full sm:px-2 lg:px-4">
@@ -228,17 +231,14 @@ export const ApiDetails = {
                     })
                 }
             }
-            // prevent 
-            if (depth <= 2) {
-                typeProperties(type).forEach(prop => {
-                    addReferencedTypes(allTypesMap, typeOf(prop.type), depth + 1)
-                    if (prop.genericArgs) {
-                        prop.genericArgs.forEach(argType => {
-                            addReferencedTypes(allTypesMap, typeOf(argType), depth + 1)
-                        })
-                    }
-                })
-            }
+            typeProperties(type).forEach(prop => {
+                addReferencedTypes(allTypesMap, typeOf(prop.type), depth + 1)
+                if (prop.genericArgs) {
+                    prop.genericArgs.forEach(argType => {
+                        addReferencedTypes(allTypesMap, typeOf(argType), depth + 1)
+                    })
+                }
+            })
             return allTypesMap
         }
 

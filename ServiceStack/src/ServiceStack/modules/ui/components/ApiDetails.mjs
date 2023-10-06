@@ -224,17 +224,14 @@ export const ApiDetails = {
                     })
                 }
             }
-            // prevent 
-            if (depth <= 2) {
-                typeProperties(type).forEach(prop => {
-                    addReferencedTypes(allTypesMap, typeOf(prop.type), depth + 1)
-                    if (prop.genericArgs) {
-                        prop.genericArgs.forEach(argType => {
-                            addReferencedTypes(allTypesMap, typeOf(argType), depth + 1)
-                        })
-                    }
-                })
-            }
+            typeProperties(type).forEach(prop => {
+                addReferencedTypes(allTypesMap, typeOf(prop.type), depth + 1)
+                if (prop.genericArgs) {
+                    prop.genericArgs.forEach(argType => {
+                        addReferencedTypes(allTypesMap, typeOf(argType), depth + 1)
+                    })
+                }
+            })
             return allTypesMap
         }
         const op = computed(() => store.op)
