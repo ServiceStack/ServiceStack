@@ -204,36 +204,41 @@ export const ApiDetails = {
         
         const { typeOf, typeOfRef, typeProperties, typeName, typeName2 } = useMetadata()
         
-        function addReferencedTypes(allTypesMap, type) {
+        function addReferencedTypes(allTypesMap, type, depth=1) {
             if (!type) return
             if (allTypesMap[type.name]) return
-
+            
             /**: don't add generic types to allTypesMap, only generic arg references */
             let genericDef = type.name.indexOf('`') >= 0
-            if (!genericDef) {
-                allTypesMap[type.name] = type
+            if (genericDef) {
+                return 
             }
+            //console.log('type', type.name, depth)
+            allTypesMap[type.name] = type
             if (type.genericArgs) {
                 type.genericArgs.forEach(argType => {
-                    addReferencedTypes(allTypesMap, typeOf(argType))
+                    addReferencedTypes(allTypesMap, typeOf(argType), depth + 1)
                 })
             }
             if (type.inherits) {
-                addReferencedTypes(allTypesMap, typeOfRef(type.inherits))
+                addReferencedTypes(allTypesMap, typeOfRef(type.inherits), depth + 1)
                 if (type.inherits.genericArgs) {
                     type.inherits.genericArgs.forEach(argType => {
-                        addReferencedTypes(allTypesMap, typeOf(argType))
+                        addReferencedTypes(allTypesMap, typeOf(argType), depth + 1)
                     })
                 }
             }
-            typeProperties(type).forEach(prop => {
-                addReferencedTypes(allTypesMap, typeOf(prop.type))
-                if (type.genericArgs) {
-                    type.genericArgs.forEach(argType => {
-                        addReferencedTypes(allTypesMap, typeOf(argType))
-                    })
-                }
-            })
+            // prevent 
+            if (depth <= 2) {
+                typeProperties(type).forEach(prop => {
+                    addReferencedTypes(allTypesMap, typeOf(prop.type), depth + 1)
+                    if (prop.genericArgs) {
+                        prop.genericArgs.forEach(argType => {
+                            addReferencedTypes(allTypesMap, typeOf(argType), depth + 1)
+                        })
+                    }
+                })
+            }
             return allTypesMap
         }
 

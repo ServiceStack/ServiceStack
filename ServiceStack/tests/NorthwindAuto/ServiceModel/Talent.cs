@@ -266,6 +266,15 @@ public class JobApplicationAttachment
 }
 
 [Tag("Talent")]
+[Route("/contacts", "GET")]
+public class GetContacts : IReturn<GetContactsResponse> {}
+public class GetContactsResponse 
+{
+    public List<Contact> Results { get; set; }
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+[Tag("Talent")]
 [AutoApply(Behavior.AuditQuery)]
 public class QueryContacts : QueryDb<Contact>
 {

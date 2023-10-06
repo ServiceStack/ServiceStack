@@ -9,6 +9,11 @@ public class TalentServices : Service
 {
     public IAutoQueryDb AutoQuery { get; set; }
 
+    public object Any(GetContacts request) => new GetContactsResponse
+    {
+        Results = Db.Select<Contact>()
+    };
+
     JobApplicationEvent CreateEvent(JobApplicationStatus status)
     {
         var userId = this.GetSession().UserAuthId;
