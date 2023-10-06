@@ -1,6 +1,6 @@
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from "vue"
 import { prettyJson } from "core"
-import { ApiResult, HttpMethods, parseCookie, map, humanify, humanize } from "@servicestack/client"
+import { ApiResult, HttpMethods, parseCookie, map, humanify, humanize, lastLeftPart } from "@servicestack/client"
 import { useMetadata, useClient, useUtils, css } from "@servicestack/vue"
 import { hasItems } from "core";
 
@@ -102,7 +102,7 @@ export const ApiDetails = {
           </div>
         
           <div>
-            <div v-for="group in opReferencedTypes(op)">
+            <div v-for="group in allReferencedTypes">
               <div class="flex flex-col mb-3">
                 <component v-if="apiDocs(group[0].typeName)" :is="apiDocs(group[0].typeName)" />
                 <div v-else-if="group[0]">
@@ -112,7 +112,7 @@ export const ApiDetails = {
                   <div v-if="group[0].type.notes"
                        class="notes mb-3 text-gray-700 bg-gray-50 p-4 text-center rounded"
                        v-html="group[0].type.notes"></div>
-                  <h3 :id="group[0].typeName" v-hash="group[0].typeName" class="font-medium text-gray-500 text-center my-3">
+                  <h3 :id="group[0].typeName" v-hash="group[0].typeName" class="cursor-pointer font-medium text-gray-500 text-center my-3">
                     {{ group[0].typeName }}
                   </h3>
                 </div>
@@ -168,8 +168,9 @@ export const ApiDetails = {
                           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{prop.name}}
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ typeName2(prop.type, prop.genericArgs) }}
+                          <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <div class="text-blue-800 cursor-pointer" v-if="includesType(prop)" v-hash="includesType(prop)">{{ typeName2(prop.type, prop.genericArgs) }}</div>
+                            <div class="text-gray-500" v-else>{{ typeName2(prop.type, prop.genericArgs) }}</div>
                           </td>
                           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{isRequired(prop) ? 'Yes' : 'No'}}
@@ -245,6 +246,7 @@ export const ApiDetails = {
         const op = computed(() => store.op)
         const request = computed(() => store.op?.request)
         const opName = computed(() => store.op?.request?.name)
+        const allReferencedTypes = computed(() => opReferencedTypes(store.op))
         
         function predefinedRoute(opName) {
             let apiFmt = server.httpHandlers['ApiHandlers.Json']
@@ -295,6 +297,23 @@ export const ApiDetails = {
             return groupTypes(opTypes)
         }
         
+        /** @param {MetadataPropertyType} prop */
+        function includesType(prop) {
+            let propTypeName = typeName2(prop.type, prop.genericArgs)
+            if (propTypeName.endsWith('?'))
+                propTypeName = lastLeftPart(propTypeName, '?')
+
+            let propType = allReferencedTypes.value.find(x => x[0].type?.name === propTypeName)
+            if (propType)
+                return propTypeName
+
+            if (prop.genericArgs?.length > 0) {
+                return prop.genericArgs.find(argType => 
+                    allReferencedTypes.value.find(x => x[0].type?.name === argType))
+            }
+            return null
+        }
+        
         function inheritedTypes(typeRef) {
             if (!typeRef) return ''
             let types = [typeRef.name]
@@ -321,11 +340,13 @@ export const ApiDetails = {
             op,
             request,
             opName,
+            allReferencedTypes,
             predefinedRoute,
             opReferencedTypes,
             inheritedTypes,
             apiDocs,
             isRequired,
+            includesType,
             typeName,
             typeName2,
         }

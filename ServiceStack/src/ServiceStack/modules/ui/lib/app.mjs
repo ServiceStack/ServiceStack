@@ -351,6 +351,13 @@ app.directive('highlightjs', (el, binding) => {
         globalThis.hljs.highlightElement(el)
     }
 })
+app.directive('hash', (el,binding) => {
+    /** @param {Event} e */
+    el.onclick = (e) => {
+        e.preventDefault()
+        location.hash = binding.value
+    }
+})
 setConfig({
     navigate: (url) => {
         console.debug('navigate', url)
