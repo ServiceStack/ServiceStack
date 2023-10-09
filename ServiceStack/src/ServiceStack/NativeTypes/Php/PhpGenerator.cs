@@ -939,12 +939,12 @@ public class PhpGenerator : ILangGenerator
                                 ? $"$this->genericArgs[{index}]"
                                 : $"'{phpType}'";
                             sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from({useType}, $o['{propName}']);");
-                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::from({useType}, $this->{propName});");
+                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to({useType}, $this->{propName});");
                         }
                         else if (phpType.StartsWith("array") && prop.GenericArgs?.Length > 0)
                         {
                             sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::fromArray('{GetPhpType(prop.GenericArgs[0])}', $o['{propName}']);");
-                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::fromArray('{GetPhpType(prop.GenericArgs[0])}', $this->{propName});");
+                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::toArray('{GetPhpType(prop.GenericArgs[0])}', $this->{propName});");
                         }
                         else if (prop.GenericArgs?.Length > 0)
                         {
@@ -960,14 +960,14 @@ public class PhpGenerator : ILangGenerator
                                 else
                                 {
                                     sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from('{GetPhpType(prop.GenericArgs[0])}', $o['{propName}']);");
-                                    toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::from({GetPhpType(prop.GenericArgs[0])}, $this->{propName});");
+                                    toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to('{GetPhpType(prop.GenericArgs[0])}', $this->{propName});");
                                 }
                             }
                             else
                             {
                                 var args = string.Join(",", prop.GenericArgs.Map(x => "'" + GetPhpType(x) + "'"));
                                 sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from(JsonConverters::context('{clsName}',genericArgs:[{args}]), $o['{propName}']);");
-                                toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::from(JsonConverters::context('{clsName}',genericArgs:[{args}]), $this->{propName});");
+                                toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to(JsonConverters::context('{clsName}',genericArgs:[{args}]), $this->{propName});");
                             }
                         }
                         else
