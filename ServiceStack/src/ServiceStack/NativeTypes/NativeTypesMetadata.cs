@@ -469,6 +469,7 @@ namespace ServiceStack.NativeTypes
                 IsEnumInt = (JsConfig.TreatEnumAsInteger || type.IsEnumFlags()).NullIfFalse(),
                 IsInterface = type.IsInterface.NullIfFalse(),
                 IsAbstract = type.IsAbstract.NullIfFalse(),
+                IsGenericTypeDef = type.IsGenericTypeDefinition.NullIfFalse(),
             };
 
             var propsToAdd = new List<MetadataPropertyType>();

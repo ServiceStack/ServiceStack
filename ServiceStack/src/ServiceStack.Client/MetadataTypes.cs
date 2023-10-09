@@ -749,6 +749,7 @@ public class MetadataType : IMeta
     public bool? IsEnumInt { get; set; }
     public bool? IsInterface { get; set; }
     public bool? IsAbstract { get; set; }
+    public bool? IsGenericTypeDef { get; set; }
     public MetadataDataContract DataContract { get; set; }
 
     public List<MetadataPropertyType> Properties { get; set; }
@@ -1416,6 +1417,7 @@ public static class AppMetadataUtils
             IsEnumInt = (JsConfig.TreatEnumAsInteger || type.IsEnumFlags()),
             IsInterface = type.IsInterface,
             IsAbstract = type.IsAbstract,
+            IsGenericTypeDef = type.IsGenericTypeDefinition.NullIfFalse(),
         };
         return ret;
     }
