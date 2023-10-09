@@ -144,7 +144,7 @@ namespace CheckWebCore
                 UseSecureCookies = true,
                 AdminAuthSecret = "secretz",
                 CompressFilesWithExtensions = { "js", "css" },
-                UseCamelCase = false,
+                //UseCamelCase = false,
             });
             
             RegisterService<GetFileService>();

@@ -266,6 +266,10 @@ public class JobApplicationAttachment
 }
 
 [Tag("Talent")]
+[Route("/contacts", "POST")]
+public class StoreContacts : List<Contact>, IReturnVoid {}
+
+[Tag("Talent")]
 [Route("/contacts", "GET")]
 public class GetContacts : IReturn<GetContactsResponse> {}
 public class GetContactsResponse 
