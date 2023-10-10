@@ -1,4 +1,5 @@
-﻿using ServiceStack;
+﻿using MyApp.ServiceInterface;
+using ServiceStack;
 
 namespace MyApp.ServiceModel;
 
@@ -16,6 +17,25 @@ public class Dummy
     public CancelRequestResponse CancelRequestResponse { get; set; }
     public UpdateEventSubscriber UpdateEventSubscriber { get; set; }
     public UpdateEventSubscriberResponse UpdateEventSubscriberResponse { get; set; }
+}
+
+[Route("/echo/collections")]
+public class EchoCollections : IReturn<EchoCollections>
+{
+    public List<string> StringList { get; set; }
+    public string[] StringArray { get; set; }
+    public Dictionary<string, string> StringMap { get; set; }
+    public Dictionary<int, string> IntStringMap { get; set; }
+}
+
+[Route("/echo/complex")]
+public class EchoComplexTypes : IReturn<EchoComplexTypes>
+{
+    public SubType SubType { get; set; }
+    public List<SubType> SubTypes { get; set; }
+    public Dictionary<string, SubType> SubTypeMap { get; set; }
+    public Dictionary<string, string> StringMap { get; set; }
+    public Dictionary<int, string> IntStringMap { get; set; }
 }
 
 /*
