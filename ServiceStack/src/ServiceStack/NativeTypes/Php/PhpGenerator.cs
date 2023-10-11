@@ -39,7 +39,7 @@ public class PhpGenerator : ILangGenerator
         "JsonSerializable",
         "ServiceStack\\{IReturn,IReturnVoid,IGet,IPost,IPut,IDelete,IPatch,IMeta,IHasSessionId,IHasBearerToken,IHasVersion}",
         "ServiceStack\\{ICrud,ICreateDb,IUpdateDb,IPatchDb,IDeleteDb,ISaveDb,AuditBase,QueryDb,QueryDb2,QueryData,QueryData2,QueryResponse}",
-        "ServiceStack\\{ResponseStatus,ResponseError,EmptyResponse,IdResponse,KeyValuePair2,StringResponse,StringsResponse,Tuple2,Tuple3}",
+        "ServiceStack\\{ResponseStatus,ResponseError,EmptyResponse,IdResponse,ArrayList,KeyValuePair2,StringResponse,StringsResponse,Tuple2,Tuple3,ByteArray}",
         "ServiceStack\\{JsonConverters,Returns,TypeContext}",
     };
         
@@ -128,9 +128,9 @@ public class PhpGenerator : ILangGenerator
         {"Decimal", "float"},
         {"IntPtr", "int"},
         {"List", "array"},
-        {"Byte[]", "string"},
-        {"Stream", "string"},
-        {"HttpWebResponse", "string"},
+        {"Byte[]", "ByteArray"},
+        {"Stream", "ByteArray"},
+        {"HttpWebResponse", "ByteArray"},
         {"IDictionary", "array"},
         {"OrderedDictionary", "array"},
         {"Uri", "string"},
@@ -138,9 +138,9 @@ public class PhpGenerator : ILangGenerator
     };
 
     public static Dictionary<string, string> ReturnTypeAliases = new() {
-        {"Byte[]", "string"},
-        {"Stream", "string"},
-        {"HttpWebResponse", "string"},
+        {"Byte[]", "ByteArray"},
+        {"Stream", "ByteArray"},
+        {"HttpWebResponse", "ByteArray"},
     };
         
     private static string declaredEmptyString = "''";
@@ -530,8 +530,15 @@ public class PhpGenerator : ILangGenerator
                         returnTypeCls = returnTypeCls.LeftPart('<') + (argsCount > 1 ? argsCount : "");
                         replaceReturnType = returnTypeCls + "::create(genericArgs:[" + string.Join(",", args) + "])";
                     }
+                    if (replaceReturnType == "''")
+                        replaceReturnType = "'string'";
                     if (returnTypeCls == "array")
-                        replaceReturnType = "[]";
+                    {
+                        var argTypes = implStr.RightPart('<').LastLeftPart('>').RightPart('<').LastLeftPart('>');
+                        replaceReturnType = "ArrayList::create([" + 
+                                string.Join(",", argTypes.Split(',').Map(x => '"' + x + '"')) 
+                            + "])";
+                    }
                     
                     responseTypeExpression = replaceReturnType == null ?
                         "public function createResponse(): mixed {{ return new {0}(); }}".Fmt(returnTypeCls) :
@@ -690,13 +697,13 @@ public class PhpGenerator : ILangGenerator
             }
             else if (isClass)
             {
-                if (type.IsGenericTypeDef == true)
+                if (type.IsGenericTypeDef == true || type.GenericArgs?.Length > 0)
                 {
                     sb.AppendLine("public array $genericArgs = [];");
                     sb.AppendLine($"public static function create(array $genericArgs=[]): {typeName} " + "{");
-                    sb.AppendLine($"$to = new {typeName}();");
-                    sb.AppendLine("$to->genericArgs = $genericArgs;");
-                    sb.AppendLine("return $to;");
+                    sb.AppendLine($"    $to = new {typeName}();");
+                    sb.AppendLine("    $to->genericArgs = $genericArgs;");
+                    sb.AppendLine("    return $to;");
                     sb.AppendLine("}");
                     sb.AppendLine();
                 }
@@ -772,6 +779,23 @@ public class PhpGenerator : ILangGenerator
 
     public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
     {
+        var isGenericType = type.IsGenericTypeDef == true || type.GenericArgs?.Length > 0;
+        var argIndexMap = new Dictionary<string, int>();
+        if (isGenericType)
+        {
+            for (var argIndex = 0; argIndex < type.GenericArgs.Length; argIndex++)
+            {
+                argIndexMap[type.GenericArgs[argIndex]] = argIndex;
+            }
+        }
+        string QuotedGenericArg(string type)
+        {
+            var phpType = GetPhpType(type);
+            return argIndexMap.TryGetValue(phpType, out var index)
+                ? $"$this->genericArgs[{index}]"
+                : $"'{phpType}'";
+        }
+        
         var subTypes = new List<MetadataType>();
         var inheritsType = type.Inherits;
         while (inheritsType != null)
@@ -850,7 +874,7 @@ public class PhpGenerator : ILangGenerator
                     sb.Emit(prop, Lang.Php);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     
-                    var phpType = type.IsGenericTypeDef != true
+                    var phpType = !isGenericType
                         ? (isOptional || defaultValue == "null" ? "?" : "") + PhpPropType(prop, propType)
                         : "mixed";
 
@@ -912,39 +936,31 @@ public class PhpGenerator : ILangGenerator
                     }
                     else if (DictionaryTypes.Contains(prop.Type))
                     {
-                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['{GetPhpType(prop.GenericArgs[0])}','{GetPhpType(prop.GenericArgs[1])}']), $o['{propName}']);");
-                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['{GetPhpType(prop.GenericArgs[0])}','{GetPhpType(prop.GenericArgs[1])}']), $this->{propName});");
+                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:[{QuotedGenericArg(prop.GenericArgs[0])},{QuotedGenericArg(prop.GenericArgs[1])}]), $o['{propName}']);");
+                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:[{QuotedGenericArg(prop.GenericArgs[0])},{QuotedGenericArg(prop.GenericArgs[1])}]), $this->{propName});");
                     }
                     else if (ArrayTypes.Contains(prop.Type))
                     {
-                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::fromArray('{GetPhpType(prop.GenericArgs[0])}', $o['{propName}']);");
-                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::toArray('{GetPhpType(prop.GenericArgs[0])}', $this->{propName});");
+                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::fromArray({QuotedGenericArg(prop.GenericArgs[0])}, $o['{propName}']);");
+                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::toArray({QuotedGenericArg(prop.GenericArgs[0])}, $this->{propName});");
                     }
                     else if (propType.EndsWith("[]"))
                     {
-                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::fromArray('{GetPhpType(propType.LeftPart('['))}', $o['{propName}']);");
-                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::toArray('{GetPhpType(propType.LeftPart('['))}', $this->{propName});");
+                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::fromArray({QuotedGenericArg(propType.LeftPart('['))}, $o['{propName}']);");
+                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::toArray({QuotedGenericArg(propType.LeftPart('['))}, $this->{propName});");
                     }
                     else
                     {
                         var phpType = GetPhpType(prop);
-                        if (type.IsGenericTypeDef == true)
+                        if (isGenericType)
                         {
-                            var argIndexMap = new Dictionary<string, int>();
-                            for (var argIndex = 0; argIndex < type.GenericArgs.Length; argIndex++)
-                            {
-                                argIndexMap[type.GenericArgs[argIndex]] = argIndex;
-                            }
-                            var useType = argIndexMap.TryGetValue(prop.Type, out var index)
-                                ? $"$this->genericArgs[{index}]"
-                                : $"'{phpType}'";
-                            sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from({useType}, $o['{propName}']);");
-                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to({useType}, $this->{propName});");
+                            sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from({QuotedGenericArg(GetPropertyType(prop, out _))}, $o['{propName}']);");
+                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to({QuotedGenericArg(GetPropertyType(prop, out _))}, $this->{propName});");
                         }
                         else if (phpType.StartsWith("array") && prop.GenericArgs?.Length > 0)
                         {
-                            sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::fromArray('{GetPhpType(prop.GenericArgs[0])}', $o['{propName}']);");
-                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::toArray('{GetPhpType(prop.GenericArgs[0])}', $this->{propName});");
+                            sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::fromArray({QuotedGenericArg(prop.GenericArgs[0])}, $o['{propName}']);");
+                            toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::toArray({QuotedGenericArg(prop.GenericArgs[0])}, $this->{propName});");
                         }
                         else if (prop.GenericArgs?.Length > 0)
                         {

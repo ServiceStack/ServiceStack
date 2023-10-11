@@ -1,7 +1,9 @@
 using Chinook.ServiceModel;
 using MyApp.ServiceModel;
 using ServiceStack;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation;
 using ServiceStack.Html;
 using ServiceStack.OrmLite;
 
@@ -64,6 +66,25 @@ public class AllCollectionTypes : IReturn<AllCollectionTypes>
     public Dictionary<string, List<Dictionary<string, Poco>>> PocoLookupMap { get; set; }
 }
 
+public class HelloAllTypes : IReturn<HelloAllTypesResponse>
+{
+    public string Name { get; set; }
+    public AllTypes AllTypes { get; set; }
+    public AllCollectionTypes AllCollectionTypes { get; set; }
+}
+
+public class HelloAllTypesResponse
+{
+    public string Result { get; set; }
+    public AllTypes AllTypes { get; set; }
+    public AllCollectionTypes AllCollectionTypes { get; set; }
+}
+
+public class HelloReturnVoid : IReturnVoid
+{
+    public int Id { get; set; }
+}
+
 public class Poco
 {
     public string Name { get; set; }
@@ -120,8 +141,127 @@ public class CreateMqBooking : AuditBase, ICreateDb<Booking>, IReturn<IdResponse
 //     public long ArtistId { get; set; }
 // }
 
+
+[Route("/throw/{Type}")]
+public class ThrowType : IReturn<ThrowTypeResponse>
+{
+    public string? Type { get; set; }
+    public string? Message { get; set; }
+}
+
+public class ThrowTypeResponse
+{
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+[Route("/throwvalidation")]
+public class ThrowValidation : IReturn<ThrowValidationResponse>
+{
+    public int Age { get; set; }
+    public string Required { get; set; }
+    public string Email { get; set; }
+}
+
+public class ThrowValidationResponse
+{
+    public int Age { get; set; }
+    public string Required { get; set; }
+    public string Email { get; set; }
+
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+[Route("/echo/types")]
+public class EchoTypes : IReturn<EchoTypes>
+{
+    public byte Byte { get; set; }
+    public short Short { get; set; }
+    public int Int { get; set; }
+    public long Long { get; set; }
+    public ushort UShort { get; set; }
+    public uint UInt { get; set; }
+    public ulong ULong { get; set; }
+    public float Float { get; set; }
+    public double Double { get; set; }
+    public decimal Decimal { get; set; }
+    public string String { get; set; }
+    public DateTime DateTime { get; set; }
+    public TimeSpan TimeSpan { get; set; }
+    public DateTimeOffset DateTimeOffset { get; set; }
+    public Guid Guid { get; set; }
+    public char Char { get; set; }
+}
+
+public class HelloList : IReturn<List<ListResult>>
+{
+    public List<string> Names { get; set; }
+}
+public class ListResult
+{
+    public string Result { get; set; }
+}
+
+public class ThrowValidationValidator : AbstractValidator<ThrowValidation>
+{
+    public ThrowValidationValidator()
+    {
+        RuleFor(x => x.Age).InclusiveBetween(1, 120);
+        RuleFor(x => x.Required).NotEmpty();
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+    }
+}
+
 public class TestServices : Service
 {
+    public object Any(HelloAllTypes request)
+    {
+        return new HelloAllTypesResponse
+        {
+            AllTypes = request.AllTypes,
+            AllCollectionTypes = request.AllCollectionTypes,
+            Result = request.Name
+        };
+    }
+    
+    public object Any(ThrowType request)
+    {
+        switch (request.Type ?? "Exception")
+        {
+            case "Exception":
+                throw new Exception(request.Message ?? "Server Error");
+            case "NotFound":
+                throw HttpError.NotFound(request.Message ?? "What you're looking for isn't here");
+            case "Unauthorized":
+                throw HttpError.Unauthorized(request.Message ?? "You shall not pass!");
+            case "Conflict":
+                throw HttpError.Conflict(request.Message ?? "We haz Conflict!");
+            case "NotImplementedException":
+                throw new NotImplementedException(request.Message ?? "Not implemented yet, try again later");
+            case "ArgumentException":
+                throw new ArgumentException(request.Message ?? "Client Argument Error");
+            case "AuthenticationException":
+                throw new AuthenticationException(request.Message ?? "We haz issue Authenticating");
+            case "UnauthorizedAccessException":
+                throw new UnauthorizedAccessException(request.Message ?? "You shall not pass!");
+            case "OptimisticConcurrencyExceptieon":
+                throw new OptimisticConcurrencyException(request.Message ?? "Sorry too optimistic");
+            case "UnhandledException":
+                throw new FileNotFoundException(request.Message ?? "File was never here");
+            case "RawResponse":
+                Response.StatusCode = 418;
+                Response.StatusDescription = request.Message ?? "On a tea break";
+                Response.Close();
+                break;
+        }
+
+        return request;
+    }
+
+    public object Any(ThrowValidation request)
+    {
+        return request.ConvertTo<ThrowValidationResponse>();
+    }    
+    
     public object Any(AllTypes request) => request;
 
     public object Any(AllCollectionTypes request) => request;
@@ -185,4 +325,10 @@ public class TestServices : Service
         
         return new ProfileGenResponse();
     }
+
+    public void Any(HelloReturnVoid request) {}
+
+    public object Any(EchoTypes request) => request;
+    
+    public object Any(HelloList request) => request.Names.Map(name => new ListResult { Result = name });
 }

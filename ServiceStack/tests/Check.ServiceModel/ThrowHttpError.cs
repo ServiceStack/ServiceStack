@@ -1,4 +1,5 @@
 ﻿using ServiceStack;
+using ServiceStack.FluentValidation;
 
 namespace Check.ServiceModel
 {
