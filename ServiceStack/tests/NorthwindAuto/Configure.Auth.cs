@@ -42,6 +42,7 @@ public class ConfigureAuth : IHostingStartup
                     new JwtAuthProvider(appSettings) {
                         AuthKeyBase64 = appSettings.GetString("AuthKeyBase64") ?? "cARl12kvS/Ra4moVBIaVsrWwTpXYuZ0mZf/gNLUhDW5=",
                     },
+                    new BasicAuthProvider(appSettings),
                     new ApiKeyAuthProvider(appSettings),
                     //new CustomCredentialsProvider(appSettings),
                     

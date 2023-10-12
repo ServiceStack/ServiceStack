@@ -968,7 +968,7 @@ public class PhpGenerator : ILangGenerator
                             if (clsName == "Nullable")
                             {
                                 if (primitiveDefaultValues.ContainsKey(prop.GenericArgs[0]) 
-                                    && !ConvertValueTypes.Contains(prop.Type))
+                                    && !ConvertValueTypes.Contains(prop.GenericArgs[0]))
                                 {
                                     sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = $o['{propName}'];");
                                     toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = $this->{propName};");
@@ -1003,14 +1003,14 @@ public class PhpGenerator : ILangGenerator
         {
             sb.AppendLine("");
             sb.AppendLine("/** @throws Exception */");
-            sb.AppendLine("public function jsonSerialize(): array");
+            sb.AppendLine("public function jsonSerialize(): mixed");
             sb.AppendLine("{");
             sb = sb.Indent();
             foreach (var line in toJsonLines)
             {
                 sb.AppendLine(line);
             }
-            sb.AppendLine("return $o;");
+            sb.AppendLine("return empty($o) ? new class(){} : $o;");
             sb = sb.UnIndent();
             sb.AppendLine("}");
         }
