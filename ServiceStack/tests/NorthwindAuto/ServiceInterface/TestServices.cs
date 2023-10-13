@@ -10,6 +10,47 @@ using ServiceStack.OrmLite;
 
 namespace MyApp.ServiceInterface;
 
+public partial class HelloSubAllTypes
+    : AllTypesBase, IReturn<SubAllTypes>
+{
+    public virtual int Hierarchy { get; set; }
+}
+[Synthesize]
+public abstract class AllTypesBase
+{
+    public int Id { get; set; }
+    public int? NullableId { get; set; }
+    public byte Byte { get; set; }
+    public short Short { get; set; }
+    public int Int { get; set; }
+    public long Long { get; set; }
+    public UInt16 UShort { get; set; }
+    public uint UInt { get; set; }
+    public ulong ULong { get; set; }
+    public float Float { get; set; }
+    public double Double { get; set; }
+    public decimal Decimal { get; set; }
+    public string String { get; set; }
+    public DateTime DateTime { get; set; }
+    public TimeSpan TimeSpan { get; set; }
+    public DateTimeOffset DateTimeOffset { get; set; }
+    public Guid Guid { get; set; }
+    public Char Char { get; set; }
+    public KeyValuePair<string, string> KeyValuePair { get; set; }
+    public DateTime? NullableDateTime { get; set; }
+    public TimeSpan? NullableTimeSpan { get; set; }
+    public List<string> StringList { get; set; }
+    public string[] StringArray { get; set; }
+    public Dictionary<string, string> StringMap { get; set; }
+    public Dictionary<int, string> IntStringMap { get; set; }
+    public SubType SubType { get; set; }
+}
+public partial class SubAllTypes
+    : AllTypesBase
+{
+    public virtual int Hierarchy { get; set; }
+}
+
 [Tag("Test")]
 public class AllTypes : IReturn<AllTypes>
 {
@@ -94,6 +135,21 @@ public class Poco
 public abstract class HelloBase
 {
     public int Id { get; set; }
+}
+
+public class HelloPost : HelloBase, IReturn<HelloPost>, IPost
+{
+}
+
+public abstract class HelloBase<T>
+{
+    public List<T> Items { get; set; }
+    public virtual List<int> Counts { get; set; }
+}
+
+public class HelloWithGenericInheritance : HelloBase<Poco>, IReturn<HelloWithGenericInheritance>
+{
+    public string Result { get; set; }
 }
 
 public class SubType
@@ -437,5 +493,8 @@ public class TestServices : Service
     
     public object Any(HelloWithEnum request) => request;
     public object Any(HelloWithEnumList request) => request;
-    public object Any(HelloWithEnumMap request) => request;    
+    public object Any(HelloWithEnumMap request) => request;
+    public object Any(HelloSubAllTypes request) => request.ConvertTo<SubAllTypes>();
+    public object Any(HelloWithGenericInheritance request) => request;
+    public object Any(HelloPost request) => request;
 }

@@ -254,6 +254,11 @@ public class PhpGenerator : ILangGenerator
         AllTypes = FilterTypes(AllTypes);
 
         BuiltInTypes = NativeTypesService.BuiltInClientDtos.Map(x => x.ToMetadataType());
+        
+        //Find conflicting type names with 1 generic arg where non generic type exists 
+        var nonGenericTypes = AllTypes.Where(x => (x.GenericArgs?.Length ?? 0) == 0).Select(x => x.Name).Distinct();
+        ConflictTypeNames = AllTypes.Where(x => 
+            x.GenericArgs?.Length == 1 && nonGenericTypes.Contains(x.Name.LeftPart('`'))).Map(x => x.Name);
     }
 
     public MetadataType FindType(MetadataTypeName typeRef) =>
@@ -740,7 +745,9 @@ public class PhpGenerator : ILangGenerator
     {
         var typeName = Type(type, null);
         //If GenericType has 1 arg, use same as TypeName, otherwise append arg types count to name 
-        if (genericArgs?.Length > 1)
+        if (genericArgs?.Length == 1 && ConflictTypeNames.Contains(type))
+            typeName += genericArgs.Length;
+        else if (genericArgs?.Length > 1)
             typeName += genericArgs.Length;
         return typeName;
     }
@@ -837,8 +844,17 @@ public class PhpGenerator : ILangGenerator
                         var isOptional = IsPropertyOptional(this, type, prop) ?? optionalProperty;
                         var defaultValue = (!isOptional ? GetDefaultInitializer(propType) : null) ?? "null";
 
-                        sb.AppendLine(" * @param " + propType + (defaultValue == "null" ? "|null" : "") + $" {propName}");
-                        baseLines.Add($"{propType.LeftPart('<')} {propName}={defaultValue},");
+                        sb.Emit(prop, Lang.Php);
+                        PrePropertyFilter?.Invoke(sb, prop, type);
+                    
+                        var phpType = !isGenericType
+                            ? (isOptional || defaultValue == "null" ? "?" : "") + PhpPropType(prop, propType)
+                            : "mixed";
+                        var docType = !propType.StartsWith("array") && propType.IndexOf('<') >= 0
+                            ? phpType.TrimStart('?') + '<' + propType.RightPart('<')
+                            : propType;
+                        sb.AppendLine(" * @param " + docType + (defaultValue == "null" ? "|null" : "") + $" {propName}");
+                        baseLines.Add($"{phpType} {propName}={defaultValue},");
                     }
                 }
                 sb.AppendLine(" */");
@@ -877,7 +893,6 @@ public class PhpGenerator : ILangGenerator
                     var phpType = !isGenericType
                         ? (isOptional || defaultValue == "null" ? "?" : "") + PhpPropType(prop, propType)
                         : "mixed";
-
                     var docType = !propType.StartsWith("array") && propType.IndexOf('<') >= 0
                         ? phpType.TrimStart('?') + '<' + propType.RightPart('<')
                         : propType;
@@ -1147,7 +1162,7 @@ public class PhpGenerator : ILangGenerator
         }
             
         if (cooked == null)
-            cooked = Type(type, genericArgs);
+            cooked = GetPhpClassName(type, genericArgs);
             
         useType = CookedDeclarationTypeFilter?.Invoke(cooked);
         if (useType != null)
@@ -1240,10 +1255,7 @@ public class PhpGenerator : ILangGenerator
 
     public string NameOnly(string type)
     {
-        var name = ConflictTypeNames.Contains(type)
-            ? type.Replace('`','_')
-            : type.LeftPart('`');
-
+        var name = type.LeftPart('`');
         return name.LastRightPart('.').SafeToken();
     }
 
