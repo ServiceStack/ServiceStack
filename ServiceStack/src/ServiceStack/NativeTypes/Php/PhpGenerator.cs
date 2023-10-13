@@ -464,7 +464,7 @@ public class PhpGenerator : ILangGenerator
                     var memberValue = type.GetEnumMemberValue(i);
                     if (memberValue != null)
                     {
-                        sb.AppendLine($"{name} = '{memberValue}',");
+                        sb.AppendLine($"case {name} = '{memberValue}';");
                         continue;
                     }
 

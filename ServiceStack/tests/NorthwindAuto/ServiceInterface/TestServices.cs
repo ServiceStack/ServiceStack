@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using Chinook.ServiceModel;
 using MyApp.ServiceModel;
 using ServiceStack;
@@ -201,6 +202,108 @@ public class ListResult
     public string Result { get; set; }
 }
 
+public class HelloWithEnum
+{
+    public EnumType EnumProp { get; set; }
+    public EnumTypeFlags EnumTypeFlags { get; set; }
+
+    public EnumWithValues EnumWithValues { get; set; }
+    public EnumType? NullableEnumProp { get; set; }
+
+    public EnumFlags EnumFlags { get; set; }
+    public EnumAsInt EnumAsInt { get; set; }
+    public EnumStyle EnumStyle { get; set; }
+    public EnumStyleMembers EnumStyleMembers { get; set; }
+}
+
+public class HelloWithEnumList
+{
+    public List<EnumType> EnumProp { get; set; }
+    public List<EnumWithValues> EnumWithValues { get; set; }
+    public List<EnumType?> NullableEnumProp { get; set; }
+
+    public List<EnumFlags> EnumFlags { get; set; }
+    public List<EnumStyle> EnumStyle { get; set; }
+}
+
+public class HelloWithEnumMap
+{
+    public Dictionary<EnumType,EnumType> EnumProp { get; set; }
+    public Dictionary<EnumWithValues,EnumWithValues> EnumWithValues { get; set; }
+    public Dictionary<EnumType?,EnumType?> NullableEnumProp { get; set; }
+
+    public Dictionary<EnumFlags,EnumFlags> EnumFlags { get; set; }
+    public Dictionary<EnumStyle,EnumStyle> EnumStyle { get; set; }
+}
+
+public enum EnumType
+{
+    Value1,
+    Value2,
+    Value3,
+}
+
+[Flags]
+public enum EnumTypeFlags
+{
+    Value1,
+    Value2,
+    Value3,
+}
+
+public enum EnumWithValues
+{
+    None = 0,
+    [EnumMember(Value = "Member 1")]
+    Value1 = 1,
+    [Description("Member 2")]
+    Value2 = 2,
+}
+
+[Flags]
+public enum EnumFlags
+{
+    Value0 = 0,
+    Value1 = 1,
+    Value2 = 2,
+    Value3 = 4,
+    Value123 = Value1 | Value2 | Value3,
+}
+
+[EnumAsInt]
+public enum EnumAsInt
+{
+    Value1 = 1000,
+    Value2 = 2000,
+    Value3 = 3000,
+}
+
+public enum EnumStyle
+{
+    lower,
+    UPPER,
+    PascalCase,
+    camelCase,
+    camelUPPER,
+    PascalUPPER,
+}
+
+public enum EnumStyleMembers
+{
+    [EnumMember(Value = "lower")]
+    Lower,
+    [EnumMember(Value = "UPPER")]
+    Upper,
+    [EnumMember(Value = "PascalCase")]
+    PascalCase,
+    [EnumMember(Value = "camelCase")]
+    CamelCase,
+    [EnumMember(Value = "camelUPPER")]
+    CamelUpper,
+    [EnumMember(Value = "PascalUPPER")]
+    PascalUpper,
+}
+
 public class ThrowValidationValidator : AbstractValidator<ThrowValidation>
 {
     public ThrowValidationValidator()
@@ -331,4 +434,8 @@ public class TestServices : Service
     public object Any(EchoTypes request) => request;
     
     public object Any(HelloList request) => request.Names.Map(name => new ListResult { Result = name });
+    
+    public object Any(HelloWithEnum request) => request;
+    public object Any(HelloWithEnumList request) => request;
+    public object Any(HelloWithEnumMap request) => request;    
 }
