@@ -145,7 +145,7 @@ public class JavaGenerator : ILangGenerator
             }
         }
 
-        var defaultNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
+        var globalNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
 
         string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
@@ -164,7 +164,7 @@ public class JavaGenerator : ILangGenerator
 
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), defaultNamespace));
+            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), globalNamespace));
             sb.AppendLine("{0}AddPropertyAccessors: {1}".Fmt(defaultValue("AddPropertyAccessors"), Config.AddPropertyAccessors));
             sb.AppendLine("{0}SettersReturnThis: {1}".Fmt(defaultValue("SettersReturnThis"), Config.SettersReturnThis));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
@@ -228,7 +228,7 @@ public class JavaGenerator : ILangGenerator
         if (insertCode != null)
             sb.AppendLine(insertCode);
 
-        sb.AppendLine("public class {0}".Fmt(defaultNamespace.SafeToken()));
+        sb.AppendLine("public class {0}".Fmt(globalNamespace.SafeToken()));
         sb.AppendLine("{");
 
         //ServiceStack core interfaces

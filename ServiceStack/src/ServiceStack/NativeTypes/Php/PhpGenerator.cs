@@ -15,6 +15,7 @@ public class PhpGenerator : ILangGenerator
     public List<MetadataType> AllTypes { get; set; }
     public List<MetadataType> BuiltInTypes { get; set; }
 
+    public static string DefaultGlobalNamespace = "dtos";
     public PhpGenerator(MetadataTypesConfig config)
     {
         Config = config;
@@ -274,7 +275,7 @@ public class PhpGenerator : ILangGenerator
             ? Config.DefaultImports
             : DefaultImports;
 
-        var globalNamespace = Config.GlobalNamespace;
+        var globalNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
 
         string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
@@ -297,8 +298,7 @@ public class PhpGenerator : ILangGenerator
                 sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
 
             sb.AppendLine();
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-
+            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), globalNamespace));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
