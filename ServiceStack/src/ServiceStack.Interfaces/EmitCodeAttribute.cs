@@ -71,3 +71,13 @@ public class EmitKotlin : EmitCodeAttribute
 {
     public EmitKotlin(params string[] statements) : base(Lang.Kotlin, statements) { }
 }
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+public class EmitPython : EmitCodeAttribute
+{
+    public EmitPython(params string[] statements) : base(Lang.Python, statements) { }
+}
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+public class EmitPhp : EmitCodeAttribute
+{
+    public EmitPhp(params string[] statements) : base(Lang.Php, statements) { }
+}
