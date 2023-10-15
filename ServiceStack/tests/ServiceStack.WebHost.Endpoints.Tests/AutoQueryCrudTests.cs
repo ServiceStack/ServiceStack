@@ -958,11 +958,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             authClient.Post(createRequest);
-            
             using var db = appHost.GetDbConnection();
 
-            ExecUtils.RetryUntilTrue(() => 
-                db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq)),
+            ExecUtils.RetryUntilTrue(() => {
+                    using var d = appHost.GetDbConnection();
+                    return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
+                },
                 TimeSpan.FromSeconds(2));
             var result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
             
@@ -973,8 +974,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
             authClient.Put(updateRequest);
 
-            ExecUtils.RetryUntilTrue(() => 
-                    db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq)),
+            ExecUtils.RetryUntilTrue(() => {
+                    using var d = appHost.GetDbConnection();
+                    return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
+                },
                 TimeSpan.FromSeconds(2));
             result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
             
@@ -991,8 +994,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
             authClient.Patch(patchRequest);
 
-            ExecUtils.RetryUntilTrue(() => 
-                    db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq)),
+            ExecUtils.RetryUntilTrue(() => {
+                    using var d = appHost.GetDbConnection();
+                    return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
+                },
                 TimeSpan.FromSeconds(2));
             result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
             
@@ -1006,8 +1011,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Id = result.Id,
             });
             
-            ExecUtils.RetryUntilTrue(() => 
-                    !db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq)),
+            ExecUtils.RetryUntilTrue(() => {
+                    using var d = appHost.GetDbConnection();
+                    return !d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
+                },
                 TimeSpan.FromSeconds(2));
             
             Assert.That(db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq)), Is.False);
