@@ -42,16 +42,18 @@ public static class LangGeneratorExtensions
             
         var src = lang switch {
             "csharp" => Generate(new CSharp.CSharpGenerator(typesConfig)),
+            "mjs" => Generate(new TypeScript.MjsGenerator(typesConfig)),
             "typescript" => Generate(new TypeScript.TypeScriptGenerator(typesConfig)),
             "dart" => Generate(new Dart.DartGenerator(typesConfig)),
             "java" => Generate(new Java.JavaGenerator(typesConfig)),
             "kotlin" => Generate(new Kotlin.KotlinGenerator(typesConfig)),
             "python" => Generate(new Python.PythonGenerator(typesConfig)),
+            "php" => Generate(new Php.PhpGenerator(typesConfig)),
             "swift" => Generate(new Swift.SwiftGenerator(typesConfig)),
             "vbnet" => Generate(new VbNet.VbNetGenerator(typesConfig)),
             "fsharp" => Generate(new FSharp.FSharpGenerator(typesConfig)),
             _ => throw new NotSupportedException($"Unknown language '{lang}', Supported languages: " +
-                                                 $"csharp, typescript, dart, java, kotlin, python, swift, vbnet, fsharp")
+                                                 $"csharp, typescript, dart, java, kotlin, python, php, swift, vbnet, fsharp")
         };
         return src;
     }

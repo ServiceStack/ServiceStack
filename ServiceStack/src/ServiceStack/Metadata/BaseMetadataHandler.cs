@@ -174,6 +174,7 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
                     new ("java", "Java"),
                     new ("kotlin", "Kotlin"),
                     new ("python", "Python"),
+                    new ("php", "PHP"),
                     new ("swift", "Swift"),
                     new ("vbnet", "VB.NET"),
                     new ("fsharp", "F#"),
@@ -206,7 +207,7 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
                 {
                     var src = metadataTypes.GenerateSourceCode(queryLang, httpReq, c => c.WithoutOptions = true);
                     sb.AppendLine($"<link href=\"{httpReq.ResolveAbsoluteUrl("~/css/highlight.css")}\" rel=\"stylesheet\" />");
-                    sb.AppendLine($"<pre style=\"padding-left:1rem;\"><code lang=\"{queryLang}\">{src.HtmlEncodeLite()}</code></pre>");
+                    sb.AppendLine($"<pre style=\"padding-left:1rem;\"><code class=\"language-{queryLang}\" lang=\"{queryLang}\">{src.HtmlEncodeLite()}</code></pre>");
                     sb.AppendLine($"<p><a href=\"{httpReq.ResolveAbsoluteUrl($"~/types/{queryLang}?IncludeTypes={op.Name}.*")}\">{queryLangName} {op.Name} DTOs</a></p>");
                     sb.AppendLine($"<script type=\"text/javascript\" src=\"{httpReq.ResolveAbsoluteUrl("~/js/highlight.js")}\"></script>");
                     sb.AppendLine("<script>hljs.highlightAll()</script>");

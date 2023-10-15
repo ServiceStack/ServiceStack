@@ -81,6 +81,18 @@ response = client.send(Hello(
 ))
 
 printdump(response)`,
+    php: `use ServiceStack\\JsonServiceClient;
+use ServiceStack\\Inspect;
+use dtos\\Hello;
+
+$client = JsonServiceClient::create('${BaseUrl}');
+
+/** @var {HelloResponse} $response */
+$response = $client->send(new Hello(
+    //...
+));
+
+Inspect::printDump(response);`,
     swift: `import Foundation
 import ServiceStack
 
@@ -359,6 +371,34 @@ const Python = {
     </div>`,
     props:['src','usage']
 }
+const Php = {
+    components,
+    template:`<div>
+      <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from PHP</h2>
+      <p class="text-lg p-4">
+        <b class="mr-2">1.</b> Include <b>servicestack/client</b> package in your projects<em>composer.json</em>
+      </p>
+
+      <CopyLine text="&quot;servicestack/client&quot;: &quot;^1.0&quot;" />
+
+      <div class="text-lg p-4 flex">
+        <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+        <CopyIcon class="ml-3" :text="src" title="Copy code" />
+      </div>
+      <div class="text-lg p-4">
+        <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+      </div>
+      <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+        <div class="relative">
+          <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+        </div>
+        <pre><code class="language-php" v-highlightjs="usage"></code></pre>
+      </div>
+
+      <InstallTool lang="php" />
+    </div>`,
+    props:['src','usage']
+}
 const Swift = {
     components,
     template:`<div>
@@ -463,7 +503,7 @@ const FSharp = {
     }
 }
 
-export const LanguageComponents = { CSharp, TypeScript, Mjs, Dart, Java, Kotlin, Python, Swift, VbNet, FSharp }
+export const LanguageComponents = { CSharp, TypeScript, Mjs, Dart, Java, Kotlin, Python, Php, Swift, VbNet, FSharp }
 export const LangTypes = {
     CSharp:     ['csharp',     'C#'],
     TypeScript: ['typescript', 'TypeScript'],
@@ -472,6 +512,7 @@ export const LangTypes = {
     Java:       ['java',       'Java'],
     Kotlin:     ['kotlin',     'Kotlin'],
     Python:     ['python',     'Python'],
+    Php:        ['php',        'PHP'],
     Swift:      ['swift',      'Swift'],
     VbNet:      ['vbnet',      'VB'],
     FSharp:     ['fsharp',     'F#'],
@@ -505,7 +546,7 @@ export const Code = {
             </div>
             <CopyIcon v-if="activeLangSrc" :text="activeLangSrc" title="Copy code" />
           </div>
-          <pre :key="selected" v-if="activeLangSrc" class=""><code :lang="selected" v-highlightjs="activeLangSrc"></code></pre>
+          <pre :key="selected" v-if="activeLangSrc" class=""><code :class="'language-' + selected" :lang="selected" v-highlightjs="activeLangSrc"></code></pre>
           <Loading v-else />
         </div>
         <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg relative" style="min-width:585px;max-width:700px">
