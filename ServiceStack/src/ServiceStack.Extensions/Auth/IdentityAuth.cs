@@ -41,8 +41,8 @@ public static class IdentityAuth
         return authFeature => {
             var authProviders = new List<IAuthProvider>();
             if (ctx.AuthApplication != null) authProviders.Add(ctx.AuthApplication);
-            if (ctx.AuthCredentials != null) authProviders.Add(ctx.AuthCredentials);
-            if (ctx.AuthJwt != null) authProviders.Add(ctx.AuthJwt);
+            if (ctx is { EnableCredentialsAuth: true, AuthCredentials: not null }) authProviders.Add(ctx.AuthCredentials);
+            if (ctx is { EnableJwtAuth: true, AuthJwt: not null }) authProviders.Add(ctx.AuthJwt);
             authFeature.RegisterAuthProviders(authProviders.ToArray());
             authFeature.SessionFactory = ctx.SessionFactory;
             authFeature.RegisterPlugins.RemoveAll(x => x is SessionFeature);
@@ -112,6 +112,9 @@ public class IdentityAuthContext<TUser, TRole> : IIdentityAuthContext
     public IdentityApplicationAuthProvider? AuthApplication { get; set; }
     public IdentityCredentialsAuthProvider<TUser>? AuthCredentials { get; set; }
     public IdentityJwtAuthProvider<TUser, TRole>? AuthJwt { get; set; }
+
+    public bool EnableCredentialsAuth { get; set; }
+    public bool EnableJwtAuth { get; set; }
 
     public void DisableApplicationCookie() => AuthApplication = null;
     public void DisableCredentialsAuth() => AuthCredentials = null;

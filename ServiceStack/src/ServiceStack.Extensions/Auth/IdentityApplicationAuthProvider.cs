@@ -37,6 +37,7 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
     public CookieAuthenticationOptions Options { get; set; }
 
     public Dictionary<string, string> MapClaimsToSession { get; set; } = new() {
+        [ClaimTypes.NameIdentifier] = nameof(AuthUserSession.UserAuthId),
         [ClaimTypes.Email] = nameof(AuthUserSession.Email),
         [ClaimTypes.Name] = nameof(AuthUserSession.UserAuthName),
         [ClaimTypes.GivenName] = nameof(AuthUserSession.FirstName),
@@ -137,22 +138,22 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
         {
             if (claim.Type == ClaimTypes.Role)
             {
-                session.Roles ??= new List<string>();
+                session.Roles ??= new();
                 session.Roles.Add(claim.Value);
             }
             else if (claim.Type == PermissionClaimType)
             {
-                session.Permissions ??= new List<string>();
+                session.Permissions ??= new();
                 session.Permissions.Add(claim.Value);
             }
             else if (extended != null && claim.Type == JwtClaimTypes.Audience)
             {
-                extended.Audiences ??= new List<string>();
+                extended.Audiences ??= new();
                 extended.Audiences.Add(claim.Value);
             }
             else if (extended != null && claim.Type == JwtClaimTypes.Scope)
             {
-                extended.Scopes ??= new List<string>();
+                extended.Scopes ??= new();
                 extended.Scopes.Add(claim.Value);
             }                        
             else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
