@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using ServiceStack.Html;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth;
@@ -26,6 +27,26 @@ public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCre
     {
         Provider = Name;
         AuthRealm = Realm;
+        Init();
+    }
+
+    protected virtual void Init()
+    {
+        Sort = -1;
+        Label = Provider.ToPascalCase();
+        FormLayout = new() {
+            Input.For<Authenticate>(x => x.UserName, c =>
+            {
+                c.Label = "Email address";
+                c.Required = true;
+            }),
+            Input.For<Authenticate>(x => x.Password, c =>
+            {
+                c.Type = "Password";
+                c.Required = true;
+            }),
+            Input.For<Authenticate>(x => x.RememberMe),
+        };
     }
 
     /// <summary>

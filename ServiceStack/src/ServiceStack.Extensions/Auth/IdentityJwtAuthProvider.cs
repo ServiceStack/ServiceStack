@@ -185,6 +185,15 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         Options = new JwtBearerOptions();
         ResolveJwtId = _ => NextJwtId();
         ResolveRefreshJwtId = _ => NextRefreshJwtId();
+        
+        Label = "JWT";
+        FormLayout = new() {
+            new InputInfo(nameof(IHasBearerToken.BearerToken), Html.Input.Types.Textarea) {
+                Label = "JWT",
+                Placeholder = "JWT Bearer Token",
+                Required = true,
+            },
+        };
     }
 
     public override void Register(IAppHost appHost, AuthFeature feature)
