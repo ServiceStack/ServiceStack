@@ -1,4 +1,5 @@
 #nullable enable
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
@@ -11,12 +12,12 @@ public interface IIdentityCredentialsAuthProvider
 {
     bool LockoutOnFailure { get; set; }
 }
-    
+
 /// <summary>
 /// Implements /auth/credentials authenticating against ASP.NET Identity IdentityUser
 /// </summary>
 /// <typeparam name="TUser"></typeparam>
-public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCredentialsAuthProvider
+public class IdentityCredentialsAuthProvider<TUser> : IdentityAuthProvider<TUser>, IIdentityCredentialsAuthProvider
     where TUser : IdentityUser
 {
     public override string Type => "credentials";
@@ -64,8 +65,8 @@ public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCre
         return session.IsAuthenticated && !session.UserAuthName.IsNullOrEmpty();
     }
 
-    public virtual async Task<SignInResult> TryAuthenticateAsync(IServiceBase authService, 
-        string userName, string password, bool? rememberMe=false, CancellationToken token = default)
+    public virtual async Task<SignInResult> TryAuthenticateAsync(IServiceBase authService,
+        string userName, string password, bool? rememberMe = false, CancellationToken token = default)
     {
         var signInManager = authService.Resolve<SignInManager<TUser>>();
 
@@ -77,7 +78,7 @@ public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCre
         return result;
     }
 
-    protected virtual async Task<IAuthSession> ResetSessionBeforeLoginAsync(IServiceBase authService, IAuthSession session, string userName, CancellationToken token=default)
+    protected virtual async Task<IAuthSession> ResetSessionBeforeLoginAsync(IServiceBase authService, IAuthSession session, string userName, CancellationToken token = default)
     {
         if (!LoginMatchesSession(session, userName))
         {
@@ -86,7 +87,7 @@ public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCre
         }
         return session;
     }
-        
+
     public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request,
         CancellationToken token = new())
     {
@@ -110,17 +111,19 @@ public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCre
         {
             // _logger.LogInformation("User logged in");
             // return authService.LocalRedirect(authService.Request.GetReturnUrl());
-                
-            session.IsAuthenticated = true;
+            await IdentityAuth.Instance<TUser>()!.AuthApplication!.PopulateSessionAsync(
+                authService.Request,
+                session,
+                authService.Request.GetClaimsPrincipal());
 
-            if (session.UserAuthName == null)
-                session.UserAuthName = request.UserName;
+            session.IsAuthenticated = true;
+            session.UserAuthName ??= request.UserName;
 
             var response = await OnAuthenticatedAsync(authService, session, null, null, token).ConfigAwait();
             if (response != null)
                 return response;
 
-            return new AuthenticateResponse
+            var ret = new AuthenticateResponse
             {
                 UserId = session.UserAuthId,
                 UserName = request.UserName,
@@ -129,8 +132,13 @@ public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCre
                               ?? session.UserName
                               ?? (session.FirstName != null ? $"{session.FirstName} {session.LastName}".Trim() : null)
                               ?? session.Email,
+                Roles = authFeature.IncludeRolesInAuthenticateResponse
+                    ? session.Roles
+                    : null,
                 ReferrerUrl = authService.Request.GetReturnUrl()
-            };                
+            };
+
+            return ret;
         }
 
         var isHtml = authService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
@@ -146,7 +154,7 @@ public class IdentityCredentialsAuthProvider<TUser> : AuthProvider, IIdentityCre
             }
             throw new AuthenticationException(ErrorMessages.Requires2FA.Localize(authService.Request));
         }
-            
+
         if (result.IsLockedOut)
         {
             // _logger.LogWarning("User account locked out");

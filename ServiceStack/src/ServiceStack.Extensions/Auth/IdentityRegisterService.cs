@@ -26,7 +26,8 @@ public class IdentityRegistrationValidator<TUser> : AbstractValidator<Register>
                 RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                 RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                 RuleFor(x => x.UserName)
-                    .MustAsync(async (x,token) => {
+                    .MustAsync(async (x, token) =>
+                    {
                         var userManager = Request.TryResolve<UserManager<TUser>>();
                         return await userManager.FindByEmailAsync(x).ConfigAwait() == null;
                     })
@@ -34,7 +35,8 @@ public class IdentityRegistrationValidator<TUser> : AbstractValidator<Register>
                     .WithMessage(ErrorMessages.UsernameAlreadyExists.Localize(base.Request))
                     .When(x => !x.UserName.IsNullOrEmpty());
                 RuleFor(x => x.Email)
-                    .MustAsync(async (x,token) => {
+                    .MustAsync(async (x, token) =>
+                    {
                         var userManager = Request.TryResolve<UserManager<TUser>>();
                         return await userManager.FindByEmailAsync(x).ConfigAwait() == null;
                     })
@@ -67,9 +69,9 @@ public abstract class IdentityRegisterServiceBase<TUser> : RegisterServiceBase
         return to;
     }
 
-    protected async Task<bool> UserExistsAsync(IAuthSession session) => 
+    protected async Task<bool> UserExistsAsync(IAuthSession session) =>
         session.IsAuthenticated && await userManager.FindByEmailAsync(session.UserAuthName ?? session.Email).ConfigAwait() != null;
-        
+
     protected virtual async Task ValidateAndThrowAsync(Register request)
     {
         var validator = RegistrationValidator ?? new RegistrationValidator();
@@ -90,9 +92,8 @@ public abstract class IdentityRegisterServiceBase<TUser> : RegisterServiceBase
 }
 
 [DefaultRequest(typeof(Register))]
-public class IdentityRegisterService<TUser,TRole> : IdentityRegisterServiceBase<TUser> 
+public class IdentityRegisterService<TUser> : IdentityRegisterServiceBase<TUser>
     where TUser : IdentityUser
-    where TRole : IdentityRole
 {
     public IdentityRegisterService(UserManager<TUser> userManager) : base(userManager) { }
 
@@ -109,20 +110,23 @@ public class IdentityRegisterService<TUser,TRole> : IdentityRegisterServiceBase<
         var result = await userManager.CreateAsync(newUser, request.Password);
         if (result.Succeeded)
         {
-            session = ((IdentityAuthContext<TUser, TRole>)IdentityAuth.Config!)!.UserToSessionConverter(newUser);
+            session = IdentityAuth.Instance<TUser>()!.UserToSessionConverter(newUser);
             await RegisterNewUserAsync(session, newUser);
-            
-            var response = await CreateRegisterResponse(session, 
+
+            var response = await CreateRegisterResponse(session,
                 request.UserName ?? request.Email, request.Password, request.AutoLogin);
             return response;
         }
 
         var errorCode = HttpStatusCode.BadRequest.ToString();
-        var errorResponse = new RegisterResponse {
-            ResponseStatus = new ResponseStatus {
+        var errorResponse = new RegisterResponse
+        {
+            ResponseStatus = new ResponseStatus
+            {
                 ErrorCode = errorCode,
                 Message = errorCode,
-                Errors = result.Errors.Map(x => new ResponseError {
+                Errors = result.Errors.Map(x => new ResponseError
+                {
                     ErrorCode = x.Code,
                     Message = x.Description,
                     FieldName = x.Code.StartsWith(nameof(Register.Password)) ? nameof(Register.Password) : null,

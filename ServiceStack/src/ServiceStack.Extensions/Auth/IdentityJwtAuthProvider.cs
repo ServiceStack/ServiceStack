@@ -25,15 +25,13 @@ public interface IIdentityJwtAuthProvider
     string? AuthenticationScheme { get; }
     JwtBearerOptions? Options { get; }
 }
-    
+
 /// <summary>
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>
 /// <typeparam name="TUser"></typeparam>
-/// <typeparam name="TRole"></typeparam>
-public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
+public class IdentityJwtAuthProvider<TUser> : IdentityAuthProvider<TUser>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
     where TUser : IdentityUser
-    where TRole : IdentityRole
 {
     public override string Type => "Bearer";
     public const string Name = "identity";
@@ -43,7 +41,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
     /// Default Issuer to use if unspecified
     /// </summary>
     public string DefaultIssuer { get; set; } = "ssjwt";
-        
+
     /// <summary>
     /// Which Hash Algorithm should be used to sign the JWT Token. (default HS256)
     /// </summary>
@@ -53,7 +51,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
     /// Which JWT Authentication Scheme configuration to use (default Bearer)
     /// </summary>
     public string AuthenticationScheme { get; }
-        
+
     /// <summary>
     /// The JWT Bearer Options to use (default populated from AuthenticationScheme JwtBearerOptions)
     /// </summary>
@@ -98,14 +96,14 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
     /// <summary>
     /// Change resolution for resolving unique jti id for Access Tokens
     /// </summary>
-    public Func<IRequest,string>? ResolveJwtId { get; set; }
+    public Func<IRequest, string>? ResolveJwtId { get; set; }
 
     /// <summary>
     /// Get the next AutoId for usage in jti JWT Access Tokens  
     /// </summary>
-    public string NextJwtId() => Interlocked.Increment(ref accessIdCounter).ToString(); 
+    public string NextJwtId() => Interlocked.Increment(ref accessIdCounter).ToString();
     private long accessIdCounter;
-        
+
     /// <summary>
     /// Get the last jti AutoId generated  
     /// </summary>
@@ -114,7 +112,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
     /// <summary>
     /// Change resolution for resolving unique jti id for Refresh Tokens
     /// </summary>
-    public Func<IRequest,string>? ResolveRefreshJwtId { get; set; }
+    public Func<IRequest, string>? ResolveRefreshJwtId { get; set; }
 
     /// <summary>
     /// Get the next AutoId for usage in jti JWT Refresh Tokens  
@@ -129,8 +127,8 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         get
         {
             var audiences = (TokenValidationParameters.ValidAudiences ?? TypeConstants.EmptyStringArray).ToList();
-            return audiences.Count > 0 
-                ? string.Join(',', audiences) 
+            return audiences.Count > 0
+                ? string.Join(',', audiences)
                 : TokenValidationParameters.ValidAudience;
         }
     }
@@ -185,7 +183,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         Options = new JwtBearerOptions();
         ResolveJwtId = _ => NextJwtId();
         ResolveRefreshJwtId = _ => NextRefreshJwtId();
-        
+
         Label = "JWT";
         FormLayout = new() {
             new InputInfo(nameof(IHasBearerToken.BearerToken), Html.Input.Types.Textarea) {
@@ -203,7 +201,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
 
         var optionsMonitor = applicationServices.TryResolve<IOptionsMonitor<JwtBearerOptions>>();
         Options = optionsMonitor.Get(AuthenticationScheme);
-            
+
         var cookieOptions = applicationServices.TryResolve<IOptionsMonitor<CookiePolicyOptions>>().Get("");
         RequireSecureConnection = cookieOptions.Secure != CookieSecurePolicy.None;
 
@@ -252,7 +250,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
 
     public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate? request = null)
     {
-        return session.FromToken && session.IsAuthenticated;
+        return session is { FromToken: true, IsAuthenticated: true };
     }
 
     public override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request,
@@ -263,8 +261,8 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         {
             var req = authService.Request;
             var bearerToken = request.Password;
-                
-            var principal = new JwtSecurityTokenHandler().ValidateToken(bearerToken, 
+
+            var principal = new JwtSecurityTokenHandler().ValidateToken(bearerToken,
                 Options!.TokenValidationParameters, out SecurityToken validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;
@@ -275,7 +273,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
             to.UserId = jwtSession.UserAuthId;
             return (to as object).InTask();
         }
-            
+
         throw new NotImplementedException("JWT Authenticate() should not be called directly");
     }
 
@@ -287,7 +285,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         var token = req.GetJwtToken();
         if (!string.IsNullOrEmpty(token))
         {
-            var principal = new JwtSecurityTokenHandler().ValidateToken(token, 
+            var principal = new JwtSecurityTokenHandler().ValidateToken(token,
                 Options!.TokenValidationParameters, out SecurityToken validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;
@@ -298,7 +296,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         }
         return Task.CompletedTask;
     }
-        
+
     public virtual IAuthSession CreateSessionFromClaims(IRequest req, List<Claim> claims)
     {
         var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? HostContext.AppHost.CreateSessionId();
@@ -328,12 +326,12 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         {
             var session = await service.GetSessionAsync().ConfigAwait();
             if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
-                user = ((IdentityAuthContext<TUser, TRole>)IdentityAuth.Config!).SessionToUserConverter(session);
+                user = IdentityAuth.Instance<TUser>()!.SessionToUserConverter(session);
         }
-            
+
         if (user == null)
             throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(service.Request));
-            
+
         var roles = await userManager.GetRolesAsync(user);
         return (user, roles);
     }
@@ -381,24 +379,24 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
 
             foreach (var fieldName in NameClaimFieldNames)
             {
-                if (!userProps.TryGetValue(fieldName, out var fieldValue)) 
+                if (!userProps.TryGetValue(fieldName, out var fieldValue))
                     continue;
                 var valueStr = fieldValue?.ToString();
-                if (valueStr == null) 
+                if (valueStr == null)
                     continue;
-                    
+
                 claims.Add(new Claim(nameClaimType, valueStr));
                 existingClaimTypes.Add(nameClaimType);
             }
 
             foreach (var (fieldName, claimType) in MapIdentityUserToClaims)
             {
-                if (existingClaimTypes.Contains(claimType)) 
+                if (existingClaimTypes.Contains(claimType))
                     continue;
-                if (!userProps.TryGetValue(fieldName, out var fieldValue)) 
+                if (!userProps.TryGetValue(fieldName, out var fieldValue))
                     continue;
                 var valueStr = fieldValue?.ToString();
-                if (valueStr == null) 
+                if (valueStr == null)
                     continue;
                 claims.Add(new Claim(claimType, valueStr));
                 existingClaimTypes.Add(claimType);
@@ -413,7 +411,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
                 claims.Add(new Claim(roleClaim, role));
             }
         }
-            
+
         OnTokenCreated?.Invoke(req, user, claims);
 
         var credentials = new SigningCredentials(TokenValidationParameters.IssuerSigningKey, HashAlgorithm);
@@ -439,7 +437,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         var jti = ResolveRefreshJwtId?.Invoke(req);
         if (jti != null)
             claims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
-            
+
         OnRefreshTokenCreated?.Invoke(req, userId, claims);
 
         var credentials = new SigningCredentials(TokenValidationParameters.IssuerSigningKey, HashAlgorithm);
@@ -455,7 +453,7 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
         return token;
     }
 
-    public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default)
+    public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token = default)
     {
         if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.TokenCookie))
         {
@@ -464,19 +462,21 @@ public class IdentityJwtAuthProvider<TUser, TRole> : AuthProvider, IIdentityJwtA
             await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
 
             authContext.Result.AddCookie(authContext.Request,
-                new Cookie(IdentityAuth.TokenCookie, accessToken, Cookies.RootPath) {
+                new Cookie(IdentityAuth.TokenCookie, accessToken, Cookies.RootPath)
+                {
                     HttpOnly = true,
                     Secure = authContext.Request.IsSecureConnection,
                     Expires = DateTime.UtcNow.Add(ExpireTokensIn),
                 });
         }
-            
+
         if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.RefreshTokenCookie) && EnableRefreshToken())
         {
             var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
 
             authContext.Result.AddCookie(authContext.Request,
-                new Cookie(IdentityAuth.RefreshTokenCookie, refreshToken, Cookies.RootPath) {
+                new Cookie(IdentityAuth.RefreshTokenCookie, refreshToken, Cookies.RootPath)
+                {
                     HttpOnly = true,
                     Secure = authContext.Request.IsSecureConnection,
                     Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),

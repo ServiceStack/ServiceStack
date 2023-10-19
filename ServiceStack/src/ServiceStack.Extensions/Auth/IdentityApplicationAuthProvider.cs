@@ -18,7 +18,8 @@ namespace ServiceStack.Auth;
 /// <summary>
 /// Handles converting from Application Cookie ClaimsPrincipal into a ServiceStack Session
 /// </summary>
-public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
+public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser>, IAuthWithRequest, IAuthPlugin
+    where TUser : IdentityUser
 {
     public const string Name = AuthenticateService.IdentityProvider;
     public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;
@@ -33,10 +34,11 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
     /// Claim Type used for populating permissions (default perms)
     /// </summary>
     public string PermissionClaimType { get; set; } = JwtClaimTypes.Permissions;
-        
+
     public CookieAuthenticationOptions Options { get; set; }
 
-    public Dictionary<string, string> MapClaimsToSession { get; set; } = new() {
+    public Dictionary<string, string> MapClaimsToSession { get; set; } = new()
+    {
         [ClaimTypes.NameIdentifier] = nameof(AuthUserSession.UserAuthId),
         [ClaimTypes.Email] = nameof(AuthUserSession.Email),
         [ClaimTypes.Name] = nameof(AuthUserSession.UserAuthName),
@@ -69,7 +71,7 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
     /// </summary>
     public Func<IAuthSession, ClaimsPrincipal, IRequest, Task>? PopulateSessionFilterAsync { get; set; }
 
-    public IdentityApplicationAuthProvider(string? authenticationScheme=null)
+    public IdentityApplicationAuthProvider(string? authenticationScheme = null)
     {
         AuthenticationScheme = authenticationScheme ?? IdentityConstants.ApplicationScheme;
         Options = new CookieAuthenticationOptions();
@@ -98,7 +100,7 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
         if (session.IsAuthenticated) // if existing Session exists use it instead
             return;
 
-        string source; 
+        string source;
         string sessionId;
 
         var idClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
@@ -119,21 +121,28 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
         }
 
         session = SessionFeature.CreateNewSession(req, sessionId);
+        await PopulateSessionAsync(req, session, claimsPrincipal, source);
+
+        req.Items[Keywords.Session] = session;
+    }
+
+    public async Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null)
+    {
         if (session is IRequireClaimsPrincipal sessionClaims)
             sessionClaims.User = claimsPrincipal;
 
-        var meta = (session as IMeta)?.Meta;            
         var extended = session as IAuthSessionExtended;
         if (extended != null)
             extended.Type = source;
-            
+
+        var meta = (session as IMeta)?.Meta;
         var authMethodClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.AuthenticationMethod)
                               ?? claimsPrincipal.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.AuthMethod);
-        session.AuthProvider = authMethodClaim?.Value 
+        session.AuthProvider = authMethodClaim?.Value
                                ?? claimsPrincipal.Identity?.AuthenticationType
                                ?? Name;
 
-        var sessionValues = new Dictionary<string,string>();
+        var sessionValues = new Dictionary<string, string>();
         foreach (var claim in claimsPrincipal.Claims)
         {
             if (claim.Type == ClaimTypes.Role)
@@ -155,7 +164,7 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
             {
                 extended.Scopes ??= new();
                 extended.Scopes.Add(claim.Value);
-            }                        
+            }
             else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
             {
                 sessionValues[sessionProp] = claim.Value;
@@ -165,25 +174,24 @@ public class IdentityApplicationAuthProvider : AuthProvider, IAuthWithRequest, I
                 meta[claim.Type] = claim.Value;
             }
         }
+
         session.PopulateFromMap(sessionValues);
 
         if (session.UserAuthName?.IndexOf('@') >= 0 && session.Email == null)
             session.Email = session.UserAuthName;
-            
+
         PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
-            
+
         if (PopulateSessionFilterAsync != null)
             await PopulateSessionFilterAsync(session, claimsPrincipal, req);
-            
-        session.OnCreated(req);
 
-        req.Items[Keywords.Session] = session;
+        session.OnCreated(req);
     }
-        
+
     public override void Register(IAppHost appHost, AuthFeature authFeature)
     {
         base.Register(appHost, authFeature);
-            
+
         var applicationServices = appHost.GetApplicationServices();
 
         var appOptionsMonitor = applicationServices.TryResolve<IOptionsMonitor<CookieAuthenticationOptions>>();
