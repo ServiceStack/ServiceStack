@@ -33,7 +33,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     public const string DefaultAuthorizeUrl = "https://appleid.apple.com/auth/authorize";
     public const string DefaultAccessTokenUrl = "https://appleid.apple.com/auth/token";
     public const string DefaultIssuerSigningKeysUrl = "https://appleid.apple.com/auth/keys";
-        
+
     /// <summary>
     /// The audience used in JWT Client Secret.
     /// Default: https://appleid.apple.com
@@ -44,12 +44,12 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     /// Apple Developer Membership Team ID
     /// </summary>
     public string TeamId { get; set; }
-        
+
     /// <summary>
     /// Service ID
     /// </summary>
     public string ClientId { get; set; }
-        
+
     /// <summary>
     /// Bundle ID
     /// </summary>
@@ -59,7 +59,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     /// The Private Key ID
     /// </summary>
     public string KeyId { get; set; }
-        
+
     /// <summary>
     /// Path to .p8 Private Key 
     /// </summary>
@@ -72,22 +72,22 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     {
         set => KeyBytes = ConvertPrivateKeyToBytes(value);
     }
-        
+
     /// <summary>
     /// .p8 Private Key bytes 
     /// </summary>
     public byte[] KeyBytes { get; set; }
-        
+
     /// <summary>
     /// Customize ClientSecret JWT
     /// </summary>
     public Func<AppleAuthProvider, string> ClientSecretFactory { get; set; }
-        
+
     /// <summary>
     /// When JWT Client Secret expires, defaults to Apple Max 6 Month Expiry 
     /// </summary>
     public TimeSpan ClientSecretExpiry { get; set; } = TimeSpan.FromSeconds(15777000); // 6 months in secs 
-        
+
     /// <summary>
     /// Optional: static list of Apple's public keys, defaults to fetching from https://appleid.apple.com/auth/keys
     /// </summary>
@@ -102,7 +102,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     /// Whether to cache Apple's public keys, defaults: true
     /// </summary>
     public bool CacheIssuerSigningKeys { get; set; }
-        
+
     /// <summary>
     /// How long before re-validating Sign in RefreshToken, default: 1 day.
     /// Set to null to disable RefreshToken validation.
@@ -116,7 +116,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
         RestoreSessionFromState = true;
         VerifyAccessTokenAsync = OnVerifyAccessTokenAsync;
         ResolveUnknownDisplayName = DefaultResolveUnknownDisplayName;
-            
+
         ClientId = appSettings.GetString($"oauth.{Name}.{nameof(ClientId)}");
         BundleId = appSettings.GetString($"oauth.{Name}.{nameof(BundleId)}");
         Audience = appSettings.Get($"oauth.{Name}.{nameof(Audience)}", DefaultAudience);
@@ -129,7 +129,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
         IssuerSigningKeysUrl = appSettings.Get($"oauth.{Name}.{nameof(IssuerSigningKeysUrl)}", DefaultIssuerSigningKeysUrl);
         IssuerSigningKeysJson = appSettings.GetString($"oauth.{Name}.{nameof(IssuerSigningKeysJson)}");
         Scopes = appSettings.Get($"oauth.{Name}.{nameof(Scopes)}", new[] { "name", "email" });
-            
+
         var clientSecretExpiry = appSettings.GetString($"oauth.{Name}.{nameof(ClientSecretExpiry)}");
         if (!string.IsNullOrEmpty(clientSecretExpiry))
             ClientSecretExpiry = clientSecretExpiry.FromJsv<TimeSpan>();
@@ -137,7 +137,8 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
         CacheKey = appSettings.Get($"oauth.{Name}.{nameof(CacheKey)}", true);
         CacheIssuerSigningKeys = appSettings.Get($"oauth.{Name}.{nameof(CacheIssuerSigningKeys)}", true);
 
-        NavItem = new NavItem {
+        NavItem = new NavItem
+        {
             Href = "/auth/" + Name,
             Label = "Sign In with Apple",
             Id = "btn-" + Name,
@@ -152,7 +153,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
         appHost.Register(new CryptoProviderFactory { CacheSignatureProviders = false });
         appHost.Register(new JwtSecurityTokenHandler());
         // UserName validation Regex to increase to allow for Apple's 44 char userid
-        feature.ValidUserNameRegEx= new Regex(@"^(?=.{3,44}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
+        feature.ValidUserNameRegEx = new Regex(@"^(?=.{3,44}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
     }
 
     public virtual async Task<bool> OnVerifyAccessTokenAsync(string idToken, AuthContext ctx)
@@ -174,13 +175,14 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
                     ctx.AuthInfo = (ctx.Request.Dto as Authenticate)?.Meta;
                     if (ctx.AuthInfo == null || ctx.AuthInfo.Count == 0)
                     {
-                        ctx.AuthInfo = new Dictionary<string, string> {
+                        ctx.AuthInfo = new Dictionary<string, string>
+                        {
                             ["authorizationCode"] = ctx.Request.GetQueryStringOrForm("authorizationCode"),
                             ["givenName"] = ctx.Request.GetQueryStringOrForm("givenName"),
                             ["familyName"] = ctx.Request.GetQueryStringOrForm("familyName"),
                         };
                     }
-                        
+
                     if (!ctx.AuthInfo.TryGetValue("authorizationCode", out var code) || string.IsNullOrEmpty(code))
                         throw new Exception("authorizationCode is required for new Users");
 
@@ -189,8 +191,8 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
                     var clientSecret = GetClientSecret(clientId);
                     var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={clientId}&client_secret={clientSecret}&grant_type=authorization_code";
                     var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
-                        
-                    var authInfo = (Dictionary<string,object>)JSON.parse(contents);
+
+                    var authInfo = (Dictionary<string, object>)JSON.parse(contents);
                     foreach (var entry in authInfo.ToStringDictionary())
                     {
                         ctx.AuthInfo[entry.Key] = entry.Value;
@@ -206,7 +208,8 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
                     var validateCacheKey = $"apple:validate:refresh:{userAuthId}";
                     var cache = ctx.Request.GetCacheClientAsync();
                     var cacheExpiry = ValidateRefreshTokenExpiry.GetValueOrDefault();
-                    var contents = await cache.GetOrCreateAsync(validateCacheKey, cacheExpiry, async () => {
+                    var contents = await cache.GetOrCreateAsync(validateCacheKey, cacheExpiry, async () =>
+                    {
                         var userAuthDetails = await authRepo.GetUserAuthDetailsAsync(userAuthId);
                         var appleAuthDetails = userAuthDetails.FirstOrDefault(x => x.Provider == Name);
                         if (appleAuthDetails?.RefreshToken == null)
@@ -216,14 +219,15 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
                         var contents = await ValidateRefreshToken(appleAuthDetails.RefreshToken, clientId, ctx); //expensive
                         return contents;
                     });
-                        
-                    var authInfo = (Dictionary<string, object>) JSON.parse(contents);
+
+                    var authInfo = (Dictionary<string, object>)JSON.parse(contents);
                     ctx.AuthInfo = authInfo.ToStringDictionary();
                 }
                 else
                 {
                     // ctx.AuthInfo is used & required in AuthenticateWithAccessTokenAsync()
-                    ctx.AuthInfo = new Dictionary<string, string> {
+                    ctx.AuthInfo = new Dictionary<string, string>
+                    {
                         ["id_token"] = idToken
                     };
                 }
@@ -270,18 +274,20 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
             return ClientSecretFactory(this);
 
         var keyBytes = GetPrivateKeyBytes();
-            
+
         using var algorithm = ECDsa.Create();
         Debug.Assert(algorithm != null, nameof(algorithm) + " != null");
         algorithm.ImportPkcs8PrivateKey(keyBytes, out _);
         var key = new ECDsaSecurityKey(algorithm) { KeyId = KeyId };
         var appHost = HostContext.AssertAppHost();
-        var tokenDescriptor = new SecurityTokenDescriptor {
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
             Audience = Audience,
             Expires = DateTime.UtcNow.Add(ClientSecretExpiry),
             Issuer = TeamId,
             Subject = new ClaimsIdentity(new[] { new Claim("sub", clientId) }),
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256Signature) {
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256Signature)
+            {
                 CryptoProviderFactory = appHost.Resolve<CryptoProviderFactory>(),
             },
         };
@@ -319,7 +325,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
         return Convert.FromBase64String(keyText);
     }
 
-    protected override async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token=default)
+    protected override async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token = default)
     {
         var redirectUri = GetRedirectUri(ctx);
         var clientSecret = GetClientSecret(ClientId);
@@ -353,7 +359,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
             IssuerSigningKeysJson = jsonKeys;
         return jsonKeys;
     }
-        
+
     /*  Good Reference: https://developer.okta.com/blog/2019/06/04/what-the-heck-is-sign-in-with-apple
         FormData:
             code:  OAuth code
@@ -388,7 +394,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     {
         if (authInfo == null)
             throw new ArgumentNullException(nameof(authInfo));
-            
+
         tokens.AccessToken = accessToken;
 
         tokens.Items ??= new Dictionary<string, string>();
@@ -422,7 +428,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
         }
 
         var idTokenAuthInfo = await CreateAuthInfoAsync(idToken, token).ConfigAwait();
-            
+
         // User Info only on first time by ?user for Web OAuth or givenName/familyName by Native App
         var userJson = authService.Request.GetQueryStringOrForm("user");
         if (userJson != null)
@@ -465,14 +471,15 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
 
         var jsonKeys = GetIssuerSigningKeysJson();
         var keySet = JsonWebKeySet.Create(jsonKeys);
-            
+
         // Uses BundleId when authenticating via Native App or ClientId/ServicesID via Web/OAuth flows 
         var idTokenPayload = JwtAuthProviderReader.ExtractPayload(idToken);
         var useAudience = idTokenPayload.TryGetValue("aud", out var oAud) && oAud is string aud && aud == BundleId
             ? BundleId
             : ClientId;
 
-        var parameters = new TokenValidationParameters {
+        var parameters = new TokenValidationParameters
+        {
             CryptoProviderFactory = appHost.Resolve<CryptoProviderFactory>(),
             IssuerSigningKeys = keySet.Keys,
             ValidAudience = useAudience,
@@ -512,7 +519,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
             tokens.LastName = lastName;
         if (!string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
             tokens.DisplayName = firstName + " " + lastName;
-                
+
         userSession.UserAuthName = tokens.UserName ?? tokens.Email;
 
         return LoadUserOAuthProviderAsync(userSession, tokens);
@@ -548,7 +555,7 @@ public static class AppleAuthProviderExtensions
             }
             else
             {
-                var reqParams = ctx.Request.GetRequestParams(exclude:null);
+                var reqParams = ctx.Request.GetRequestParams(exclude: null);
                 foreach (var entry in reqParams)
                 {
                     if (sb.Length > 0)
@@ -556,12 +563,12 @@ public static class AppleAuthProviderExtensions
                     sb.Append(entry.Key).Append('=').Append(entry.Value.UrlEncode());
                 }
             }
-                
+
             url = $"intent://callback?{sb}#Intent;package={packageId};scheme=signinwithapple;end";
         }
         return url;
     }
-        
+
     public static AppleAuthProvider Use(this AppleAuthProvider provider, AppleAuthFeature feature)
     {
         if (feature == AppleAuthFeature.FlutterSignInWithApple)

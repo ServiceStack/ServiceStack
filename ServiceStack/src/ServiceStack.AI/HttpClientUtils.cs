@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Net.Http.Headers;
 using ServiceStack.IO;
 using ServiceStack.Text;

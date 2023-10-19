@@ -18,7 +18,7 @@ public class IdentityAssignRolesService<TUser> : Service
     {
         if (!Request.IsInProcessRequest())
             await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, RoleNames.Admin);
-            
+
         if (string.IsNullOrEmpty(request.UserName))
             throw new ArgumentNullException(nameof(request.UserName));
 
@@ -39,7 +39,7 @@ public class IdentityAssignRolesService<TUser> : Service
         };
     }
 }
-    
+
 [DefaultRequest(typeof(UnAssignRoles))]
 public class IdentityUnAssignRolesService<TUser> : Service
     where TUser : IdentityUser
@@ -51,7 +51,7 @@ public class IdentityUnAssignRolesService<TUser> : Service
     {
         if (!Request.IsInProcessRequest())
             await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, RoleNames.Admin);
-            
+
         if (string.IsNullOrEmpty(request.UserName))
             throw new ArgumentNullException(nameof(request.UserName));
 
