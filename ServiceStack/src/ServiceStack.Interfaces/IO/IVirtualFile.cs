@@ -19,6 +19,9 @@ public interface IVirtualFile : IVirtualNode
     StreamReader OpenText();
     string ReadAllText();
 
+    Task<string> ReadAllTextAsync(CancellationToken token = default);
+    Task<byte[]> ReadAllBytesAsync(CancellationToken token = default);
+
     /// <summary>
     /// Returns ReadOnlyMemory&lt;byte&gt; for binary files or
     /// ReadOnlyMemory&lt;char&gt; for text files   

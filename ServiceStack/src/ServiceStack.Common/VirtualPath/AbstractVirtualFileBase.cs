@@ -56,9 +56,25 @@ namespace ServiceStack.VirtualPath
 
         public virtual byte[] ReadAllBytes()
         {
-            using var stream = OpenRead();
-            return stream.ReadFully();
+            var contents = GetContents();
+            var bytes = contents is ReadOnlyMemory<byte> rom
+                ? rom.ToArray()
+                : contents is ReadOnlyMemory<char> romChars
+                    ? MemoryProvider.Instance.ToUtf8(romChars.Span).ToArray()
+                    : contents is string s
+                        ? MemoryProvider.Instance.ToUtf8(s.AsSpan()).ToArray()
+                        : ReadAllBytes();
+            return bytes;
         }
+
+        public virtual async Task<string> ReadAllTextAsync(CancellationToken token = default)
+        {
+            using var reader = OpenText();
+            var text = await reader.ReadToEndAsync();
+            return text;
+        }
+
+        public virtual Task<byte[]> ReadAllBytesAsync(CancellationToken token = default) => Task.FromResult(ReadAllBytes());
 
         public abstract Stream OpenRead();
 
@@ -171,7 +187,10 @@ namespace ServiceStack
         public static ResourceVirtualFiles GetResourceVirtualFiles(this IVirtualPathProvider vfs) =>
             vfs.GetVirtualFileSource<ResourceVirtualFiles>();
 
-        public static ReadOnlyMemory<char> GetTextContentsAsMemory(this IVirtualFile file)
+        [Obsolete("Use ReadAllTextAsMemory()")]
+        public static ReadOnlyMemory<char> GetTextContentsAsMemory(this IVirtualFile file) => ReadAllTextAsMemory(file);
+
+        public static ReadOnlyMemory<char> ReadAllTextAsMemory(this IVirtualFile file)
         {
             var contents = file.GetContents();
             var span = contents is ReadOnlyMemory<char> rom
@@ -182,7 +201,10 @@ namespace ServiceStack
             return span;
         }
 
-        public static ReadOnlyMemory<byte> GetBytesContentsAsMemory(this IVirtualFile file)
+        [Obsolete("Use ReadAllBytesAsMemory()")]
+        public static ReadOnlyMemory<byte> GetBytesContentsAsMemory(this IVirtualFile file) => ReadAllBytesAsMemory(file);
+
+        public static ReadOnlyMemory<byte> ReadAllBytesAsMemory(this IVirtualFile file)
         {
             var contents = file.GetContents();
             var span = contents is ReadOnlyMemory<byte> rom
@@ -195,24 +217,8 @@ namespace ServiceStack
             return span;
         }
 
-        public static byte[] GetBytesContentsAsBytes(this IVirtualFile file)
-        {
-            if (file is InMemoryVirtualFile m)
-                return m.ByteContents ?? MemoryProvider.Instance.ToUtf8Bytes(m.TextContents.AsSpan());
-            if (file is GistVirtualFile g && g.Stream != null)
-                return ((MemoryStream) g.Stream).GetBufferAsBytes();
-
-            var contents = file.GetContents();
-            var bytes = contents is ReadOnlyMemory<byte> rom
-                ? rom.ToArray()
-                : contents is ReadOnlyMemory<char> romChars
-                    ? MemoryProvider.Instance.ToUtf8(romChars.Span).ToArray()
-                    : contents is string s
-                        ? MemoryProvider.Instance.ToUtf8(s.AsSpan()).ToArray()
-                        : file.ReadAllBytes();
-            return bytes;
-        }
-
+        [Obsolete("Use ReadAllBytes()")]
+        public static byte[] GetBytesContentsAsBytes(this IVirtualFile file) => file.ReadAllBytes();
     }
-    
+
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
@@ -472,6 +473,8 @@ namespace ServiceStack.IO
                     ? ms.GetBufferAsMemory()
                     : Stream?.CopyToNewMemoryStream().GetBufferAsMemory());
         }
+
+        public override byte[] ReadAllBytes() => ((MemoryStream)Stream).GetBufferAsBytes();
 
         public override void Refresh()
         {
