@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ServiceStack;
@@ -29,4 +30,36 @@ public static class HttpMethods
     public const string Options = "OPTIONS";
     public const string Head = "HEAD";
     public const string Patch = "PATCH";
+    public const string Connect = "CONNECT";
+    public const string Trace = "TRACE";
+
+    // Add Microsoft.AspNetCore.Http.HttpMethods so existing source still compiles if ServiceStack.HttpMethod takes preference
+    public static bool IsConnect(string method) => Equals(Connect, method);
+    public static bool IsDelete(string method) => Equals(Delete, method);
+    public static bool IsGet(string method) => Equals(Get, method);
+    public static bool IsHead(string method) => Equals(Head, method);
+    public static bool IsOptions(string method) => Equals(Options, method);
+    public static bool IsPatch(string method) => Equals(Patch, method);
+    public static bool IsPost(string method) => Equals(Post, method);
+    public static bool IsPut(string method) => Equals(Put, method);
+    public static bool IsTrace(string method) => Equals(Trace, method);
+    public static string GetCanonicalizedValue(string method) => method switch
+    {
+        string _ when IsGet(method) => Get,
+        string _ when IsPost(method) => Post,
+        string _ when IsPut(method) => Put,
+        string _ when IsDelete(method) => Delete,
+        string _ when IsOptions(method) => Options,
+        string _ when IsHead(method) => Head,
+        string _ when IsPatch(method) => Patch,
+        string _ when IsTrace(method) => Trace,
+        string _ when IsConnect(method) => Connect,
+        string _ => method
+    };
+
+    /// <summary>
+    /// Returns a value that indicates if the HTTP methods are the same.
+    /// </summary>
+    public static bool Equals(string methodA, string methodB) =>
+        ReferenceEquals(methodA, methodB) || StringComparer.OrdinalIgnoreCase.Equals(methodA, methodB);
 }

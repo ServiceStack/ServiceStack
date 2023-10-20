@@ -72,5 +72,4 @@ public static class MarkdownUtils
             return ApiResult.CreateError<MarkdownFileInfo>(ex.AsResponseStatus());
         }
     }
-
 }
