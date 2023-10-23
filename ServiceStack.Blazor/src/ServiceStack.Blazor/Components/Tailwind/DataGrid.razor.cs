@@ -171,6 +171,14 @@ public partial class DataGrid<Model> : UiComponentBase
         columns.Add(column);
     }
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        // Required to render DataGrid in non-interactive
+        // FIXME: Only render when using non-interactive mode
+        OnAfterRender(firstRender:true);
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
