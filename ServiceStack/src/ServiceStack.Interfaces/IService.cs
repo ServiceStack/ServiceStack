@@ -56,6 +56,11 @@ public interface IAny<T>
 {
     object Any(T request);
 }
+public interface IAnyAsync<T>
+{
+    object AnyAsync(T request);
+}
+
 /// <summary>
 /// Marker interface to enforce recommended method signature on ServiceStack Services: object Get(T request)   
 /// </summary>
@@ -63,6 +68,11 @@ public interface IGet<T>
 {
     object Get(T request);
 }
+public interface IGetAsync<T>
+{
+    object GetAsync(T request);
+}
+
 /// <summary>
 /// Marker interface to enforce recommended method signature on ServiceStack Services: object Post(T request)   
 /// </summary>
@@ -70,6 +80,11 @@ public interface IPost<T>
 {
     object Post(T request);
 }
+public interface IPostAsync<T>
+{
+    object PostAsync(T request);
+}
+
 /// <summary>
 /// Marker interface to enforce recommended method signature on ServiceStack Services: object Put(T request)   
 /// </summary>
@@ -77,6 +92,11 @@ public interface IPut<T>
 {
     object Put(T request);
 }
+public interface IPutAsync<T>
+{
+    object PutAsync(T request);
+}
+
 /// <summary>
 /// Marker interface to enforce recommended method signature on ServiceStack Services: object Delete(T request)   
 /// </summary>
@@ -84,6 +104,11 @@ public interface IDelete<T>
 {
     object Delete(T request);
 }
+public interface IDeleteAsync<T>
+{
+    object DeleteAsync(T request);
+}
+
 /// <summary>
 /// Marker interface to enforce recommended method signature on ServiceStack Services: object Patch(T request)   
 /// </summary>
@@ -91,6 +116,11 @@ public interface IPatch<T>
 {
     object Patch(T request);
 }
+public interface IPatchAsync<T>
+{
+    object PatchAsync(T request);
+}
+
 /// <summary>
 /// Marker interface to enforce recommended method signature on ServiceStack Services: object Options(T request)   
 /// </summary>
@@ -98,33 +128,65 @@ public interface IOptions<T>
 {
     object Options(T request);
 }
+public interface IOptionsAsync<T>
+{
+    object OptionsAsync(T request);
+}
 
 
 public interface IAnyVoid<T>
 {
     void Any(T request);
 }
+public interface IAnyVoidAsync<T>
+{
+    void AnyAsync(T request);
+}
 public interface IGetVoid<T>
 {
     void Get(T request);
+}
+public interface IGetVoidAsync<T>
+{
+    void GetAsync(T request);
 }
 public interface IPostVoid<T>
 {
     void Post(T request);
 }
+public interface IPostVoidAsync<T>
+{
+    void PostAsync(T request);
+}
 public interface IPutVoid<T>
 {
     void Put(T request);
+}
+public interface IPutVoidAsync<T>
+{
+    void PutAsync(T request);
 }
 public interface IDeleteVoid<T>
 {
     void Delete(T request);
 }
+public interface IDeleteVoidAsync<T>
+{
+    void DeleteAsync(T request);
+}
 public interface IPatchVoid<T>
 {
     void Patch(T request);
 }
+public interface IPatchVoidAsync<T>
+{
+    void PatchAsync(T request);
+}
 public interface IOptionsVoid<T>
 {
     void Options(T request);
+}
+public interface IOptionsVoidAsync<T>
+{
+    void OptionsAsync(T request);
 }
