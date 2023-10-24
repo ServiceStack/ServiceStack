@@ -58,7 +58,7 @@ public interface IAny<T>
 }
 public interface IAnyAsync<T>
 {
-    object AnyAsync(T request);
+    Task<object> AnyAsync(T request);
 }
 
 /// <summary>
@@ -70,7 +70,7 @@ public interface IGet<T>
 }
 public interface IGetAsync<T>
 {
-    object GetAsync(T request);
+    Task<object> GetAsync(T request);
 }
 
 /// <summary>
@@ -82,7 +82,7 @@ public interface IPost<T>
 }
 public interface IPostAsync<T>
 {
-    object PostAsync(T request);
+    Task<object> PostAsync(T request);
 }
 
 /// <summary>
@@ -94,7 +94,7 @@ public interface IPut<T>
 }
 public interface IPutAsync<T>
 {
-    object PutAsync(T request);
+    Task<object> PutAsync(T request);
 }
 
 /// <summary>
@@ -106,7 +106,7 @@ public interface IDelete<T>
 }
 public interface IDeleteAsync<T>
 {
-    object DeleteAsync(T request);
+    Task<object> DeleteAsync(T request);
 }
 
 /// <summary>
@@ -118,7 +118,7 @@ public interface IPatch<T>
 }
 public interface IPatchAsync<T>
 {
-    object PatchAsync(T request);
+    Task<object> PatchAsync(T request);
 }
 
 /// <summary>
@@ -130,7 +130,7 @@ public interface IOptions<T>
 }
 public interface IOptionsAsync<T>
 {
-    object OptionsAsync(T request);
+    Task<object> OptionsAsync(T request);
 }
 
 
@@ -140,7 +140,7 @@ public interface IAnyVoid<T>
 }
 public interface IAnyVoidAsync<T>
 {
-    void AnyAsync(T request);
+    Task AnyAsync(T request);
 }
 public interface IGetVoid<T>
 {
@@ -148,7 +148,7 @@ public interface IGetVoid<T>
 }
 public interface IGetVoidAsync<T>
 {
-    void GetAsync(T request);
+    Task GetAsync(T request);
 }
 public interface IPostVoid<T>
 {
@@ -156,7 +156,7 @@ public interface IPostVoid<T>
 }
 public interface IPostVoidAsync<T>
 {
-    void PostAsync(T request);
+    Task PostAsync(T request);
 }
 public interface IPutVoid<T>
 {
@@ -164,7 +164,7 @@ public interface IPutVoid<T>
 }
 public interface IPutVoidAsync<T>
 {
-    void PutAsync(T request);
+    Task PutAsync(T request);
 }
 public interface IDeleteVoid<T>
 {
@@ -172,7 +172,7 @@ public interface IDeleteVoid<T>
 }
 public interface IDeleteVoidAsync<T>
 {
-    void DeleteAsync(T request);
+    Task DeleteAsync(T request);
 }
 public interface IPatchVoid<T>
 {
@@ -180,7 +180,7 @@ public interface IPatchVoid<T>
 }
 public interface IPatchVoidAsync<T>
 {
-    void PatchAsync(T request);
+    Task PatchAsync(T request);
 }
 public interface IOptionsVoid<T>
 {
@@ -188,5 +188,5 @@ public interface IOptionsVoid<T>
 }
 public interface IOptionsVoidAsync<T>
 {
-    void OptionsAsync(T request);
+    Task OptionsAsync(T request);
 }
