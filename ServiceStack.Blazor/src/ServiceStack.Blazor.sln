@@ -78,10 +78,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Tests", "..\tests\Ser
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Server", "..\tests\ServiceStack.Blazor.Server.Tests\Server\MyApp.Server.csproj", "{84E89721-C330-4754-A884-2BA19ACF4F89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery", "..\tests\UI.Gallery\Gallery\Gallery\Gallery.csproj", "{E5C7F123-1858-4478-A120-F1E2A9C70EF1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery.Client", "..\tests\UI.Gallery\Gallery\Gallery.Client\Gallery.Client.csproj", "{44669F2D-42D5-4A0F-8183-E570CAB622AA}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
