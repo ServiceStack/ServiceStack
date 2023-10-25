@@ -13,11 +13,11 @@
     <link href="css/typography.css" rel="stylesheet">
     <link href="css/markdown.css" rel="stylesheet">
     <link rel="icon" href="/img/blazor.svg" type="image/svg+xml">
-    <HeadOutlet @rendermode="@RenderMode.Auto" />
+    <HeadOutlet @rendermode="@RenderMode.InteractiveAuto" />
 </head>
 
 <body class=@ServiceStack.CssUtils.ClassNames("bg-white dark:bg-black dark:text-white", new Regex("/gallery/[a-z]*/[a-z]*").IsMatch(new Uri(NavigationManager.Uri).LocalPath) ? "p-1 overflow-hidden" : "")>
-<Routes @rendermode="@RenderMode.Auto" />
+<Routes @rendermode="@RenderMode.InteractiveAuto" />
 
 <div id="blazor-error-ui" class="hidden fixed bottom-0 w-full z-10">
     <div class="flex rounded-md bg-yellow-50 p-4 m-4">

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Blazor.Extensions.Logging;
-using MyApp.Data;
+using MyApp.Client.Data;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddLogging(c => c

@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Net.Http.Headers;
 using MyApp;
 using MyApp.Client;
-using MyApp.Data;
+using MyApp.Client.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddServerComponents()
-    .AddWebAssemblyComponents();
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -46,6 +46,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
+app.UseAntiforgery();
+
 app.UseServiceStack(new AppHost());
 
 BlazorConfig.Set(new BlazorConfig
@@ -58,8 +60,8 @@ BlazorConfig.Set(new BlazorConfig
 });
 
 app.MapRazorComponents<App>()
-    .AddServerRenderMode()
-    .AddWebAssemblyRenderMode();
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode();
 
 app.Run();
 
