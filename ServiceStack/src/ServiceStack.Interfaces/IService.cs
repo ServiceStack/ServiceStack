@@ -124,7 +124,8 @@ public interface IPatchAsync<T>
 /// <summary>
 /// Marker interface to enforce recommended method signature on ServiceStack Services: object Options(T request)   
 /// </summary>
-public interface IOptions<T>
+// Rename to avoid conflicts with Microsoft.Extensions.Options.IOptions
+public interface IOptionsVerb<T>
 {
     object Options(T request);
 }
