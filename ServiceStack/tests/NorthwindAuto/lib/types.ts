@@ -1,8 +1,8 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2023-02-28 21:42:04
-Version: 6.61
+Date: 2023-10-27 18:15:00
+Version: 6.111
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -395,14 +395,14 @@ export class InputInfo
     public autofocus: string;
     public min: string;
     public max: string;
-    public step?: number;
+    public step: string;
     public minLength?: number;
     public maxLength?: number;
     public accept: string;
     public capture: string;
     public multiple?: boolean;
     public allowableValues: string[];
-    public allowableEntries: KeyValuePair[];
+    public allowableEntries: KeyValuePair<string, string>[];
     public options: string;
     public ignore?: boolean;
     public css: FieldCss;
@@ -590,6 +590,7 @@ export class RefInfo
     public selfId: string;
     public refId: string;
     public refLabel: string;
+    public queryApi: string;
 
     public constructor(init?: Partial<RefInfo>) { (Object as any).assign(this, init); }
 }
@@ -638,6 +639,7 @@ export class MetadataType
     public isEnumInt?: boolean;
     public isInterface?: boolean;
     public isAbstract?: boolean;
+    public isGenericTypeDef?: boolean;
     public dataContract: MetadataDataContract;
     public properties: MetadataPropertyType[];
     public attributes: MetadataAttribute[];
@@ -1337,6 +1339,9 @@ export class Authenticate implements IReturn<AuthenticateResponse>, IPost
     public scope: string;
 
     // @DataMember(Order=20)
+    public returnUrl: string;
+
+    // @DataMember(Order=21)
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<Authenticate>) { (Object as any).assign(this, init); }
