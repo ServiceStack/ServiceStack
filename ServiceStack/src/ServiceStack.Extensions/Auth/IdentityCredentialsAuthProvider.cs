@@ -111,7 +111,7 @@ public class IdentityCredentialsAuthProvider<TUser> : IdentityAuthProvider<TUser
         {
             // _logger.LogInformation("User logged in");
             // return authService.LocalRedirect(authService.Request.GetReturnUrl());
-            await IdentityAuth.Instance<TUser>()!.AuthApplication!.PopulateSessionAsync(
+            await IdentityAuth.AuthApplication.PopulateSessionAsync(
                 authService.Request,
                 session,
                 authService.Request.GetClaimsPrincipal());

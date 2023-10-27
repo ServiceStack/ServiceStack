@@ -15,10 +15,17 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
+public interface IIdentityApplicationAuthProvider
+{
+    void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
+    Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
+}
+
 /// <summary>
 /// Handles converting from Application Cookie ClaimsPrincipal into a ServiceStack Session
 /// </summary>
-public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser>, IAuthWithRequest, IAuthPlugin
+public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser>, 
+    IAuthWithRequest, IAuthPlugin, IIdentityApplicationAuthProvider
     where TUser : IdentityUser
 {
     public const string Name = AuthenticateService.IdentityProvider;
@@ -125,8 +132,8 @@ public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser
 
         req.Items[Keywords.Session] = session;
     }
-
-    public async Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null)
+    
+    public virtual void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null)
     {
         if (session is IRequireClaimsPrincipal sessionClaims)
             sessionClaims.User = claimsPrincipal;
@@ -137,10 +144,10 @@ public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser
 
         var meta = (session as IMeta)?.Meta;
         var authMethodClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.AuthenticationMethod)
-                              ?? claimsPrincipal.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.AuthMethod);
+            ?? claimsPrincipal.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.AuthMethod);
         session.AuthProvider = authMethodClaim?.Value
-                               ?? claimsPrincipal.Identity?.AuthenticationType
-                               ?? Name;
+            ?? claimsPrincipal.Identity?.AuthenticationType
+            ?? Name;
 
         var sessionValues = new Dictionary<string, string>();
         foreach (var claim in claimsPrincipal.Claims)
@@ -182,10 +189,15 @@ public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser
 
         PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
 
+        session.OnCreated(req);
+    }
+    
+    public virtual async Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null)
+    {
+        PopulateSession(req, session, claimsPrincipal, source);
+        
         if (PopulateSessionFilterAsync != null)
             await PopulateSessionFilterAsync(session, claimsPrincipal, req);
-
-        session.OnCreated(req);
     }
 
     public override void Register(IAppHost appHost, AuthFeature authFeature)

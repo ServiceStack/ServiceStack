@@ -16,6 +16,9 @@ public static class IdentityAuth
     public static string TokenCookie = Keywords.TokenCookie;
     public static string RefreshTokenCookie = Keywords.RefreshTokenCookie;
     public static IIdentityAuthContext? Config { get; private set; }
+    public static IIdentityApplicationAuthProvider? ApplicationAuthProvider { get; private set; }
+    public static IIdentityApplicationAuthProvider AuthApplication => ApplicationAuthProvider
+        ?? throw new Exception("IdentityAuth.AuthApplication is not configured");
 
     public static IdentityAuthContext<TUser>? Instance<TUser>()
         where TUser : IdentityUser
@@ -31,6 +34,7 @@ public static class IdentityAuth
             new IdentityJwtAuthProvider<TUser>());
 
         Config = ctx;
+        ApplicationAuthProvider = ctx.AuthApplication;
         configure(ctx);
 
         return authFeature =>
