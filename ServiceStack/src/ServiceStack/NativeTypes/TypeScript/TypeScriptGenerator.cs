@@ -800,9 +800,17 @@ public class TypeScriptGenerator : ILangGenerator
                         else
                             args.Append(GenericArg(arg));
                     }
+                    var genericArgsList = StringBuilderCacheAlt.ReturnAndFree(args);
 
                     var typeName = TypeAlias(type);
-                    cooked = "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
+                    var suffix = "";
+                    if (typeName.EndsWith("[]"))
+                    {
+                        suffix = "[]";
+                        typeName = typeName.Substring(0, typeName.Length - 2);
+                    }
+
+                    cooked = $"{typeName}<{genericArgsList}>{suffix}";
                 }
             }
 
