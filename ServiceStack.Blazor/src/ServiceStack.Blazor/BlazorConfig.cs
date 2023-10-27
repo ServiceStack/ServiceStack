@@ -35,6 +35,10 @@ public class BlazorConfig
     /// <summary>
     /// Flag App can use to detect if running in Blazor WASM or Blazor Server
     /// </summary>
+    public bool IsDevelopment { get; init; }
+    /// <summary>
+    /// Flag App can use to detect if running in Blazor WASM or Blazor Server
+    /// </summary>
     public bool IsWasm { get; init; }
     /// <summary>
     /// Whether Components should be rendered in Dark Mode
