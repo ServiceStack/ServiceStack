@@ -7,8 +7,8 @@ public static class BlazorHtml
 {
     internal static MarkupString NullJson = new("null");
 
-    public static MarkupString AsRaw(string? text) => (MarkupString)(text ?? "");
-    public static MarkupString AsRawJson<T>(T model)
+    public static MarkupString Raw(string? text) => (MarkupString)(text ?? "");
+    public static MarkupString RawJson<T>(T model)
     {
         var json = !Equals(model, default(T))
             ? model.ToJson()
@@ -26,7 +26,7 @@ public static class BlazorHtml
             map[importMap.Key] = isDev ? importMap.Value.Dev : importMap.Value.Prod;
         }
         var script = $"<script type=\"importmap\">\n{imports.ToJson().IndentJson()}\n</script>";
-        return AsRaw(script);
+        return Raw(script);
     }
 
     public static MarkupString StaticImportMap(Dictionary<string, string> importMaps)
@@ -41,12 +41,12 @@ public static class BlazorHtml
 
     public static async Task<MarkupString> ApiAsJsonAsync<TResponse>(this IServiceGateway gateway, IReturn<TResponse> request)
     {
-        return AsRawJson((await gateway.ApiAsync(request).ConfigAwait()).Response);
+        return RawJson((await gateway.ApiAsync(request).ConfigAwait()).Response);
     }
 
     public static async Task<MarkupString> ApiResultsAsJsonAsync<T>(this IServiceGateway gateway, IReturn<QueryResponse<T>> request)
     {
         var api = await gateway.ApiAsync(request).ConfigAwait();
-        return AsRawJson(api.Response?.Results);
+        return RawJson(api.Response?.Results);
     }
 }
