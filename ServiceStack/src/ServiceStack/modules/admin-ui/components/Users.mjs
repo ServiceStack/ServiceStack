@@ -440,8 +440,8 @@ export const Users = {
             </a>
         </div>
     </form>
-    <NewUser v-if="routes.new" class="mb-3" @done="formSearch" />
-    <EditUser v-else-if="routes.edit" class="mb-3" :id="routes.edit" @done="formSearch" />
+    <NewUser :key="refreshKey" v-if="routes.new" class="mb-3" @done="formSearch" />
+    <EditUser :key="refreshKey" v-else-if="routes.edit" class="mb-3" :id="routes.edit" @done="formSearch" />
     
     <Loading v-if="loading" />
     <div v-else-if="results.length" class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -491,6 +491,7 @@ export const Users = {
         const routes = inject('routes')
         const store = inject('store')
         const client = useClient()
+        const refreshKey = ref(1)
         
         const request = ref(new AdminQueryUsers({ query:routes.q }))
         /** @type {Ref<ApiResult<AdminQueryUsersResponse>>>} */
@@ -537,7 +538,8 @@ export const Users = {
         return {
             client,
             store, 
-            routes, 
+            routes,
+            refreshKey,
             link,
             loading,
             pageSize,
@@ -554,6 +556,7 @@ export const Users = {
             humanify,
             mapGet,
             nav() {
+                refreshKey.value++
                 if (adminUsersNav) adminUsersNav()
             },
         }
