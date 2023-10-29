@@ -1,5 +1,5 @@
 /* Options:
-Date: 2023-10-27 17:59:15
+Date: 2023-10-27 18:15:00
 Version: 6.111
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -351,7 +351,7 @@ export class FieldCss {
     label;
 }
 export class InputInfo {
-    /** @param {{id?:string,name?:string,type?:string,value?:string,placeholder?:string,help?:string,label?:string,title?:string,size?:string,pattern?:string,readOnly?:boolean,required?:boolean,disabled?:boolean,autocomplete?:string,autofocus?:string,min?:string,max?:string,step?:string,minLength?:number,maxLength?:number,accept?:string,capture?:string,multiple?:boolean,allowableValues?:string[],allowableEntries?:KeyValuePair[]<string, string>,options?:string,ignore?:boolean,css?:FieldCss,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:string,name?:string,type?:string,value?:string,placeholder?:string,help?:string,label?:string,title?:string,size?:string,pattern?:string,readOnly?:boolean,required?:boolean,disabled?:boolean,autocomplete?:string,autofocus?:string,min?:string,max?:string,step?:string,minLength?:number,maxLength?:number,accept?:string,capture?:string,multiple?:boolean,allowableValues?:string[],allowableEntries?:KeyValuePair<string, string>[],options?:string,ignore?:boolean,css?:FieldCss,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     id;
@@ -401,7 +401,7 @@ export class InputInfo {
     multiple;
     /** @type {string[]} */
     allowableValues;
-    /** @type {KeyValuePair[]<string, string>} */
+    /** @type {KeyValuePair<string, string>[]} */
     allowableEntries;
     /** @type {string} */
     options;
