@@ -98,8 +98,7 @@ public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser
 
     public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
     {
-        var coreReq = (HttpRequest)req.OriginalRequest;
-        var claimsPrincipal = coreReq.HttpContext.User;
+        var claimsPrincipal = req.GetClaimsPrincipal();
         if (claimsPrincipal.Identity?.IsAuthenticated != true)
             return;
 
