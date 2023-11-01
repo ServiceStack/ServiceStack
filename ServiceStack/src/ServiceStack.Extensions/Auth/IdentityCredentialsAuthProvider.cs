@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,8 +18,9 @@ public interface IIdentityCredentialsAuthProvider
 /// Implements /auth/credentials authenticating against ASP.NET Identity IdentityUser
 /// </summary>
 /// <typeparam name="TUser"></typeparam>
-public class IdentityCredentialsAuthProvider<TUser> : IdentityAuthProvider<TUser>, IIdentityCredentialsAuthProvider
-    where TUser : IdentityUser
+public class IdentityCredentialsAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityCredentialsAuthProvider
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>
 {
     public override string Type => "credentials";
     public static string Name = AuthenticateService.CredentialsProvider;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using ServiceStack.Configuration;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,8 +13,9 @@ public abstract class IdentityAuthProvider : AuthProvider
         : base(appSettings, authRealm, authProvider) { }
 }
 
-public abstract class IdentityAuthProvider<TUser> : IdentityAuthProvider
-    where TUser : IdentityUser
+public abstract class IdentityAuthProvider<TUser,TKey> : IdentityAuthProvider
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>
 {
     protected IdentityAuthProvider() { }
     protected IdentityAuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
@@ -23,7 +25,7 @@ public abstract class IdentityAuthProvider<TUser> : IdentityAuthProvider
     {
         var user = service.Request.GetClaimsPrincipal();
 
-        var signInManager = service.Resolve<SignInManager<TUser>>();
+        var signInManager = service.Resolve<SignInManager<IdentityUser<TKey>>>();
         if (signInManager.IsSignedIn(user))
         {
             await signInManager.SignOutAsync();

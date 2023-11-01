@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -24,9 +25,10 @@ public interface IIdentityApplicationAuthProvider
 /// <summary>
 /// Handles converting from Application Cookie ClaimsPrincipal into a ServiceStack Session
 /// </summary>
-public class IdentityApplicationAuthProvider<TUser> : IdentityAuthProvider<TUser>, 
+public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, 
     IAuthWithRequest, IAuthPlugin, IIdentityApplicationAuthProvider
-    where TUser : IdentityUser
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>
 {
     public const string Name = AuthenticateService.IdentityProvider;
     public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;

@@ -20,18 +20,23 @@ public static class IdentityAuth
     public static IIdentityApplicationAuthProvider AuthApplication => ApplicationAuthProvider
         ?? throw new Exception("IdentityAuth.AuthApplication is not configured");
 
-    public static IdentityAuthContext<TUser>? Instance<TUser>()
-        where TUser : IdentityUser
-        => Config as IdentityAuthContext<TUser>;
+    public static IdentityAuthContext<TUser, TKey>? Instance<TUser, TKey>()
+        where TKey : IEquatable<TKey>
+        where TUser : IdentityUser<TKey>
+    => Config as IdentityAuthContext<TUser, TKey>;
 
-    public static Action<AuthFeature> For<TUser>(Action<IdentityAuthContext<TUser>> configure)
-        where TUser : IdentityUser
+    public static Action<AuthFeature> For<TUser>(Action<IdentityAuthContext<TUser, string>> configure)
+        where TUser : IdentityUser<string> => For<TUser, string>(configure);
+
+    public static Action<AuthFeature> For<TUser,TKey>(Action<IdentityAuthContext<TUser, TKey>> configure)
+        where TKey : IEquatable<TKey>
+        where TUser : IdentityUser<TKey>
     {
-        var ctx = new IdentityAuthContext<TUser>(
+        var ctx = new IdentityAuthContext<TUser, TKey>(
             () => new IdentityAuthSession(new ClaimsPrincipal()),
-            new IdentityApplicationAuthProvider<TUser>(),
-            new IdentityCredentialsAuthProvider<TUser>(),
-            new IdentityJwtAuthProvider<TUser>());
+            new IdentityApplicationAuthProvider<TUser, TKey>(),
+            new IdentityCredentialsAuthProvider<TUser, TKey>(),
+            new IdentityJwtAuthProvider<TUser, TKey>());
 
         Config = ctx;
         ApplicationAuthProvider = ctx.AuthApplication;
@@ -52,16 +57,16 @@ public static class IdentityAuth
 
             if (ctx.IncludeAssignRoleServices)
             {
-                authFeature.ServiceRoutes[typeof(IdentityAssignRolesService<TUser>)] =
+                authFeature.ServiceRoutes[typeof(IdentityAssignRolesService<TUser, TKey>)] =
                     new[] { "/" + LocalizedStrings.AssignRoles.Localize() };
-                authFeature.ServiceRoutes[typeof(IdentityUnAssignRolesService<TUser>)] =
+                authFeature.ServiceRoutes[typeof(IdentityUnAssignRolesService<TUser, TKey>)] =
                     new[] { "/" + LocalizedStrings.UnassignRoles.Localize() };
             }
             if (ctx.IncludeRegisterService)
             {
-                authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser>)] =
+                authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] =
                     new[] { "/" + "register".Localize() };
-                HostContext.Container.RegisterAs<IdentityRegistrationValidator<TUser>, IValidator<Register>>();
+                HostContext.Container.RegisterAs<IdentityRegistrationValidator<TUser, TKey>, IValidator<Register>>();
             }
 
             authFeature.OnAfterInit.Add(feature =>
@@ -95,13 +100,14 @@ public interface IIdentityAuthContext
     Func<IAuthSession> SessionFactory { get; }
 }
 
-public class IdentityAuthContext<TUser> : IIdentityAuthContext
-    where TUser : IdentityUser
+public class IdentityAuthContext<TUser, TKey> : IIdentityAuthContext
+        where TKey : IEquatable<TKey>
+        where TUser : IdentityUser<TKey>
 {
     public IdentityAuthContext(Func<IAuthSession> sessionFactory,
-        IdentityApplicationAuthProvider<TUser> authApplication,
-        IdentityCredentialsAuthProvider<TUser> authCredentials,
-        IdentityJwtAuthProvider<TUser> authJwt)
+        IdentityApplicationAuthProvider<TUser, TKey> authApplication,
+        IdentityCredentialsAuthProvider<TUser, TKey> authCredentials,
+        IdentityJwtAuthProvider<TUser, TKey> authJwt)
     {
         AuthApplication = authApplication;
         AuthCredentials = authCredentials;
@@ -110,9 +116,9 @@ public class IdentityAuthContext<TUser> : IIdentityAuthContext
     }
 
     public Func<IAuthSession> SessionFactory { get; set; }
-    public IdentityApplicationAuthProvider<TUser>? AuthApplication { get; set; }
-    public IdentityCredentialsAuthProvider<TUser>? AuthCredentials { get; set; }
-    public IdentityJwtAuthProvider<TUser>? AuthJwt { get; set; }
+    public IdentityApplicationAuthProvider<TUser, TKey>? AuthApplication { get; set; }
+    public IdentityCredentialsAuthProvider<TUser, TKey>? AuthCredentials { get; set; }
+    public IdentityJwtAuthProvider<TUser, TKey>? AuthJwt { get; set; }
 
     public bool EnableCredentialsAuth { get; set; }
     public bool EnableJwtAuth { get; set; }

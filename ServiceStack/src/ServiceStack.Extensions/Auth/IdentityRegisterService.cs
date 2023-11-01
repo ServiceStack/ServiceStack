@@ -8,8 +8,9 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth;
 
-public class IdentityRegistrationValidator<TUser> : AbstractValidator<Register>
-    where TUser : IdentityUser
+public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Register>
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>
 {
     public IdentityRegistrationValidator()
     {
@@ -50,8 +51,9 @@ public class IdentityRegistrationValidator<TUser> : AbstractValidator<Register>
 /// <summary>
 /// Register Base class for IAuthRepository / IUserAuth users
 /// </summary>
-public abstract class IdentityRegisterServiceBase<TUser> : RegisterServiceBase
-    where TUser : IdentityUser
+public abstract class IdentityRegisterServiceBase<TUser,TKey> : RegisterServiceBase
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>
 {
     public IValidator<Register> RegistrationValidator { get; set; }
 
@@ -81,7 +83,7 @@ public abstract class IdentityRegisterServiceBase<TUser> : RegisterServiceBase
     protected async Task RegisterNewUserAsync(IAuthSession session, TUser user)
     {
         var authEvents = TryResolve<IAuthEvents>();
-        session.UserAuthId = user.Id;
+        session.UserAuthId = user.Id.ToString();
         session.OnRegistered(Request, session, this);
         if (session is IAuthSessionExtended sessionExt)
             await sessionExt.OnRegisteredAsync(Request, session, this).ConfigAwait();
@@ -92,8 +94,9 @@ public abstract class IdentityRegisterServiceBase<TUser> : RegisterServiceBase
 }
 
 [DefaultRequest(typeof(Register))]
-public class IdentityRegisterService<TUser> : IdentityRegisterServiceBase<TUser>
-    where TUser : IdentityUser
+public class IdentityRegisterService<TUser,TKey> : IdentityRegisterServiceBase<TUser,TKey>
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>
 {
     public IdentityRegisterService(UserManager<TUser> userManager) : base(userManager) { }
 
@@ -110,7 +113,7 @@ public class IdentityRegisterService<TUser> : IdentityRegisterServiceBase<TUser>
         var result = await userManager.CreateAsync(newUser, request.Password);
         if (result.Succeeded)
         {
-            session = IdentityAuth.Instance<TUser>()!.UserToSessionConverter(newUser);
+            session = IdentityAuth.Instance<TUser,TKey>()!.UserToSessionConverter(newUser);
             await RegisterNewUserAsync(session, newUser);
 
             var response = await CreateRegisterResponse(session,

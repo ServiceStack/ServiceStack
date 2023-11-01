@@ -30,8 +30,9 @@ public interface IIdentityJwtAuthProvider
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>
 /// <typeparam name="TUser"></typeparam>
-public class IdentityJwtAuthProvider<TUser> : IdentityAuthProvider<TUser>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
-    where TUser : IdentityUser
+public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>
 {
     public override string Type => "Bearer";
     public const string Name = "identity";
@@ -326,7 +327,7 @@ public class IdentityJwtAuthProvider<TUser> : IdentityAuthProvider<TUser>, IIden
         {
             var session = await service.GetSessionAsync().ConfigAwait();
             if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
-                user = IdentityAuth.Instance<TUser>()!.SessionToUserConverter(session);
+                user = IdentityAuth.Instance<TUser,TKey>()!.SessionToUserConverter(session);
         }
 
         if (user == null)
@@ -348,13 +349,13 @@ public class IdentityJwtAuthProvider<TUser> : IdentityAuthProvider<TUser>, IIden
             {
                 var (user, roles) = await GetUserAndRolesAsync(authService, session.UserAuthName).ConfigAwait();
 
-                authContext.Session.UserAuthId = authContext.AuthResponse.UserId = user.Id;
+                authContext.Session.UserAuthId = authContext.AuthResponse.UserId = user.Id.ToString();
                 authContext.Session.Roles = roles.ToList();
                 authContext.UserSource = user;
 
                 authContext.AuthResponse.BearerToken = CreateJwtBearerToken(authContext.AuthService.Request, user, authContext.Session.Roles);
                 authContext.AuthResponse.RefreshToken = EnableRefreshToken()
-                    ? CreateJwtRefreshToken(authService.Request, user.Id, ExpireRefreshTokensIn)
+                    ? CreateJwtRefreshToken(authService.Request, user.Id.ToString(), ExpireRefreshTokensIn)
                     : null;
             }
         }
@@ -363,7 +364,7 @@ public class IdentityJwtAuthProvider<TUser> : IdentityAuthProvider<TUser>, IIden
     protected string? CreateJwtBearerToken(IRequest req, TUser user, IEnumerable<string>? roles = null)
     {
         var claims = new List<Claim> {
-            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtClaimTypes.PreferredUserName, user.UserName),
         };
 
