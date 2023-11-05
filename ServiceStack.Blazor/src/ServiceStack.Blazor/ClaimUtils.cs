@@ -12,6 +12,8 @@ public static class ClaimUtils
 
     public static bool IsAuthenticated(this AuthenticationState? state) => state?.User?.AuthenticatedUser() != null;
     public static ClaimsPrincipal? AuthenticatedUser(this AuthenticationState? state) => state?.User?.AuthenticatedUser();
+
+    public static bool IsAuthenticated(this ClaimsPrincipal? principal) => principal?.Identity?.IsAuthenticated == true;
     public static ClaimsPrincipal? AuthenticatedUser(this ClaimsPrincipal? principal) =>
         principal?.Identity?.IsAuthenticated == true ? principal : null;
     public static bool IsAdmin(this ClaimsPrincipal? principal) => principal?.GetRoles().Contains(Admin) != null;

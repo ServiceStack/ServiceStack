@@ -64,6 +64,20 @@ namespace ServiceStack
             return roles;
         }
 
+        public static long GetIdentityUsersCount(this IDbConnection db) => db.GetTableRowsCount("AspNetUsers");
+        public static long GetIdentityRolesCount(this IDbConnection db) => db.GetTableRowsCount("AspNetRoles");
+        public static long GetTableRowsCount(this IDbConnection db, string sqlTable)
+        {
+            using var cmd = db.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM " + sqlTable;
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                return reader.GetInt64(0);
+            }
+            return 0;
+        }
+
         const string IdentityUserByIdSql = @"SELECT * FROM AspNetUsers WHERE Id = @userId";
 
         public static Dictionary<string, object> GetIdentityUserById(this IDbConnection db, string userId) =>

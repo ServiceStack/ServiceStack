@@ -1,6 +1,6 @@
 ﻿@inherits UiComponentBase
 
-<div class=@ClassNames(BackgroundColor, BorderColor, "border-l-4 p-4", Class)>
+<div class=@ClassNames(BackgroundColor, BorderColor, "border-l-4 p-4", Class) @attributes="AdditionalAttributes">
     <div class="flex">
         <div class="flex-shrink-0">
             @if (Type == AlertType.Warning)

@@ -45,6 +45,8 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
     public string PermissionClaimType { get; set; } = JwtClaimTypes.Permissions;
 
     public CookieAuthenticationOptions Options { get; set; }
+    
+    public string IdClaimName { get; set; } = ClaimTypes.NameIdentifier;
 
     public Dictionary<string, string> MapClaimsToSession { get; set; } = new()
     {
@@ -111,7 +113,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         string source;
         string sessionId;
 
-        var idClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
+        var idClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == IdClaimName);
         if (idClaim != null)
         {
             sessionId = idClaim.Value;
@@ -125,7 +127,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
                 sessionId = clientIdClaim.Value;
                 source = JwtClaimTypes.ClientId;
             }
-            else throw new NotSupportedException($"Claim '{ClaimTypes.Name}' is required");
+            else throw new NotSupportedException($"Claim '{IdClaimName}' is required");
         }
 
         session = SessionFeature.CreateNewSession(req, sessionId);
@@ -136,6 +138,9 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
     
     public virtual void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null)
     {
+        if (claimsPrincipal == null)
+            throw new ArgumentNullException(nameof(claimsPrincipal));
+
         if (session is IRequireClaimsPrincipal sessionClaims)
             sessionClaims.User = claimsPrincipal;
 
