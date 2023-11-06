@@ -4,7 +4,7 @@
         <PackageId>ServiceStack.Interfaces</PackageId>
         <AssemblyName>ServiceStack.Interfaces</AssemblyName>
         <RootNamespace>ServiceStack</RootNamespace>
-        <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
         <Title>Lightweight and implementation-free interfaces for ServiceStack</Title>
         <PackageDescription>Lightweight and implementation-free interfaces for DTO's, providers and adapters.</PackageDescription>
         <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
@@ -19,6 +19,9 @@
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
     
     <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
         <Reference Include="System.Net" />
@@ -32,7 +35,7 @@
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Redis</PackageId>
     <AssemblyName>ServiceStack.Redis</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>C# Redis client for the Redis NoSQL DB</Title>
     <PackageDescription>
       C# Redis Client for the worlds fastest distributed NoSQL datastore.
@@ -24,6 +24,10 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <DefineConstants>$(DefineConstants);ASYNC_MEMORY;NETCORE;NET6_0</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
@@ -43,7 +47,7 @@
     <!-- note: not needed from netstandard2.1 or netcoreapp3.0 onwards -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
   
 </Project>

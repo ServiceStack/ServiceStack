@@ -3,7 +3,7 @@
     <PropertyGroup>
         <PackageId>ServiceStack.AI</PackageId>
         <AssemblyName>ServiceStack.AI</AssemblyName>
-        <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Title>ServiceStack functionality for AI, Microsoft.SemanticKernel, OpenAI Whisper and TypeChat</Title>
@@ -20,6 +20,9 @@
     </PropertyGroup>
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

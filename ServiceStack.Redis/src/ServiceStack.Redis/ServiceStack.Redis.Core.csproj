@@ -3,7 +3,7 @@
     <PackageId>ServiceStack.Redis.Core</PackageId>
     <AssemblyName>ServiceStack.Redis</AssemblyName>
     <RootNamespace>ServiceStack.Redis</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Redis .NET Standard 2.0</Title>
     <PackageDescription>
       .NET Standard 2.0 version of ServiceStack.Redis
@@ -15,6 +15,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +35,7 @@
     <!-- note: not needed from netstandard2.1 or netcoreapp3.0 onwards -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 
 </Project>

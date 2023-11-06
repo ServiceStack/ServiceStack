@@ -3,9 +3,8 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Stripe</PackageId>
     <AssemblyName>Stripe</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;netstandard2.0;net8.0</TargetFrameworks>
     <Title>Typed message-based .NET Client Gateway for Stripe's REST API</Title>
-    <TargetFrameworks>net472;net6.0;netstandard2.0</TargetFrameworks>
     <PackageDescription>
       A typed message-based .NET client gateway for accessing Stripe's REST API.
       Used by servicestack.net to process merchant payments and recurring subscriptions.
@@ -20,6 +19,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +42,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 
 </Project>

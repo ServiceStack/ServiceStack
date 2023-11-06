@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack</PackageId>
     <AssemblyName>ServiceStack</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</Title>
     <PackageDescription>
     ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services and web apps that's intuitive and Easy to use!
@@ -19,6 +19,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
@@ -59,7 +62,7 @@
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>

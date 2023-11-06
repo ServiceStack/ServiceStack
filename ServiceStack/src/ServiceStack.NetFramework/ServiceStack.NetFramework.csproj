@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.NetFramework</PackageId>
     <AssemblyName>ServiceStack.NetFramework</AssemblyName>
-    <TargetFrameworks>net472</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <RootNamespace>ServiceStack</RootNamespace>
     <Title>.NET v4.5 only features for ServiceStack</Title>
     <PackageDescription>

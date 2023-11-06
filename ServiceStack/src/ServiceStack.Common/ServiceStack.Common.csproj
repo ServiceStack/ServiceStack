@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Common</PackageId>
     <AssemblyName>ServiceStack.Common</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <RootNamespace>ServiceStack</RootNamespace>
     <Title>Common libraries for ServiceStack projects</Title>
     <PackageDescription>#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.</PackageDescription>
@@ -13,6 +13,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
@@ -31,6 +34,6 @@
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 </Project>

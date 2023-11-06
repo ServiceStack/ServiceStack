@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Api.OpenApi.Core</PackageId>
     <AssemblyName>ServiceStack.Api.OpenApi</AssemblyName>
     <RootNamespace>ServiceStack.Api.OpenApi</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Api.OpenApi .NET Standard 2.0</Title>
     <PackageDescription>
       Implements v2.0 of the Open API Specification (https://www.openapis.org).
@@ -31,7 +31,7 @@
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 
 </Project>

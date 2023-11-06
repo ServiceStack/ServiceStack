@@ -4,7 +4,7 @@
         <PackageId>ServiceStack.Interfaces.Core</PackageId>
         <AssemblyName>ServiceStack.Interfaces</AssemblyName>
         <RootNamespace>ServiceStack.Interfaces</RootNamespace>
-        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
         <Title>ServiceStack.Interfaces .NET Standard 2.0</Title>
         <PackageDescription>
             Lightweight and implementation-free interfaces for DTO's, providers and adapters.
@@ -17,6 +17,9 @@
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
         <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
@@ -24,7 +27,7 @@
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     </ItemGroup>
 
 </Project>

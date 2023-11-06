@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Kestrel.Core</PackageId>
     <AssemblyName>ServiceStack.Kestrel</AssemblyName>
     <RootNamespace>ServiceStack.Kestrel</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Kestrel .NET Standard 2.0</Title>
     <PackageDescription>
       Provides AppSelfHostBase implementation for .NET Core's Kestrel Self Host HTTP Server
@@ -18,6 +18,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +43,7 @@
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.2.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 

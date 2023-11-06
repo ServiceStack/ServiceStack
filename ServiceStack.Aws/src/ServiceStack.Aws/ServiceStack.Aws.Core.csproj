@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Aws.Core</PackageId>
     <AssemblyName>ServiceStack.Aws</AssemblyName>
     <RootNamespace>ServiceStack.Aws</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Aws .NET Standard 2.0</Title>
     <PackageDescription>
       .NET Standard 2.0 version of ServiceStack.Aws
@@ -16,6 +16,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,7 +37,7 @@
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 

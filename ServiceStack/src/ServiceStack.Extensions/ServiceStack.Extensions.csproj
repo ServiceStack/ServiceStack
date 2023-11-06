@@ -8,10 +8,10 @@
         <Title>ServiceStack.Extensions</Title>
         <PackageDescription>ServiceStack extensions for .NET Core Apps, including GrpcFeature</PackageDescription>
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
-        <TargetFrameworks>net6.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.13" />
     </ItemGroup>
 

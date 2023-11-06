@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Stripe.Core</PackageId>
     <AssemblyName>Stripe</AssemblyName>
     <RootNamespace>Stripe</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Stripe .NET Standard 2.0</Title>
     <PackageDescription>
       A typed message-based .NET client gateway for accessing Stripe's REST API.
@@ -25,7 +25,7 @@
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 
 </Project>

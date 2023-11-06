@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Authentication.MongoDb.Core</PackageId>
     <AssemblyName>ServiceStack.Authentication.MongoDb</AssemblyName>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Authentication.MongoDb .NET Standard 2.0</Title>
     <PackageDescription>
       A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB.

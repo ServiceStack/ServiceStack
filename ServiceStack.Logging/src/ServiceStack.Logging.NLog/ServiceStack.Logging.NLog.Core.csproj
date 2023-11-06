@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Logging.NLog.Core</PackageId>
     <AssemblyName>ServiceStack.Logging.NLog</AssemblyName>
     <RootNamespace>ServiceStack.Logging.NLog</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Logging.NLog .NET Standard 2.0</Title>
     <PackageDescription>
       Provides NLog logging integration for other ServiceStack projects
@@ -16,6 +16,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
