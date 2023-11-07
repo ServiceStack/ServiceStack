@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ServiceStack.Text;
 
-#if !NET6_0
+#if !NET6_0_OR_GREATER
 using ServiceStack.Extensions;
 #endif
 
