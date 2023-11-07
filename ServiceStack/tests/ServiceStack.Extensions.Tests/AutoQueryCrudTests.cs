@@ -923,67 +923,78 @@ namespace ServiceStack.Extensions.Tests
             };
 
             authClient.Post(createRequest);
-            
-            using var db = appHost.GetDbConnection();
+            RockstarAuditTenant result;
 
-            ExecUtils.RetryUntilTrue(() => {
-                    using var d = appHost.GetDbConnection();
-                    return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
-                },
-                TimeSpan.FromSeconds(2));
-            var result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
-            
-            var updateRequest = new UpdateRockstarAuditTenantMq {
-                Id = result.Id,
-                FirstName = nameof(UpdateRockstarAuditTenantMq),
-                LivingStatus = LivingStatus.Alive,
-            };
-            authClient.Put(updateRequest);
+            using (var db = appHost.GetDbConnection())
+            {
+                ExecUtils.RetryUntilTrue(() => {
+                        using var d = appHost.GetDbConnection();
+                        return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
+                    },
+                    TimeSpan.FromSeconds(2));
+                result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
+            }
 
-            ExecUtils.RetryUntilTrue(() => {
-                    using var d = appHost.GetDbConnection();
-                    return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
-                },
-                TimeSpan.FromSeconds(2));
-            result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
-            
-            Assert.That(result.FirstName, Is.EqualTo(updateRequest.FirstName));
-            Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
-            Assert.That(result.Age, Is.EqualTo(createRequest.Age));
-            Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
-            Assert.That(result.LivingStatus, Is.EqualTo(updateRequest.LivingStatus));
+            using (var db = appHost.GetDbConnection())
+            {
+                var updateRequest = new UpdateRockstarAuditTenantMq {
+                    Id = result.Id,
+                    FirstName = nameof(UpdateRockstarAuditTenantMq),
+                    LivingStatus = LivingStatus.Alive,
+                };
+                authClient.Put(updateRequest);
 
-            var patchRequest = new PatchRockstarAuditTenantMq {
-                Id = result.Id,
-                FirstName = nameof(PatchRockstarAuditTenantMq),
-                LivingStatus = LivingStatus.Alive,
-            };
-            authClient.Patch(patchRequest);
+                ExecUtils.RetryUntilTrue(() => {
+                        using var d = appHost.GetDbConnection();
+                        return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
+                    },
+                    TimeSpan.FromSeconds(2));
+                result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
+                
+                Assert.That(result.FirstName, Is.EqualTo(updateRequest.FirstName));
+                Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
+                Assert.That(result.Age, Is.EqualTo(createRequest.Age));
+                Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
+                Assert.That(result.LivingStatus, Is.EqualTo(updateRequest.LivingStatus));
+            }
 
-            ExecUtils.RetryUntilTrue(() => {
-                    using var d = appHost.GetDbConnection();
-                    return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
-                },
-                TimeSpan.FromSeconds(2));
-            result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
-            
-            Assert.That(result.FirstName, Is.EqualTo(patchRequest.FirstName));
-            Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
-            Assert.That(result.Age, Is.EqualTo(createRequest.Age));
-            Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
-            Assert.That(result.LivingStatus, Is.EqualTo(patchRequest.LivingStatus));
+            using (var db = appHost.GetDbConnection())
+            {
+                var patchRequest = new PatchRockstarAuditTenantMq {
+                    Id = result.Id,
+                    FirstName = nameof(PatchRockstarAuditTenantMq),
+                    LivingStatus = LivingStatus.Alive,
+                };
+                authClient.Patch(patchRequest);
 
-            authClient.Delete(new RealDeleteAuditTenantMq {
-                Id = result.Id,
-            });
-            
-            ExecUtils.RetryUntilTrue(() => {
-                    using var d = appHost.GetDbConnection();
-                    return !d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
-                },
-                TimeSpan.FromSeconds(2));
-            
-            Assert.That(db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq)), Is.False);
+                ExecUtils.RetryUntilTrue(() => {
+                        using var d = appHost.GetDbConnection();
+                        return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
+                    },
+                    TimeSpan.FromSeconds(2));
+                result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
+                
+                Assert.That(result.FirstName, Is.EqualTo(patchRequest.FirstName));
+                Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
+                Assert.That(result.Age, Is.EqualTo(createRequest.Age));
+                Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
+                Assert.That(result.LivingStatus, Is.EqualTo(patchRequest.LivingStatus));
+            }
+
+            using (var db = appHost.GetDbConnection())
+            {
+                authClient.Delete(new RealDeleteAuditTenantMq {
+                    Id = result.Id,
+                });
+                
+                ExecUtils.RetryUntilTrue(() => {
+                        using var d = appHost.GetDbConnection();
+                        return !d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
+                    },
+                    TimeSpan.FromSeconds(2));
+                
+                Assert.That(db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq)), Is.False);
+            }
         }
 
         [Test]
