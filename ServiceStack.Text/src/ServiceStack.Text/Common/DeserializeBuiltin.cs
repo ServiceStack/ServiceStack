@@ -74,7 +74,7 @@ public static class DeserializeBuiltin<T>
                 return value => DateTimeSerializer.ParseDateTimeOffset(value.ToString());
             if (typeof(T) == typeof(TimeSpan))
                 return value => DateTimeSerializer.ParseTimeSpan(value.ToString());
-#if NET6_0 
+#if NET6_0_OR_GREATER 
                 if (typeof(T) == typeof(DateOnly))
                     return value => DateOnly.FromDateTime(DateTimeSerializer.ParseShortestXsdDateTime(value.ToString()));
                 if (typeof(T) == typeof(TimeOnly))
@@ -125,7 +125,7 @@ public static class DeserializeBuiltin<T>
                 return value => value.IsNullOrEmpty() ? (Guid?)null : value.ParseGuid();
             if (typeof(T) == typeof(DateTimeOffset?))
                 return value => DateTimeSerializer.ParseNullableDateTimeOffset(value.ToString());
-#if NET6_0 
+#if NET6_0_OR_GREATER
                 if (typeof(T) == typeof(DateOnly?))
                     return value => value.IsNullOrEmpty() ? default : DateOnly.FromDateTime(DateTimeSerializer.ParseShortestXsdDateTime(value.ToString()));
                 if (typeof(T) == typeof(TimeOnly?))

@@ -1,7 +1,7 @@
 using System;
 using ServiceStack.OrmLite.Converters;
 
-#if NET6_0
+#if NET6_0_OR_GREATER
 namespace ServiceStack.OrmLite.PostgreSQL.Converters
 {
     public class PostgreSqlDateOnlyConverter : PostgreSqlDateTimeConverter

@@ -79,7 +79,7 @@ public static class DateTimeExtensions
         return (ticks - UnixEpoch) / TimeSpan.TicksPerMillisecond;
     }
 
-#if NET6_0
+#if NET6_0_OR_GREATER
         public static long ToUnixTimeMs(this DateOnly dateOnly) => dateOnly.ToDateTime(default, DateTimeKind.Utc).ToUnixTimeMs(); 
         public static long ToUnixTime(this DateOnly dateOnly) => dateOnly.ToDateTime(default, DateTimeKind.Utc).ToUnixTime(); 
 #endif

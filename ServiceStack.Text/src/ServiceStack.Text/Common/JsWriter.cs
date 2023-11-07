@@ -299,7 +299,7 @@ public class JsWriter<TSerializer>
             if (type == typeof(Guid?))
                 return Serializer.WriteNullableGuid;
 
-#if NET6_0
+#if NET6_0_OR_GREATER
                 if (type == typeof(DateOnly))
                     if (isNullable)
                         return Serializer.WriteNullableDateOnly;

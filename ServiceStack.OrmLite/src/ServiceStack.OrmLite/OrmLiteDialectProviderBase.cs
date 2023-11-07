@@ -123,7 +123,7 @@ namespace ServiceStack.OrmLite
             RegisterConverter<DateTime>(new DateTimeConverter());
             RegisterConverter<DateTimeOffset>(new DateTimeOffsetConverter());
 
-#if NET6_0
+#if NET6_0_OR_GREATER
             RegisterConverter<DateOnly>(new DateOnlyConverter());
             RegisterConverter<TimeOnly>(new TimeOnlyConverter());
 #endif

@@ -248,7 +248,7 @@ public struct JsvTypeSerializer
             JsWriter.WriteEnumFlags(writer, enumValue);
     }
 
-#if NET6_0
+#if NET6_0_OR_GREATER
         public void WriteDateOnly(TextWriter writer, object oDateOnly)
         {
             var dateOnly = (DateOnly)oDateOnly;

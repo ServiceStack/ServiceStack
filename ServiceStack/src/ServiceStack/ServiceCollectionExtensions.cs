@@ -1,7 +1,6 @@
 #nullable enable
 
-#if NET6_0
-
+#if NET6_0_OR_GREATER
 using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;

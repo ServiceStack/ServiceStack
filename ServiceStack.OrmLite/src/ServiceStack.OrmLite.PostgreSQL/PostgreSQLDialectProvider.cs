@@ -74,7 +74,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
             
             RegisterConverter<XmlValue>(new PostgreSqlXmlConverter());
 
-#if NET6_0
+#if NET6_0_OR_GREATER
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             AppContext.SetSwitch("Npgsql.EnableLegacyCaseInsensitiveDbParameters", true);
             RegisterConverter<DateOnly>(new PostgreSqlDateOnlyConverter());
@@ -795,7 +795,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
             [typeof(PhysicalAddress)] = NpgsqlDbType.MacAddr,
             [typeof(NpgsqlTsQuery)] = NpgsqlDbType.TsQuery,
             [typeof(NpgsqlTsVector)] = NpgsqlDbType.TsVector,
-#if NET6_0
+#if NET6_0_OR_GREATER
             [typeof(DateOnly)] = NpgsqlDbType.Date,
             [typeof(TimeOnly)] = NpgsqlDbType.Time,  
 #endif

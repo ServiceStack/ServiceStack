@@ -70,7 +70,7 @@ public static class Env
             SupportsDynamic = true;
             IsNetCore21 = true;
 #endif
-#if NET6_0
+#if NET6_0_OR_GREATER
             IsNet6 = true;
 #endif
 #if NETSTANDARD2_0
