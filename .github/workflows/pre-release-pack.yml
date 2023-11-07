@@ -29,6 +29,7 @@ jobs:
           chmod +x ../ServiceStack.Redis/build/build.sh
           chmod +x ../ServiceStack.Stripe/build/build.sh
           chmod +x ../ServiceStack.Text/build/build.sh
+          chmod +x ../ServiceStack.Core/build/build.sh
           ./build-all.sh
 
       - name: Stage output
