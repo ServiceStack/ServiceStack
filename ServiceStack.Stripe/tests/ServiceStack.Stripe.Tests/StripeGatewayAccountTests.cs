@@ -103,7 +103,7 @@ namespace Stripe.Tests
             Assert.That(verification.DisabledReason, Is.EqualTo("fields_needed"));
             Assert.That(verification.DueBy, Is.Null);
             Assert.That(verification.FieldsNeeded, Is.Not.Null);
-            Assert.That(verification.FieldsNeeded.Length, Is.EqualTo(6));
+            Assert.That(verification.FieldsNeeded.Length, Is.EqualTo(9));
         }
     }
 }
