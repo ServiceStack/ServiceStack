@@ -1178,6 +1178,9 @@ public static class StringExtensions
     public static int CountOccurrencesOf(this string text, char needle) =>
         text.AsSpan().CountOccurrencesOf(needle);
 
+    public static int CountOccurrencesOf(this string text, string needle) =>
+        text.AsSpan().CountOccurrencesOf(needle);
+
     public static string NormalizeNewLines(this string text)
     {
         return text?.Replace("\r\n", "\n").Trim();

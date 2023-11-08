@@ -118,9 +118,8 @@ internal static class OrmLiteConfigExtensions
 
             var isNullableType = propertyInfo.PropertyType.IsNullableType();
 
-            var isNullable = (!propertyInfo.PropertyType.IsValueType
-                              && !propertyInfo.HasAttributeNamed(nameof(RequiredAttribute)))
-                             || isNullableType;
+            var isNullable = (!propertyInfo.PropertyType.IsValueType || isNullableType)
+                             && !propertyInfo.HasAttributeNamed(nameof(RequiredAttribute));
 
             var propertyType = isNullableType
                 ? Nullable.GetUnderlyingType(propertyInfo.PropertyType)

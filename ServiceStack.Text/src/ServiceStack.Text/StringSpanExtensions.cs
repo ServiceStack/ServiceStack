@@ -561,9 +561,9 @@ public static class StringSpanExtensions
     public static int IndexOf(this ReadOnlySpan<char> value, string other) => value.IndexOf(other.AsSpan());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf(this ReadOnlySpan<char> value, string needle, int start)
+    public static int IndexOf(this ReadOnlySpan<char> value, string needle, int start, StringComparison comparisonType=StringComparison.Ordinal)
     {
-        var pos = value.Slice(start).IndexOf(needle.AsSpan());
+        var pos = value.Slice(start).IndexOf(needle.AsSpan(), comparisonType);
         return pos == -1 ? -1 : start + pos;
     }
 
@@ -665,6 +665,17 @@ public static class StringSpanExtensions
         {
             if (value[n] == needle)
                 count++;
+        }
+        return count;
+    }
+    
+    public static int CountOccurrencesOf(this ReadOnlySpan<char> text, string needle, StringComparison comparisonType=StringComparison.Ordinal)
+    {                  
+        int count = 0, minIndex = text.IndexOf(needle, 0, comparisonType);
+        while (minIndex != -1)
+        {
+            minIndex = text.IndexOf(needle, minIndex + needle.Length, comparisonType);
+            count++;
         }
         return count;
     }
