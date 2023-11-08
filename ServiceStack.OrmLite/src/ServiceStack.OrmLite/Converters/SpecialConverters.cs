@@ -171,8 +171,26 @@ namespace ServiceStack.OrmLite.Converters
                 return Enum.ToObject(fieldType, (int)ToCharValue(value));
 
             if (value is string strVal)
-                return Enum.Parse(fieldType, strVal, ignoreCase:true);
+            {
+                if (string.IsNullOrEmpty(strVal))
+                    return Enum.ToObject(fieldType, 0);
 
+#if NET6_0_OR_GREATER
+                return Enum.TryParse(fieldType, strVal, ignoreCase:true, out var ret)
+                    ? ret
+                    : Text.TypeSerializer.DeserializeFromString(strVal, fieldType);
+#else
+                try
+                {
+                    return Enum.Parse(fieldType, strVal, ignoreCase: true);
+                }
+                catch (Exception)
+                {
+                    return Text.TypeSerializer.DeserializeFromString(strVal, fieldType);
+                }
+#endif
+            }
+            
             return Enum.ToObject(fieldType, value);
         }
     }

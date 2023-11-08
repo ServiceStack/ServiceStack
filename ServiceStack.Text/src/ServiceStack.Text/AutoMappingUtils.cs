@@ -286,7 +286,20 @@ public static class AutoMappingUtils
         if (toType.IsEnum)
         {
             var enumValueStr = s.LastRightPart('.');
-            return Enum.Parse(toType, enumValueStr);
+#if NET6_0_OR_GREATER
+            return Enum.TryParse(toType, enumValueStr, out var ret)
+                ? ret
+                : TypeSerializer.DeserializeFromString(enumValueStr, toType);
+#else
+            try
+            {
+                return Enum.Parse(toType, enumValueStr);
+            }
+            catch (Exception)
+            {
+                return TypeSerializer.DeserializeFromString(enumValueStr, toType);
+            }
+#endif
         }
 
         if (s != null)
