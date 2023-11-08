@@ -652,17 +652,17 @@ public partial class OrmLiteSelectTests : OrmLiteProvidersTestBase
             })
             .Where(x => x.Index.StartsWith("1_2"));
         var sql1 = q.ToMergedParamsSelectStatement();
-        Debug.Assert(sql1.Contains("like '1^_2%' escape '^'"));
+        Assert.That(sql1, Does.Contain("like '1^_2%' escape '^'"));
         var c1 = db.Count(q);
-        Debug.Assert(c1 == 2);
+        Assert.That(c1, Is.EqualTo(2));
         q = db.From<EscapeWildcardsModel>(x =>
             {
                 x.AllowEscapeWildcards = false;
             })
             .Where(x => x.Index.StartsWith("1_2"));
         var sql2 = q.ToMergedParamsSelectStatement();
-        Debug.Assert(sql2.Contains("like '1_2%'"));
+        Assert.That(sql2, Does.Contain("like '1_2%'"));
         var c2 = db.Count(q);
-        Debug.Assert(c2 == 3);
+        Assert.That(c2, Is.EqualTo(2));
     }
 }
