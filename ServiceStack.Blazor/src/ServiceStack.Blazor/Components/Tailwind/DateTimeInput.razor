@@ -4,10 +4,11 @@
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class="@LabelClasses">@UseLabel</label>
+    <label for=@Id class="@DateTimeInput.LabelClasses">@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
-        <input type="date" class=@ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses))
+        <input type="date" class=@ClassNames(DateTimeInput.InputBaseClasses,
+               CssClass(DateTimeInput.InputValidClasses, DateTimeInput.InputInvalidClasses))
                id=@Id name=@Id @bind-value="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes">
     @if (HasErrorField)
     {
@@ -21,19 +22,10 @@
     </div>
     @if (HasErrorField)
     {
-        <p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+        <p class="@DateTimeInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
     }
     else if (!string.IsNullOrEmpty(UseHelp))
     {
         <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
     }
 </div>
-
-@code {
-    public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
-    public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
-    public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
-    public static string InputValidClasses { get; set; } = "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
-    public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
-    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
-}

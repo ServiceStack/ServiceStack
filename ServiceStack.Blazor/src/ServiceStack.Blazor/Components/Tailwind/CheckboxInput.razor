@@ -4,20 +4,20 @@
 <div class=@ClassNames("relative flex items-start", CssClass())>
     <div class="flex items-center h-5">
         <input type="checkbox"
-               class="@InputClasses"
+               class="@CheckboxInput.InputClasses"
                id=@Id 
                name=@Id 
                @bind="CurrentValueAsBool" 
                @attributes="IncludeAttributes">
     </div>
     <div class="ml-3 text-sm">
-        <label class=@ClassNames(LabelClasses, LabelClass) for=@Id>
+        <label class=@ClassNames(CheckboxInput.LabelClasses, LabelClass) for=@Id>
             @UseLabel
         </label>
         
     @if (HasErrorField)
     {
-        <p class=@ClassNames("text-gray-500")>@ErrorFieldMessage</p>
+        <p class=@ClassNames(CheckboxInput.ErrorClasses)>@ErrorFieldMessage</p>
     }
     else if (!string.IsNullOrEmpty(UseHelp))
     {
@@ -26,9 +26,3 @@
 
     </div>
 </div>
-
-@code {
-    public static string ErrorClasses { get; set; } = "text-gray-500";
-    public static string LabelClasses { get; set; } = "font-medium text-gray-700 dark:text-gray-300";
-    public static string InputClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";
-}

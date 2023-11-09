@@ -4,9 +4,10 @@
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class=@ClassNames(LabelClasses, LabelClass)>@UseLabel</label>
+    <label for=@Id class=@ClassNames(SelectInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
-    <select id=@Id name=@Id class=@ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses))
+    <select id=@Id name=@Id class=@ClassNames(SelectInput.InputBaseClasses, 
+            CssClass(SelectInput.InputValidClasses, SelectInput.InputInvalidClasses))
             @bind="CurrentValue" @attributes="IncludeAttributes">
             @ChildContent
     @foreach (var kvp in KvpValues())
@@ -16,14 +17,6 @@
     </select>
     @if (HasErrorField)
     {
-        <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+        <p class="@SelectInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
     }
 </div>
-
-@code {
-    public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
-    public static string InputBaseClasses { get; set; } = "mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600";
-    public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500";
-    public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500";
-    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
-}

@@ -873,19 +873,19 @@ else
 <div class=@ClassNames("relative flex items-start", CssClass())>
 <div class="flex items-center h-5">
 <input type="checkbox"
-class="@InputClasses"
+class="@CheckboxInput.InputClasses"
 id=@Id
 name=@Id
 @bind="CurrentValueAsBool"
 @attributes="IncludeAttributes">
 </div>
 <div class="ml-3 text-sm">
-<label class=@ClassNames(LabelClasses, LabelClass) for=@Id>
+<label class=@ClassNames(CheckboxInput.LabelClasses, LabelClass) for=@Id>
 @UseLabel
 </label>
 @if (HasErrorField)
 {
-<p class=@ClassNames("text-gray-500")>@ErrorFieldMessage</p>
+<p class=@ClassNames(CheckboxInput.ErrorClasses)>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -893,11 +893,6 @@ else if (!string.IsNullOrEmpty(UseHelp))
 }
 </div>
 </div>
-@code {
-public static string ErrorClasses { get; set; } = "text-gray-500";
-public static string LabelClasses { get; set; } = "font-medium text-gray-700 dark:text-gray-300";
-public static string InputClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";
-}
 @inherits UiComponentBase
 <input id="confirmDelete" type="checkbox" @bind-value="confirmDelete" class="@CheckboxClasses">
 <label for="confirmDelete" class="@LabelClasses">@ConfirmLabel</label>
@@ -1044,10 +1039,11 @@ class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="@LabelClasses">@UseLabel</label>
+<label for=@Id class="@DateTimeInput.LabelClasses">@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
-<input type="date" class=@ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses))
+<input type="date" class=@ClassNames(DateTimeInput.InputBaseClasses,
+CssClass(DateTimeInput.InputValidClasses, DateTimeInput.InputInvalidClasses))
 id=@Id name=@Id @bind-value="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes">
 @if (HasErrorField)
 {
@@ -1061,21 +1057,13 @@ id=@Id name=@Id @bind-value="CurrentValueAsDateTime" placeHolder=@UsePlaceholder
 </div>
 @if (HasErrorField)
 {
-<p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@DateTimeInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
 <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
 }
 </div>
-@code {
-public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
-public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
-public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
-public static string InputValidClasses { get; set; } = "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
-public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
-public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
-}
 @inherits DynamicInputBase
 @if (IsSelect)
 {
@@ -1786,9 +1774,10 @@ else
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames(LabelClasses, LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(SelectInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
-<select id=@Id name=@Id class=@ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses))
+<select id=@Id name=@Id class=@ClassNames(SelectInput.InputBaseClasses,
+CssClass(SelectInput.InputValidClasses, SelectInput.InputInvalidClasses))
 @bind="CurrentValue" @attributes="IncludeAttributes">
 @ChildContent
 @foreach (var kvp in KvpValues())
@@ -1798,16 +1787,9 @@ else
 </select>
 @if (HasErrorField)
 {
-<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@SelectInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 </div>
-@code {
-public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
-public static string InputBaseClasses { get; set; } = "mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600";
-public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500";
-public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500";
-public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
-}
 @inherits BlazorComponentBase
 <div class=@SlideOverClass aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
 <div class="">
@@ -1924,14 +1906,15 @@ public static string InputClasses { get; set; } = InputBaseClasses + " " + Input
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames(LabelClasses, LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(TextAreaInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
-class=@ClassNames(InputBaseClasses, CssClass(InputValidClasses,InputInvalidClasses)) />
+class=@ClassNames(TextAreaInput.InputBaseClasses,
+CssClass(TextAreaInput.InputValidClasses,TextAreaInput.InputInvalidClasses)) />
 @if (HasErrorField)
 {
-<p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@TextAreaInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -1939,24 +1922,16 @@ else if (!string.IsNullOrEmpty(UseHelp))
 }
 </div>
 </div>
-@code {
-public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
-public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
-public static string InputBaseClasses { get; set; } = "shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
-public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
-public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300";
-public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
-}
 @typeparam TValue
 @inherits TextInputBase<TValue>
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames(LabelClasses, LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(TextInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 @{
-var cls = ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses));
+var cls = ClassNames(TextInput.InputBaseClasses, CssClass(TextInput.InputValidClasses, TextInput.InputInvalidClasses));
 }
 @if (UseType == Html.Input.Types.Textarea)
 {
@@ -1977,21 +1952,13 @@ else
 </div>
 @if (HasErrorField)
 {
-<p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@TextInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
 <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
 }
 </div>
-@code {
-public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
-public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
-public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
-public static string InputValidClasses { get; set; } = "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
-public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
-public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
-}
 @inherits UiComponentBase
 <a href=@href class=@ClassNames(Classes, Class) title=@title target=@target @onclick="onclick" @onclick:stopPropagation>@ChildContent</a>
 @code {
@@ -2129,4 +2096,47 @@ Medium,
 Large,
 ExtraLarge,
 ExtraLarge2x,
+}
+/* CSS Classes for Generic Components */
+public static class TextInput
+{
+public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
+public static string InputValidClasses { get; set; } = "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class DateTimeInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = TextInput.InputBaseClasses;
+public static string InputValidClasses { get; set; } = TextInput.InputValidClasses;
+public static string InputInvalidClasses { get; set; } = TextInput.InputInvalidClasses;
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class TextAreaInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = "shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
+public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class SelectInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = "mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600";
+public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500";
+public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class CheckboxInput
+{
+public static string ErrorClasses { get; set; } = "text-gray-500";
+public static string LabelClasses { get; set; } = "font-medium text-gray-700 dark:text-gray-300";
+public static string InputClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";
 }
