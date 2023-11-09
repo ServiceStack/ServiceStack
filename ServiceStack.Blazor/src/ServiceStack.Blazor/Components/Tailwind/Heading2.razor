@@ -1,6 +1,6 @@
 ﻿@inherits UiComponentLiteBase
 
-<h2 class=@ClassNames(Classes, Class)>@ChildContent</h2>
+<h2 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h2>
 
 @code {
     [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }

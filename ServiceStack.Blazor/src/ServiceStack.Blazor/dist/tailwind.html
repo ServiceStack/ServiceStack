@@ -1302,25 +1302,25 @@ else
 public static string LabelClasses { get; set; } = "flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none";
 }
 @inherits UiComponentLiteBase
-<h1 class=@ClassNames(Classes, Class)>@ChildContent</h1>
+<h1 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h1>
 @code {
 [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
 public static string Classes { get; set; } = "mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl";
 }
 @inherits UiComponentLiteBase
-<h2 class=@ClassNames(Classes, Class)>@ChildContent</h2>
+<h2 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h2>
 @code {
 [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
 public static string Classes { get; set; } = "mb-4 text-3xl md:text-4xl font-bold tracking-tighter leading-tight md:pr-8 whitespace-nowrap text-center pt-8";
 }
 @inherits UiComponentLiteBase
-<h3 class=@ClassNames(Classes, Class)>@ChildContent</h3>
+<h3 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h3>
 @code {
 [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
 public static string Classes { get; set; } = "mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100 leading-tight";
 }
 @inherits UiComponentLiteBase
-<h4 class=@ClassNames(Classes, Class)>@ChildContent</h4>
+<h4 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h4>
 @code {
 [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
 public static string Classes { get; set; } = "text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight";
@@ -1329,7 +1329,7 @@ public static string Classes { get; set; } = "text-xl font-semibold text-gray-90
 @((MarkupString) HtmlUtils.HtmlDump(Value ?? ""))
 </div>
 @inherits UiComponentLiteBase
-<a class=@ClassNames(GetStyleClass(Style), Class)>@ChildContent</a>
+<a class=@ClassNames(GetStyleClass(Style), Class) @attributes="AdditionalAttributes">@ChildContent</a>
 @code {
 [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
 public static string Classes  => GetStyleClass(LinkStyle.Indigo);
