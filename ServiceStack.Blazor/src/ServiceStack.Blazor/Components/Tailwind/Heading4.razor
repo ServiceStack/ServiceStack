@@ -1,0 +1,7 @@
+﻿@inherits UiComponentLiteBase
+
+<h4 class=@ClassNames("text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight", Class)>@ChildContent</h4>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

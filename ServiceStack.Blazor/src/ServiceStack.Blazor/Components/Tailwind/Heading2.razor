@@ -1,0 +1,7 @@
+﻿@inherits UiComponentLiteBase
+
+<h2 class=@ClassNames("mb-4 text-3xl md:text-4xl font-bold tracking-tighter leading-tight md:pr-8 whitespace-nowrap text-center pt-8", Class)>@ChildContent</h2>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

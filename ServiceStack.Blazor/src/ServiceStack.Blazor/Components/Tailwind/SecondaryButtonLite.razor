@@ -1,0 +1,19 @@
+﻿@inherits UiComponentLiteBase
+
+@if (AdditionalAttributes?.ContainsKey("href") == true)
+{
+    <a class=@ClassNames(SecondaryButton.BaseClass, SecondaryButton.SecondaryClass, Class) @attributes="AdditionalAttributes">
+        @ChildContent
+    </a>
+}
+else
+{
+    <button class=@ClassNames(SecondaryButton.BaseClass, SecondaryButton.SecondaryClass, Class) @attributes="AdditionalAttributes">
+        @ChildContent
+    </button>
+}
+
+@code {
+    [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Indigo;
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}
