@@ -25,7 +25,7 @@ public partial class PrimaryButton : UiComponentBase
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
     public virtual IReadOnlyDictionary<string, object>? IncludeAttributes => SanitizeAttributes(AdditionalAttributes);
 
-    public const string BaseClass = "inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-black";
+    public static string BaseClass { get; set; } = "inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-black";
     public static string GetStyleClass(ButtonStyle style) => style switch
     {
         ButtonStyle.Blue => "text-white bg-blue-600 hover:bg-blue-700 focus:ring-indigo-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800",
@@ -36,4 +36,5 @@ public partial class PrimaryButton : UiComponentBase
         ButtonStyle.Cyan => "focus:ring-cyan-300 text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-500",
         _ => "focus:ring-2 focus:ring-offset-2 text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
     };
+    public static string Classes(ButtonStyle style) => BaseClass + " " + GetStyleClass(style);
 }

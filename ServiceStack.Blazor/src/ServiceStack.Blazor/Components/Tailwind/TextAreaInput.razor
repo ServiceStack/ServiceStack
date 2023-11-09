@@ -4,17 +4,14 @@
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+    <label for=@Id class=@ClassNames(LabelClasses, LabelClass)>@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
         <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
-                class=@ClassNames("shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900", 
-                    CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
-                            invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
-                />
+                  class=@ClassNames(InputBaseClasses, CssClass(InputValidClasses,InputInvalidClasses)) />
     @if (HasErrorField)
     {
-        <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+        <p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
     }
     else if (!string.IsNullOrEmpty(UseHelp))
     {
@@ -22,3 +19,12 @@
     }
     </div>
 </div>
+
+@code {
+    public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+    public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+    public static string InputBaseClasses { get; set; } = "shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
+    public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+    public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300";
+    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}

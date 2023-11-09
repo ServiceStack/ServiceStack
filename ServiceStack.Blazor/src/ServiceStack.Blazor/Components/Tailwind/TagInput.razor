@@ -3,13 +3,11 @@
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+    <label for=@Id class=@ClassNames(@LabelClasses, LabelClass)>@UseLabel</label>
 }
     <div class="mt-1 w-full relative rounded-md shadow-sm">
         @{
-            var cls = ClassNames("w-full cursor-text flex flex-wrap sm:text-sm rounded-md dark:text-white dark:bg-gray-900 border focus-within:border-transparent focus-within:ring-1 focus-within:outline-none",
-            CssClass("shadow-sm border-gray-300 dark:border-gray-600 focus-within:ring-indigo-500 focus-within:border-indigo-500",
-                "pr-10 border-red-300 text-red-900 placeholder-red-300 focus-within:outline-none focus-within:ring-red-500 focus-within:border-red-500"));
+            var cls = ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses));
         }
         <button class=@cls @onclick="handleClick" @onclick:preventDefault>
             <div class="flex flex-wrap pb-1.5">
@@ -44,10 +42,19 @@
     </div>
     @if (HasErrorField)
     {
-        <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+        <p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
     }
     else if (!string.IsNullOrEmpty(UseHelp))
     {
         <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
     }
 </div>
+
+@code {
+    public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+    public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+    public static string InputBaseClasses { get; set; } = "w-full cursor-text flex flex-wrap sm:text-sm rounded-md dark:text-white dark:bg-gray-900 border focus-within:border-transparent focus-within:ring-1 focus-within:outline-none";
+    public static string InputValidClasses { get; set; } = "shadow-sm border-gray-300 dark:border-gray-600 focus-within:ring-indigo-500 focus-within:border-indigo-500";
+    public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus-within:outline-none focus-within:ring-red-500 focus-within:border-red-500";
+    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}

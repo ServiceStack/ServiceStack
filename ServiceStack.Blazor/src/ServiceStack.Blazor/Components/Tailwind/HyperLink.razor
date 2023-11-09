@@ -1,0 +1,19 @@
+﻿@inherits UiComponentLiteBase
+
+<a class=@ClassNames(GetStyleClass(Style), Class)>@ChildContent</a>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+    public static string Classes  => GetStyleClass(LinkStyle.Indigo);
+    
+    [Parameter] public LinkStyle Style { get; set; } = LinkStyle.Indigo;
+
+    public static string GetStyleClass(LinkStyle style) => style switch
+    {
+        LinkStyle.Blue => "text-blue-600 dark:text-blue-300 hover:text-blue-500 dark:hover:text-blue-400",
+        LinkStyle.Red => "text-red-600 dark:text-red-300 hover:text-red-500 dark:hover:text-red-400",
+        LinkStyle.Green => "text-green-600 dark:text-green-300 hover:text-green-500 dark:hover:text-green-400",
+        LinkStyle.Sky => "text-sky-600 dark:text-sky-300 hover:text-sky-500 dark:hover:text-sky-400",
+        _ => "text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-400"
+    };
+}

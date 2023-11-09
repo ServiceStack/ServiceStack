@@ -1,7 +1,0 @@
-﻿@inherits UiComponentLiteBase
-
-<a class=@ClassNames("text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-400", Class)>@ChildContent</a>
-
-@code {
-    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
-}
