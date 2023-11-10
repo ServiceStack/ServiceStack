@@ -94,17 +94,32 @@ JS = (function () {
         },
         elInvoke(sel, fnName, args) {
             let $el = el(sel)
-            if ($el) {
-                fnName = useFn(fnName, args)
-                let f = $el[fnName]
-                if (typeof f == 'function') {
-                    let ret = f.apply($el, args || [])
-                    return ret
-                } else {
-                    if (args !== undefined)
-                        $el[fnName] = args
-                    return $el[fnName]
-                }
+            if (!$el) return
+            fnName = useFn(fnName, args)
+            let f = $el[fnName]
+            if (typeof f == 'function') {
+                let ret = f.apply($el, args || [])
+                return ret
+            } else {
+                if (args !== undefined)
+                    $el[fnName] = args
+                return $el[fnName]
+            }
+        },
+        elInvokeObjectMethod(sel, objName, fnName, args) {
+            let $el = el(sel)
+            if (!$el) return
+            fnName = useFn(fnName, args)
+            const obj = $el[objName]
+            if (!obj) return
+            let f = obj[fnName]
+            if (typeof f == 'function') {
+                let ret = f.apply(obj, args || [])
+                return ret
+            } else {
+                if (args !== undefined)
+                    obj[fnName] = args
+                return obj[fnName]
             }
         },
         elInvokeDelayIf(test, sel, fnName, args) {
@@ -140,16 +155,15 @@ JS = (function () {
         focusNextElement() {
             let elActive = document.activeElement
             let form = elActive && elActive.form
-            if (form) {
-                let sel = ':not([disabled]):not([tabindex="-1"])'
-                let els = form.querySelectorAll(`a:not([disabled]), button${sel}, input[type=text]${sel}, [tabindex]${sel}`)
-                let focusable = Array.prototype.filter.call(els,
-                    el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === elActive);
-                let index = focusable.indexOf(elActive);
-                if (index > -1) {
-                    let elNext = focusable[index + 1] || focusable[0];
-                    elNext.focus();
-                }
+            if (!form) return
+            let sel = ':not([disabled]):not([tabindex="-1"])'
+            let els = form.querySelectorAll(`a:not([disabled]), button${sel}, input[type=text]${sel}, [tabindex]${sel}`)
+            let focusable = Array.prototype.filter.call(els,
+                el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === elActive);
+            let index = focusable.indexOf(elActive);
+            if (index > -1) {
+                let elNext = focusable[index + 1] || focusable[0];
+                elNext.focus();
             }
         },
         enableAutoScroll() { skipAutoScroll = false },
@@ -185,13 +199,9 @@ JS = (function () {
                 let darkMode = colorScheme != null
                     ? colorScheme === 'dark'
                     : window.matchMedia('(prefers-color-scheme: dark)').matches
-                let classList = document.documentElement.classList
-                if (darkMode) {
-                    if (!classList.contains('dark'))
-                        classList.add('dark')
-                } else {
-                    classList.remove('dark')
-                }
+                let html = document.documentElement
+                html.classList.toggle('dark', darkMode)
+                html.style.setProperty('color-scheme', darkMode ? 'dark' : null)
             }
         },
     }
