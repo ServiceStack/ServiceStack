@@ -334,10 +334,10 @@ export const Profiling = {
             linkFields.forEach(x => {
                 if (routes[x]) request[x] = routes[x]
             })
-            api.value = await client.api(request)
+            api.value = await client.api(request, { jsconfig: 'eccn' })
         }
         const errorSummary = computed(() => api.value.summaryMessage())
-        /** @type {ComputedRef<DiagnosticEntry[]>>} */
+        /** @type {ComputedRef<DiagnosticEntry[]>} */
         const results = computed(() => api.value.response?.results || [])
         const total = computed(() => api.value.response?.total)
         const uniqueKeys = summaryFields

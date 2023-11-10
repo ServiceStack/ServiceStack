@@ -30,9 +30,9 @@ public class AppHost : AppHostBase
         // });
         SetConfig(new HostConfig
         {
-            //DebugMode = false,
             DebugMode = true,
             AdminAuthSecret = "secret",
+            // UseCamelCase = false,
         });
         
         Plugins.Add(new CorsFeature(new[] {

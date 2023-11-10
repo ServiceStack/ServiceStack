@@ -389,7 +389,7 @@ export const Logging = {
             linkFields.forEach(x => {
                 if (routes[x]) request[x] = routes[x]
             })
-            api.value = await client.api(request)
+            api.value = await client.api(request, { jsconfig: 'eccn' })
         }
         
         function valueFmt(obj, k) {
