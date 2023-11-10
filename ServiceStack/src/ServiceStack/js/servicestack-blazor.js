@@ -68,7 +68,6 @@ JS = (function () {
         Object.keys(resolutions).forEach(res => o[res] = w > resolutions[res])
         return o
     }
-
     return {
         SelectorAliases,
         get(name) { return window[name] },
@@ -78,16 +77,15 @@ JS = (function () {
             return el && el.innerHTML || ''
         },
         invoke(target, fnName, args) {
+            if (!target || !fnName) return
             let f = target[fnName]
             if (typeof f == 'function') {
                 let ret = f.apply(target, args || [])
                 return ret
-            } else {   
-                if (args !== undefined)
-                    target[fnName] = args
-                return target[fnName]
             }
-            return f
+            if (args !== undefined)
+                target[fnName] = args
+            return target[fnName]
         },
         invokeDelay(target, fnName, args, ms) {
             setTimeout(() => JS.invoke(target, fnName, args), isNaN(ms) ? 0 : ms)
@@ -95,32 +93,24 @@ JS = (function () {
         elInvoke(sel, fnName, args) {
             let $el = el(sel)
             if (!$el) return
-            fnName = useFn(fnName, args)
-            let f = $el[fnName]
-            if (typeof f == 'function') {
-                let ret = f.apply($el, args || [])
-                return ret
-            } else {
-                if (args !== undefined)
-                    $el[fnName] = args
-                return $el[fnName]
-            }
+            return JS.invoke($el, useFn(fnName, args), args)
         },
-        elInvokeObjectMethod(sel, objName, fnName, args) {
-            let $el = el(sel)
-            if (!$el) return
-            fnName = useFn(fnName, args)
-            const obj = $el[objName]
+        elInvokeObjectMethod(sel, objAccessor, fnName, args) {
+            let obj = el(sel)
             if (!obj) return
-            let f = obj[fnName]
-            if (typeof f == 'function') {
-                let ret = f.apply(obj, args || [])
-                return ret
-            } else {
-                if (args !== undefined)
-                    obj[fnName] = args
-                return obj[fnName]
-            }
+            objAccessor.split('.').forEach(name => {
+                if (!obj) return
+                obj = obj[name]
+            })
+            return JS.invoke(obj, useFn(fnName, args), args)
+        },
+        invokeObjectMethod(objAccessor, fnName, args) {
+            let obj = window
+            objAccessor.split('.').forEach(name => {
+                if (!obj) return
+                obj = obj[name]
+            })
+            return JS.invoke(obj, useFn(fnName, args), args)
         },
         elInvokeDelayIf(test, sel, fnName, args) {
             if (matchesTest(test, sel)) JS.elInvoke(sel, sel, fnName, args)
