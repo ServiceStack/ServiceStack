@@ -336,7 +336,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         catch (Exception ex)
         {
             e = ex;
-            LogManager.GetLogger(GetType()).Error(ex, nameof(SendAsync) + ": " + ex.Message);
+            LogManager.GetLogger(GetType()).Error(ex, nameof(SendAsync) + ": {0}", ex.Message);
             throw;
         }
         finally
@@ -434,7 +434,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         catch (Exception ex)
         {
             e = ex;
-            LogManager.GetLogger(GetType()).Error(ex, nameof(Send) + ": " + ex.Message);
+            LogManager.GetLogger(GetType()).Error(ex, nameof(Send) + ": {0}", ex.Message);
             throw;
         }
         finally
@@ -1521,7 +1521,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         catch (Exception ex)
         {
             e = ex;
-            LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendForm)}: " + e.Message);
+            LogManager.GetLogger(GetType()).Error(ex, nameof(SendForm) + ": {0}", ex.Message);
             throw;
         }
         finally
@@ -1594,7 +1594,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         catch (Exception ex)
         {
             e = ex;
-            LogManager.GetLogger(GetType()).Error(e, $"{nameof(SendFormAsync)}: " + e.Message);
+            LogManager.GetLogger(GetType()).Error(ex, nameof(SendFormAsync) + ": {0}", ex.Message);
             throw;
         }
         finally
