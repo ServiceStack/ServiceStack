@@ -25,7 +25,7 @@ public abstract class IdentityAuthProvider<TUser,TKey> : IdentityAuthProvider
     {
         var user = service.Request.GetClaimsPrincipal();
 
-        var signInManager = service.Resolve<SignInManager<IdentityUser<TKey>>>();
+        var signInManager = service.Resolve<SignInManager<TUser>>();
         if (signInManager.IsSignedIn(user))
         {
             await signInManager.SignOutAsync();

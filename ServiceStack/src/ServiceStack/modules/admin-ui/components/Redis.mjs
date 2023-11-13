@@ -69,7 +69,7 @@ const NewKey = {
             } else if (type === 'hash') {
                 request.args = ['HSET', id, modelValue.value.field, modelValue.value.value]
             }
-            api.value = await client.api(request, { id, type })
+            api.value = await client.api(request, { id, type, jsconfig: 'eccn' })
             if (api.value.succeeded) {
                 modelValue.value.type = type
                 emit('done', modelValue.value)
@@ -611,7 +611,7 @@ export const Redis = {
                 if (type) {
                     load(routes.show, type)
                 } else {
-                    const api = await client.api(createRequest({ args: ['TYPE',routes.show] }), { id:routes.show })
+                    const api = await client.api(createRequest({ args: ['TYPE',routes.show] }), { id:routes.show, jsconfig: 'eccn' })
                     if (api.succeeded) {
                         let type = api.response?.result.text
                         if (type)
@@ -627,7 +627,7 @@ export const Redis = {
             else
                 return
             let apiCallNo = ++apiCall.value
-            api.value = await client.api(request)
+            api.value = await client.api(request, { jsconfig: 'eccn' })
             /** If reconnected since failed request ignore error */
             if (api.value.error && reconnectedAt.value > apiCallNo) return
             let res = api.value.response
@@ -659,7 +659,7 @@ export const Redis = {
         async function send(request, opt) {
             
             console.log('send', request, opt)
-            const api = await client.api(request)
+            const api = await client.api(request, { jsconfig: 'eccn' })
             if (!opt) opt = { id:null, type:null }
             let { id, type } = opt
             let result = api.response?.result
@@ -784,7 +784,7 @@ export const Redis = {
         
         async function call(args, opt, f) {
             let request = createRequest({ args })
-            const r = await client.api(request)
+            const r = await client.api(request, { jsconfig: 'eccn' })
             let result = r.response?.result
             let value = result && f(result) || null
             let error = r.error || null

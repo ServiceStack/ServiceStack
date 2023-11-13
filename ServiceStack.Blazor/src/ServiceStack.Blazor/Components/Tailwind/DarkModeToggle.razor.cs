@@ -19,11 +19,13 @@ public partial class DarkModeToggle : UiComponentBase
         {
             await LocalStorage.SetStringAsync(Key, "dark");
             await JS.InvokeVoidAsync("JS.addClass", "html", "dark");
+            await JS.InvokeVoidAsync("JS.invokeObjectMethod", "document.documentElement.style", "setProperty", new[] { "color-scheme", "dark" });
         }
         else
         {
             await LocalStorage.RemoveAsync(Key);
             await JS.InvokeVoidAsync("JS.removeClass", "html", "dark");
+            await JS.InvokeVoidAsync("JS.invokeObjectMethod", "document.documentElement.style", "setProperty", new[] { "color-scheme", null });
         }
         StateHasChanged();
     }

@@ -12,10 +12,11 @@
 </button>
 
 <script>
-window.toggleDarkMode = (function () {
+window.toggleDarkMode = (function() {
     let isDark = localStorage.getItem('color-scheme') === 'dark'
     const html = document.documentElement
     function renderDarkMode() {
+        html.style.setProperty('color-scheme', isDark ? 'dark' : null)
         html.classList.toggle('dark', isDark)
         document.querySelectorAll('[data-class-light]').forEach(el => {
             const removeClasses = isDark
@@ -33,7 +34,7 @@ window.toggleDarkMode = (function () {
 
     document.addEventListener('DOMContentLoaded', () =>
         Blazor.addEventListener('enhancedload', () => {
-            isDark = localStorage.getItem('color-scheme') == 'dark'
+            isDark = localStorage.getItem('color-scheme') === 'dark'
             html.classList.toggle('dark', isDark)
             renderDarkMode()
         }))

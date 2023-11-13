@@ -505,7 +505,7 @@ export const Database = {
             if (routes.table) {
                 prefs.value = refreshPrefs()
                 if ((columnsMap[routes.dbTable()] || []).length === 0) {
-                    apiColumns.value = await client.api(new AdminDatabase({ db:routes.db, schema:routes.schema, table:routes.table, take:1, include:'columns' }))
+                    apiColumns.value = await client.api(new AdminDatabase({ db:routes.db, schema:routes.schema, table:routes.table, take:1, include:'columns' }), { jsconfig: 'eccn' })
                     columnsMap[routes.dbTable()] = apiColumns.value.response?.columns || []
                 }
                 refreshFilters()
@@ -516,7 +516,7 @@ export const Database = {
                 if (skipRefresh) return
                 lastState.value = newState
 
-                api.value = await client.api(new AdminDatabase(args))
+                api.value = await client.api(new AdminDatabase(args), { jsconfig: 'eccn' })
                 /** populate row.id with PK if Id doesn't exist */
                 api.value.response?.results?.filter(x => x.id == null).forEach(x => {
                     x.id = x.Id
