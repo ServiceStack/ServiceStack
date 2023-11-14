@@ -161,6 +161,11 @@ public interface IAuthSessionExtended : IAuthSession
     /// Returning a non-null response invalidates Authentication with IHttpResult response returned to client.
     /// </summary>
     Task<IHttpResult> ValidateAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default);
+
+    /// <summary>
+    /// Custom logic to populate Session with data from Identity Auth Claims
+    /// </summary>
+    void PopulateFromClaims(IRequest httpReq, System.Security.Claims.ClaimsPrincipal principal);
 }
 
 public interface IWebSudoAuthSession : IAuthSession

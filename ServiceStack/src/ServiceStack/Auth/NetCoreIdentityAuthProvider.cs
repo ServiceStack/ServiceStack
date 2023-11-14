@@ -209,6 +209,8 @@ namespace ServiceStack.Auth
 
             PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
 
+            extended?.PopulateFromClaims(req, claimsPrincipal);
+
             if (PopulateSessionFilterAsync != null)
                 await PopulateSessionFilterAsync(session, claimsPrincipal, req);
 
