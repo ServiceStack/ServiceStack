@@ -216,6 +216,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         Options = appOptionsMonitor.Get(AuthenticationScheme);
 
         authFeature.HtmlRedirect = Options.LoginPath;
+        authFeature.HtmlLogoutRedirect = Options.LogoutPath;
         authFeature.HtmlRedirectAccessDenied = Options.AccessDeniedPath;
         authFeature.HtmlRedirectReturnParam = Options.ReturnUrlParameter;
         authFeature.HtmlRedirectReturnPathOnly = true;
