@@ -362,6 +362,8 @@ namespace ServiceStack
         public virtual Task<IHttpResult> ValidateAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo,
             CancellationToken token = default) => ((IHttpResult)null).InTask();
 
+        public virtual void PopulateFromClaims(IRequest httpReq, ClaimsPrincipal principal) {}
+
         public virtual HashSet<string> GetUserAttributes(IRequest request)
         {
             var attrs = new HashSet<string> {

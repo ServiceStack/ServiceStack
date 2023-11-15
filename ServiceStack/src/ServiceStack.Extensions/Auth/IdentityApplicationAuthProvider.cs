@@ -7,8 +7,6 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using ServiceStack.Text;
@@ -193,6 +191,8 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         if (session.UserAuthName?.IndexOf('@') >= 0 && session.Email == null)
             session.Email = session.UserAuthName;
 
+        extended?.PopulateFromClaims(req, claimsPrincipal);
+
         PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
 
         session.OnCreated(req);
@@ -216,6 +216,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         Options = appOptionsMonitor.Get(AuthenticationScheme);
 
         authFeature.HtmlRedirect = Options.LoginPath;
+        authFeature.HtmlLogoutRedirect = Options.LogoutPath;
         authFeature.HtmlRedirectAccessDenied = Options.AccessDeniedPath;
         authFeature.HtmlRedirectReturnParam = Options.ReturnUrlParameter;
         authFeature.HtmlRedirectReturnPathOnly = true;

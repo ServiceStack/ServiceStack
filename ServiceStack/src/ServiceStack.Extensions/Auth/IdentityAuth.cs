@@ -100,6 +100,9 @@ public interface IIdentityAuthContext
     Func<IAuthSession> SessionFactory { get; }
 }
 
+/// <summary>
+/// Configure ServiceStack's Identity Auth Integration
+/// </summary>
 public class IdentityAuthContext<TUser, TKey> : IIdentityAuthContext
         where TKey : IEquatable<TKey>
         where TUser : IdentityUser<TKey>
@@ -115,30 +118,76 @@ public class IdentityAuthContext<TUser, TKey> : IIdentityAuthContext
         SessionFactory = sessionFactory;
     }
 
+    /// <summary>
+    /// Specify which Custom AuthUserSession to use
+    /// </summary>
     public Func<IAuthSession> SessionFactory { get; set; }
+    
+    /// <summary>
+    /// Application Cookie Identity Auth Provider
+    /// </summary>
     public IdentityApplicationAuthProvider<TUser, TKey>? AuthApplication { get; set; }
+    
+    /// <summary>
+    /// Username/Password SignIn Identity Auth Provider
+    /// </summary>
     public IdentityCredentialsAuthProvider<TUser, TKey>? AuthCredentials { get; set; }
+    
+    /// <summary>
+    /// JWT Identity Auth Provider
+    /// </summary>
     public IdentityJwtAuthProvider<TUser, TKey>? AuthJwt { get; set; }
 
+    /// <summary>
+    /// Enable Username/Password SignIn via ServiceStack's Authenticate API (/auth) 
+    /// </summary>
     public bool EnableCredentialsAuth { get; set; }
+    
+    /// <summary>
+    /// Enable Authentication via Identity Auth JWT
+    /// </summary>
     public bool EnableJwtAuth { get; set; }
 
+    /// <summary>
+    /// Disable Authentication via Application Cookie
+    /// </summary>
     public void DisableApplicationCookie() => AuthApplication = null;
+    /// <summary>
+    /// Disable Authentication via Username/Password
+    /// </summary>
     public void DisableCredentialsAuth() => AuthCredentials = null;
+    /// <summary>
+    /// Disable Authentication via JWT
+    /// </summary>
     public void DisableJwt() => AuthJwt = null;
 
+    /// <summary>
+    /// Where users should redirect to Sign In
+    /// </summary>
     public string? LoginPath { get; set; }
+    
+    /// <summary>
+    /// Where users should redirect to after logging out
+    /// </summary>
     public string? LogoutPath { get; set; }
+    
+    /// <summary>
+    /// Which path users should be redirected to if they don't have access to a resource
+    /// </summary>
     public string? AccessDeniedPath { get; set; }
+
+    /// <summary>
+    /// The URL parameter name used to pass the ReturnUrl
+    /// </summary>
     public string? ReturnUrlParameter { get; set; }
 
     /// <summary>
-    /// Register ServiceStack Identity Register Service
+    /// Register ServiceStack's Register API (/register)
     /// </summary>
     public bool IncludeRegisterService { get; set; }
 
     /// <summary>
-    /// Register ServiceStack Identity Un/Assign Roles Services
+    /// Register ServiceStack's Assign & Unassign Roles Services
     /// </summary>
     public bool IncludeAssignRoleServices { get; set; }
 
@@ -146,7 +195,14 @@ public class IdentityAuthContext<TUser, TKey> : IIdentityAuthContext
         RoleNames.Admin,
     };
 
+    /// <summary>
+    /// Additional custom logic to convert an Identity User to a ServiceStack Session
+    /// </summary>
     public Func<TUser, IAuthSession> UserToSessionConverter { get; set; } = DefaultUserToSessionConverter;
+    
+    /// <summary>
+    /// Additional custom logic to convert a ServiceStack Session to an Identity User
+    /// </summary>
     public Func<IAuthSession, TUser> SessionToUserConverter { get; set; } = DefaultSessionToUserConverter;
 
     public static TUser DefaultSessionToUserConverter(IAuthSession session)

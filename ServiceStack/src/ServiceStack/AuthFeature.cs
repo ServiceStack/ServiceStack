@@ -110,6 +110,9 @@ namespace ServiceStack
         /// </summary>
         public bool HtmlRedirectReturnPathOnly { get; set; }
 
+        /// <summary>
+        /// Where users should redirect to after logging out
+        /// </summary>
         public string HtmlLogoutRedirect { get; set; }
 
         public bool IncludeAuthMetadataProvider { get; set; } = true;
