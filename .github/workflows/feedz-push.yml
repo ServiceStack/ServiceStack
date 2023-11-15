@@ -11,11 +11,11 @@ jobs:
       # Checkout the repo
       - uses: actions/checkout@v2
 
-      # Setup .NET Core SDK
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+      # Setup .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0'
+          dotnet-version: '8.*'
 
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
