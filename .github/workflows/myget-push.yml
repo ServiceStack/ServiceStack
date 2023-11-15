@@ -10,8 +10,8 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.*'
-          dotnet-quality: 'preview'
+          dotnet-version: '8.0.100'
+          
 
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
