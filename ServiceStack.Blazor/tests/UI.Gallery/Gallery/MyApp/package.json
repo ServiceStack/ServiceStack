@@ -1,0 +1,14 @@
+{
+    "scripts": {
+        "postinstall": "dotnet run --AppTasks=migrate",
+        "dtos": "x mjs",
+        "dev": "dotnet watch",
+        "ui:dev": "npx tailwindcss -i ./tailwind.input.css -o ./wwwroot/css/app.css --watch",
+        "ui:build": "npx tailwindcss -i ./tailwind.input.css -o ./wwwroot/css/app.css --minify",
+        "build": "npm run ui:build",
+        "migrate": "dotnet run --AppTasks=migrate",
+        "revert:last": "dotnet run --AppTasks=migrate.revert:last",
+        "revert:all": "dotnet run --AppTasks=migrate.revert:all",
+        "rerun:last": "npm run revert:last && npm run migrate"
+    }
+}

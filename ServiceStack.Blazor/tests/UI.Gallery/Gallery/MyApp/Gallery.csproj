@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>aspnet-MyApp-7b2ab71a-0b50-423f-969d-e35a9402b1b5</UserSecretsId>
+        <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+        <PublishProfile>DefaultContainer</PublishProfile>
+        <AssemblyName>Gallery</AssemblyName>
+        <RootNamespace>MyApp</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="MyApp" />
+        <Using Include="ServiceStack" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bogus" Version="34.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
+        <PackageReference Include="Markdig" Version="0.33.*" />
+    </ItemGroup>
+
+<!--    <ItemGroup>-->
+<!--        <PackageReference Include="ServiceStack" Version="8.*" />-->
+<!--        <PackageReference Include="ServiceStack.Blazor" Version="8.*" />-->
+<!--        <PackageReference Include="ServiceStack.Mvc" Version="8.*" />-->
+<!--        <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="8.*" />-->
+<!--        <PackageReference Include="ServiceStack.Extensions" Version="8.*" />-->
+<!--        <PackageReference Include="ServiceStack.Server" Version="8.*" />-->
+<!--    </ItemGroup>-->
+
+    <ItemGroup>
+        <Folder Include="App_Data\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="_pages\**" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="_videos\**" CopyToPublishDirectory="PreserveNewest" />
+        <None Remove="Migrations\seed\sample_coverletter.pdf" />
+        <Content Include="Migrations\seed\sample_coverletter.pdf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Migrations\seed\sample_resume.pdf" />
+        <Content Include="Migrations\seed\sample_resume.pdf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+      <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+      <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
+      <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
+      <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+      <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
+      <ProjectReference Include="..\..\..\..\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
+    </ItemGroup>
+
+    <Target Name="tailwind" BeforeTargets="Publish">
+        <Exec Command="npm run ui:build" WorkingDirectory="./" />
+    </Target>
+
+</Project>

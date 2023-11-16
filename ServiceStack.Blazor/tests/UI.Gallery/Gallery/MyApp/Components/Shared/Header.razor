@@ -1,0 +1,81 @@
+﻿@using MyApp.Components.Identity
+@inherits AppAuthComponentBase
+@inject NavigationManager NavigationManager
+
+<header class="border-b border-gray-200 dark:border-gray-800 pr-3">
+    <div class="flex flex-wrap items-center">
+        <div class="flex flex-grow flex-shrink flex-nowrap justify-end items-center">
+            <nav class="relative flex flex-grow">
+                <ul class="flex flex-wrap items-center justify-end w-full m-0">
+                    @foreach (var item in NavItems)
+                    {
+                        <li class="relative flex flex-wrap just-fu-start m-0">
+                            <NavLink href=@item.Href class="flex items-center justify-start mw-full p-4 hover:text-green-600 dark:hover:text-green-400">@item.Label</NavLink>
+                        </li>
+                    }
+                    
+                    <AuthorizeView Roles="Admin">
+                        <Authorized>
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <NavLink href="admin" class="p-4 flex items-center justify-start mw-full hover:text-sky-500 dark:hover:text-sky-400" ActiveClass="text-blue-700 dark:text-blue-300">Admin</NavLink>
+                            </li>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView>
+                        <Authorized>
+                            <li>
+                                <div class="mx-3 relative">
+                                    <div>
+                                        <a href="/Account/Manage"
+                                           class="max-w-xs bg-white dark:bg-black rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 lg:p-2 lg:rounded-md lg:hover:bg-gray-50 dark:lg:hover:bg-gray-900 dark:ring-offset-black" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                            <img class="h-8 w-8 rounded-full" src=@User.GetProfileUrl() alt="">
+                                            <span class="hidden ml-3 text-gray-700 dark:text-gray-300 text-sm font-medium lg:block">
+                                                <span class="sr-only">Open user menu for </span>
+                                                @User.GetDisplayName()
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="mr-3 relative flex flex-wrap just-fu-start m-0">
+                                <LogoutForm id="header-logout-form"/>
+                                <LinkButton onclick="document.getElementById('header-logout-form').submit(); return false;">
+                                    Sign Out
+                                </LinkButton>
+                            </li>
+                        </Authorized>
+                        <Authorizing>
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <NavLink href="/Account/Login" class="m-2 mr-4">
+                                    <SecondaryButton>
+                                        Sign In
+                                    </SecondaryButton>
+                                </NavLink>
+                            </li>
+                        </Authorizing>
+                        <NotAuthorized>
+                            <li class="relative flex flex-wrap just-fu-start m-0">
+                                <NavLink href="/Account/Login" class="m-2 mr-4">
+                                    <SecondaryButton>
+                                        Sign In
+                                    </SecondaryButton>
+                                </NavLink>
+                            </li>
+                        </NotAuthorized>
+                    </AuthorizeView>
+
+                    <li class="relative flex flex-wrap just-fu-start m-0">
+                        <DarkModeToggleLite/>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+@code {
+    List<NavItem> NavItems { get; set; } = new() {
+        new NavItem { Label = "API Reference", Href = "https://reference.servicestack.net/api/ServiceStack.Blazor.Components.Tailwind/" },
+    };
+}
