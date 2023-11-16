@@ -35,7 +35,4 @@ COPY tests\*.* ..\ServiceStack.Text\tests\
 COPY build\*.* ..\ServiceStack.Text\build\
 
 COPY src\*.* ..\ServiceStack.Core\src\
-COPY tests\*.* ..\ServiceStack.Core\tests\
 COPY build\*.* ..\ServiceStack.Core\build\
-
-

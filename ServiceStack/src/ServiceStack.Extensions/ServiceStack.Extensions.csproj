@@ -11,27 +11,31 @@
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.13" />
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.25"/>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
-        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
-        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-        <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj"/>
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj"/>
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj"/>
+        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj"/>
+        <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj"/>
 
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.57.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.57.0" />
-        <PackageReference Include="protobuf-net" Version="3.2.26" />
-        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.1.1" />
-        
-        <PackageReference Include="System.Threading.Channels" Version="7.0.0" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.59.0"/>
+        <PackageReference Include="Grpc.Core.Api" Version="2.59.0"/>
+        <PackageReference Include="protobuf-net" Version="3.2.26"/>
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.1.1"/>
 
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.25.1" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.1" />
+        <PackageReference Include="System.Threading.Channels" Version="8.0.0"/>
+
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3"/>
     </ItemGroup>
 
 </Project>

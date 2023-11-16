@@ -169,7 +169,7 @@ const CSharp = {
     </div>`,
     props:['src','usage'],
     setup() {
-        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="6.*" />` }
+        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="8.*" />` }
     }
 }
 const TypeScript = {
@@ -430,7 +430,7 @@ const VbNet = {
     </div>`,
     props:['src','usage'],
     setup() {
-        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="6.*" />` }
+        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="8.*" />` }
     }
 }
 const FSharp = {
@@ -458,7 +458,7 @@ const FSharp = {
     </div>`,
     props:['src','usage'],
     setup() {
-        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="6.*" />` }
+        return { pkg: `<PackageReference Include="ServiceStack.Client" Version="8.*" />` }
     }
 }
 export const LanguageComponents = { CSharp, TypeScript, Mjs, Dart, Java, Kotlin, Python, Php, Swift, VbNet, FSharp }
