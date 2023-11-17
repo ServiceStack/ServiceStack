@@ -45,12 +45,14 @@ namespace ServiceStack
 
         public static bool HasClaim(IRequest req, string type, string value)
         {
-            var claims = req.GetClaims().ToList();
-
-            if (claims.HasRole(RoleNames.Admin))
+            var principal = req.GetClaimsPrincipal();
+            if (principal == null)
+                return false;
+            
+            if (principal.IsInRole(RoleNames.Admin))
                 return true;
 
-            if (claims.HasClaim(type, value))
+            if (req.GetClaims().HasClaim(type, value))
                 return true;
 
             return false;

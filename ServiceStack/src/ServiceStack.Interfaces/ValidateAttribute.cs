@@ -112,6 +112,17 @@ public class ValidateHasPermissionAttribute : ValidateRequestAttribute
 {
     public ValidateHasPermissionAttribute(string permission) : base("HasPermission(`" + permission + "`)") { }
 }
+
+public class ValidateHasClaimAttribute : ValidateRequestAttribute
+{
+    public ValidateHasClaimAttribute(string type, string value) : base("HasClaim(`" + type + "`,`" + value + "`)") { }
+}
+
+public class ValidateHasScopeAttribute : ValidateRequestAttribute
+{
+    public ValidateHasScopeAttribute(string scope) : base("HasScope(`" + scope + "`)") { }
+}
+
     
 /// <summary>
 /// Validate property against registered Validator expression

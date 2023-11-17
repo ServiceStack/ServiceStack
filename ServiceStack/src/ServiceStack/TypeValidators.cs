@@ -77,6 +77,41 @@ namespace ServiceStack
         }
     }
 
+    public class HasClaimValidator : TypeValidator, IAuthTypeValidator
+    {
+        public static string DefaultErrorMessage { get; set; } = "`${Type} Claim with '${Value}' is Required`";
+
+        public string Type { get; }
+        public string Value { get; }
+
+        public HasClaimValidator(string type, string value)
+            : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
+        {
+            this.Type = type ?? throw new ArgumentNullException(nameof(type));
+            this.Value = value ?? throw new ArgumentNullException(nameof(value));
+            this.ContextArgs = new Dictionary<string, object> {
+                [nameof(Type)] = Type,
+                [nameof(Value)] = Value,
+            };
+        }
+
+        public override async Task<bool> IsValidAsync(object dto, IRequest request)
+        {
+            return request != null && await IsAuthenticatedValidator.Instance.IsValidAsync(dto, request).ConfigAwait() 
+                                   && RequiredClaimAttribute.HasClaim(request, Type, Value);
+        }
+
+        public override async Task ThrowIfNotValidAsync(object dto, IRequest request)
+        {
+            await IsAuthenticatedValidator.Instance.ThrowIfNotValidAsync(dto, request).ConfigAwait();
+            
+            if (RequiredClaimAttribute.HasClaim(request, Type, Value))
+                return;
+
+            throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));
+        }
+    }
+
     public class HasPermissionsValidator : TypeValidator, IAuthTypeValidator
     {
         public static string DefaultErrorMessage { get; set; } = "`${Permissions.join(', ')} Permission${Permissions.length > 1 ? 's' : ''} Required`";

@@ -5,10 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using System.Web;
 using ServiceStack.Data;
-using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -1113,9 +1111,10 @@ namespace ServiceStack
         public static IEnumerable<Claim> GetClaims(this IRequest req) => 
             req.GetClaimsPrincipal()?.Claims ?? TypeConstants<Claim>.EmptyArray;
 
-        public static bool HasRole(this IEnumerable<Claim> claims, string role) => claims.HasClaim("role", role);
+        public static bool HasRole(this ClaimsPrincipal principal, string role) =>
+            principal.IsInRole(role);
 
-        public static bool HasScope(this IEnumerable<Claim> claims, string scope) => claims.HasClaim("scope", scope);
+        public static bool HasScope(this IEnumerable<Claim> claims, string scope) => claims.HasClaim(JwtClaimTypes.Scope, scope);
 
         public static bool HasClaim(this IEnumerable<Claim> claims, string type, string value)
         {

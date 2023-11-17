@@ -66,6 +66,10 @@ namespace ServiceStack
         public ITypeValidator HasRoles(string[] roles) => new HasRolesValidator(roles);
         public ITypeValidator HasPermission(string permission) => new HasPermissionsValidator(permission);
         public ITypeValidator HasPermissions(string[] permission) => new HasPermissionsValidator(permission);
+        public ITypeValidator HasClaim(string type, string value) => new HasClaimValidator(type, value);
+        public ITypeValidator HasScope(string scope) => new HasClaimValidator(JwtClaimTypes.Scope, scope) {
+            DefaultMessage = "`'${Value}' scope is Required`"
+        };
         public ITypeValidator IsAdmin() => new HasRolesValidator(RoleNames.Admin);
     }
     
