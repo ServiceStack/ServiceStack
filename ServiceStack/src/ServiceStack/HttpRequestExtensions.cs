@@ -1111,21 +1111,6 @@ namespace ServiceStack
         public static IEnumerable<Claim> GetClaims(this IRequest req) => 
             req.GetClaimsPrincipal()?.Claims ?? TypeConstants<Claim>.EmptyArray;
 
-        public static bool HasRole(this ClaimsPrincipal principal, string role) =>
-            principal.IsInRole(role);
-
-        public static bool HasScope(this IEnumerable<Claim> claims, string scope) => claims.HasClaim(JwtClaimTypes.Scope, scope);
-
-        public static bool HasClaim(this IEnumerable<Claim> claims, string type, string value)
-        {
-            foreach (var claim in claims)
-            {
-                if (claim.Type == type && claim.Value == value)
-                    return true;
-            }
-            return false;
-        }
-
         public static bool CanReadRequestBody(this IRequest req)
         {
             if (req is IHasBufferedStream hasStream)

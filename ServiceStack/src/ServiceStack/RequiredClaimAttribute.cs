@@ -52,7 +52,7 @@ namespace ServiceStack
             if (principal.IsInRole(RoleNames.Admin))
                 return true;
 
-            if (req.GetClaims().HasClaim(type, value))
+            if (req.GetClaimsPrincipal().HasClaim(type, value))
                 return true;
 
             return false;
