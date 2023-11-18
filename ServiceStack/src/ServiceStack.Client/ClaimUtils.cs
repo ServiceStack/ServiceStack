@@ -9,7 +9,8 @@ namespace ServiceStack;
 public static class ClaimUtils
 {
     public static string Admin { get; set; } = nameof(Admin);
-    public static string PermissionType { get; set; } = "perm";
+    public static string PermissionType { get; set; } = JwtClaimTypes.Permission;
+    public static string Picture { get; set; } = JwtClaimTypes.Picture;
 
     public static bool IsAuthenticated(this ClaimsPrincipal? principal) => principal?.Identity?.IsAuthenticated == true;
     public static ClaimsPrincipal? AuthenticatedUser(this ClaimsPrincipal? principal) =>
@@ -39,5 +40,9 @@ public static class ClaimUtils
                 return true;
         }
         return false;
-    }    
+    }
+
+    public static string? GetPicture(this ClaimsPrincipal? principal) => 
+        X.Map(principal?.FindFirst(Picture)?.Value, x => string.IsNullOrWhiteSpace(x) ? null : x)
+        ?? JwtClaimTypes.DefaultProfileUrl;
 }
