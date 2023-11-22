@@ -20,9 +20,12 @@ namespace ServiceStack.OrmLite
     {
         public const string IdField = "Id";
 
-        private const int DefaultCommandTimeout = 30;
+        private const int DefaultCommandTimeout = 30;//in seconds
         private static int? commandTimeout;
 
+        /// <summary>
+        /// Gets or sets the wait time before terminating the attempt to execute a command and generating an error(in seconds).
+        /// </summary>
         public static int CommandTimeout
         {
             get => commandTimeout ?? DefaultCommandTimeout;
@@ -97,12 +100,28 @@ namespace ServiceStack.OrmLite
 
         private const string RequiresOrmLiteConnection = "{0} can only be set on a OrmLiteConnectionFactory connection, not a plain IDbConnection";
 
+        /// <summary>
+        /// Sets the wait time before terminating the attempt to execute a command and generating an error.
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="commandTimeout">Command execution timeout(in seconds)</param>
+        /// <exception cref="NotImplementedException"></exception>
         public static void SetCommandTimeout(this IDbConnection db, int? commandTimeout)
         {
             if (!(db is OrmLiteConnection ormLiteConn))
-                throw new NotImplementedException(string.Format(RequiresOrmLiteConnection,"CommandTimeout"));
+                throw new NotImplementedException(string.Format(RequiresOrmLiteConnection,nameof(CommandTimeout)));
 
             ormLiteConn.CommandTimeout = commandTimeout;
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="SetCommandTimeout(IDbConnection,int?)"/>
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="commandTimeout">Command execution timeout</param>
+        public static void SetCommandTimeout(this IDbConnection db, TimeSpan? commandTimeout)
+        {
+            SetCommandTimeout(db, (int?)commandTimeout?.TotalSeconds);
         }
 
         public static IDbConnection ToDbConnection(this string dbConnectionStringOrFilePath)
