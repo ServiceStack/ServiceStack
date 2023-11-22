@@ -84,7 +84,17 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
                 return default;
         }
 
-        ExecValidatorsAsync(request).Wait();
+        if (request is object[] requestDtos)
+        {
+            foreach (var requestDto in requestDtos)
+            {
+                ExecValidatorsAsync(requestDto).Wait();
+            }
+        }
+        else
+        {
+            ExecValidatorsAsync(request).Wait();
+        }
 
         var response = HostContext.ServiceController.Execute(request, req);
         response = UnwrapResponse(response);
@@ -127,7 +137,17 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         if (!await appHost.ApplyGatewayRequestFiltersAsync(req, request)) 
             return default;
 
-        await ExecValidatorsAsync(request);
+        if (request is object[] requestDtos)
+        {
+            foreach (var requestDto in requestDtos)
+            {
+                await ExecValidatorsAsync(requestDto);
+            }
+        }
+        else
+        {
+            await ExecValidatorsAsync(request);
+        }
 
         var response = await HostContext.ServiceController.GatewayExecuteAsync(request, req, applyFilters: false);
 
