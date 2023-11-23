@@ -395,7 +395,20 @@ namespace ServiceStack.ServiceHost.Tests
             Assert.AreEqual(5, func());
         }
 
-        
+        [Test]
+        public void Lazy_Resolver_works_with_adapter_services()
+        {
+            var container = new Container()
+            {
+                Adapter = new CustomAdapterWithFunc()
+            };
+
+            var func = container.Resolve<Func<Func<int>>>();
+
+            Assert.AreEqual(5, func()());
+        }
+
+
         [Test]
         [TestCase(true)]
         [TestCase(false)]
