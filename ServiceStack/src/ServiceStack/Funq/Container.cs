@@ -428,10 +428,32 @@ namespace Funq
                 container = container.parent;
             }
 
-            if (entry == null)
+            if (entry != null)
             {
-                var genericDef = typeof(TService).FirstGenericTypeDefinition();
-                if (genericDef != null && genericDef.Name.StartsWith("Func`")) //Lazy Dependencies
+                if (entry.Reuse == ReuseScope.Container && entry.Container != this)
+                    entry = SetServiceEntry(key, ((ServiceEntry<TService, TFunc>)entry).CloneFor(this));
+            }
+            else
+            {
+
+                if (TryResolveFromAdapter(out var instance))
+                {
+                    try
+                    {
+                        return new ServiceEntry<TService, TFunc>(
+                            (TFunc)(object)(Func<Container, TService>)(c => instance))
+                        {
+                            Owner = DefaultOwner,
+                            Container = this,
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateAdapterException<TService>(ex);
+                    }
+                }
+
+                if (ShouldFallbackToLazyResolver())
                 {
                     var argTypes = typeof(TService).GetGenericArguments();
                     var lazyResolver = GetLazyResolver(argTypes);
@@ -443,57 +465,33 @@ namespace Funq
                         Container = this,
                     };
                 }
-            }
 
-            if (entry != null)
-            {
-                if (entry.Reuse == ReuseScope.Container && entry.Container != this)
-                    entry = SetServiceEntry(key, ((ServiceEntry<TService, TFunc>)entry).CloneFor(this));
-            }
-            else
-            {
-                try
+                if (throwIfMissing)
                 {
-                    //i.e. if called Resolve<> for Constructor injection
-                    if (throwIfMissing)
-                    {
-                        if (Adapter != null)
-                        {
-                            return new ServiceEntry<TService, TFunc>(
-                                (TFunc)(object)(Func<Container, TService>)(c => Adapter.Resolve<TService>()))
-                            {
-                                Owner = DefaultOwner,
-                                Container = this,
-                            };
-                        }
-                        ThrowMissing<TService>(serviceName);
-                    }
-                    else
-                    {
-                        if (Adapter != null
-                            && (typeof(TService) != typeof(IRequest)))
-                        {
-                            //Container.Exists<> needs to return null if no dependency exists
-                            var instance = Adapter.TryResolve<TService>();
-                            if (instance == null || (typeof(TService).IsValueType && default(TService)?.Equals(instance) == true))
-                                return null;
+                    ThrowMissing<TService>(serviceName);
+                }
 
-                            return new ServiceEntry<TService, TFunc>(
-                                (TFunc)(object)(Func<Container, TService>)(c => instance))
-                            {
-                                Owner = DefaultOwner,
-                                Container = this,
-                            };
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw CreateAdapterException<TService>(ex);
-                }
+                return null;
+
             }
 
             return (ServiceEntry<TService, TFunc>)entry;
+
+            bool TryResolveFromAdapter(out TService instance)
+            {
+                if (Adapter == null)
+                {
+                    instance = default;
+                    return false;
+                }
+
+                instance = Adapter.TryResolve<TService>();
+                return instance != null && (!typeof(TService).IsValueType || default(TService)?.Equals(instance) != true);
+            }
+
+            bool ShouldFallbackToLazyResolver() => typeof(TService).FirstGenericTypeDefinition()?
+                .Name.StartsWith("Func`") == true;
+
         }
 
         private Exception CreateAdapterException<TService>(Exception ex)
