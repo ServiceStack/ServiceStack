@@ -420,8 +420,7 @@ namespace ServiceStack.ServiceHost.Tests
                 container.Adapter = new CustomAdapterWithFunc();
             }
 
-            Assert.Catch(() => container.Resolve<Func<string>>());
-
+            Assert.Catch(() => container.Resolve<Func<string>>()());
         }
         
     }
