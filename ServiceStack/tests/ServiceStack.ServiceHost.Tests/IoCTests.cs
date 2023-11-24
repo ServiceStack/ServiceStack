@@ -355,5 +355,74 @@ namespace ServiceStack.ServiceHost.Tests
             Assert.That(one, Is.Not.Null);
             Assert.AreNotSame(one, two);
         }
+
+
+        class CustomAdapterWithFunc : IContainerAdapter
+        {
+            public T Resolve<T>()
+            {
+                if (typeof(T) == typeof(Func<int>))
+                {                    
+                    return (T)(object)(() => 5);
+                }
+                throw new InvalidOperationException();
+            }
+
+            public T TryResolve<T>()
+            {
+                try
+                {
+                    return Resolve<T>();
+                }
+                catch (Exception)
+                {
+                    return default;
+                }
+            }
+        }
+
+        
+        [Test]
+        public void Does_resolve_from_adapter_before_fallback_to_Lazy_Resolver()
+        {
+            var container = new Container()
+            {
+                Adapter = new CustomAdapterWithFunc()
+            };
+
+            var func = container.Resolve<Func<int>>();
+
+            Assert.AreEqual(5, func());
+        }
+
+        [Test]
+        public void Lazy_Resolver_works_with_adapter_services()
+        {
+            var container = new Container()
+            {
+                Adapter = new CustomAdapterWithFunc()
+            };
+
+            var func = container.Resolve<Func<Func<int>>>();
+
+            Assert.AreEqual(5, func()());
+        }
+
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Throws_when_Resolve_nonexisting(bool withAdapter)
+        {
+            var container = new Container();
+            if (withAdapter)
+            {
+                container.Adapter = new CustomAdapterWithFunc();
+            }
+
+            Assert.Catch(() => container.Resolve<Func<string>>());
+
+        }
+        
     }
 }
