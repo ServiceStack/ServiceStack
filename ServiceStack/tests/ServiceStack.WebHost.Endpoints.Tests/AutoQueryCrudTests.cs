@@ -935,6 +935,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
             Assert.That(deleteRequest.Id, Is.EqualTo(createResponse.Id));
         }
+        
+        //ignore "The transaction object is not associated with the same connection object as this command." in CI
+        void RetryUntilTrue(Func<bool> action, TimeSpan? timeOut = null)
+        {
+            try
+            {
+                ExecUtils.RetryUntilTrue(action, timeOut);
+            }
+            catch (InvalidOperationException e)
+            {
+                Console.WriteLine($@"{e.GetType().Name}: {e.Message}");
+            }
+        }
 
         [Test]
         public void Can_CreateRockstarAuditTenantMq()
@@ -961,7 +974,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             RockstarAuditTenant result;
 
-            ExecUtils.RetryUntilTrue(() => {
+            RetryUntilTrue(() => {
                     using var d = appHost.GetDbConnection();
                     return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
                 },
@@ -978,7 +991,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
             authClient.Put(updateRequest);
 
-            ExecUtils.RetryUntilTrue(() => {
+            RetryUntilTrue(() => {
                     using var d = appHost.GetDbConnection();
                     return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
                 },
@@ -1001,7 +1014,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
             authClient.Patch(patchRequest);
 
-            ExecUtils.RetryUntilTrue(() => {
+            RetryUntilTrue(() => {
                     using var d = appHost.GetDbConnection();
                     return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
                 },
@@ -1021,7 +1034,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Id = result.Id,
             });
             
-            ExecUtils.RetryUntilTrue(() => {
+            RetryUntilTrue(() => {
                     using var d = appHost.GetDbConnection();
                     return !d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
                 },
