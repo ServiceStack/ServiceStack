@@ -158,6 +158,8 @@ let store = {
     filter: '',
     sideNav,
     detailSrcResult: {},
+    /** @type {string} */
+    serviceName: globalThis.Server.app.serviceName,
     /** @type {boolean} */
     debug: globalThis.Server.config.debugMode,
     /** @type {ApiResult<AuthenticateResponse>} */
