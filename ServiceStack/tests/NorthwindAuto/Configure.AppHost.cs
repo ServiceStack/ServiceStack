@@ -15,7 +15,7 @@ namespace MyApp;
 public class AppHost : AppHostBase
 {
     public static string TalentBlazorDir = "../../../../../netcore/TalentBlazor/TalentBlazor";
-    public static string TalentBlazorAppDataDir = TalentBlazorDir + "/App_Data";
+    public static string TalentBlazorSeedDataDir = TalentBlazorDir + "/Migrations/seed";
     public static string TalentBlazorWwwRootDir = TalentBlazorDir + "/wwwroot";
     public static string ProfilesDir = $"{TalentBlazorWwwRootDir}/profiles";
         
@@ -80,7 +80,7 @@ public class AppHost : AppHostBase
         //Plugins.Add(new PostmanFeature());
 
         var uploadVfs = new FileSystemVirtualFiles(TalentBlazorWwwRootDir);
-        var appDataVfs = new FileSystemVirtualFiles(TalentBlazorAppDataDir);
+        var appDataVfs = new FileSystemVirtualFiles(TalentBlazorSeedDataDir);
         Plugins.Add(new FilesUploadFeature(
             new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
                 resolvePath:ctx => $"/profiles/{ctx.FileName}"),

@@ -50,7 +50,7 @@ public class ConfigureDb : IHostingStartup
             ConfigureAuthRepository.RecreateUsers(appHost.Resolve<IAuthRepository>(), db);
             
             db.SeedTalent(profilesDir:AppHost.ProfilesDir);
-            db.SeedAttachments(appHost, sourceDir:AppHost.TalentBlazorAppDataDir);
+            db.SeedAttachments(appHost, sourceDir:AppHost.TalentBlazorSeedDataDir);
             
             db.DropTable<FileSystemFile>();
             db.DropTable<FileSystemItem>();
