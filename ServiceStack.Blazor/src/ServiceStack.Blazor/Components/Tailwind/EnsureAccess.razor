@@ -1,17 +1,17 @@
 ﻿@inherits AuthBlazorComponentBase
 
-@if (!IsAuthenticated)
-{
-    <SlideOver Title=@Title SubHeading=@SubHeading Done="Done">
-        <Alert HtmlMessage=@HtmlMessage />
+<SlideOver Title=@Title SubHeading=@SubHeading Done="Done">
+    <Alert HtmlMessage=@HtmlMessage />
+    @if (!IsAuthenticated)
+    {
         <div class="md:p-4">
-            <button type="button" @onclick="signIn"
-                    class="@ButtonClasses">
+            <button type="button" @onclick="signIn" class="@ButtonClasses">
                 Sign In
             </button>
         </div>
-    </SlideOver>
-}
+    }
+</SlideOver>
+
 @code {
     public static string ButtonClasses { get; set; } = "flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50";
 }
