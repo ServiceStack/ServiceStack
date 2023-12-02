@@ -1114,18 +1114,17 @@ else
 <TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }
 @inherits AuthBlazorComponentBase
-@if (!IsAuthenticated)
-{
 <SlideOver Title=@Title SubHeading=@SubHeading Done="Done">
 <Alert HtmlMessage=@HtmlMessage />
+@if (!IsAuthenticated)
+{
 <div class="md:p-4">
-<button type="button" @onclick="signIn"
-class="@ButtonClasses">
+<button type="button" @onclick="signIn" class="@ButtonClasses">
 Sign In
 </button>
 </div>
-</SlideOver>
 }
+</SlideOver>
 @code {
 public static string ButtonClasses { get; set; } = "flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50";
 }
@@ -1783,6 +1782,11 @@ else
 <button type=@type @onclick="onclick" class=@ClassNames(Classes, Class) @attributes="IncludeAttributes">
 @ChildContent
 </button>
+}
+@code {
+public static string BaseClass { get; set; } = "inline-flex justify-center rounded-md border border-gray-300 py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2";
+public static string SecondaryClass { get; set; } = "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-black";
+public static string Classes => BaseClass + " " + SecondaryClass;
 }
 @typeparam TValue
 @inherits SelectInputBase<TValue>
