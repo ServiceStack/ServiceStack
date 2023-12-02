@@ -1405,7 +1405,7 @@ namespace ServiceStack
         {
             try
             {
-                if (Container.Adapter is IRelease iocAdapterReleases)
+                if (Container?.Adapter is IRelease iocAdapterReleases)
                 {
                     iocAdapterReleases.Release(instance);
                 }
@@ -2002,6 +2002,7 @@ namespace ServiceStack
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
+            Log.InfoFormat("AppHost is disposing...");
             if (disposing)
             {
                 //clear managed resources here
