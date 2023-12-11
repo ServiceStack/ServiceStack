@@ -133,7 +133,7 @@ namespace ServiceStack.OrmLite
         {
             var uniqueExpr = Dump(includeParams);
             // fastest up to 500 chars https://wintermute79.wordpress.com/2014/10/10/c-sha-1-benchmark/
-            using var sha1 = System.Security.Cryptography.SHA1.Create();
+            using var sha1 = TextConfig.CreateSha();
             var hash = sha1.ComputeHash(Encoding.ASCII.GetBytes(uniqueExpr));
             var hexFormat = hash.ToHex();
             

@@ -16,3 +16,4 @@ cd ..\..\ServiceStack.Stripe\build
 call build.bat
 cd ..\..\ServiceStack.Text\build
 call build.bat
+cd ..\..\build

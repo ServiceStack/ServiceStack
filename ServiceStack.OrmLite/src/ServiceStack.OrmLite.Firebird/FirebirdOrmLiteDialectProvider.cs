@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Linq;
 using FirebirdSql.Data.FirebirdClient;
+using FirebirdSql.Data.Isql;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Firebird.Converters;
@@ -118,6 +119,43 @@ namespace ServiceStack.OrmLite.Firebird
             }
 
             return StringBuilderCache.ReturnAndFree(sql);
+        }
+
+        public override string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string> insertFields = null)
+        {
+            if (objs == null)
+                throw new ArgumentNullException(nameof(objs));
+        
+            var sb = new StringBuilder();
+            sb.AppendLine("set term ^ ;");
+            sb.AppendLine("EXECUTE BLOCK AS BEGIN");
+            foreach (var objWithProperties in objs)
+            {
+                var sql = ToInsertRowSql(objWithProperties, insertFields:insertFields);
+                sb.Append(sql);
+                if (!string.IsNullOrEmpty(sql))
+                    sb.Append(';');
+                sb.AppendLine();
+            }
+            sb.AppendLine("END^");
+            return sb.ToString();
+        }
+
+        public override void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
+        {
+            var firebirdDb = (FbConnection)db.ToDbConnection();
+
+            config ??= new();
+            var batchSize = Math.Min(config.BatchSize, 256); // Max Size
+            foreach (var batch in objs.BatchesOf(batchSize))
+            {
+                var sql = ToInsertRowsSql(batch, insertFields:config.InsertFields);
+                var fbScript = new FbScript(sql);
+                fbScript.Parse();
+                var fbe = new FbBatchExecution(firebirdDb);
+                fbe.AppendSqlStatements(fbScript);
+                fbe.Execute();
+            }
         }
 
         public override string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null)

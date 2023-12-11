@@ -6,7 +6,7 @@
 }
 else
 {
-    <div class=@ClassNames("mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300", @class)>
+    <div class=@ClassNames(Classes, @class)>
         <h1 class="flex">
             <svg class=@ClassNames("self-center inline mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300", ImageClass)
                  role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -16,4 +16,8 @@ else
             <span>@Message</span>
         </h1>
     </div>
+}
+
+@code {
+    public static string Classes = "mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300";
 }

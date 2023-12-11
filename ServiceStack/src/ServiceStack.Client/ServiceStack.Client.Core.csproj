@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Client.Core</PackageId>
     <AssemblyName>ServiceStack.Client</AssemblyName>
     <RootNamespace>ServiceStack.Client</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Client .NET Standard 2.0</Title>
     <PackageDescription>
       JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.
@@ -16,6 +16,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,7 +34,7 @@
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     <!-- Include JsonApiClient in .NET6 builds -->
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
   </ItemGroup>

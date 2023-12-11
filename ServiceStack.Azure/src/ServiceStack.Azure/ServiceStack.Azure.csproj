@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Azure</PackageId>
     <AssemblyName>ServiceStack.Azure</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack integration for Azure Services</Title>
     <PackageDescription>
       ServiceStack integration for Azure Services in Azure and Windows ServiceBus, 
@@ -16,7 +16,10 @@
     <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,17 +32,24 @@
 
   <ItemGroup>
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
-    <PackageReference Include="System.Linq.Async" Version="5.1.0" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.33.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="WindowsAzure.ServiceBus" Version="6.2.2" />
+    <PackageReference Include="WindowsAzure.ServiceBus" Version="7.0.1" />
     <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.3" />
+    <PackageReference Include="System.Linq.Async" Version="5.1.0" />
+    <PackageReference Include="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR  '$(TargetFramework)' == 'net6.0'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Text.Json" Version="7.0.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
     <PackageReference Include="Microsoft.Azure.Management.ServiceBus" Version="5.0.0" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
   
 </Project>

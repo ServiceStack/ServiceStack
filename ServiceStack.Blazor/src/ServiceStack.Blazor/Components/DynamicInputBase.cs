@@ -63,7 +63,7 @@ public class DynamicInputBase : TextInputBase
                 ["required"] = input.Required ?? false,
                 ["min"] = input.Min,
                 ["max"] = input.Max,
-                ["step"] = input.Step ?? 0,
+                ["step"] = input.Step,
                 ["minlength"] = input.MinLength ?? 0,
                 ["maxlength"] = input.MaxLength ?? 0,
             };

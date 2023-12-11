@@ -1,0 +1,33 @@
+﻿@page "/fetchdata"
+@inject HttpClient Http
+
+<h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+    Weather forecast
+</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <Loading />
+}
+else
+{
+    <DataGrid Items=@forecasts class="max-w-screen-md" TableStyle="TableStyle.StripedRows | TableStyle.UppercaseHeadings">
+        <Column Field="(WeatherForecast x) => x.Date" Format="dd/MM/yyyy" />
+        <Column Title="Temp. (C)" Field="(WeatherForecast x) => x.TemperatureC" />
+        <Column Title="Temp. (F)" Field="(WeatherForecast x) => x.TemperatureF" />
+        <Column Field="(WeatherForecast x) => x.Summary" />
+    </DataGrid>
+}
+
+<ExampleCode Title="Source Code" Path="/FetchData.razor" />
+
+@code {
+    List<WeatherForecast> forecasts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<List<WeatherForecast>>("data/weather.json") ?? forecasts;
+    }
+}

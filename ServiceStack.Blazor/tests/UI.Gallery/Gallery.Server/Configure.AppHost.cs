@@ -22,11 +22,15 @@ public class AppHost : AppHostBase, IHostingStartup
             allowOriginWhitelist: new[]{
             "http://localhost:5000",
             "https://localhost:5001",
+            "https://localhost:5002",
             "https://localhost:7142",
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:8080",
             "https://docs.servicestack.net",
+            "https://jamstacks.net",
+            "https://razor-ssg.web-templates.io",
+            "https://razor-press.web-templates.io",
             "https://" + Environment.GetEnvironmentVariable("DEPLOY_CDN")
         }, allowCredentials: true));
 

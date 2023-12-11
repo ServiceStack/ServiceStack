@@ -1,0 +1,6 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<div class=@CssUtils.ClassNames("example", NavigationManager.QueryString("class"))>
+    @Body
+</div>

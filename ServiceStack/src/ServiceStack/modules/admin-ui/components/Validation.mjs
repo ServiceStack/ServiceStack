@@ -217,7 +217,7 @@ const EditValidationRule = {
             return v.name + (paramNames.length > 0 ? `(${paramNames.join(',')})` : '')
         }
         async function submitDelete() {
-            api.value = await client.apiVoid(new ModifyValidationRules({ deleteRuleIds: [props.rule.id] }))
+            api.value = await client.apiVoid(new ModifyValidationRules({ deleteRuleIds: [props.rule.id] }), { jsconfig: 'eccn' })
             if (api.value.succeeded) {
                 done(props.rule)
             }
@@ -226,7 +226,7 @@ const EditValidationRule = {
             request.value.type = props.type.name 
             api.value = await client.apiVoid(new ModifyValidationRules({
                 saveRules: [request.value]
-            }))
+            }), { jsconfig: 'eccn' })
             if (api.value.succeeded) {
                 done(request.value)
             }
@@ -442,7 +442,7 @@ export const Validation = {
             showTypeForm.value = showPropertyForm.value = false
             editTypeRule.value = editPropertyRule.value = null
             if (!operation.value) return
-            api.value = await client.api(new GetValidationRules({type: operation.value.request.name})) 
+            api.value = await client.api(new GetValidationRules({type: operation.value.request.name}), { jsconfig: 'eccn' }) 
         }
         
         async function update() {

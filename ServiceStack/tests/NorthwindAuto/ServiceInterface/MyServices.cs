@@ -12,7 +12,7 @@ public class MyServices : Service
     public object Get(Greet request) =>
         new HelloResponse { Result = "Welcome!" };
 
-    public object Get(Hello request) =>
+    public object Any(Hello request) =>
         new HelloResponse { Result = $"Hello, {AssertName(request.Name)}!" };
 
     public object Any(HelloVeryLongOperationNameVersions request) =>
@@ -25,4 +25,7 @@ public class MyServices : Service
         new HelloResponse { Result = $"Hello, {AssertName(request.Name)}!" };
 
     public object Any(HelloBookingList request) => new List<Booking>();
+    
+    public object Any(HelloString request) => request.Name;
+    public object Any(ReturnString request) => request.Data;
 }

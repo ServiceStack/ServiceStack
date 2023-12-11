@@ -4,41 +4,40 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.IO
+namespace ServiceStack.IO;
+
+public interface IVirtualFiles : IVirtualPathProvider
 {
-    public interface IVirtualFiles : IVirtualPathProvider
-    {
-        Task WriteFileAsync(string filePath, object contents, CancellationToken token=default);
+    Task WriteFileAsync(string filePath, object contents, CancellationToken token=default);
 
-        void WriteFile(string filePath, string textContents);
+    void WriteFile(string filePath, string textContents);
 
-        void WriteFile(string filePath, Stream stream);
+    void WriteFile(string filePath, Stream stream);
 
-        /// <summary>
-        /// Contents can be either:
-        /// string, ReadOnlyMemory&lt;char&gt;, byte[], `ReadOnlyMemory&lt;byte&gt;, Stream or IVirtualFile 
-        /// </summary>
-        void WriteFile(string filePath, object contents);
+    /// <summary>
+    /// Contents can be either:
+    /// string, ReadOnlyMemory&lt;char&gt;, byte[], `ReadOnlyMemory&lt;byte&gt;, Stream or IVirtualFile 
+    /// </summary>
+    void WriteFile(string filePath, object contents);
 
-        void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null);
+    void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null);
 
-        void WriteFiles(Dictionary<string, string> textFiles);
-        void WriteFiles(Dictionary<string, object> files);
+    void WriteFiles(Dictionary<string, string> textFiles);
+    void WriteFiles(Dictionary<string, object> files);
 
-        void AppendFile(string filePath, string textContents);
+    void AppendFile(string filePath, string textContents);
 
-        void AppendFile(string filePath, Stream stream);
+    void AppendFile(string filePath, Stream stream);
 
-        /// <summary>
-        /// Contents can be either:
-        /// string, ReadOnlyMemory&lt;char&gt;, byte[], `ReadOnlyMemory&lt;byte&gt;, Stream or IVirtualFile 
-        /// </summary>
-        void AppendFile(string filePath, object contents);
+    /// <summary>
+    /// Contents can be either:
+    /// string, ReadOnlyMemory&lt;char&gt;, byte[], `ReadOnlyMemory&lt;byte&gt;, Stream or IVirtualFile 
+    /// </summary>
+    void AppendFile(string filePath, object contents);
 
-        void DeleteFile(string filePath);
+    void DeleteFile(string filePath);
 
-        void DeleteFiles(IEnumerable<string> filePaths);
+    void DeleteFiles(IEnumerable<string> filePaths);
 
-        void DeleteFolder(string dirPath);
-    }
+    void DeleteFolder(string dirPath);
 }

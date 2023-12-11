@@ -153,6 +153,8 @@ namespace ServiceStack.OrmLite.Tests
                     return Init(SqlServerDb.DefaultConnection, SqlServer2019Dialect.Provider);
                 case Dialect.MySql:
                     return Init(MySqlDb.DefaultConnection, MySqlDialect.Provider);
+                case Dialect.MySqlConnector:
+                    return Init(MySqlDb.DefaultConnection, MySqlConnectorDialect.Provider);
                 case Dialect.PostgreSql9:
                 case Dialect.PostgreSql10:
                 case Dialect.PostgreSql11:

@@ -54,7 +54,10 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
             });
 
             var dirPath = GetDirPath(filePath);
-            return new S3VirtualFile(this, new S3VirtualDirectory(this, dirPath, GetParentDirectory(dirPath))).Init(response);
+            var dir = dirPath == null
+                ? RootDirectory
+                : GetParentDirectory(dirPath);
+            return new S3VirtualFile(this, dir).Init(response);
         }
         catch (AmazonS3Exception ex)
         {
@@ -69,11 +72,12 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
     {
         if (string.IsNullOrEmpty(dirPath))
             return null;
-
-        var parentDir = GetDirPath(dirPath.TrimEnd(DirSep));
-        return parentDir != null
-            ? new S3VirtualDirectory(this, dirPath, GetParentDirectory(parentDir))
+        
+        var parentDirPath = GetDirPath(dirPath.TrimEnd(DirSep));
+        var parentDir = parentDirPath != null
+            ? GetParentDirectory(parentDirPath)
             : (S3VirtualDirectory)RootDirectory;
+        return new S3VirtualDirectory(this, dirPath, parentDir);
     }
 
     public override IVirtualDirectory GetDirectory(string virtualPath)
@@ -287,15 +291,15 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
 
     public virtual IEnumerable<S3VirtualDirectory> GetImmediateDirectories(string fromDirPath)
     {
-        var dirPaths = EnumerateFiles(fromDirPath)
+        var files = EnumerateFiles(fromDirPath);
+        var dirPaths = files
             .Map(x => x.DirPath)
             .Distinct()
             .Map(x => GetImmediateSubDirPath(fromDirPath, x))
             .Where(x => x != null)
             .Distinct();
 
-        var parentDir = GetParentDirectory(fromDirPath);
-        return dirPaths.Map(x => new S3VirtualDirectory(this, x, parentDir));
+        return dirPaths.Select(x => new S3VirtualDirectory(this, x, GetParentDirectory(x)));
     }
 
 #if NET6_0_OR_GREATER
@@ -345,9 +349,9 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
 
         if (fromDirPath == null)
         {
-            return subDirPath.CountOccurrencesOf(DirSep) == 0
+            return subDirPath.CountOccurrencesOf(DirSep) == 0 
                 ? subDirPath
-                : null;
+                : subDirPath.LeftPart(DirSep);
         }
 
         if (!subDirPath.StartsWith(fromDirPath))

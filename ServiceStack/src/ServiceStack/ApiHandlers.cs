@@ -24,7 +24,7 @@ public static class ApiHandlers
         Generic(apiPath, MimeTypes.Xml, RequestAttributes.Reply | RequestAttributes.Xml, Feature.Xml);
     
     public static Func<IHttpRequest, HttpAsyncTaskHandler> Generic(string apiPath, 
-        string contentType, RequestAttributes requestAttributes, Feature feature)
+        string contentType, RequestAttributes requestAttributes, Feature features)
     {
         if (string.IsNullOrEmpty(apiPath))
             throw new ArgumentNullException(nameof(apiPath));
@@ -37,7 +37,13 @@ public static class ApiHandlers
         
         return req => {
             // Don't handle OPTIONS CORS requests
-            if (req.HttpMethod == HttpMethods.Options) return null;
+            if (req.HttpMethod == HttpMethods.Options)
+            {
+                var emitHandler = HostContext.GetPlugin<CorsFeature>()?.EmitGlobalHeadersHandler;
+                if (emitHandler != null)
+                    return emitHandler;
+                return null;
+            }
             
             var pathInfo = req.PathInfo;
             if (pathInfo == baseApiPath || pathInfo.StartsWith(useApiPath))
@@ -61,7 +67,7 @@ public static class ApiHandlers
                 
                 var useContentType = contentType;
                 var useRequestAttrs = requestAttributes;
-                var useFeature = feature;
+                var useFeature = features;
                 if (apiName.IndexOf('.') >= 0)
                 {
                     var ext = apiName.RightPart('.');

@@ -26,7 +26,7 @@
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
@@ -43,11 +43,10 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
-    <PackageReference Include="MongoDB.Bson" Version="2.18.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.18.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.18.0" />
+    <PackageReference Include="MongoDB.Bson" Version="2.22.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.22.0" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.22.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
@@ -59,6 +58,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <PackageReference Include="System.Linq.Async" Version="5.1.0" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
@@ -66,6 +66,6 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 </Project>

@@ -178,6 +178,7 @@ namespace ServiceStack
                 new PreProcessRequest(),
                 new HtmlFormat(),
                 new CsvFormat(),
+                new JsonlFormat(),
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
                 new NativeTypesFeature(),
@@ -1283,6 +1284,18 @@ namespace ServiceStack
             {
                 TaskScheduler.UnobservedTaskException += this.HandleUnobservedTaskException;
             }
+
+            if (config.IgnorePathInfoPrefixes.Count > 0)
+            {
+                RawHttpHandlers.Add(httpReq => {
+                    foreach (var path in config.IgnorePathInfoPrefixes)
+                    {
+                        if (httpReq.PathInfo.StartsWith(path))
+                            return HttpHandlerFactory.NotFoundHttpHandler;
+                    }
+                    return null;
+                });
+            }
         }
 
         private void HandleUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
@@ -1392,7 +1405,7 @@ namespace ServiceStack
         {
             try
             {
-                if (Container.Adapter is IRelease iocAdapterReleases)
+                if (Container?.Adapter is IRelease iocAdapterReleases)
                 {
                     iocAdapterReleases.Release(instance);
                 }
@@ -1989,6 +2002,7 @@ namespace ServiceStack
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
+            Log.InfoFormat("AppHost is disposing...");
             if (disposing)
             {
                 //clear managed resources here

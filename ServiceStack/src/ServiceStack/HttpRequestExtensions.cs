@@ -5,10 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using System.Web;
 using ServiceStack.Data;
-using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -1090,35 +1088,28 @@ namespace ServiceStack
             httpReq.Items.Remove(Keywords.AutoBatchIndex);
         }
 
+        public static T GetOriginalRequest<T>(this IRequest req)
+        {
+            if (req.OriginalRequest is T t)
+                return t;
+            if (req.OriginalRequest is IRequest hasRequest)
+                return hasRequest.GetOriginalRequest<T>();
+            return default;
+        }
+
         public static ClaimsPrincipal GetClaimsPrincipal(this IRequest req)
         {
 #if NETCORE
-            if (req.OriginalRequest is Microsoft.AspNetCore.Http.HttpRequest httpReq)
-                return httpReq.HttpContext.User;
+            return req.GetOriginalRequest<Microsoft.AspNetCore.Http.HttpRequest>()?.HttpContext.User;
 #else
-            if (req.OriginalRequest is HttpRequestBase httpReq
-                && httpReq.RequestContext.HttpContext.User is ClaimsPrincipal principal)
-                return principal;
+            return req.GetOriginalRequest<HttpRequestBase>()?.RequestContext.HttpContext.User is ClaimsPrincipal principal
+                ? principal
+                : null;
 #endif
-            return null;
         }
 
         public static IEnumerable<Claim> GetClaims(this IRequest req) => 
             req.GetClaimsPrincipal()?.Claims ?? TypeConstants<Claim>.EmptyArray;
-
-        public static bool HasRole(this IEnumerable<Claim> claims, string role) => claims.HasClaim("role", role);
-
-        public static bool HasScope(this IEnumerable<Claim> claims, string scope) => claims.HasClaim("scope", scope);
-
-        public static bool HasClaim(this IEnumerable<Claim> claims, string type, string value)
-        {
-            foreach (var claim in claims)
-            {
-                if (claim.Type == type && claim.Value == value)
-                    return true;
-            }
-            return false;
-        }
 
         public static bool CanReadRequestBody(this IRequest req)
         {

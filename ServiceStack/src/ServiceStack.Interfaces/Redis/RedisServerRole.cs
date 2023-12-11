@@ -1,10 +1,9 @@
-﻿namespace ServiceStack.Redis
+﻿namespace ServiceStack.Redis;
+
+public enum RedisServerRole
 {
-    public enum RedisServerRole
-    {
-        Unknown,
-        Master,
-        Slave,
-        Sentinel,
-    }
+    Unknown,
+    Master,
+    Slave,
+    Sentinel,
 }

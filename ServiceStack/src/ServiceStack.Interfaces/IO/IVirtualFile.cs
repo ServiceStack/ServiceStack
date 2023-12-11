@@ -2,36 +2,38 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.IO
+namespace ServiceStack.IO;
+
+public interface IVirtualFile : IVirtualNode
 {
-    public interface IVirtualFile : IVirtualNode
-    {
-        IVirtualPathProvider VirtualPathProvider { get; }
+    IVirtualPathProvider VirtualPathProvider { get; }
 
-        /// <summary>
-        /// The file extension without '.' prefix
-        /// </summary>
-        string Extension { get; }
+    /// <summary>
+    /// The file extension without '.' prefix
+    /// </summary>
+    string Extension { get; }
 
-        string GetFileHash();
+    string GetFileHash();
 
-        Stream OpenRead();
-        StreamReader OpenText();
-        string ReadAllText();
+    Stream OpenRead();
+    StreamReader OpenText();
+    string ReadAllText();
 
-        /// <summary>
-        /// Returns ReadOnlyMemory&lt;byte&gt; for binary files or
-        /// ReadOnlyMemory&lt;char&gt; for text files   
-        /// </summary>
-        object GetContents();
+    Task<string> ReadAllTextAsync(CancellationToken token = default);
+    Task<byte[]> ReadAllBytesAsync(CancellationToken token = default);
 
-        long Length { get; }
+    /// <summary>
+    /// Returns ReadOnlyMemory&lt;byte&gt; for binary files or
+    /// ReadOnlyMemory&lt;char&gt; for text files   
+    /// </summary>
+    object GetContents();
 
-        /// <summary>
-        /// Refresh file stats for this node if supported
-        /// </summary>
-        void Refresh();
+    long Length { get; }
 
-        Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default);
-    }
+    /// <summary>
+    /// Refresh file stats for this node if supported
+    /// </summary>
+    void Refresh();
+
+    Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default);
 }

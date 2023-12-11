@@ -168,6 +168,14 @@ namespace ServiceStack.OrmLite
         }
 
         /// <summary>
+        /// Uses the most optimal approach to bulk insert multiple rows for each RDBMS provider 
+        /// </summary>
+        public static void BulkInsert<T>(this IDbConnection dbConn, IEnumerable<T> objs, BulkInsertConfig config = null)
+        {
+            dbConn.Dialect().BulkInsert(dbConn, objs, config);
+        }
+
+        /// <summary>
         /// Updates 1 POCO. All fields are updated except for the PrimaryKey which is used as the identity selector. E.g:
         /// <para>db.Update(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
         /// </summary>

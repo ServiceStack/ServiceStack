@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Razor</PackageId>
     <AssemblyName>ServiceStack.Razor</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472</TargetFrameworks>
     <Title>ServiceStack.Razor - ServiceStack's HTML story including MVC Razor</Title>
     <PackageDescription>
       ServiceStack Razor Documentation: https://razor.netcore.io
@@ -26,7 +26,7 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.7" />
+    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.3.0" />
     <Reference Include="System" />
     <Reference Include="System.Web" />
     <Reference Include="System.Configuration" />

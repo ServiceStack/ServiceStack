@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
 
-#if !NET6_0
+#if !NET6_0_OR_GREATER
 using ServiceStack.Extensions;
 #endif
 

@@ -3,7 +3,7 @@
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
     <PropertyGroup>
-        <TargetFrameworks>net472;net6.0</TargetFrameworks>
+        <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
         <PackageId>ServiceStack.OrmLite.T4</PackageId>
         <Title>OrmLite.T4 - T4 schema-generation templates for OrmLite</Title>
         <PackageDescription>

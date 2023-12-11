@@ -1,0 +1,11 @@
+﻿@page "/admin/bookings"
+@attribute [Authorize(Roles = "Admin")]
+@rendermode RenderMode.InteractiveServer
+
+<Breadcrumbs class="mb-8" HomeHref="/admin">
+    <Breadcrumb>
+        Bookings
+    </Breadcrumb>
+</Breadcrumbs>
+
+<AutoQueryGrid Model="Booking" Apis="Apis.AutoQuery<QueryBookings,CreateBooking,UpdateBooking,DeleteBooking>()" />

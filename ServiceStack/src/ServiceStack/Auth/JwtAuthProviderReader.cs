@@ -87,6 +87,11 @@ namespace ServiceStack.Auth
         public Action<IAuthSession, JsonObject, IRequest> PopulateSessionFilter { get; set; }
 
         /// <summary>
+        /// Run Async custom filter after session is restored from a JWT Token
+        /// </summary>
+        public Func<IAuthSession, JsonObject, IRequest, Task> PopulateSessionFilterAsync { get; set; }
+
+        /// <summary>
         /// Whether to encrypt JWE Payload (default false). 
         /// Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Content Encryption
         /// </summary>
@@ -346,6 +351,15 @@ namespace ServiceStack.Auth
 
         public virtual void Init(IAppSettings appSettings = null)
         {
+            Label = "JWT";
+            FormLayout = new() {
+                new InputInfo(nameof(IHasBearerToken.BearerToken), Html.Input.Types.Textarea) {
+                    Label = "JWT",
+                    Placeholder = "JWT Bearer Token",
+                    Required = true,
+                },
+            };
+            
             RequireSecureConnection = true;
             EncryptPayload = false;
             HashAlgorithm = "HS256";
@@ -458,7 +472,7 @@ namespace ServiceStack.Auth
             return session.FromToken && session.IsAuthenticated;
         }
 
-        public override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             // only allow verification of token
             if (!string.IsNullOrEmpty(request.Password) && string.IsNullOrEmpty(request.UserName))
@@ -480,7 +494,7 @@ namespace ServiceStack.Auth
                     if (jwtPayload == null) //not verified
                         throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     
-                    return (toAuthResponse(CreateSessionFromPayload(req, jwtPayload)) as object).InTask();
+                    return (toAuthResponse(await CreateSessionFromPayloadAsync(req, jwtPayload)) as object).InTask();
                 }
                 if (parts.Length == 5) //Encrypted JWE Token
                 {
@@ -494,7 +508,7 @@ namespace ServiceStack.Auth
                             throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     }
 
-                    return (toAuthResponse(CreateSessionFromPayload(req, jwtPayload)) as object).InTask();
+                    return (toAuthResponse(await CreateSessionFromPayloadAsync(req, jwtPayload)) as object).InTask();
                 }
             }
    
@@ -514,7 +528,7 @@ namespace ServiceStack.Auth
                 var bearerToken = req.GetJwtToken();
                 if (bearerToken != null)
                 {
-                    if (AuthenticateBearerToken(req, res, bearerToken))
+                    if (await AuthenticateBearerTokenAsync(req, res, bearerToken))
                         return;
                 }
             }
@@ -532,7 +546,7 @@ namespace ServiceStack.Auth
                 
             if (refreshToken != null)
             {
-                if (await AuthenticateRefreshToken(req, res, refreshToken).ConfigAwait())
+                if (await AuthenticateRefreshTokenAsync(req, res, refreshToken).ConfigAwait())
                     return;
             }
 
@@ -540,7 +554,7 @@ namespace ServiceStack.Auth
                 throw origException;
         }
 
-        protected virtual bool AuthenticateBearerToken(IRequest req, IResponse res, string bearerToken)
+        protected virtual async Task<bool> AuthenticateBearerTokenAsync(IRequest req, IResponse res, string bearerToken)
         {
             if (bearerToken == null)
                 throw new ArgumentNullException(nameof(bearerToken));
@@ -563,7 +577,7 @@ namespace ServiceStack.Auth
                             throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     }
 
-                    var session = CreateSessionFromPayload(req, jwtPayload);
+                    var session = await CreateSessionFromPayloadAsync(req, jwtPayload);
                     req.Items[Keywords.Session] = session;
                     return true;
                 }
@@ -583,7 +597,7 @@ namespace ServiceStack.Auth
                             throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     }
 
-                    var session = CreateSessionFromPayload(req, jwtPayload);
+                    var session = await CreateSessionFromPayloadAsync(req, jwtPayload);
                     req.Items[Keywords.Session] = session;
                     return true;
                 }
@@ -597,7 +611,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        protected virtual async Task<bool> AuthenticateRefreshToken(IRequest req, IResponse res, string refreshToken)
+        protected virtual async Task<bool> AuthenticateRefreshTokenAsync(IRequest req, IResponse res, string refreshToken)
         {
             if (refreshToken == null)
                 throw new ArgumentNullException(nameof(refreshToken));
@@ -607,7 +621,7 @@ namespace ServiceStack.Auth
                 var accessToken = await CreateAccessTokenFromRefreshToken(refreshToken, req).ConfigAwait();
                 if (accessToken != null)
                 {
-                    if (AuthenticateBearerToken(req, res, accessToken))
+                    if (await AuthenticateBearerTokenAsync(req, res, accessToken))
                     {
                         (res as IHttpResponse)?.SetCookie(new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
                             HttpOnly = true,
@@ -826,7 +840,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public virtual IAuthSession ConvertJwtToSession(IRequest req, string jwt)
+        public virtual async Task<IAuthSession> ConvertJwtToSessionAsync(IRequest req, string jwt)
         {
             if (jwt == null)
                 throw new ArgumentNullException(nameof(jwt));
@@ -841,11 +855,11 @@ namespace ServiceStack.Auth
                     return null;
             }
 
-            var session = CreateSessionFromPayload(req, jwtPayload);
+            var session = await CreateSessionFromPayloadAsync(req, jwtPayload);
             return session;
         }
 
-        public virtual IAuthSession CreateSessionFromPayload(IRequest req, JsonObject jwtPayload)
+        public virtual async Task<IAuthSession> CreateSessionFromPayloadAsync(IRequest req, JsonObject jwtPayload)
         {
             AssertJwtPayloadIsValid(jwtPayload);
 
@@ -857,17 +871,19 @@ namespace ServiceStack.Auth
             session.PopulateFromMap(jwtPayload);
 
             PopulateSessionFilter?.Invoke(session, jwtPayload, req);
+            if (PopulateSessionFilterAsync != null)
+                await PopulateSessionFilterAsync(session, jwtPayload, req);
 
             HostContext.AppHost.OnSessionFilter(req, session, sessionId);
             return session;
         }
 
-        public static IAuthSession CreateSessionFromJwt(IRequest req)
+        public static async Task<IAuthSession> CreateSessionFromJwtAsync(IRequest req)
         {
             var jwtProvider = AuthenticateService.GetRequiredJwtAuthProvider();
 
             var jwtToken = req.GetJwtToken();
-            var session = jwtProvider.ConvertJwtToSession(req, jwtToken);
+            var session = await jwtProvider.ConvertJwtToSessionAsync(req, jwtToken);
 
             return session;
         }

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Text</PackageId>
     <AssemblyName>ServiceStack.Text</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>.NET's fastest JSON Serializer by ServiceStack</Title>
     <PackageDescription>
       .NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.
@@ -21,6 +21,9 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -31,8 +34,8 @@
   </ItemGroup>  
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Runtime" Version="4.3.1" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -109,6 +110,47 @@ public class RazorSsg
         return ctx;
     }
     
+    public static async Task PrerenderRedirectsAsync(IVirtualFile? redirectFile, string distDir)
+    {
+        if (redirectFile == null)
+            return;
+
+        var log = HostContext.Resolve<ILogger<RazorSsg>>();
+        await using var sr = redirectFile.OpenRead();
+        var redirectJson = await sr.ReadToEndAsync();
+        if (!string.IsNullOrEmpty(redirectJson) && JSON.parse(redirectJson) is Dictionary<string, object> redirects)
+        {
+            log.LogInformation("Found {RedirectsCount} redirects...", redirects.Count);
+            foreach (var entry in redirects)
+            {
+                var redirectTo = entry.Value as string;
+                if (string.IsNullOrEmpty(entry.Key))
+                {
+                    log.LogWarning("Empty redirects path for value '{RedirectToo}'", redirectTo);
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(redirectTo))
+                {
+                    log.LogWarning("Invalid redirects path for key '{EntryKey}'", entry.Key);
+                    continue;
+                }
+
+                var html = "<!DOCTYPE html><html>"
+                           + $"<head><meta http-equiv=\"refresh\" content=\"0; url=.{redirectTo}\" /></head>"
+                           + $"<body><p>Redirecting to <a href=\"{redirectTo}\">{redirectTo}</a></p></body>"
+                           + "</html>";
+                var toFile = entry.Key.EndsWith('/')
+                    ? entry.Key + "index.html"
+                    : entry.Key + ".html";
+                var toPath = distDir.CombineWith(toFile);
+                toPath.LastLeftPart('/').AssertDir();
+                log.LogInformation("Writing '{RedirectTo}' redirect to {File}...", redirectTo, toFile);
+                await File.WriteAllTextAsync(toPath, html);
+            }
+        }
+    }
+    
     public static async Task PrerenderAsync(ServiceStackHost appHost, IEnumerable<IVirtualFile> razorFiles, string distDir)
     {
         var log = appHost.Resolve<ILogger<RazorSsg>>();
@@ -156,17 +198,24 @@ public class RazorSsg
             var modelType = renderStaticDef.GetGenericArguments()[0];
             var method = typeof(RazorSsg).GetMethod(nameof(RenderStaticRazorPageAsync));
             var genericMi = method.MakeGenericMethod(modelType);
-            var task = (Task) genericMi.Invoke(null, new object[] { appHost, razorFile, distDir });
+            var task = (Task) genericMi.Invoke(null, new object[] { appHost, razorFile, distDir })!;
             await task;
         }
     }
+
+    private static readonly Regex RouteConstraintsRegex = new(":[^}]+", RegexOptions.Multiline);
 
     public static string ResolvePageRoute(string pageRoute, object pageModel)
     {
         var to = pageRoute;
         if (pageRoute.IndexOf('{') >= 0)
         {
-            var jsExpr = '`' + pageRoute.Replace("{", "${") + '`';
+            var jsExpr = pageRoute.Replace("*", "").Replace("?", "");
+            if (jsExpr.IndexOf(':') >= 0)
+            {
+                jsExpr = RouteConstraintsRegex.Replace(jsExpr,"");
+            }
+            jsExpr = '`' + jsExpr.Replace("{", "${") + '`';
             var scope = JS.CreateScope(new Dictionary<string, object>(pageModel.ToObjectDictionary(), StringComparer.OrdinalIgnoreCase));
             var jsResult = JS.eval(jsExpr, scope);
             to = jsResult.ToString();

@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Data;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite
@@ -21,7 +22,12 @@ namespace ServiceStack.OrmLite
 
         public IOrmLiteDialectProvider DialectProvider { get; set; }
         public string LastCommandText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wait time before terminating the attempt to execute a command and generating an error(in seconds).
+        /// </summary>
         public int? CommandTimeout { get; set; }
+
         public Guid ConnectionId { get; set; }
 
         public OrmLiteConnection(OrmLiteConnectionFactory factory)
@@ -37,7 +43,13 @@ namespace ServiceStack.OrmLite
             Factory.OnDispose?.Invoke(this);
             if (!Factory.AutoDisposeConnection) return;
 
-            DbConnection.Dispose();
+            if (dbConnection == null)
+            {
+                LogManager.GetLogger(GetType()).WarnFormat("No dbConnection to Dispose()");
+                return;
+            }
+
+            dbConnection?.Dispose();
             dbConnection = null;
         }
 
@@ -59,12 +71,18 @@ namespace ServiceStack.OrmLite
 
         public void Close()
         {
-            var id = Diagnostics.OrmLite.WriteConnectionCloseBefore(DbConnection);
-            var connectionId = DbConnection.GetConnectionId();
+            if (dbConnection == null)
+            {
+                LogManager.GetLogger(GetType()).WarnFormat("No dbConnection to Close()");
+                return;
+            }
+
+            var id = Diagnostics.OrmLite.WriteConnectionCloseBefore(dbConnection);
+            var connectionId = dbConnection.GetConnectionId();
             Exception e = null;
             try
             {
-                DbConnection.Close();
+                dbConnection.Close();
             }
             catch (Exception ex)
             {
@@ -74,9 +92,9 @@ namespace ServiceStack.OrmLite
             finally
             {
                 if (e != null)
-                    Diagnostics.OrmLite.WriteConnectionCloseError(id, connectionId, DbConnection, e);
+                    Diagnostics.OrmLite.WriteConnectionCloseError(id, connectionId, dbConnection, e);
                 else
-                    Diagnostics.OrmLite.WriteConnectionCloseAfter(id, connectionId, DbConnection);
+                    Diagnostics.OrmLite.WriteConnectionCloseAfter(id, connectionId, dbConnection);
             }
         }
 
@@ -97,21 +115,22 @@ namespace ServiceStack.OrmLite
 
         public void Open()
         {
-            if (DbConnection.State == ConnectionState.Broken)
-                DbConnection.Close();
+            var dbConn = DbConnection;
+            if (dbConn.State == ConnectionState.Broken)
+                dbConn.Close();
 
-            if (DbConnection.State == ConnectionState.Closed)
+            if (dbConn.State == ConnectionState.Closed)
             {
-                var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(DbConnection);
+                var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(dbConn);
                 Exception e = null;
                 try
                 {
-                    DbConnection.Open();
+                    dbConn.Open();
                     //so the internal connection is wrapped for example by miniprofiler
                     if (Factory.ConnectionFilter != null)
-                        dbConnection = Factory.ConnectionFilter(dbConnection);
+                        dbConn = Factory.ConnectionFilter(dbConn);
 
-                    DialectProvider.InitConnection(dbConnection);
+                    DialectProvider.InitConnection(dbConn);
                 }
                 catch (Exception ex)
                 {
@@ -121,30 +140,31 @@ namespace ServiceStack.OrmLite
                 finally
                 {
                     if (e != null)
-                        Diagnostics.OrmLite.WriteConnectionOpenError(id, DbConnection, e);
+                        Diagnostics.OrmLite.WriteConnectionOpenError(id, dbConn, e);
                     else
-                        Diagnostics.OrmLite.WriteConnectionOpenAfter(id, DbConnection);
+                        Diagnostics.OrmLite.WriteConnectionOpenAfter(id, dbConn);
                 }
             }
         }
 
         public async Task OpenAsync(CancellationToken token = default)
         {
-            if (DbConnection.State == ConnectionState.Broken)
-                DbConnection.Close();
+            var dbConn = DbConnection;
+            if (dbConn.State == ConnectionState.Broken)
+                dbConn.Close();
 
-            if (DbConnection.State == ConnectionState.Closed)
+            if (dbConn.State == ConnectionState.Closed)
             {
-                var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(DbConnection);
+                var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(dbConn);
                 Exception e = null;
                 try
                 {
-                    await DialectProvider.OpenAsync(DbConnection, token).ConfigAwait();
+                    await DialectProvider.OpenAsync(dbConn, token).ConfigAwait();
                     //so the internal connection is wrapped for example by miniprofiler
                     if (Factory.ConnectionFilter != null)
-                        dbConnection = Factory.ConnectionFilter(dbConnection);
+                        dbConn = Factory.ConnectionFilter(dbConn);
 
-                    DialectProvider.InitConnection(dbConnection);
+                    DialectProvider.InitConnection(dbConn);
                 }
                 catch (Exception ex)
                 {
@@ -154,14 +174,15 @@ namespace ServiceStack.OrmLite
                 finally
                 {
                     if (e != null)
-                        Diagnostics.OrmLite.WriteConnectionOpenError(id, DbConnection, e);
+                        Diagnostics.OrmLite.WriteConnectionOpenError(id, dbConn, e);
                     else
-                        Diagnostics.OrmLite.WriteConnectionOpenAfter(id, DbConnection);
+                        Diagnostics.OrmLite.WriteConnectionOpenAfter(id, dbConn);
                 }
             }
         }
 
         private string connectionString;
+
         public string ConnectionString
         {
             get => connectionString ?? Factory.ConnectionString;
@@ -189,10 +210,10 @@ namespace ServiceStack.OrmLite
 
     public static class OrmLiteConnectionUtils
     {
-        public static bool InTransaction(this IDbConnection db) => 
-            db is IHasDbTransaction { DbTransaction: {} };
+        public static bool InTransaction(this IDbConnection db) =>
+            db is IHasDbTransaction { DbTransaction: { } };
 
-        public static IDbTransaction GetTransaction(this IDbConnection db) => 
+        public static IDbTransaction GetTransaction(this IDbConnection db) =>
             db is IHasDbTransaction setDb ? setDb.DbTransaction : null;
     }
 }

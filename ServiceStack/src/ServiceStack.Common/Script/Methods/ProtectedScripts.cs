@@ -1541,9 +1541,9 @@ public class ProtectedScripts : ScriptMethods
         return bytes == null || bytes.Length == 0 ? null : _.ComputeHash(bytes).ToHex();
     }
     public string sha1(object target) => target is string s
-        ? HexHash(SHA1.Create(), s)
+        ? HexHash(TextConfig.CreateSha(), s)
         : target is byte[] b
-            ? HexHash(SHA1.Create(), b)
+            ? HexHash(TextConfig.CreateSha(), b)
             : throw new NotSupportedException(target?.GetType().Name);
     public string sha256(object target) => target is string s
         ? HexHash(SHA256.Create(), s)

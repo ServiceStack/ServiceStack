@@ -3,7 +3,7 @@
     <PropertyGroup>
         <PackageId>ServiceStack.GrpcClient</PackageId>
         <AssemblyName>ServiceStack.GrpcClient</AssemblyName>
-        <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;net6.0;net8.0</TargetFrameworks>
         <RootNamespace>ServiceStack</RootNamespace>
         <LangVersion>default</LangVersion>
         <Title>ServiceStack.GrpcClient</Title>
@@ -16,7 +16,7 @@
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
 
-        <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.59.0" />
         <PackageReference Include="Grpc.Core" Version="2.46.6" />
         <PackageReference Include="protobuf-net.Grpc" Version="1.1.1" />
         <PackageReference Include="protobuf-net" Version="3.2.26" />

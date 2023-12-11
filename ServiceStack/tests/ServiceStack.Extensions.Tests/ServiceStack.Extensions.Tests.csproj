@@ -13,7 +13,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
-        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
@@ -30,8 +30,8 @@
         <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
         <PackageReference Include="NUnit" Version="3.*" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.53.0" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.59.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.59.0" />
         <PackageReference Include="Grpc.Core" Version="2.46.6" />
         <PackageReference Include="Google.Protobuf" Version="3.21.12" />
         <PackageReference Include="System.ServiceModel.Primitives" Version="4.10.0" />

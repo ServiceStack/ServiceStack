@@ -3,7 +3,7 @@ using System.Data;
 using System.Linq;
 using NUnit.Framework;
 
-#if NET6_0
+#if NET6_0_OR_GREATER
 namespace ServiceStack.OrmLite.Tests
 {
 

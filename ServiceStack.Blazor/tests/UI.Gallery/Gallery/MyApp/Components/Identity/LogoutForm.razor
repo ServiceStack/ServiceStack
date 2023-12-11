@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using MyApp.Data
+@using MyApp.Identity
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<form @onsubmit="OnSubmitAsync" id="@id" @formname="@FormName" method="post" @attributes="AdditionalAttributes">
+    <AntiforgeryToken />
+    <input type="hidden" name="ReturnUrl" value="@NavigationManager.Uri" />
+</form>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+    [Parameter]
+    public string? id { get; set; }
+
+    [SupplyParameterFromForm]
+    string? ReturnUrl { get; set; }
+
+    string FormName => id ?? "logout";
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private async Task OnSubmitAsync()
+    {
+        var user = HttpContext.User;
+
+        if (SignInManager.IsSignedIn(user))
+        {
+            await SignInManager.SignOutAsync();
+            RedirectManager.RedirectTo(ReturnUrl ?? "/");
+        }
+    }
+}

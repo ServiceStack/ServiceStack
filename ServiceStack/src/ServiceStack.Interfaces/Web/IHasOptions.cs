@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+public interface IHasOptions
 {
-    public interface IHasOptions
-    {
-        IDictionary<string, string> Options { get; }
-    }
+    IDictionary<string, string> Options { get; }
 }

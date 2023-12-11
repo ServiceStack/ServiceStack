@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.HttpClient</PackageId>
     <AssemblyName>ServiceStack.HttpClient</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>Common libraries for ServiceStack projects</Title>
     <PackageDescription>Typed .NET Core and .NET Framework ServiceClients based on .NET's HttpClient</PackageDescription>
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
@@ -31,7 +31,7 @@
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 
 </Project>

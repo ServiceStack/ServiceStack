@@ -169,6 +169,8 @@ public partial class DataGrid<Model> : UiComponentBase
     internal void AddColumn(Column<Model> column)
     {
         columns.Add(column);
+        // Required to render DataGrid in pre/server rendered mode
+        StateHasChanged();
     }
 
     protected override void OnAfterRender(bool firstRender)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using ServiceStack.Text;
 
@@ -48,6 +49,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(JSON.parseSpan("null".AsSpan()), Is.EqualTo(null));
             Assert.That(JSON.parseSpan("[1]".AsSpan()), Is.EqualTo(new object[]{ 1 }));
             Assert.That(JSON.parseSpan("{\"foo\":1}".AsSpan()), Is.EqualTo(new Dictionary<string,object> { ["foo"] = 1 }));
+        }
+
+        [Test]
+        public void Can_parse_dictionary()
+        {
+            var json = @"
+            {
+                ""/redis"": ""/redis/"",
+                ""/ormlite"": ""/ormlite/""
+            }
+            ";
+            var obj = (Dictionary<string,object>)JSON.parse(json);
+            Assert.That(obj.Count, Is.EqualTo(2));
+            Assert.That(obj["/redis"], Is.EqualTo("/redis/"));
+            Assert.That(obj["/ormlite"], Is.EqualTo("/ormlite/"));
         }
     }
 }

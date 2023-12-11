@@ -10,6 +10,7 @@ node_modules/
 ServiceStack/tests/NorthwindAuto/wwwroot/css/
 ServiceStack/tests/NetCoreTests/types/
 ServiceStack/tests/NetCoreTests/dist/
+BenchmarkDotNet.Artifacts/
 
 *.txt
 *.suo

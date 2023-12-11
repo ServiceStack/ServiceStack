@@ -1,0 +1,69 @@
+﻿@page "/Account/Manage/GenerateRecoveryCodes"
+
+@using Microsoft.AspNetCore.Identity
+@using MyApp.Data
+@using MyApp.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject UserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<GenerateRecoveryCodes> Logger
+
+<PageTitle>Generate two-factor authentication (2FA) recovery codes</PageTitle>
+
+<div class="max-w-xl">
+    @if (_recoveryCodes is not null)
+    {
+        <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_message" />
+    }
+    else
+    {
+        <Heading3>Generate two-factor authentication (2FA) recovery codes</Heading3>
+        <Alert Type="AlertType.Warning">
+            <p class="mb-3">
+                <strong>Put these codes in a safe place.</strong>
+            </p>
+            <p class="mb-3">
+                If you lose your device and don't have the recovery codes you will lose access to your account.
+            </p>
+            <p class="mb-3">
+                Generating new recovery codes does not change the keys used in authenticator apps. 
+                If you wish to change the key used in an authenticator app you should
+                <HyperLink class="font-semibold" href="/Account/Manage/ResetAuthenticator">reset your authenticator keys.</HyperLink>
+            </p>
+        </Alert>
+        <div class="mt-4">
+            <form @formname="generate-recovery-codes" @onsubmit="OnSubmitAsync" method="post">
+                <AntiforgeryToken />
+                <PrimaryButton Style="ButtonStyle.Red" type="submit">Generate Recovery Codes</PrimaryButton>
+            </form>
+        </div>
+    }
+</div>
+
+@code {
+    private ApplicationUser _user = default!;
+
+    private IEnumerable<string>? _recoveryCodes;
+    private string? _message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = await UserAccessor.GetRequiredUserAsync();
+
+        var isTwoFactorEnabled = await UserManager.GetTwoFactorEnabledAsync(_user);
+        if (!isTwoFactorEnabled)
+        {
+            throw new InvalidOperationException($"Cannot generate recovery codes for user because they do not have 2FA enabled.");
+        }
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        var userId = await UserManager.GetUserIdAsync(_user);
+        _recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, 10);
+        _message = "You have generated new recovery codes.";
+
+        Logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", userId);
+    }
+}

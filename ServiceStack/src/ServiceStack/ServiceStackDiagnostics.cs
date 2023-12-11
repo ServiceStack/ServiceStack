@@ -25,9 +25,13 @@ public class MqRequestDiagnosticEvent : DiagnosticEvent
 internal static class ServiceStackDiagnostics
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Supports(this DiagnosticListener listener, string name) => 
+        HostContext.AppHost?.HasPlugin<ProfilingFeature>() == true && listener.IsEnabled(name);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid WriteRequestBefore(this DiagnosticListener listener, IRequest req, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestBefore))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteRequestBefore))
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.ServiceStack.WriteRequestBefore, new RequestDiagnosticEvent {
@@ -42,7 +46,7 @@ internal static class ServiceStackDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteRequestAfter(this DiagnosticListener listener, Guid operationId, IRequest req, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestAfter))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteRequestAfter))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteRequestAfter, new RequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteRequestAfter,
@@ -55,7 +59,7 @@ internal static class ServiceStackDiagnostics
     public static void WriteRequestError(this DiagnosticListener listener, Guid operationId, IRequest req,
         Exception ex, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteRequestError))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteRequestError))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteRequestError, new RequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteRequestError,
@@ -70,7 +74,7 @@ internal static class ServiceStackDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid WriteGatewayBefore(this DiagnosticListener listener, IRequest req, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteGatewayBefore))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteGatewayBefore))
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.ServiceStack.WriteGatewayBefore, new RequestDiagnosticEvent {
@@ -86,7 +90,7 @@ internal static class ServiceStackDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteGatewayAfter(this DiagnosticListener listener, Guid operationId, IRequest req, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteGatewayAfter))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteGatewayAfter))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteGatewayAfter, new RequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteGatewayAfter,
@@ -99,7 +103,7 @@ internal static class ServiceStackDiagnostics
     public static void WriteGatewayError(this DiagnosticListener listener, Guid operationId, IRequest req,
         Exception ex, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteGatewayError))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteGatewayError))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteGatewayError, new RequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteGatewayError,
@@ -114,7 +118,7 @@ internal static class ServiceStackDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid WriteMqRequestBefore(this DiagnosticListener listener, IMessage msg, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
         {
             var operationId = Guid.NewGuid();
             listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestBefore, new MqRequestDiagnosticEvent {
@@ -129,7 +133,7 @@ internal static class ServiceStackDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteMqRequestAfter(this DiagnosticListener listener, Guid operationId, IMessage msg, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestAfter))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteMqRequestAfter))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestAfter, new MqRequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteMqRequestAfter,
@@ -142,7 +146,7 @@ internal static class ServiceStackDiagnostics
     public static void WriteMqRequestError(this DiagnosticListener listener, Guid operationId, IMessage msg,
         Exception ex, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestError))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteMqRequestError))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestError, new MqRequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteMqRequestError,
@@ -156,7 +160,7 @@ internal static class ServiceStackDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteMqRequestPublish(this DiagnosticListener listener, Guid operationId, IMessageQueueClient replyClient, string replyTo, object response, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestPublish))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteMqRequestPublish))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestPublish, new MqRequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteMqRequestPublish,
@@ -170,7 +174,7 @@ internal static class ServiceStackDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteMqRequestPublish(this DiagnosticListener listener, Guid operationId, IOneWayClient replyClient, string replyTo, object response, [CallerMemberName] string operation = "")
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestPublish))
+        if (listener.Supports(Diagnostics.Events.ServiceStack.WriteMqRequestPublish))
         {
             listener.Write(Diagnostics.Events.ServiceStack.WriteMqRequestPublish, new MqRequestDiagnosticEvent {
                 EventType = Diagnostics.Events.ServiceStack.WriteMqRequestPublish,

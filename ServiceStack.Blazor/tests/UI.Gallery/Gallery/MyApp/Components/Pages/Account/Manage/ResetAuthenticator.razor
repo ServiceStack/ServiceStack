@@ -1,0 +1,61 @@
+﻿@page "/Account/Manage/ResetAuthenticator"
+
+@using Microsoft.AspNetCore.Identity
+@using MyApp.Data
+@using MyApp.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<ResetAuthenticator> Logger
+
+<PageTitle>Reset authenticator key</PageTitle>
+
+<Heading3>Reset authenticator key</Heading3>
+
+<div class="max-w-xl">
+    <StatusMessage />
+
+    <Alert Type="AlertType.Warning">
+        <p class="mb-3">
+            <strong>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</strong>
+        </p>
+        <p class="mb-3">
+            This process disables 2FA until you verify your authenticator app.
+            If you do not complete your authenticator app configuration you may lose access to your account.
+        </p>
+    </Alert>
+
+    <div class="pt-4">
+        <form id="reset-authenticator-form" @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
+            <AntiforgeryToken />
+            <PrimaryButton Style="ButtonStyle.Red" id="reset-authenticator-button" type="submit">Reset authenticator key</PrimaryButton>
+        </form>
+    </div>
+</div>
+
+
+
+@code {
+    private ApplicationUser _user = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = await UserAccessor.GetRequiredUserAsync();
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        await UserManager.SetTwoFactorEnabledAsync(_user, false);
+        await UserManager.ResetAuthenticatorKeyAsync(_user);
+        var userId = await UserManager.GetUserIdAsync(_user);
+        Logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", _user.Id);
+
+        await SignInManager.RefreshSignInAsync(_user);
+
+        RedirectManager.RedirectToWithStatus(
+            "/Account/Manage/EnableAuthenticator",
+            "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.");
+    }
+}

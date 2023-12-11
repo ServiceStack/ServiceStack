@@ -486,6 +486,15 @@ namespace ServiceStack.Auth
                     case "ProfileUrl":
                         session.ProfileUrl = entry.Value;
                         break;
+                    case JwtClaimTypes.Role:
+                        session.Roles ??= new();
+                        session.Roles.Add(entry.Value);
+                        break;
+                    case JwtClaimTypes.Permission:
+                        session.Permissions ??= new();
+                        session.Permissions.Add(entry.Value);
+                        break;
+                    //ServiceStack JWT uses array in roles/perms instead of multiple role/permission claims
                     case JwtClaimTypes.Roles:
                     case "Roles":
                         var jsonRoles = jsonObj != null
@@ -496,7 +505,7 @@ namespace ServiceStack.Auth
                     case JwtClaimTypes.Permissions:
                     case "Permissions":
                         var jsonPerms = jsonObj != null
-                            ? jsonObj.GetUnescaped("perms") ?? jsonObj.GetUnescaped("Perms")
+                            ? jsonObj.GetUnescaped("perms") ?? jsonObj.GetUnescaped("Perms") ?? jsonObj.GetUnescaped("Permissions")
                             : entry.Value;
                         session.Permissions = jsonPerms.FromJson<List<string>>();
                         break;

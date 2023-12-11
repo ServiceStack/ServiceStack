@@ -1,9 +1,8 @@
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+public interface IHttpError : IHttpResult
 {
-    public interface IHttpError : IHttpResult
-    {
-        string Message { get; }
-        string ErrorCode { get; }
-        string StackTrace { get; }
-    }
+    string Message { get; }
+    string ErrorCode { get; }
+    string StackTrace { get; }
 }

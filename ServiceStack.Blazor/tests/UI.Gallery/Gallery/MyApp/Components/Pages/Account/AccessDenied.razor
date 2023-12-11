@@ -1,0 +1,16 @@
+﻿@page "/Account/AccessDenied"
+
+
+<PageTitle>Access Denied</PageTitle>
+
+<div class="mt-8 mx-auto max-w-lg">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl text-danger">Access Denied</h1>
+
+    <p class="my-4 text-danger">
+        You do not have access to this resource.
+    </p>
+</div>
+
+@code {
+    [Parameter] public string ReturnUrl { get; set; }
+}

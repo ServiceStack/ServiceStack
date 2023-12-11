@@ -1,11 +1,10 @@
 ﻿using ServiceStack.Redis.Pipeline;
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+/// <summary>
+/// Base transaction interface, shared by typed and non-typed transactions
+/// </summary>
+public interface IRedisTransactionBaseAsync : IRedisPipelineSharedAsync
 {
-    /// <summary>
-    /// Base transaction interface, shared by typed and non-typed transactions
-    /// </summary>
-    public interface IRedisTransactionBaseAsync : IRedisPipelineSharedAsync
-    {
-    }
 }

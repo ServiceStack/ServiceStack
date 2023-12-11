@@ -438,7 +438,7 @@ public static class FileExt
     public static string[] BinaryImages { get; set; } = { "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp", "ai", "psd", "ps" };
     public static string[] Images { get; set; } = WebImages.CombineDistinct(BinaryImages);
     public static string[] WebVideos { get; set; } = { "avi", "m4v", "mov", "mp4", "mpg", "mpeg", "wmv", "webm" };
-    public static string[] WebAudios { get; set; } = { "mp3", "mpa", "ogg", "wav", "wma", "mid", "webm" };
+    public static string[] WebAudios { get; set; } = { "mp3", "mpa", "ogg", "wav", "wma", "mid", "webm", "mp4", "m4a" };
     public static string[] BinaryDocuments { get; set; } = { "doc", "docx", "pdf", "rtf" };
     public static string[] TextDocuments { get; set; } = { "tex", "txt", "md", "rst" };
     public static string[] Spreadsheets { get; set; } = { "xls", "xlsm", "xlsx", "ods", "csv", "txv" };

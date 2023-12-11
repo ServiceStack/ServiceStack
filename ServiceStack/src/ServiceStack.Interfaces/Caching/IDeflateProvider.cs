@@ -1,18 +1,17 @@
 using System;
 using System.IO;
 
-namespace ServiceStack.Caching
+namespace ServiceStack.Caching;
+
+[Obsolete("Use DeflateCompressor and IStreamCompressor")]
+public interface IDeflateProvider
 {
-    [Obsolete("Use DeflateCompressor and IStreamCompressor")]
-    public interface IDeflateProvider
-    {
-        byte[] Deflate(string text);
-        byte[] Deflate(byte[] bytes);
+    byte[] Deflate(string text);
+    byte[] Deflate(byte[] bytes);
 
-        string Inflate(byte[] gzBuffer);
-        byte[] InflateBytes(byte[] gzBuffer);
+    string Inflate(byte[] gzBuffer);
+    byte[] InflateBytes(byte[] gzBuffer);
 
-        Stream DeflateStream(Stream outputStream);
-        Stream InflateStream(Stream inputStream);
-    }
+    Stream DeflateStream(Stream outputStream);
+    Stream InflateStream(Stream inputStream);
 }

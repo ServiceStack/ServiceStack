@@ -88,6 +88,11 @@ namespace ServiceStack.Auth
         public Action<IAuthSession, ClaimsPrincipal, IRequest> PopulateSessionFilter { get; set; }
 
         /// <summary>
+        /// Run Async custom filter after session is restored from ClaimsPrincipal
+        /// </summary>
+        public Func<IAuthSession, ClaimsPrincipal, IRequest, Task> PopulateSessionFilterAsync { get; set; }
+
+        /// <summary>
         /// Run custom filter after ClaimsPrincipal is created from Session
         /// </summary>
         public Func<List<Claim>, IAuthSession, IRequest, ClaimsPrincipal> CreateClaimsPrincipal { get; set; }
@@ -203,6 +208,11 @@ namespace ServiceStack.Auth
                 session.Email = session.UserAuthName;
 
             PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
+
+            extended?.PopulateFromClaims(req, claimsPrincipal);
+
+            if (PopulateSessionFilterAsync != null)
+                await PopulateSessionFilterAsync(session, claimsPrincipal, req);
 
             req.Items[Keywords.Session] = session;
         }

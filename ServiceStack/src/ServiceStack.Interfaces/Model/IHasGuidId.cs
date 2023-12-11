@@ -3,7 +3,6 @@
 
 using System;
 
-namespace ServiceStack.Model
-{
-    public interface IHasGuidId : IHasId<Guid> { }
-}
+namespace ServiceStack.Model;
+
+public interface IHasGuidId : IHasId<Guid> { }

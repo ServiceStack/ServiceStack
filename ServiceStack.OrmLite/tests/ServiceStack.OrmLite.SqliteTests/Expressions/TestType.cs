@@ -1,4 +1,5 @@
-﻿using ServiceStack.DataAnnotations;
+﻿using System;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite.Tests.Expressions
 {
@@ -9,6 +10,8 @@ namespace ServiceStack.OrmLite.Tests.Expressions
         public string StringColumn { get; set; }
         public object NullableCol { get; set; }
 
+        public DateTime DateTimeColumn { get; set; }
+
         [AutoIncrement]
         public int Id { get; set; }
 
@@ -16,7 +19,7 @@ namespace ServiceStack.OrmLite.Tests.Expressions
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return other.IntColumn == IntColumn && other.BoolColumn.Equals(BoolColumn) && Equals(other.StringColumn, StringColumn);
+            return other.IntColumn == IntColumn && other.BoolColumn.Equals(BoolColumn) && Equals(other.StringColumn, StringColumn)&& Equals(other.DateTimeColumn, DateTimeColumn);
         }
 
         public override bool Equals(object obj)
@@ -34,6 +37,7 @@ namespace ServiceStack.OrmLite.Tests.Expressions
                 int result = IntColumn;
                 result = (result*397) ^ BoolColumn.GetHashCode();
                 result = (result*397) ^ (StringColumn != null ? StringColumn.GetHashCode() : 0);
+                result = (result*397) ^ ( DateTimeColumn.GetHashCode());
                 return result;
             }
         }

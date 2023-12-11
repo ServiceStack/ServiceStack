@@ -172,6 +172,28 @@ public class MigrationTests : OrmLiteTestBase
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations));
     }
+    
+    [Test]
+    public void Does_not_rerun_completed_migrations_if_one_removed()
+    {
+        using var db = Create();
+
+        var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
+        var result = migrator.Run();
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations));
+        
+        // Remove last migration type
+        var migrator2 = new Migrator(DbFactory, typeof(Migration1000), typeof(Migration1001), typeof(Migration1002), typeof(Migration1003));
+        // Should skip all run migrations
+        var migrationsCountDb = db.Count<Migration>();
+        Assert.That(migrationsCountDb, Is.EqualTo(5));
+        var result2 = migrator2.Run();
+        Assert.That(result2.Succeeded);
+        Assert.That(result2.TypesCompleted, Is.EquivalentTo(new Type[]{ }));
+        var migrations2CountDb = db.Count<Migration>();
+        Assert.That(migrations2CountDb, Is.EqualTo(migrationsCountDb));
+    }
 
     [Test]
     public void Can_mask_connection_string()

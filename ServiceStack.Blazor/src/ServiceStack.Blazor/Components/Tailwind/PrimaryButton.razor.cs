@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 namespace ServiceStack.Blazor.Components.Tailwind;
 
 /// <summary>
-/// Render a Primary Tailwlind Link or Button
+/// Render a Primary Tailwind Link or Button
 /// </summary>
 /// <remarks>
 /// ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/blazor/components/PrimaryButton.png)
@@ -23,5 +23,5 @@ public partial class PrimaryButton : UiComponentBase
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
-    public virtual IReadOnlyDictionary<string, object>? IncludeAttributes => TextInputBase.SanitizeAttributes(AdditionalAttributes);
+    public virtual IReadOnlyDictionary<string, object>? IncludeAttributes => SanitizeAttributes(AdditionalAttributes);
 }

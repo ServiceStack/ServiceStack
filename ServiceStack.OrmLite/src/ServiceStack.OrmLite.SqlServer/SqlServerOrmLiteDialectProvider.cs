@@ -156,6 +156,10 @@ namespace ServiceStack.OrmLite.SqlServer
             var sql = $"CREATE SCHEMA [{GetSchemaName(schemaName)}]";
             return sql;
         }
+        
+        public override string ToCreateSavePoint(string name) => $"SAVE TRANSACTION {name}";
+        public override string ToReleaseSavePoint(string name) => null;
+        public override string ToRollbackSavePoint(string name) => $"ROLLBACK TRANSACTION {name}";
 
         public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
         {
@@ -231,7 +235,6 @@ namespace ServiceStack.OrmLite.SqlServer
         public override string GetDropForeignKeyConstraints(ModelDefinition modelDef)
         {
             //TODO: find out if this should go in base class?
-
             var sb = StringBuilderCache.Allocate();
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
@@ -339,6 +342,68 @@ namespace ServiceStack.OrmLite.SqlServer
             return StringBuilderCache.ReturnAndFree(sql);
         }
 
+        public override void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
+        {
+            config ??= new();
+            if (config.Mode == BulkInsertMode.Sql)
+            {
+                base.BulkInsert(db, objs, config);
+                return;
+            }
+            
+            var sqlConn = (SqlConnection)db.ToDbConnection();
+            using var bulkCopy = new SqlBulkCopy(sqlConn);
+            var modelDef = ModelDefinition<T>.Definition;
+
+            bulkCopy.BatchSize = config.BatchSize;
+            bulkCopy.DestinationTableName = modelDef.ModelName;
+            
+            var table = new DataTable();
+            var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields);
+            foreach (var fieldDef in fieldDefs)
+            {
+                if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                    continue;
+
+                var columnName = NamingStrategy.GetColumnName(fieldDef.FieldName);
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+                
+                var converter = GetConverterBestMatch(fieldDef);
+                var colType = converter.DbType switch
+                {
+                    DbType.String => typeof(string),
+                    DbType.Int32 => typeof(int),
+                    DbType.Int64 => typeof(long),
+                    _ => Nullable.GetUnderlyingType(fieldDef.FieldType) ?? fieldDef.FieldType
+                };
+
+                table.Columns.Add(columnName, colType);
+            }
+
+            foreach (var obj in objs)
+            {
+                var row = table.NewRow();
+                foreach (var fieldDef in fieldDefs)
+                {
+                    if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                        continue;
+                    
+                    var value = fieldDef.AutoId
+                        ? GetInsertDefaultValue(fieldDef)
+                        : fieldDef.GetValue(obj);
+
+                    var converter = GetConverterBestMatch(fieldDef);
+                    var dbValue = converter.ToDbValue(fieldDef.FieldType, value);
+                    var columnName = NamingStrategy.GetColumnName(fieldDef.FieldName);
+                    dbValue ??= DBNull.Value;
+                    row[columnName] = dbValue;
+                }
+                table.Rows.Add(row);
+            }
+            
+            bulkCopy.WriteToServer(table);
+        }
+        
         public override string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null)
         {
             var sbColumnNames = StringBuilderCache.Allocate();

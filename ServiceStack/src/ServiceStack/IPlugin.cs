@@ -13,6 +13,7 @@ namespace ServiceStack
         public const string NativeTypes = "ssref";
         public const string Auth = "auth";
         public const string Csv = "csv";
+        public const string Jsonl = "jsonl";
         public const string Html = "html";
         public const string HttpCache = "httpcache";
         public const string LispTcpServer = "lisptcp";

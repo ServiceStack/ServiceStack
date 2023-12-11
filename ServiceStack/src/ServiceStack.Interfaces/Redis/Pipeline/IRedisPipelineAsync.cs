@@ -1,9 +1,8 @@
-﻿namespace ServiceStack.Redis.Pipeline
+﻿namespace ServiceStack.Redis.Pipeline;
+
+/// <summary>
+/// Interface to redis pipeline
+/// </summary>
+public interface IRedisPipelineAsync : IRedisPipelineSharedAsync, IRedisQueueableOperationAsync
 {
-    /// <summary>
-    /// Interface to redis pipeline
-    /// </summary>
-    public interface IRedisPipelineAsync : IRedisPipelineSharedAsync, IRedisQueueableOperationAsync
-    {
-    }
 }

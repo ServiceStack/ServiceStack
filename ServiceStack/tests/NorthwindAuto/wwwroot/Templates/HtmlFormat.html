@@ -5,7 +5,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <base href="${BaseUrl}">
-<link href="css/highlight.css" rel="stylesheet">
+<link href="css/ui-highlight.css" rel="stylesheet">
 <link href="css/ui.css" rel="stylesheet">
 <script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script><!--safari-->
 <script type="importmap">
@@ -131,10 +131,11 @@ const Preview = {
         const url = location.href
         const hasQs = url.includes('?')
         const formats = {
-            json: hasQs ? appendQueryString(url, { format:'json' }) : `${url}.json`,
-            csv:  hasQs ? appendQueryString(url, { format:'csv' }) : `${url}.csv`,
-            jsv:  hasQs ? appendQueryString(url, { format:'jsv' }) : `${url}.jsv`,
-            xml:  hasQs ? appendQueryString(url, { format:'xml' }) : `${url}.xml`,
+            json:  hasQs ? appendQueryString(url, { format:'json' })  : `${url}.json`,
+            csv:   hasQs ? appendQueryString(url, { format:'csv' })   : `${url}.csv`,
+            jsonl: hasQs ? appendQueryString(url, { format:'jsonl' }) : `${url}.jsonl`,
+            jsv:   hasQs ? appendQueryString(url, { format:'jsv' })   : `${url}.jsv`,
+            xml:   hasQs ? appendQueryString(url, { format:'xml' })   : `${url}.xml`,
         }
         
         const status = mapGet(Dto, 'responseStatus')
@@ -255,7 +256,7 @@ const Form = {
                   <div :class="form.buttonsClass">
                     <div class="flex w-full justify-between">
                       <div class="flex items-center">
-                        <OutlineButton v-else class="ml-4" type="button" @click="copyApiUrl" title="Copy API URL">
+                        <OutlineButton class="ml-4" type="button" @click="copyApiUrl" title="Copy API URL">
                           <svg v-if="copiedApiUrl" class="w-5 h-5 mr-1 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                           <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
                           <span>Copy URL</span>

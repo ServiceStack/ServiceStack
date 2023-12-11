@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using MyApp.ServiceInterface;
 using ServiceStack;
 
 namespace MyApp.ServiceModel;
@@ -11,8 +12,9 @@ public class Greet : IReturn<HelloResponse>
 }
 
 [Tag("hello")]
+[Route("/hello")]
 [Route("/hello/{Name}")]
-[ValidateHasRole("Employee")]
+// [ValidateHasRole("Employee")]
 public class Hello : IReturn<HelloResponse>
 {
     public string Name { get; set; } = string.Empty;
@@ -58,4 +60,15 @@ public class HelloBookingList : IReturn<List<Booking>>
 {
     [DataMember(Order = 1, Name = "Alias")]
     public string Name { get; set; }
+}
+
+public class HelloString : IReturn<string>
+{
+    public string Name { get; set; }
+}
+
+[Route("/return/string")]
+public class ReturnString : IReturn<string>
+{
+    public string Data { get; set; }
 }

@@ -158,3 +158,52 @@ public enum Breakpoint
     ExtraLarge,
     ExtraLarge2x,
 }
+
+/* CSS Classes for Generic Components */
+
+public static class TextInput
+{
+    public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+    public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+    public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+    public static string InputValidClasses { get; set; } = "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+    public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class DateTimeInput
+{
+    public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+    public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+    public static string InputBaseClasses { get; set; } = TextInput.InputBaseClasses;
+    public static string InputValidClasses { get; set; } = TextInput.InputValidClasses;
+    public static string InputInvalidClasses { get; set; } = TextInput.InputInvalidClasses;
+    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+
+public static class TextAreaInput
+{
+    public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+    public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+    public static string InputBaseClasses { get; set; } = "shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+    public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+    public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300";
+    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+
+public static class SelectInput
+{
+    public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+    public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+    public static string InputBaseClasses { get; set; } = "mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+    public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500";
+    public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500";
+    public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+
+
+public static class CheckboxInput
+{
+    public static string ErrorClasses { get; set; } = "text-gray-500";
+    public static string LabelClasses { get; set; } = "font-medium text-gray-700 dark:text-gray-300";
+    public static string InputClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";                                                                
+}

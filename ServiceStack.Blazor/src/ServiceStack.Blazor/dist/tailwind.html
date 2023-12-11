@@ -222,7 +222,7 @@ else if (Column.Settings.SortOrder == SortOrder.Descending)
 }
 </div>
 @inherits UiComponentBase
-<div class=@ClassNames(BackgroundColor, BorderColor, "border-l-4 p-4", Class)>
+<div class=@ClassNames(BackgroundColor, BorderColor, "border-l-4 p-4", Class) @attributes="AdditionalAttributes">
 <div class="flex">
 <div class="flex-shrink-0">
 @if (Type == AlertType.Warning)
@@ -290,7 +290,7 @@ _ => "text-yellow-700"
 @inherits AlertSuccessBase
 @if (!dismissed)
 {
-<div class=@(ClassNames("rounded-md bg-green-50 dark:bg-green-200 p-4", CssClass())) role="alert">
+<div class=@(ClassNames(Classes, CssClass())) role="alert">
 <div class="flex">
 <div class="flex-shrink-0">
 <svg class="h-5 w-5 text-green-400 dark:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -323,6 +323,7 @@ else
 }
 @code {
 bool dismissed = false;
+public static string Classes { get; set; } = "rounded-md bg-green-50 dark:bg-green-200 p-4";
 }
 @typeparam T
 @inherits TextInputBase
@@ -872,19 +873,19 @@ else
 <div class=@ClassNames("relative flex items-start", CssClass())>
 <div class="flex items-center h-5">
 <input type="checkbox"
-class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black"
+class="@CheckboxInput.InputClasses"
 id=@Id
 name=@Id
 @bind="CurrentValueAsBool"
 @attributes="IncludeAttributes">
 </div>
 <div class="ml-3 text-sm">
-<label class=@ClassNames("font-medium text-gray-700 dark:text-gray-300", LabelClass) for=@Id>
+<label class=@ClassNames(CheckboxInput.LabelClasses, LabelClass) for=@Id>
 @UseLabel
 </label>
 @if (HasErrorField)
 {
-<p class=@ClassNames("text-gray-500")>@ErrorFieldMessage</p>
+<p class=@ClassNames(CheckboxInput.ErrorClasses)>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -893,11 +894,11 @@ else if (!string.IsNullOrEmpty(UseHelp))
 </div>
 </div>
 @inherits UiComponentBase
-<input id="confirmDelete" type="checkbox" @bind-value="confirmDelete" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black">
-<label for="confirmDelete" class="mx-1 select-none dark:text-gray-300">@ConfirmLabel</label>
+<input id="confirmDelete" type="checkbox" @bind-value="confirmDelete" class="@CheckboxClasses">
+<label for="confirmDelete" class="@LabelClasses">@ConfirmLabel</label>
 <button type="button" disabled=@(!confirmDelete) @onclick="OnDelete"
-class=@ClassNames("select-none inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white",
-confirmDelete? "cursor-pointer bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" : "bg-red-400", Class)>
+class=@ClassNames(ButtonClasses,
+confirmDelete? EnabledClasses : DisabledClasses, Class)>
 @if (ChildContent != null)
 {
 @ChildContent
@@ -907,17 +908,72 @@ else
 @Label
 }
 </button>
+@code {
+public static string CheckboxClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";
+public static string LabelClasses { get; set; } = "mx-1 select-none dark:text-gray-300";
+public static string ButtonClasses { get; set; } = "select-none inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white";
+public static string EnabledClasses { get; set; } = "cursor-pointer bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500";
+public static string DisabledClasses { get; set; } = "bg-red-400";
+}
 @inherits UiComponentBase
-<button type="button" class=@ClassNames("bg-gray-200 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", Class) role="switch" aria-checked="false" @onclick="toggleDark">
-<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "translate-x-5" : "translate-x-0", "pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow transform ring-0 transition ease-in-out duration-200")>
-<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "opacity-0 ease-out duration-100" : "opacity-100 ease-in duration-200", "absolute inset-0 h-full w-full flex items-center justify-center transition-opacity") aria-hidden="true">
+<button type="button" class=@ClassNames(ButtonClasses, Class) role="switch" aria-checked="false" @onclick="toggleDark">
+<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "translate-x-5" : "translate-x-0", InnerClasses)>
+<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "opacity-0 ease-out duration-100" : "opacity-100 ease-in duration-200", IconClasses) aria-hidden="true">
 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z" /></svg>
 </span>
-<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "opacity-100 ease-in duration-200" : "opacity-0 ease-out duration-100", "absolute inset-0 h-full w-full flex items-center justify-center transition-opacity") aria-hidden="true">
+<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "opacity-100 ease-in duration-200" : "opacity-0 ease-out duration-100", IconClasses) aria-hidden="true">
 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z" /></svg>
 </span>
 </span>
 </button>
+@code {
+public static string ButtonClasses { get; set; } = "bg-gray-200 dark:bg-gray-700 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:ring-offset-black";
+public static string InnerClasses { get; set; } = "pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white dark:bg-black shadow transform ring-0 transition ease-in-out duration-200";
+public static string IconClasses { get; set; } = "absolute inset-0 h-full w-full flex items-center justify-center transition-opacity";
+}
+@inherits UiComponentLiteBase
+<button type="button" onclick="toggleDarkMode()" class=@ClassNames(DarkModeToggle.ButtonClasses, Class) role="switch" aria-checked="false" @attributes="AdditionalAttributes">
+<span class="@DarkModeToggle.InnerClasses" data-class-light="translate-x-5" data-class-dark="translate-x-0">
+<span class="@DarkModeToggle.IconClasses" data-class-light="opacity-0 ease-out duration-100" data-class-dark="opacity-100 ease-in duration-200" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z" /></svg>
+</span>
+<span class="@DarkModeToggle.IconClasses" data-class-light="opacity-100 ease-in duration-200" data-class-dark="opacity-0 ease-out duration-100" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z" /></svg>
+</span>
+</span>
+</button>
+<script>
+window.toggleDarkMode = (function() {
+let isDark = localStorage.getItem('color-scheme') === 'dark'
+const html = document.documentElement
+function renderDarkMode() {
+html.style.setProperty('color-scheme', isDark ? 'dark' : null)
+html.classList.toggle('dark', isDark)
+document.querySelectorAll('[data-class-light]').forEach(el => {
+const removeClasses = isDark
+? el.dataset.classLight
+: el.dataset.classDark
+const addClasses = isDark
+? el.dataset.classDark
+: el.dataset.classLight
+removeClasses.split(' ').forEach(c => el.classList.remove(c))
+addClasses.split(' ').forEach(c => el.classList.add(c))
+})
+}
+renderDarkMode()
+document.addEventListener('DOMContentLoaded', () =>
+Blazor.addEventListener('enhancedload', () => {
+isDark = localStorage.getItem('color-scheme') === 'dark'
+html.classList.toggle('dark', isDark)
+renderDarkMode()
+}))
+return function() {
+isDark = !isDark
+localStorage.setItem('color-scheme', isDark ? 'dark' : 'light')
+renderDarkMode()
+}
+})()
+</script>
 @typeparam Model
 @inherits UiComponentBase
 <CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
@@ -984,12 +1040,11 @@ class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class="block text-sm font-medium text-gray-700 dark:text-gray-300">@UseLabel</label>
+<label for=@Id class="@DateTimeInput.LabelClasses">@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
-<input type="date" class=@ClassNames("block w-full sm:text-sm rounded-md",
-CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600 dark:text-white dark:bg-gray-900",
-"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
+<input type="date" class=@ClassNames(DateTimeInput.InputBaseClasses,
+CssClass(DateTimeInput.InputValidClasses, DateTimeInput.InputInvalidClasses))
 id=@Id name=@Id @bind-value="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes">
 @if (HasErrorField)
 {
@@ -1003,7 +1058,7 @@ id=@Id name=@Id @bind-value="CurrentValueAsDateTime" placeHolder=@UsePlaceholder
 </div>
 @if (HasErrorField)
 {
-<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@DateTimeInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -1059,22 +1114,24 @@ else
 <TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
 }
 @inherits AuthBlazorComponentBase
-@if (!IsAuthenticated)
-{
 <SlideOver Title=@Title SubHeading=@SubHeading Done="Done">
 <Alert HtmlMessage=@HtmlMessage />
+@if (!IsAuthenticated)
+{
 <div class="md:p-4">
-<button type="button" @onclick="signIn"
-class="flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+<button type="button" @onclick="signIn" class="@ButtonClasses">
 Sign In
 </button>
 </div>
+}
 </SlideOver>
+@code {
+public static string ButtonClasses { get; set; } = "flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50";
 }
 @inherits ErrorSummaryBase
 @if (UseStatus.ShowSummary(UseExcept))
 {
-<div class=@(ClassNames("bg-red-50 dark:bg-red-200 border-l-4 border-red-400 p-4", CssClass())) role="alert">
+<div class=@(ClassNames(Classes, CssClass())) role="alert">
 <div class="flex">
 <div class="flex-shrink-0">
 <!-- Heroicon name: solid/x-circle -->
@@ -1083,10 +1140,14 @@ Sign In
 </svg>
 </div>
 <div class="ml-3">
-<p class="text-sm text-red-700 dark:text-red-800">@UseStatus.SummaryMessage(UseExcept)</p>
+<p class="@MessageClasses">@UseStatus.SummaryMessage(UseExcept)</p>
 </div>
 </div>
 </div>
+}
+@code {
+public static string Classes { get; set; } = "bg-red-50 dark:bg-red-200 border-l-4 border-red-400 p-4";
+public static string MessageClasses { get; set; } = "text-sm text-red-700 dark:text-red-800";
 }
 @using Microsoft.AspNetCore.Components.Forms
 @inherits TextInputBase
@@ -1095,14 +1156,12 @@ Sign In
 <div>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(LabelClasses, LabelClass)>@UseLabel</label>
 }
 <div class="block mt-2">
 <span class="sr-only">UseHelp ?? UseLabel</span>
 @{
-var cls = @ClassNames("block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
-CssClass("block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 dark:file:bg-violet-900 file:text-violet-700 dark:file:text-violet-200 hover:file:bg-violet-100 dark:hover:file:bg-violet-800",
-"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
+var cls = @ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses));
 }
 <InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder multiple=@Multiple accept=@Accept @attributes="IncludeAttributes" OnChange="@OnChange" />
 @if (HasErrorField)
@@ -1117,7 +1176,7 @@ CssClass("block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file
 </div>
 @if (HasErrorField)
 {
-<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -1194,13 +1253,18 @@ bool isDataUri(string? src) => src == null ? false : src.StartsWith("data:") || 
 string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
 ? ""
 : "rounded-full object-cover";
+public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
+public static string InputValidClasses { get; set; } = "block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 dark:file:bg-violet-900 file:text-violet-700 dark:file:text-violet-200 hover:file:bg-violet-100 dark:hover:file:bg-violet-800";
+public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
 }
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam TReq
 @inherits BlazorComponentBase
 <div class="m-2 mt-4" @ref="fileDropContainer">
-<label for="blazor-input-file"
-class=@(ClassNames("flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none", CssUtils.ClassNames(@class)))>
+<label for="blazor-input-file" class=@(ClassNames(LabelClasses, Class))>
 <span class="flex items-center space-x-2">
 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
 stroke="currentColor" stroke-width="2">
@@ -1234,9 +1298,51 @@ else
 <ErrorSummary/>
 </CascadingValue>
 }
+@code {
+public static string LabelClasses { get; set; } = "flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none";
+}
+@inherits UiComponentLiteBase
+<h1 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h1>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl";
+}
+@inherits UiComponentLiteBase
+<h2 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h2>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "mb-4 text-3xl md:text-4xl font-bold tracking-tighter leading-tight md:pr-8 whitespace-nowrap text-center pt-8";
+}
+@inherits UiComponentLiteBase
+<h3 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h3>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100 leading-tight";
+}
+@inherits UiComponentLiteBase
+<h4 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h4>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight";
+}
 <div class=@(@class)>
 @((MarkupString) HtmlUtils.HtmlDump(Value ?? ""))
 </div>
+@inherits UiComponentLiteBase
+<a class=@ClassNames(GetStyleClass(Style), Class) @attributes="AdditionalAttributes">@ChildContent</a>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes  => GetStyleClass(LinkStyle.Indigo);
+[Parameter] public LinkStyle Style { get; set; } = LinkStyle.Indigo;
+public static string GetStyleClass(LinkStyle style) => style switch
+{
+LinkStyle.Blue => "text-blue-600 dark:text-blue-300 hover:text-blue-500 dark:hover:text-blue-400",
+LinkStyle.Red => "text-red-600 dark:text-red-300 hover:text-red-500 dark:hover:text-red-400",
+LinkStyle.Green => "text-green-600 dark:text-green-300 hover:text-green-500 dark:hover:text-green-400",
+LinkStyle.Sky => "text-sky-600 dark:text-sky-300 hover:text-sky-500 dark:hover:text-sky-400",
+_ => "text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-400"
+};
+}
 @inherits UiComponentBase
 @((MarkupString)ToHtml())
 @inherits UiComponentBase
@@ -1246,7 +1352,7 @@ else
 }
 else
 {
-<div class=@ClassNames("mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300", @class)>
+<div class=@ClassNames(Classes, @class)>
 <h1 class="flex">
 <svg class=@ClassNames("self-center inline mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300", ImageClass)
 role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1256,6 +1362,9 @@ role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/sv
 <span>@Message</span>
 </h1>
 </div>
+}
+@code {
+public static string Classes = "mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300";
 }
 @inherits TextInputBase
 @implements IHasJsonApiClient
@@ -1455,13 +1564,17 @@ TableStyle="TableStyle.FullWidth">
 @inherits UiComponentBase
 @if (!string.IsNullOrEmpty(Title))
 {
-<h2 class="text-base font-semibold text-gray-500 dark:text-gray-400">
+<h2 class="@TitleClasses">
 @Title
 </h2>
 }
-<ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
+<ul role="list" class="@ListClasses">
 <CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
 </ul>
+@code {
+public static string TitleClasses { get; set; } = "text-base font-semibold text-gray-500 dark:text-gray-400";
+public static string ListClasses { get; set; } = "mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800";
+}
 @inherits UiComponentBase
 <li class="relative flex items-start space-x-4 py-6">
 <div class="flex-shrink-0">
@@ -1633,56 +1746,57 @@ RenderValue(Value);
 @inherits UiComponentBase
 @if (!string.IsNullOrEmpty(href))
 {
-<a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation @attributes="IncludeAttributes">
+<a href=@href class=@ClassNames(Classes(Style), Class) title=@title target=@target @onclick:stopPropagation @attributes="IncludeAttributes">
 @ChildContent
 </a>
 }
 else
 {
-<button type=@type @onclick="onclick" class=@ClassNames(cls, Class) @attributes="IncludeAttributes">
+<button type=@type @onclick="onclick" class=@ClassNames(Classes(Style), Class) @attributes="IncludeAttributes">
 @ChildContent
 </button>
 }
 @code {
-string colors => Style switch
+public static string BaseClass { get; set; } = "inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-black";
+public static string GetStyleClass(ButtonStyle style) => style switch
 {
-ButtonStyle.Blue => "text-white bg-blue-600 hover:bg-blue-700 focus:ring-indigo-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800",
-ButtonStyle.Purple => "text-white bg-purple-600 hover:bg-purple-700 focus:ring-indigo-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800",
+ButtonStyle.Blue => "text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800",
+ButtonStyle.Purple => "text-white bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800",
 ButtonStyle.Red => "focus:ring-red-500 text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-500",
 ButtonStyle.Green => "focus:ring-green-300 text-white bg-green-600 hover:bg-green-700 focus:ring-green-500 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-500",
 ButtonStyle.Sky => "focus:ring-sky-300 text-white bg-sky-600 hover:bg-sky-700 focus:ring-sky-500 dark:bg-sky-600 dark:hover:bg-sky-700 dark:focus:ring-sky-500",
 ButtonStyle.Cyan => "focus:ring-cyan-300 text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-500",
-_ => "focus:ring-2 focus:ring-offset-2 text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+_ => "focus:ring-2 focus:ring-offset-2 text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800"
 };
-string cls => "inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-black " + colors;
+public static string Classes(ButtonStyle style) => BaseClass + " " + GetStyleClass(style);
 }
 @inherits UiComponentBase
 @if (!string.IsNullOrEmpty(href))
 {
-<a href=@href class=@ClassNames(cls, Class) title=@title target=@target @onclick:stopPropagation @attributes="IncludeAttributes">
+<a href=@href class=@ClassNames(Classes, Class) title=@title target=@target @onclick:stopPropagation @attributes="IncludeAttributes">
 @ChildContent
 </a>
 }
 else
 {
-<button type=@type @onclick="onclick" class=@ClassNames(cls, Class) @attributes="IncludeAttributes">
+<button type=@type @onclick="onclick" class=@ClassNames(Classes, Class) @attributes="IncludeAttributes">
 @ChildContent
 </button>
 }
 @code {
-string colors => "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-black";
-string cls => "inline-flex justify-center rounded-md border border-gray-300 py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 " + colors;
+public static string BaseClass { get; set; } = "inline-flex justify-center rounded-md border border-gray-300 py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2";
+public static string SecondaryClass { get; set; } = "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-black";
+public static string Classes => BaseClass + " " + SecondaryClass;
 }
 @typeparam TValue
 @inherits SelectInputBase<TValue>
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(SelectInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
-<select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600",
-CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
-invalid:"text-red-900 focus:ring-red-500 focus:border-red-500"))
+<select id=@Id name=@Id class=@ClassNames(SelectInput.InputBaseClasses,
+CssClass(SelectInput.InputValidClasses, SelectInput.InputInvalidClasses))
 @bind="CurrentValue" @attributes="IncludeAttributes">
 @ChildContent
 @foreach (var kvp in KvpValues())
@@ -1692,7 +1806,7 @@ invalid:"text-red-900 focus:ring-red-500 focus:border-red-500"))
 </select>
 @if (HasErrorField)
 {
-<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@SelectInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 </div>
 @inherits BlazorComponentBase
@@ -1752,13 +1866,11 @@ Close
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(@LabelClasses, LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 w-full relative rounded-md shadow-sm">
 @{
-var cls = ClassNames("w-full cursor-text flex flex-wrap sm:text-sm rounded-md dark:text-white dark:bg-gray-900 border focus-within:border-transparent focus-within:ring-1 focus-within:outline-none",
-CssClass("shadow-sm border-gray-300 dark:border-gray-600 focus-within:ring-indigo-500 focus-within:border-indigo-500",
-"pr-10 border-red-300 text-red-900 placeholder-red-300 focus-within:outline-none focus-within:ring-red-500 focus-within:border-red-500"));
+var cls = ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses));
 }
 <button class=@cls @onclick="handleClick" @onclick:preventDefault>
 <div class="flex flex-wrap pb-1.5">
@@ -1793,29 +1905,35 @@ style=@($"box-shadow:none !important;width:{InputValue.Length + 1}ch")
 </div>
 @if (HasErrorField)
 {
-<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
 <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
 }
 </div>
+@code {
+public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+public static string InputBaseClasses { get; set; } = "w-full cursor-text flex flex-wrap sm:text-sm rounded-md dark:text-white dark:bg-gray-900 border focus-within:border-transparent focus-within:ring-1 focus-within:outline-none";
+public static string InputValidClasses { get; set; } = "shadow-sm border-gray-300 dark:border-gray-600 focus-within:ring-indigo-500 focus-within:border-indigo-500";
+public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus-within:outline-none focus-within:ring-red-500 focus-within:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
 @typeparam TValue
 @inherits TextInputBase<TValue>
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(TextAreaInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
-class=@ClassNames("shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
-CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
-invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
-/>
+class=@ClassNames(TextAreaInput.InputBaseClasses,
+CssClass(TextAreaInput.InputValidClasses,TextAreaInput.InputInvalidClasses)) />
 @if (HasErrorField)
 {
-<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@TextAreaInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -1828,13 +1946,11 @@ else if (!string.IsNullOrEmpty(UseHelp))
 <div class=@FieldClass>
 @if (!string.IsNullOrEmpty(UseLabel))
 {
-<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+<label for=@Id class=@ClassNames(TextInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
 @{
-var cls = ClassNames("block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
-CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
-"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"));
+var cls = ClassNames(TextInput.InputBaseClasses, CssClass(TextInput.InputValidClasses, TextInput.InputInvalidClasses));
 }
 @if (UseType == Html.Input.Types.Textarea)
 {
@@ -1855,7 +1971,7 @@ else
 </div>
 @if (HasErrorField)
 {
-<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+<p class="@TextInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
 }
 else if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -1863,7 +1979,10 @@ else if (!string.IsNullOrEmpty(UseHelp))
 }
 </div>
 @inherits UiComponentBase
-<a href=@href class=@ClassNames("text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200", Class) title=@title target=@target @onclick="onclick" @onclick:stopPropagation>@ChildContent</a>
+<a href=@href class=@ClassNames(Classes, Class) title=@title target=@target @onclick="onclick" @onclick:stopPropagation>@ChildContent</a>
+@code {
+public static string Classes { get; set; } = "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200";
+}
 using ServiceStack.Blazor.Components;
 namespace ServiceStack.Blazor;
 /// <summary>
@@ -1996,4 +2115,47 @@ Medium,
 Large,
 ExtraLarge,
 ExtraLarge2x,
+}
+/* CSS Classes for Generic Components */
+public static class TextInput
+{
+public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+public static string InputValidClasses { get; set; } = "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class DateTimeInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = TextInput.InputBaseClasses;
+public static string InputValidClasses { get; set; } = TextInput.InputValidClasses;
+public static string InputInvalidClasses { get; set; } = TextInput.InputInvalidClasses;
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class TextAreaInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = "shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class SelectInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = "mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500";
+public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class CheckboxInput
+{
+public static string ErrorClasses { get; set; } = "text-gray-500";
+public static string LabelClasses { get; set; } = "font-medium text-gray-700 dark:text-gray-300";
+public static string InputClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";
 }

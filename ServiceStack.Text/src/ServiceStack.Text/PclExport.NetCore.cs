@@ -4,37 +4,36 @@ using System;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 
-namespace ServiceStack 
+namespace ServiceStack;
+
+public class Net6PclExport : NetStandardPclExport
 {
-    public class Net6PclExport : NetStandardPclExport
+    public Net6PclExport()
     {
-        public Net6PclExport()
+        this.PlatformName = Platforms.Net6;
+        ReflectionOptimizer.Instance = EmitReflectionOptimizer.Provider;            
+    }
+
+    public override ParseStringDelegate GetJsReaderParseMethod<TSerializer>(Type type)
+    {
+        if (type.IsAssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
+            type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
         {
-            this.PlatformName = Platforms.Net6;
-            ReflectionOptimizer.Instance = EmitReflectionOptimizer.Provider;            
+            return DeserializeDynamic<TSerializer>.Parse;
         }
 
-        public override ParseStringDelegate GetJsReaderParseMethod<TSerializer>(Type type)
-        {
-            if (type.IsAssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
-                type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
-            {
-                return DeserializeDynamic<TSerializer>.Parse;
-            }
+        return null;
+    }
 
-            return null;
-        }
-
-        public override ParseStringSpanDelegate GetJsReaderParseStringSpanMethod<TSerializer>(Type type)
+    public override ParseStringSpanDelegate GetJsReaderParseStringSpanMethod<TSerializer>(Type type)
+    {
+        if (type.IsAssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
+            type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
         {
-            if (type.IsAssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
-                type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
-            {
-                return DeserializeDynamic<TSerializer>.ParseStringSpan;
-            }
-            
-            return null;
+            return DeserializeDynamic<TSerializer>.ParseStringSpan;
         }
+        
+        return null;
     }
 }
 

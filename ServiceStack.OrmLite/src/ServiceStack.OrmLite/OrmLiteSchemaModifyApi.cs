@@ -146,15 +146,23 @@ namespace ServiceStack.OrmLite
             dbConn.ExecuteSql(command);
         }
 
+        public static void DropForeignKeys<T>(this IDbConnection dbConn)
+        {
+            var provider = dbConn.GetDialectProvider();
+            var modelDef = ModelDefinition<T>.Definition;
+            var dropSql = provider.GetDropForeignKeyConstraints(modelDef);
+            if (string.IsNullOrEmpty(dropSql))
+                throw new NotSupportedException($"Drop All Foreign Keys not supported by {provider.GetType().Name}");
+            
+            dbConn.ExecuteSql(dropSql);
+        }
+
         public static void DropForeignKey<T>(this IDbConnection dbConn, string foreignKeyName)
         {
             var provider = dbConn.GetDialectProvider();
             var modelDef = ModelDefinition<T>.Definition;
-            var command = string.Format(provider.GetDropForeignKeyConstraints(modelDef),
-                provider.GetQuotedTableName(modelDef.ModelName),
-                provider.GetQuotedName(foreignKeyName));
-
-            dbConn.ExecuteSql(command);
+            var dropSql = provider.ToDropForeignKeyStatement(modelDef.Schema, modelDef.ModelName, foreignKeyName);
+            dbConn.ExecuteSql(dropSql);
         }
 
         public static void CreateIndex<T>(this IDbConnection dbConn, Expression<Func<T, object>> field,

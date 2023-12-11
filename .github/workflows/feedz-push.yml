@@ -1,0 +1,56 @@
+name: A Feedz Publish
+on: workflow_dispatch
+
+env:
+  FEED_URL: https://f.feedz.io/servicestack/pre-release/nuget/index.json
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repo
+      - uses: actions/checkout@v2
+
+      # Setup .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.*'
+
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: pre-release-pack.yml
+          # workflow_conclusion: success
+          name: ServiceStack Packages
+          commit: ${{ github.sha }}
+          path: ./build/staging
+          
+      - name: Check output
+        working-directory: ./build
+        run: |
+          cd staging
+          export number_of_packages=$(ls -1 | wc -l)
+          echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
+          dotnet nuget add source ${{ env.FEED_URL }} -n pre-release -u pre-release -p ${{ secrets.FEEDZ_TOKEN }} --store-password-in-clear-text
+
+      - name: Clear packages
+        working-directory: ./build/staging
+        shell: bash
+        run: |
+          ls -1 | grep .nupkg$ | sed -E 's/(.*)\.([0-9]+\.[0-9]+\.[0-9]+).nupkg$/\1 \2/' | while read line
+          do 
+            dotnet nuget delete ${line} --source ${{ env.FEED_URL }} --api-key ${{ secrets.FEEDZ_TOKEN }} --non-interactive || true
+          done
+
+      - name: Push to GitHub
+        working-directory: ./build/staging
+        run: |
+          # Check if more than 73 packages 
+          if [[ ${number_of_packages} -gt 73 ]]; then
+            echo "Publishing to Azure Artifacts"
+            dotnet nuget push '*.nupkg' --source ${{ env.FEED_URL }} --api-key ${{ secrets.FEEDZ_TOKEN }} --skip-duplicate
+          else
+            echo 'Less files than expected, skipping push'
+            exit 1
+          fi

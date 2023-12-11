@@ -3,7 +3,7 @@
     <PackageId>ServiceStack.OrmLite.MySqlConnector.Core</PackageId>
     <AssemblyName>ServiceStack.OrmLite.MySqlConnector</AssemblyName>
     <RootNamespace>ServiceStack.OrmLite.MySqlConnector</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <RootNamespace>ServiceStack.OrmLite.MySql</RootNamespace>
     <Title>ServiceStack.OrmLite.MySqlConnector .NET Standard 2.0</Title>
     <PackageDescription>
@@ -17,6 +17,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,7 +41,7 @@
     <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="2.2.1" />
+    <PackageReference Include="MySqlConnector" Version="2.3.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DataAnnotations\" />

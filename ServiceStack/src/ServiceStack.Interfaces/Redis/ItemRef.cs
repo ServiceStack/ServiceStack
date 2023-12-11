@@ -1,8 +1,7 @@
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public class ItemRef
 {
-    public class ItemRef
-    {
-        public string Id { get; set; }
-        public string Item { get; set; }
-    }
+    public string Id { get; set; }
+    public string Item { get; set; }
 }

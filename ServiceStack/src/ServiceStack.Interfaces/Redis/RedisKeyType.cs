@@ -10,15 +10,14 @@
 // Licensed under the same terms of ServiceStack.
 //
 
-namespace ServiceStack.Redis
+namespace ServiceStack.Redis;
+
+public enum RedisKeyType
 {
-    public enum RedisKeyType
-    {
-        None,
-        String,
-        List,
-        Set,
-        SortedSet,
-        Hash
-    }
+    None,
+    String,
+    List,
+    Set,
+    SortedSet,
+    Hash
 }

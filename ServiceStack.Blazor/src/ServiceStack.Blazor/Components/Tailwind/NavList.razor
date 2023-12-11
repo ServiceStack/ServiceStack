@@ -2,11 +2,16 @@
 
 @if (!string.IsNullOrEmpty(Title))
 {
-    <h2 class="text-base font-semibold text-gray-500 dark:text-gray-400">
+    <h2 class="@TitleClasses">
         @Title
     </h2>
 }
 
-<ul role="list" class="mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800">
+<ul role="list" class="@ListClasses">
     <CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
 </ul>
+
+@code {
+    public static string TitleClasses { get; set; } = "text-base font-semibold text-gray-500 dark:text-gray-400";
+    public static string ListClasses { get; set; } = "mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800";
+}

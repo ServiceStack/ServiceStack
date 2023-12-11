@@ -1,0 +1,9 @@
+﻿@page "/secure/coupons"
+@attribute [Authorize(Roles = "Employee")]
+@rendermode RenderMode.InteractiveServer
+
+<PageTitle>Coupons</PageTitle>
+
+<Heading1>Coupons</Heading1>
+
+<AutoQueryGrid Model="Coupon" Apis="Apis.AutoQuery<QueryCoupons>()" />

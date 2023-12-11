@@ -1,34 +1,47 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace ServiceStack.OrmLite.Sqlite
 {
     public class SqliteExpression<T> : SqlExpression<T>
     {
         public SqliteExpression(IOrmLiteDialectProvider dialectProvider)
-            : base(dialectProvider) {}
+            : base(dialectProvider)
+        {
+        }
 
         protected override object VisitColumnAccessMethod(MethodCallExpression m)
         {
-            var args = this.VisitExpressionList(m.Arguments);
+            List<object> args = this.VisitExpressionList(m.Arguments);
             var quotedColName = Visit(m.Object);
+            if (!IsSqlClass(quotedColName))
+                quotedColName = ConvertToParam(quotedColName);
             string statement;
 
-            switch (m.Method.Name)
+            if (m.Method.Name == nameof(string.ToString) && m.Object?.Type == typeof(DateTime))
             {
-                case "Substring":
-                    var startIndex = int.Parse(args[0].ToString()) + 1;
-                    if (args.Count == 2)
-                    {
-                        var length = int.Parse(args[1].ToString());
-                        statement = $"substr({quotedColName}, {startIndex}, {length})";
-                    }
-                    else
-                        statement = $"substr({quotedColName}, {startIndex})";
-                    break;
-                default:
-                    return base.VisitColumnAccessMethod(m);
+                var arg = args.Count > 0 ? args[0] : null;
+                if (arg == null) statement = ToCast(quotedColName.ToString());
+                else statement = $"strftime('{arg}',{quotedColName})";
+                return new PartialSqlString(statement);
             }
-            return new PartialSqlString(statement);
+
+            if (m.Method.Name == nameof(string.Substring))
+            {
+                var startIndex = int.Parse(args[0].ToString()) + 1;
+                if (args.Count == 2)
+                {
+                    var length = int.Parse(args[1].ToString());
+                    statement = $"substr({quotedColName}, {startIndex}, {length})";
+                }
+                else
+                    statement = $"substr({quotedColName}, {startIndex})";
+
+                return new PartialSqlString(statement);
+            }
+
+            return base.VisitColumnAccessMethod(m);
         }
 
         protected override object VisitSqlMethodCall(MethodCallExpression m)
@@ -48,7 +61,8 @@ namespace ServiceStack.OrmLite.Sqlite
                     statement = $"{quotedColName} DESC";
                     break;
                 case "As":
-                    statement = $"{quotedColName} AS {base.DialectProvider.GetQuotedColumnName(RemoveQuoteFromAlias(args[0].ToString()))}";
+                    statement =
+                        $"{quotedColName} AS {base.DialectProvider.GetQuotedColumnName(RemoveQuoteFromAlias(args[0].ToString()))}";
                     break;
                 case "Sum":
                 case "Count":

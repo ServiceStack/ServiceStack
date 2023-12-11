@@ -310,6 +310,27 @@ namespace ServiceStack.Aws.Tests.S3
             Assert.That(pathProvider.GetDirectory("a").GetAllMatchingFiles("testfile-abcdefg1.txt").Count(), Is.EqualTo(1));
         }
 
+        [Test]
+        public void Does_create_file_in_nested_folders_with_correct_parent_directories()
+        {
+            var vfs = GetPathProvider();
+            
+            vfs.WriteFile("a/b/c/file.txt", "file");
+            var file = vfs.GetFile("a/b/c/file.txt");
+            Assert.That(file != null);
+
+            Assert.That(file.Directory.VirtualPath, Is.EqualTo("a/b/c"));
+            Assert.That(file.Directory.Name, Is.EqualTo("c"));
+            Assert.That(file.Directory.ParentDirectory.VirtualPath, Is.EqualTo("a/b"));
+            Assert.That(file.Directory.ParentDirectory.Name, Is.EqualTo("b"));
+            Assert.That(file.Directory.ParentDirectory.ParentDirectory.VirtualPath, Is.EqualTo("a"));
+            Assert.That(file.Directory.ParentDirectory.ParentDirectory.Name, Is.EqualTo("a"));
+            Assert.That(file.Directory.ParentDirectory.ParentDirectory.ParentDirectory.IsRoot);
+            Assert.That(vfs.RootDirectory.GetDirectories().Any(x => x.Name == "a"));
+            
+            vfs.DeleteFile("a/b/c/file.txt");
+        }
+
         byte[] ReadAndReset(MemoryStream ms)
         {
             var ret = ms.ToArray();

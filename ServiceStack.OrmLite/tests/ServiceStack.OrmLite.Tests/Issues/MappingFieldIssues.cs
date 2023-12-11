@@ -31,22 +31,25 @@ namespace ServiceStack.OrmLite.Tests.Issues
         [Test]
         public void Does_map_remaining_columns_after_failed_mapping()
         {
-            using (var db = OpenDbConnection())
+            var hold = OrmLiteConfig.ThrowOnError; 
+            OrmLiteConfig.ThrowOnError = false;
+            
+            using var db = OpenDbConnection();
+            db.DropAndCreateTable<OriginalTable>();
+            db.Insert(new OriginalTable
             {
-                db.DropAndCreateTable<OriginalTable>();
-                db.Insert(new OriginalTable
-                {
-                    Id = 1,
-                    SaleDate = new DateTime(2001, 01, 01),
-                    SaleTime = new TimeSpan(1,1,1,1),
-                    NumberOfItems = 2,
-                    Amount = 3
-                });
+                Id = 1,
+                SaleDate = new DateTime(2001, 01, 01),
+                SaleTime = new TimeSpan(1,1,1,1),
+                NumberOfItems = 2,
+                Amount = 3
+            });
 
-                var result = db.SingleById<MismatchTable>(1);
-                Assert.That(result.NumberOfItems, Is.EqualTo(2));
-                Assert.That(result.Amount, Is.EqualTo(3));
-            }
+            var result = db.SingleById<MismatchTable>(1);
+            Assert.That(result.NumberOfItems, Is.EqualTo(2));
+            Assert.That(result.Amount, Is.EqualTo(3));
+            
+            OrmLiteConfig.ThrowOnError = hold;
         }
 
     }

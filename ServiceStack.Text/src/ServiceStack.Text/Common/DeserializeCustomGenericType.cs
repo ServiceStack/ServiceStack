@@ -2,52 +2,51 @@
 using System.Linq;
 using ServiceStack.Text.Json;
 
-namespace ServiceStack.Text.Common
+namespace ServiceStack.Text.Common;
+
+internal static class DeserializeCustomGenericType<TSerializer>
+    where TSerializer : ITypeSerializer
 {
-    internal static class DeserializeCustomGenericType<TSerializer>
-        where TSerializer : ITypeSerializer
+    private static readonly ITypeSerializer Serializer = JsWriter.GetTypeSerializer<TSerializer>();
+
+    public static ParseStringDelegate GetParseMethod(Type type) => v => GetParseStringSpanMethod(type)(v.AsSpan());
+
+    public static ParseStringSpanDelegate GetParseStringSpanMethod(Type type)
     {
-        private static readonly ITypeSerializer Serializer = JsWriter.GetTypeSerializer<TSerializer>();
+        if (type.Name.IndexOf("Tuple`", StringComparison.Ordinal) >= 0)
+            return x => ParseTuple(type, x);
 
-        public static ParseStringDelegate GetParseMethod(Type type) => v => GetParseStringSpanMethod(type)(v.AsSpan());
+        return null;
+    }
 
-        public static ParseStringSpanDelegate GetParseStringSpanMethod(Type type)
+    public static object ParseTuple(Type tupleType, string value) => ParseTuple(tupleType, value.AsSpan());
+
+    public static object ParseTuple(Type tupleType, ReadOnlySpan<char> value)
+    {
+        var index = 0;
+        Serializer.EatMapStartChar(value, ref index);
+        if (JsonTypeSerializer.IsEmptyMap(value, index))
+            return tupleType.CreateInstance();
+
+        var genericArgs = tupleType.GetGenericArguments();
+        var argValues = new object[genericArgs.Length];
+        var valueLength = value.Length;
+        while (index < valueLength)
         {
-            if (type.Name.IndexOf("Tuple`", StringComparison.Ordinal) >= 0)
-                return x => ParseTuple(type, x);
+            var keyValue = Serializer.EatMapKey(value, ref index);
+            Serializer.EatMapKeySeperator(value, ref index);
+            var elementValue = Serializer.EatValue(value, ref index);
+            if (keyValue.IsEmpty) continue;
 
-            return null;
+            var keyIndex = keyValue.Slice("Item".Length).ParseInt32() - 1;
+            var parseFn = Serializer.GetParseStringSpanFn(genericArgs[keyIndex]);
+            argValues[keyIndex] = parseFn(elementValue);
+
+            Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
         }
 
-        public static object ParseTuple(Type tupleType, string value) => ParseTuple(tupleType, value.AsSpan());
-
-        public static object ParseTuple(Type tupleType, ReadOnlySpan<char> value)
-        {
-            var index = 0;
-            Serializer.EatMapStartChar(value, ref index);
-            if (JsonTypeSerializer.IsEmptyMap(value, index))
-                return tupleType.CreateInstance();
-
-            var genericArgs = tupleType.GetGenericArguments();
-            var argValues = new object[genericArgs.Length];
-            var valueLength = value.Length;
-            while (index < valueLength)
-            {
-                var keyValue = Serializer.EatMapKey(value, ref index);
-                Serializer.EatMapKeySeperator(value, ref index);
-                var elementValue = Serializer.EatValue(value, ref index);
-                if (keyValue.IsEmpty) continue;
-
-                var keyIndex = keyValue.Slice("Item".Length).ParseInt32() - 1;
-                var parseFn = Serializer.GetParseStringSpanFn(genericArgs[keyIndex]);
-                argValues[keyIndex] = parseFn(elementValue);
-
-                Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
-            }
-
-            var ctor = tupleType.GetConstructors()
-                .First(x => x.GetParameters().Length == genericArgs.Length);
-            return ctor.Invoke(argValues);
-        }
+        var ctor = tupleType.GetConstructors()
+            .First(x => x.GetParameters().Length == genericArgs.Length);
+        return ctor.Invoke(argValues);
     }
 }

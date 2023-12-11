@@ -127,7 +127,7 @@
     <PackageReference Include="Microsoft.AspNet.TelemetryCorrelation" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNet.Web.Optimization" Version="1.1.3" />
     <PackageReference Include="Microsoft.AspNet.Web.Optimization.WebForms" Version="1.1.3" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="2.0.0" />
     <PackageReference Include="Microsoft.Web.Infrastructure" Version="1.0.0" />
     <PackageReference Include="Modernizr" Version="2.8.3" />

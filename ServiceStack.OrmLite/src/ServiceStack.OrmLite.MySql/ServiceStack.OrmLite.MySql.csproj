@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.OrmLite.MySql</PackageId>
     <AssemblyName>ServiceStack.OrmLite.MySql</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>OrmLite.MySql - Fast, code-first, config-free POCO ORM</Title>
     <PackageDescription>
       Light, simple and fast convention-based code-first POCO ORM for MySQL.
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mysql.Data" Version="8.0.33" />
+    <PackageReference Include="Mysql.Data" Version="8.2.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

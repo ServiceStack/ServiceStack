@@ -185,7 +185,7 @@ export const Dashboard = {
         const client = useClient()
         const api = ref(new ApiResult())
         async function updated() {
-            api.value = await client.api(new AdminDashboard())
+            api.value = await client.api(new AdminDashboard(), { jsconfig: 'eccn' })
         }
         const serverStats = computed(() => api.value.response?.serverStats || {})
         function statLabel(name) {

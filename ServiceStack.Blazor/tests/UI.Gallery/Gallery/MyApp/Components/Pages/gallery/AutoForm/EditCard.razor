@@ -1,0 +1,8 @@
+﻿@page "/gallery/autoform/edit/card"
+
+<AutoEditForm FormStyle="FormStyle.Card" Model="Booking" Edit="Model" 
+              ApiType="typeof(UpdateBooking)" DeleteApiType="typeof(DeleteBooking)" />
+
+@code {
+    Booking Model = Create.Booking("First Booking!", RoomType.Queen, 10, 100, "employee@email.com");
+}

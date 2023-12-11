@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.OrmLite.Sqlite.Converters;
@@ -60,6 +61,54 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
     public override bool SupportsSchema => false;
+
+    public override string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string> insertFields = null)
+    {
+        var modelDef = ModelDefinition<T>.Definition;
+        var sb = StringBuilderCache.Allocate()
+            .Append($"INSERT INTO {GetQuotedTableName(modelDef)} (");
+
+        var fieldDefs = GetInsertFieldDefinitions(modelDef);
+        var i = 0;
+        foreach (var fieldDef in fieldDefs)
+        {
+            if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                continue;
+
+            if (i++ > 0)
+                sb.Append(",");
+
+            sb.Append(GetQuotedColumnName(fieldDef.FieldName));
+        }
+        sb.Append(") VALUES");
+
+        var count = 0;
+        foreach (var obj in objs)
+        {
+            count++;
+            sb.AppendLine();
+            sb.Append('(');
+            i = 0;
+            foreach (var fieldDef in fieldDefs)
+            {
+                if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                    continue;
+
+                if (i++ > 0)
+                    sb.Append(',');
+                
+                AppendInsertRowValueSql(sb, fieldDef, obj);
+            }
+            sb.Append("),");
+        }
+        if (count == 0)
+            return "";
+
+        sb.Length--;
+        sb.AppendLine(";");
+        var sql = StringBuilderCache.ReturnAndFree(sb);
+        return sql;
+    }
 
     public override string ToPostDropTableStatement(ModelDefinition modelDef)
     {
@@ -131,11 +180,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
                     Directory.CreateDirectory(existingDir);
                 }
             }
-#if NETCORE
-                connString.AppendFormat(@"Data Source={0};", connectionString.Trim());
-#else
-            connString.AppendFormat(@"Data Source={0};Version=3;New=True;Compress=True;", connectionString.Trim());
-#endif
+            connString.AppendFormat(@"Data Source={0};", connectionString.Trim());
         }
         else
         {
@@ -157,9 +202,13 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
                 connString.AppendFormat("{0}={1};", option.Key, option.Value);
             }
         }
+        
+        ConnectionStringFilter?.Invoke(connString);
 
         return CreateConnection(StringBuilderCache.ReturnAndFree(connString));
     }
+    
+    public Action<StringBuilder> ConnectionStringFilter { get; set; }
 
     protected abstract IDbConnection CreateConnection(string connectionString);
 

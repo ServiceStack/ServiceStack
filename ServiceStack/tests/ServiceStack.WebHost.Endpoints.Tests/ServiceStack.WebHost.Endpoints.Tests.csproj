@@ -23,10 +23,11 @@
       <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
-      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.GoogleCloud\ServiceStack.GoogleCloud.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -45,14 +46,14 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
+    <PackageReference Include="Mysql.Data" Version="8.2.0" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
     <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
-    <PackageReference Include="Mysql.Data" Version="8.0.33" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.Configuration" />
@@ -64,9 +65,8 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="App_Data\customers.json">

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>MyApp</RootNamespace>
@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
-        <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="5.*" />
+        <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="6.*" />
         <PackageReference Include="System.Memory" Version="4.5.5" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     </ItemGroup>

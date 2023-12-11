@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.OrmLite.PostgreSQL.Core</PackageId>
     <AssemblyName>ServiceStack.OrmLite.PostgreSQL</AssemblyName>
     <RootNamespace>ServiceStack.OrmLite.PostgreSQL</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.OrmLite.PostgreSQL .NET Standard 2.0</Title>
     <PackageDescription>
       .NET Standard 2.0 version of ServiceStack.OrmLite.PostgreSQL
@@ -18,6 +18,9 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Core.csproj" />
@@ -26,7 +29,7 @@
     <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="7.0.4" />
+    <PackageReference Include="Npgsql" Version="7.0.6" />
   </ItemGroup>
 
 </Project>

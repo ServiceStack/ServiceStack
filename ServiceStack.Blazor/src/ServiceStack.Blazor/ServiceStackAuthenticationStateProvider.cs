@@ -60,7 +60,7 @@ public class BlazorWasmAuthenticationStateProvider : AuthenticationStateProvider
                 new Claim(ClaimTypes.NameIdentifier, authResponse.UserId),
                 new Claim(ClaimTypes.Name, authResponse.DisplayName),
                 new Claim(ClaimTypes.Email, authResponse.UserName),
-                new Claim(ClaimUtils.Picture, authResponse.ProfileUrl),
+                new Claim(BlazorClaimUtils.Picture, authResponse.ProfileUrl),
             };
 
             var roles = authResponse.Roles;
@@ -73,7 +73,7 @@ public class BlazorWasmAuthenticationStateProvider : AuthenticationStateProvider
                 claims.Add(new Claim(ClaimUtils.PermissionType, permission));
             }
 
-            var identity = new ClaimsIdentity(claims, ClaimUtils.AuthenticationType);
+            var identity = new ClaimsIdentity(claims, BlazorClaimUtils.AuthenticationType);
             return new AuthenticationState(new ClaimsPrincipal(identity));
         }
         catch (Exception ex)

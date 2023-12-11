@@ -72,7 +72,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
     [Parameter] public ApiPrefs? Prefs { get; set; }
-
+    [Parameter] public bool MonitorNavigationChanges { get; set; } = true;
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
     AutoEditForm<Model>? AutoEditForm { get; set; }
 
@@ -447,7 +447,10 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        NavigationManager.LocationChanged += HandleLocationChanged;
+        if (MonitorNavigationChanges)
+        {
+            NavigationManager.LocationChanged += HandleLocationChanged;
+        }
 
         if (AppMetadata == null)
         {
@@ -478,7 +481,10 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     public void Dispose()
     {
         dotnetRef?.Dispose();
-        NavigationManager.LocationChanged -= HandleLocationChanged;
+        if (MonitorNavigationChanges)
+        {
+            NavigationManager.LocationChanged -= HandleLocationChanged;
+        }
     }
 
     protected virtual void CloseDialogs()

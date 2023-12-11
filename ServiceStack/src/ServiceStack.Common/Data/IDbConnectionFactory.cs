@@ -1,20 +1,17 @@
-﻿#if !SL5
-using System.Data;
+﻿using System.Data;
 
-namespace ServiceStack.Data
+namespace ServiceStack.Data;
+
+public interface IDbConnectionFactory
 {
-    public interface IDbConnectionFactory
-    {
-        IDbConnection OpenDbConnection();
-        IDbConnection CreateDbConnection();
-    }
-
-    public interface IDbConnectionFactoryExtended : IDbConnectionFactory
-    {
-        IDbConnection OpenDbConnection(string namedConnection);
-
-        IDbConnection OpenDbConnectionString(string connectionString);
-        IDbConnection OpenDbConnectionString(string connectionString, string providerName);
-    }
+    IDbConnection OpenDbConnection();
+    IDbConnection CreateDbConnection();
 }
-#endif
+
+public interface IDbConnectionFactoryExtended : IDbConnectionFactory
+{
+    IDbConnection OpenDbConnection(string namedConnection);
+
+    IDbConnection OpenDbConnectionString(string connectionString);
+    IDbConnection OpenDbConnectionString(string connectionString, string providerName);
+}

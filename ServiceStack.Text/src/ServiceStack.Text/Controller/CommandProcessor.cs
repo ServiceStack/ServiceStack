@@ -13,68 +13,66 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
-namespace ServiceStack.Text.Controller
+namespace ServiceStack.Text.Controller;
+
+public class CommandProcessor 
 {
-	public class CommandProcessor 
+	private object[] Controllers { get; set; }
+
+	private readonly Dictionary<string, object> contextMap;
+
+	public CommandProcessor(object[] controllers)
 	{
-		private object[] Controllers { get; set; }
+		this.Controllers = controllers;
 
-		private readonly Dictionary<string, object> contextMap;
-
-		public CommandProcessor(object[] controllers)
+		this.contextMap = new Dictionary<string, object>();
+		foreach (var x in controllers.ToList())
 		{
-			this.Controllers = controllers;
-
-			this.contextMap = new Dictionary<string, object>();
-            foreach (var x in controllers.ToList())
-            {
-                contextMap[x.GetType().Name] = x;
-            }
-        }
-
-		public void Invoke(string commandUri)
-		{
-			var actionParts = commandUri.Split(new[] { "://" }, StringSplitOptions.None);
-
-			var controllerName = actionParts[0];
-
-			var pathInfo = PathInfo.Parse(actionParts[1]);
-
-		    if (!this.contextMap.TryGetValue(controllerName, out var context))
-		        throw new Exception("UnknownContext: " + controllerName);
-
-            var methodName = pathInfo.ActionName;
-
-            var method = context.GetType().GetMethods().First(
-                c => c.Name == methodName && c.GetParameters().Length == pathInfo.Arguments.Count);
-
-			var methodParamTypes = method.GetParameters().Select(x => x.ParameterType);
-
-			var methodArgs = ConvertValuesToTypes(pathInfo.Arguments, methodParamTypes.ToList());
-
-			try
-			{
-				method.Invoke(context, methodArgs);
-			}
-			catch (Exception ex)
-			{
-				throw new Exception("InvalidCommand", ex);
-			}
+			contextMap[x.GetType().Name] = x;
 		}
+	}
 
-		private static object[] ConvertValuesToTypes(IList<string> values, IList<Type> types)
+	public void Invoke(string commandUri)
+	{
+		var actionParts = commandUri.Split(new[] { "://" }, StringSplitOptions.None);
+
+		var controllerName = actionParts[0];
+
+		var pathInfo = PathInfo.Parse(actionParts[1]);
+
+		if (!this.contextMap.TryGetValue(controllerName, out var context))
+			throw new Exception("UnknownContext: " + controllerName);
+
+		var methodName = pathInfo.ActionName;
+
+		var method = context.GetType().GetMethods().First(
+			c => c.Name == methodName && c.GetParameters().Length == pathInfo.Arguments.Count);
+
+		var methodParamTypes = method.GetParameters().Select(x => x.ParameterType);
+
+		var methodArgs = ConvertValuesToTypes(pathInfo.Arguments, methodParamTypes.ToList());
+
+		try
 		{
-			var convertedValues = new object[types.Count];
-			for (var i = 0; i < types.Count; i++)
-			{
-				var propertyValueType = types[i];
-				var propertyValueString = values[i];
-				var argValue = TypeSerializer.DeserializeFromString(propertyValueString, propertyValueType);
-				convertedValues[i] = argValue;
-			}
-			return convertedValues;
+			method.Invoke(context, methodArgs);
 		}
+		catch (Exception ex)
+		{
+			throw new Exception("InvalidCommand", ex);
+		}
+	}
+
+	private static object[] ConvertValuesToTypes(IList<string> values, IList<Type> types)
+	{
+		var convertedValues = new object[types.Count];
+		for (var i = 0; i < types.Count; i++)
+		{
+			var propertyValueType = types[i];
+			var propertyValueString = values[i];
+			var argValue = TypeSerializer.DeserializeFromString(propertyValueString, propertyValueType);
+			convertedValues[i] = argValue;
+		}
+		return convertedValues;
 	}
 }

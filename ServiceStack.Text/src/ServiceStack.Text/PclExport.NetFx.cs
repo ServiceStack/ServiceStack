@@ -25,7 +25,7 @@ namespace ServiceStack
 {
     public class NetFxPclExport : PclExport
     {
-        public static NetFxPclExport Provider = new NetFxPclExport();
+        public static NetFxPclExport Provider = new();
 
         public NetFxPclExport()
         {

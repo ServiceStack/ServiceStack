@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-#if NET6_0
+#if NET6_0_OR_GREATER
 namespace ServiceStack.OrmLite.Converters
 {
     public class TimeOnlyConverter : TimeSpanAsIntConverter

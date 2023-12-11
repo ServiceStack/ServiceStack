@@ -149,7 +149,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
   </ItemGroup>

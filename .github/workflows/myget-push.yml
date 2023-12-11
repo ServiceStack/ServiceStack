@@ -1,4 +1,4 @@
-﻿name: A MyGet Publish
+name: A MyGet Publish
 
 on: workflow_dispatch
 
@@ -8,15 +8,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0'
-          include-prerelease: true
+          dotnet-version: '8.0.100'
+          
 
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: myget-pack.yml
+          workflow: pre-release-pack.yml
           # workflow_conclusion: success
           name: ServiceStack Packages
           commit: ${{ github.sha }}
@@ -40,5 +40,3 @@ jobs:
             echo 'Less files than expected, skipping push'
             exit 1
           fi
-          
-          

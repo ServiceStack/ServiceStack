@@ -169,7 +169,7 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
             {
                 var responseMap = response.ToObjectDictionary();
                 // populates Id
-                responseMap.PopulateInstance(responseMap);
+                responseMap.PopulateInstance(model);
                 // populates Result
                 if (responseMap.TryGetValue("Result", out var result))
                 {

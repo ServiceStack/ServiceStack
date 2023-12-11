@@ -1,25 +1,23 @@
-﻿namespace ServiceStack.Text.Pools
+﻿namespace ServiceStack.Text.Pools;
+
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+using System.Text;
+
+public static class StringBuilderPool
 {
-    // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-
-    using System.Text;
-
-    public static class StringBuilderPool
+    public static StringBuilder Allocate()
     {
-        public static StringBuilder Allocate()
-        {
-            return SharedPools.Default<StringBuilder>().AllocateAndClear();
-        }
+        return SharedPools.Default<StringBuilder>().AllocateAndClear();
+    }
 
-        public static void Free(StringBuilder builder)
-        {
-            SharedPools.Default<StringBuilder>().ClearAndFree(builder);
-        }
+    public static void Free(StringBuilder builder)
+    {
+        SharedPools.Default<StringBuilder>().ClearAndFree(builder);
+    }
 
-        public static string ReturnAndFree(StringBuilder builder)
-        {
-            SharedPools.Default<StringBuilder>().ForgetTrackedObject(builder);
-            return builder.ToString();
-        }
+    public static string ReturnAndFree(StringBuilder builder)
+    {
+        SharedPools.Default<StringBuilder>().ForgetTrackedObject(builder);
+        return builder.ToString();
     }
 }

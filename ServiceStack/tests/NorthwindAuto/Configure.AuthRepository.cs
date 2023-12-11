@@ -136,6 +136,7 @@ public class ConfigureAuthRepository : IHostingStartup
         new("employee@email.com", "A Employee", Roles: new[] { AppRoles.Employee }),
         new("employee1@email.com", "Employee 2", Roles: new[] { AppRoles.Employee }),
         new("employee2@email.com", "Employee 3", Roles: new[] { AppRoles.Employee }),
+        new("test", "Test User", Password:"test"),
     }.ForEach(user => CreateUser(authRepo, user));
     
     public static void CreateUser(IAuthRepository authRepo, SeedUser user)
@@ -143,8 +144,10 @@ public class ConfigureAuthRepository : IHostingStartup
         if (authRepo.GetUserAuthByUserName(user.Email) == null)
         {
             var newUser = appUserFaker.Generate();
-            newUser.Email = user.Email;
-            newUser.DisplayName = user.Name;
+            if (user.Email.Contains('@'))
+                newUser.Email = user.Email;
+            else
+                newUser.UserName = user.Email;
             var dbUser = (AppUser)authRepo.CreateUserAuth(newUser, user.Password);
             newUser.ProfileUrl = $"/profiles/users/{newUser.Id}.jpg";
             authRepo.UpdateUserAuth(dbUser, newUser);

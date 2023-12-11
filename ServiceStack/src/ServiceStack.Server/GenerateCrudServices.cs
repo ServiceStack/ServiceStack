@@ -101,6 +101,14 @@ namespace ServiceStack
         /// Filter to modify the `TableSchema` used by AutoGen to generate data models
         /// </summary>
         public Action<List<TableSchema>> TableSchemasFilter { get; set; }
+        
+        public GetTableNamesDelegate GetTableNames { get; set; }
+        
+        /// <summary>
+        /// Override which table columns to generate APIs for from a 'table' and 'schema'  
+        /// </summary>
+        public GetTableColumnsDelegate GetTableColumns { get; set; }
+
 
         public static Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
         {
@@ -824,7 +832,11 @@ namespace ServiceStack
 
             try
             {
-                var tables = db.GetTableNames(schema);
+                var config = HostContext.GetPlugin<AutoQueryFeature>()?.GenerateCrudServices; 
+                var tables = config?.GetTableNames != null
+                    ? config.GetTableNames(db,schema)
+                    : db.GetTableNames(schema);
+                
                 var results = new List<TableSchema>();
                 ILog log = null;
 
@@ -840,18 +852,24 @@ namespace ServiceStack
                         Name = table,
                     };
 
-                    string quotedTable = null;
                     try
                     {
-                        quotedTable = dialect.GetQuotedTableName(table, schema);
-                        to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable}");
+                        if (config?.GetTableColumns != null)
+                        {
+                            to.Columns = config.GetTableColumns(db, table, schema);
+                        }
+                        else
+                        {
+                            var quotedTable = dialect.GetQuotedTableName(table, schema);
+                            to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable}");
+                        }
                     }
                     catch (Exception e)
                     {
                         to.ErrorType = e.GetType().Name;
                         to.ErrorMessage = e.Message;
                         log ??= LogManager.GetLogger(typeof(GenerateCrudServices));
-                        log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
+                        log.Error($"GetTableSchemas(): Failed to GetTableColumns() for {dialect.GetQuotedTableName(table, schema)}", e);
 
                         if (db.State != System.Data.ConnectionState.Open)
                         {

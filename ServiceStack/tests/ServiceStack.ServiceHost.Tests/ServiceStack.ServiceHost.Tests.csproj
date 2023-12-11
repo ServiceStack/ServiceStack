@@ -1,228 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.ServiceHost.Tests</RootNamespace>
+    <TargetFramework>net472</TargetFramework>
+    <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.ServiceHost.Tests</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>True</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'STATIC_ONLY NO_EXPRESSIONS|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\STATIC_ONLY NO_EXPRESSIONS\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>False</Optimize>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'MonoTouch|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\MonoTouch\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>False</Optimize>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
-    <OutputPath>bin\Signed\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
+    <PackageId>ServiceStack.ServiceHost.Tests</PackageId>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Net" />
-    <Reference Include="System.Runtime.Serialization">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="AppData\NoTemplate\Static.cshtml" />
-    <None Include="AppData\NoTemplate\Static.md" />
-    <None Include="AppData\Pages.json" />
-    <None Include="AppData\Template\StaticTpl.cshtml" />
-    <None Include="Views\NoTemplate\Dynamic.cshtml" />
-    <None Include="Views\NoTemplate\Dynamic.md" />
-    <Compile Include="AppData\NorthwindCustomers.cs" />
-    <Compile Include="AppData\FormatHelpers.cs" />
-    <Compile Include="AppData\NorthwindHelpers.cs" />
-    <Compile Include="BasicAppHostTests.cs" />
-    <Compile Include="Formats\MarkdownFormatExtensions.cs" />
-    <Compile Include="Formats_Razor\CustomRazorBasePage.cs" />
-    <Compile Include="Formats_Razor\IntroductionExampleRazorTests.cs" />
-    <Compile Include="Formats_Razor\IntroductionLayoutRazorTests.cs" />
-    <Compile Include="Formats\MarkdownTestBase.cs" />
-    <Compile Include="Formats_Razor\PrecompiledRazorEngineTests.cs" />
-    <Compile Include="Formats_Razor\RazorEngineTests.cs" />
-    <Compile Include="Formats_Razor\RazorPageResolutionTests.cs" />
-    <Compile Include="Formats_Razor\StandAloneExampleTests.cs" />
-    <Compile Include="Formats_Razor\TemplateTests.cs" />
-    <Compile Include="Formats\IntroductionExampleTests.cs" />
-    <Compile Include="Formats\IntroductionLayoutTests.cs" />
-    <Compile Include="Formats\MarkdownFormatTests.cs" />
-    <Compile Include="Formats_Razor\RazorTestBase.cs" />
-    <Compile Include="Formats\MockClass.cs" />
-    <Compile Include="Formats\TemplateExtentionTests.cs" />
-    <Compile Include="Formats\TemplateTests.cs" />
-    <Compile Include="Formats\TextBlockTests.cs" />
-    <Compile Include="Formats\TextBlockUtils.cs" />
-    <Compile Include="Formats\UseCaseTests.cs" />
-    <Compile Include="Formats\ViewTests.cs" />
-    <Compile Include="HttpRequestAuthenticationTests.cs" />
-    <Compile Include="HttpRequestMock.cs" />
-    <Compile Include="IoCTests.cs" />
-    <Compile Include="RequestContextExtensionsTest.cs" />
-    <Compile Include="RestPathTests.cs" />
-    <Compile Include="Routes\DynamicRouteAttributeTests.cs" />
-    <Compile Include="Routes\SimpleRestServices.cs" />
-    <Compile Include="Routes\ServiceRoutesTests.cs" />
-    <Compile Include="ServiceControllerPerfTests.cs" />
-    <Compile Include="ServiceControllerTests.cs" />
-    <Compile Include="ServiceCreationTests.cs" />
-    <Compile Include="ServiceHostTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceStackHandlerPathTests.cs" />
-    <Compile Include="ServiceStackHandlerUrlTests.cs" />
-    <Compile Include="Support\BasicService.cs" />
-    <Compile Include="Support\AutoWireService.cs" />
-    <Compile Include="Support\GenericService.cs" />
-    <Compile Include="Support\RestTestService.cs" />
-    <Compile Include="Support\RequiresService.cs" />
-    <Compile Include="TypeFactory\ReflectionTypeFunqContainer.cs" />
-    <Compile Include="TypeFactory\FuncTypeFactory.cs" />
-    <Compile Include="Examples\FunqEasyRegistrationHelper.cs" />
-    <Compile Include="Examples\funq_easy_registration.cs" />
-    <Compile Include="UseCase\CustomerUseCase.cs" />
-    <Compile Include="Support\InMemoryDbConnection.cs" />
-    <Compile Include="Support\CustomerUseCaseConfig.cs" />
-    <Compile Include="UseCase\Operations\GetCustomer.cs" />
-    <Compile Include="UseCase\Operations\StoreCustomers.cs" />
-    <Compile Include="UseCase\Services\GetCustomerService.cs" />
-    <Compile Include="UseCase\Services\StoreCustomersService.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="AppData\ALFKI.json" />
-    <None Include="Views\Shared\DynamicTplShared.cshtml" />
-    <None Include="Views\Shared\DynamicShared.cshtml" />
-    <None Include="Views\Template\DynamicTpl.cshtml" />
-    <None Include="Views\Template\DynamicNestedTpl.cshtml" />
-    <None Include="Views\Template\DynamicListTpl.cshtml" />
-    <None Include="Views\Template\CustomerDetailsResponse.cshtml" />
-    <None Include="Views\Template\Customer.cshtml" />
-    <None Include="Views\Template\Customer.md" />
-    <None Include="Views\Template\CustomerDetailsResponse.md" />
-    <None Include="AppData\Template\_Layout.cshtml" />
-    <Content Include="AppData\Template\_Layout.shtml" />
-    <Content Include="AppData\NoTemplate\_Layout.shtml" />
-    <Content Include="Views\Shared\alt-template.shtml" />
-    <None Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Shared\_Layout.shtml" />
-    <Content Include="lib\Funq.dll" />
-    <Content Include="lib\hiro\Hiro.Containers.dll" />
-    <Content Include="lib\hiro\Hiro.Containers.XML" />
-    <Content Include="lib\hiro\Hiro.Core.dll" />
-    <Content Include="lib\hiro\Hiro.Core.xml" />
-    <Content Include="lib\hiro\Iesi.Collections.dll" />
-    <Content Include="lib\hiro\Iesi.Collections.Generic.dll" />
-    <Content Include="lib\hiro\Mono.Cecil.dll" />
-    <Content Include="lib\hiro\NGenerics.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Views\Shared\DynamicShared.md" />
-    <None Include="Views\Shared\DynamicTplShared.md" />
-    <None Include="Views\Template\DynamicNestedTpl.md" />
-    <None Include="Views\Template\DynamicListTpl.md" />
-    <None Include="Views\Template\DynamicTpl.md" />
-    <None Include="AppData\Template\StaticTpl.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Code\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+    <None Include="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -232,7 +31,6 @@
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.3.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Moq" Version="4.9.0" />
     <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
@@ -240,12 +38,20 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <DefineConstants>$(DefineConstants);NETFX</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
+  </ItemGroup>
 </Project>

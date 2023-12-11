@@ -51,26 +51,22 @@ namespace ServiceStack.Common.Tests.Xlinq
             OrmLiteConfig.DialectProvider = SqliteOrmLiteDialectProvider.Instance;
 
             var element2 = XElement.Parse(xml).AnyElement("Body").AnyElement("Element1").AnyElement("Element2");
-
-            using (var db = ":memory:".OpenDbConnection())
+            using var db = ":memory:".OpenDbConnection();
+            db.CreateTable<XmlData>(true);
+            foreach (var element3 in element2.AllElements("Element3"))
             {
-                db.CreateTable<XmlData>(true);
-                foreach (var element3 in element2.AllElements("Element3"))
+                var xmlData = new XmlData
                 {
-                    var xmlData = new XmlData
-                    {
-                        Day = element2.AnyAttribute("day").Value,
-                        Name = element3.AnyAttribute("name").Value,
-                        Time = int.Parse(element3.FirstElement().AnyAttribute("time").Value),
-                        Amount = int.Parse(element3.FirstElement().FirstElement().AnyAttribute("amount").Value),
-                        Price = decimal.Parse(element3.FirstElement().FirstElement().AnyAttribute("price").Value),
-                    };
-                    db.Insert(xmlData);
-                }
-                db.Select<XmlData>().ForEach(x => Console.WriteLine(TypeSerializer.SerializeToString(x)));
+                    Day = element2.AnyAttribute("day").Value,
+                    Name = element3.AnyAttribute("name").Value,
+                    Time = int.Parse(element3.FirstElement().AnyAttribute("time").Value),
+                    Amount = int.Parse(element3.FirstElement().FirstElement().AnyAttribute("amount").Value),
+                    Price = decimal.Parse(element3.FirstElement().FirstElement().AnyAttribute("price").Value),
+                };
+                db.Insert(xmlData);
             }
+            db.Select<XmlData>().ForEach(x => Console.WriteLine(TypeSerializer.SerializeToString(x)));
         }
-
     }
 }
 #endif

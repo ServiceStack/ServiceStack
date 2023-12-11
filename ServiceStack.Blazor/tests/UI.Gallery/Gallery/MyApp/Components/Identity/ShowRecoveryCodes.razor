@@ -1,0 +1,34 @@
+﻿<Heading3>Recovery codes</Heading3>
+<div class="max-w-xl">
+    <StatusMessage Message="@StatusMessage" />
+
+    <Alert class="mt-4" Type="AlertType.Warning">
+        <p class="mb-3">
+            <strong>Put these codes in a safe place.</strong>
+        </p>
+        <p class="mb-3">
+            If you lose your device and don't have the recovery codes you will lose access to your account.
+        </p>
+    </Alert>
+
+    <div class="mt-4">
+        @for (var row = 0; row < RecoveryCodes.Length; row += 2)
+        {
+            <code class="recovery-code">@RecoveryCodes[row]</code>
+
+            <text>&nbsp;</text>
+
+            <code class="recovery-code">@RecoveryCodes[row + 1]</code>
+
+            <br />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string[] RecoveryCodes { get; set; } = default!;
+
+    [Parameter]
+    public string StatusMessage { get; set; } = default!;
+}

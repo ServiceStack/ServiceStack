@@ -68,7 +68,6 @@ JS = (function () {
         Object.keys(resolutions).forEach(res => o[res] = w > resolutions[res])
         return o
     }
-
     return {
         SelectorAliases,
         get(name) { return window[name] },
@@ -78,34 +77,40 @@ JS = (function () {
             return el && el.innerHTML || ''
         },
         invoke(target, fnName, args) {
+            if (!target || !fnName) return
             let f = target[fnName]
             if (typeof f == 'function') {
                 let ret = f.apply(target, args || [])
                 return ret
-            } else {   
-                if (args !== undefined)
-                    target[fnName] = args
-                return target[fnName]
             }
-            return f
+            if (args !== undefined)
+                target[fnName] = args
+            return target[fnName]
         },
         invokeDelay(target, fnName, args, ms) {
             setTimeout(() => JS.invoke(target, fnName, args), isNaN(ms) ? 0 : ms)
         },
         elInvoke(sel, fnName, args) {
             let $el = el(sel)
-            if ($el) {
-                fnName = useFn(fnName, args)
-                let f = $el[fnName]
-                if (typeof f == 'function') {
-                    let ret = f.apply($el, args || [])
-                    return ret
-                } else {
-                    if (args !== undefined)
-                        $el[fnName] = args
-                    return $el[fnName]
-                }
-            }
+            if (!$el) return
+            return JS.invoke($el, useFn(fnName, args), args)
+        },
+        elInvokeObjectMethod(sel, objAccessor, fnName, args) {
+            let obj = el(sel)
+            if (!obj) return
+            objAccessor.split('.').forEach(name => {
+                if (!obj) return
+                obj = obj[name]
+            })
+            return JS.invoke(obj, useFn(fnName, args), args)
+        },
+        invokeObjectMethod(objAccessor, fnName, args) {
+            let obj = window
+            objAccessor.split('.').forEach(name => {
+                if (!obj) return
+                obj = obj[name]
+            })
+            return JS.invoke(obj, useFn(fnName, args), args)
         },
         elInvokeDelayIf(test, sel, fnName, args) {
             if (matchesTest(test, sel)) JS.elInvoke(sel, sel, fnName, args)
@@ -140,16 +145,15 @@ JS = (function () {
         focusNextElement() {
             let elActive = document.activeElement
             let form = elActive && elActive.form
-            if (form) {
-                let sel = ':not([disabled]):not([tabindex="-1"])'
-                let els = form.querySelectorAll(`a:not([disabled]), button${sel}, input[type=text]${sel}, [tabindex]${sel}`)
-                let focusable = Array.prototype.filter.call(els,
-                    el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === elActive);
-                let index = focusable.indexOf(elActive);
-                if (index > -1) {
-                    let elNext = focusable[index + 1] || focusable[0];
-                    elNext.focus();
-                }
+            if (!form) return
+            let sel = ':not([disabled]):not([tabindex="-1"])'
+            let els = form.querySelectorAll(`a:not([disabled]), button${sel}, input[type=text]${sel}, [tabindex]${sel}`)
+            let focusable = Array.prototype.filter.call(els,
+                el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === elActive);
+            let index = focusable.indexOf(elActive);
+            if (index > -1) {
+                let elNext = focusable[index + 1] || focusable[0];
+                elNext.focus();
             }
         },
         enableAutoScroll() { skipAutoScroll = false },
@@ -185,13 +189,9 @@ JS = (function () {
                 let darkMode = colorScheme != null
                     ? colorScheme === 'dark'
                     : window.matchMedia('(prefers-color-scheme: dark)').matches
-                let classList = document.documentElement.classList
-                if (darkMode) {
-                    if (!classList.contains('dark'))
-                        classList.add('dark')
-                } else {
-                    classList.remove('dark')
-                }
+                let html = document.documentElement
+                html.classList.toggle('dark', darkMode)
+                html.style.setProperty('color-scheme', darkMode ? 'dark' : null)
             }
         },
     }

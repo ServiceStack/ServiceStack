@@ -89,6 +89,21 @@ namespace ServiceStack.Text.Tests.Utils
         }
 
         [Test]
+        public void CanDeserialize_DateTimeOffset_with_Offset()
+        {
+            var offset = TimeSpan.Zero.Add(TimeSpan.FromHours(8));
+            var expectedValue = new DateTimeOffset(2012, 6, 27, 11, 26, 04, 524, offset);
+
+            var s = DateTimeSerializer.ToWcfJsonDateTimeOffset(expectedValue);
+
+            Assert.AreEqual("\\/Date(1340767564524+0800)\\/", s);
+
+            var afterValue = DateTimeSerializer.ParseWcfJsonDateOffset(s);
+
+            Assert.AreEqual(expectedValue, afterValue);
+        }
+
+        [Test]
         [Ignore("TODO: add reason")]
         public void Utc_Local_Equals()
         {

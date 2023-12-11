@@ -400,7 +400,7 @@ namespace Funq
             try
             {
                 TService resolved;
-                if (CheckAdapterFirst
+                if ((CheckAdapterFirst || typeof(TService).FirstGenericTypeDefinition()?.Name.StartsWith("Func`") == true)
                     && Adapter != null
                     && typeof(TService) != typeof(IRequest)
                     && !Equals(default(TService), (resolved = Adapter.TryResolve<TService>())))

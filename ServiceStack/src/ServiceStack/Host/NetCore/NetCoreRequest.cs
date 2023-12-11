@@ -51,10 +51,7 @@ namespace ServiceStack.Host.NetCore
         public T TryResolve<T>()
         {
             var instance = context.RequestServices.GetService<T>();
-            if (instance != null)
-                return instance;
-
-            return this.TryResolveInternal<T>();
+            return instance ?? this.TryResolveInternal<T>();
         }
 
         public object GetService(Type serviceType) => context.RequestServices.GetService(serviceType);

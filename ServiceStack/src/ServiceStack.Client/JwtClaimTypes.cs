@@ -65,8 +65,10 @@ public static class JwtClaimTypes
     public const string Scope = "scope";
     public const string ClientId = "client_id";
     public const string MayAct = "may_act";
-    public const string Roles = "roles";
     public const string Groups = "groups";
     public const string IdentityProvider = "idp";
+    public const string Role = "role";
+    public const string Permission = "perm";
+    public const string Roles = "roles";
     public const string Permissions = "perms";
 }

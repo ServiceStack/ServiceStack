@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -321,6 +322,14 @@ namespace ServiceStack.OrmLite.MySql
 		  "ZEROFILL",
         }, StringComparer.OrdinalIgnoreCase);
 
+        public override void Init(string connectionString)
+        {
+	        if (connectionString.ToLower().Contains("allowloadlocalinfile=true"))
+	        {
+		        AllowLoadLocalInfile = true;
+	        }
+        }
+
         public override string GetLoadChildrenSubSelect<From>(SqlExpression<From> expr)
         {
 	        // Workaround for: MySQL - This version of MySQL doesn't yet support 'LIMIT & IN/ALL/ANY/SOME subquery
@@ -535,6 +544,9 @@ namespace ServiceStack.OrmLite.MySql
             // https://mariadb.com/kb/en/library/create-database/
             return $"SELECT 1";
         }
+        
+        public override string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
+	        $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP FOREIGN KEY {GetQuotedName(foreignKeyName)};";
 
         public override string GetColumnDefinition(FieldDefinition fieldDef)
         {

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Aws</PackageId>
     <AssemblyName>ServiceStack.Aws</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack integration for Amazon Web Services (AWS)</Title>
     <PackageDescription>
       ServiceStack integration for Amazon Web Services (AWS) including:
@@ -23,6 +23,9 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
@@ -33,26 +36,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="3.7.107.2" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.103.17" />
-    <PackageReference Include="AWSSDK.S3" Version="3.7.104.28" />
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.102.16" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.300.2" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.300.2" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.300.2" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.300.2" />
+    <PackageReference Include="AWSSDK.TranscribeService" Version="3.7.300.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
-    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.1.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
 </Project>

@@ -8,6 +8,7 @@ using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
 using ServiceStack.NativeTypes.Java;
 using ServiceStack.NativeTypes.Kotlin;
+using ServiceStack.NativeTypes.Php;
 using ServiceStack.NativeTypes.Python;
 using ServiceStack.NativeTypes.Swift;
 using ServiceStack.NativeTypes.TypeScript;
@@ -84,6 +85,14 @@ public class TypesMjs : NativeTypesBase, IGet, IReturn<string>
     public string Vfx { get; set; }
 }
 
+[ExcludeMetadata]
+[Route("/types/php")]
+public class TypesPhp : NativeTypesBase, IGet, IReturn<string>
+{
+    public bool? Cache { get; set; }
+    public string Vfx { get; set; }
+}
+
 public class NativeTypesBase
 {
     public string BaseUrl { get; set; }
@@ -151,6 +160,7 @@ public class NativeTypesService : Service
             {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri(Request)},
             {"CommonJs", new TypesCommonJs().ToAbsoluteUri(Request)},
             {"Mjs", new TypesMjs().ToAbsoluteUri(Request)},
+            {"Php", new TypesPhp().ToAbsoluteUri(Request)},
             {"Dart", new TypesDart().ToAbsoluteUri(Request)},
             {"Java", new TypesJava().ToAbsoluteUri(Request)},
             {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
@@ -293,6 +303,38 @@ public class NativeTypesService : Service
             return Request.ToOptimizedResultUsingCache(LocalCache, cacheKey:Request.AbsoluteUri, Generate);
             
         return Generate();
+    }
+
+    [AddHeader(ContentType = MimeTypes.JavaScript)]
+    public object Any(TypesPhp request)
+    {
+        request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+        typesConfig.ExportAsTypes = true;
+        typesConfig.AddServiceStackTypes = true;
+            
+        var metadataTypes = ResolveMetadataTypes(typesConfig);
+
+        if (!PhpGenerator.GenerateServiceStackTypes)
+        {
+            var ignoreLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+            ignoreLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+            ignoreLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
+        
+            metadataTypes.Operations.RemoveAll(x => ignoreLibraryTypes.Contains(x.Request.Name));
+            metadataTypes.Operations.Each(x => {
+                if (x.Response != null && ignoreLibraryTypes.Contains(x.Response.Name))
+                {
+                    x.Response = null;
+                }
+            });
+            metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
+        }
+
+        var gen = new PhpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        return gen;
     }
 
     [AddHeader(ContentType = MimeTypes.PlainText)]

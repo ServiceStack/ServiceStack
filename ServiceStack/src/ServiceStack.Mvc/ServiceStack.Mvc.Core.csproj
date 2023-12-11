@@ -3,7 +3,7 @@
     <PackageId>ServiceStack.Mvc.Core</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
     <RootNamespace>ServiceStack.Mvc</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>ServiceStack.Mvc .NET Standard 2.0</Title>
     <PackageDescription>
       MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
@@ -16,6 +16,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +39,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core " Version="2.2.5" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 </Project>

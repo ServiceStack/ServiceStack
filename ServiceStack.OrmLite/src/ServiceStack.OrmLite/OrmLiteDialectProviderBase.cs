@@ -123,7 +123,7 @@ namespace ServiceStack.OrmLite
             RegisterConverter<DateTime>(new DateTimeConverter());
             RegisterConverter<DateTimeOffset>(new DateTimeOffsetConverter());
 
-#if NET6_0
+#if NET6_0_OR_GREATER
             RegisterConverter<DateOnly>(new DateOnlyConverter());
             RegisterConverter<TimeOnly>(new TimeOnlyConverter());
 #endif
@@ -177,6 +177,17 @@ namespace ServiceStack.OrmLite
 
         public Action<IDbConnection> OnOpenConnection { get; set; }
 
+        internal int OneTimeConnectionCommandsRun;
+
+        /// <summary>
+        /// Enable Bulk Inserts from CSV files
+        /// </summary>
+        public bool AllowLoadLocalInfile
+        {
+            set => OneTimeConnectionCommands.Add($"SET GLOBAL LOCAL_INFILE={value.ToString().ToUpper()};");
+        }
+        
+        public List<string> OneTimeConnectionCommands { get; } = new();
         public List<string> ConnectionCommands { get; } = new();
 
         public string ParamString { get; set; } = "@";
@@ -245,6 +256,8 @@ namespace ServiceStack.OrmLite
             if (Converters.TryRemove(typeof(T), out var converter))
                 converter.DialectProvider = null;
         }
+
+        public virtual void Init(string connectionString) {}
 
         public void RegisterConverter<T>(IOrmLiteConverter converter)
         {
@@ -577,6 +590,15 @@ namespace ServiceStack.OrmLite
         {
             if (dbConn is OrmLiteConnection ormLiteConn)
                 ormLiteConn.ConnectionId = Guid.NewGuid();
+
+            if (Interlocked.CompareExchange(ref OneTimeConnectionCommandsRun, 1, 0) == 0)
+            {
+                foreach (var command in OneTimeConnectionCommands)
+                {
+                    using var cmd = dbConn.CreateCommand();
+                    cmd.ExecNonQuery(command);
+                }
+            }
             
             foreach (var command in ConnectionCommands)
             {
@@ -640,7 +662,7 @@ namespace ServiceStack.OrmLite
             return ret;
         }
 
-        public virtual FieldDefinition[] GetInsertFieldDefinitions(ModelDefinition modelDef, ICollection<string> insertFields)
+        public virtual FieldDefinition[] GetInsertFieldDefinitions(ModelDefinition modelDef, ICollection<string> insertFields=null)
         {
             var insertColumns = insertFields?.Map(ColumnNameOnly);
             return insertColumns != null 
@@ -648,6 +670,117 @@ namespace ServiceStack.OrmLite
                     ? modelDef.GetOrderedFieldDefinitions(insertColumns)
                     : modelDef.GetOrderedFieldDefinitions(insertColumns, name => NamingStrategy.GetColumnName(name)) 
                 : modelDef.FieldDefinitionsArray;
+        }
+
+        public virtual void AppendInsertRowValueSql(StringBuilder sbColumnValues, FieldDefinition fieldDef, object obj)
+        {
+            if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                return;
+
+            try
+            {
+                if (fieldDef.AutoId)
+                {
+                    var dbValue = GetInsertDefaultValue(fieldDef);
+                    sbColumnValues.Append(dbValue != null ? GetQuotedValue(dbValue.ToString()) : "NULL");
+                }
+                else
+                {
+                    sbColumnValues.Append(GetQuotedValue(fieldDef.GetValue(obj), fieldDef.FieldType));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("ERROR in ToInsertRowStatement(): " + ex.Message, ex);
+                throw;
+            }
+        }
+        
+        public virtual string ToInsertRowSql<T>(T obj, ICollection<string> insertFields = null)
+        {
+            var sbColumnNames = StringBuilderCache.Allocate();
+            var sbColumnValues = StringBuilderCacheAlt.Allocate();
+            var modelDef = obj.GetType().GetModelDefinition();
+
+            var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields);
+            foreach (var fieldDef in fieldDefs)
+            {
+                if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                    continue;
+
+                if (sbColumnNames.Length > 0)
+                    sbColumnNames.Append(",");
+
+                sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+
+                if (sbColumnValues.Length > 0)
+                    sbColumnValues.Append(",");
+
+                AppendInsertRowValueSql(sbColumnValues, fieldDef, obj);
+            }
+
+            var sql = $"INSERT INTO {GetQuotedTableName(modelDef)} ({StringBuilderCache.ReturnAndFree(sbColumnNames)}) " +
+                      $"VALUES ({StringBuilderCacheAlt.ReturnAndFree(sbColumnValues)})";
+
+            return sql;
+        }
+
+        public virtual string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string> insertFields = null)
+        {
+            var modelDef = ModelDefinition<T>.Definition;
+            var sb = StringBuilderCache.Allocate()
+                .Append($"INSERT INTO {GetQuotedTableName(modelDef)} (");
+
+            var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:insertFields);
+            var i = 0;
+            foreach (var fieldDef in fieldDefs)
+            {
+                if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                    continue;
+
+                if (i++ > 0)
+                    sb.Append(",");
+
+                sb.Append(GetQuotedColumnName(fieldDef.FieldName));
+            }
+            sb.Append(") VALUES");
+
+            var count = 0;
+            foreach (var obj in objs)
+            {
+                count++;
+                sb.AppendLine();
+                sb.Append('(');
+                i = 0;
+                foreach (var fieldDef in fieldDefs)
+                {
+                    if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                        continue;
+
+                    if (i++ > 0)
+                        sb.Append(',');
+                
+                    AppendInsertRowValueSql(sb, fieldDef, obj);
+                }
+                sb.Append("),");
+            }
+            if (count == 0)
+                return "";
+
+            sb.Length--;
+            sb.AppendLine(";");
+            var sql = StringBuilderCache.ReturnAndFree(sb);
+            return sql;
+        }
+
+        public virtual void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
+        {
+            config ??= new();
+            foreach (var batch in objs.BatchesOf(config.BatchSize))
+            {
+                var sql = ToInsertRowsSql(batch, insertFields:config.InsertFields);
+                db.ExecuteSql(sql);
+            }
         }
 
         public virtual string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null)
@@ -1608,6 +1741,10 @@ namespace ServiceStack.OrmLite
             return "";
         }
 
+        public virtual string ToCreateSavePoint(string name) => $"SAVEPOINT {name}";
+        public virtual string ToReleaseSavePoint(string name) => $"RELEASE SAVEPOINT {name}";
+        public virtual string ToRollbackSavePoint(string name) => $"ROLLBACK TO SAVEPOINT {name}";
+
         public virtual List<string> SequenceList(Type tableType) => new List<string>();
 
         public virtual Task<List<string>> SequenceListAsync(Type tableType, CancellationToken token = default) => new List<string>().InTask();
@@ -1683,6 +1820,9 @@ namespace ServiceStack.OrmLite
                    $"{GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof(T), onDelete: FkOptionToString(onDelete)))}" +
                    $"{GetForeignKeyOnUpdateClause(new ForeignKeyConstraint(typeof(T), onUpdate: FkOptionToString(onUpdate)))};";
         }
+
+        public virtual string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
 
         public virtual string ToCreateIndexStatement<T>(Expression<Func<T, object>> field, string indexName = null, bool unique = false)
         {

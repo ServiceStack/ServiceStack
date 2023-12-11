@@ -13,28 +13,27 @@
 
 using System;
 
-namespace ServiceStack.Text
+namespace ServiceStack.Text;
+
+public static class SystemTime
 {
-    public static class SystemTime
+    public static Func<DateTime> UtcDateTimeResolver;
+
+    public static DateTime Now
     {
-        public static Func<DateTime> UtcDateTimeResolver;
-
-        public static DateTime Now
+        get
         {
-            get
-            {
-                var temp = UtcDateTimeResolver;
-                return temp == null ? DateTime.Now : temp().ToLocalTime();
-            }
+            var temp = UtcDateTimeResolver;
+            return temp == null ? DateTime.Now : temp().ToLocalTime();
         }
+    }
 
-        public static DateTime UtcNow
+    public static DateTime UtcNow
+    {
+        get
         {
-            get
-            {
-                var temp = UtcDateTimeResolver;
-                return temp == null ? DateTime.UtcNow : temp();
-            }
+            var temp = UtcDateTimeResolver;
+            return temp == null ? DateTime.UtcNow : temp();
         }
     }
 }

@@ -16,6 +16,9 @@ namespace ServiceStack.OrmLite.Converters
 
         public override object ToDbValue(Type fieldType, object value)
         {
+            if (value == null)
+                return null;
+            
             var timespan = (TimeSpan)value;
             return timespan.Ticks;
         }

@@ -14,76 +14,70 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Text;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public static class TextExtensions
 {
-    public static class TextExtensions
+    public static string ToCsvField(this string text)
     {
-        public static string ToCsvField(this string text)
-        {
-            return string.IsNullOrEmpty(text) || !CsvWriter.HasAnyEscapeChars(text)
-                ? text
-                : string.Concat
-                        (
-                            CsvConfig.ItemDelimiterString,
-                            text.Replace(CsvConfig.ItemDelimiterString, CsvConfig.EscapedItemDelimiterString),
-                            CsvConfig.ItemDelimiterString
-                        );
-        }
+        if (string.IsNullOrEmpty(text) || !CsvWriter.HasAnyEscapeChars(text))
+            return text;
+        var itemDelim = CsvConfig.ItemDelimiterString;
+        return string.Concat(
+            itemDelim,
+            text.Replace(itemDelim, CsvConfig.EscapedItemDelimiterString),
+            itemDelim);
+    }
 
-        public static object ToCsvField(this object text)
-        {
-            var textSerialized = string.Empty;
-            if (text is string)
-            {
-                textSerialized = text.ToString();
-            }
-            else
-            {
-                textSerialized = TypeSerializer.SerializeToString(text).StripQuotes();
-            }
+    public static object ToCsvField(this object text)
+    {
+        var textSerialized = text is string 
+            ? text.ToString() 
+            : TypeSerializer.SerializeToString(text).StripQuotes();
 
-            return textSerialized.IsNullOrEmpty() || !CsvWriter.HasAnyEscapeChars(textSerialized)
-                ? textSerialized
-                : string.Concat
-                  (
-                      CsvConfig.ItemDelimiterString,
-                      textSerialized.Replace(CsvConfig.ItemDelimiterString, CsvConfig.EscapedItemDelimiterString),
-                      CsvConfig.ItemDelimiterString
-                  );
-        }
+        if (textSerialized.IsNullOrEmpty() || !CsvWriter.HasAnyEscapeChars(textSerialized))
+            return textSerialized;
+            
+        var itemDelim = CsvConfig.ItemDelimiterString;
+        return string.Concat(
+            itemDelim,
+            textSerialized.Replace(itemDelim, CsvConfig.EscapedItemDelimiterString),
+            itemDelim);
+    }
 
-        public static string FromCsvField(this string text)
-        {
-            return string.IsNullOrEmpty(text) || !text.StartsWith(CsvConfig.ItemDelimiterString, StringComparison.Ordinal)
-                ? text
-                : text.Substring(CsvConfig.ItemDelimiterString.Length, text.Length - CsvConfig.EscapedItemDelimiterString.Length)
-                    .Replace(CsvConfig.EscapedItemDelimiterString, CsvConfig.ItemDelimiterString);
-        }
+    public static string FromCsvField(this string text)
+    {
+        var itemDelim = CsvConfig.ItemDelimiterString;
+        if (string.IsNullOrEmpty(text) || !text.StartsWith(itemDelim, StringComparison.Ordinal))
+            return text; 
+        var escapedDelim = CsvConfig.EscapedItemDelimiterString;
+        return text.Substring(itemDelim.Length, text.Length - escapedDelim.Length)
+            .Replace(escapedDelim, itemDelim);
+    }
 
-        public static List<string> FromCsvFields(this IEnumerable<string> texts)
+    public static List<string> FromCsvFields(this IEnumerable<string> texts)
+    {
+        var safeTexts = new List<string>();
+        foreach (var text in texts)
         {
-            var safeTexts = new List<string>();
-            foreach (var text in texts)
-            {
-                safeTexts.Add(FromCsvField(text));
-            }
-            return safeTexts;
+            safeTexts.Add(FromCsvField(text));
         }
+        return safeTexts;
+    }
 
-        public static string[] FromCsvFields(params string[] texts)
+    public static string[] FromCsvFields(params string[] texts)
+    {
+        var textsLen = texts.Length;
+        var safeTexts = new string[textsLen];
+        for (var i = 0; i < textsLen; i++)
         {
-            var textsLen = texts.Length;
-            var safeTexts = new string[textsLen];
-            for (var i = 0; i < textsLen; i++)
-            {
-                safeTexts[i] = FromCsvField(texts[i]);
-            }
-            return safeTexts;
+            safeTexts[i] = FromCsvField(texts[i]);
         }
+        return safeTexts;
+    }
 
-        public static string SerializeToString<T>(this T value)
-        {
-            return JsonSerializer.SerializeToString(value);
-        }
+    public static string SerializeToString<T>(this T value)
+    {
+        return JsonSerializer.SerializeToString(value);
     }
 }

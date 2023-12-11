@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.OrmLite.PostgreSQL</PackageId>
     <AssemblyName>ServiceStack.OrmLite.PostgreSQL</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
     <Title>OrmLite.PostgreSQL - Fast, code-first, config-free POCO ORM</Title>
     <PackageDescription>
       Light, simple and fast convention-based code-first POCO ORM for PostgreSQL.
@@ -21,13 +21,13 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="Npgsql" Version="7.0.4" />
+    <PackageReference Include="Npgsql" Version="7.0.6" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Npgsql" Version="7.0.4" />
+    <PackageReference Include="Npgsql" Version="7.0.6" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Npgsql" Version="7.0.4" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="Npgsql" Version="7.0.6" />
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,8 @@
 using System;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Web;
+
+public interface IExpirable
 {
-    public interface IExpirable
-    {
-        DateTime? LastModified { get; }
-    }
+    DateTime? LastModified { get; }
 }

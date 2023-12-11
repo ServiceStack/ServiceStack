@@ -15,9 +15,9 @@ public class Todo
 [Route("/todos", "GET")]
 public class QueryTodos : QueryDb<Todo>
 {
-    // public int? Id { get; set; }
-    // public List<long>? Ids { get; set; }
-    // public string? TextContains { get; set; }
+    public int? Id { get; set; }
+    public List<long>? Ids { get; set; }
+    public string? TextContains { get; set; }
 }
 
 /*

@@ -19,6 +19,7 @@ public static class MimeTypes
     public const string Jsv = "application/jsv";
     public const string JsvText = "text/jsv";
     public const string Csv = "text/csv";
+    public const string Jsonl = "text/jsonl";
     public const string Pdf = "application/pdf";
     public const string ProtoBuf = "application/x-protobuf";
     public const string JavaScript = "text/javascript";
@@ -32,6 +33,7 @@ public static class MimeTypes
     public const string JsonReport = "text/jsonreport";
     public const string Soap11 = "text/xml; charset=utf-8";
     public const string Soap12 = "application/soap+xml";
+    public const string Rss = "application/rss+xml";
     public const string Yaml = "application/yaml";
     public const string YamlText = "text/yaml";
     public const string PlainText = "text/plain";
@@ -278,6 +280,9 @@ public static class MimeTypes
             case "fsproj":
             case "vbproj":
                 return "text/xml";
+            
+            case "rss":
+                return Rss;
 
             case "txt":
             case "ps1":

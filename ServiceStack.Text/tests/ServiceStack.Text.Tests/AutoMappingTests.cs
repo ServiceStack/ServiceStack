@@ -1758,6 +1758,7 @@ public class PropertyExpressionTests
         public int? NullableIdNonMatchingUnderlyingType { get; set; }
         public int? NullableIdMatchingUnderlyingType { get; set; }
         public DateTime? DateTime { get; set; }
+        public bool NullableBool { get; set; }
     }
     class NullableTarget
     {
@@ -1767,6 +1768,7 @@ public class PropertyExpressionTests
         public DateTime? NullableDateTime { get; set; }
         public DateTime DateTime { get; set; }
         public DateTime TargetOnlyDateTime { get; set; }
+        public bool? NullableBool { get; set; }
     }
 
     [Test]
@@ -1781,5 +1783,18 @@ public class PropertyExpressionTests
         Assert.That(target.NullableDateTime, Is.Null);
         Assert.That(target.DateTime, Is.EqualTo(default(DateTime)));
         Assert.That(target.TargetOnlyDateTime, Is.EqualTo(default(DateTime)));
+    }
+
+    [Test]
+    public void Does_not_populate_bool_with_nullable_bool()
+    {
+        var to = new NullableSource {
+            NullableBool = true,
+        };
+
+        var from = new NullableTarget();
+        to.PopulateWithNonDefaultValues(from);
+
+        Assert.That(to.NullableBool, Is.True);
     }
 }

@@ -415,7 +415,7 @@ public class InputInfo : IMeta
     public string Autofocus  { get; set; }
     public string Min { get; set; }
     public string Max { get; set; }
-    public int? Step { get; set; }
+    public string Step { get; set; }
     public int? MinLength { get; set; }
     public int? MaxLength { get; set; }
     public string Accept  { get; set; }
@@ -749,6 +749,7 @@ public class MetadataType : IMeta
     public bool? IsEnumInt { get; set; }
     public bool? IsInterface { get; set; }
     public bool? IsAbstract { get; set; }
+    public bool? IsGenericTypeDef { get; set; }
     public MetadataDataContract DataContract { get; set; }
 
     public List<MetadataPropertyType> Properties { get; set; }
@@ -1134,7 +1135,7 @@ public static class AppMetadataUtils
             Required = input.Required.NullIfFalse(),
             Min = input.Min,
             Max = input.Max,
-            Step = input.Step.NullIfMinValue(),
+            Step = input.Step,
             MinLength = input.MinLength.NullIfMinValue(),
             MaxLength = input.MaxLength.NullIfMinValue(),
             Accept = input.Accept,
@@ -1416,6 +1417,7 @@ public static class AppMetadataUtils
             IsEnumInt = (JsConfig.TreatEnumAsInteger || type.IsEnumFlags()),
             IsInterface = type.IsInterface,
             IsAbstract = type.IsAbstract,
+            IsGenericTypeDef = type.IsGenericTypeDefinition.NullIfFalse(),
         };
         return ret;
     }
@@ -1891,6 +1893,15 @@ public static class AppMetadataUtils
         var genericArgs = propType.IsGenericType
             ? propType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
             : null;
+        
+        if (genericArgs == null && typeof(IEnumerable).IsAssignableFrom(propType))
+        {
+            var elType = propType.GetCollectionType();
+            return elType?.IsGenericType == true
+                ? elType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
+                : null;
+        }
+
         return genericArgs;
     }
 

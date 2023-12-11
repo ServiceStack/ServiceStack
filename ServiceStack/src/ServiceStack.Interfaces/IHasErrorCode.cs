@@ -1,7 +1,6 @@
-namespace ServiceStack
+namespace ServiceStack;
+
+public interface IHasErrorCode
 {
-    public interface IHasErrorCode
-    {
-        string ErrorCode { get; }
-    }
+    string ErrorCode { get; }
 }

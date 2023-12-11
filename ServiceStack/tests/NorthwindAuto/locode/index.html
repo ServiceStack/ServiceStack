@@ -6,7 +6,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <style>
-/*vfs[]:/css/highlight.css*/
+/*vfs[]:/css/ui-highlight.css*/
 </style>
 <script>
 let DEBUG = false
@@ -109,8 +109,9 @@ import { setFavIcon, setBodyClass } from "core"
 import { humanify } from "@servicestack/client"
 
 const { loadMetadata } = useMetadata()
-const { signIn } = useAuth()
+const { signIn, toAuth } = useAuth()
 
+globalThis.AUTH = toAuth(globalThis.AUTH)
 loadMetadata()
 signIn(globalThis.AUTH)
 setBodyClass({ auth:globalThis.AUTH })

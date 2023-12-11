@@ -4,7 +4,7 @@ import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 const { setConfig } = useConfig()
-const { invalidAccessMessage } = useAuth()
+const { invalidAccessMessage, toAuth } = useAuth()
 const { Crud, apiOf } = useMetadata()
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI, '/'), '/')
 export let AppData = {
@@ -14,6 +14,10 @@ export let AppData = {
     bearerToken: null,
     /** @type {string|null} */
     authsecret: null,
+    /** @type {string|null} */
+    userName: null,
+    /** @type {string|null} */
+    password: null,
     /** @type {() => void|null} */
     onRoutesEditChange: null,
     /** @type {string|null} */
@@ -38,6 +42,8 @@ export function createClient(fn) {
         c.bearerToken = AppData.bearerToken
         c.enableAutoRefreshToken = false
         if (AppData.authsecret) c.headers.set('authsecret', AppData.authsecret)
+        if (AppData.userName) c.userName = AppData.userName
+        if (AppData.password) c.password = AppData.password
         let apiFmt = globalThis.Server.httpHandlers['ApiHandlers.Json']
         if (apiFmt)
             c.basePath = apiFmt.replace('/{Request}', '')
@@ -294,18 +300,21 @@ let store = {
     },
     /** @param {AuthenticateResponse} auth */
     login(auth) {
-        globalThis.AUTH = this.auth = auth
-        AppData.bearerToken = AppData.authsecret = null
+        globalThis.AUTH = this.auth = toAuth(auth)
+        AppData.bearerToken = AppData.authsecret = AppData.userName = AppData.password = null
         if (auth.bearerToken) {
             AppData.bearerToken = client.bearerToken = auth.bearerToken
         }
+        if (client.userName) AppData.userName = client.userName
+        if (client.password) AppData.password = client.password
         setBodyClass({ auth: this.auth })
     },
     logout() {
-        globalThis.AUTH = this.auth = AppData.authsecret = AppData.bearerToken = client.bearerToken = null
+        globalThis.AUTH = this.auth = AppData.authsecret = AppData.bearerToken = client.bearerToken = AppData.userName = AppData.password = null
         setBodyClass({ auth: null })
         client.api(new Authenticate({ provider: 'logout' }))
         client.headers.delete('authsecret')
+        client.userName = client.password = null
         routes.to({ $page:null })
     },
     /** @return {string[]} */

@@ -1,6 +1,6 @@
 /* Options:
-Date: 2023-02-28 21:42:04
-Version: 6.61
+Date: 2023-10-27 18:15:00
+Version: 6.111
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -353,7 +353,7 @@ export class FieldCss {
     label;
 }
 export class InputInfo {
-    /** @param {{id?:string,name?:string,type?:string,value?:string,placeholder?:string,help?:string,label?:string,title?:string,size?:string,pattern?:string,readOnly?:boolean,required?:boolean,disabled?:boolean,autocomplete?:string,autofocus?:string,min?:string,max?:string,step?:number,minLength?:number,maxLength?:number,accept?:string,capture?:string,multiple?:boolean,allowableValues?:string[],allowableEntries?:KeyValuePair[],options?:string,ignore?:boolean,css?:FieldCss,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:string,name?:string,type?:string,value?:string,placeholder?:string,help?:string,label?:string,title?:string,size?:string,pattern?:string,readOnly?:boolean,required?:boolean,disabled?:boolean,autocomplete?:string,autofocus?:string,min?:string,max?:string,step?:string,minLength?:number,maxLength?:number,accept?:string,capture?:string,multiple?:boolean,allowableValues?:string[],allowableEntries?:KeyValuePair<string, string>[],options?:string,ignore?:boolean,css?:FieldCss,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     id;
@@ -389,7 +389,7 @@ export class InputInfo {
     min;
     /** @type {string} */
     max;
-    /** @type {?number} */
+    /** @type {string} */
     step;
     /** @type {?number} */
     minLength;
@@ -403,7 +403,7 @@ export class InputInfo {
     multiple;
     /** @type {string[]} */
     allowableValues;
-    /** @type {KeyValuePair[]} */
+    /** @type {KeyValuePair<string, string>[]} */
     allowableEntries;
     /** @type {string} */
     options;
@@ -641,7 +641,7 @@ export class MetadataAttribute {
     args;
 }
 export class RefInfo {
-    /** @param {{model?:string,selfId?:string,refId?:string,refLabel?:string}} [init] */
+    /** @param {{model?:string,selfId?:string,refId?:string,refLabel?:string,queryApi?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     model;
@@ -651,6 +651,8 @@ export class RefInfo {
     refId;
     /** @type {string} */
     refLabel;
+    /** @type {string} */
+    queryApi;
 }
 export class MetadataPropertyType {
     /** @param {{name?:string,type?:string,namespace?:string,isValueType?:boolean,isEnum?:boolean,isPrimaryKey?:boolean,genericArgs?:string[],value?:string,description?:string,dataMember?:MetadataDataMember,readOnly?:boolean,paramType?:string,displayType?:string,isRequired?:boolean,allowableValues?:string[],allowableMin?:number,allowableMax?:number,attributes?:MetadataAttribute[],uploadTo?:string,input?:InputInfo,format?:FormatInfo,ref?:RefInfo}} [init] */
@@ -701,7 +703,7 @@ export class MetadataPropertyType {
     ref;
 }
 export class MetadataType {
-    /** @param {{name?:string,namespace?:string,genericArgs?:string[],inherits?:MetadataTypeName,implements?:MetadataTypeName[],displayType?:string,description?:string,notes?:string,icon?:ImageInfo,isNested?:boolean,isEnum?:boolean,isEnumInt?:boolean,isInterface?:boolean,isAbstract?:boolean,dataContract?:MetadataDataContract,properties?:MetadataPropertyType[],attributes?:MetadataAttribute[],innerTypes?:MetadataTypeName[],enumNames?:string[],enumValues?:string[],enumMemberValues?:string[],enumDescriptions?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{name?:string,namespace?:string,genericArgs?:string[],inherits?:MetadataTypeName,implements?:MetadataTypeName[],displayType?:string,description?:string,notes?:string,icon?:ImageInfo,isNested?:boolean,isEnum?:boolean,isEnumInt?:boolean,isInterface?:boolean,isAbstract?:boolean,isGenericTypeDef?:boolean,dataContract?:MetadataDataContract,properties?:MetadataPropertyType[],attributes?:MetadataAttribute[],innerTypes?:MetadataTypeName[],enumNames?:string[],enumValues?:string[],enumMemberValues?:string[],enumDescriptions?:string[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -731,6 +733,8 @@ export class MetadataType {
     isInterface;
     /** @type {?boolean} */
     isAbstract;
+    /** @type {?boolean} */
+    isGenericTypeDef;
     /** @type {MetadataDataContract} */
     dataContract;
     /** @type {MetadataPropertyType[]} */
@@ -1439,7 +1443,7 @@ export class ModifyValidationRules {
     createResponse() { }
 }
 export class Authenticate {
-    /** @param {{provider?:string,state?:string,oauth_token?:string,oauth_verifier?:string,userName?:string,password?:string,rememberMe?:boolean,errorView?:string,nonce?:string,uri?:string,response?:string,qop?:string,nc?:string,cnonce?:string,accessToken?:string,accessTokenSecret?:string,scope?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{provider?:string,state?:string,oauth_token?:string,oauth_verifier?:string,userName?:string,password?:string,rememberMe?:boolean,errorView?:string,nonce?:string,uri?:string,response?:string,qop?:string,nc?:string,cnonce?:string,accessToken?:string,accessTokenSecret?:string,scope?:string,returnUrl?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /**
      * @type {string}
@@ -1477,6 +1481,8 @@ export class Authenticate {
     accessTokenSecret;
     /** @type {string} */
     scope;
+    /** @type {string} */
+    returnUrl;
     /** @type {{ [index: string]: string; }} */
     meta;
     getTypeName() { return 'Authenticate' }

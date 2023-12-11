@@ -42,7 +42,9 @@ namespace ServiceStack.OrmLite
 
             ormLiteConn.SetLastCommandText(null);
 
-            return new OrmLiteCommand(ormLiteConn, dbCmd);
+            return ormLiteConn != null
+                ? new OrmLiteCommand(ormLiteConn, dbCmd)
+                : dbCmd;
         }
 
         public virtual void DisposeCommand(IDbCommand dbCmd, IDbConnection dbConn)

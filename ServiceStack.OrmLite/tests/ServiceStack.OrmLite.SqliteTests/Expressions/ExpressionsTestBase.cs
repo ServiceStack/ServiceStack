@@ -48,7 +48,8 @@ namespace ServiceStack.OrmLite.Tests.Expressions
                                 {
                                     BoolColumn = random.Next()%2 == 0,
                                     IntColumn = intVal,
-                                    StringColumn = Guid.NewGuid().ToString()
+                                    StringColumn = Guid.NewGuid().ToString(),
+                                    DateTimeColumn = DateTime.Now
                                 };
 
                         if (obj.Any(x => x.IntColumn == intVal))

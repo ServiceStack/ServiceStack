@@ -13,8 +13,8 @@ public class IdentityException : Exception
 {
     public string Code { get; }
     private List<IdentityError> Errors { get; }
-    
-    public IdentityException(List<IdentityError> errors) 
+
+    public IdentityException(List<IdentityError> errors)
         : base(errors[0].Description)
     {
         Code = errors[0].Code;

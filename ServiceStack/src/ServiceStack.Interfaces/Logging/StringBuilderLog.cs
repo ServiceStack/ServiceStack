@@ -1,180 +1,179 @@
 using System;
 using System.Text;
 
-namespace ServiceStack.Logging
+namespace ServiceStack.Logging;
+
+/// <summary>
+/// StringBuilderLog writes to shared StringBuffer.
+/// Made public so its testable
+/// </summary>
+public class StringBuilderLogFactory : ILogFactory
 {
-    /// <summary>
-    /// StringBuilderLog writes to shared StringBuffer.
-    /// Made public so its testable
-    /// </summary>
-    public class StringBuilderLogFactory : ILogFactory
+    private readonly StringBuilder sb;
+    private readonly bool debugEnabled;
+
+    public StringBuilderLogFactory(bool debugEnabled = true)
     {
-        private readonly StringBuilder sb;
-        private readonly bool debugEnabled;
+        sb = new StringBuilder();
+        this.debugEnabled = debugEnabled;
+    }
 
-        public StringBuilderLogFactory(bool debugEnabled = true)
+    public ILog GetLogger(Type type)
+    {
+        return new StringBuilderLog(type, sb) { IsDebugEnabled = debugEnabled };
+    }
+
+    public ILog GetLogger(string typeName)
+    {
+        return new StringBuilderLog(typeName, sb) { IsDebugEnabled = debugEnabled };
+    }
+
+    public string GetLogs()
+    {
+        lock (sb)
+            return sb.ToString();
+    }
+
+    public void ClearLogs()
+    {
+        lock (sb)
+            sb.Remove(0, sb.Length - 1);
+    }
+}
+
+public class StringBuilderLog : ILog
+{
+    const string DEBUG = "DEBUG: ";
+    const string ERROR = "ERROR: ";
+    const string FATAL = "FATAL: ";
+    const string INFO = "INFO: ";
+    const string WARN = "WARN: ";
+    private readonly StringBuilder logs;
+
+    public StringBuilderLog(string type, StringBuilder logs)
+    {
+        this.logs = logs;
+    }
+
+    public StringBuilderLog(Type type, StringBuilder logs)
+    {
+        this.logs = logs;
+    }
+
+    public bool IsDebugEnabled { get; set; }
+
+    /// <summary>
+    /// Logs the specified message.
+    /// </summary>
+    private void Log(object message, Exception exception)
+    {
+        var msg = message?.ToString() ?? string.Empty;
+        if (exception != null)
         {
-            sb = new StringBuilder();
-            this.debugEnabled = debugEnabled;
+            msg += ", Exception: " + exception.Message;
         }
+        lock (logs)
+            logs.AppendLine(msg);
+    }
 
-        public ILog GetLogger(Type type)
+    /// <summary>
+    /// Logs the format.
+    /// </summary>
+    private void LogFormat(object message, params object[] args)
+    {
+        var msg = message?.ToString() ?? string.Empty;
+        lock (logs)
         {
-            return new StringBuilderLog(type, sb) { IsDebugEnabled = debugEnabled };
-        }
-
-        public ILog GetLogger(string typeName)
-        {
-            return new StringBuilderLog(typeName, sb) { IsDebugEnabled = debugEnabled };
-        }
-
-        public string GetLogs()
-        {
-            lock (sb)
-                return sb.ToString();
-        }
-
-        public void ClearLogs()
-        {
-            lock (sb)
-                sb.Remove(0, sb.Length - 1);
+            logs.AppendFormat(msg, args);
+            logs.AppendLine();
         }
     }
 
-    public class StringBuilderLog : ILog
+    /// <summary>
+    /// Logs the specified message.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    private void Log(object message)
     {
-        const string DEBUG = "DEBUG: ";
-        const string ERROR = "ERROR: ";
-        const string FATAL = "FATAL: ";
-        const string INFO = "INFO: ";
-        const string WARN = "WARN: ";
-        private readonly StringBuilder logs;
-
-        public StringBuilderLog(string type, StringBuilder logs)
+        var msg = message?.ToString() ?? string.Empty;
+        lock (logs)
         {
-            this.logs = logs;
+            logs.AppendLine(msg);
         }
+    }
 
-        public StringBuilderLog(Type type, StringBuilder logs)
-        {
-            this.logs = logs;
-        }
+    public void Debug(object message, Exception exception)
+    {
+        Log(DEBUG + message, exception);
+    }
 
-        public bool IsDebugEnabled { get; set; }
+    public void Debug(object message)
+    {
+        Log(DEBUG + message);
+    }
 
-        /// <summary>
-        /// Logs the specified message.
-        /// </summary>
-        private void Log(object message, Exception exception)
-        {
-            var msg = message?.ToString() ?? string.Empty;
-            if (exception != null)
-            {
-                msg += ", Exception: " + exception.Message;
-            }
-            lock (logs)
-                logs.AppendLine(msg);
-        }
+    public void DebugFormat(string format, params object[] args)
+    {
+        LogFormat(DEBUG + format, args);
+    }
 
-        /// <summary>
-        /// Logs the format.
-        /// </summary>
-        private void LogFormat(object message, params object[] args)
-        {
-            var msg = message?.ToString() ?? string.Empty;
-            lock (logs)
-            {
-                logs.AppendFormat(msg, args);
-                logs.AppendLine();
-            }
-        }
+    public void Error(object message, Exception exception)
+    {
+        Log(ERROR + message, exception);
+    }
 
-        /// <summary>
-        /// Logs the specified message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        private void Log(object message)
-        {
-            var msg = message?.ToString() ?? string.Empty;
-            lock (logs)
-            {
-                logs.AppendLine(msg);
-            }
-        }
+    public void Error(object message)
+    {
+        Log(ERROR + message);
+    }
 
-        public void Debug(object message, Exception exception)
-        {
-            Log(DEBUG + message, exception);
-        }
+    public void ErrorFormat(string format, params object[] args)
+    {
+        LogFormat(ERROR + format, args);
+    }
 
-        public void Debug(object message)
-        {
-            Log(DEBUG + message);
-        }
+    public void Fatal(object message, Exception exception)
+    {
+        Log(FATAL + message, exception);
+    }
 
-        public void DebugFormat(string format, params object[] args)
-        {
-            LogFormat(DEBUG + format, args);
-        }
+    public void Fatal(object message)
+    {
+        Log(FATAL + message);
+    }
 
-        public void Error(object message, Exception exception)
-        {
-            Log(ERROR + message, exception);
-        }
+    public void FatalFormat(string format, params object[] args)
+    {
+        LogFormat(FATAL + format, args);
+    }
 
-        public void Error(object message)
-        {
-            Log(ERROR + message);
-        }
+    public void Info(object message, Exception exception)
+    {
+        Log(INFO + message, exception);
+    }
 
-        public void ErrorFormat(string format, params object[] args)
-        {
-            LogFormat(ERROR + format, args);
-        }
+    public void Info(object message)
+    {
+        Log(INFO + message);
+    }
 
-        public void Fatal(object message, Exception exception)
-        {
-            Log(FATAL + message, exception);
-        }
+    public void InfoFormat(string format, params object[] args)
+    {
+        LogFormat(INFO + format, args);
+    }
 
-        public void Fatal(object message)
-        {
-            Log(FATAL + message);
-        }
+    public void Warn(object message, Exception exception)
+    {
+        Log(WARN + message, exception);
+    }
 
-        public void FatalFormat(string format, params object[] args)
-        {
-            LogFormat(FATAL + format, args);
-        }
+    public void Warn(object message)
+    {
+        Log(WARN + message);
+    }
 
-        public void Info(object message, Exception exception)
-        {
-            Log(INFO + message, exception);
-        }
-
-        public void Info(object message)
-        {
-            Log(INFO + message);
-        }
-
-        public void InfoFormat(string format, params object[] args)
-        {
-            LogFormat(INFO + format, args);
-        }
-
-        public void Warn(object message, Exception exception)
-        {
-            Log(WARN + message, exception);
-        }
-
-        public void Warn(object message)
-        {
-            Log(WARN + message);
-        }
-
-        public void WarnFormat(string format, params object[] args)
-        {
-            LogFormat(WARN + format, args);
-        }
+    public void WarnFormat(string format, params object[] args)
+    {
+        LogFormat(WARN + format, args);
     }
 }

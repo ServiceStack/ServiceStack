@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 namespace ServiceStack.NativeTypes
@@ -44,9 +45,21 @@ namespace ServiceStack.NativeTypes
             return sb.ToString();
         }
 
-        public int Length
+        public void Chop(char c)
         {
-            get { return sb.Length; }
+            var endsWithNewLine = sb.Length > 0 && sb[sb.Length - 1] == '\n';
+            do
+            {
+                if (sb.Length == 0) return;
+                sb.Length--;
+            } while (sb[sb.Length - 1] != c);
+            sb.Length--; //TODO why is this needed
+            if (endsWithNewLine)
+            {
+                sb.AppendLine();
+            }
         }
+
+        public int Length => sb.Length;
     }
 }

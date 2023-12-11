@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
@@ -408,7 +409,10 @@ namespace ServiceStack.IO
                 ? (object) TextContents.AsMemory() 
                 : ByteContents != null ? new ReadOnlyMemory<byte>(ByteContents) : null;
         }
-        
+
+        public override byte[] ReadAllBytes() =>
+            ByteContents ?? MemoryProvider.Instance.ToUtf8Bytes(TextContents.AsSpan());
+
         public override void Refresh()
         {
             if (base.VirtualPathProvider.GetFile(VirtualPath) is InMemoryVirtualFile file && !ReferenceEquals(file, this))
