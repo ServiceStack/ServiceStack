@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Npgsql;
 using Npgsql.TypeMapping;
 using NpgsqlTypes;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Converters;
 using ServiceStack.OrmLite.PostgreSQL.Converters;
@@ -819,7 +820,8 @@ namespace ServiceStack.OrmLite.PostgreSQL
             throw new NotSupportedException($"Type '{type.Name}' not found in 'TypesMap'");
         }
         
-        public Dictionary<string, NpgsqlDbType> NativeTypes = new Dictionary<string, NpgsqlDbType> {
+        public Dictionary<string, NpgsqlDbType> NativeTypes = new()
+        {
             { "json", NpgsqlDbType.Json },
             { "jsonb", NpgsqlDbType.Jsonb },
             { "hstore", NpgsqlDbType.Hstore },

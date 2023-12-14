@@ -286,6 +286,5 @@ namespace ServiceStack.OrmLite.Tests
             Assert.That(results["str"], Is.EqualTo("hi"));
             Assert.That(results["date"], Is.Not.Empty);
         }
-
     }
 }
