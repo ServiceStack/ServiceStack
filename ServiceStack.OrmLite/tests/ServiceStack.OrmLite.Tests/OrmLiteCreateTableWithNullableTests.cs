@@ -8,12 +8,8 @@ using ServiceStack.Text;
 namespace ServiceStack.OrmLite.Tests;
 
 [TestFixtureOrmLite]
-public class OrmLiteCreateTableWithNullableTests : OrmLiteProvidersTestBase
+public class OrmLiteCreateTableWithNullableTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public OrmLiteCreateTableWithNullableTests(DialectContext context) : base(context)
-    {
-    }
-
     public interface IDemo
     {
         string? StringData { get; set; }
@@ -39,7 +35,10 @@ public class OrmLiteCreateTableWithNullableTests : OrmLiteProvidersTestBase
         using var captured = new CaptureSqlFilter();
         using var db = OpenDbConnection();
         db.CreateTable<DemoDb>();
-        captured.SqlStatements[0].Print();
-        Assert.That(captured.SqlStatements[0].ToUpper().CountOccurrencesOf("NOT NULL"), Is.EqualTo(3));
+        
+        var capturedSql = string.Join("\n", captured.SqlStatements);
+        capturedSql.Print();
+        
+        Assert.That(capturedSql.ToUpper().CountOccurrencesOf("NOT NULL"), Is.EqualTo(3));
     }
 }

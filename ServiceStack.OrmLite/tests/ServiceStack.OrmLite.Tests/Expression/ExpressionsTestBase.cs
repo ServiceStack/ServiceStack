@@ -63,8 +63,7 @@ namespace ServiceStack.OrmLite.Tests.Expression
 
         protected void Init(IDbConnection db, int numberOfRandomObjects, params TestType[] obj)
         {
-            if (obj == null)
-                obj = new TestType[0];
+            obj ??= Array.Empty<TestType>();
 
             var con = db ?? OpenDbConnection();
             foreach (var t in obj)

@@ -20,7 +20,13 @@ namespace ServiceStack.OrmLite.Converters
             if (value.GetType() == fieldType)
                 return value;
             if (value is DateTime dateTime)
-                return new DateTimeOffset(dateTime);
+            {
+                return dateTime == DateTime.MinValue 
+                    ? DateTimeOffset.MinValue 
+                    : dateTime == DateTime.MaxValue 
+                        ? DateTimeOffset.MaxValue 
+                        : new DateTimeOffset(dateTime);
+            }
 
             var convertedValue = DialectProvider.StringSerializer.DeserializeFromString(value.ToString(), fieldType);
             return convertedValue;
