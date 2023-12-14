@@ -2,11 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.Common;
-using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
-using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests
 {
@@ -282,10 +278,10 @@ namespace ServiceStack.OrmLite.Tests
                     [Tuple.Create(Dialect.PostgreSql11, PostgreSqlDb.V11)] = EnvironmentVariable(new[]{ "PGSQL11_CONNECTION", "PGSQL_CONNECTION" }, "Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
                 
                     [Tuple.Create(Dialect.MySql, MySqlDb.V5_5)]  = EnvironmentVariable(new[]{ "MYSQL55_CONNECTION",  "MYSQL_CONNECTION" }, "Server=localhost;Port=48201;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_1)] = EnvironmentVariable(new[]{ "MYSQL101_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48202;Database=test;UID=root;Password=test;SslMode=none"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_2)] = EnvironmentVariable(new[]{ "MYSQL102_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48203;Database=test;UID=root;Password=test;SslMode=none"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_3)] = EnvironmentVariable(new[]{ "MYSQL103_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48204;Database=test;UID=root;Password=test;SslMode=none"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_4)] = EnvironmentVariable(new[]{ "MYSQL104_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_1)] = EnvironmentVariable(new[]{ "MYSQL101_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48202;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_2)] = EnvironmentVariable(new[]{ "MYSQL102_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48203;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_3)] = EnvironmentVariable(new[]{ "MYSQL103_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48204;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_4)] = EnvironmentVariable(new[]{ "MYSQL104_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
 
                     [Tuple.Create(Dialect.MySqlConnector, MySqlDb.V10_4)] = EnvironmentVariable(new[]{ "MYSQL104_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none"),
                 
