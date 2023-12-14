@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text.Pools;
@@ -28,8 +30,8 @@ namespace ServiceStack.Text.Tests
             Assert.That(n.Equals(((string) null).AsMemory()));
             Assert.That(e.Equals("".AsMemory()));
 
-            Assert.That(n.Equals(default(ReadOnlyMemory<char>)));
-            Assert.That(!e.Equals(default(ReadOnlyMemory<char>)));
+            Assert.That(n.Equals(default));
+            Assert.That(!e.Equals(default));
 
             Assert.That(n.IsEmpty);
             Assert.That(e.IsEmpty);
@@ -138,5 +140,36 @@ namespace ServiceStack.Text.Tests
             Assert.That(to, Is.EqualTo(from));
         }
         
+        [Test]
+        public async Task Can_write_to_Stream_Async()
+        {
+            var from = new Person { Id = 1, Name = "FooBA\u0400R" };
+            var json = from.ToJson();
+
+            Stream stream = new MemoryStream();
+            await JsonSerializer.SerializeToStreamAsync(from, stream);
+            
+            var fromJson = await stream.ReadToEndAsync();
+            Assert.That(fromJson, Is.EqualTo(json));
+        }
+        
+#if NET6_0_OR_GREATER
+        [Test]
+        public async Task Can_write_to_Stream_with_BufferPool_Async()
+        {
+            var from = new Person { Id = 1, Name = "FooBA\u0400R" };
+            var json = from.ToJson();
+
+            Stream stream = new MemoryStream();
+            var buf = BufferPool.GetBuffer(Encoding.UTF8.GetByteCount(json));
+            Memory<byte> bytes = buf;
+            await stream.WriteAsync(bytes[..Encoding.UTF8.GetBytes(json, bytes.Span)]);
+            BufferPool.ReleaseBufferToPool(ref buf);
+
+            var fromJson = await stream.ReadToEndAsync();
+            Assert.That(fromJson, Is.EqualTo(json));
+        }
+#endif
+
     }
 }
