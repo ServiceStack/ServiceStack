@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Text.Common;
 using ServiceStack.Text.Jsv;
 
@@ -102,9 +103,9 @@ public class CsvSerializer
     public static void SerializeToWriter<T>(T value, TextWriter writer)
     {
         if (value == null) return;
-        if (typeof(T) == typeof(string))
+        if (value is string s)
         {
-            writer.Write(value);
+            writer.Write(s);
             return;
         }
         CsvSerializer<T>.WriteObject(writer, value);
@@ -116,6 +117,17 @@ public class CsvSerializer
         var writer = new StreamWriter(stream, UseEncoding);
         CsvSerializer<T>.WriteObject(writer, value);
         writer.Flush();
+    }
+
+    public static async Task SerializeToStreamAsync<T>(T value, Stream stream)
+    {
+        OnSerialize?.Invoke(value);
+        using var ms = MemoryStreamFactory.GetStream();
+        using var writer = new StreamWriter(ms, JsConfig.UTF8Encoding, JsonSerializer.BufferSize, leaveOpen:true);
+        CsvSerializer<T>.WriteObject(writer, value);
+        await writer.FlushAsync();
+        ms.Position = 0;
+        await ms.CopyToAsync(stream).ConfigAwait();
     }
 
     public static void SerializeToStream(object obj, Stream stream)

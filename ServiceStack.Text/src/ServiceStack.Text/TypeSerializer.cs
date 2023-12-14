@@ -204,6 +204,25 @@ public static class TypeSerializer
         writer.Flush();
     }
 
+    public static Task SerializeToStreamAsync(object value, Stream stream) =>
+        SerializeToStreamAsync(value, value.GetType(), stream);
+    
+    public static async Task SerializeToStreamAsync(object value, Type type, Stream stream)
+    {
+        OnSerialize?.Invoke(value);
+        using var ms = MemoryStreamFactory.GetStream();
+        using var writer = new StreamWriter(ms, JsConfig.UTF8Encoding, JsonSerializer.BufferSize, leaveOpen:true);
+        WriteObjectToWriter(value, JsvWriter.GetWriteFn(type), writer);
+        await writer.FlushAsync();
+        ms.Position = 0;
+        await ms.CopyToAsync(stream).ConfigAwait();
+    }
+
+    private static void WriteObjectToWriter(object value, WriteObjectDelegate serializeFn, TextWriter writer)
+    {
+        serializeFn(writer, value);
+    }
+
     public static T Clone<T>(T value)
     {
         var serializedValue = SerializeToString(value);
