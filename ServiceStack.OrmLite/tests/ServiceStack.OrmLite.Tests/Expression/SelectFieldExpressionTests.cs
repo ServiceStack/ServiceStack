@@ -39,24 +39,22 @@ namespace ServiceStack.OrmLite.Tests.Expression
         [Test]
         public void Can_select_value_as_null()
         {
-            using (var db = OpenDbConnection())
-            {
-                db.DropAndCreateTable<Person>();
-                db.InsertAll(Person.Rockstars);
+            using var db = OpenDbConnection();
+            db.DropAndCreateTable<Person>();
+            db.InsertAll(Person.Rockstars);
 
-                var firstName = "Kurt";
-                string lastName = null;
+            var firstName = "Kurt";
+            string lastName = null;
 
-                var results = db.Select(db.From<Person>()
-                    .Where(x => firstName == null || x.FirstName == firstName)
-                    .And(x => lastName == null || x.LastName == lastName));
+            var results = db.Select(db.From<Person>()
+                .Where(x => firstName == null || x.FirstName == firstName)
+                .And(x => lastName == null || x.LastName == lastName));
 
-                db.GetLastSql().Print();
+            db.GetLastSql().Print();
 
-                results.PrintDump();
+            results.PrintDump();
 
-                Assert.That(results[0].LastName, Is.EqualTo("Cobain"));
-            }
+            Assert.That(results[0].LastName, Is.EqualTo("Cobain"));
         }
 
         [Test]

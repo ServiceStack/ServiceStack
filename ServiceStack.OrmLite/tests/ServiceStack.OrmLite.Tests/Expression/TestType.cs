@@ -10,6 +10,7 @@ namespace ServiceStack.OrmLite.Tests.Expression
         public string StringColumn { get; set; }
         public object NullableCol { get; set; }
         public TimeSpan TimeSpanColumn { get; set; }
+        public DateTime? Date { get; set; }
 
         [AutoIncrement]
         public int Id { get; set; }

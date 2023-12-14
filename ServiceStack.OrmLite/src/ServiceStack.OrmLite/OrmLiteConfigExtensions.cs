@@ -41,7 +41,9 @@ internal static class OrmLiteConfigExtensions
     }
 
     internal static ModelDefinition GetModelDefinition(this Type modelType)
-    {                            
+    {
+        if (modelType == null)
+            return null;
         if (typeModelDefinitionMap.TryGetValue(modelType, out var modelDef))
             return modelDef;
 
