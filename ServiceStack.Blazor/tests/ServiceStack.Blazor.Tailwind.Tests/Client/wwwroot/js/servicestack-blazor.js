@@ -192,6 +192,9 @@ JS = (function () {
                 let html = document.documentElement
                 html.classList.toggle('dark', darkMode)
                 html.style.setProperty('color-scheme', darkMode ? 'dark' : null)
+                if (localStorage.getItem('color-scheme') === null) {
+                    localStorage.setItem('color-scheme', darkMode ? 'dark' : 'light')
+                }
             }
         },
     }
