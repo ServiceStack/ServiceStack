@@ -38,6 +38,12 @@ public class ApiAttribute : AttributeBase
     /// `GenerateBodyParam.IfNotDisabled` (default value), `GenerateBodyParam.Always`, `GenerateBodyParam.Never`
     /// </summary>
     public int BodyParameter { get; set; }
+    
+    /// <summary>
+    /// Preferred Content-Type, e.g: application/json, multipart/form-data, application/x-www-form-urlencoded
+    /// or [MimeTypes.Json, MimeTypes.MultiPartFormData, MimeTypes.FormUrlEncoded]
+    /// </summary>
+    public string RequestContentType { get; set; }
 
     /// <summary>
     /// Tells if body param is required
