@@ -101,7 +101,7 @@ namespace ServiceStack.Api.OpenApi
         public void Register(IAppHost appHost)
         {
             if (ResourceFilterPattern != null)
-                OpenApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+                OpenApiService.ResourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
             if (SecurityDefinitions == null && OperationSecurity == null)
             {

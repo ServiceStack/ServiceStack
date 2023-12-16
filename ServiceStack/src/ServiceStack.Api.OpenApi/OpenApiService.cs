@@ -32,7 +32,7 @@ namespace ServiceStack.Api.OpenApi
         internal static bool UseLowercaseUnderscoreSchemaPropertyNames { get; set; }
         internal static bool DisableAutoDtoInBodyParam { get; set; }
 
-        internal static Regex resourceFilterRegex;
+        internal static Regex ResourceFilterRegex;
 
         internal static Action<OpenApiDeclaration> ApiDeclarationFilter { get; set; }
         internal static Action<string, OpenApiOperation> OperationFilter { get; set; }
@@ -82,10 +82,10 @@ namespace ServiceStack.Api.OpenApi
                 },
                 Paths = apiPaths,
                 BasePath = basePath.AbsolutePath,
-                Schemes = new List<string> { basePath.Scheme }, //TODO: get https from config
+                Schemes = [basePath.Scheme], //TODO: get https from config
                 Host = basePath.Authority,
-                Consumes = new List<string> { "application/json" },
-                Produces = new List<string> { "application/json" },
+                Consumes = ["application/json"],
+                Produces = ["application/json"],
                 Definitions = definitions.Where(x => !SchemaIdToClrType.ContainsKey(x.Key) || !IsInlineSchema(SchemaIdToClrType[x.Key])).ToDictionary(x => x.Key, x => x.Value),
                 Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
@@ -137,7 +137,8 @@ namespace ServiceStack.Api.OpenApi
             if (value.Options != null) yield return new Tuple<string, OpenApiOperation>("OPTIONS", value.Options);
         }
 
-        private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarTypes = new Dictionary<Type, string> {
+        private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarTypes = new()
+        {
             {typeof(byte[]), OpenApiType.String},
             {typeof(sbyte[]), OpenApiType.String},
             {typeof(byte), OpenApiType.Integer},
@@ -157,7 +158,8 @@ namespace ServiceStack.Api.OpenApi
             {typeof(DateTimeOffset), OpenApiType.String},
         };
 
-        private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarFormats = new Dictionary<Type, string> {
+        private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarFormats = new()
+        {
             {typeof(byte[]), OpenApiTypeFormat.Byte},
             {typeof(sbyte[]), OpenApiTypeFormat.Byte},
             {typeof(byte), OpenApiTypeFormat.Int},
@@ -187,8 +189,8 @@ namespace ServiceStack.Api.OpenApi
         {
             var lookupType = Nullable.GetUnderlyingType(type) ?? type;
 
-            return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType)
-                ? ClrTypesToSwaggerScalarTypes[lookupType]
+            return ClrTypesToSwaggerScalarTypes.TryGetValue(lookupType, out var scalarType)
+                ? scalarType
                 : GetSchemaTypeName(lookupType);
         }
 
@@ -202,7 +204,7 @@ namespace ServiceStack.Api.OpenApi
             if (route == null && verb == null && type == typeof(byte[]))
                 return OpenApiTypeFormat.Binary;
 
-            return ClrTypesToSwaggerScalarFormats.TryGetValue(lookupType, out var format) ? format : null;
+            return ClrTypesToSwaggerScalarFormats.GetValueOrDefault(lookupType);
         }
 
         private static Type GetListElementType(Type type)
@@ -347,7 +349,7 @@ namespace ServiceStack.Api.OpenApi
         private static string GetSchemaDefinitionRef(Type schemaType) =>
             swaggerRefRegex.Replace(GetSchemaTypeName(schemaType), "_");
 
-        private static readonly Regex swaggerRefRegex = new Regex("[^A-Za-z0-9\\.\\-_]", RegexOptions.Compiled);
+        private static readonly Regex swaggerRefRegex = new("[^A-Za-z0-9\\.\\-_]", RegexOptions.Compiled);
 
         private OpenApiProperty GetOpenApiProperty(IDictionary<string, OpenApiSchema> schemas, PropertyInfo pi, string route, string verb)
         {
