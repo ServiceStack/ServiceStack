@@ -422,7 +422,7 @@ namespace ServiceStack.Host
 
         public bool HasImplementation(Operation operation, Format format)
         {
-            if (format == Format.Soap11 || format == Format.Soap12)
+            if (format is Format.Soap11 or Format.Soap12)
             {
                 if (operation.Actions == null) return false;
 
@@ -469,6 +469,8 @@ namespace ServiceStack.Host
             var ops = OperationsMap.Values;
             foreach (var op in ops)
             {
+                if (!include(op.RequestType))
+                    continue;
                 AddReferencedTypes(to, op.RequestType, include);
                 AddReferencedTypes(to, op.ResponseType, include);
             }
@@ -529,7 +531,7 @@ namespace ServiceStack.Host
             if (route == null)
                 throw new ArgumentException($"No matching route found for path {method} '{pathInfo}'");
 
-            Dictionary<string, string> query = null;
+            Dictionary<string, string>? query = null;
             if (parts.Length == 2)
             {
                 query = new Dictionary<string, string>();
