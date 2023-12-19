@@ -556,7 +556,7 @@ namespace ServiceStack.Host
 
             foreach (var iface in type.GetInterfaces())
             {
-                if (iface.IsGenericType && !iface.IsGenericTypeDefinition)
+                if (iface is { IsGenericType: true, IsGenericTypeDefinition: false })
                 {
                     foreach (var arg in iface.GetGenericArguments())
                     {
@@ -571,7 +571,7 @@ namespace ServiceStack.Host
                     continue;
                 
                 if (IsDtoType(pi.PropertyType))
-                    to.Add(pi.PropertyType);
+                    AddReferencedTypes(to, pi.PropertyType);
 
                 var genericArgs = pi.PropertyType.IsGenericType
                     ? pi.PropertyType.GetGenericArguments()
@@ -595,7 +595,6 @@ namespace ServiceStack.Host
         public static bool IsDtoType(Type? type) => type != null &&
             type.Namespace?.StartsWith("System") == false &&
             type.IsClass && type != typeof(string) &&
-            !type.IsGenericType &&
             !type.IsArray &&
             !type.HasInterface(typeof(IService));
 
