@@ -33,4 +33,5 @@ public enum Feature : int
 
     ServiceDiscovery = 1 << 17,
     Validation   = 1 << 18,
+    ApiExplorers = 1 << 19, // API Explorer, Open API, etc
 }

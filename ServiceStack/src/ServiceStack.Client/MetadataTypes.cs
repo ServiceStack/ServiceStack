@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -13,7 +12,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataTypesConfig
 {
     public MetadataTypesConfig(
@@ -113,7 +112,7 @@ public class MetadataTypesConfig
     public List<string> IgnoreTypesInNamespaces { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataTypes
 {
     public MetadataTypes()
@@ -129,7 +128,7 @@ public class MetadataTypes
     public List<MetadataOperationType> Operations { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AppMetadata : IMeta
 {
     public DateTime Date { get; set; }
@@ -147,14 +146,14 @@ public class AppMetadata : IMeta
     public AppMetadataCache Cache { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ConfigInfo : IMeta
 {
     public bool? DebugMode { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class PluginInfo : IMeta
 {
     public List<string> Loaded { get; set; }
@@ -171,7 +170,7 @@ public class PluginInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class LinkInfo
 {
     public string Id { get; set; }
@@ -188,7 +187,7 @@ public class LinkInfo
     public string Hide { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ImageInfo
 {
     public string Svg { get; set; }
@@ -197,7 +196,7 @@ public class ImageInfo
     public string Cls { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ApiFormat
 {
     /// <summary>
@@ -212,7 +211,7 @@ public class ApiFormat
     public FormatInfo Date { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class FormatInfo
 {
     public string Method { get; set; }
@@ -220,7 +219,7 @@ public class FormatInfo
     public string Locale { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class RefInfo
 {
     [IgnoreDataMember]
@@ -235,7 +234,7 @@ public class RefInfo
     public string QueryApi { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AuthInfo : IMeta
 {
     public bool? HasAuthSecret { get; set; }
@@ -250,7 +249,7 @@ public class AuthInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AutoQueryInfo : IMeta
 {
     public int? MaxLimit { get; set; }
@@ -267,7 +266,7 @@ public class AutoQueryInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ValidationInfo : IMeta
 {
     public bool? HasValidationSource { get; set; }
@@ -280,7 +279,7 @@ public class ValidationInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class SharpPagesInfo : IMeta
 {
     public string ApiPath { get; set; }
@@ -291,7 +290,7 @@ public class SharpPagesInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class RequestLogsInfo : IMeta
 {
     public string AccessRole { get; set; }
@@ -303,7 +302,7 @@ public class RequestLogsInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ProfilingInfo : IMeta
 {
     public string AccessRole { get; set; }
@@ -313,7 +312,7 @@ public class ProfilingInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class FilesUploadInfo : IMeta
 {
     public string BasePath { get; set; }
@@ -333,7 +332,7 @@ public class FilesUploadLocation
     public long? MaxFileBytes { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AdminUsersInfo : IMeta
 {
     public string AccessRole { get; set; }
@@ -350,7 +349,7 @@ public class AdminUsersInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AdminRedisInfo : IMeta
 {
     public int QueryLimit { get; set; }
@@ -360,7 +359,7 @@ public class AdminRedisInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class RedisEndpointInfo
 {
     public string Host { get; set; }
@@ -371,7 +370,7 @@ public class RedisEndpointInfo
     public string Password { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AdminDatabaseInfo : IMeta
 {
     public int QueryLimit { get; set; }
@@ -379,7 +378,7 @@ public class AdminDatabaseInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class DatabaseInfo
 {
     public string Alias { get; set; }
@@ -387,7 +386,7 @@ public class DatabaseInfo
     public List<SchemaInfo> Schemas { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class SchemaInfo
 {
     public string Alias { get; set; }
@@ -395,7 +394,7 @@ public class SchemaInfo
     public List<string> Tables { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class InputInfo : IMeta
 {
     public string Id { get; set; }
@@ -438,7 +437,7 @@ public class InputInfo : IMeta
     }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MediaRule : IMeta
 {
     public string Size { get; set; }
@@ -450,7 +449,7 @@ public class MediaRule : IMeta
 /// <summary>
 /// Generic template for adding metadata info about custom plugins  
 /// </summary>
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class CustomPluginInfo : IMeta
 {
     /// <summary>
@@ -474,7 +473,7 @@ public class CustomPluginInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ScriptMethodType
 {
     public string Name { get; set; }
@@ -483,7 +482,7 @@ public class ScriptMethodType
     public string ReturnType { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AutoQueryConvention
 {
     public string Name { get; set; }
@@ -495,7 +494,7 @@ public class AutoQueryConvention
 /// <summary>
 /// App Info and 
 /// </summary>
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AppInfo : IMeta
 {
     /// <summary>
@@ -566,7 +565,7 @@ public class AppInfo : IMeta
 /// <summary>
 /// App Info and 
 /// </summary>
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class UiInfo : IMeta
 {
     /// <summary>
@@ -625,14 +624,14 @@ public class UiInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ThemeInfo
 {
     public string Form { get; set; }
     public ImageInfo ModelIcon { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class LocodeUi
 {
     public ApiCss Css { get; set; }
@@ -642,14 +641,14 @@ public class LocodeUi
     public int MaxNestedFieldLength { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ExplorerUi
 {
     public ApiCss Css { get; set; }
     public AppTags Tags { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AdminUi
 {
     /// <summary>
@@ -658,7 +657,7 @@ public class AdminUi
     public ApiCss Css { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class ApiCss
 {
     public string Form { get; set; }
@@ -666,7 +665,7 @@ public class ApiCss
     public string Field { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class FieldCss
 {
     public string Field { get; set; }
@@ -674,14 +673,14 @@ public class FieldCss
     public string Label { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AppTags
 {
     public string Default { get; set; }
     public string Other { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetaAuthProvider : IMeta
 {
     public string Name { get; set; }
@@ -693,7 +692,7 @@ public class MetaAuthProvider : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataOperationType
 {
     public MetadataType Request { get; set; }
@@ -722,7 +721,7 @@ public class ApiUiInfo : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataType : IMeta
 {
     [IgnoreDataMember]
@@ -789,7 +788,7 @@ public class MetadataType : IMeta
     }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataTypeName
 {
     [IgnoreDataMember]
@@ -799,7 +798,7 @@ public class MetadataTypeName
     public string[] GenericArgs { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataRoute
 {
     [IgnoreDataMember]
@@ -810,14 +809,14 @@ public class MetadataRoute
     public string Summary { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataDataContract
 {
     public string Name { get; set; }
     public string Namespace { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataDataMember
 {
     public string Name { get; set; }
@@ -826,7 +825,7 @@ public class MetadataDataMember
     public bool? EmitDefaultValue { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataPropertyType
 {
     [IgnoreDataMember]
@@ -862,7 +861,7 @@ public class MetadataPropertyType
     public RefInfo Ref { get; set; }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class MetadataAttribute
 {
     [IgnoreDataMember]
@@ -959,7 +958,7 @@ public static class MetadataTypeExtensions
     }
 }
 
-[Exclude(Feature.Soap)]
+[Exclude(Feature.Soap | Feature.ApiExplorers)]
 public class AppMetadataCache
 {
     public Dictionary<string, MetadataOperationType> OperationsMap { get; set; }
