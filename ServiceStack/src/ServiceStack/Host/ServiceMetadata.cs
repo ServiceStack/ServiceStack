@@ -460,6 +460,21 @@ namespace ServiceStack.Host
             return allDtos = to;
         }
 
+        public HashSet<Type> GetDtoTypes(Func<Type,bool> include)
+        {
+            if (allDtos != null)
+                return allDtos;
+            
+            var to = new HashSet<Type>();
+            var ops = OperationsMap.Values;
+            foreach (var op in ops)
+            {
+                AddReferencedTypes(to, op.RequestType, include);
+                AddReferencedTypes(to, op.ResponseType, include);
+            }
+            return allDtos = to;
+        }
+
         private Dictionary<string, Type>? dtoTypesMap;
         private HashSet<string> duplicateTypeNames;
         public Type? FindDtoType(string typeName)
@@ -532,9 +547,10 @@ namespace ServiceStack.Host
             return requestDto;
         }
 
-        public static void AddReferencedTypes(HashSet<Type> to, Type? type)
+        public static void AddReferencedTypes(HashSet<Type> to, Type? type) => AddReferencedTypes(to, type, IsDtoType);
+        public static void AddReferencedTypes(HashSet<Type> to, Type? type, Func<Type,bool> include)
         {
-            if (type == null || to.Contains(type) || !IsDtoType(type))
+            if (type == null || to.Contains(type) || !include(type))
                 return;
 
             to.Add(type);
@@ -542,7 +558,7 @@ namespace ServiceStack.Host
             var baseType = type.BaseType;
             if (baseType != null && IsDtoType(baseType) && !to.Contains(baseType))
             {
-                AddReferencedTypes(to, baseType);
+                AddReferencedTypes(to, baseType, include);
 
                 var genericArgs = type.IsGenericType
                     ? type.GetGenericArguments()
@@ -550,7 +566,7 @@ namespace ServiceStack.Host
 
                 foreach (var arg in genericArgs)
                 {
-                    AddReferencedTypes(to, arg);
+                    AddReferencedTypes(to, arg, include);
                 }
             }
 
@@ -560,7 +576,7 @@ namespace ServiceStack.Host
                 {
                     foreach (var arg in iface.GetGenericArguments())
                     {
-                        AddReferencedTypes(to, arg);
+                        AddReferencedTypes(to, arg, include);
                     }
                 }
             }
@@ -571,7 +587,7 @@ namespace ServiceStack.Host
                     continue;
                 
                 if (IsDtoType(pi.PropertyType))
-                    AddReferencedTypes(to, pi.PropertyType);
+                    AddReferencedTypes(to, pi.PropertyType, include);
 
                 var genericArgs = pi.PropertyType.IsGenericType
                     ? pi.PropertyType.GetGenericArguments()
@@ -581,13 +597,13 @@ namespace ServiceStack.Host
                 {
                     foreach (var arg in genericArgs)
                     {
-                        AddReferencedTypes(to, arg);
+                        AddReferencedTypes(to, arg, include);
                     }
                 }
                 else if (pi.PropertyType.IsArray)
                 {
                     var elType = pi.PropertyType.HasElementType ? pi.PropertyType.GetElementType() : null;
-                    AddReferencedTypes(to, elType);
+                    AddReferencedTypes(to, elType, include);
                 }
             }
         }
