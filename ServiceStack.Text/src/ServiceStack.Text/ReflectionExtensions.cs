@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -167,6 +168,57 @@ public static class ReflectionExtensions
     public static bool IsNullableType(this Type type)
     {
         return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+    }
+
+    public static bool IsAssignableToNull(this PropertyInfo pi)
+    {
+        var propType = pi.PropertyType;
+        if (propType.IsValueType)
+            return propType.IsNullableType();
+        
+#if NET6_0_OR_GREATER
+        return new NullabilityInfoContext().Create(pi).WriteState is NullabilityState.Nullable;
+#else
+        return IsAssignableToNull(propType, pi.DeclaringType, pi.CustomAttributes);
+#endif
+    }
+
+    public static bool IsAssignableToNull(Type memberType, MemberInfo declaringType, IEnumerable<CustomAttributeData> customAttributes)
+    {
+        if (memberType.IsValueType)
+            return Nullable.GetUnderlyingType(memberType) != null;
+
+        var nullable = customAttributes
+            .FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
+        if (nullable is { ConstructorArguments.Count: 1 })
+        {
+            var attributeArgument = nullable.ConstructorArguments[0];
+            if (attributeArgument.ArgumentType == typeof(byte[]))
+            {
+                var args = (ReadOnlyCollection<CustomAttributeTypedArgument>)attributeArgument.Value!;
+                if (args.Count > 0 && args[0].ArgumentType == typeof(byte))
+                {
+                    return (byte)args[0].Value! == 2;
+                }
+            }
+            else if (attributeArgument.ArgumentType == typeof(byte))
+            {
+                return (byte)attributeArgument.Value! == 2;
+            }
+        }
+
+        for (var type = declaringType; type != null; type = type.DeclaringType)
+        {
+            var context = type.CustomAttributes
+                .FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute");
+            if (context is { ConstructorArguments.Count: 1 } &&
+                context.ConstructorArguments[0].ArgumentType == typeof(byte))
+            {
+                return (byte)context.ConstructorArguments[0].Value! == 2;
+            }
+        }
+
+        return false;
     }
 
     public static TypeCode GetUnderlyingTypeCode(this Type type)
