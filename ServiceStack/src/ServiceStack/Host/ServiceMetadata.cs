@@ -558,7 +558,7 @@ namespace ServiceStack.Host
             to.Add(type);
 
             var baseType = type.BaseType;
-            if (baseType != null && IsDtoType(baseType) && !to.Contains(baseType))
+            if (baseType != null && include(baseType) && !to.Contains(baseType))
             {
                 AddReferencedTypes(to, baseType, include);
 
@@ -588,7 +588,7 @@ namespace ServiceStack.Host
                 if (to.Contains(pi.PropertyType))
                     continue;
                 
-                if (IsDtoType(pi.PropertyType))
+                if (include(pi.PropertyType))
                     AddReferencedTypes(to, pi.PropertyType, include);
 
                 var genericArgs = pi.PropertyType.IsGenericType
