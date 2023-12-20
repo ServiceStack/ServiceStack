@@ -74,9 +74,11 @@ namespace ServiceStack.Auth
             }
 
             //Default OAuth logic based on Twitter's OAuth workflow
-            if (!tokens.RequestTokenSecret.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
+            var oauthToken = authService.Request.QueryString["oauth_token"];
+            var oauthVerifier = authService.Request.QueryString["oauth_verifier"];
+            if (!tokens.RequestTokenSecret.IsNullOrEmpty() && !string.IsNullOrEmpty(oauthToken))
             {
-                if (OAuthUtils.AcquireAccessToken(tokens.RequestTokenSecret, request.oauth_token, request.oauth_verifier))
+                if (OAuthUtils.AcquireAccessToken(tokens.RequestTokenSecret, oauthToken, oauthVerifier))
                 {
                     session.IsAuthenticated = true;
                     tokens.AccessToken = OAuthUtils.AccessToken;

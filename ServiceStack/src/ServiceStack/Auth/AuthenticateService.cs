@@ -478,7 +478,8 @@ namespace ServiceStack.Auth
 
             var authFeature = GetPlugin<AuthFeature>();
             var generateNewCookies = (authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication)
-                && request.oauth_token == null && request.State == null; //keep existing session during OAuth flow
+                //keep existing session during OAuth flow                                     
+                && string.IsNullOrEmpty(Request.QueryString["oauth_token"]) && string.IsNullOrEmpty(Request.QueryString["State"]) && string.IsNullOrEmpty(Request.QueryString["state"]);
 
             if (generateNewCookies)
                 await Request.GenerateNewSessionCookiesAsync(session, token).ConfigAwait();

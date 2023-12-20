@@ -81,9 +81,7 @@ namespace ServiceStack.Auth
             if (TryAuthenticate(authService, userName, password))
             {
                 session.IsAuthenticated = true;
-
-                if (session.UserAuthName == null)
-                    session.UserAuthName = userName;
+                session.UserAuthName ??= userName;
 
                 var response = await OnAuthenticatedAsync(authService, session, null, null, token).ConfigAwait();
                 if (response != null)
@@ -194,12 +192,6 @@ namespace ServiceStack.Auth
                 var response = await authService.PostAsync(new Authenticate
                 {
                     provider = Name,
-                    nonce = digestAuth["nonce"],
-                    uri = digestAuth["uri"],
-                    response = digestAuth["response"],
-                    qop = digestAuth["qop"],
-                    nc = digestAuth["nc"],
-                    cnonce = digestAuth["cnonce"],
                     UserName = digestAuth["username"]
                 }).ConfigAwait();
             }
