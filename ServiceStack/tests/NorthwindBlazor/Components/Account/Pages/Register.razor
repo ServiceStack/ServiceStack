@@ -1,0 +1,155 @@
+﻿@page "/Account/Register"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using MyApp.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserStore<ApplicationUser> UserStore
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject ILogger<Register> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Register</PageTitle>
+
+<div class="mt-8 mx-auto max-w-lg">
+    <Heading1>Register</Heading1>
+
+    <StatusMessage Message="@Message" />
+    <div class="mt-3 shadow overflow-hidden sm:rounded-md">
+        <div class="px-4 bg-white dark:bg-black sm:p-6">
+            <EditForm id="registerForm" Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                <Heading3>Create a new account.</Heading3>
+                <DataAnnotationsValidator />
+                <ValidationSummary class="mb-3 text-danger text-center font-semibold" />
+                <div class="flex flex-col gap-y-4">
+                    <div>
+                        <label for="email" class="@TextInput.LabelClasses">Email</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <InputText id="email" type="text" @bind-Value="Input.Email" class="@TextInput.InputClasses" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        </div>
+                        <ValidationMessage For="() => Input.Email" class="mt-2 text-danger text-sm" />
+                    </div>
+                    <div>
+                        <label for="password" class="@TextInput.LabelClasses">Password</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <InputText id="password" type="password" @bind-Value="Input.Password" class="@TextInput.InputClasses" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        </div>
+                        <ValidationMessage For="() => Input.Password" class="mt-2 text-danger text-sm" />
+                    </div>
+                    <div>
+                        <label for="confirm-password">Confirm Password</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <InputText id="confirm-password" type="password" @bind-Value="Input.ConfirmPassword" class="@TextInput.InputClasses" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        </div>
+                        <ValidationMessage For="() => Input.ConfirmPassword" class="mt-2 text-danger text-sm" />
+                    </div>
+                    <div>
+                        <PrimaryButton id="registerSubmit" type="submit">Register</PrimaryButton>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+    <div class="mt-8">
+        <section>
+            <Heading3>Use another service to register.</Heading3>
+            <ExternalLoginPicker />
+        </section>
+    </div>
+</div>
+
+@code {
+    private IEnumerable<IdentityError>? identityErrors;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    public async Task RegisterUser(EditContext editContext)
+    {
+        var user = CreateUser();
+
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        Logger.LogInformation("User created a new account with password.");
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+        if (UserManager.Options.SignIn.RequireConfirmedAccount)
+        {
+            RedirectManager.RedirectTo(
+                "Account/RegisterConfirmation",
+                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+        }
+
+        await SignInManager.SignInAsync(user, isPersistent: false);
+        RedirectManager.RedirectTo(ReturnUrl);
+    }
+
+    private ApplicationUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<ApplicationUser>();
+        }
+        catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
+        }
+    }
+
+    private IUserEmailStore<ApplicationUser> GetEmailStore()
+    {
+        if (!UserManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException("The default UI requires a user store with email support.");
+        }
+        return (IUserEmailStore<ApplicationUser>)UserStore;
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = "";
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}

@@ -1,0 +1,56 @@
+﻿@page "/secure/bookings-vue"
+@attribute [Authorize(Roles = "Employee")]
+
+<div class="mt-8 mb-20 mx-auto max-w-fit">
+
+    <Heading1>Bookings AutoQueryGrid</Heading1>
+
+    <div id="bookings" data-component="pages/Bookings.mjs"></div>
+
+    <div>
+        <div class="mt-5 flex justify-center gap-x-4">
+            <SrcRazorPage Path="Secure/Bookings.razor" />
+            <SrcVuePage Path="Bookings.mjs" />
+        </div>
+    </div>
+
+    <div class="pb-20">
+
+        <h4 class="mt-20 text-center text-xl">
+            Manage Bookings in
+            <HyperLink class="font-semibold" href="/admin/#Bookings" data-enhance-nav="false">Admin</HyperLink>,
+            <HyperLink class="font-semibold" href="/locode/QueryBookings" data-enhance-nav="false">Locode</HyperLink> or
+            <HyperLink class="font-semibold" href="/ui/QueryBookings" data-enhance-nav="false">API Explorer</HyperLink>
+        </h4>
+
+        <div class="mt-20 mx-auto text-gray-500 max-w-screen-lg">
+            <h2 class="mt-4 text-3xl sm:text-4xl text-slate-900 font-extrabold tracking-tight dark:text-slate-50">
+                Create a multi-user Booking system in minutes
+            </h2>
+            <p class="my-3 mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl">
+                The Bookings APIs are built using
+                <HyperLink class="font-semibold" href="https://docs.servicestack.net/autoquery-crud">AutoQuery CRUD</HyperLink>,
+                allowing for rapid development of typed CRUD Services using only declarative POCO DTOs, enabling
+                developing entire
+                <HyperLink class="font-semibold" href="https://docs.servicestack.net/autoquery-crud#advanced-crud-example">audited</HyperLink>
+                &amp; <HyperLink class="font-semibold" href="https://docs.servicestack.net/autoquery-audit-log">verifiable</HyperLink>
+                data-driven systems in mins
+                <HyperLink class="font-semibold" href="https://docs.servicestack.net/autoquery-crud-bookings">more...</HyperLink>
+            </p>
+            <iframe class="mt-4 w-full aspect-video" src="https://www.youtube.com/embed/rSFiikDjGos" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+
+        <div class="mt-20 mx-auto text-gray-500 max-w-screen-lg">
+            <h2 class="mt-4 text-3xl sm:text-4xl text-slate-900 font-extrabold tracking-tight dark:text-slate-50">
+                Instantly Manage your data using AutoQueryGrid Vue
+            </h2>
+            <p class="my-3 mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl">
+                This walkthrough explores the ServiceStack Vue 3 library and the functionality of the AutoQueryGrid component.
+                The AutoQueryGrid component simplifies the integration of AutoQuery services by generating a customizable UI.
+            </p>
+            <iframe class="mt-4 w-full aspect-video" src="https://www.youtube.com/embed/znCoC-Ct0Ps" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+
+    </div>
+
+</div>

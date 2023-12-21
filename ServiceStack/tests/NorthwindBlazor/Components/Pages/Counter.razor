@@ -1,0 +1,19 @@
+﻿@page "/counter"
+@rendermode RenderMode.InteractiveServer
+
+<PageTitle>Counter</PageTitle>
+
+<Heading1>Counter</Heading1>
+
+<p class="my-4">Current count: @currentCount</p>
+
+<PrimaryButton @onclick="IncrementCount">Click me</PrimaryButton>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

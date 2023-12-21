@@ -1,0 +1,186 @@
+﻿@page "/Account/Manage/EnableAuthenticator"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using MyApp.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityUserAccessor UserAccessor
+@inject UrlEncoder UrlEncoder
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<EnableAuthenticator> Logger
+
+<PageTitle>Configure authenticator app</PageTitle>
+
+@if (recoveryCodes is not null)
+{
+    <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" />
+}
+else
+{
+    <Heading3>Configure authenticator app</Heading3>
+
+    <div class="max-w-xl" data-module="pages/Account/Manage/EnableAuthenticator.mjs">
+        <StatusMessage class="mb-3" />
+        <div>
+            <p>To use an authenticator app go through the following steps:</p>
+            <ol class="list-decimal ml-8">
+                <li>
+                    <p class="my-2">
+                        Download a two-factor authenticator app like Microsoft Authenticator for
+                        <HyperLink class="font-semibold" href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</HyperLink> and
+                        <HyperLink class="font-semibold" href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</HyperLink> or
+                        Google Authenticator for
+                        <HyperLink class="font-semibold" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</HyperLink> and
+                        <HyperLink class="font-semibold" href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</HyperLink>.
+                    </p>
+                </li>
+                <li>
+                    <p class="my-2">
+                        Scan the QR Code or enter this key <kbd class="bg-gray-100 dark:bg-gray-800 p-1 px-2 rounded-sm">@sharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.
+                    </p>
+
+                    <Alert class="my-4" Type="AlertType.Information">
+                        Learn how to <HyperLink class="font-semibold" href="https://go.microsoft.com/fwlink/?Linkid=852423">enable QR code generation</HyperLink>.
+                    </Alert>
+
+                    <div data-permanent id="qrCode"></div>
+                    <div id="qrCodeData" data-url="@authenticatorUri"></div>
+                </li>
+                <li>
+                    <p class="my-2">
+                        Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
+                        with a unique code. Enter the code in the confirmation box below.
+                    </p>
+                    <div>
+                        <div class="max-w-xs">
+                            <EditForm id="send-code" Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary class="mb-3 text-danger text-center font-semibold" />
+
+                                <div class="flex flex-col gap-4">
+                                    <div>
+                                        <label for="code" class="@TextInput.LabelClasses">Verification Code</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <InputText id="code" type="text" @bind-Value="Input.Code" class="@TextInput.InputClasses" autocomplete="off" placeholder="Please enter the code." />
+                                        </div>
+                                        <ValidationMessage For="() => Input.Code" class="mt-2 text-danger text-sm" />
+                                    </div>
+                                    <PrimaryButton type="submit">Verify</PrimaryButton>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </div>
+}
+
+@code {
+    private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+
+    private string? message;
+    private ApplicationUser user = default!;
+    private string? sharedKey;
+    private string? authenticatorUri;
+    private IEnumerable<string>? recoveryCodes;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+
+        await LoadSharedKeyAndQrCodeUriAsync(user);
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        // Strip spaces and hyphens
+        var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+
+        var is2faTokenValid = await UserManager.VerifyTwoFactorTokenAsync(
+            user, UserManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+
+        if (!is2faTokenValid)
+        {
+            message = "Error: Verification code is invalid.";
+            return;
+        }
+
+        await UserManager.SetTwoFactorEnabledAsync(user, true);
+        var userId = await UserManager.GetUserIdAsync(user);
+        Logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
+
+        message = "Your authenticator app has been verified.";
+
+        if (await UserManager.CountRecoveryCodesAsync(user) == 0)
+        {
+            recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+        }
+        else
+        {
+            RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, HttpContext);
+        }
+    }
+
+    private async ValueTask LoadSharedKeyAndQrCodeUriAsync(ApplicationUser user)
+    {
+        // Load the authenticator key & QR code URI to display on the form
+        var unformattedKey = await UserManager.GetAuthenticatorKeyAsync(user);
+        if (string.IsNullOrEmpty(unformattedKey))
+        {
+            await UserManager.ResetAuthenticatorKeyAsync(user);
+            unformattedKey = await UserManager.GetAuthenticatorKeyAsync(user);
+        }
+
+        sharedKey = FormatKey(unformattedKey!);
+
+        var email = await UserManager.GetEmailAsync(user);
+        authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
+    }
+
+    private string FormatKey(string unformattedKey)
+    {
+        var result = new StringBuilder();
+        int currentPosition = 0;
+        while (currentPosition + 4 < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
+            currentPosition += 4;
+        }
+        if (currentPosition < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition));
+        }
+
+        return result.ToString().ToLowerInvariant();
+    }
+
+    private string GenerateQrCodeUri(string email, string unformattedKey)
+    {
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            AuthenticatorUriFormat,
+            UrlEncoder.Encode("Microsoft.AspNetCore.Identity.UI"),
+            UrlEncoder.Encode(email),
+            unformattedKey);
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Text)]
+        [Display(Name = "Verification Code")]
+        public string Code { get; set; } = "";
+    }
+}

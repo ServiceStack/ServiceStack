@@ -1,0 +1,35 @@
+﻿@page "/admin"
+@attribute [Authorize(Roles = "Admin")]
+
+<div class="bg-white dark:bg-black">
+    <main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex-shrink-0 pt-8">
+            <img class="mx-auto h-20 w-auto" src="/img/blazor.svg" alt="Blazor MyApp">
+        </div>
+        <div class="mx-auto max-w-xl py-8 sm:py-16">
+            <div class="text-center">
+                <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
+                    MyApp Admin
+                </h1>
+                <p class="mt-2 text-lg text-gray-500 dark:text-gray-400">
+                    Manage App Database
+                </p>
+            </div>
+            <div class="mt-12">
+
+                <NavList Title="Admin">
+                    <NavListItem Title="Bookings" href="/admin/bookings" Icon=@typeof(Booking).GetIcon()>
+                        Create and Manage Bookings
+                    </NavListItem>
+                    <NavListItem Title="Coupons" href="/admin/coupons" Icon=@typeof(Coupon).GetIcon()>
+                        Create and Manage Coupons
+                    </NavListItem>
+                </NavList>
+
+                <p class="my-8 text-center">
+                    View all <HyperLink href="/admin-ui/database">Database Tables</HyperLink>
+                </p>
+            </div>
+        </div>
+    </main>
+</div>

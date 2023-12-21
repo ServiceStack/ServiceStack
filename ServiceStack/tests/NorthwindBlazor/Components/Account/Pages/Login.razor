@@ -1,0 +1,137 @@
+﻿@page "/Account/Login"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using MyApp.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Log in</PageTitle>
+
+<div class="mt-8 mx-auto max-w-lg">
+    <div class="max-w-xl">
+        <Heading1>Use a local account to log in.</Heading1>
+        <StatusMessage class="mb-3" Message="@errorMessage" />
+        <section class="mt-4 sm:shadow overflow-hidden sm:rounded-md">
+            <EditForm id="account" Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                <div class="px-4 bg-white dark:bg-black sm:p-6">
+                    <ValidationSummary class="mb-3 text-danger text-center font-semibold" />
+                    <div class="flex flex-col gap-y-4">
+                        <div>
+                            <div>
+                                <label for="Email" class="@TextInput.LabelClasses">Email</label>
+                                <div class="mt-1 relative rounded-md shadow-sm">
+                                    <InputText id="email" type="text" @bind-Value="Input.Email" class="@TextInput.InputClasses" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <label for="UserName" class="@TextInput.LabelClasses">Password</label>
+                                <div class="mt-1 relative rounded-md shadow-sm">
+                                    <InputText id="password" type="password" @bind-Value="Input.Password" class="@TextInput.InputClasses" autocomplete="current-password" aria-required="true" placeholder="password" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <InputCheckbox id="remember-me" @bind-Value="Input.RememberMe" class="@CheckboxInput.InputClasses" />
+                                <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-50 select-none">Remember Me</label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <PrimaryButton id="login-submit" type="submit">Log in</PrimaryButton>
+                        </div>
+
+                        <div class="mt-8 text-sm">
+                            <p class="mb-3">
+                                <HyperLink class="font-semibold" id="forgot-password" href="Account/ForgotPassword">Forgot your password?</HyperLink>
+                            </p>
+                            <p class="mb-3">
+                                <HyperLink class="font-semibold" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</HyperLink>
+                            </p>
+                            <p class="mb-3">
+                                <HyperLink class="font-semibold" id="resend-confirmation" href="Account/ResendEmailConfirmation">Resend email confirmation</HyperLink>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        </section>
+        <div class="mt-8">
+            <section>
+                <Heading3>Use another service to log in.</Heading3>
+                <ExternalLoginPicker />
+            </section>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? errorMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+    }
+
+    public async Task LoginUser()
+    {
+        // This doesn't count login failures towards account lockout
+        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User logged in.");
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+        else if (result.RequiresTwoFactor)
+        {
+            RedirectManager.RedirectTo(
+                "Account/LoginWith2fa",
+                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("User account locked out.");
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            errorMessage = "Error: Invalid login attempt.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
+    }
+}

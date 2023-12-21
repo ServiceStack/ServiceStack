@@ -15,7 +15,7 @@ public class Greet : IReturn<HelloResponse>
 [Route("/hello")]
 [Route("/hello/{Name}")]
 // [ValidateHasRole("Employee")]
-public class Hello : IReturn<HelloResponse>
+public class Hello : IGet, IReturn<HelloResponse>
 {
     public string Name { get; set; } = string.Empty;
 }

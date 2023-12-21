@@ -1,0 +1,87 @@
+﻿@page "/Account/Manage"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using MyApp.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Profile</PageTitle>
+
+<Heading3>Profile</Heading3>
+<StatusMessage />
+
+<div class="max-w-xl">
+    <div class="shadow overflow-hidden sm:rounded-md">
+        <EditForm id="profile-form" Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post"
+                  class="px-4 bg-white dark:bg-black sm:p-6">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="mb-3 text-danger text-center font-semibold" />
+
+            <div class="flex flex-col gap-y-4">
+                <div>
+                    <label for="username" class="@TextInput.LabelClasses">Username</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <input id="username" type="text" value="@username" class="@TextInput.InputClasses" placeholder="Please choose your username." disabled />
+                    </div>
+                </div>
+                <div>
+                    <label for="phone-number" class="@TextInput.LabelClasses">Phone number</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <InputText id="phone-number" type="text" @bind-Value="Input.PhoneNumber" class="@TextInput.InputClasses" placeholder="Please enter your phone number." />
+                    </div>
+                    <ValidationMessage For="() => Input.PhoneNumber" class="mt-2 text-danger text-sm" />
+                </div>
+                <div>
+                    <PrimaryButton id="update-profile-button" type="submit">Save</PrimaryButton>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private ApplicationUser user = default!;
+    private string? username;
+    private string? phoneNumber;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        username = await UserManager.GetUserNameAsync(user);
+        phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+
+        Input.PhoneNumber ??= phoneNumber;
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (Input.PhoneNumber != phoneNumber)
+        {
+            var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
+            if (!setPhoneResult.Succeeded)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
+            }
+        }
+
+        await SignInManager.RefreshSignInAsync(user);
+        RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
+    }
+
+    private sealed class InputModel
+    {
+        [Phone]
+        [Display(Name = "Phone number")]
+        public string? PhoneNumber { get; set; }
+    }
+}

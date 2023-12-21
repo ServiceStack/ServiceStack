@@ -1,0 +1,2157 @@
+@using Microsoft.AspNetCore.Components.Forms
+@namespace ServiceStack.Blazor.Components.Tailwind
+@typeparam Model
+@inherits UiComponentBase
+<div class="fixed z-20 inset-0 overflow-y-auto" @onclick="onDone">
+<div class="absolute" style=@(TopLeft != null ? $"top:{TopLeft.Value.Y}px;left:{TopLeft.Value.X}px" : "") @onclick:stopPropagation="true">
+<div class="absolute top-0 right-0 bg-white dark:bg-black border dark:border-gray-800 rounded normal-case text-sm shadow w-80">
+<div class="p-4">
+<h3 class="text-base font-medium mb-3 dark:text-gray-100">Sort</h3>
+<div class="flex w-full justify-center">
+<button type="button" title="Sort Ascending" @onclick="_ => sort(SortOrder.Ascending)"
+class=@ClassNames(Column.Settings.SortOrder == SortOrder.Ascending ? "bg-indigo-100 dark:bg-indigo-800 border-indigo-500 dark:border-indigo-400" : "bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-900 border-gray-300 dark:border-gray-700",
+"mr-1 inline-flex items-center px-2.5 py-1.5 border shadow-sm text-sm font-medium rounded text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500")>
+<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="currentColor"><path fill-rule="evenodd" d="M10.082 5.629L9.664 7H8.598l1.789-5.332h1.234L13.402 7h-1.12l-.419-1.371h-1.781zm1.57-.785L11 2.687h-.047l-.652 2.157h1.351z" /><path d="M12.96 14H9.028v-.691l2.579-3.72v-.054H9.098v-.867h3.785v.691l-2.567 3.72v.054h2.645V14zm-8.46-.5a.5.5 0 0 1-1 0V3.707L2.354 4.854a.5.5 0 1 1-.708-.708l2-1.999l.007-.007a.498.498 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L4.5 3.707V13.5z" /></g></svg>
+<span>ASC</span>
+</button>
+<button type="button" title="Sort Descending" @onclick="_ => sort(SortOrder.Descending)"
+class=@ClassNames(Column.Settings.SortOrder == SortOrder.Descending ? "bg-indigo-100 dark:bg-indigo-800 border-indigo-500 dark:border-indigo-400" : "bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-900 border-gray-300 dark:border-gray-700",
+"ml-1 inline-flex items-center px-2.5 py-1.5 border shadow-sm text-sm font-medium rounded text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500")>
+<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g fill="currentColor"><path d="M12.96 7H9.028v-.691l2.579-3.72v-.054H9.098v-.867h3.785v.691l-2.567 3.72v.054h2.645V7z" /><path fill-rule="evenodd" d="M10.082 12.629L9.664 14H8.598l1.789-5.332h1.234L13.402 14h-1.12l-.419-1.371h-1.781zm1.57-.785L11 9.688h-.047l-.652 2.156h1.351z" /><path d="M4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999l.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293V2.5z" /></g></svg>
+<span>DESC</span>
+</button>
+</div>
+<h3 class="text-base font-medium mt-4 mb-2 dark:text-gray-100">
+Filter
+</h3>
+@if (Column.FieldType.IsEnum)
+{
+<div>
+@foreach (var c in Column.EnumEntries)
+{
+<div key=@c.Value class="flex items-center">
+<input type="checkbox" id=@c.Value value=@c.Value
+checked=@selectedEnums.Contains(c.Value) @onchange="e => selectedEnumsChanged(c.Value, e.Value is bool b && b)"
+class="h-4 w-4 border-gray-300 dark:border-gray-700 rounded text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500">
+<label for=@c.Value class="ml-3">@c.Value</label>
+</div>
+}
+</div>
+}
+else
+{
+<div>
+@foreach (var filter in filters)
+{
+<div class="mb-2">
+<span class="inline-flex rounded-full items-center py-0.5 pl-2.5 pr-1 text-sm font-medium bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300">
+@Column.Name @filter.Name @Column.GetFilterValue(filter)
+<button type="button" @onclick="_ => removeFilter(filter)"
+class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-400 dark:text-indigo-500 hover:bg-indigo-200 dark:hover:bg-indigo-800 hover:text-indigo-500 dark:hover:text-indigo-400 focus:outline-none focus:bg-indigo-500 focus:text-white">
+<svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+<path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+</svg>
+</button>
+</span>
+</div>
+}
+<EditForm Model="NewFilter" class="flex">
+<InputSelect @bind-Value="NewFilter.Query" class=@CssUtils.Tailwind.Input("w-32 mr-1")>
+@foreach (var rule in Column.FilterRules)
+{
+<option value=@rule.Value>@rule.Name</option>
+}
+</InputSelect>
+@if (newFilterValueType != "none")
+{
+<InputText type="text" class=@CssUtils.Tailwind.Input("w-32 mr-1") @bind-Value="NewFilter.Value" @onkeyup="handleKeyUp" />
+}
+<div class="pt-1">
+<button type="button" @onclick="addFilter"
+class="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white dark:text-black bg-indigo-600 dark:bg-indigo-400 hover:bg-indigo-700 dark:hover:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+</svg>
+</button>
+</div>
+</EditForm>
+</div>
+}
+</div>
+<div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+<PrimaryButton @onclick="onSave" Style="ButtonStyle.Red" class="ml-2">
+Save
+</PrimaryButton>
+<SecondaryButton @onclick="onDone">
+Cancel
+</SecondaryButton>
+</div>
+</div>
+</div>
+</div>
+@namespace ServiceStack.Blazor.Components.Tailwind
+@typeparam Model
+@inherits UiComponentBase
+<div class=@Class>
+<div class="px-4 sm:px-6 lg:px-8 text-sm">
+<div class="flex flex-wrap">
+@foreach (var c in Columns.Where(c => c.Filters.Count > 0))
+{
+<fieldset class="group pr-4 sm:pr-6 lg:pr-8">
+<legend class="flex justify-between w-full font-medium">
+<span>@c.Label</span>
+<span class="w-6 flex justify-end">
+<span class="hidden group-hover:inline">
+<button @onclick="_ => removeFilters(c)" title=@($"Clear all {c.Title} filters")
+class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-red-600 hover:bg-red-200 hover:text-red-500 focus:outline-none focus:bg-red-500 focus:text-white">
+<svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+<path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+</svg>
+</button>
+</span>
+</span>
+</legend>
+@if (c.FieldType.IsEnum)
+{
+<div class="pt-2">
+@foreach (var value in c.Filters.FirstOrDefault()!.Values.OrEmpty())
+{
+<div key=@value class="flex items-center">
+<label class="ml-2">@value</label>
+</div>
+}
+</div>
+}
+else
+{
+<div>
+@foreach (var f in c.Filters)
+{
+<div class="pt-2">
+<span class="inline-flex rounded-full items-center py-0.5 pl-2.5 pr-1 text-sm font-medium bg-indigo-100 text-indigo-700">
+@c.Name @f.Name @c.GetFilterValue(f)
+<button type="button" @onclick="_ => removeFilter(c, f)"
+class="flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:outline-none focus:bg-indigo-500 focus:text-white">
+<svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+<path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+</svg>
+</button>
+</span>
+</div>
+}
+</div>
+}
+</fieldset>
+}
+</div>
+<div class="flex justify-center pt-4">
+<button type="button" @onclick="clearAll"
+class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+<span>Clear All</span>
+</button>
+</div>
+</div>
+</div>
+@namespace ServiceStack.Blazor.Components.Tailwind
+@inherits UiComponentBase
+<ModalDialog Id=@Id Show=@Show Close="Done" SizeClass="w-full sm:max-w-prose">
+<div class="bg-white dark:bg-black px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+<div class="">
+<div class="mt-3 text-center sm:mt-0 sm:mx-4 sm:text-left">
+<h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Query Preferences</h3>
+<div class="mt-4">
+<label for=@($"{Id}-take") class="block text-sm font-medium text-gray-700 dark:text-gray-300">Results per page</label>
+<select id=@($"{Id}-take") @bind="Model.Take"
+class="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-black border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+@foreach (var take in allTakes)
+{
+<option class="text-black dark:text-white" value=@take>@take</option>
+}
+</select>
+</div>
+<div class="mt-4 flex items-center py-4 border-b border-gray-200 dark:border-gray-800">
+<input type="radio" id=@($"{Id}-allColumns") @onclick=@(_ => Model.SelectedColumns.Clear()) checked=@(Model.SelectedColumns.Count == 0)
+class="focus:ring-indigo-500 h-4 w-4 bg-white dark:bg-black text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-700">
+<label class="ml-3 block text-gray-700 dark:text-gray-300" for=@($"{Id}-allColumns")>View all columns</label>
+</div>
+<div class="mt-4">
+<div class="pb-2 px-4">
+<div class="">
+@foreach (var c in Columns)
+{
+<div key=@c.Name class="flex items-center">
+<input type="checkbox" id=@c.Name checked=@Model.SelectedColumns.Contains(c.Name) @oninput="x => columnSelected(c, x.Value)"
+class="h-4 w-4 bg-white dark:bg-black border-gray-300 dark:border-gray-700 rounded text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500">
+<label for=@c.Name class="ml-3 dark:text-gray-50">@c.Name</label>
+</div>
+}
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+<PrimaryButton @onclick="save" Style="ButtonStyle.Red" class="ml-2">
+Save
+</PrimaryButton>
+<SecondaryButton @onclick="async _ => await Done.InvokeAsync()">
+Cancel
+</SecondaryButton>
+</div>
+</ModalDialog>
+@namespace ServiceStack.Blazor.Components.Tailwind
+@typeparam Model
+@inherits UiComponentBase
+<div class="flex">
+@if (Column.Settings.Filters.Count > 0)
+{
+<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.586a1 1 0 0 1-.293.707l-6.414 6.414a1 1 0 0 0-.293.707V17l-4 4v-6.586a1 1 0 0 0-.293-.707L3.293 7.293A1 1 0 0 1 3 6.586V4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
+}
+else
+{
+<svg class=@CssUtils.ClassNames("w-4 h-4 transition-transform", IsOpen ? "rotate-180" : "") v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path d="M505.5 658.7c3.2 4.4 9.7 4.4 12.9 0l178-246c3.8-5.3 0-12.7-6.5-12.7H643c-10.2 0-19.9 4.9-25.9 13.2L512 558.6L406.8 413.2c-6-8.3-15.6-13.2-25.9-13.2H334c-6.5 0-10.3 7.4-6.5 12.7l178 246z" fill="currentColor" /><path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z" fill="currentColor" /></svg>
+}
+@if (Column.Settings.SortOrder == SortOrder.Ascending)
+{
+<svg class="w-4 h-4" v-if="sort==='ASC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor" /></g></svg>
+}
+else if (Column.Settings.SortOrder == SortOrder.Descending)
+{
+<svg class="w-4 h-4" v-else-if="sort==='DESC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor" /></g></svg>
+}
+</div>
+@inherits UiComponentBase
+<div class=@ClassNames(BackgroundColor, BorderColor, "border-l-4 p-4", Class) @attributes="AdditionalAttributes">
+<div class="flex">
+<div class="flex-shrink-0">
+@if (Type == AlertType.Warning)
+{
+<svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+}
+else if (Type == AlertType.Error)
+{
+<svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+</svg>
+}
+else if (Type == AlertType.Information)
+{
+<svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M19 10.5a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0zM8.25 9.75A.75.75 0 019 9h.253a1.75 1.75 0 011.709 2.13l-.46 2.066a.25.25 0 00.245.304H11a.75.75 0 010 1.5h-.253a1.75 1.75 0 01-1.709-2.13l.46-2.066a.25.25 0 00-.245-.304H9a.75.75 0 01-.75-.75zM10 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+</svg>
+}
+else if (Type == AlertType.Success)
+{
+<svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+</svg>
+}
+</div>
+<div class="ml-3">
+<p class=@ClassNames(TextColor, "text-sm")>
+@if (!string.IsNullOrEmpty(HtmlMessage))
+{
+@((MarkupString)HtmlMessage)
+}
+else
+{
+@ChildContent
+}
+</p>
+</div>
+</div>
+</div>
+@code {
+string BackgroundColor => Type switch
+{
+AlertType.Information => "bg-blue-50 dark:bg-blue-200",
+AlertType.Error => "bg-red-50 dark:bg-red-200",
+AlertType.Success => "bg-green-50 dark:bg-green-200",
+_ => "bg-yellow-50 dark:bg-yellow-200"
+};
+string BorderColor => Type switch
+{
+AlertType.Information => "border-blue-400",
+AlertType.Error => "border-red-400",
+AlertType.Success => "border-green-400",
+_ => "border-yellow-400"
+};
+string TextColor => Type switch
+{
+AlertType.Information => "text-blue-700",
+AlertType.Error => "text-red-700",
+AlertType.Success => "text-green-700",
+_ => "text-yellow-700"
+};
+}
+@inherits AlertSuccessBase
+@if (!dismissed)
+{
+<div class=@(ClassNames(Classes, CssClass())) role="alert">
+<div class="flex">
+<div class="flex-shrink-0">
+<svg class="h-5 w-5 text-green-400 dark:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+</div>
+<div class="ml-3">
+<h3 class="text-sm font-medium text-green-800">
+@if (!string.IsNullOrEmpty(Message))
+{
+@Message
+}
+else
+{
+@ChildContent
+}
+</h3>
+</div>
+<div class="ml-auto pl-3">
+<div class="-mx-1.5 -my-1.5">
+<button type="button" class="inline-flex rounded-md bg-green-50 dark:bg-green-200 p-1.5 text-green-500 dark:text-green-600 hover:bg-green-100 dark:hover:bg-green-700 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50 dark:ring-offset-green-200"
+@onclick="_ => dismissed = true">
+<span class="sr-only">Dismiss</span>
+<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+</svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+}
+@code {
+bool dismissed = false;
+public static string Classes { get; set; } = "rounded-md bg-green-50 dark:bg-green-200 p-4";
+}
+@typeparam T
+@inherits TextInputBase
+<div id=@($"{Id}-autocomplete") class=@FieldClass>
+@if (!string.IsNullOrEmpty(Label))
+{
+<label for=@Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+}
+<div class="relative mt-1">
+<input id=@Id type="text" @bind-value="txtValue" @bind-value:event="oninput" class=@ClassNames("block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900",
+CssClass("shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600",
+"pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
+role="combobox" aria-controls="options" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder=@(Multiple || Value == null ? placeholder : "")
+@onkeydown="OnKeyDownAsync" @onkeyup="OnKeyUp" @onclick="update" @onpaste="OnPasteAsync" @attributes="IncludeAttributes">
+<button type="button" @onclick="toggle" class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none" tabindex="-1">
+<svg class="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd" />
+</svg>
+</button>
+@if (showPopup)
+{
+<ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-black py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+@onkeydown="OnKeyDownAsync" id=@("{Id}-options") role="listbox">
+@foreach (var option in FilteredValues)
+{
+<li class=@ClassNames(option.Equals(active) ? "active bg-indigo-600 text-white" : "text-gray-900 dark:text-gray-100", "relative cursor-default select-none py-2 pl-3 pr-9")
+@onmouseover="_ => setActive(option)" @onclick="_ => select(option)" role="option" tabindex="-1">
+@Item!(option)
+@if (Values.Contains(option))
+{
+<span class=@ClassNames("absolute inset-y-0 right-0 flex items-center pr-4", option.Equals(active) ? "text-white" : "text-indigo-600")>
+<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+</svg>
+</span>
+}
+</li>
+}
+</ul>
+}
+else if (!Multiple && Value is not null)
+{
+<div @onkeydown="OnKeyDownAsync" @onclick="toggle" class="h-8 -mt-8 ml-3 pt-0.5">
+@Item!(Value)
+</div>
+}
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none" tabindex="-1">
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@typeparam Model
+@inherits AutoFormBase<Model>
+@if (FormStyle == FormStyle.Card)
+{
+<div class=@ClassNames(PanelClass, @class)>
+<form @onsubmit="OnSave" @onsubmit:preventDefault>
+<div class=@FormClass>
+<div>
+<h3 class=@HeadingClass>@Title</h3>
+@if (SubHeading != null)
+{
+<p class=@SubHeadingClass>@SubHeading</p>
+}
+else if (Notes != null)
+{
+<p class=@ClassNames("notes", SubHeadingClass)>@((MarkupString)Notes)</p>
+}
+</div>
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+</div>
+<div class=@ButtonsClass>
+<div></div>
+<div class="flex justify-end">
+<SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+<PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
+</div>
+</div>
+</form>
+</div>
+}
+else
+{
+<div class=@ClassNames("relative z-10", @class) aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+<div class="">
+<div class="">
+<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+<div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
+<form class=@FormClass @onsubmit="OnSave" @onsubmit:preventDefault>
+<!-- Header -->
+<div class="h-0 flex-1 overflow-y-auto">
+<div class=@TitlebarClass>
+<div class="flex items-start justify-between space-x-3">
+<div class="space-y-1">
+<h2 class=@HeadingClass id="slide-over-title">@Title</h2>
+@if (SubHeading != null)
+{
+<p class=@SubHeadingClass>@SubHeading</p>
+}
+else if (Notes != null)
+{
+<p class=@ClassNames("notes", SubHeadingClass)>@((MarkupString)Notes)</p>
+}
+</div>
+<div class="flex h-7 items-center">
+<button type="button" @onclick="OnDone" class=@CssDefaults.Form.SlideOver.CloseButtonClass>
+<span class="sr-only">Close panel</span>
+<!-- Heroicon name: outline/x-mark -->
+<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+</div>
+</div>
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+</div>
+<div class=@ButtonsClass>
+<div></div>
+<div class="flex justify-end">
+<SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+<PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+}
+@typeparam Model
+@inherits AutoFormBase<Model>
+@if (FormStyle == FormStyle.Card)
+{
+<div class=@ClassNames(PanelClass, @class)>
+<form @onsubmit="OnSave" @onsubmit:preventDefault>
+<div class=@FormClass>
+<div>
+<h3 class=@HeadingClass>@Title</h3>
+@if (SubHeading != null)
+{
+<p class=@SubHeadingClass>@SubHeading</p>
+}
+else if (Notes != null)
+{
+<p class=@ClassNames("notes", SubHeadingClass)>@((MarkupString)Notes)</p>
+}
+</div>
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+</div>
+<div class=@ButtonsClass>
+<div>
+@if (DeleteApiType != null)
+{
+<ConfirmDelete OnDelete="OnDelete" />
+}
+</div>
+<div class="flex justify-end">
+<SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+<PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
+</div>
+</div>
+</form>
+</div>
+}
+else
+{
+<div class=@ClassNames("relative z-10", @class) aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+<div class="">
+<div class="">
+<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+<div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
+<form class=@FormClass @onsubmit="OnSave" @onsubmit:preventDefault>
+<!-- Header -->
+<div class="h-0 flex-1 overflow-y-auto">
+<div class=@TitlebarClass>
+<div class="flex items-start justify-between space-x-3">
+<div class="space-y-1">
+<h2 class=@HeadingClass id="slide-over-title">@Title</h2>
+@if (SubHeading != null)
+{
+<p class=@SubHeadingClass>@SubHeading</p>
+}
+else if (Notes != null)
+{
+<p class=@ClassNames("notes", SubHeadingClass)>@((MarkupString)Notes)</p>
+}
+</div>
+<div class="flex h-7 items-center">
+<button type="button" @onclick="OnDone" class=@CssDefaults.Form.SlideOver.CloseButtonClass>
+<span class="sr-only">Close panel</span>
+<!-- Heroicon name: outline/x-mark -->
+<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+</div>
+</div>
+<AutoFormFields Type="ApiType" Api="api" FormLayout="FormLayout" ModelDictionary="ModelDictionary" />
+</div>
+<div class=@ButtonsClass>
+<div>
+@if (DeleteApiType != null)
+{
+<ConfirmDelete OnDelete="OnDelete" />
+}
+</div>
+<div class="flex justify-end">
+<SecondaryButton @onclick="OnDone">Cancel</SecondaryButton>
+<PrimaryButton type="submit" class="ml-4">Save</PrimaryButton>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+}
+@using ServiceStack.Html
+@inherits UiComponentBase
+<ErrorSummary ExplicitStatus=@(Api?.Error) Except=@VisibleFields />
+<div class="flex flex-1 flex-col justify-between">
+<div class="divide-y divide-gray-200 px-4 sm:px-6">
+<div class="space-y-6 pt-6 pb-5">
+<fieldset class="grid grid-cols-12 gap-6">
+@foreach (var f in FormLayout.OrEmpty())
+{
+var propType = MetadataType.Properties.FirstOrDefault(x => x.Name == f.Id);
+var dataModelProp = DataModelType.Property(f.Id);
+if (f.Ignore == true || !BlazorUtils.SupportsProperty(propType))
+{
+continue;
+}
+<div class=@CssUtils.ClassNames(
+f.Css?.Field ?? (f.Type == Input.Types.Textarea
+? "col-span-12"
+: "col-span-12 xl:col-span-6" + (f.Type == Input.Types.Checkbox ? " flex items-center" : "")),
+f.Type == Input.Types.Hidden ? "hidden" : "") style="width:100%">
+@if (dataModelProp?.Ref != null && f.Type != Input.Types.File)
+{
+<LookupInput MetadataType=@DataModelType Input=@f Model=@ModelDictionary Status=@Api?.Error />
+}
+else
+{
+<DynamicInput Input=@f Model=@ModelDictionary Status=@Api?.Error />
+}
+</div>
+}
+</fieldset>
+</div>
+</div>
+</div>
+@typeparam Model
+@inherits AuthBlazorComponentBase
+@implements IDisposable
+@if (invalidAccess != null)
+{
+<div class="w-body md:w-body overflow-auto">
+<EnsureAccess Title=@($"View {typeof(Model).Name}") HtmlMessage=@invalidAccess />
+</div>
+}
+else
+{
+<CascadingValue Value="ModalLookup">
+<div class="pt-1">
+<CascadingValue Value="AppMetadata">
+@if (New == true)
+{
+if (invalidCreateAccess != null)
+{
+<EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDone" />
+}
+else if (CreateForm != null)
+{
+@CreateForm
+}
+else if (Apis!.Create != null)
+{
+<AutoCreateForm @ref="AutoCreateForm" Model="Model" ApiType="Apis!.Create" Done="OnNewDone" Save="OnNewSave" />
+}
+}
+else if (EditModel != null)
+{
+if (invalidUpdateAccess != null)
+{
+<EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDone" />
+}
+else if (EditForm != null)
+{
+@EditForm(EditModel)
+}
+else if (Apis!.Patch != null || Apis!.Update != null)
+{
+<AutoEditForm @ref="AutoEditForm" Model="Model" Edit="EditModel" ApiType="Apis!.Patch ?? Apis!.Update" DeleteApiType="Apis!.Delete" Done="OnEditDone" Save="OnEditSave" Delete="OnEditSave" />
+}
+}
+</CascadingValue>
+@if (Toolbar != null)
+{
+@Toolbar
+}
+else if (ShowToolbar)
+{
+<QueryPrefs Show=@ShowQueryPrefs Columns="ViewModelColumns" Prefs="ApiPrefs" Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
+<div class="pl-1 pt-1 flex flex-wrap">
+<div class="flex mt-1">
+@if (ShowPreferences)
+{
+<button type="button" class="pl-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
+</button>
+}
+@if (ShowPagingNav)
+{
+<button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="First page" disabled=@(!canFirst) @onclick="_ => skipTo(-Total)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canPrev ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="Previous page" disabled=@(!canPrev) @onclick="_ => skipTo(-ApiPrefs.Take)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canNext ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="Next page" disabled=@(!canNext)  @onclick="_ => skipTo(ApiPrefs.Take)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canLast ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="Last page" disabled=@(!canLast) @onclick="_ => skipTo(Total)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor" /></svg>
+</button>
+}
+</div>
+@if (ShowPagingInfo)
+{
+<div class="flex mt-1">
+<div class="px-4 text-lg text-black dark:text-white">
+@if (apiLoading)
+{
+<span>Querying...</span>
+}
+else if (Results.Count > 0)
+{
+<span>
+<span class="hidden xl:inline">
+Showing Results
+</span>
+@(Skip + 1) - @Math.Min(Skip + Results.Count, Total) <span> of @Total</span>
+</span>
+}
+else if (Api != null)
+{
+<span>No Results</span>
+}
+</div>
+</div>
+}
+<div class="flex flex-wrap">
+@if (ShowRefresh)
+{
+<div class="pl-2 mt-1">
+<button type="button" @onclick="RefreshAsync" title="Refresh" class=@ToolbarButtonClass>
+<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20v-5h-5M4 4v5h5m10.938 2A8.001 8.001 0 0 0 5.07 8m-1.008 5a8.001 8.001  0 0 0 14.868 3" /></svg>
+</button>
+</div>
+}
+@if (ShowDownloadCsv)
+{
+<div class="pl-2 mt-1">
+<button type="button" @onclick="downloadCsv" title="Download CSV" class=@ToolbarButtonClass>
+<svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411z" fill="#20744a" fill-rule="evenodd" /><path fill="#20744a" d="M22.487 7.439h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 10.94h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 14.441h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 17.942h4.323v2.2h-4.323z" /><path fill="#20744a" d="M22.487 21.443h4.323v2.2h-4.323z" /><path fill="#fff" fill-rule="evenodd" d="M6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z" /></svg>
+<span class="text-green-900 dark:text-green-100">Excel</span>
+</button>
+</div>
+}
+@if (ShowCopyApiUrl)
+{
+<div class="pl-2 mt-1">
+<button type="button" @onclick="copyApiUrl" title="Copy API URL" class=@ToolbarButtonClass>
+@if (copiedApiUrl)
+{
+<svg class="w-5 h-5 mr-1 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+}
+else
+{
+<svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></g></svg>
+}
+<span class="whitespace-nowrap">Copy URL</span>
+</button>
+</div>
+}
+@if (hasPrefs && ShowResetPreferences)
+{
+<div class="pl-2 mt-1">
+<button type="button" @onclick="ResetPreferencesAsync" title="Reset Preferences & Filters" class=@ToolbarButtonClass>
+<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z" /></svg>
+</button>
+</div>
+}
+@if (ShowFiltersView && filtersCount > 0)
+{
+<div class="pl-2 mt-1">
+<button type="button" @onclick=@(_ => open = open == Features.Filters ? null : Features.Filters) class=@ToolbarButtonClass aria-expanded="false">
+<svg class="flex-none w-5 h-5 mr-2 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+<path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+</svg>
+<span class="mr-1">
+@filtersCount @(filtersCount == 1 ? "Filter" : "Filters")
+</span>
+@if (open != Features.Filters)
+{
+<svg class="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+</svg>
+}
+else
+{
+<svg class="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+</svg>
+}
+</button>
+</div>
+}
+@if (ShowNewItem && CreateOp != null)
+{
+<div class="pl-2 mt-1">
+<button type="button" @onclick="OnShowNewItem" title=@($"New {typeof(Model).Name}") class=@ToolbarButtonClass>
+<svg class="w-5 h-5 mr-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"></path></svg>
+<span class="whitespace-nowrap">@($"New {typeof(Model).Name}")</span>
+</button>
+</div>
+}
+@if (ToolbarButtons != null)
+{
+@ToolbarButtons
+}
+</div>
+</div>
+}
+@if (open == Features.Filters)
+{
+<FilterViews class="border-y border-gray-200 dark:border-gray-800 py-8 my-2" Columns="GetColumns()" Done="() => open = null" FiltersChanged="UpdateAsync" />
+}
+@if (errorSummary != null)
+{
+<ErrorSummary class="p-4" ExplicitStatus="EditApi?.Error ?? Api?.Error"  />
+}
+else if (apiLoading)
+{
+<Loading class="p-4 text-xl text-gray-500 dark:text-gray-400" ImageClass="w-5 h-5" />
+}
+else
+{
+<div>
+@if (Results.Count > 0)
+{
+<div>
+<CascadingValue IsFixed="true" Value="this">
+<DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
+PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync"
+TableStyle=@TableStyle GridClass=@GridClass Grid2Class=@Grid2Class Grid3Class=@Grid3Class Grid4Class=@Grid4Class
+TableClass=@TableClass TableHeadClass=@TableHeadClass TableHeaderRowClass=@TableHeaderRowClass TableHeaderCellClass=@TableHeaderCellClass TableBodyClass=@TableBodyClass
+RowSelected="OnRowSelected" HeaderSelected="HeaderSelected" MaxFieldLength="MaxFieldLength"
+AllowSelection="AllowSelection" AllowFiltering="AllowFiltering" FilterDefinitions="FilterDefinitions"
+>
+<CascadingValue IsFixed="true" Value="DataGrid">
+@Columns
+</CascadingValue>
+</DataGrid>
+</CascadingValue>
+</div>
+}
+</div>
+}
+</div>
+</CascadingValue>
+<DynamicModalLookup @ref="ModalLookup" AppMetadata=@AppMetadata />
+}
+@inherits UiComponentBase
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+<nav class=@ClassNames("flex", Class) aria-label="Breadcrumb">
+<ol role="list" class="flex items-center space-x-4">
+<li>
+<div>
+<a href=@HomeHref class="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400" title=@HomeLabel>
+<!-- Heroicon name: mini/home -->
+<svg class="h-6 w-6 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+</svg>
+<span class="sr-only">@HomeLabel</span>
+</a>
+</div>
+</li>
+@foreach (var link in Links)
+{
+<li>
+<div class="flex items-center">
+<!-- Heroicon name: mini/chevron-right -->
+<svg class="h-6 w-6 flex-shrink-0 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+</svg>
+@if (!string.IsNullOrEmpty(link.href))
+{
+<a href=@link.href class="ml-4 text-lg font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title=@link.title>@link.ChildContent</a>
+}
+else
+{
+<span class="ml-4 text-lg font-medium text-gray-700 dark:text-gray-300" title=@link.title>@link.ChildContent</span>
+}
+</div>
+</li>
+}
+</ol>
+</nav>
+@if (Label != null)
+{
+<span class="flex" title=@Title>
+@if (Icon != null)
+{
+<Icon Image=@Icon Class="w-5 h-5 mr-1" />
+}
+@Label
+</span>
+}
+else
+{
+<PreviewFormat Format=@PropType?.Format Value=@Value />
+}
+@typeparam TValue
+@inherits CheckboxInputBase<TValue>
+<div class=@ClassNames("relative flex items-start", CssClass())>
+<div class="flex items-center h-5">
+<input type="checkbox"
+class="@CheckboxInput.InputClasses"
+id=@Id
+name=@Id
+@bind="CurrentValueAsBool"
+@attributes="IncludeAttributes">
+</div>
+<div class="ml-3 text-sm">
+<label class=@ClassNames(CheckboxInput.LabelClasses, LabelClass) for=@Id>
+@UseLabel
+</label>
+@if (HasErrorField)
+{
+<p class=@ClassNames(CheckboxInput.ErrorClasses)>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+</div>
+@inherits UiComponentBase
+<input id="confirmDelete" type="checkbox" @bind-value="confirmDelete" class="@CheckboxClasses">
+<label for="confirmDelete" class="@LabelClasses">@ConfirmLabel</label>
+<button type="button" disabled=@(!confirmDelete) @onclick="OnDelete"
+class=@ClassNames(ButtonClasses,
+confirmDelete? EnabledClasses : DisabledClasses, Class)>
+@if (ChildContent != null)
+{
+@ChildContent
+}
+else
+{
+@Label
+}
+</button>
+@code {
+public static string CheckboxClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";
+public static string LabelClasses { get; set; } = "mx-1 select-none dark:text-gray-300";
+public static string ButtonClasses { get; set; } = "select-none inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white";
+public static string EnabledClasses { get; set; } = "cursor-pointer bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500";
+public static string DisabledClasses { get; set; } = "bg-red-400";
+}
+@inherits UiComponentBase
+<button type="button" class=@ClassNames(ButtonClasses, Class) role="switch" aria-checked="false" @onclick="toggleDark">
+<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "translate-x-5" : "translate-x-0", InnerClasses)>
+<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "opacity-0 ease-out duration-100" : "opacity-100 ease-in duration-200", IconClasses) aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z" /></svg>
+</span>
+<span class=@ClassNames(!BlazorConfig.Instance.DarkMode ? "opacity-100 ease-in duration-200" : "opacity-0 ease-out duration-100", IconClasses) aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z" /></svg>
+</span>
+</span>
+</button>
+@code {
+public static string ButtonClasses { get; set; } = "bg-gray-200 dark:bg-gray-700 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:ring-offset-black";
+public static string InnerClasses { get; set; } = "pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white dark:bg-black shadow transform ring-0 transition ease-in-out duration-200";
+public static string IconClasses { get; set; } = "absolute inset-0 h-full w-full flex items-center justify-center transition-opacity";
+}
+@inherits UiComponentLiteBase
+<button type="button" onclick="toggleDarkMode()" class=@ClassNames(DarkModeToggle.ButtonClasses, Class) role="switch" aria-checked="false" @attributes="AdditionalAttributes">
+<span class="@DarkModeToggle.InnerClasses" data-class-light="translate-x-5" data-class-dark="translate-x-0">
+<span class="@DarkModeToggle.IconClasses" data-class-light="opacity-0 ease-out duration-100" data-class-dark="opacity-100 ease-in duration-200" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3Z" /></svg>
+</span>
+<span class="@DarkModeToggle.IconClasses" data-class-light="opacity-100 ease-in duration-200" data-class-dark="opacity-0 ease-out duration-100" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32"><path fill="currentColor" d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6ZM5.394 6.813L6.81 5.399l3.505 3.506L8.9 10.319zM2 15.005h5v2H2zm3.394 10.193L8.9 21.692l1.414 1.414l-3.505 3.506zM15 25.005h2v5h-2zm6.687-1.9l1.414-1.414l3.506 3.506l-1.414 1.414zm3.313-8.1h5v2h-5zm-3.313-6.101l3.506-3.506l1.414 1.414l-3.506 3.506zM15 2.005h2v5h-2z" /></svg>
+</span>
+</span>
+</button>
+<script>
+window.toggleDarkMode = (function() {
+let isDark = localStorage.getItem('color-scheme') === 'dark'
+const html = document.documentElement
+function renderDarkMode() {
+html.style.setProperty('color-scheme', isDark ? 'dark' : null)
+html.classList.toggle('dark', isDark)
+document.querySelectorAll('[data-class-light]').forEach(el => {
+const removeClasses = isDark
+? el.dataset.classLight
+: el.dataset.classDark
+const addClasses = isDark
+? el.dataset.classDark
+: el.dataset.classLight
+removeClasses.split(' ').forEach(c => el.classList.remove(c))
+addClasses.split(' ').forEach(c => el.classList.add(c))
+})
+}
+renderDarkMode()
+document.addEventListener('DOMContentLoaded', () =>
+Blazor.addEventListener('enhancedload', () => {
+isDark = localStorage.getItem('color-scheme') === 'dark'
+html.classList.toggle('dark', isDark)
+renderDarkMode()
+}))
+return function() {
+isDark = !isDark
+localStorage.setItem('color-scheme', isDark ? 'dark' : 'light')
+renderDarkMode()
+}
+})()
+</script>
+@typeparam Model
+@inherits UiComponentBase
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+@if (Items.Count > 0)
+{
+@if (ShowFilters != null)
+{
+<div class="relative">
+<FilterColumn Column=@ShowFilters TopLeft=@ShowFiltersTopLeft Done="OnFilterDone" Saved="OnFilterSave" />
+</div>
+}
+<div @ref="refResults" class=@ClassNames(GridClass, @class)>
+<div class=@Grid2Class>
+<div class=@Grid3Class>
+<div class=@Grid4Class>
+<table class=@TableClass>
+<thead class=@TableHeadClass>
+<tr class=@TableHeaderRowClass>
+@foreach (var column in VisibleColumns)
+{
+var allowFiltering = AllowFiltering && column.AllowFiltering && !TextUtils.IsComplexType(column.FieldType) && !column.IsComputed;
+var isOpen = column == ShowFilters;
+<td class=@ClassNames(column.VisibleFrom != null ? $"hidden {column.VisibleFrom.Value.ToBreakpointCellClass()}" : null,
+column.HeaderClass ?? ClassNames(TableHeaderCellClass, isOpen ? "text-gray-900 dark:text-gray-50" : "text-gray-500 dark:text-gray-400", column.@class))>
+@if (!allowFiltering)
+{
+<div class="flex justify-between items-center">
+@column.HeaderTemplate
+</div>
+}
+else
+{
+<div @onclick="e => OnHeaderSelected(e, column)" class="flex justify-between items-center cursor-pointer hover:text-gray-900 dark:hover:text-gray-50">
+@column.HeaderTemplate
+<SettingsIcons Column=@column IsOpen=isOpen />
+</div>
+}
+</td>
+}
+</tr>
+</thead>
+<tbody class=@TableBodyClass>
+@{ var i = 0; }
+@foreach (var item in Items)
+{
+<tr @key="item.GetHashCode()"
+class=@ClassNames(CssDefaults.Grid.GetTableRowClass(TableStyle, i++, IsSelected(item), AllowSelection), RowClass?.Invoke(item, i))
+@onclick="e => OnRowSelected(e, item)">
+@foreach (var column in VisibleColumns)
+{
+@column.CellTemplate(item)
+}
+</tr>
+}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+}
+@typeparam TValue
+@inherits DateTimeInputBase<TValue>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class="@DateTimeInput.LabelClasses">@UseLabel</label>
+}
+<div class="mt-1 relative rounded-md shadow-sm">
+<input type="date" class=@ClassNames(DateTimeInput.InputBaseClasses,
+CssClass(DateTimeInput.InputValidClasses, DateTimeInput.InputInvalidClasses))
+id=@Id name=@Id @bind-value="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes">
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<!-- Heroicon name: solid/exclamation-circle -->
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="@DateTimeInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@inherits DynamicInputBase
+@if (IsSelect)
+{
+<SelectInput Id=@UseId Status=@Status TValue="string" Input=@Input
+@bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@TextUtils.Humanize(UseId) @attributes="AllAttributes" />
+}
+else if (IsCheckbox)
+{
+<CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
+}
+else if (UseType == "file")
+{
+string? value = null;
+ICollection<string>? values = null;
+UploadedFile? file = null;
+List<UploadedFile>? files = null;
+if (ValueObject != null)
+{
+value = ValueObject as string;
+if (value == null)
+{
+values = ValueObject as ICollection<string>;
+if (values == null)
+{
+if (ValueObject is System.Collections.IEnumerable)
+{
+files = ValueObject.ConvertTo<List<UploadedFile>>();
+}
+else
+{
+file = ValueObject.ConvertTo<UploadedFile>();
+}
+}
+}
+}
+<FileInput type=@UseType Id=@UseId Status=@Status class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes"
+Multiple=@(Input?.Multiple ?? false) Accept=@(Input?.Accept)
+Value=@value Values=@values File=@file Files=@files
+OnInput="e => Model[Input!.Id] = e" />
+}
+else if (UseType == "tag")
+{
+<TagInput Id=@UseId Status=@Status @bind-Value="Values" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
+}
+else
+{
+<TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" class=@(Input?.Css?.Input) LabelClass=@(Input?.Css?.Label) Help=@UseHelp @attributes="AllAttributes" />
+}
+@inherits AuthBlazorComponentBase
+@if (!IsAuthenticated)
+{
+<SlideOver Title=@Title SubHeading=@SubHeading Done="Done">
+<Alert HtmlMessage=@HtmlMessage />
+<div class="md:p-4">
+<button type="button" @onclick="signIn"
+class="@ButtonClasses">
+Sign In
+</button>
+</div>
+</SlideOver>
+}
+@code {
+public static string ButtonClasses { get; set; } = "flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50";
+}
+@inherits ErrorSummaryBase
+@if (UseStatus.ShowSummary(UseExcept))
+{
+<div class=@(ClassNames(Classes, CssClass())) role="alert">
+<div class="flex">
+<div class="flex-shrink-0">
+<!-- Heroicon name: solid/x-circle -->
+<svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+</svg>
+</div>
+<div class="ml-3">
+<p class="@MessageClasses">@UseStatus.SummaryMessage(UseExcept)</p>
+</div>
+</div>
+</div>
+}
+@code {
+public static string Classes { get; set; } = "bg-red-50 dark:bg-red-200 border-l-4 border-red-400 p-4";
+public static string MessageClasses { get; set; } = "text-sm text-red-700 dark:text-red-800";
+}
+@using Microsoft.AspNetCore.Components.Forms
+@inherits TextInputBase
+@implements IDisposable
+<div class=@ClassNames("flex", !Multiple ? "justify-between" : "flex-col")>
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class=@ClassNames(LabelClasses, LabelClass)>@UseLabel</label>
+}
+<div class="block mt-2">
+<span class="sr-only">UseHelp ?? UseLabel</span>
+@{
+var cls = @ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses));
+}
+<InputFile @ref="InputFile" class=@cls id=@Id name=@Id placeHolder=@UsePlaceholder multiple=@Multiple accept=@Accept @attributes="IncludeAttributes" OnChange="@OnChange" />
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<!-- Heroicon name: solid/exclamation-circle -->
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@if (!Multiple)
+{
+var src = imgSrc();
+if (!string.IsNullOrEmpty(src))
+{
+<div class="shrink-0 cursor-pointer" title=@(!isDataUri(src) ? src : "")>
+<img @onclick="openFile" class=@ClassNames("h-16 w-16", imgCls(src)) alt=@($"Current {UseLabel}")
+src=@(FallbackSrc ?? BlazorConfig.Instance.AssetsPathResolver(src))
+@onerror="() => FallbackSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+</div>
+}
+}
+else if (FileList.Count > 0)
+{
+<div class="mt-3">
+<table class="w-full">
+@foreach (var file in FileList)
+{
+var filePath = file.FilePath ?? "";
+var src = FileIcons.FilePathUri(filePath)!;
+<tr>
+<td class="pr-6 align-bottom pb-2">
+<div class="flex w-full" title=@(!isDataUri(filePath) ? filePath : "")>
+<img src=@((FallbackSrcMap.TryGetValue(src, out var fallback) ? fallback : null) ?? BlazorConfig.Instance.AssetsPathResolver(src))
+class=@ClassNames("mr-2 h-8 w-8", imgCls(filePath))
+@onerror="() => FallbackSrcMap[src] = BlazorConfig.Instance.FallbackPathResolver(src)">
+@if (!isDataUri(filePath))
+{
+<a href=@BlazorConfig.Instance.AssetsPathResolver(filePath) target="_blank" class="overflow-hidden">
+@file.FileName
+</a>
+}
+else
+{
+<span class="overflow-hidden">@file.FileName</span>
+}
+</div>
+</td>
+<td class="align-top pb-2 whitespace-nowrap">
+@if (file.ContentLength > 0)
+{
+<span class="text-gray-500 dark:text-gray-400 text-sm bg-white dark:bg-black">
+@TextUtils.FormatBytes(file.ContentLength)
+</span>
+}
+</td>
+</tr>
+}
+</table>
+</div>
+}
+</div>
+@code {
+string? imgSrc()
+{
+var inputFile = inputFiles?.FirstOrDefault();
+if (inputFile != null)
+return inputFile.FilePath;
+var filePath = Value ?? Values?.FirstOrDefault() ?? File?.FilePath ?? Files?.FirstOrDefault()?.FilePath;
+if (filePath != null)
+{
+var resolvedFilePath = BlazorConfig.Instance.AssetsPathResolver(filePath);
+return FileIcons.FilePathUri(resolvedFilePath);
+}
+return null;
+}
+bool isDataUri(string? src) => src == null ? false : src.StartsWith("data:") || src.StartsWith("blob:");
+string imgCls(string? src) => string.IsNullOrEmpty(src) || src.StartsWith("data:") || src.EndsWith(".svg")
+? ""
+: "rounded-full object-cover";
+public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900";
+public static string InputValidClasses { get; set; } = "block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 dark:file:bg-violet-900 file:text-violet-700 dark:file:text-violet-200 hover:file:bg-violet-100 dark:hover:file:bg-violet-800";
+public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+@using Microsoft.AspNetCore.Components.Forms
+@typeparam TReq
+@inherits BlazorComponentBase
+<div class="m-2 mt-4" @ref="fileDropContainer">
+<label for="blazor-input-file" class=@(ClassNames(LabelClasses, Class))>
+<span class="flex items-center space-x-2">
+<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24"
+stroke="currentColor" stroke-width="2">
+<path stroke-linecap="round" stroke-linejoin="round"
+d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+</svg>
+@if (!uploading)
+{
+<span class="font-medium text-gray-600">
+Drop files to Attach, or <span class="text-blue-600 underline">browse</span>
+</span>
+}
+else
+{
+<span class="font-medium text-gray-600">
+@progress
+</span>
+}
+</span>
+@if (toggleInputClear)
+{
+<InputFile id="blazor-input-file" OnChange="@OnChange" class="w-auto absolute opacity-0 h-32"/>
+}
+else
+{
+<InputFile id="blazor-input-file" OnChange="@OnChange" class="w-auto absolute opacity-0 h-32"/>
+}
+</label>
+</div>
+<CascadingValue Value="errorStatus">
+<ErrorSummary/>
+</CascadingValue>
+}
+@code {
+public static string LabelClasses { get; set; } = "flex justify-center w-full h-32 px-4 transition border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none";
+}
+@inherits UiComponentLiteBase
+<h1 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h1>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl";
+}
+@inherits UiComponentLiteBase
+<h2 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h2>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "mb-4 text-3xl md:text-4xl font-bold tracking-tighter leading-tight md:pr-8 whitespace-nowrap text-center pt-8";
+}
+@inherits UiComponentLiteBase
+<h3 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h3>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100 leading-tight";
+}
+@inherits UiComponentLiteBase
+<h4 class=@ClassNames(Classes, Class) @attributes="AdditionalAttributes">@ChildContent</h4>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes { get; set; } = "text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight";
+}
+<div class=@(@class)>
+@((MarkupString) HtmlUtils.HtmlDump(Value ?? ""))
+</div>
+@inherits UiComponentLiteBase
+<a class=@ClassNames(GetStyleClass(Style), Class) @attributes="AdditionalAttributes">@ChildContent</a>
+@code {
+[Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+public static string Classes  => GetStyleClass(LinkStyle.Indigo);
+[Parameter] public LinkStyle Style { get; set; } = LinkStyle.Indigo;
+public static string GetStyleClass(LinkStyle style) => style switch
+{
+LinkStyle.Blue => "text-blue-600 dark:text-blue-300 hover:text-blue-500 dark:hover:text-blue-400",
+LinkStyle.Red => "text-red-600 dark:text-red-300 hover:text-red-500 dark:hover:text-red-400",
+LinkStyle.Green => "text-green-600 dark:text-green-300 hover:text-green-500 dark:hover:text-green-400",
+LinkStyle.Sky => "text-sky-600 dark:text-sky-300 hover:text-sky-500 dark:hover:text-sky-400",
+_ => "text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-400"
+};
+}
+@inherits UiComponentBase
+@((MarkupString)ToHtml())
+@inherits UiComponentBase
+@if (!string.IsNullOrEmpty(prerenderedHtml))
+{
+@((MarkupString)prerenderedHtml)
+}
+else
+{
+<div class=@ClassNames(Classes, @class)>
+<h1 class="flex">
+<svg class=@ClassNames("self-center inline mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300", ImageClass)
+role="status" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
+<path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
+</svg>
+<span>@Message</span>
+</h1>
+</div>
+}
+@code {
+public static string Classes = "mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300";
+}
+@inherits TextInputBase
+@implements IHasJsonApiClient
+@if (AppMetadata != null)
+{
+<div class=@ClassNames("lookup-field", FieldClass)>
+<input type="hidden" name=@Input.Id value=@Value />
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<div class="flex justify-between">
+<label for=@Input.Id class=@ClassNames("block text-sm font-medium text-gray-700 dark:text-gray-300", LabelClass)>@UseLabel</label>
+@if (!string.IsNullOrEmpty(Value))
+{
+<div class="flex items-center">
+<span class="text-sm text-gray-500 dark:text-gray-400 mr-1">@Value</span>
+<button @onclick="Clear" type="button" title="clear" class="mr-1 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black">
+<span class="sr-only">Clear</span>
+<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+</button>
+</div>
+}
+</div>
+}
+@if (Property.Ref != null)
+{
+<div class="mt-1 relative">
+<button type="button" class="lookup flex relative w-full bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+@onclick="lookup" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+<span class="w-full inline-flex truncate">
+<span class="text-blue-700 dark:text-blue-300 flex cursor-pointer">
+<Icon class="mr-1 w-5 h-5" Image=@Icon />
+<span>@refInfoValue</span>
+</span>
+</span>
+<span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+<svg class="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+</svg>
+</span>
+</button>
+</div>
+}
+else if (ErrorFieldMessage != null)
+{
+<p class="mt-2 text-sm text-red-500" id=@($"{Input.Id}-error")>@ErrorFieldMessage</p>
+}
+</div>
+<DynamicModalLookup @ref="LocalModalLookup" AppMetadata=@AppMetadata />
+}
+@inherits UiComponentBase
+<div @onclick="Close" id=@Id aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
+<div class=@ClassNames("fixed inset-0 bg-gray-500 dark:bg-gray-400 bg-opacity-75 dark:bg-opacity-75 transition-opacity", DialogTransition.Class)></div>
+<div class="fixed inset-0 z-10 overflow-y-auto">
+<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+<!-- This element is to trick the browser into centering the modal contents. -->
+<span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+<div class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white dark:bg-black text-left shadow-xl transition-all sm:my-8", SizeClass,
+ContentTransition.DisplayClass)>
+<div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4" @onclick="Close">
+<button type="button" @onclick="Close"
+class="bg-white dark:bg-black rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+<span class="sr-only">Close</span>
+<!-- Heroicon name: outline/x -->
+<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+<div @onclick:stopPropagation="true">
+@ChildContent
+</div>
+</div>
+</div>
+</div>
+</div>
+@typeparam Model
+@inherits ModalLookup
+<ModalDialog @ref="ModalDialog" Id=@Id Show=@Show Close="Close">
+<div class="pt-2 overflow-auto" style="min-height:620px">
+<div class="mt-3 pl-5 flex flex-wrap items-center">
+<h3 class="hidden sm:block text-xl leading-6 font-medium text-gray-900 dark:text-gray-50 mr-3">
+Select <span class="hidden md:inline">@TextUtils.Humanize(typeof(Model).Name)</span>
+</h3>
+<div class="flex pb-1 sm:pb-0">
+<button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="First page" disabled=@(!canFirst) @onclick="_ => skipTo(-Total)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6l6 6zM6 6h2v12H6z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canPrev ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="Previous page" disabled=@(!canPrev) @onclick="_ => skipTo(-ApiPrefs.Take)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canNext ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="Next page" disabled=@(!canNext) @onclick="_ => skipTo(ApiPrefs.Take)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" /></svg>
+</button>
+<button type="button" class=@ClassNames("pl-2", canLast ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")
+title="Last page" disabled=@(!canLast) @onclick="_ => skipTo(Total)">
+<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6l-6-6zM16 6h2v12h-2z" fill="currentColor" /></svg>
+</button>
+</div>
+<div class="flex pb-1 sm:pb-0">
+<div class="px-4 text-lg">
+@if (apiLoading)
+{
+<span>Querying...</span>
+}
+else if (Results.Count > 0)
+{
+<span>
+<span class="hidden xl:inline">
+Showing Results
+</span>
+@(Skip + 1) - @Math.Min(Skip + Results.Count, Total) <span> of @Total</span>
+</span>
+}
+else if (Api != null)
+{
+<span>No Results</span>
+}
+</div>
+</div>
+@if (hasPrefs)
+{
+<div class="pl-2">
+<button type="button" @onclick="clearPrefs" title="Reset Preferences & Filters" class=@ToolbarButtonClass>
+<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z" /></svg>
+</button>
+</div>
+}
+@if (filtersCount > 0)
+{
+<div class="pl-2">
+<button type="button" @onclick=@(_ => open = open == Features.Filters ? null : Features.Filters) class=@ToolbarButtonClass aria-expanded="false">
+<svg class="flex-none w-5 h-5 mr-2 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+<path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+</svg>
+<span class="mr-1">
+@filtersCount @(filtersCount == 1 ? "Filter" : "Filters")
+</span>
+@if (open != Features.Filters)
+{
+<svg class="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+</svg>
+}
+else
+{
+<svg class="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+</svg>
+}
+</button>
+</div>
+}
+</div>
+@if (open == Features.Filters)
+{
+<FilterViews class="border-y border-gray-200 dark:border-gray-800 py-8 my-2" Columns="GetColumns()" Done="() => open = null" FiltersChanged="UpdateAsync" />
+}
+@if (errorSummary != null)
+{
+<ErrorSummary class="p-4" ExplicitStatus="Api?.Error" />
+}
+else if (apiLoading)
+{
+<Loading class="p-4 text-xl text-gray-500 dark:text-gray-400" ImageClass="w-5 h-5" />
+}
+else
+{
+<div>
+@if (Results.Count > 0)
+{
+<div class="">
+<CascadingValue IsFixed="true" Value="this">
+<DataGrid Id=@Id Model="Model" @ref="DataGrid" Items="Results" SelectedColumns="ApiPrefs.SelectedColumns"
+PropertyChanged="_ => StateHasChanged()" FiltersChanged="UpdateAsync"
+RowSelected="OnRowSelected" HeaderSelected="HeaderSelected"
+AllowSelection="true" AllowFiltering="true" FilterDefinitions="FilterDefinitions"
+FiltersTopLeftResolver="FiltersTopLeftResolver"
+TableStyle="TableStyle.FullWidth">
+<CascadingValue IsFixed="true" Value="DataGrid">
+@Columns
+</CascadingValue>
+</DataGrid>
+</CascadingValue>
+</div>
+}
+</div>
+}
+</div>
+</ModalDialog>
+<QueryPrefs Show=@ShowQueryPrefs Columns="ViewModelColumns" Prefs="ApiPrefs" Done="() => ShowQueryPrefs = false" Save="saveApiPrefs" />
+@inherits UiComponentBase
+@if (!string.IsNullOrEmpty(Title))
+{
+<h2 class="@TitleClasses">
+@Title
+</h2>
+}
+<ul role="list" class="@ListClasses">
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+</ul>
+@code {
+public static string TitleClasses { get; set; } = "text-base font-semibold text-gray-500 dark:text-gray-400";
+public static string ListClasses { get; set; } = "mt-4 divide-y divide-gray-200 dark:divide-gray-800 border-t border-b border-gray-200 dark:border-gray-800";
+}
+@inherits UiComponentBase
+<li class="relative flex items-start space-x-4 py-6">
+<div class="flex-shrink-0">
+<span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900">
+<Icon class="w-6 h-6 text-indigo-700 dark:text-indigo-300" Image=@Icon Src=@IconSrc Svg=@IconSvg Alt=@IconAlt />
+</span>
+</div>
+<div class="min-w-0 flex-1">
+<h3 class="text-base font-medium text-gray-900 dark:text-gray-100">
+<span class="rounded-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
+<a href=@href class="focus:outline-none">
+<span class="absolute inset-0" aria-hidden="true"></span>
+@Title
+</a>
+</span>
+</h3>
+<p class="text-base text-gray-500">
+@ChildContent
+</p>
+</div>
+<div class="flex-shrink-0 self-center">
+<svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+</svg>
+</div>
+</li>
+@using System.Collections
+@using ServiceStack.Text
+@{
+void RenderValue(object? value)
+{
+if (Format?.Method == null)
+{
+@FormatValue(value)
+}
+else
+{
+var str = $"{value}";
+var attrs = (Format.Options != null
+? BlazorConfig.Instance.JSParseObject(Format.Options)
+: null) ?? new();
+var cls = attrs.Remove("cls", out var oClass) ? oClass as string : null;
+if (Format.Method == FormatMethods.IconRounded)
+{
+var src = str;
+<img class=@(cls ?? IconRoundedClass) title=@str
+src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+}
+else if (Format.Method == FormatMethods.Icon)
+{
+var src = str;
+<img class=@(cls ?? IconClass) title=@str
+src=@(UseImageSrc ?? BlazorConfig.Instance.AssetsPathResolver(src)) @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(src)">
+}
+else if (Format.Method == FormatMethods.Currency)
+{
+<span class=@cls>@($"{value.ConvertTo<decimal>():C}")</span>
+}
+else if (Format.Method == FormatMethods.Bytes)
+{
+<span class=@cls>@TextUtils.FormatBytes(value.ConvertTo<long>())</span>
+}
+else if (Format.Method.StartsWith("link"))
+{
+if (Format.Method == FormatMethods.Link)
+{
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@str @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+else if (Format.Method == FormatMethods.LinkPhone)
+{
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"tel:{str}") @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+else if (Format.Method == FormatMethods.LinkEmail)
+{
+var href = str;
+if (attrs.Remove("subject", out var oSubject) && oSubject is string subject)
+href = href.AddQueryParam("subject", subject.UrlEncode().Replace("+", "%20"), encode: false);
+if (attrs.Remove("body", out var oBody) && oBody is string body)
+href = href.AddQueryParam("body", body.UrlEncode().Replace("+","%20"), encode:false);
+<a class=@(cls ?? "text-blue-600 hover:text-blue-800") href=@($"mailto:{href}") @attributes=attrs @onclick:stopPropagation>@str</a>
+}
+}
+else if (Format.Method == FormatMethods.Attachment)
+{
+var url = str;
+var fileName = FileIcons.GetFileName(url)!;
+var ext = FileIcons.GetExt(fileName);
+var imgSrc = ext == null || FileIcons.CanPreview(url)
+? BlazorConfig.Instance.AssetsPathResolver(url)
+: FileIcons.IconFallbackSrc(url);
+<a class=@(cls ?? "flex") href=@BlazorConfig.Instance.AssetsPathResolver(url) title=@url target="_blank">
+<img class=@IconClass src=@imgSrc @onerror="() => UseImageSrc = BlazorConfig.Instance.FallbackPathResolver(imgSrc)">
+<span class="pl-1">@fileName</span>
+</a>
+}
+else if (Format.Method != FormatMethods.Hidden)
+{
+<span class=@cls>@FormatValue(value)</span>
+}
+}
+}
+}
+@if (TextUtils.IsComplexType(Value?.GetType()))
+{
+var useValue = Value;
+var e = Value as IEnumerable;
+var isCollection = e != null && Value is not IDictionary;
+var count = e != null && isCollection && IncludeCount ? EnumerableUtils.Count(e) : 0;
+<span class=@CssUtils.ClassNames(@class)>
+@if (isCollection)
+{
+useValue = EnumerableUtils.FirstOrDefault(e);
+<span class="mr-2">@count</span>
+}
+@if (IncludeIcon)
+{
+<Icon class=@ValueIconClass Image=Value!.GetType().GetIcon() />
+}
+<span>
+@if (isCollection)
+{
+@("[ ")
+}
+@if (!isCollection || count > 0)
+{
+@("{ ")
+@if (TextUtils.IsComplexType(useValue?.GetType()))
+{
+var dict = useValue.ToObjectDictionary();
+var keys = dict.Keys.ToList();
+var len = Math.Min(MaxNestedFields, keys.Count);
+for (var i = 0; i < len; i++)
+{
+var key = keys[i];
+var val = dict[key];
+var value = FormatValue(val);
+var str = TextUtils.Truncate(value, MaxNestedFieldLength);
+if (i > 0)
+{
+@(", ")
+}
+{
+<b class="font-medium">@key</b>
+@($": {str}")
+}
+}
+if (keys.Count > len)
+{
+@("...")
+}
+}
+else
+{
+RenderValue(useValue);
+}
+@(" }")
+}
+@if (isCollection)
+{
+@(" ]")
+}
+</span>
+</span>
+}
+else
+{
+RenderValue(Value);
+}
+@inherits UiComponentBase
+@if (!string.IsNullOrEmpty(href))
+{
+<a href=@href class=@ClassNames(Classes(Style), Class) title=@title target=@target @onclick:stopPropagation @attributes="IncludeAttributes">
+@ChildContent
+</a>
+}
+else
+{
+<button type=@type @onclick="onclick" class=@ClassNames(Classes(Style), Class) @attributes="IncludeAttributes">
+@ChildContent
+</button>
+}
+@code {
+public static string BaseClass { get; set; } = "inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-black";
+public static string GetStyleClass(ButtonStyle style) => style switch
+{
+ButtonStyle.Blue => "text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800",
+ButtonStyle.Purple => "text-white bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800",
+ButtonStyle.Red => "focus:ring-red-500 text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-500",
+ButtonStyle.Green => "focus:ring-green-300 text-white bg-green-600 hover:bg-green-700 focus:ring-green-500 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-500",
+ButtonStyle.Sky => "focus:ring-sky-300 text-white bg-sky-600 hover:bg-sky-700 focus:ring-sky-500 dark:bg-sky-600 dark:hover:bg-sky-700 dark:focus:ring-sky-500",
+ButtonStyle.Cyan => "focus:ring-cyan-300 text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-500",
+_ => "focus:ring-2 focus:ring-offset-2 text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800"
+};
+public static string Classes(ButtonStyle style) => BaseClass + " " + GetStyleClass(style);
+}
+@inherits UiComponentBase
+@if (!string.IsNullOrEmpty(href))
+{
+<a href=@href class=@ClassNames(Classes, Class) title=@title target=@target @onclick:stopPropagation @attributes="IncludeAttributes">
+@ChildContent
+</a>
+}
+else
+{
+<button type=@type @onclick="onclick" class=@ClassNames(Classes, Class) @attributes="IncludeAttributes">
+@ChildContent
+</button>
+}
+@typeparam TValue
+@inherits SelectInputBase<TValue>
+<div class=@FieldClass>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class=@ClassNames(SelectInput.LabelClasses, LabelClass)>@UseLabel</label>
+}
+<select id=@Id name=@Id class=@ClassNames(SelectInput.InputBaseClasses,
+CssClass(SelectInput.InputValidClasses, SelectInput.InputInvalidClasses))
+@bind="CurrentValue" @attributes="IncludeAttributes">
+@ChildContent
+@foreach (var kvp in KvpValues())
+{
+<option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
+}
+</select>
+@if (HasErrorField)
+{
+<p class="@SelectInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+</div>
+@inherits BlazorComponentBase
+<div class=@SlideOverClass aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+<div class="">
+<div class="">
+<div class=@DialogClass>
+<div class=@ClassNames(PanelClass, SlideOverTransition.Class)>
+<form class=@FormClass @onsubmit="CloseAsync">
+<!-- Header -->
+<div class="h-0 flex-1 overflow-y-auto">
+@if (ShowTitlebar)
+{
+<div class=@TitlebarClass>
+<div class="flex items-start justify-between space-x-3">
+<div class="space-y-1">
+<h2 class=@HeadingClass id="slide-over-title">@Title</h2>
+@if (SubHeading != null)
+{
+<div class="mt-1">
+<p class="notes text-sm text-gray-500">@((MarkupString)SubHeading)</p>
+</div>
+}
+</div>
+@if (ShowCloseButton)
+{
+<div class="flex h-7 items-center">
+<button type="button" @onclick="CloseAsync" class=@CloseButtonClass>
+<span class="sr-only">Close panel</span>
+<!-- Heroicon name: outline/x-mark -->
+<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+}
+</div>
+</div>
+}
+@ChildContent
+</div>
+@if (ShowFooter)
+{
+<div class="flex flex-shrink-0 justify-end px-4 py-4">
+<SecondaryButton @onclick="CloseAsync">
+Close
+</SecondaryButton>
+</div>
+}
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+@inherits TextInputBase<List<string>>
+<div class=@FieldClass>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class=@ClassNames(@LabelClasses, LabelClass)>@UseLabel</label>
+}
+<div class="mt-1 w-full relative rounded-md shadow-sm">
+@{
+var cls = ClassNames(InputBaseClasses, CssClass(InputValidClasses, InputInvalidClasses));
+}
+<button class=@cls @onclick="handleClick" @onclick:preventDefault>
+<div class="flex flex-wrap pb-1.5">
+@foreach (var tag in Value.OrEmpty())
+{
+<div class="pt-1.5 pl-1">
+<span class="inline-flex rounded-full items-center py-0.5 pl-2.5 pr-1 text-sm font-medium bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300">
+@tag
+<button type="button" @onclick="_ => RemoveTagAsync(tag)" class="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-400 dark:text-indigo-500 hover:bg-indigo-200 dark:hover:bg-indigo-800 hover:text-indigo-500 dark:hover:text-indigo-400 focus:outline-none focus:bg-indigo-500 focus:text-white dark:focus:text-black">
+<svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8"><path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7"></path></svg>
+</button>
+</span>
+</div>
+}
+<div class="pt-1.5 pl-1 shrink">
+<input @ref=@txtInput type=@UseType id=@Id name=@Id @bind-value="InputValue" placeHolder=@placeholder
+class="p-0 dark:bg-transparent rounded-md border-none focus:!border-none focus:!outline-none"
+style=@($"box-shadow:none !important;width:{InputValue.Length + 1}ch")
+@onkeydown="KeyDownAsync" @onkeypress="KeyPressAsync" @bind-value:event="oninput" @onpaste="OnPasteAsync" @onblur="OnBlurAsync"
+@attributes="IncludeAttributes">
+</div>
+</div>
+</button>
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="@ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@code {
+public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+public static string InputBaseClasses { get; set; } = "w-full cursor-text flex flex-wrap sm:text-sm rounded-md dark:text-white dark:bg-gray-900 border focus-within:border-transparent focus-within:ring-1 focus-within:outline-none";
+public static string InputValidClasses { get; set; } = "shadow-sm border-gray-300 dark:border-gray-600 focus-within:ring-indigo-500 focus-within:border-indigo-500";
+public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus-within:outline-none focus-within:ring-red-500 focus-within:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+@typeparam TValue
+@inherits TextInputBase<TValue>
+<div class=@FieldClass>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class=@ClassNames(TextAreaInput.LabelClasses, LabelClass)>@UseLabel</label>
+}
+<div class="mt-1 relative rounded-md shadow-sm">
+<textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
+class=@ClassNames(TextAreaInput.InputBaseClasses,
+CssClass(TextAreaInput.InputValidClasses,TextAreaInput.InputInvalidClasses)) />
+@if (HasErrorField)
+{
+<p class="@TextAreaInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+</div>
+@typeparam TValue
+@inherits TextInputBase<TValue>
+<div class=@FieldClass>
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+<label for=@Id class=@ClassNames(TextInput.LabelClasses, LabelClass)>@UseLabel</label>
+}
+<div class="mt-1 relative rounded-md shadow-sm">
+@{
+var cls = ClassNames(TextInput.InputBaseClasses, CssClass(TextInput.InputValidClasses, TextInput.InputInvalidClasses));
+}
+@if (UseType == Html.Input.Types.Textarea)
+{
+<textarea type=@UseType class=@cls id=@Id name=@Id @bind-value="CurrentValue" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes"></textarea>
+}
+else
+{
+<input type=@UseType class=@cls id=@Id name=@Id @bind-value="CurrentValue" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes">
+}
+@if (HasErrorField)
+{
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>
+</div>
+}
+</div>
+@if (HasErrorField)
+{
+<p class="@TextInput.ErrorClasses" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
+}
+</div>
+@inherits UiComponentBase
+<a href=@href class=@ClassNames(Classes, Class) title=@title target=@target @onclick="onclick" @onclick:stopPropagation>@ChildContent</a>
+@code {
+public static string Classes { get; set; } = "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200";
+}
+using ServiceStack.Blazor.Components;
+namespace ServiceStack.Blazor;
+/// <summary>
+/// For CSS classes used in *.cs so they're exported to tailwind.html
+/// </summary>
+public static class CssDefaults
+{
+public static class Grid
+{
+public const TableStyle DefaultTableStyle = TableStyle.StripedRows;
+public const string GridClass = "mt-4 flex flex-col";
+public const string Grid2Class = "-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8";
+public const string Grid3Class = "inline-block min-w-full py-2 align-middle md:px-6 lg:px-8";
+public const string Grid4Class = "overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg";
+public const string TableClass = "min-w-full divide-y divide-gray-200 dark:divide-gray-700";
+public const string TableHeadClass = "bg-gray-50 dark:bg-gray-900";
+public const string TableCellClass = "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400";
+public const string TableHeaderRowClass = "select-none";
+public const string TableHeaderCellClass = "px-6 py-4 text-left text-sm font-medium tracking-wider whitespace-nowrap";
+public const string TableBodyClass = "";
+public static string GetGridClass(TableStyle style = DefaultTableStyle) => GridClass;
+public static string GetGrid2Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
+? "overflow-x-auto"
+: Grid2Class;
+public static string GetGrid3Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth)
+? "inline-block min-w-full py-2 align-middle"
+: Grid3Class;
+public static string GetGrid4Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
+? ""
+: style.HasFlag(TableStyle.FullWidth)
+? "overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5"
+: Grid4Class;
+public static string GetTableClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth) || style.HasFlag(TableStyle.VerticalLines)
+? "min-w-full divide-y divide-gray-300"
+: TableClass;
+public static string GetTableHeadClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
+? ""
+: TableHeadClass;
+public static string GetTableHeaderRowClass(TableStyle style = DefaultTableStyle) =>
+TableHeaderRowClass + (style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200 dark:divide-gray-700" : "");
+public static string GetTableHeaderCellClass(TableStyle style = DefaultTableStyle) =>
+TableHeaderCellClass + (style.HasFlag(TableStyle.UppercaseHeadings) ? " uppercase" : "");
+public static string GetTableBodyClass(TableStyle style = DefaultTableStyle) =>
+(style.HasFlag(TableStyle.WhiteBackground) || style.HasFlag(TableStyle.VerticalLines)
+? "divide-y divide-gray-200 dark:divide-gray-800"
+: "")
++ (style.HasFlag(TableStyle.VerticalLines)
+? " bg-white"
+: "");
+public static string GetTableRowClass(TableStyle style, int i, bool selected, bool allowSelection) =>
+(allowSelection ? "cursor-pointer " : "") +
+(selected ? "bg-indigo-100 dark:bg-blue-800" : (allowSelection ? "hover:bg-yellow-50 dark:hover:bg-blue-900 " : "") + (style.HasFlag(TableStyle.StripedRows)
+? (i % 2 == 0 ? "bg-white dark:bg-black" : "bg-gray-50 dark:bg-gray-800")
+: "bg-white dark:bg-black")) +
+(style.HasFlag(TableStyle.VerticalLines) ? " divide-x divide-gray-200 dark:divide-gray-700" : "");
+}
+public static class Form
+{
+public const FormStyle DefaultFormStyle = FormStyle.SlideOver;
+public static string GetPanelClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.PanelClass : SlideOver.PanelClass;
+public static string GetFormClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.FormClass : SlideOver.FormClass;
+public static string GetHeadingClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.HeadingClass : SlideOver.HeadingClass;
+public static string GetSubHeadingClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.SubHeadingClass : SlideOver.SubHeadingClass;
+public const string ButtonsClass = "mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-900 sm:px-6 flex flex-wrap justify-between";
+public const string LegendClass = "text-base font-medium text-gray-900 dark:text-gray-100 text-center mb-4";
+public static class SlideOver
+{
+public const string PanelClass = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
+public const string FormClass = "flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 shadow-xl bg-white dark:bg-black";
+public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 px-4 py-6 sm:px-6";
+public const string HeadingClass = "text-lg font-medium text-gray-900 dark:text-gray-100";
+public const string SubHeadingClass = "mt-1 text-sm text-gray-500 dark:text-gray-400";
+public const string CloseButtonClass = "rounded-md bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black";
+public static DataTransition SlideOverTransition = new DataTransition(
+entering: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-full", to: "translate-x-0"),
+leaving: new(@class: "transform transition ease-in-out duration-500 sm:duration-700", from: "translate-x-0", to: "translate-x-full"),
+visible: false);
+}
+public static class Card
+{
+public const string PanelClass = "shadow sm:overflow-hidden sm:rounded-md";
+public const string FormClass = "space-y-6 bg-white dark:bg-black py-6 px-4 sm:p-6";
+public const string HeadingClass = "text-lg font-medium leading-6 text-gray-900 dark:text-gray-100";
+public const string SubHeadingClass = "mt-1 text-sm text-gray-500 dark:text-gray-400";
+}
+}
+public static class Modal
+{
+public const string SizeClass = "sm:max-w-prose lg:max-w-screen-md xl:max-w-screen-lg 2xl:max-w-screen-xl sm:w-full";
+}
+public static class SlideOver
+{
+public const string SlideOverClass = "relative z-10";
+public const string DialogClass = "pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16";
+public const string PanelClass = "pointer-events-auto w-screen xl:max-w-3xl md:max-w-xl max-w-lg";
+public const string FormClass = "flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-black shadow-xl";
+public const string TitlebarClass = "bg-gray-50 dark:bg-gray-900 p-3 sm:p-6";
+public const string HeadingClass = "text-lg font-medium text-gray-900 dark:text-gray-50";
+public const string CloseButtonClass = "rounded-md bg-gray-50 dark:bg-black text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:ring-offset-black";
+public const string TransitionClass = "transform transition ease-in-out duration-500 sm:duration-700";
+}
+public static class HtmlFormat
+{
+public const string Class = "prose html-format";
+}
+public static class PreviewFormat
+{
+public const string Class = "flex items-center";
+public const string IconClass = "w-6 h-6";
+public const string IconRoundedClass = "w-8 h-8 rounded-full";
+public const string ValueIconClass = "w-5 h-5 mr-1";
+}
+public static string ToBreakpointCellClass(this Breakpoint breakpoint) => breakpoint switch
+{
+// Use full class names so tailwindcss can find it
+Breakpoint.ExtraSmall => "xs:table-cell",
+Breakpoint.Small => "sm:table-cell",
+Breakpoint.Medium => "md:table-cell",
+Breakpoint.Large => "lg:table-cell",
+Breakpoint.ExtraLarge => "xl:table-cell",
+Breakpoint.ExtraLarge2x => "2xl:table-cell",
+_ => throw new NotSupportedException(),
+};
+}
+public enum Breakpoint
+{
+ExtraSmall,
+Small,
+Medium,
+Large,
+ExtraLarge,
+ExtraLarge2x,
+}
+/* CSS Classes for Generic Components */
+public static class TextInput
+{
+public static string ErrorClasses { get; set; } = "mt-2 text-sm text-red-500";
+public static string LabelClasses { get; set; } = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+public static string InputBaseClasses { get; set; } = "block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+public static string InputValidClasses { get; set; } = "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+public static string InputInvalidClasses { get; set; } = "pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class DateTimeInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = TextInput.InputBaseClasses;
+public static string InputValidClasses { get; set; } = TextInput.InputValidClasses;
+public static string InputInvalidClasses { get; set; } = TextInput.InputInvalidClasses;
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class TextAreaInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = "shadow-sm block w-full sm:text-sm rounded-md dark:text-white dark:bg-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 dark:border-gray-600";
+public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class SelectInput
+{
+public static string ErrorClasses { get; set; } = TextInput.ErrorClasses;
+public static string LabelClasses { get; set; } = TextInput.LabelClasses;
+public static string InputBaseClasses { get; set; } = "mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:shadow-none";
+public static string InputValidClasses { get; set; } = "text-gray-900 focus:ring-indigo-500 focus:border-indigo-500";
+public static string InputInvalidClasses { get; set; } = "text-red-900 focus:ring-red-500 focus:border-red-500";
+public static string InputClasses { get; set; } = InputBaseClasses + " " + InputValidClasses;
+}
+public static class CheckboxInput
+{
+public static string ErrorClasses { get; set; } = "text-gray-500";
+public static string LabelClasses { get; set; } = "font-medium text-gray-700 dark:text-gray-300";
+public static string InputClasses { get; set; } = "focus:ring-indigo-500 h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-black";
+}

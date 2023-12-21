@@ -1,0 +1,130 @@
+﻿@inject NavigationManager NavigationManager
+
+<!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+<div class="mobile relative z-40 md:hidden" role="dialog" aria-modal="true" data-collapse="hidden">
+    <div class="fixed inset-0 bg-gray-600 dark:bg-gray-400 bg-opacity-75 dark:bg-opacity-75" data-collapse="opacity-0" data-collapse-off="opacity-100"></div>
+    <div class="fixed inset-0 flex z-40">
+        <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-black" data-collapse="-translate-x-full" data-collapse-off="translate-x-0">
+            <div class="absolute top-0 right-0 -mr-12 pt-2" data-collapse="opacity-0" data-collapse-off="opacity-100">
+                <button type="button" onclick="toggleSidebar()"
+                        class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white dark:focus:ring-black">
+                    <span class="sr-only">Close sidebar</span>
+                    <!-- Heroicon name: outline/x -->
+                    <svg class="h-6 w-6 text-white dark:text-black" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                <NavLink href="/" class="flex-shrink-0 flex items-center px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                    <svg style="color:rgb(91, 33, 182)" class="h-8 w-auto" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M23.834 8.101a13.912 13.912 0 0 1-13.643 11.72a10.105 10.105 0 0 1-1.994-.12a6.111 6.111 0 0 1-5.082-5.761a5.934 5.934 0 0 1 11.867-.084c.025.983-.401 1.846-1.277 1.871c-.936 0-1.374-.668-1.374-1.567v-2.5a1.531 1.531 0 0 0-1.52-1.533H8.715a3.648 3.648 0 1 0 2.695 6.08l.073-.11l.074.121a2.58 2.58 0 0 0 2.2 1.048a2.909 2.909 0 0 0 2.695-3.04a7.912 7.912 0 0 0-.217-1.933a7.404 7.404 0 0 0-14.64 1.603a7.497 7.497 0 0 0 7.308 7.405s.549.05 1.167.035a15.803 15.803 0 0 0 8.475-2.528c.036-.025.072.025.048.061a12.44 12.44 0 0 1-9.69 3.963a8.744 8.744 0 0 1-8.9-8.972a9.049 9.049 0 0 1 3.635-7.247a8.863 8.863 0 0 1 5.229-1.726h2.813a7.915 7.915 0 0 0 5.839-2.578a.11.11 0 0 1 .059-.034a.112.112 0 0 1 .12.053a.113.113 0 0 1 .015.067a7.934 7.934 0 0 1-1.227 3.549a.107.107 0 0 0-.014.06a.11.11 0 0 0 .073.095a.109.109 0 0 0 .062.004a8.505 8.505 0 0 0 5.913-4.876a.155.155 0 0 1 .055-.053a.15.15 0 0 1 .147 0a.153.153 0 0 1 .054.053A10.779 10.779 0 0 1 23.834 8.1zM8.895 11.628a2.188 2.188 0 1 0 2.188 2.188v-2.042a.158.158 0 0 0-.15-.15z" fill="currentColor" /></svg>
+                    <div class="ml-2 text-black dark:text-white">My App</div>
+                </NavLink>
+                <nav class="mt-5 px-2 space-y-1">
+
+                    <NavLink href="counter" ActiveClass="@MobileNavLinkActiveClass" class="@MobileNavLinkClass">
+                        <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/counter.svg">
+                        Counter
+                    </NavLink>
+                    <NavLink href="weather" ActiveClass="@MobileNavLinkActiveClass" class="@MobileNavLinkClass">
+                        <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/weather.svg">
+                        Weather
+                    </NavLink>
+                    <NavLink href="todomvc" ActiveClass="@MobileNavLinkActiveClass" class="@MobileNavLinkClass">
+                        <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/todomvc.svg">
+                        Todos
+                    </NavLink>
+                    <NavLink href="secure/bookings-vue" ActiveClass="@MobileNavLinkActiveClass" class="@MobileNavLinkClass">
+                        <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/bookings.svg">
+                        Bookings Vue
+                    </NavLink>
+                    <NavLink href="secure/bookings" ActiveClass="@MobileNavLinkActiveClass" class="@MobileNavLinkClass">
+                        <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/bookings.svg">
+                        Bookings
+                    </NavLink>
+                    <NavLink href="secure/coupons" ActiveClass="@MobileNavLinkActiveClass" class="@MobileNavLinkClass">
+                        <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/coupon.svg">
+                        Coupons
+                    </NavLink>
+                    <NavLink href="profile" ActiveClass="@MobileNavLinkActiveClass" class="@MobileNavLinkClass">
+                        <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/profile.svg">
+                        Profile
+                    </NavLink>
+                </nav>
+            </div>
+        </div>
+
+        <div class="flex-shrink-0 w-14">
+            <!-- Force sidebar to shrink to fit close icon -->
+        </div>
+    </div>
+</div>
+
+<!-- Static sidebar for desktop -->
+<div class="desktop hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+    <!-- Sidebar component, swap this element with another sidebar if you like -->
+    <div class="flex-1 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
+        <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+            <NavLink href="/" class="flex items-center flex-shrink-0 px-4 text-2xl whitespace-nowrap overflow-x-hidden flex items-center">
+                <svg style="color:rgb(91, 33, 182)" class="h-8 w-auto" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M23.834 8.101a13.912 13.912 0 0 1-13.643 11.72a10.105 10.105 0 0 1-1.994-.12a6.111 6.111 0 0 1-5.082-5.761a5.934 5.934 0 0 1 11.867-.084c.025.983-.401 1.846-1.277 1.871c-.936 0-1.374-.668-1.374-1.567v-2.5a1.531 1.531 0 0 0-1.52-1.533H8.715a3.648 3.648 0 1 0 2.695 6.08l.073-.11l.074.121a2.58 2.58 0 0 0 2.2 1.048a2.909 2.909 0 0 0 2.695-3.04a7.912 7.912 0 0 0-.217-1.933a7.404 7.404 0 0 0-14.64 1.603a7.497 7.497 0 0 0 7.308 7.405s.549.05 1.167.035a15.803 15.803 0 0 0 8.475-2.528c.036-.025.072.025.048.061a12.44 12.44 0 0 1-9.69 3.963a8.744 8.744 0 0 1-8.9-8.972a9.049 9.049 0 0 1 3.635-7.247a8.863 8.863 0 0 1 5.229-1.726h2.813a7.915 7.915 0 0 0 5.839-2.578a.11.11 0 0 1 .059-.034a.112.112 0 0 1 .12.053a.113.113 0 0 1 .015.067a7.934 7.934 0 0 1-1.227 3.549a.107.107 0 0 0-.014.06a.11.11 0 0 0 .073.095a.109.109 0 0 0 .062.004a8.505 8.505 0 0 0 5.913-4.876a.155.155 0 0 1 .055-.053a.15.15 0 0 1 .147 0a.153.153 0 0 1 .054.053A10.779 10.779 0 0 1 23.834 8.1zM8.895 11.628a2.188 2.188 0 1 0 2.188 2.188v-2.042a.158.158 0 0 0-.15-.15z" fill="currentColor" /></svg>
+                <div class="ml-2 text-black dark:text-white">My App</div>
+            </NavLink>
+            <nav class="mt-5 flex-1 px-2 bg-white dark:bg-black space-y-1">
+                <NavLink href="counter" ActiveClass="@DesktopNavLinkActiveClass" class="@DesktopNavLinkClass">
+                    <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/counter.svg">
+                    Counter
+                </NavLink>
+                <NavLink href="weather" ActiveClass="@DesktopNavLinkActiveClass" class="@DesktopNavLinkClass">
+                    <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/weather.svg">
+                    Weather
+                </NavLink>
+                <NavLink href="todomvc" ActiveClass="@DesktopNavLinkActiveClass" class="@DesktopNavLinkClass">
+                    <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/todomvc.svg">
+                    Todos
+                </NavLink>
+                <NavLink href="secure/bookings-vue" ActiveClass="@DesktopNavLinkActiveClass" class="@DesktopNavLinkClass">
+                    <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/bookings.svg">
+                    Bookings Vue
+                </NavLink>
+                <NavLink href="secure/bookings" ActiveClass="@DesktopNavLinkActiveClass" class="@DesktopNavLinkClass">
+                    <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/bookings.svg">
+                    Bookings
+                </NavLink>
+                <NavLink href="secure/coupons" ActiveClass="@DesktopNavLinkActiveClass" class="@DesktopNavLinkClass">
+                    <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/coupon.svg">
+                    Coupons
+                </NavLink>
+                <NavLink href="profile" ActiveClass="@DesktopNavLinkActiveClass" class="@DesktopNavLinkClass">
+                    <img class="mr-4 flex-shrink-0 h-6 w-6" src="/img/nav/profile.svg">
+                    Profile
+                </NavLink>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script>
+function hideSidebar() {
+    document.body.setAttribute('data-collapsed', 'true')
+}
+function toggleSidebar() {
+    let collapsed = document.body.getAttribute('data-collapsed')
+    if (collapsed) {
+        document.body.removeAttribute('data-collapsed')
+    } else {
+        hideSidebar()
+    }
+}
+document.addEventListener('DOMContentLoaded', () =>
+    Blazor.addEventListener('enhancedload', hideSidebar))
+</script>
+
+@code {
+    const string MobileNavLinkActiveClass = "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50";
+    const string MobileNavLinkClass = "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md";
+
+    const string DesktopNavLinkActiveClass = "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50";
+    const string DesktopNavLinkClass = "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-50 group flex items-center px-2 py-2 font-medium rounded-md";
+}

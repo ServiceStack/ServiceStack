@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>aspnet-NorthwindBlazor-4090C1D0-7557-4847-8314-1DFD16B99DAF</UserSecretsId>
+        <RootNamespace>MyApp</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="MyApp" />
+        <Using Include="ServiceStack" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
+        <PackageReference Include="Markdig" Version="0.33.*" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\ServiceStack.Blazor\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi\ServiceStack.AspNetCore.OpenApi.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    </ItemGroup>
+
+</Project>
