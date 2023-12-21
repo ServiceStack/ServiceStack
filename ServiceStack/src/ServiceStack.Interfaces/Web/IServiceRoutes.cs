@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack.Web;
 
 /// <summary>
@@ -81,10 +83,10 @@ public interface IServiceRoutes
     ///		such as "GET,PUT,DELETE".
     /// </param>
     /// <param name="summary">
-    ///     The short summary of what the REST does. 
+    ///     A short summary of what the API does 
     /// </param>
     /// <param name="notes">
-    ///     The longer text to explain the behaviour of the REST. 
+    ///     A longer description to explain the behaviour of the API 
     /// </param>
     /// <returns>The same <see cref="IServiceRoutes"/> instance;
     ///		never <see langword="null"/>.</returns>
@@ -106,10 +108,10 @@ public interface IServiceRoutes
     ///		such as "GET,PUT,DELETE".
     /// </param>
     /// <param name="summary">
-    ///     The short summary of what the REST does. 
+    ///     A short summary of what the API does 
     /// </param>
     /// <param name="notes">
-    ///     The longer text to explain the behaviour of the REST. 
+    ///     A longer description to explain the behaviour of the API 
     /// </param>
     /// <param name="matches">
     ///     Must match rule defined in Config.RequestRules or Regex expression with format: 

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+      <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+      <ProjectReference Include="..\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
+      <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+      <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+    </ItemGroup>
+
+</Project>
