@@ -59,7 +59,6 @@ namespace ServiceStack.Host
             "html",
             "protobuf",
             "msgpack",
-            "wire",
         };
 
         //built-in formats

@@ -40,6 +40,9 @@ namespace ServiceStack
                 case MimeTypes.Csv:
                     return RequestAttributes.Csv;
 
+                case MimeTypes.Jsonl:
+                    return RequestAttributes.Jsonl;
+
                 case MimeTypes.Soap12:
                     return RequestAttributes.Soap12;
 
@@ -48,9 +51,6 @@ namespace ServiceStack
 
                 case MimeTypes.MsgPack:
                     return RequestAttributes.MsgPack;
-
-                case MimeTypes.Wire:
-                    return RequestAttributes.Wire;
             }
 
             return RequestAttributes.FormatOther;
@@ -123,8 +123,8 @@ namespace ServiceStack
                 case MimeTypes.MsgPack:
                     return Feature.MsgPack;
 
-                case MimeTypes.Wire:
-                    return Feature.Wire;
+                case MimeTypes.Jsonl:
+                    return Feature.Jsonl;
             }
 
             return Feature.CustomFormat;

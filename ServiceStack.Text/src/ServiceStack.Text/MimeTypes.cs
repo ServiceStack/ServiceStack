@@ -241,6 +241,8 @@ public static class MimeTypes
 
             case "csv":
                 return Csv;
+            case "jsonl":
+                return Jsonl;
             case "css":
                 return Css;
                     

@@ -15,7 +15,7 @@ public enum RequestAttributes : long
     AnySecurityMode = Secure | InSecure,
     AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpPatch | HttpOptions | HttpOther,
     AnyCallStyle = OneWay | Reply,
-    AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Wire | FormatOther,
+    AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Jsonl | FormatOther,
     AnyEndpoint = Http | MessageQueue | Tcp | Grpc | EndpointOther,
     InternalNetworkAccess = InProcess | Localhost | LocalSubnet,
 
@@ -56,7 +56,7 @@ public enum RequestAttributes : long
     //e.g. text/csv
     Csv = 1 << 21,
     Html = 1 << 22,
-    Wire = 1 << 23,
+    Jsonl = 1 << 23,
     MsgPack = 1 << 24,
     FormatOther = 1 << 25,
 

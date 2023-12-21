@@ -12,7 +12,7 @@ public class JsonlFormat : IPlugin, Model.IHasStringId
     
     public void Register(IAppHost appHost)
     {
-        //Register the 'text/csv' content-type and serializers (format is inferred from the last part of the content-type)
+        //Register the 'text/jsonl' content-type and serializers (format is inferred from the last part of the content-type)
         appHost.ContentTypes.Register(MimeTypes.Jsonl,
             SerializeToStream, JsonlSerializer.DeserializeFromStream);
     }
