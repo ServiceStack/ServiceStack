@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Model;
 
 namespace ServiceStack;
 
@@ -47,6 +46,10 @@ public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IH
     [DataMember(Order = 11)] public ResponseStatus ResponseStatus { get; set; }
     [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
 }
+
+[ExcludeMetadata]
+[Route("/auth/logout","GET,POST")]
+public class AuthenticateLogout : IReturn<AuthenticateResponse>  {}
 
 [Tag(TagNames.Auth), Api("Sign Up")]
 [DataContract]

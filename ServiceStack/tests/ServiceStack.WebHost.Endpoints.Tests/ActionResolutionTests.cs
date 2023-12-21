@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_resolve_all_AuthenticateService_methods()
         {
             var actions = typeof(AuthenticateService).GetActions();
-            Assert.That(actions.Count, Is.EqualTo(4));
+            Assert.That(actions.Count, Is.EqualTo(3));
             var verbs = ActionVerbs(actions);
             var expected = StripAsync(new[] {
                 nameof(AuthenticateService.Options),

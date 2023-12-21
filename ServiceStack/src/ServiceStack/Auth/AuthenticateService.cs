@@ -138,11 +138,8 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        class UserSessionSourceSyncWrapper : IUserSessionSourceAsync
+        class UserSessionSourceSyncWrapper(IUserSessionSource source) : IUserSessionSourceAsync
         {
-            private readonly IUserSessionSource source;
-            public UserSessionSourceSyncWrapper(IUserSessionSource source) => this.source = source;
-
             public Task<IAuthSession> GetUserSessionAsync(string userAuthId, CancellationToken token = default)
             {
                 return source.GetUserSession(userAuthId).InTask();
@@ -236,6 +233,11 @@ namespace ServiceStack.Auth
             {
                 throw e.UnwrapIfSingleException();
             }
+        }
+
+        public Task<object> AnyAsync(AuthenticateLogout request)
+        {
+            return PostAsync(new Authenticate { provider = LogoutAction });
         }
 
         public async Task<object> PostAsync(Authenticate request)
