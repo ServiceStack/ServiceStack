@@ -18,17 +18,16 @@ public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
 
     [Description("AuthProvider, e.g. credentials")]
     [DataMember(Order = 1)] public string provider { get; set; }
-    [DataMember(Order = 2)] public string State { get; set; }
-    [DataMember(Order = 3)] public string UserName { get; set; }
-    [DataMember(Order = 4)] public string Password { get; set; }
-    [DataMember(Order = 5)] public bool? RememberMe { get; set; }
-    [DataMember(Order = 6)] public string ErrorView { get; set; }
+    [DataMember(Order = 2)] public string UserName { get; set; }
+    [DataMember(Order = 3)] public string Password { get; set; }
+    [DataMember(Order = 4)] public bool? RememberMe { get; set; }
 
-    [DataMember(Order = 7)] public string AccessToken { get; set; }
-    [DataMember(Order = 8)] public string AccessTokenSecret { get; set; }
-    [DataMember(Order = 9)] public string ReturnUrl { get; set; }
+    [DataMember(Order = 5)] public string AccessToken { get; set; }
+    [DataMember(Order = 6)] public string AccessTokenSecret { get; set; }
+    [DataMember(Order = 7)] public string ReturnUrl { get; set; }
 
-    [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 8)] public string ErrorView { get; set; }
+    [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
 }
 
 [DataContract]

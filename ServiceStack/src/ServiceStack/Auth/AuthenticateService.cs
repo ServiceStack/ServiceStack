@@ -488,17 +488,6 @@ namespace ServiceStack.Auth
 
             return response;
         }
-
-        public async Task<object> DeleteAsync(Authenticate request)
-        {
-            var response = ValidateFn?.Invoke(this, HttpMethods.Delete, request);
-            if (response != null)
-                return response;
-
-            await this.RemoveSessionAsync();
-
-            return new AuthenticateResponse();
-        }
     }
 }
 
