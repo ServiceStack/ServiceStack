@@ -49,11 +49,9 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
         AppHost = appHost;
         //Register this in ServiceStack with the custom formats
         appHost.ContentTypes.RegisterAsync(MimeTypes.Html, SerializeToStreamAsync, null);
-        appHost.ContentTypes.RegisterAsync(MimeTypes.JsonReport, SerializeToStreamAsync, null);
 
         appHost.Config.DefaultContentType = MimeTypes.Html;
         appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.Html.ToContentFormat());
-        appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.JsonReport.ToContentFormat());
     }
 
     public async Task SerializeToStreamAsync(IRequest req, object response, Stream outputStream)
