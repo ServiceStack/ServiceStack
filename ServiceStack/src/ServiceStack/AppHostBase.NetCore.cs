@@ -48,6 +48,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         PathBase = iisPathBase;
     }
 
+    public ServiceStackOptions Options { get; set; } = new();
+
     private string pathBase;
 
     public override string PathBase
@@ -185,7 +187,24 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 
     public bool InjectRequestContext { get; set; } = true;
     
+    /// <summary>
+    /// Whether ServiceStack should ignore handling request
+    /// </summary>
     public Func<HttpContext, bool> IgnoreRequestHandler { get; set; }
+
+#if NET8_0_OR_GREATER    
+    /// <summary>
+    /// Whether to use ASP.NET Core Endpoint Route to invoke ServiceStack APIs
+    /// </summary>
+    public virtual bool ShouldUseEndpointRoute(HttpContext httpContext)
+    {
+        var endpoint = httpContext.GetEndpoint();
+        var wildcardEndpoint = endpoint is Microsoft.AspNetCore.Routing.RouteEndpoint routeEndpoint && 
+                               routeEndpoint.RoutePattern.RawText?.StartsWith("/{") == true;
+        var ignoreExistingNonWildcardEndpoint = endpoint != null && !wildcardEndpoint;
+        return ignoreExistingNonWildcardEndpoint;
+    }
+#endif
 
     public virtual async Task ProcessRequest(HttpContext context, Func<Task> next)
     {
@@ -344,7 +363,46 @@ public interface IAppHostNetCore : IAppHost, IRequireConfiguration
 #else
     IWebHostEnvironment HostingEnvironment { get; }
 #endif
+}
 
+#if NET8_0_OR_GREATER
+
+public delegate void RouteHandlerBuilderDelegate(RouteHandlerBuilder builder, Operation operation, string verb, string route);
+
+#endif
+
+public class ServiceStackOptions
+{
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Generate ASP.NET Core Endpoints for ServiceStack APIs
+    /// </summary>
+    public void MapEndpoints(bool use = true)
+    {
+        MapEndpointRouting = true;
+        UseEndpointRouting = use;
+    }
+
+    /// <summary>
+    /// Use ASP .NET Route Endpoint implementations
+    /// </summary>
+    public bool MapEndpointRouting { get; set; }
+
+    /// <summary>
+    /// Use ASP .NET Route Endpoint implementations
+    /// </summary>
+    public bool UseEndpointRouting { get; set; }
+
+    /// <summary>
+    /// The ASP.NET Core AuthenticationSchemes to use for protected ServiceStack APIs
+    /// </summary>
+    public string AuthenticationSchemes { get; set; } = Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme + ",basic";
+    
+    /// <summary>
+    /// Custom handlers to execute for each ServiceStack API endpoint
+    /// </summary>
+    public List<RouteHandlerBuilderDelegate> RouteHandlerBuilders { get; } = new();
+#endif
 }
 
 public static class NetCoreAppHostExtensions
@@ -391,7 +449,7 @@ public static class NetCoreAppHostExtensions
     public static bool IsProductionEnvironment(this IAppHost appHost) =>
         appHost.GetHostingEnvironment().EnvironmentName == "Production";
 
-    public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
+    public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost, Action<ServiceStackOptions> configure = null)
     {
         // Manually simulating Modular Startup when using .NET 6+ top-level statements app builder
         if (TopLevelAppModularStartup.Instance != null)
@@ -401,6 +459,19 @@ public static class NetCoreAppHostExtensions
 
         appHost.Bind(app);
         appHost.Init();
+
+#if NET8_0_OR_GREATER
+        configure?.Invoke(appHost.Options);
+
+        if (appHost.Options.MapEndpointRouting)
+        {
+            if (app is Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+            {
+                routeBuilder.MapEndpoints(appHost);
+            }
+        }
+#endif
+        
         return app;
     }
 
@@ -460,44 +531,44 @@ public static class NetCoreAppHostExtensions
     }
     
 #if NET6_0_OR_GREATER
-public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null, bool setHostDir = true)
-{
-    var holdCurrentDir = Environment.CurrentDirectory;
-    var host = new HostBuilder()
-        .ConfigureHostConfiguration(hostConfig => {
-            if (hostDir == null)
-            {
-                // Allow local appsettings.json to override HostDir 
-                var localConfigPath = Path.GetFullPath("appsettings.json");
-                if (File.Exists(localConfigPath))
+    public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null, bool setHostDir = true)
+    {
+        var holdCurrentDir = Environment.CurrentDirectory;
+        var host = new HostBuilder()
+            .ConfigureHostConfiguration(hostConfig => {
+                if (hostDir == null)
                 {
-                    var appSettings = JSON.parse(File.ReadAllText(localConfigPath));
-                    if (appSettings is Dictionary<string, object> map &&
-                        map.TryGetValue("HostDir", out var oHostDir) && oHostDir is string s)
+                    // Allow local appsettings.json to override HostDir 
+                    var localConfigPath = Path.GetFullPath("appsettings.json");
+                    if (File.Exists(localConfigPath))
                     {
-                        hostDir = Path.GetFullPath(s);
-                        // File based connection to relative App_Data/db.sqlite requires cd
-                        if (setHostDir)
-                            Directory.SetCurrentDirectory(hostDir);
+                        var appSettings = JSON.parse(File.ReadAllText(localConfigPath));
+                        if (appSettings is Dictionary<string, object> map &&
+                            map.TryGetValue("HostDir", out var oHostDir) && oHostDir is string s)
+                        {
+                            hostDir = Path.GetFullPath(s);
+                            // File based connection to relative App_Data/db.sqlite requires cd
+                            if (setHostDir)
+                                Directory.SetCurrentDirectory(hostDir);
+                        }
                     }
                 }
-            }
-            
-            hostDir ??= Path.GetDirectoryName(config.GetType().Assembly.Location);
-            if (!Directory.Exists(hostDir)) return;
-            hostConfig.SetBasePath(hostDir);
-            var devAppSettingsPath = Path.Combine(hostDir, "appsettings.Development.json");
-            hostConfig.AddJsonFile(devAppSettingsPath, optional:true, reloadOnChange:false);
-            var appSettingsPath = Path.Combine(hostDir, "appsettings.json");
-            hostConfig.AddJsonFile(appSettingsPath, optional:true, reloadOnChange:false);
-        })
-        .ConfigureWebHost(builder => {
-            config.Configure(builder);
-        }).Build();
+                
+                hostDir ??= Path.GetDirectoryName(config.GetType().Assembly.Location);
+                if (!Directory.Exists(hostDir)) return;
+                hostConfig.SetBasePath(hostDir);
+                var devAppSettingsPath = Path.Combine(hostDir, "appsettings.Development.json");
+                hostConfig.AddJsonFile(devAppSettingsPath, optional:true, reloadOnChange:false);
+                var appSettingsPath = Path.Combine(hostDir, "appsettings.json");
+                hostConfig.AddJsonFile(appSettingsPath, optional:true, reloadOnChange:false);
+            })
+            .ConfigureWebHost(builder => {
+                config.Configure(builder);
+            }).Build();
 
-    var service = host.Services.GetRequiredService<T>();
-    return service;
-}
+        var service = host.Services.GetRequiredService<T>();
+        return service;
+    }
 #endif
     
 }

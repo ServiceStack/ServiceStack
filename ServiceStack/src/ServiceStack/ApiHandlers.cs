@@ -26,13 +26,7 @@ public static class ApiHandlers
     public static Func<IHttpRequest, HttpAsyncTaskHandler> Generic(string apiPath, 
         string contentType, RequestAttributes requestAttributes, Feature features)
     {
-        if (string.IsNullOrEmpty(apiPath))
-            throw new ArgumentNullException(nameof(apiPath));
-        if (apiPath[0] != '/')
-            throw new ArgumentException(apiPath + " must start with '/'");
-        if (!apiPath.EndsWith("/{Request}"))
-            throw new ArgumentException(apiPath + " must end with '/{Request}'");
-        var baseApiPath = apiPath.LastLeftPart('/'); 
+        var baseApiPath = GetBaseApiPath(apiPath);
         var useApiPath = apiPath.LastLeftPart('/') + '/';
         
         return req => {
@@ -63,6 +57,7 @@ public static class ApiHandlers
                             await serializer(req, ret, req.Response.OutputStream).ConfigAwait();
                         });
                     }
+                    return new NotFoundHttpHandler();
                 }
                 
                 var useContentType = contentType;
@@ -72,7 +67,7 @@ public static class ApiHandlers
                 {
                     var ext = apiName.RightPart('.');
                     apiName = apiName.LeftPart('.');
-                    useContentType = MimeTypes.GetMimeType(ext);
+                    useContentType = HostContext.ContentTypes.GetFormatContentType(ext);
                     useRequestAttrs = RequestAttributes.Reply | ContentFormat.GetEndpointAttributes(useContentType);
                     useFeature = useContentType.ToFeature();
                 }
@@ -82,6 +77,43 @@ public static class ApiHandlers
                 };
             }
             return null;
+        };
+    }
+
+    public static string GetBaseApiPath(string apiPath)
+    {
+        if (string.IsNullOrEmpty(apiPath))
+            throw new ArgumentNullException(nameof(apiPath));
+        if (apiPath[0] != '/')
+            throw new ArgumentException(apiPath + " must start with '/'");
+        if (!apiPath.EndsWith("/{Request}"))
+            throw new ArgumentException(apiPath + " must end with '/{Request}'");
+        var baseApiPath = apiPath.LastLeftPart('/');
+        return baseApiPath;
+    }
+
+    public static HttpAsyncTaskHandler JsonEndpointHandler(string apiPath, IRequest req)
+    {
+        var useContentType = MimeTypes.Json;
+        var useRequestAttrs = RequestAttributes.Reply | RequestAttributes.Json;
+        var useFeature = Feature.Json;
+
+        var pathInfo = req.PathInfo;
+        var apiName = pathInfo == apiPath ? "" : pathInfo.LastRightPart('/');
+        if (string.IsNullOrEmpty(apiName))
+            return new NotFoundHttpHandler();
+
+        if (apiName.IndexOf('.') >= 0)
+        {
+            var ext = apiName.RightPart('.');
+            apiName = apiName.LeftPart('.');
+            useContentType = HostContext.ContentTypes.GetFormatContentType(ext);
+            useRequestAttrs = RequestAttributes.Reply | ContentFormat.GetEndpointAttributes(useContentType);
+            useFeature = useContentType.ToFeature();
+        }
+
+        return new GenericHandler(useContentType, useRequestAttrs, useFeature) {
+            RequestName = apiName
         };
     }
 }

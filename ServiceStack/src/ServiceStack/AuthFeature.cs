@@ -63,6 +63,7 @@ namespace ServiceStack
         public IAuthProvider[] AuthProviders => authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
+        public Dictionary<string, string> ServiceRoutesVerbs { get; set; }
 
         public List<IPlugin> RegisterPlugins { get; set; } = new() {
             new SessionFeature()
@@ -270,13 +271,18 @@ namespace ServiceStack
             this.authProviders = authProviders;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
-                { typeof(AuthenticateService), new[]
-                    {
+                { typeof(AuthenticateService), [
                         "/" + LocalizedStrings.Auth.Localize(),
-                        "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
-                    } },
-                { typeof(AssignRolesService), new[]{ "/" + LocalizedStrings.AssignRoles.Localize() } },
-                { typeof(UnAssignRolesService), new[]{ "/" + LocalizedStrings.UnassignRoles.Localize() } },
+                        "/" + LocalizedStrings.Auth.Localize() + "/{provider}"
+                    ]
+                },
+                { typeof(AssignRolesService), ["/" + LocalizedStrings.AssignRoles.Localize()] },
+                { typeof(UnAssignRolesService), ["/" + LocalizedStrings.UnassignRoles.Localize()] },
+            };
+            ServiceRoutesVerbs = new()
+            {
+                ["/" + LocalizedStrings.Auth.Localize()] = "GET,POST",
+                ["/" + LocalizedStrings.Auth.Localize() + "/{provider}"] = "POST",
             };
 
             this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();
@@ -335,7 +341,27 @@ namespace ServiceStack
 
             AuthSecretSession = appHost.Config.AuthSecretSession;
 
-            appHost.RegisterServices(ServiceRoutes);
+            var serviceLookup = ServiceRoutes.GroupBy(x => x.Key);
+            foreach (var lookup in serviceLookup)
+            {
+                var serviceType = lookup.Key;
+                appHost.ServiceController.RegisterService(serviceType);
+                var defaultVerbs = serviceType.GetVerbs();
+
+                var reqAttr = serviceType.FirstAttribute<DefaultRequestAttribute>();
+                if (reqAttr != null)
+                {
+                    foreach (var entry in lookup)
+                    {
+                        foreach (var atPath in entry.Value)
+                        {
+                            var verbs = ServiceRoutesVerbs.TryGetValue(atPath, out var v) ? v : defaultVerbs;
+                            appHost.Routes.Add(reqAttr.RequestType, atPath, verbs);
+                        }
+                    }
+                }
+            }
+            
             appHost.ConfigureOperation<Authenticate>(op => op.FormLayout = FormLayout);
             appHost.ConfigureOperation<AssignRoles>(op => op.AddRole(RoleNames.Admin));
             appHost.ConfigureOperation<UnAssignRoles>(op => op.AddRole(RoleNames.Admin));
