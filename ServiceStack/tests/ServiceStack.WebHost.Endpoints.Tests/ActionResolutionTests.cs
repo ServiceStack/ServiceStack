@@ -21,12 +21,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_resolve_all_AuthenticateService_methods()
         {
             var actions = typeof(AuthenticateService).GetActions();
-            Assert.That(actions.Count, Is.EqualTo(3));
+            Assert.That(actions.Count, Is.EqualTo(4));
             var verbs = ActionVerbs(actions);
             var expected = StripAsync(new[] {
                 nameof(AuthenticateService.Options),
                 nameof(AuthenticateService.GetAsync),
                 nameof(AuthenticateService.PostAsync),
+                nameof(AuthenticateService.AnyAsync),
             });
             Assert.That(verbs, Is.EquivalentTo(expected));
         }
