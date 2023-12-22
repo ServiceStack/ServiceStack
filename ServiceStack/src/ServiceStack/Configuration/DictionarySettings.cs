@@ -2,56 +2,55 @@
 using System.Linq;
 using ServiceStack.Text;
 
-namespace ServiceStack.Configuration
+namespace ServiceStack.Configuration;
+
+public class DictionarySettings : AppSettingsBase, ISettings
 {
-    public class DictionarySettings : AppSettingsBase, ISettings
+    private readonly DictionaryWrapper instance;
+
+    class DictionaryWrapper : ISettingsWriter
     {
-        private readonly DictionaryWrapper instance;
+        internal readonly Dictionary<string, string> Map;
 
-        class DictionaryWrapper : ISettingsWriter
+        public DictionaryWrapper(Dictionary<string, string> map = null)
         {
-            internal readonly Dictionary<string, string> Map;
-
-            public DictionaryWrapper(Dictionary<string, string> map = null)
-            {
-                Map = map ?? new Dictionary<string, string>();
-            }
-
-            public string Get(string key)
-            {
-                return Map.TryGetValue(key, out var value) ? value : null;
-            }
-
-            public List<string> GetAllKeys()
-            {
-                return Map.Keys.ToList();
-            }
-
-            public void Set<T>(string key, T value)
-            {
-                var textValue = value is string
-                    ? (string)(object)value
-                    : value.ToJsv();
-
-                Map[key] = textValue;
-            }
+            Map = map ?? new Dictionary<string, string>();
         }
 
-        public DictionarySettings(IEnumerable<KeyValuePair<string, string>> map)
-            : base(new DictionaryWrapper(map.ToStringDictionary()))
+        public string Get(string key)
         {
-            instance = (DictionaryWrapper)settings;
+            return Map.TryGetValue(key, out var value) ? value : null;
         }
 
-        public DictionarySettings(Dictionary<string, string> map=null)
-            : base(new DictionaryWrapper(map))
+        public List<string> GetAllKeys()
         {
-            instance = (DictionaryWrapper)settings;
+            return Map.Keys.ToList();
         }
 
-        public override Dictionary<string, string> GetAll()
+        public void Set<T>(string key, T value)
         {
-            return instance.Map;
+            var textValue = value is string
+                ? (string)(object)value
+                : value.ToJsv();
+
+            Map[key] = textValue;
         }
+    }
+
+    public DictionarySettings(IEnumerable<KeyValuePair<string, string>> map)
+        : base(new DictionaryWrapper(map.ToStringDictionary()))
+    {
+        instance = (DictionaryWrapper)settings;
+    }
+
+    public DictionarySettings(Dictionary<string, string> map=null)
+        : base(new DictionaryWrapper(map))
+    {
+        instance = (DictionaryWrapper)settings;
+    }
+
+    public override Dictionary<string, string> GetAll()
+    {
+        return instance.Map;
     }
 }

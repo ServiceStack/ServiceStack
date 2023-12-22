@@ -1,28 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Configuration
+namespace ServiceStack.Configuration;
+
+public class EnvironmentVariableSettings : AppSettingsBase
 {
-    public class EnvironmentVariableSettings : AppSettingsBase
+    class EnvironmentSettingsWrapper : ISettings
     {
-        class EnvironmentSettingsWrapper : ISettings
+        public string Get(string key)
         {
-            public string Get(string key)
-            {
-                return Environment.GetEnvironmentVariable(key);
-            }
-
-            public List<string> GetAllKeys()
-            {
-                return Environment.GetEnvironmentVariables().Keys.Map(x => x.ToString());
-            }
+            return Environment.GetEnvironmentVariable(key);
         }
 
-        public EnvironmentVariableSettings() : base(new EnvironmentSettingsWrapper()) {}
-
-        public override string GetString(string name)
+        public List<string> GetAllKeys()
         {
-            return base.GetNullableString(name);
+            return Environment.GetEnvironmentVariables().Keys.Map(x => x.ToString());
         }
+    }
+
+    public EnvironmentVariableSettings() : base(new EnvironmentSettingsWrapper()) {}
+
+    public override string GetString(string name)
+    {
+        return base.GetNullableString(name);
     }
 }

@@ -1,27 +1,26 @@
 using System;
 using ServiceStack.Web;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+public class ErrorViewAttribute : RequestFilterAttribute
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public class ErrorViewAttribute : RequestFilterAttribute
+    public string FieldName { get; set; }
+
+    public ErrorViewAttribute() : this("ErrorView") {}
+    public ErrorViewAttribute(string fieldName)
     {
-        public string FieldName { get; set; }
+        FieldName = fieldName;
+        Priority = -1;
+    }
 
-        public ErrorViewAttribute() : this("ErrorView") {}
-        public ErrorViewAttribute(string fieldName)
+    public override void Execute(IRequest req, IResponse res, object requestDto)
+    {
+        var errorViewGetter = TypeProperties.Get(requestDto.GetType()).GetPublicGetter(FieldName);
+        if (errorViewGetter?.Invoke(requestDto) is string errorView)
         {
-            FieldName = fieldName;
-            Priority = -1;
-        }
-
-        public override void Execute(IRequest req, IResponse res, object requestDto)
-        {
-            var errorViewGetter = TypeProperties.Get(requestDto.GetType()).GetPublicGetter(FieldName);
-            if (errorViewGetter?.Invoke(requestDto) is string errorView)
-            {
-                req.SetErrorView(errorView);
-            }
+            req.SetErrorView(errorView);
         }
     }
 }

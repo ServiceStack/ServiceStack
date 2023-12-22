@@ -1,11 +1,11 @@
 ﻿#if !NETCORE
 using System.ServiceModel.Channels;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public interface IRequiresSoapMessage
 {
-    public interface IRequiresSoapMessage
-    {
-        Message Message { get; set; }
-    }
+    Message Message { get; set; }
 }
+
 #endif

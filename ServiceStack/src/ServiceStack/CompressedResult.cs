@@ -7,92 +7,91 @@ using System.Threading.Tasks;
 using ServiceStack.Web;
 using ServiceStack.Text;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public class CompressedResult
+    : IStreamWriterAsync, IHttpResult
 {
-    public class CompressedResult
-        : IStreamWriterAsync, IHttpResult
+    public const string DefaultContentType = MimeTypes.Xml;
+
+    public byte[] Contents { get; }
+
+    public string ContentType { get; set; }
+
+    public Dictionary<string, string> Headers { get; }
+    public List<Cookie> Cookies { get; }
+
+    public int Status { get; set; }
+
+    public HttpStatusCode StatusCode
     {
-        public const string DefaultContentType = MimeTypes.Xml;
+        get => (HttpStatusCode)Status;
+        set => Status = (int)value;
+    }
 
-        public byte[] Contents { get; }
+    public string StatusDescription { get; set; }
 
-        public string ContentType { get; set; }
+    public object Response
+    {
+        get => this.Contents;
+        set => throw new NotImplementedException();
+    }
 
-        public Dictionary<string, string> Headers { get; }
-        public List<Cookie> Cookies { get; }
+    public IContentTypeWriter ResponseFilter { get; set; }
 
-        public int Status { get; set; }
+    public IRequest RequestContext { get; set; }
 
-        public HttpStatusCode StatusCode
+    public int PaddingLength { get; set; }
+
+    public Func<IDisposable> ResultScope { get; set; }
+
+    public IDictionary<string, string> Options => this.Headers;
+
+    public DateTime? LastModified
+    {
+        set
         {
-            get => (HttpStatusCode)Status;
-            set => Status = (int)value;
+            if (value == null)
+                return;
+
+            this.Headers[HttpHeaders.LastModified] = value.Value.ToUniversalTime().ToString("r");
+
+            var feature = HostContext.GetPlugin<HttpCacheFeature>();
+            if (feature?.CacheControlForOptimizedResults != null)
+                this.Headers[HttpHeaders.CacheControl] = feature.CacheControlForOptimizedResults;
         }
+    }
 
-        public string StatusDescription { get; set; }
+    public CompressedResult(byte[] contents)
+        : this(contents, CompressionTypes.Deflate)
+    { }
 
-        public object Response
-        {
-            get => this.Contents;
-            set => throw new NotImplementedException();
-        }
+    public CompressedResult(byte[] contents, string compressionType)
+        : this(contents, compressionType, DefaultContentType)
+    { }
 
-        public IContentTypeWriter ResponseFilter { get; set; }
+    public CompressedResult(byte[] contents, string compressionType, string contentMimeType)
+    {
+        if (!CompressionTypes.IsValid(compressionType))
+            throw new ArgumentException("Must be " + string.Join(", ", CompressionTypes.AllCompressionTypes), compressionType);
 
-        public IRequest RequestContext { get; set; }
+        this.StatusCode = HttpStatusCode.OK;
+        this.ContentType = contentMimeType;
 
-        public int PaddingLength { get; set; }
+        this.Contents = contents;
+        this.Headers = new Dictionary<string, string> {
+            { HttpHeaders.ContentEncoding, compressionType },
+        };
+        this.Cookies = new List<Cookie>();
+    }
 
-        public Func<IDisposable> ResultScope { get; set; }
+    public async Task WriteToAsync(Stream responseStream, CancellationToken token = new())
+    {
+        var response = RequestContext?.Response;
+        response?.SetContentLength(this.Contents.Length + PaddingLength);
 
-        public IDictionary<string, string> Options => this.Headers;
+        await responseStream.WriteAsync(this.Contents, token).ConfigAwait();
 
-        public DateTime? LastModified
-        {
-            set
-            {
-                if (value == null)
-                    return;
-
-                this.Headers[HttpHeaders.LastModified] = value.Value.ToUniversalTime().ToString("r");
-
-                var feature = HostContext.GetPlugin<HttpCacheFeature>();
-                if (feature?.CacheControlForOptimizedResults != null)
-                    this.Headers[HttpHeaders.CacheControl] = feature.CacheControlForOptimizedResults;
-            }
-        }
-
-        public CompressedResult(byte[] contents)
-            : this(contents, CompressionTypes.Deflate)
-        { }
-
-        public CompressedResult(byte[] contents, string compressionType)
-            : this(contents, compressionType, DefaultContentType)
-        { }
-
-        public CompressedResult(byte[] contents, string compressionType, string contentMimeType)
-        {
-            if (!CompressionTypes.IsValid(compressionType))
-                throw new ArgumentException("Must be " + string.Join(", ", CompressionTypes.AllCompressionTypes), compressionType);
-
-            this.StatusCode = HttpStatusCode.OK;
-            this.ContentType = contentMimeType;
-
-            this.Contents = contents;
-            this.Headers = new Dictionary<string, string> {
-                { HttpHeaders.ContentEncoding, compressionType },
-            };
-            this.Cookies = new List<Cookie>();
-        }
-
-        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new())
-        {
-            var response = RequestContext?.Response;
-            response?.SetContentLength(this.Contents.Length + PaddingLength);
-
-            await responseStream.WriteAsync(this.Contents, token).ConfigAwait();
-
-            await responseStream.FlushAsync(token).ConfigAwait();
-        }
+        await responseStream.FlushAsync(token).ConfigAwait();
     }
 }

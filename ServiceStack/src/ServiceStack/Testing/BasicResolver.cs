@@ -1,22 +1,21 @@
 ﻿using Funq;
 using ServiceStack.Configuration;
 
-namespace ServiceStack.Testing
+namespace ServiceStack.Testing;
+
+public class BasicResolver : IResolver
 {
-    public class BasicResolver : IResolver
+    private readonly Container container;
+
+    public BasicResolver() : this(new Container()) {}
+
+    public BasicResolver(Container container)
     {
-        private readonly Container container;
+        this.container = container;
+    }
 
-        public BasicResolver() : this(new Container()) {}
-
-        public BasicResolver(Container container)
-        {
-            this.container = container;
-        }
-
-        public T TryResolve<T>()
-        {
-            return this.container.TryResolve<T>();
-        }
+    public T TryResolve<T>()
+    {
+        return this.container.TryResolve<T>();
     }
 }

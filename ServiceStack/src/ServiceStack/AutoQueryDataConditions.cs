@@ -2,340 +2,339 @@
 using System.Collections;
 using ServiceStack.Text;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public static class ConditionAlias
 {
-    public static class ConditionAlias
+    public new const string Equals = "=";
+    public const string NotEqual = "<>";
+    public const string LessEqual = "<=";
+    public const string Less = "<";
+    public const string Greater = ">";
+    public const string GreaterEqual = ">=";
+    public const string StartsWith = "StartsWith";
+    public const string Contains = "Contains";
+    public const string EndsWith = "EndsWith";
+    public const string In = "In";
+    public const string Between = "Between";
+    public const string Like = "Like";
+    public const string False = "false";
+}
+
+public class EqualsCondition : QueryCondition
+{
+    public static EqualsCondition Instance = new();
+
+    public override string Alias => ConditionAlias.Equals;
+
+    public override bool Match(object a, object b)
     {
-        public new const string Equals = "=";
-        public const string NotEqual = "<>";
-        public const string LessEqual = "<=";
-        public const string Less = "<";
-        public const string Greater = ">";
-        public const string GreaterEqual = ">=";
-        public const string StartsWith = "StartsWith";
-        public const string Contains = "Contains";
-        public const string EndsWith = "EndsWith";
-        public const string In = "In";
-        public const string Between = "Between";
-        public const string Like = "Like";
-        public const string False = "false";
+        return CompareTo(a, b) == 0;
     }
+}
+public class NotEqualCondition : QueryCondition
+{
+    public static NotEqualCondition Instance = new();
+    public override string Alias => ConditionAlias.NotEqual;
 
-    public class EqualsCondition : QueryCondition
+    public override bool Match(object a, object b)
     {
-        public static EqualsCondition Instance = new();
-
-        public override string Alias => ConditionAlias.Equals;
-
-        public override bool Match(object a, object b)
-        {
-            return CompareTo(a, b) == 0;
-        }
+        return CompareTo(a, b) != 0;
     }
-    public class NotEqualCondition : QueryCondition
-    {
-        public static NotEqualCondition Instance = new();
-        public override string Alias => ConditionAlias.NotEqual;
+}
+public class GreaterCondition : QueryCondition
+{
+    public static GreaterCondition Instance = new();
+    public override string Alias => ConditionAlias.Greater;
 
-        public override bool Match(object a, object b)
-        {
-            return CompareTo(a, b) != 0;
-        }
-    }
-    public class GreaterCondition : QueryCondition
+    public override bool Match(object a, object b)
     {
-        public static GreaterCondition Instance = new();
-        public override string Alias => ConditionAlias.Greater;
-
-        public override bool Match(object a, object b)
-        {
-            if (a == null || b == null)
-                return false;
-            return CompareTo(a, b) > 0;
-        }
-    }
-    public class GreaterEqualCondition : QueryCondition
-    {
-        public static GreaterEqualCondition Instance = new();
-        public override string Alias => ConditionAlias.GreaterEqual;
-
-        public override bool Match(object a, object b)
-        {
-            return CompareTo(a, b) >= 0;
-        }
-    }
-    public class LessCondition : QueryCondition
-    {
-        public static LessCondition Instance = new();
-        public override string Alias => ConditionAlias.Less;
-
-        public override bool Match(object a, object b)
-        {
-            return CompareTo(a, b) < 0;
-        }
-    }
-    public class LessEqualCondition : QueryCondition
-    {
-        public static LessEqualCondition Instance = new();
-        public override string Alias => ConditionAlias.LessEqual;
-
-        public override bool Match(object a, object b)
-        {
-            return CompareTo(a, b) <= 0;
-        }
-    }
-    public class CaseInsensitiveEqualCondition : QueryCondition
-    {
-        public static CaseInsensitiveEqualCondition Instance = new();
-        public override string Alias => ConditionAlias.Like;
-
-        public override bool Match(object a, object b)
-        {
-            var aString = CompareTypeUtils.CoerceString(a);
-            var bString = CompareTypeUtils.CoerceString(b);
-            return string.Compare(aString, bString, StringComparison.OrdinalIgnoreCase) == 0;
-        }
-    }
-    public class InCollectionCondition : QueryCondition, IQueryMultiple
-    {
-        public static InCollectionCondition Instance = new();
-        public override string Alias => ConditionAlias.In;
-
-        public override bool Match(object a, object b)
-        {
-            if (b is not IEnumerable bValues)
-                return EqualsCondition.Instance.Match(a, b);
-            foreach (var item in bValues)
-            {
-                if (EqualsCondition.Instance.Match(a, item))
-                    return true;
-            }
+        if (a == null || b == null)
             return false;
-        }
+        return CompareTo(a, b) > 0;
     }
+}
+public class GreaterEqualCondition : QueryCondition
+{
+    public static GreaterEqualCondition Instance = new();
+    public override string Alias => ConditionAlias.GreaterEqual;
+
+    public override bool Match(object a, object b)
+    {
+        return CompareTo(a, b) >= 0;
+    }
+}
+public class LessCondition : QueryCondition
+{
+    public static LessCondition Instance = new();
+    public override string Alias => ConditionAlias.Less;
+
+    public override bool Match(object a, object b)
+    {
+        return CompareTo(a, b) < 0;
+    }
+}
+public class LessEqualCondition : QueryCondition
+{
+    public static LessEqualCondition Instance = new();
+    public override string Alias => ConditionAlias.LessEqual;
+
+    public override bool Match(object a, object b)
+    {
+        return CompareTo(a, b) <= 0;
+    }
+}
+public class CaseInsensitiveEqualCondition : QueryCondition
+{
+    public static CaseInsensitiveEqualCondition Instance = new();
+    public override string Alias => ConditionAlias.Like;
+
+    public override bool Match(object a, object b)
+    {
+        var aString = CompareTypeUtils.CoerceString(a);
+        var bString = CompareTypeUtils.CoerceString(b);
+        return string.Compare(aString, bString, StringComparison.OrdinalIgnoreCase) == 0;
+    }
+}
+public class InCollectionCondition : QueryCondition, IQueryMultiple
+{
+    public static InCollectionCondition Instance = new();
+    public override string Alias => ConditionAlias.In;
+
+    public override bool Match(object a, object b)
+    {
+        if (b is not IEnumerable bValues)
+            return EqualsCondition.Instance.Match(a, b);
+        foreach (var item in bValues)
+        {
+            if (EqualsCondition.Instance.Match(a, item))
+                return true;
+        }
+        return false;
+    }
+}
     
-    public class CaseInsensitiveInCollectionCondition : QueryCondition, IQueryMultiple
-    {
-        public static CaseInsensitiveInCollectionCondition Instance = new();
-        public override string Alias => ConditionAlias.In;
+public class CaseInsensitiveInCollectionCondition : QueryCondition, IQueryMultiple
+{
+    public static CaseInsensitiveInCollectionCondition Instance = new();
+    public override string Alias => ConditionAlias.In;
 
-        public override bool Match(object a, object b)
+    public override bool Match(object a, object b)
+    {
+        if (b is not IEnumerable bValues)
+            return CaseInsensitiveEqualCondition.Instance.Match(a, b);
+        foreach (var item in bValues)
         {
-            if (b is not IEnumerable bValues)
-                return CaseInsensitiveEqualCondition.Instance.Match(a, b);
-            foreach (var item in bValues)
-            {
-                if (CaseInsensitiveEqualCondition.Instance.Match(a, item))
-                    return true;
-            }
-            return false;
+            if (CaseInsensitiveEqualCondition.Instance.Match(a, item))
+                return true;
         }
+        return false;
     }
+}
     
-    public class InBetweenCondition : QueryCondition, IQueryMultiple
+public class InBetweenCondition : QueryCondition, IQueryMultiple
+{
+    public static InBetweenCondition Instance = new();
+    public override string Alias => ConditionAlias.Between;
+
+    public override bool Match(object a, object b)
     {
-        public static InBetweenCondition Instance = new();
-        public override string Alias => ConditionAlias.Between;
+        var bValues = b as IEnumerable;
+        if (bValues == null)
+            throw new ArgumentException("InBetweenCondition must be queried with multiple values");
 
-        public override bool Match(object a, object b)
-        {
-            var bValues = b as IEnumerable;
-            if (bValues == null)
-                throw new ArgumentException("InBetweenCondition must be queried with multiple values");
+        var bList = bValues.Map(x => x);
+        if (bList.Count != 2)
+            throw new ArgumentException($"InBetweenCondition expected 2 values, got {bList.Count} instead.");
 
-            var bList = bValues.Map(x => x);
-            if (bList.Count != 2)
-                throw new ArgumentException($"InBetweenCondition expected 2 values, got {bList.Count} instead.");
-
-            return GreaterEqualCondition.Instance.Match(a, bList[0]) &&
-                   LessEqualCondition.Instance.Match(a, bList[1]);
-        }
+        return GreaterEqualCondition.Instance.Match(a, bList[0]) &&
+               LessEqualCondition.Instance.Match(a, bList[1]);
     }
-    public class StartsWithCondition : QueryCondition
-    {
-        public static StartsWithCondition Instance = new();
-        public override string Alias => ConditionAlias.StartsWith;
+}
+public class StartsWithCondition : QueryCondition
+{
+    public static StartsWithCondition Instance = new();
+    public override string Alias => ConditionAlias.StartsWith;
 
-        public override bool Match(object a, object b)
-        {
-            var aString = CompareTypeUtils.CoerceString(a);
-            var bString = CompareTypeUtils.CoerceString(b);
-            if (aString == null || bString == null)
-                return false;
-            return aString.StartsWith(bString, StringComparison.OrdinalIgnoreCase);
-        }
-    }
-    public class ContainsCondition : QueryCondition
+    public override bool Match(object a, object b)
     {
-        public static ContainsCondition Instance = new();
-        public override string Alias => ConditionAlias.Contains;
-
-        public override bool Match(object a, object b)
-        {
-            var aString = CompareTypeUtils.CoerceString(a);
-            var bString = CompareTypeUtils.CoerceString(b);
-            if (aString == null || bString == null)
-                return false;
-            return aString.IndexOf(bString, StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-    }
-    public class EndsWithCondition : QueryCondition
-    {
-        public static EndsWithCondition Instance = new();
-        public override string Alias => ConditionAlias.EndsWith;
-
-        public override bool Match(object a, object b)
-        {
-            var aString = CompareTypeUtils.CoerceString(a);
-            var bString = CompareTypeUtils.CoerceString(b);
-            if (aString == null || bString == null)
-                return false;
-            return aString.EndsWith(bString, StringComparison.OrdinalIgnoreCase);
-        }
-    }
-    public class AlwaysFalseCondition : QueryCondition
-    {
-        public static AlwaysFalseCondition Instance = new();
-        public override string Alias => ConditionAlias.False;
-
-        public override bool Match(object a, object b)
-        {
+        var aString = CompareTypeUtils.CoerceString(a);
+        var bString = CompareTypeUtils.CoerceString(b);
+        if (aString == null || bString == null)
             return false;
+        return aString.StartsWith(bString, StringComparison.OrdinalIgnoreCase);
+    }
+}
+public class ContainsCondition : QueryCondition
+{
+    public static ContainsCondition Instance = new();
+    public override string Alias => ConditionAlias.Contains;
+
+    public override bool Match(object a, object b)
+    {
+        var aString = CompareTypeUtils.CoerceString(a);
+        var bString = CompareTypeUtils.CoerceString(b);
+        if (aString == null || bString == null)
+            return false;
+        return aString.IndexOf(bString, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+}
+public class EndsWithCondition : QueryCondition
+{
+    public static EndsWithCondition Instance = new();
+    public override string Alias => ConditionAlias.EndsWith;
+
+    public override bool Match(object a, object b)
+    {
+        var aString = CompareTypeUtils.CoerceString(a);
+        var bString = CompareTypeUtils.CoerceString(b);
+        if (aString == null || bString == null)
+            return false;
+        return aString.EndsWith(bString, StringComparison.OrdinalIgnoreCase);
+    }
+}
+public class AlwaysFalseCondition : QueryCondition
+{
+    public static AlwaysFalseCondition Instance = new();
+    public override string Alias => ConditionAlias.False;
+
+    public override bool Match(object a, object b)
+    {
+        return false;
+    }
+}
+
+public interface IQueryMultiple {}
+
+public abstract class QueryCondition
+{
+    public abstract string Alias { get; }
+
+    public QueryTerm Term { get; set; }
+
+    public abstract bool Match(object a, object b);
+
+    public virtual int CompareTo(object a, object b)
+    {
+        return CompareTypeUtils.CompareTo(a, b);
+    }
+}
+
+public static class CompareTypeUtils
+{
+    public static int CompareTo(object a, object b)
+    {
+        if (a == null || b == null)
+        {
+            return a == null && b == null
+                ? 0
+                : a == null //NULL is lowest in RDBMS
+                    ? 1
+                    : -1;
         }
+
+        if (a.GetType() == b.GetType())
+        {
+            if (a is IComparable ac)
+                return ac.CompareTo(b);
+        }
+
+        var aLong = CoerceLong(a);
+        if (aLong != null)
+        {
+            var bLong = CoerceLong(b);
+            if (bLong != null)
+                return aLong.Value.CompareTo(bLong.Value);
+        }
+
+        var aDouble = CoerceDouble(a);
+        if (aDouble != null)
+        {
+            var bDouble = CoerceDouble(b);
+            if (bDouble != null)
+                return aDouble.Value.CompareTo(bDouble.Value);
+        }
+
+        var aString = CoerceString(a);
+        var bString = CoerceString(b);
+        return string.Compare(aString, bString, StringComparison.Ordinal);
     }
 
-    public interface IQueryMultiple {}
-
-    public abstract class QueryCondition
+    public static long? CoerceLong(object o)
     {
-        public abstract string Alias { get; }
-
-        public QueryTerm Term { get; set; }
-
-        public abstract bool Match(object a, object b);
-
-        public virtual int CompareTo(object a, object b)
-        {
-            return CompareTypeUtils.CompareTo(a, b);
-        }
+        return (long?)(o.GetType().IsIntegerType()
+            ? Convert.ChangeType(o, typeof(long))
+            : null);
     }
 
-    public static class CompareTypeUtils
+    public static double? CoerceDouble(object o)
     {
-        public static int CompareTo(object a, object b)
+        return (long?)(o.GetType().IsRealNumberType()
+            ? Convert.ChangeType(o, typeof(double))
+            : null);
+    }
+
+    public static string CoerceString(object o)
+    {
+        return TypeSerializer.SerializeToString(o);
+    }
+
+    public static object Add(object a, object b)
+    {
+        var aLong = CoerceLong(a);
+        if (aLong != null)
         {
-            if (a == null || b == null)
-            {
-                return a == null && b == null
-                    ? 0
-                    : a == null //NULL is lowest in RDBMS
-                        ? 1
-                        : -1;
-            }
-
-            if (a.GetType() == b.GetType())
-            {
-                if (a is IComparable ac)
-                    return ac.CompareTo(b);
-            }
-
-            var aLong = CoerceLong(a);
-            if (aLong != null)
-            {
-                var bLong = CoerceLong(b);
-                if (bLong != null)
-                    return aLong.Value.CompareTo(bLong.Value);
-            }
-
-            var aDouble = CoerceDouble(a);
-            if (aDouble != null)
-            {
-                var bDouble = CoerceDouble(b);
-                if (bDouble != null)
-                    return aDouble.Value.CompareTo(bDouble.Value);
-            }
-
-            var aString = CoerceString(a);
-            var bString = CoerceString(b);
-            return string.Compare(aString, bString, StringComparison.Ordinal);
+            var bLong = CoerceLong(b);
+            return aLong + bLong ?? aLong;
         }
 
-        public static long? CoerceLong(object o)
+        var aDouble = CoerceDouble(a);
+        if (aDouble != null)
         {
-            return (long?)(o.GetType().IsIntegerType()
-                ? Convert.ChangeType(o, typeof(long))
-                : null);
+            var bDouble = CoerceDouble(b);
+            return aDouble + bDouble ?? aDouble;
         }
 
-        public static double? CoerceDouble(object o)
+        var aString = CoerceString(a);
+        var bString = CoerceString(b);
+        return aString + bString;
+    }
+
+    public static object Min(object a, object b)
+    {
+        if (a == null)
+            return b;
+
+        return CompareTo(a, b) > 0 ? b : a;
+    }
+
+    public static object Max(object a, object b)
+    {
+        if (a == null)
+            return b;
+
+        return CompareTo(a, b) < 0 ? b : a;
+    }
+
+    public static object Sum(IEnumerable values)
+    {
+        object sum = null;
+        foreach (var value in values)
         {
-            return (long?)(o.GetType().IsRealNumberType()
-                ? Convert.ChangeType(o, typeof(double))
-                : null);
+            sum = sum == null
+                ? value
+                : Add(sum, value);
         }
+        return sum;
+    }
 
-        public static string CoerceString(object o)
+    public static object Aggregate(IEnumerable source, Func<object, object, object> fn, object seed = null)
+    {
+        var acc = seed;
+        foreach (var item in source)
         {
-            return TypeSerializer.SerializeToString(o);
+            acc = fn(acc, item);
         }
-
-        public static object Add(object a, object b)
-        {
-            var aLong = CoerceLong(a);
-            if (aLong != null)
-            {
-                var bLong = CoerceLong(b);
-                return aLong + bLong ?? aLong;
-            }
-
-            var aDouble = CoerceDouble(a);
-            if (aDouble != null)
-            {
-                var bDouble = CoerceDouble(b);
-                return aDouble + bDouble ?? aDouble;
-            }
-
-            var aString = CoerceString(a);
-            var bString = CoerceString(b);
-            return aString + bString;
-        }
-
-        public static object Min(object a, object b)
-        {
-            if (a == null)
-                return b;
-
-            return CompareTo(a, b) > 0 ? b : a;
-        }
-
-        public static object Max(object a, object b)
-        {
-            if (a == null)
-                return b;
-
-            return CompareTo(a, b) < 0 ? b : a;
-        }
-
-        public static object Sum(IEnumerable values)
-        {
-            object sum = null;
-            foreach (var value in values)
-            {
-                sum = sum == null
-                    ? value
-                    : Add(sum, value);
-            }
-            return sum;
-        }
-
-        public static object Aggregate(IEnumerable source, Func<object, object, object> fn, object seed = null)
-        {
-            var acc = seed;
-            foreach (var item in source)
-            {
-                acc = fn(acc, item);
-            }
-            return acc;
-        }
+        return acc;
     }
 }

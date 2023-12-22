@@ -9,56 +9,56 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading;
 #endif
 
-namespace ServiceStack
+namespace ServiceStack;
+
+/// <summary>
+/// Abstraction to provide a context per request.
+/// in aspnet.web its equivalent to System.Web.HttpContext.Current.Items falls back to CallContext
+/// </summary>
+public class RequestContext
 {
-    /// <summary>
-    /// Abstraction to provide a context per request.
-    /// in aspnet.web its equivalent to System.Web.HttpContext.Current.Items falls back to CallContext
-    /// </summary>
-    public class RequestContext
-    {
-        public static readonly RequestContext Instance = new RequestContext();
+    public static readonly RequestContext Instance = new RequestContext();
 
 #if !NETCORE
-        /// <summary>
-        /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
-        /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
-        /// </summary>
-        public static bool UseThreadStatic;
+    /// <summary>
+    /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
+    /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
+    /// </summary>
+    public static bool UseThreadStatic;
 
-        [ThreadStatic]
-        public static IDictionary RequestItems;
+    [ThreadStatic]
+    public static IDictionary RequestItems;
 #else
-        public static AsyncLocal<IDictionary> AsyncRequestItems = new AsyncLocal<IDictionary>();
+    public static AsyncLocal<IDictionary> AsyncRequestItems = new AsyncLocal<IDictionary>();
 #endif
 
-        /// <summary>
-        /// Start a new Request context, everything deeper in Async pipeline will get this new RequestContext dictionary.
-        /// </summary>
-        public void StartRequestContext()
-        {
-            // This fixes problems if the RequestContext.Instance.Items was touched on startup or outside of request context.
-            // It would turn it into a static dictionary instead flooding request with each-others values.
-            // This can already happen if I register a Funq.Container Request Scope type and Resolve it on startup.
-            CreateItems();
-        }
+    /// <summary>
+    /// Start a new Request context, everything deeper in Async pipeline will get this new RequestContext dictionary.
+    /// </summary>
+    public void StartRequestContext()
+    {
+        // This fixes problems if the RequestContext.Instance.Items was touched on startup or outside of request context.
+        // It would turn it into a static dictionary instead flooding request with each-others values.
+        // This can already happen if I register a Funq.Container Request Scope type and Resolve it on startup.
+        CreateItems();
+    }
 
-        /// <summary>
-        /// Gets a list of items for this request. 
-        /// </summary>
-        /// <remarks>This list will be cleared on every request and is specific to the original thread that is handling the request.
-        /// If a handler uses additional threads, this data will not be available on those threads.
-        /// </remarks>
-        public virtual IDictionary Items
-        {
-            get => GetItems() ?? CreateItems();
-            set => CreateItems(value);
-        }
+    /// <summary>
+    /// Gets a list of items for this request. 
+    /// </summary>
+    /// <remarks>This list will be cleared on every request and is specific to the original thread that is handling the request.
+    /// If a handler uses additional threads, this data will not be available on those threads.
+    /// </remarks>
+    public virtual IDictionary Items
+    {
+        get => GetItems() ?? CreateItems();
+        set => CreateItems(value);
+    }
 
-        private const string _key = "__Request.Items";
+    private const string _key = "__Request.Items";
 
-        private IDictionary GetItems()
-        {
+    private IDictionary GetItems()
+    {
 #if !NETCORE
             try
             {
@@ -80,12 +80,12 @@ namespace ServiceStack
                 return CallContext.GetData(_key) as IDictionary;
             }
 #else
-            return AsyncRequestItems.Value;
+        return AsyncRequestItems.Value;
 #endif
-        }
+    }
 
-        private IDictionary CreateItems(IDictionary items = null)
-        {
+    private IDictionary CreateItems(IDictionary items = null)
+    {
 #if !NETCORE
             try
             {
@@ -105,69 +105,68 @@ namespace ServiceStack
             }
             return items;
 #else
-            return AsyncRequestItems.Value = items ?? new Dictionary<object, object>();
+        return AsyncRequestItems.Value = items ?? new Dictionary<object, object>();
 #endif
-        }
+    }
 
-        public T GetOrCreate<T>(Func<T> createFn)
-        {
-            if (Items.Contains(typeof(T).Name))
-                return (T)Items[typeof(T).Name];
+    public T GetOrCreate<T>(Func<T> createFn)
+    {
+        if (Items.Contains(typeof(T).Name))
+            return (T)Items[typeof(T).Name];
 
-            return (T)(Items[typeof(T).Name] = createFn());
-        }
+        return (T)(Items[typeof(T).Name] = createFn());
+    }
 
-        public void EndRequest()
-        {
+    public void EndRequest()
+    {
 #if !NETCORE
             if (UseThreadStatic)
                 Items = null;
             else
                 CallContext.FreeNamedDataSlot(_key);
 #else
-            //setting to AsyncLocal.Value to null does not really null it
-            //possible bug in .NET Core
-            AsyncRequestItems.Value?.Clear();
+        //setting to AsyncLocal.Value to null does not really null it
+        //possible bug in .NET Core
+        AsyncRequestItems.Value?.Clear();
 #endif
-        }
+    }
 
-        /// <summary>
-        /// Track any IDisposable's to dispose of at the end of the request in IAppHost.OnEndRequest()
-        /// </summary>
-        /// <param name="instance"></param>
-        public void TrackDisposable(IDisposable instance)
+    /// <summary>
+    /// Track any IDisposable's to dispose of at the end of the request in IAppHost.OnEndRequest()
+    /// </summary>
+    /// <param name="instance"></param>
+    public void TrackDisposable(IDisposable instance)
+    {
+        if (!ServiceStackHost.IsReady()) return;
+        if (instance == null) return;
+        if (instance is IService) return; //IService's are already disposed right after they've been executed
+
+        DisposableTracker disposableTracker = null;
+        if (!Items.Contains(DisposableTracker.HashId))
+            Items[DisposableTracker.HashId] = disposableTracker = new DisposableTracker();
+        if (disposableTracker == null)
+            disposableTracker = (DisposableTracker)Items[DisposableTracker.HashId];
+        disposableTracker.Add(instance);
+    }
+
+    /// <summary>
+    /// Release currently registered dependencies for this request
+    /// </summary>
+    /// <returns>true if any dependencies were released</returns>
+    public bool ReleaseDisposables()
+    {
+        if (!ServiceStackHost.IsReady()) return false;
+        if (!ServiceStackHost.Instance.Config.DisposeDependenciesAfterUse) return false;
+
+        var ctxItems = Instance.Items;
+
+        if (ctxItems[DisposableTracker.HashId] is DisposableTracker disposables)
         {
-            if (!ServiceStackHost.IsReady()) return;
-            if (instance == null) return;
-            if (instance is IService) return; //IService's are already disposed right after they've been executed
-
-            DisposableTracker disposableTracker = null;
-            if (!Items.Contains(DisposableTracker.HashId))
-                Items[DisposableTracker.HashId] = disposableTracker = new DisposableTracker();
-            if (disposableTracker == null)
-                disposableTracker = (DisposableTracker)Items[DisposableTracker.HashId];
-            disposableTracker.Add(instance);
+            disposables.Dispose();
+            ctxItems.Remove(DisposableTracker.HashId);
+            return true;
         }
 
-        /// <summary>
-        /// Release currently registered dependencies for this request
-        /// </summary>
-        /// <returns>true if any dependencies were released</returns>
-        public bool ReleaseDisposables()
-        {
-            if (!ServiceStackHost.IsReady()) return false;
-            if (!ServiceStackHost.Instance.Config.DisposeDependenciesAfterUse) return false;
-
-            var ctxItems = Instance.Items;
-
-            if (ctxItems[DisposableTracker.HashId] is DisposableTracker disposables)
-            {
-                disposables.Dispose();
-                ctxItems.Remove(DisposableTracker.HashId);
-                return true;
-            }
-
-            return false;
-        }
+        return false;
     }
 }

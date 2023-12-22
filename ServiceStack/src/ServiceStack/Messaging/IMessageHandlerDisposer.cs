@@ -1,7 +1,6 @@
-﻿namespace ServiceStack.Messaging
+﻿namespace ServiceStack.Messaging;
+
+public interface IMessageHandlerDisposer
 {
-    public interface IMessageHandlerDisposer
-    {
-        void DisposeMessageHandler(IMessageHandler messageHandler);
-    }
+    void DisposeMessageHandler(IMessageHandler messageHandler);
 }

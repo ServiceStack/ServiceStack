@@ -6,79 +6,78 @@ using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Web;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public class RedisErrorLoggerFeature : IPlugin, Model.IHasStringId
 {
-    public class RedisErrorLoggerFeature : IPlugin, Model.IHasStringId
+    public string Id { get; set; } = Plugins.RedisErrorLogs;
+    private static ILog Log = LogManager.GetLogger(typeof(RedisErrorLoggerFeature));
+
+    private readonly IRedisClientsManager redisManager;
+
+    public RedisErrorLoggerFeature(IRedisClientsManager redisManager)
     {
-        public string Id { get; set; } = Plugins.RedisErrorLogs;
-        private static ILog Log = LogManager.GetLogger(typeof(RedisErrorLoggerFeature));
-
-        private readonly IRedisClientsManager redisManager;
-
-        public RedisErrorLoggerFeature(IRedisClientsManager redisManager)
-        {
-            this.redisManager = redisManager ?? throw new ArgumentNullException(nameof(redisManager));
-        }
-
-        public void Register(IAppHost appHost)
-        {
-            appHost.ServiceExceptionHandlers.Add(HandleServiceException);
-            appHost.UncaughtExceptionHandlers.Add(HandleUncaughtException);
-        }
-
-        /// <summary>
-        /// Service error logs are kept in 'urn:ServiceErrors:{ServiceName}'
-        /// </summary>
-        public const string UrnServiceErrorType = "ServiceErrors";
-
-        /// <summary>
-        /// Combined service error logs are maintained in 'urn:ServiceErrors:All'
-        /// </summary>
-        public const string CombinedServiceLogId = "All";
-
-        public void HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
-        {
-            LogErrorInRedis(operationName, ex);
-        }
-
-        public object HandleServiceException(IRequest httpReq, object request, Exception ex)
-        {
-            LogErrorInRedis(httpReq.OperationName, ex);
-
-            return null;
-        }
-
-        private void LogErrorInRedis(string operationName, Exception ex)
-        {
-            try
-            {
-                //Get a thread-safe redis client from the client manager pool
-                using (var client = redisManager.GetClient())
-                {
-                    //Get a client with a native interface for storing 'ResponseStatus' objects
-                    var redis = client.As<ResponseStatus>();
-
-                    //Store the errors in predictable Redis-named lists i.e. 
-                    //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 
-                    var redisServiceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, operationName)];
-                    var redisCombinedErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, CombinedServiceLogId)];
-
-                    //Append the error at the start of the service-specific and combined error logs.
-                    var responseStatus = ex.ToResponseStatus();
-                    redisServiceErrorList.Prepend(responseStatus);
-                    redisCombinedErrorList.Prepend(responseStatus);
-
-                    //Clip old error logs from the managed logs
-                    const int rollingErrorCount = 1000;
-                    redisServiceErrorList.Trim(0, rollingErrorCount);
-                    redisCombinedErrorList.Trim(0, rollingErrorCount);
-                }
-            }
-            catch (Exception suppressRedisException)
-            {
-                Log.Error("Could not append exception to redis service error logs", suppressRedisException);
-            }
-        }
-
+        this.redisManager = redisManager ?? throw new ArgumentNullException(nameof(redisManager));
     }
+
+    public void Register(IAppHost appHost)
+    {
+        appHost.ServiceExceptionHandlers.Add(HandleServiceException);
+        appHost.UncaughtExceptionHandlers.Add(HandleUncaughtException);
+    }
+
+    /// <summary>
+    /// Service error logs are kept in 'urn:ServiceErrors:{ServiceName}'
+    /// </summary>
+    public const string UrnServiceErrorType = "ServiceErrors";
+
+    /// <summary>
+    /// Combined service error logs are maintained in 'urn:ServiceErrors:All'
+    /// </summary>
+    public const string CombinedServiceLogId = "All";
+
+    public void HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+    {
+        LogErrorInRedis(operationName, ex);
+    }
+
+    public object HandleServiceException(IRequest httpReq, object request, Exception ex)
+    {
+        LogErrorInRedis(httpReq.OperationName, ex);
+
+        return null;
+    }
+
+    private void LogErrorInRedis(string operationName, Exception ex)
+    {
+        try
+        {
+            //Get a thread-safe redis client from the client manager pool
+            using (var client = redisManager.GetClient())
+            {
+                //Get a client with a native interface for storing 'ResponseStatus' objects
+                var redis = client.As<ResponseStatus>();
+
+                //Store the errors in predictable Redis-named lists i.e. 
+                //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 
+                var redisServiceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, operationName)];
+                var redisCombinedErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, CombinedServiceLogId)];
+
+                //Append the error at the start of the service-specific and combined error logs.
+                var responseStatus = ex.ToResponseStatus();
+                redisServiceErrorList.Prepend(responseStatus);
+                redisCombinedErrorList.Prepend(responseStatus);
+
+                //Clip old error logs from the managed logs
+                const int rollingErrorCount = 1000;
+                redisServiceErrorList.Trim(0, rollingErrorCount);
+                redisCombinedErrorList.Trim(0, rollingErrorCount);
+            }
+        }
+        catch (Exception suppressRedisException)
+        {
+            Log.Error("Could not append exception to redis service error logs", suppressRedisException);
+        }
+    }
+
 }

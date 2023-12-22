@@ -5,144 +5,143 @@ using ServiceStack.Text;
 using ServiceStack.Text.Common;
 using ServiceStack.Web;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public class SessionFactory : ISessionFactory
 {
-    public class SessionFactory : ISessionFactory
+    private readonly ICacheClient cacheClient;
+    private readonly ICacheClientAsync cacheClientAsync;
+
+    public SessionFactory(ICacheClient cacheClient)
+        : this(cacheClient, null) {}
+
+    public SessionFactory(ICacheClient cacheClient, ICacheClientAsync cacheClientAsync)
+    {
+        this.cacheClient = cacheClient;
+        this.cacheClientAsync = cacheClientAsync ?? cacheClient.AsAsync();
+    }
+
+    public class SessionCacheClient : ISession
     {
         private readonly ICacheClient cacheClient;
-        private readonly ICacheClientAsync cacheClientAsync;
+        private readonly string prefixNs;
 
-        public SessionFactory(ICacheClient cacheClient)
-            : this(cacheClient, null) {}
-
-        public SessionFactory(ICacheClient cacheClient, ICacheClientAsync cacheClientAsync)
+        public SessionCacheClient(ICacheClient cacheClient, string sessionId)
         {
             this.cacheClient = cacheClient;
-            this.cacheClientAsync = cacheClientAsync ?? cacheClient.AsAsync();
+            this.prefixNs = "sess:" + sessionId + ":";
         }
 
-        public class SessionCacheClient : ISession
+        private string EnsurePrefix(string s) => s != null && !s.StartsWith(prefixNs)
+            ? prefixNs + s
+            : s;
+
+        public object this[string key]
         {
-            private readonly ICacheClient cacheClient;
-            private readonly string prefixNs;
-
-            public SessionCacheClient(ICacheClient cacheClient, string sessionId)
+            get => cacheClient.Get<object>(EnsurePrefix(key));
+            set
             {
-                this.cacheClient = cacheClient;
-                this.prefixNs = "sess:" + sessionId + ":";
-            }
-
-            private string EnsurePrefix(string s) => s != null && !s.StartsWith(prefixNs)
-                ? prefixNs + s
-                : s;
-
-            public object this[string key]
-            {
-                get => cacheClient.Get<object>(EnsurePrefix(key));
-                set
-                {
-                    JsWriter.WriteDynamic(() =>
-                        cacheClient.Set(EnsurePrefix(key), value));
-                }
-            }
-
-            public void Set<T>(string key, T value)
-            {
-                var expiry = HostContext.GetPlugin<SessionFeature>()?.SessionBagExpiry;
-                if (expiry != null)
-                    cacheClient.Set(EnsurePrefix(key), value, expiry.Value);
-                else
-                    cacheClient.Set(EnsurePrefix(key), value);
-            }
-
-            public T Get<T>(string key)
-            {
-                return cacheClient.Get<T>(EnsurePrefix(key));
-            }
-
-            public bool Remove(string key)
-            {
-                return cacheClient.Remove(EnsurePrefix(key));
-            }
-
-            public void RemoveAll()
-            {
-                cacheClient.RemoveByPattern(this.prefixNs + "*");
+                JsWriter.WriteDynamic(() =>
+                    cacheClient.Set(EnsurePrefix(key), value));
             }
         }
 
-        public class SessionCacheClientAsync : ISessionAsync
+        public void Set<T>(string key, T value)
         {
-            private readonly ICacheClientAsync cacheClient;
-            private readonly string prefixNs;
-
-            public SessionCacheClientAsync(ICacheClientAsync cacheClient, string sessionId)
-            {
-                this.cacheClient = cacheClient;
-                this.prefixNs = "sess:" + sessionId + ":";
-            }
-
-            private string EnsurePrefix(string s) => s != null && !s.StartsWith(prefixNs)
-                ? prefixNs + s
-                : s;
-
-            public async Task SetAsync<T>(string key, T value, CancellationToken token=default)
-            {
-                var expiry = HostContext.GetPlugin<SessionFeature>()?.SessionBagExpiry;
-                if (expiry != null)
-                    await cacheClient.SetAsync(EnsurePrefix(key), value, expiry.Value, token).ConfigAwait();
-                else
-                    await cacheClient.SetAsync(EnsurePrefix(key), value, token).ConfigAwait();
-            }
-
-            public Task<T> GetAsync<T>(string key, CancellationToken token=default)
-            {
-                return cacheClient.GetAsync<T>(EnsurePrefix(key), token);
-            }
-
-            public Task<bool> RemoveAsync(string key, CancellationToken token=default)
-            {
-                return cacheClient.RemoveAsync(EnsurePrefix(key), token);
-            }
-
-            public Task RemoveAllAsync(CancellationToken token=default)
-            {
-                return cacheClient.RemoveByPatternAsync(this.prefixNs + "*", token);
-            }
+            var expiry = HostContext.GetPlugin<SessionFeature>()?.SessionBagExpiry;
+            if (expiry != null)
+                cacheClient.Set(EnsurePrefix(key), value, expiry.Value);
+            else
+                cacheClient.Set(EnsurePrefix(key), value);
         }
 
-        public ISession GetOrCreateSession(IRequest httpReq, IResponse httpRes)
+        public T Get<T>(string key)
         {
-            var sessionId = httpReq.GetSessionId() ?? httpRes.CreateSessionIds(httpReq);
-            return new SessionCacheClient(cacheClient, sessionId);
+            return cacheClient.Get<T>(EnsurePrefix(key));
         }
 
-        public ISessionAsync GetOrCreateSessionAsync(IRequest httpReq, IResponse httpRes)
+        public bool Remove(string key)
         {
-            var sessionId = httpReq.GetSessionId() ?? httpRes.CreateSessionIds(httpReq);
-            return new SessionCacheClientAsync(cacheClientAsync, sessionId);
+            return cacheClient.Remove(EnsurePrefix(key));
         }
 
-        public ISession GetOrCreateSession()
+        public void RemoveAll()
         {
-            var request = HostContext.GetCurrentRequest();
-            return GetOrCreateSession(request, request.Response);
+            cacheClient.RemoveByPattern(this.prefixNs + "*");
+        }
+    }
+
+    public class SessionCacheClientAsync : ISessionAsync
+    {
+        private readonly ICacheClientAsync cacheClient;
+        private readonly string prefixNs;
+
+        public SessionCacheClientAsync(ICacheClientAsync cacheClient, string sessionId)
+        {
+            this.cacheClient = cacheClient;
+            this.prefixNs = "sess:" + sessionId + ":";
         }
 
-        public ISessionAsync GetOrCreateSessionAsync()
+        private string EnsurePrefix(string s) => s != null && !s.StartsWith(prefixNs)
+            ? prefixNs + s
+            : s;
+
+        public async Task SetAsync<T>(string key, T value, CancellationToken token=default)
         {
-            var request = HostContext.GetCurrentRequest();
-            return GetOrCreateSessionAsync(request, request.Response);
+            var expiry = HostContext.GetPlugin<SessionFeature>()?.SessionBagExpiry;
+            if (expiry != null)
+                await cacheClient.SetAsync(EnsurePrefix(key), value, expiry.Value, token).ConfigAwait();
+            else
+                await cacheClient.SetAsync(EnsurePrefix(key), value, token).ConfigAwait();
         }
 
-        public ISession CreateSession(string sessionId)
+        public Task<T> GetAsync<T>(string key, CancellationToken token=default)
         {
-            return new SessionCacheClient(cacheClient, sessionId);
+            return cacheClient.GetAsync<T>(EnsurePrefix(key), token);
         }
 
-        public ISessionAsync CreateSessionAsync(string sessionId)
+        public Task<bool> RemoveAsync(string key, CancellationToken token=default)
         {
-            return new SessionCacheClientAsync(cacheClientAsync, sessionId);
+            return cacheClient.RemoveAsync(EnsurePrefix(key), token);
         }
+
+        public Task RemoveAllAsync(CancellationToken token=default)
+        {
+            return cacheClient.RemoveByPatternAsync(this.prefixNs + "*", token);
+        }
+    }
+
+    public ISession GetOrCreateSession(IRequest httpReq, IResponse httpRes)
+    {
+        var sessionId = httpReq.GetSessionId() ?? httpRes.CreateSessionIds(httpReq);
+        return new SessionCacheClient(cacheClient, sessionId);
+    }
+
+    public ISessionAsync GetOrCreateSessionAsync(IRequest httpReq, IResponse httpRes)
+    {
+        var sessionId = httpReq.GetSessionId() ?? httpRes.CreateSessionIds(httpReq);
+        return new SessionCacheClientAsync(cacheClientAsync, sessionId);
+    }
+
+    public ISession GetOrCreateSession()
+    {
+        var request = HostContext.GetCurrentRequest();
+        return GetOrCreateSession(request, request.Response);
+    }
+
+    public ISessionAsync GetOrCreateSessionAsync()
+    {
+        var request = HostContext.GetCurrentRequest();
+        return GetOrCreateSessionAsync(request, request.Response);
+    }
+
+    public ISession CreateSession(string sessionId)
+    {
+        return new SessionCacheClient(cacheClient, sessionId);
+    }
+
+    public ISessionAsync CreateSessionAsync(string sessionId)
+    {
+        return new SessionCacheClientAsync(cacheClientAsync, sessionId);
     }
 }

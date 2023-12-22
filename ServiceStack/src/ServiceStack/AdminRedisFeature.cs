@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 
 namespace ServiceStack;
 

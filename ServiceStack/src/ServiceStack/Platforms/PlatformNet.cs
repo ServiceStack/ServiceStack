@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Platforms
+namespace ServiceStack.Platforms;
+
+public partial class PlatformNet : Platform
 {
-    public partial class PlatformNet : Platform
-    {
-    }
 }
 
 #endif

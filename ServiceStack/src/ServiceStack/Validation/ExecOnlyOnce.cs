@@ -1,63 +1,62 @@
 ﻿using System;
 using ServiceStack.Redis;
 
-namespace ServiceStack.Validation
+namespace ServiceStack.Validation;
+
+public class ExecOnceOnly : IDisposable
 {
-    public class ExecOnceOnly : IDisposable
+    private const string Flag = "Y";
+
+    private readonly string hashKey;
+
+    private readonly string correlationId;
+
+    private readonly IRedisClient redis;
+
+    public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, string correlationId)
+        : this(redisManager, "hash:nx:" + forType.GetOperationName(), correlationId) { }
+
+    public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, Guid? correlationId)
+        : this(redisManager, "hash:nx:" + forType.GetOperationName(), correlationId?.ToString("N")) { }
+
+    public ExecOnceOnly(IRedisClientsManager redisManager, string hashKey, string correlationId)
     {
-        private const string Flag = "Y";
+        redisManager.ThrowIfNull("redisManager");
+        hashKey.ThrowIfNull("hashKey");
 
-        private readonly string hashKey;
+        this.hashKey = hashKey;
+        this.correlationId = correlationId;
 
-        private readonly string correlationId;
-
-        private readonly IRedisClient redis;
-
-        public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, string correlationId)
-            : this(redisManager, "hash:nx:" + forType.GetOperationName(), correlationId) { }
-
-        public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, Guid? correlationId)
-            : this(redisManager, "hash:nx:" + forType.GetOperationName(), correlationId?.ToString("N")) { }
-
-        public ExecOnceOnly(IRedisClientsManager redisManager, string hashKey, string correlationId)
+        if (correlationId != null)
         {
-            redisManager.ThrowIfNull("redisManager");
-            hashKey.ThrowIfNull("hashKey");
-
-            this.hashKey = hashKey;
-            this.correlationId = correlationId;
-
-            if (correlationId != null)
-            {
-                redis = redisManager.GetClient();
-                var exists = !redis.SetEntryInHashIfNotExists(hashKey, correlationId, Flag);
-                if (exists)
-                    throw HttpError.Conflict(ErrorMessages.RequestAlreadyProcessedFmt.LocalizeFmt(correlationId.SafeInput()));
-            }
+            redis = redisManager.GetClient();
+            var exists = !redis.SetEntryInHashIfNotExists(hashKey, correlationId, Flag);
+            if (exists)
+                throw HttpError.Conflict(ErrorMessages.RequestAlreadyProcessedFmt.LocalizeFmt(correlationId.SafeInput()));
         }
+    }
 
-        public bool Executed { get; private set; }
+    public bool Executed { get; private set; }
 
-        public void Commit()
+    public void Commit()
+    {
+        this.Executed = true;
+    }
+
+    public void Rollback()
+    {
+        if (redis == null) return;
+
+        redis.RemoveEntryFromHash(hashKey, correlationId);
+        this.Executed = false;
+    }
+
+    public void Dispose()
+    {
+        if (correlationId != null && !Executed)
         {
-            this.Executed = true;
+            Rollback();
         }
-
-        public void Rollback()
-        {
-            if (redis == null) return;
-
-            redis.RemoveEntryFromHash(hashKey, correlationId);
-            this.Executed = false;
-        }
-
-        public void Dispose()
-        {
-            if (correlationId != null && !Executed)
-            {
-                Rollback();
-            }
-            redis?.Dispose(); //release back into the pool.
-        }
+        redis?.Dispose(); //release back into the pool.
     }
 }

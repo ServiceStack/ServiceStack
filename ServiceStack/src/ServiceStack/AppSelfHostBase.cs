@@ -6,19 +6,18 @@
 using System;
 using System.Reflection;
 
-namespace ServiceStack 
+namespace ServiceStack; 
+
+public abstract class AppSelfHostBase : AppHostHttpListenerPoolBase
 {
-    public abstract class AppSelfHostBase : AppHostHttpListenerPoolBase
-    {
-        protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices) 
-            : base(serviceName, assembliesWithServices) { }
-        
-        protected AppSelfHostBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices) 
-            : base(serviceName, handlerPath, assembliesWithServices) { }
-        
-        protected AppSelfHostBase(string serviceName, params Type[] serviceTypes) 
-            : base(serviceName, serviceTypes) { }
-    }
+    protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices) 
+        : base(serviceName, assembliesWithServices) { }
+    
+    protected AppSelfHostBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices) 
+        : base(serviceName, handlerPath, assembliesWithServices) { }
+    
+    protected AppSelfHostBase(string serviceName, params Type[] serviceTypes) 
+        : base(serviceName, serviceTypes) { }
 }
 
 #endif

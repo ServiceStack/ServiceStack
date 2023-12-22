@@ -9,113 +9,112 @@ using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
-namespace ServiceStack.Testing
+namespace ServiceStack.Testing;
+
+public class MockHttpResponse : IHttpResponse, IHasHeaders
 {
-    public class MockHttpResponse : IHttpResponse, IHasHeaders
+    public MockHttpResponse(IRequest request = null)
     {
-        public MockHttpResponse(IRequest request = null)
-        {
-            this.Request = request;
-            this.Headers = new Dictionary<string, string>();
-            this.OutputStream = new MemoryStream();
-            this.TextWritten = new StringBuilder();
-            this.Cookies = HostContext.AssertAppHost().GetCookies(this);
-            this.Items = new Dictionary<string, object>();
-        }
+        this.Request = request;
+        this.Headers = new Dictionary<string, string>();
+        this.OutputStream = new MemoryStream();
+        this.TextWritten = new StringBuilder();
+        this.Cookies = HostContext.AssertAppHost().GetCookies(this);
+        this.Items = new Dictionary<string, object>();
+    }
 
-        public IRequest Request { get; private set; }
-        public object OriginalResponse { get; private set; }
-        public int StatusCode { set; get; }
-        public string StatusDescription { set; get; }
-        public string ContentType { get; set; }
+    public IRequest Request { get; private set; }
+    public object OriginalResponse { get; private set; }
+    public int StatusCode { set; get; }
+    public string StatusDescription { set; get; }
+    public string ContentType { get; set; }
 
-        public StringBuilder TextWritten { get; set; }
+    public StringBuilder TextWritten { get; set; }
 
-        public Dictionary<string, string> Headers { get; }
+    public Dictionary<string, string> Headers { get; }
 
-        public ICookies Cookies { get; set; }
+    public ICookies Cookies { get; set; }
 
-        public void AddHeader(string name, string value)
-        {
-            this.Headers.Add(name, value);
-        }
+    public void AddHeader(string name, string value)
+    {
+        this.Headers.Add(name, value);
+    }
 
-        public void RemoveHeader(string name)
-        {
-            Headers.Remove(name);
-        }
+    public void RemoveHeader(string name)
+    {
+        Headers.Remove(name);
+    }
 
-        public string GetHeader(string name)
-        {
-            return this.Headers[name];
-        }
+    public string GetHeader(string name)
+    {
+        return this.Headers[name];
+    }
 
-        public void Redirect(string url)
-        {
-            this.Headers.Add(HttpHeaders.Location, url.MapServerPath());
-        }
+    public void Redirect(string url)
+    {
+        this.Headers.Add(HttpHeaders.Location, url.MapServerPath());
+    }
 
-        public Stream OutputStream { get; }
+    public Stream OutputStream { get; }
 
-        public object Dto { get; set; }
+    public object Dto { get; set; }
 
-        public bool UseBufferedStream { get; set; }
+    public bool UseBufferedStream { get; set; }
 
-        public void Close()
-        {
-            this.IsClosed = true;
-        }
+    public void Close()
+    {
+        this.IsClosed = true;
+    }
 
-        public Task CloseAsync(CancellationToken token = default(CancellationToken))
-        {
-            Close();
-            return TypeConstants.EmptyTask;
-        }
+    public Task CloseAsync(CancellationToken token = default(CancellationToken))
+    {
+        Close();
+        return TypeConstants.EmptyTask;
+    }
 
-        public void End()
-        {
-            Close();
-        }
+    public void End()
+    {
+        Close();
+    }
 
-        public void Flush()
-        {
-            OutputStream.Flush();
-        }
+    public void Flush()
+    {
+        OutputStream.Flush();
+    }
 
-        public Task FlushAsync(CancellationToken token = default(CancellationToken)) => OutputStream.FlushAsync(token);
+    public Task FlushAsync(CancellationToken token = default(CancellationToken)) => OutputStream.FlushAsync(token);
 
-        public string ReadAsString()
-        {
-            if (!IsClosed) this.OutputStream.Seek(0, SeekOrigin.Begin);
-            return ((MemoryStream) OutputStream).ReadToEnd();
-        }
+    public string ReadAsString()
+    {
+        if (!IsClosed) this.OutputStream.Seek(0, SeekOrigin.Begin);
+        return ((MemoryStream) OutputStream).ReadToEnd();
+    }
 
-        public byte[] ReadAsBytes()
-        {
-            if (!IsClosed) this.OutputStream.Seek(0, SeekOrigin.Begin);
-            var ms = (MemoryStream)this.OutputStream;
-            return ms.ToArray();
-        }
+    public byte[] ReadAsBytes()
+    {
+        if (!IsClosed) this.OutputStream.Seek(0, SeekOrigin.Begin);
+        var ms = (MemoryStream)this.OutputStream;
+        return ms.ToArray();
+    }
 
-        public bool IsClosed { get; private set; }
+    public bool IsClosed { get; private set; }
 
-        public void SetContentLength(long contentLength)
-        {
-            Headers[HttpHeaders.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
-        }
+    public void SetContentLength(long contentLength)
+    {
+        Headers[HttpHeaders.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
+    }
 
-        public bool KeepAlive { get; set; }
+    public bool KeepAlive { get; set; }
 
-        public bool HasStarted { get; set; }
+    public bool HasStarted { get; set; }
 
-        public Dictionary<string, object> Items { get; }
+    public Dictionary<string, object> Items { get; }
 
-        public void SetCookie(Cookie cookie)
-        {            
-        }
+    public void SetCookie(Cookie cookie)
+    {            
+    }
 
-        public void ClearCookies()
-        {
-        }
+    public void ClearCookies()
+    {
     }
 }

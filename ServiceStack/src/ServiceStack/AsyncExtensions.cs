@@ -2,81 +2,80 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+internal static class AsyncExtensions
 {
-    internal static class AsyncExtensions
+    //http://bradwilson.typepad.com/blog/2012/04/tpl-and-servers-pt3.html
+    public static Task<TOut> Continue<TOut>(
+        this Task task,
+        Func<Task, TOut> next)
     {
-        //http://bradwilson.typepad.com/blog/2012/04/tpl-and-servers-pt3.html
-        public static Task<TOut> Continue<TOut>(
-            this Task task,
-            Func<Task, TOut> next)
+        if (task.IsCompleted)
         {
-            if (task.IsCompleted)
+            var tcs = new TaskCompletionSource<TOut>();
+
+            try
             {
-                var tcs = new TaskCompletionSource<TOut>();
-
-                try
-                {
-                    var res = next(task);
-                    tcs.TrySetResult(res);
-                }
-                catch (Exception ex)
-                {
-                    tcs.TrySetException(ex);
-                }
-
-                return tcs.Task;
+                var res = next(task);
+                tcs.TrySetResult(res);
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
             }
 
-            return ContinueClosure(task, next);
+            return tcs.Task;
         }
 
-        static Task<TOut> ContinueClosure<TOut>(
-                Task task,
-                Func<Task, TOut> next)
-        {
-            var ctxt = SynchronizationContext.Current;
-            return task.ContinueWith(innerTask =>
-            {
-                var tcs = new TaskCompletionSource<TOut>();
+        return ContinueClosure(task, next);
+    }
 
-                try
+    static Task<TOut> ContinueClosure<TOut>(
+        Task task,
+        Func<Task, TOut> next)
+    {
+        var ctxt = SynchronizationContext.Current;
+        return task.ContinueWith(innerTask =>
+        {
+            var tcs = new TaskCompletionSource<TOut>();
+
+            try
+            {
+                if (ctxt != null)
                 {
-                    if (ctxt != null)
+                    ctxt.Post(state =>
                     {
-                        ctxt.Post(state =>
+                        try
                         {
-                            try
-                            {
-                                var res = next(innerTask);
-                                tcs.TrySetResult(res);
-                            }
-                            catch (Exception ex)
-                            {
-                                tcs.TrySetException(ex);
-                            }
-                        }, state: null);
+                            var res = next(innerTask);
+                            tcs.TrySetResult(res);
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.TrySetException(ex);
+                        }
+                    }, state: null);
+                }
+                else
+                {
+                    var res = next(innerTask);
+                    if (res is Task t && t.IsFaulted)
+                    {
+                        tcs.TrySetException(t.Exception);
                     }
                     else
                     {
-                        var res = next(innerTask);
-                        if (res is Task t && t.IsFaulted)
-                        {
-                            tcs.TrySetException(t.Exception);
-                        }
-                        else
-                        {
-                            tcs.TrySetResult(res);
-                        }
+                        tcs.TrySetResult(res);
                     }
                 }
-                catch (Exception ex)
-                {
-                    tcs.TrySetException(ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
 
-                return tcs.Task;
-            }).Unwrap();
-        }
+            return tcs.Task;
+        }).Unwrap();
     }
 }

@@ -1,9 +1,8 @@
-namespace ServiceStack
+namespace ServiceStack;
+
+public enum RequestFilterPriority : int
 {
-    public enum RequestFilterPriority : int
-    {
-        Authenticate = -100,
-        RequiredRole = -90,
-        RequiredPermission = -80,
-    }
+    Authenticate = -100,
+    RequiredRole = -90,
+    RequiredPermission = -80,
 }
