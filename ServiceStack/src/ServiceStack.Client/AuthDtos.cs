@@ -48,8 +48,13 @@ public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IH
 }
 
 [ExcludeMetadata]
-[Route("/auth/logout","GET,POST")]
-public class AuthenticateLogout : IReturn<AuthenticateResponse>  {}
+[Tag(TagNames.Auth), Api("Sign Out")]
+[DataContract]
+[Route("/auth/logout", "GET,POST")]
+public class AuthenticateLogout : IPost, IReturn<AuthenticateResponse>
+{
+    [DataMember(Order = 1)] public string ReturnUrl { get; set; }
+}
 
 [Tag(TagNames.Auth), Api("Sign Up")]
 [DataContract]
