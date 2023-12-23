@@ -93,10 +93,13 @@ public class NetCoreResponse : IHttpResponse, IHasHeaders
             : null;
     }
 
+    public bool KeepOpen { get; set; }
     bool closed = false;
 
     public void Close()
     {
+        if (KeepOpen) return;
+        
         if (closed) return;
         closed = true;
         try
@@ -113,6 +116,8 @@ public class NetCoreResponse : IHttpResponse, IHasHeaders
 
     public async Task CloseAsync(CancellationToken token = default)
     {
+        if (KeepOpen) return;
+
         if (!closed)
         {
             closed = true;
