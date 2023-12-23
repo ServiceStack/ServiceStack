@@ -14,6 +14,13 @@ using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;
 using ServiceStack.Web;
 
+#if NET8_0_OR_GREATER
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+#endif
+
 namespace ServiceStack;
 
 public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
@@ -106,14 +113,60 @@ public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
     public void Register(IAppHost appHost)
     {
-        appHost.CatchAllHandlers.Add(ProcessRequest);
-
         if (EnableNav)
         {
             ViewUtils.Load(appHost.AppSettings);
         }
 
         appHost.RegisterServices(ServiceRoutes);
+
+        appHost.CatchAllHandlers.Add(ProcessRequest);
+        
+#if NET8_0_OR_GREATER
+        var host = (AppHostBase)appHost;
+        host.MapEndpoints(routeBuilder =>
+        {
+            var tag = GetType().Name;
+            routeBuilder.MapGet("/metadata", httpContext => httpContext.ProcessRequestAsync(new IndexMetadataHandler()))
+                .WithMetadata<string>(name:nameof(IndexMetadataHandler), tag:tag, contentType:MimeTypes.Html);
+            
+            routeBuilder.MapGet("/json/metadata", httpContext => httpContext.ProcessRequestAsync(new JsonMetadataHandler()))
+                .WithMetadata<string>(name:nameof(JsonMetadataHandler), tag:tag, contentType:MimeTypes.Html);
+            
+            routeBuilder.MapGet("/xml/metadata", httpContext => httpContext.ProcessRequestAsync(new XmlMetadataHandler()))
+                .WithMetadata<string>(name:nameof(XmlMetadataHandler), tag:tag, contentType:MimeTypes.Html);
+            
+            routeBuilder.MapGet("/jsv/metadata", httpContext => httpContext.ProcessRequestAsync(new JsvMetadataHandler()))
+                .WithMetadata<string>(name:nameof(JsvMetadataHandler), tag:tag, contentType:MimeTypes.Html);
+
+            var operationsHandler = new CustomResponseHandler((httpReq, httpRes) =>
+                HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes)
+                    ? HostContext.Metadata.GetOperationDtos()
+                    : null, "Operations Metadata");
+            
+            routeBuilder.MapGet("/operations/metadata", httpContext => httpContext.ProcessRequestAsync(operationsHandler))
+                .WithMetadata<List<OperationDto>>(name:"Operations Metadata", tag:tag, contentType:MimeTypes.Json);
+            routeBuilder.MapGet("/operations/metadata.{format}", (string format, HttpContext httpContext) => {
+                    return httpContext.ProcessRequestAsync(operationsHandler, 
+                        configure:req => req.ResponseContentType = HostContext.ContentTypes.GetFormatContentType(format));
+                })
+                .WithMetadata<string>(name:"Operations Metadata format", tag:tag);
+            
+            routeBuilder.MapGet("/{format}/metadata", (string format, HttpContext httpContext) =>
+                {
+                    if (format.IndexOf(' ') >= 0)
+                        format = format.Replace(' ', '+'); //Convert 'x-custom csv' -> 'x-custom+csv'
+                    if (appHost.ContentTypes.ContentTypeFormats.TryGetValue(format, out var contentType))
+                    {
+                        format = ContentFormat.GetContentFormat(contentType);
+                        return httpContext.ProcessRequestAsync(new CustomMetadataHandler(contentType, format));
+                    }
+                    return Task.CompletedTask;
+                })
+                .WithMetadata<string>(name:nameof(CustomMetadataHandler), tag:tag, contentType:MimeTypes.Html);
+        });
+#endif
+        
     }
 
     public virtual IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
