@@ -12,17 +12,10 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Host;
 
-public class Cookies : ICookies
+public class Cookies(IHttpResponse httpRes) : ICookies
 {
     public static DateTime PermanentCookieExpiry { get; set; } = DateTime.UtcNow.AddYears(20);
     public const string RootPath = "/";
-
-    readonly IHttpResponse httpRes;
-
-    public Cookies(IHttpResponse httpRes)
-    {
-        this.httpRes = httpRes;
-    }
 
     public List<Cookie> Collection { get; set; } = new();
 

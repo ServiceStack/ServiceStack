@@ -25,30 +25,21 @@ public class HtmlTextFragment : IHtmlModuleFragment
         await responseStream.WriteAsync(TextUtf8, token).ConfigAwait();
 }
 
-public class HtmlTokenFragment : IHtmlModuleFragment
+public class HtmlTokenFragment(string token, Func<HtmlModuleContext, ReadOnlyMemory<byte>> fn)
+    : IHtmlModuleFragment
 {
-    public string Token { get; }
-    private readonly Func<HtmlModuleContext, ReadOnlyMemory<byte>> fn;
-    public HtmlTokenFragment(string token, Func<HtmlModuleContext, ReadOnlyMemory<byte>> fn)
-    {
-        this.Token = token;
-        this.fn = fn;
-    }
+    public string Token { get; } = token;
+
     public async Task WriteToAsync(HtmlModuleContext ctx, Stream responseStream, CancellationToken token = default) => 
         await responseStream.WriteAsync(fn(ctx), token).ConfigAwait();
 }
 
-public class HtmlHandlerFragment : IHtmlModuleFragment
+public class HtmlHandlerFragment(string token, string args, Func<HtmlModuleContext, string, ReadOnlyMemory<byte>> fn)
+    : IHtmlModuleFragment
 {
-    public string Token { get; }
-    public string Args { get; }
-    private readonly Func<HtmlModuleContext, string, ReadOnlyMemory<byte>> fn;
-    public HtmlHandlerFragment(string token, string args, Func<HtmlModuleContext, string, ReadOnlyMemory<byte>> fn)
-    {
-        this.Token = token;
-        this.Args = args;
-        this.fn = fn;
-    }
+    public string Token { get; } = token;
+    public string Args { get; } = args;
+
     public async Task WriteToAsync(HtmlModuleContext ctx, Stream responseStream, CancellationToken token = default) => 
         await responseStream.WriteAsync(fn(ctx, Args), token).ConfigAwait();
 }

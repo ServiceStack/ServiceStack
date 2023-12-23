@@ -211,4 +211,9 @@ public static class AppHostExtensions
     }
 
     public static bool IsRunAsAppTask(this IAppHost appHost) => AppTasks.IsRunAsAppTask();
+
+    public static string GetOperationName(this ServiceStack.Host.Handlers.IServiceStackHandler handler)
+    {
+        return handler.RequestName;
+    }
 }

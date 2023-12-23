@@ -4,56 +4,55 @@ using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Web;
 
-namespace ServiceStack.Host
+namespace ServiceStack.Host;
+
+public delegate void RouteNamingConventionDelegate(IServiceRoutes routes, Type requestType, string allowedVerbs);
+
+public static class RouteNamingConvention
 {
-    public delegate void RouteNamingConventionDelegate(IServiceRoutes routes, Type requestType, string allowedVerbs);
+    private const int AutoGenPriority = -1;
 
-    public static class RouteNamingConvention
+    public static readonly List<string> AttributeNamesToMatch = new[] {
+        nameof(PrimaryKeyAttribute),
+    }.ToList();
+
+    public static readonly List<string> PropertyNamesToMatch = new[] {
+        IdUtils.IdField,
+        "IDs",
+    }.ToList();
+
+    public static void WithRequestDtoName(IServiceRoutes routes, Type requestType, string allowedVerbs)
     {
-        private const int AutoGenPriority = -1;
+        routes.Add(requestType, restPath: $"/{requestType.GetOperationName()}", verbs: allowedVerbs, priority: AutoGenPriority);
+    }
 
-        public static readonly List<string> AttributeNamesToMatch = new[] {
-            nameof(PrimaryKeyAttribute),
-		}.ToList();
+    public static void WithMatchingAttributes(IServiceRoutes routes, Type requestType, string allowedVerbs)
+    {
+        var membersWithAttribute = (from p in requestType.GetPublicProperties()
+            let attributes = p.AllAttributes<Attribute>()
+            where attributes.Any(a => AttributeNamesToMatch.Contains(a.GetType().GetOperationName()))
+            select $"{{{p.Name}}}").ToList();
 
-        public static readonly List<string> PropertyNamesToMatch = new[] {
-            IdUtils.IdField,
-            "IDs",
-        }.ToList();
+        if (membersWithAttribute.Count == 0) return;
 
-        public static void WithRequestDtoName(IServiceRoutes routes, Type requestType, string allowedVerbs)
-        {
-            routes.Add(requestType, restPath: $"/{requestType.GetOperationName()}", verbs: allowedVerbs, priority: AutoGenPriority);
-        }
+        membersWithAttribute.Insert(0, $"/{requestType.GetOperationName()}");
 
-        public static void WithMatchingAttributes(IServiceRoutes routes, Type requestType, string allowedVerbs)
-        {
-            var membersWithAttribute = (from p in requestType.GetPublicProperties()
-                                        let attributes = p.AllAttributes<Attribute>()
-                                        where attributes.Any(a => AttributeNamesToMatch.Contains(a.GetType().GetOperationName()))
-                                        select $"{{{p.Name}}}").ToList();
+        var restPath = membersWithAttribute.Join("/");
+        routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);
+    }
 
-            if (membersWithAttribute.Count == 0) return;
+    public static void WithMatchingPropertyNames(IServiceRoutes routes, Type requestType, string allowedVerbs)
+    {
+        var membersWithName = (from property in requestType.GetPublicProperties().Select(p => p.Name)
+            from name in PropertyNamesToMatch
+            where property.Equals(name, StringComparison.OrdinalIgnoreCase)
+            select $"{{{property}}}").ToList();
 
-            membersWithAttribute.Insert(0, $"/{requestType.GetOperationName()}");
+        if (membersWithName.Count == 0) return;
 
-            var restPath = membersWithAttribute.Join("/");
-            routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);
-        }
+        membersWithName.Insert(0, $"/{requestType.GetOperationName()}");
 
-        public static void WithMatchingPropertyNames(IServiceRoutes routes, Type requestType, string allowedVerbs)
-        {
-            var membersWithName = (from property in requestType.GetPublicProperties().Select(p => p.Name)
-                                   from name in PropertyNamesToMatch
-                                   where property.Equals(name, StringComparison.OrdinalIgnoreCase)
-                                   select $"{{{property}}}").ToList();
-
-            if (membersWithName.Count == 0) return;
-
-            membersWithName.Insert(0, $"/{requestType.GetOperationName()}");
-
-            var restPath = membersWithName.Join("/");
-            routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);
-        }
+        var restPath = membersWithName.Join("/");
+        routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);
     }
 }

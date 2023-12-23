@@ -12,10 +12,9 @@ namespace ServiceStack.HtmlModules;
 /// &lt;!--files:components/*.html--&gt; or /*files:components/*.css*/
 /// &lt;!--files:/dir/components/*.html--&gt; or /*files:/dir/*.css*/
 /// </summary>
-public class FilesHandler : IHtmlModulesHandler
+public class FilesHandler(string name) : IHtmlModulesHandler
 {
-    public string Name { get; }
-    public FilesHandler(string name) => Name = name;
+    public string Name { get; } = name;
     public Func<HtmlModuleContext,IVirtualPathProvider>? VirtualFilesResolver { get; set; }
     public Func<IVirtualFile, string>? Header { get; set; }
     public Func<IVirtualFile, string>? Footer { get; set; }

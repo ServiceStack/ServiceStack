@@ -2,56 +2,55 @@
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
-namespace ServiceStack.Host.Handlers
+namespace ServiceStack.Host.Handlers;
+
+public class CustomResponseHandler : HttpAsyncTaskHandler
 {
-    public class CustomResponseHandler : HttpAsyncTaskHandler
+    public Func<IRequest, IResponse, object> Action { get; set; }
+
+    public CustomResponseHandler(Func<IRequest, IResponse, object> action, string operationName = null)
     {
-        public Func<IRequest, IResponse, object> Action { get; set; }
-
-        public CustomResponseHandler(Func<IRequest, IResponse, object> action, string operationName = null)
-        {
-            Action = action ?? throw new ArgumentNullException(nameof(action));
-            RequestName = operationName ?? "CustomResponse";
-        }
-
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
-        {
-            if (Action == null)
-                throw new Exception("Action was not supplied to ActionHandler");
-
-            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
-                return;
-
-            httpReq.OperationName ??= RequestName;
-
-            var response = Action(httpReq, httpRes);
-            httpRes.WriteToResponse(httpReq, response);
-        }
+        Action = action ?? throw new ArgumentNullException(nameof(action));
+        RequestName = operationName ?? "CustomResponse";
     }
 
-    public class CustomResponseHandlerAsync : HttpAsyncTaskHandler
+    public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
     {
-        public Func<IRequest, IResponse, Task<object>> Action { get; set; }
+        if (Action == null)
+            throw new Exception("Action was not supplied to ActionHandler");
 
-        public CustomResponseHandlerAsync(Func<IRequest, IResponse, Task<object>> action, string operationName = null)
-        {
-            Action = action ?? throw new ArgumentNullException(nameof(action));
-            RequestName = operationName ?? "CustomResponse";
-        }
+        if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+            return;
 
-        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
-        {
-            if (Action == null)
-                throw new Exception("Action was not supplied to ActionHandler");
+        httpReq.OperationName ??= RequestName;
 
-            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
-                return;
+        var response = Action(httpReq, httpRes);
+        httpRes.WriteToResponse(httpReq, response);
+    }
+}
 
-            if (httpReq.OperationName == null)
-                httpReq.OperationName = RequestName;
+public class CustomResponseHandlerAsync : HttpAsyncTaskHandler
+{
+    public Func<IRequest, IResponse, Task<object>> Action { get; set; }
 
-            var response = await Action(httpReq, httpRes);
-            await httpRes.WriteToResponse(httpReq, response);
-        }
+    public CustomResponseHandlerAsync(Func<IRequest, IResponse, Task<object>> action, string operationName = null)
+    {
+        Action = action ?? throw new ArgumentNullException(nameof(action));
+        RequestName = operationName ?? "CustomResponse";
+    }
+
+    public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+    {
+        if (Action == null)
+            throw new Exception("Action was not supplied to ActionHandler");
+
+        if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+            return;
+
+        if (httpReq.OperationName == null)
+            httpReq.OperationName = RequestName;
+
+        var response = await Action(httpReq, httpRes);
+        await httpRes.WriteToResponse(httpReq, response);
     }
 }

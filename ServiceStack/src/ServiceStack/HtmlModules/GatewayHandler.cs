@@ -10,10 +10,9 @@ namespace ServiceStack.HtmlModules;
 /// Invoke gateway response and return result as JSON, e.g:
 /// /*gateway:window.ARG=MyRequest({arg:1})*/
 /// </summary>
-public class GatewayHandler : IHtmlModulesHandler
+public class GatewayHandler(string name) : IHtmlModulesHandler
 {
-    public string Name { get; }
-    public GatewayHandler(string name) => Name = name;
+    public string Name { get; } = name;
 
     public Func<IRequest, IServiceGateway> ServiceGatewayFactory { get; set; } = req => new InProcessServiceGateway(req);
 

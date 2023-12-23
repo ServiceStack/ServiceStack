@@ -33,14 +33,12 @@ public abstract class HtmlModuleBlock
     public virtual string? Transform(string block) => block;
 }
 
-public class RawBlock : HtmlModuleBlock
-{
-    public RawBlock(string startTag, string endTag, Run behaviour = Run.Always) : base(startTag, endTag, behaviour) {}
-}
+public class RawBlock(string startTag, string endTag, Run behaviour = Run.Always)
+    : HtmlModuleBlock(startTag, endTag, behaviour);
 
-public class RemoveBlock : HtmlModuleBlock
+public class RemoveBlock(string startTag, string endTag, Run behaviour = Run.Always)
+    : HtmlModuleBlock(startTag, endTag, behaviour)
 {
-    public RemoveBlock(string startTag, string endTag, Run behaviour = Run.Always) : base(startTag, endTag, behaviour) {}
     public override string? Transform(string block) => null;
 }
 

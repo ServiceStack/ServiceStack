@@ -1,9 +1,8 @@
 using System.IO;
 
-namespace ServiceStack.Host
+namespace ServiceStack.Host;
+
+public interface IHasBufferedStream
 {
-    public interface IHasBufferedStream
-    {
-        MemoryStream BufferedStream { get; }
-    }
+    MemoryStream BufferedStream { get; }
 }

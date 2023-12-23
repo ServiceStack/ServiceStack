@@ -5,105 +5,96 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
-namespace ServiceStack.Host
+namespace ServiceStack.Host;
+
+public class HttpResponseStreamWrapper(Stream stream, IRequest request) : IHttpResponse, IHasHeaders
 {
-    public class HttpResponseStreamWrapper : IHttpResponse, IHasHeaders
+    public Dictionary<string, string> Headers { get; set; } = new();
+
+    public object OriginalResponse => null;
+
+    public IRequest Request { get; } = request;
+
+    public int StatusCode { set; get; }
+    public string StatusDescription { set; get; }
+    public string ContentType { get; set; }
+    public bool KeepOpen { get; set; }
+    public ICookies Cookies { get; set; }
+
+    public void AddHeader(string name, string value)
     {
-        public HttpResponseStreamWrapper(Stream stream, IRequest request)
-        {
-            this.OutputStream = stream;
-            this.Request = request;
-            this.Headers = new Dictionary<string, string>();
-            this.Items = new Dictionary<string, object>();
-        }
+        this.Headers[name] = value;
+    }
 
-        public Dictionary<string, string> Headers { get; set; }
+    public void RemoveHeader(string name)
+    {
+        this.Headers.Remove(name);
+    }
 
-        public object OriginalResponse => null;
+    public string GetHeader(string name)
+    {
+        this.Headers.TryGetValue(name, out var value);
+        return value;
+    }
 
-        public IRequest Request { get; private set; }
+    public void Redirect(string url)
+    {
+        this.Headers[HttpHeaders.Location] = url;
+    }
 
-        public int StatusCode { set; get; }
-        public string StatusDescription { set; get; }
-        public string ContentType { get; set; }
-        public bool KeepOpen { get; set; }
-        public ICookies Cookies { get; set; }
+    public Stream OutputStream { get; private set; } = stream;
 
-        public void AddHeader(string name, string value)
-        {
-            this.Headers[name] = value;
-        }
+    public object Dto { get; set; }
 
-        public void RemoveHeader(string name)
-        {
-            this.Headers.Remove(name);
-        }
+    public bool UseBufferedStream { get; set; }
 
-        public string GetHeader(string name)
-        {
-            this.Headers.TryGetValue(name, out var value);
-            return value;
-        }
+    public void Close()
+    {
+        if (KeepOpen) return;
+        ForceClose();
+    }
 
-        public void Redirect(string url)
-        {
-            this.Headers[HttpHeaders.Location] = url;
-        }
+    public Task CloseAsync(CancellationToken token = default(CancellationToken))
+    {
+        Close();
+        return TypeConstants.EmptyTask;
+    }
 
-        public Stream OutputStream { get; private set; }
+    public void ForceClose()
+    {
+        if (IsClosed) return;
 
-        public object Dto { get; set; }
+        OutputStream.Close();
+        IsClosed = true;
+    }
 
-        public bool UseBufferedStream { get; set; }
+    public void End()
+    {
+        Close();
+    }
 
-        public void Close()
-        {
-            if (KeepOpen) return;
-            ForceClose();
-        }
+    public void Flush()
+    {
+        OutputStream.Flush();
+    }
 
-        public Task CloseAsync(CancellationToken token = default(CancellationToken))
-        {
-            Close();
-            return TypeConstants.EmptyTask;
-        }
+    public Task FlushAsync(CancellationToken token = new CancellationToken()) => OutputStream.FlushAsync(token);
 
-        public void ForceClose()
-        {
-            if (IsClosed) return;
+    public bool IsClosed { get; private set; }
 
-            OutputStream.Close();
-            IsClosed = true;
-        }
+    public void SetContentLength(long contentLength) {}
 
-        public void End()
-        {
-            Close();
-        }
+    public bool KeepAlive { get; set; }
 
-        public void Flush()
-        {
-            OutputStream.Flush();
-        }
+    public bool HasStarted { get; set; }
 
-        public Task FlushAsync(CancellationToken token = new CancellationToken()) => OutputStream.FlushAsync(token);
+    public Dictionary<string, object> Items { get; private set; } = new();
 
-        public bool IsClosed { get; private set; }
+    public void SetCookie(Cookie cookie)
+    {
+    }
 
-        public void SetContentLength(long contentLength) {}
-
-        public bool KeepAlive { get; set; }
-
-        public bool HasStarted { get; set; }
-
-        public Dictionary<string, object> Items { get; private set; }
-
-        public void SetCookie(Cookie cookie)
-        {
-        }
-
-        public void ClearCookies()
-        {
-        }
+    public void ClearCookies()
+    {
     }
 }

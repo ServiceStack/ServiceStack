@@ -10,10 +10,9 @@ namespace ServiceStack.HtmlModules;
 /// &lt;!--file:single.html--&gt; or /*file:single.txt*/
 /// &lt;!--file:/path/to/single.html--&gt; or /*file:/path/to/single.txt*/
 /// </summary>
-public class FileHandler : IHtmlModulesHandler
+public class FileHandler(string name) : IHtmlModulesHandler
 {
-    public string Name { get; }
-    public FileHandler(string name) => Name = name;
+    public string Name { get; } = name;
     public Func<HtmlModuleContext,IVirtualPathProvider>? VirtualFilesResolver { get; set; }
     public ReadOnlyMemory<byte> Execute(HtmlModuleContext ctx, string path)
     {

@@ -5,61 +5,54 @@ using Funq;
 using System.Linq.Expressions;
 using System.Threading;
 
-namespace ServiceStack.Host
+namespace ServiceStack.Host;
+
+public class ContainerResolveCache(Container container) : ITypeFactory
 {
-    public class ContainerResolveCache : ITypeFactory
+    private readonly Container container = container;
+    private static Dictionary<Type, Func<IResolver, object>> resolveFnMap = new();
+
+    private Func<IResolver, object> GenerateServiceFactory(Type type)
     {
-        private readonly Container container;
-        private static Dictionary<Type, Func<IResolver, object>> resolveFnMap = new Dictionary<Type, Func<IResolver, object>>();
+        var containerParam = Expression.Parameter(typeof(IResolver), "container");
+        var resolveInstance = Expression.Call(containerParam, "TryResolve", new[] { type });
+        var resolveObject = Expression.Convert(resolveInstance, typeof(object));
+        return Expression.Lambda<Func<IResolver, object>>(resolveObject, containerParam).Compile();
+    }
 
-        public ContainerResolveCache(Container container)
-        {
-            this.container = container;
-        }
+    /// <summary>
+    /// Creates instance using straight Resolve approach.
+    /// This will throw an exception if resolution fails
+    /// </summary>
+    public object CreateInstance(IResolver resolver, Type type)
+    {
+        return CreateInstance(resolver, type, false);
+    }
 
-        private Func<IResolver, object> GenerateServiceFactory(Type type)
+    /// <summary>
+    /// Creates instance using the TryResolve approach if tryResolve = true.
+    /// Otherwise uses Resolve approach, which will throw an exception if resolution fails
+    /// </summary>
+	public object CreateInstance(IResolver resolver, Type type, bool tryResolve)
+    {
+        if (!resolveFnMap.TryGetValue(type, out var resolveFn))
         {
-            var containerParam = Expression.Parameter(typeof(IResolver), "container");
-            var resolveInstance = Expression.Call(containerParam, "TryResolve", new[] { type });
-            var resolveObject = Expression.Convert(resolveInstance, typeof(object));
-            return Expression.Lambda<Func<IResolver, object>>(resolveObject, containerParam).Compile();
-        }
+            resolveFn = GenerateServiceFactory(type);
 
-        /// <summary>
-        /// Creates instance using straight Resolve approach.
-        /// This will throw an exception if resolution fails
-        /// </summary>
-        public object CreateInstance(IResolver resolver, Type type)
-        {
-            return CreateInstance(resolver, type, false);
-        }
-
-        /// <summary>
-        /// Creates instance using the TryResolve approach if tryResolve = true.
-        /// Otherwise uses Resolve approach, which will throw an exception if resolution fails
-        /// </summary>
-		public object CreateInstance(IResolver resolver, Type type, bool tryResolve)
-        {
-            Func<IResolver, object> resolveFn;
-            if (!resolveFnMap.TryGetValue(type, out resolveFn))
+            //Support for multiple threads is needed
+            Dictionary<Type, Func<IResolver, object>> snapshot, newCache;
+            do
             {
-                resolveFn = GenerateServiceFactory(type);
-
-                //Support for multiple threads is needed
-                Dictionary<Type, Func<IResolver, object>> snapshot, newCache;
-                do
-                {
-                    snapshot = resolveFnMap;
-                    newCache = new Dictionary<Type, Func<IResolver, object>>(resolveFnMap) { [type] = resolveFn };
-                } while (!ReferenceEquals(
+                snapshot = resolveFnMap;
+                newCache = new Dictionary<Type, Func<IResolver, object>>(resolveFnMap) { [type] = resolveFn };
+            } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref resolveFnMap, newCache, snapshot), snapshot));
-            }
-
-            var instance = resolveFn(resolver);
-            if (instance == null && !tryResolve)
-                throw new ResolutionException(type);
-
-            return instance;
         }
+
+        var instance = resolveFn(resolver);
+        if (instance == null && !tryResolve)
+            throw new ResolutionException(type);
+
+        return instance;
     }
 }

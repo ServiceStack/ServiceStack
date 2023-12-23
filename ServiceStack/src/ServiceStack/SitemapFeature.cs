@@ -202,7 +202,7 @@ public class SitemapFeature : IPlugin, Model.IHasStringId
 #if NET6_0_OR_GREATER
         await File.WriteAllTextAsync(destDir.CombineWith("sitemap.xml"), contents).ConfigAwait();
 #else
-            File.WriteAllText(destDir.CombineWith("sitemap.xml"), contents);
+        File.WriteAllText(destDir.CombineWith("sitemap.xml"), contents);
 #endif
 
         foreach (var sitemap in SitemapIndex)
@@ -213,20 +213,13 @@ public class SitemapFeature : IPlugin, Model.IHasStringId
 #if NET6_0_OR_GREATER
             await File.WriteAllTextAsync(sitemapPath, contents).ConfigAwait();
 #else
-                File.WriteAllText(sitemapPath, contents);
+            File.WriteAllText(sitemapPath, contents);
 #endif
         }
     }
 
-    public class SitemapIndexHandler : HttpAsyncTaskHandler
+    public class SitemapIndexHandler(SitemapFeature feature) : HttpAsyncTaskHandler
     {
-        private readonly SitemapFeature feature;
-
-        public SitemapIndexHandler(SitemapFeature feature)
-        {
-            this.feature = feature;
-        }
-
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
@@ -240,18 +233,8 @@ public class SitemapFeature : IPlugin, Model.IHasStringId
 
     }
 
-    public class SitemapUrlSetHandler : HttpAsyncTaskHandler
+    public class SitemapUrlSetHandler(SitemapFeature feature, List<SitemapUrl> urlSet) : HttpAsyncTaskHandler
     {
-        private readonly SitemapFeature feature;
-
-        private readonly List<SitemapUrl> urlSet;
-
-        public SitemapUrlSetHandler(SitemapFeature feature, List<SitemapUrl> urlSet)
-        {
-            this.feature = feature;
-            this.urlSet = urlSet;
-        }
-
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
