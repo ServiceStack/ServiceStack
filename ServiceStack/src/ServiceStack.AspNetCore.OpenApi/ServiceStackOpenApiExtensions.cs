@@ -12,10 +12,11 @@ public static class ServiceStackOpenApiExtensions
 {
     public static OpenApiMetadata OpenApiMetadata { get; set; } = new();
 
-    public static void WithOpenApi(this ServiceStackOptions options, bool useEndpointRoutes = true)
+    public static void WithOpenApi(this ServiceStackOptions options)
     {
-        options.MapEndpointRouting = true;
-        options.UseEndpointRouting = useEndpointRoutes;
+        if (!options.MapEndpointRouting)
+            throw new NotSupportedException("MapEndpointRouting must be enabled to use OpenApi");
+        
         options.RouteHandlerBuilders.Add((builder, operation, method, route) =>
         {
             builder.WithOpenApi(op =>
