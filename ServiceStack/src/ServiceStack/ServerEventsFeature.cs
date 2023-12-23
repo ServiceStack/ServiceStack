@@ -20,6 +20,10 @@ using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
+#if NET8_0_OR_GREATER
+using Microsoft.AspNetCore.Builder;
+#endif
+
 namespace ServiceStack;
 
 public class ServerEventsFeature : IPlugin, Model.IHasStringId
@@ -187,6 +191,16 @@ public class ServerEventsFeature : IPlugin, Model.IHasStringId
         }
             
         appHost.OnDisposeCallbacks.Add(host => container.Resolve<IServerEvents>().Stop());
+        
+#if NET8_0_OR_GREATER
+        var host = (AppHostBase)appHost;
+        host.MapEndpoints(routeBuilder =>
+        {
+            routeBuilder.MapGet(StreamPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHandler()));
+            routeBuilder.MapGet(HeartbeatPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHeartbeatHandler()));
+        });
+#endif
+        
     }
 
     internal bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)

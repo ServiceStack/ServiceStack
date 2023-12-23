@@ -5,6 +5,10 @@ using System.Web;
 #endif
 using ServiceStack.Host.Handlers;
 
+#if NET8_0_OR_GREATER
+using Microsoft.AspNetCore.Builder;
+#endif
+
 namespace ServiceStack;
 
 public class RequestInfoFeature : IPlugin, Model.IHasStringId
@@ -16,6 +20,15 @@ public class RequestInfoFeature : IPlugin, Model.IHasStringId
 
         appHost.ConfigurePlugin<MetadataFeature>(
             feature => feature.AddDebugLink($"?{Keywords.Debug}={Keywords.RequestInfo}", "Request Info"));
+        
+#if NET8_0_OR_GREATER
+        var host = (AppHostBase)appHost;
+        host.MapEndpoints(routeBuilder =>
+        {
+            var handler = new RequestInfoHandler();
+            routeBuilder.MapGet("/" + Keywords.RequestInfo, httpContext => httpContext.ProcessRequestAsync(handler));
+        });
+#endif
     }
 
     public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)

@@ -308,7 +308,7 @@ namespace ServiceStack.Host.Handlers
             var config = HostContext.Config;
             var response = new RequestInfoResponse
             {
-                Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
+                //Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
                 Host = HostContext.ServiceName + "_" + config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
                 HostType = $"{(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost")} ({hostType.BaseType?.Name ?? hostType.Name})",
                 StartedAt = appHost.StartedAt.ToString("yyyy-MM-dd HH:mm:ss"),
