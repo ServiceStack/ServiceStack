@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Hosting;
 using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 #else
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Hosting;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
 using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IHostApplicationLifetime;
@@ -192,7 +193,17 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     /// </summary>
     public Func<HttpContext, bool> IgnoreRequestHandler { get; set; }
 
-#if NET8_0_OR_GREATER    
+#if NET8_0_OR_GREATER
+    
+    public readonly Dictionary<string, string[]> EndpointVerbs = new()
+    {
+        [HttpMethods.Get] = [HttpMethods.Get],
+        [HttpMethods.Post] = [HttpMethods.Post],
+        [HttpMethods.Put] = [HttpMethods.Put],
+        [HttpMethods.Delete] = [HttpMethods.Delete],
+        [HttpMethods.Patch] = [HttpMethods.Patch],
+    };
+    
     /// <summary>
     /// Whether to use ASP.NET Core Endpoint Route to invoke ServiceStack APIs
     /// </summary>
@@ -200,9 +211,94 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     {
         var endpoint = httpContext.GetEndpoint();
         var wildcardEndpoint = endpoint is Microsoft.AspNetCore.Routing.RouteEndpoint routeEndpoint && 
-                               routeEndpoint.RoutePattern.RawText?.StartsWith("/{") == true;
-        var ignoreExistingNonWildcardEndpoint = endpoint != null && !wildcardEndpoint;
-        return ignoreExistingNonWildcardEndpoint;
+                               routeEndpoint.RoutePattern.RawText?.StartsWith("/{") == true &&
+                               routeEndpoint.RoutePattern.RawText?.EndsWith('}') == true;
+        var useExistingNonWildcardEndpoint = endpoint != null && !wildcardEndpoint;
+        return useExistingNonWildcardEndpoint;
+    }
+    
+    public virtual void ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation)
+    {
+        if (operation.ResponseType != null)
+        {
+            if (operation.ResponseType == typeof(byte[]) || operation.ResponseType == typeof(Stream))
+            {
+                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Binary);
+            }
+            else
+            {
+                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Json);
+            }
+        }
+        else
+        {
+            builder.Produces(Config.Return204NoContentForEmptyResponse ? 204 : 200, responseType:null);
+        }
+        if (operation.RequiresAuthentication)
+        {
+            var authAttr = new AuthorizeAttribute { AuthenticationSchemes = Options.AuthenticationSchemes };
+            builder.RequireAuthorization(authAttr);
+        }
+        else
+        {
+            builder.AllowAnonymous();
+        }
+            
+        if (operation.RequestType.ExcludesFeature(Feature.Metadata) || 
+            operation.RequestType.ExcludesFeature(Feature.ApiExplorer))
+            builder.ExcludeFromDescription();
+    }
+    
+    public virtual void RegisterEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+    {
+        if (Options.UseEndpointRouting)
+        {
+            IgnoreRequestHandler = ShouldUseEndpointRoute;
+        }
+
+        MapUserDefinedRoutes(routeBuilder);
+    }
+
+    public virtual void MapUserDefinedRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+    {
+        foreach (var entry in Metadata.OperationsMap)
+        {
+            var requestType = entry.Key;
+            var operation = entry.Value;
+
+            if (!EndpointVerbs.TryGetValue(operation.Method, out var verb))
+                continue;
+
+            foreach (var route in operation.Routes.Safe())
+            {
+                var routeVerbs = route.Verbs == null || (route.Verbs.Length == 1 && route.Verbs[0] == ActionContext.AnyAction) 
+                    ? [operation.Method]
+                    : route.Verbs;
+
+                foreach (var routeVerb in routeVerbs)
+                {
+                    if (!EndpointVerbs.TryGetValue(routeVerb, out verb))
+                        continue;
+
+                    var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
+                    {
+                        var req = httpContext.ToRequest();
+                        var restPath = RestHandler.FindMatchingRestPath(req, out var contentType);
+                        var handler = restPath != null
+                            ? (HttpAsyncTaskHandler)new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType }
+                            : new NotFoundHttpHandler();
+                        return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
+                    });
+                    
+                    ConfigureOperationEndpoint(pathBuilder, operation);
+
+                    foreach (var handler in Options.RouteHandlerBuilders)
+                    {
+                        handler(pathBuilder, operation, routeVerb, route.Path);
+                    }
+                }
+            }
+        }
     }
 #endif
 
@@ -456,24 +552,81 @@ public static class NetCoreAppHostExtensions
         {
             TopLevelAppModularStartup.Instance.Configure(app);
         }
-
+        
+#if NET8_0_OR_GREATER
+        configure?.Invoke(appHost.Options);
+#endif
         appHost.Bind(app);
         appHost.Init();
 
 #if NET8_0_OR_GREATER
-        configure?.Invoke(appHost.Options);
-
         if (appHost.Options.MapEndpointRouting)
         {
             if (app is Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
             {
-                routeBuilder.MapEndpoints(appHost);
+                appHost.RegisterEndpoints(routeBuilder);
             }
         }
 #endif
         
         return app;
     }
+    
+#if NET8_0_OR_GREATER
+    public static void MapEndpoints(this AppHostBase appHost, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure)
+    {
+        if (!appHost.Options.MapEndpointRouting)
+            return;
+        
+        configure((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)appHost.App);
+    }
+    
+    public static Task ProcessRequestAsync(this HttpContext httpContext, HttpAsyncTaskHandler handler, string apiName=null, Action<IRequest> configure = null)
+    {
+        if (handler == null)
+            return Task.CompletedTask;
+        var req = httpContext.ToRequest();
+        var res = (NetCoreResponse)req.Response;
+        //res.KeepOpen = true; // Let ASP.NET Core close request
+        configure?.Invoke(req);
+        return handler.ProcessRequestAsync(req, req.Response, apiName ?? httpContext.Request.Path);
+    }
+
+    public static IEndpointConventionBuilder WithMetadata<TResponse>(this IEndpointConventionBuilder builder,
+        string name=null,
+        string tag=null,
+        string description=null,
+        string contentType=null,
+        string[] additionalContentTypes=null) =>
+        builder.WithMetadata(name:name,
+            tag:tag,
+            description:description,
+            responseType:typeof(TResponse),
+            contentType:contentType,
+            additionalContentTypes:additionalContentTypes);
+    
+    public static IEndpointConventionBuilder WithMetadata(this IEndpointConventionBuilder builder,
+        string name=null,
+        string tag=null,
+        string description=null,
+        Type responseType=null,
+        string contentType=null,
+        string[] additionalContentTypes=null)
+    {
+        if (name != null)
+            builder.WithName(name);
+        if (tag != null)
+            builder.WithTags(tag);
+        if (description != null)
+            builder.WithDescription(description);
+        if (responseType != null)
+        {
+            var routeBuilder = (RouteHandlerBuilder)builder;
+            routeBuilder.Produces(200, responseType, contentType: contentType, additionalContentTypes: additionalContentTypes ?? Array.Empty<string>());
+        }
+        return builder.ExcludeFromDescription();
+    }
+#endif
 
     public static IApplicationBuilder Use(this IApplicationBuilder app, IHttpAsyncHandler httpHandler)
     {

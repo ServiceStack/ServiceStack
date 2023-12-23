@@ -10,9 +10,15 @@ using System.Web;
 using ServiceStack.Host;
 #endif
 
+#if NET8_0_OR_GREATER
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+#endif
+
 namespace ServiceStack;
 
-public class PredefinedRoutesFeature : IPlugin, Model.IHasStringId
+public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.PredefinedRoutes;
     public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new();
@@ -94,6 +100,64 @@ public class PredefinedRoutesFeature : IPlugin, Model.IHasStringId
         }
             
         appHost.CatchAllHandlers.Add(ProcessRequest);
+    }
+
+    public void AfterInit(IAppHost appHost)
+    {
+        if (JsonApiRoute != null)
+        {
+#if NET8_0_OR_GREATER
+            var host = (AppHostBase)appHost;
+            host.MapEndpoints(routeBuilder =>
+            {
+                var apiPath = ApiHandlers.GetBaseApiPath(JsonApiRoute);
+                if (ApiIndex != null)
+                {
+                    // Map /api index route
+                    routeBuilder.MapGet(apiPath, (HttpResponse response, HttpContext httpContext) =>
+                        {
+                            var req = httpContext.ToRequest();
+                            var result = ApiIndex(req);
+                            return Results.Json(result);
+                        })
+                        .WithMetadata<Dictionary<string, List<ApiDescription>>>();
+                }
+                
+                // Map /api/{Request} routes
+                var apis = routeBuilder.MapGroup(apiPath);
+                foreach (var entry in appHost.Metadata.OperationsMap)
+                {
+                    var requestType = entry.Key;
+                    var operation = entry.Value;
+                
+                    if (!host.EndpointVerbs.TryGetValue(operation.Method, out var verb))
+                        continue;
+
+                    var builder = apis.MapMethods("/" + requestType.Name, verb, (HttpResponse response, HttpContext httpContext) => 
+                        httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:requestType.Name));
+
+                    host.ConfigureOperationEndpoint(builder, operation);
+                    
+                    foreach (var handler in host.Options.RouteHandlerBuilders)
+                    {
+                        handler(builder, operation, operation.Method, apiPath + "/" + requestType.Name);
+                    }
+                }
+
+                // Map /api/{Request}.{Format} routes
+                foreach (var entry in appHost.ContentTypes.ContentTypeFormats)
+                {
+                    var serializer = appHost.ContentTypes.GetStreamSerializerAsync(entry.Value);
+                    if (serializer == ContentTypes.UnknownContentTypeSerializer)
+                        continue;
+            
+                    apis.MapGet("{name}." + entry.Key, (string name, HttpContext httpContext) => 
+                            httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:name))
+                        .WithMetadata<string>(contentType:entry.Value);
+                }
+            });
+#endif
+        }
     }
 
     public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)

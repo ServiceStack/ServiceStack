@@ -92,13 +92,12 @@ public static class ApiHandlers
         return baseApiPath;
     }
 
-    public static HttpAsyncTaskHandler JsonEndpointHandler(string apiPath, IRequest req)
+    public static HttpAsyncTaskHandler JsonEndpointHandler(string apiPath, string pathInfo)
     {
         var useContentType = MimeTypes.Json;
         var useRequestAttrs = RequestAttributes.Reply | RequestAttributes.Json;
         var useFeature = Feature.Json;
 
-        var pathInfo = req.PathInfo;
         var apiName = pathInfo == apiPath ? "" : pathInfo.LastRightPart('/');
         if (string.IsNullOrEmpty(apiName))
             return new NotFoundHttpHandler();
