@@ -22,8 +22,7 @@ namespace ServiceStack.Host.Handlers
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
 
-            if (httpReq.OperationName == null)
-                httpReq.OperationName = RequestName;
+            httpReq.OperationName ??= RequestName;
 
             var response = Action(httpReq, httpRes);
             httpRes.WriteToResponse(httpReq, response);

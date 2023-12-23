@@ -77,10 +77,7 @@ public class OpenApiMetadata
         if (!hasRequestBody)
         {
             var parameters = CreateParameters(operation.RequestType, route, verb);
-            foreach (var parameter in parameters)
-            {
-                op.Parameters.Add(parameter);
-            }
+            op.Parameters.AddDistinctRange(parameters);
         }
         
         var apiAttr = operation.RequestType.FirstAttribute<ApiAttribute>();

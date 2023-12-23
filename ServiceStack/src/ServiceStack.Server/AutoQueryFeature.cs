@@ -153,7 +153,7 @@ namespace ServiceStack
 
         public AutoQueryFeature()
         {
-            ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
+            ResponseFilters = [IncludeAggregates];
         }
         
         public void BeforePluginsLoaded(IAppHost appHost)
