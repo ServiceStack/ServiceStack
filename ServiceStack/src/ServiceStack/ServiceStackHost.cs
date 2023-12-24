@@ -110,118 +110,17 @@ public abstract partial class ServiceStackHost
 
         ServiceName = serviceName;
         ServiceAssemblies = assembliesWithServices.ToList();
-        AppSettings = new AppSettings();
-        Container = new Container { DefaultOwner = Owner.External };
 
         ContentTypes = new ContentTypes();
-        RestPaths = new List<RestPath>();
         Routes = new ServiceRoutes(this);
         Metadata = new ServiceMetadata(RestPaths);
-        PreRequestFilters = new List<Action<IRequest, IResponse>>();
-        RequestConverters = new List<Func<IRequest, object, Task<object>>>();
-        ResponseConverters = new List<Func<IRequest, object, Task<object>>>();
-        GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
-        GlobalRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
-        GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
-        GlobalTypedRequestFiltersAsync = new Dictionary<Type, ITypedFilterAsync>();
-        GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
-        GlobalResponseFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
-        GlobalTypedResponseFilters = new Dictionary<Type, ITypedFilter>();
-        GlobalTypedResponseFiltersAsync = new Dictionary<Type, ITypedFilterAsync>();
-        GlobalMessageRequestFilters = new List<Action<IRequest, IResponse, object>>();
-        GlobalMessageRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
-        GlobalTypedMessageRequestFilters = new Dictionary<Type, ITypedFilter>();
-        GlobalMessageResponseFilters = new List<Action<IRequest, IResponse, object>>();
-        GlobalMessageResponseFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
-        GlobalTypedMessageResponseFilters = new Dictionary<Type, ITypedFilter>();
-        GatewayRequestFilters = new List<Action<IRequest, object>>();
-        GatewayRequestFiltersAsync = new List<Func<IRequest, object, Task>>();
-        GatewayResponseFilters = new List<Action<IRequest, object>>();
-        GatewayResponseFiltersAsync = new List<Func<IRequest, object, Task>>();
-        ViewEngines = new List<IViewEngine>();
-        ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
-        ServiceExceptionHandlersAsync = new List<HandleServiceExceptionAsyncDelegate>();
-        UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
-        UncaughtExceptionHandlersAsync = new List<HandleUncaughtExceptionAsyncDelegate>();
-        GatewayExceptionHandlers = new List<HandleGatewayExceptionDelegate>();
-        GatewayExceptionHandlersAsync = new List<HandleGatewayExceptionAsyncDelegate>();
-        OnPreRegisterPlugins = new Dictionary<Type, List<Action<IPlugin>>>();
-        OnPostRegisterPlugins = new Dictionary<Type, List<Action<IPlugin>>>();
-        OnAfterPluginsLoaded = new Dictionary<Type, List<Action<IPlugin>>>();
-        BeforeConfigure = new List<Action<ServiceStackHost>>();
-        AfterConfigure = new List<Action<ServiceStackHost>>();
-        AfterPluginsLoaded = new List<Action<ServiceStackHost>>();
-        AfterInitCallbacks = new List<Action<IAppHost>>();
-        OnDisposeCallbacks = new List<Action<IAppHost>>();
-        OnEndRequestCallbacks = new List<Action<IRequest>>();
-        InsertVirtualFileSources = new List<IVirtualPathProvider> {
-            new MemoryVirtualFiles(), //allow injecting files
-        };
-        AddVirtualFileSources = new List<IVirtualPathProvider>();
-        RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
+        RawHttpHandlers = [
             ReturnRedirectHandler,
-            ReturnRequestInfoHandler,
-        };
-        CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
-        FallbackHandlers = new List<HttpHandlerResolverDelegate>();
-        CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler> {
-            { HttpStatusCode.Forbidden, new ForbiddenHttpHandler() },
-            { HttpStatusCode.NotFound, new NotFoundHttpHandler() },
-        };
-        StartUpErrors = new List<ResponseStatus>();
-        AsyncErrors = new List<ResponseStatus>();
+            ReturnRequestInfoHandler
+        ];
         DefaultScriptContext = new ScriptContext {
             ScriptLanguages = { ScriptLisp.Language },
         }.InitForSharpPages(this);
-        PluginsLoaded = new List<string>();
-        Plugins = new List<IPlugin> {
-            new PreProcessRequest(),
-            new HtmlFormat(),
-            new CsvFormat(),
-            new JsonlFormat(),
-            new PredefinedRoutesFeature(),
-            new MetadataFeature(),
-            new NativeTypesFeature(),
-            new HttpCacheFeature(),
-            new RequestInfoFeature(),
-            new SvgFeature(),
-            new UiFeature(),
-            new Validation.ValidationFeature(),
-        };
-        ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
-            typeof(AuthenticateService),
-            typeof(RegisterService),
-            typeof(AssignRolesService),
-            typeof(UnAssignRolesService),
-            typeof(NativeTypesService),
-            typeof(PostmanService),
-            typeof(HotReloadPageService),
-            typeof(HotReloadFilesService),
-            typeof(SpaFallbackService),
-            typeof(SharpApiService),
-            typeof(MetadataDebugService),
-            typeof(ServerEventsSubscribersService),
-            typeof(ServerEventsUnRegisterService),
-            typeof(MetadataAppService),
-            typeof(MetadataNavService),
-            typeof(ScriptAdminService),
-            typeof(RequestLogsService),
-            typeof(AutoQueryMetadataService),
-            typeof(GetApiKeysService),
-            typeof(RegenerateApiKeysService),
-            typeof(ConvertSessionToTokenService),
-            typeof(GetAccessTokenService),
-            typeof(StoreFileUploadService),
-            typeof(ReplaceFileUploadService),
-            typeof(GetFileUploadService),
-            typeof(DeleteFileUploadService),
-            typeof(AdminDashboardService),
-            typeof(AdminUsersService),
-            typeof(AdminProfilingService),
-            typeof(AdminRedisService),
-            typeof(Validation.GetValidationRulesService),
-            typeof(Validation.ModifyValidationRulesService),
-        };
 
         JsConfig.InitStatics();
     }
@@ -508,7 +407,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// ServiceStack's Configuration API, see: https://docs.servicestack.net/appsettings  
     /// </summary>
-    public IAppSettings AppSettings { get; set; }
+    public IAppSettings AppSettings { get; set; } = new AppSettings();
 
     /// <summary>
     /// The populated Metadata for this AppHost's Services
@@ -529,12 +428,46 @@ public abstract partial class ServiceStackHost
     // Rare for a user to auto register all available services in ServiceStack.dll
     // But happens when ILMerged, so exclude auto-registering SS services by default 
     // and let them register them manually
-    public HashSet<Type> ExcludeAutoRegisteringServiceTypes { get; set; }
+    public HashSet<Type> ExcludeAutoRegisteringServiceTypes { get; set; } =
+    [
+        typeof(AuthenticateService),
+        typeof(RegisterService),
+        typeof(AssignRolesService),
+        typeof(UnAssignRolesService),
+        typeof(NativeTypesService),
+        typeof(PostmanService),
+        typeof(HotReloadPageService),
+        typeof(HotReloadFilesService),
+        typeof(SpaFallbackService),
+        typeof(SharpApiService),
+        typeof(MetadataDebugService),
+        typeof(ServerEventsSubscribersService),
+        typeof(ServerEventsUnRegisterService),
+        typeof(MetadataAppService),
+        typeof(MetadataNavService),
+        typeof(ScriptAdminService),
+        typeof(RequestLogsService),
+        typeof(AutoQueryMetadataService),
+        typeof(GetApiKeysService),
+        typeof(RegenerateApiKeysService),
+        typeof(ConvertSessionToTokenService),
+        typeof(GetAccessTokenService),
+        typeof(StoreFileUploadService),
+        typeof(ReplaceFileUploadService),
+        typeof(GetFileUploadService),
+        typeof(DeleteFileUploadService),
+        typeof(AdminDashboardService),
+        typeof(AdminUsersService),
+        typeof(AdminProfilingService),
+        typeof(AdminRedisService),
+        typeof(Validation.GetValidationRulesService),
+        typeof(Validation.ModifyValidationRulesService)
+    ];
 
     /// <summary>
     /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
     /// </summary>
-    public virtual Container Container { get; private set; }
+    public virtual Container Container { get; private set; } = new() { DefaultOwner = Owner.External };
 
     /// <summary>
     /// Dynamically register Service Routes
@@ -544,7 +477,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Registered Routes
     /// </summary>
-    public List<RestPath> RestPaths { get; set; }
+    public List<RestPath> RestPaths { get; set; } = [];
 
     /// <summary>
     /// Register custom Request Binder
@@ -561,7 +494,8 @@ public abstract partial class ServiceStackHost
     /// They are called before each request is handled by a service, but after an HttpHandler is by the <see cref="HttpHandlerFactory"/> chosen.
     /// called in <see cref="ApplyPreRequestFilters"/>.
     /// </summary>
-    public List<Action<IRequest, IResponse>> PreRequestFilters { get; set; }
+    public List<Action<IRequest, IResponse>> PreRequestFilters { get; set; } = [];
+
     internal Action<IRequest, IResponse>[] PreRequestFiltersArray;
 
     /// <summary>
@@ -573,7 +507,8 @@ public abstract partial class ServiceStackHost
     /// 
     /// Note one converter could influence the input for the next converter!
     /// </summary>
-    public List<Func<IRequest, object, Task<object>>> RequestConverters { get; set; }
+    public List<Func<IRequest, object, Task<object>>> RequestConverters { get; set; } = [];
+
     internal Func<IRequest, object, Task<object>>[] RequestConvertersArray;
 
     /// <summary>
@@ -582,59 +517,60 @@ public abstract partial class ServiceStackHost
     /// 
     /// Called directly after response is handled, even before <see cref="ApplyResponseFiltersAsync"></see>!
     /// </summary>
-    public List<Func<IRequest, object, Task<object>>> ResponseConverters { get; set; }
+    public List<Func<IRequest, object, Task<object>>> ResponseConverters { get; set; } = [];
+
     internal Func<IRequest, object, Task<object>>[] ResponseConvertersArray;
 
-    public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
+    public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; } = [];
     internal Action<IRequest, IResponse, object>[] GlobalRequestFiltersArray;
 
-    public List<Func<IRequest, IResponse, object, Task>> GlobalRequestFiltersAsync { get; set; }
+    public List<Func<IRequest, IResponse, object, Task>> GlobalRequestFiltersAsync { get; set; } = [];
     internal Func<IRequest, IResponse, object, Task>[] GlobalRequestFiltersAsyncArray;
 
-    public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
-    public Dictionary<Type, ITypedFilterAsync> GlobalTypedRequestFiltersAsync { get; set; }
+    public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; } = new();
+    public Dictionary<Type, ITypedFilterAsync> GlobalTypedRequestFiltersAsync { get; set; } = new();
 
-    public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
+    public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; } = [];
     internal Action<IRequest, IResponse, object>[] GlobalResponseFiltersArray;
 
-    public List<Func<IRequest, IResponse, object, Task>> GlobalResponseFiltersAsync { get; set; }
+    public List<Func<IRequest, IResponse, object, Task>> GlobalResponseFiltersAsync { get; set; } = [];
     internal Func<IRequest, IResponse, object, Task>[] GlobalResponseFiltersAsyncArray;
 
-    public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; }
-    public Dictionary<Type, ITypedFilterAsync> GlobalTypedResponseFiltersAsync { get; set; }
+    public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; } = new();
+    public Dictionary<Type, ITypedFilterAsync> GlobalTypedResponseFiltersAsync { get; set; } = new();
 
-    public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }
+    public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; } = [];
     internal Action<IRequest, IResponse, object>[] GlobalMessageRequestFiltersArray;
 
-    public List<Func<IRequest, IResponse, object, Task>> GlobalMessageRequestFiltersAsync { get; }
+    public List<Func<IRequest, IResponse, object, Task>> GlobalMessageRequestFiltersAsync { get; } = [];
     internal Func<IRequest, IResponse, object, Task>[] GlobalMessageRequestFiltersAsyncArray;
 
-    public Dictionary<Type, ITypedFilter> GlobalTypedMessageRequestFilters { get; set; }
+    public Dictionary<Type, ITypedFilter> GlobalTypedMessageRequestFilters { get; set; } = new();
 
-    public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; }
+    public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; } = [];
     internal Action<IRequest, IResponse, object>[] GlobalMessageResponseFiltersArray;
 
-    public List<Func<IRequest, IResponse, object, Task>> GlobalMessageResponseFiltersAsync { get; }
+    public List<Func<IRequest, IResponse, object, Task>> GlobalMessageResponseFiltersAsync { get; } = [];
     internal Func<IRequest, IResponse, object, Task>[] GlobalMessageResponseFiltersAsyncArray;
 
-    public Dictionary<Type, ITypedFilter> GlobalTypedMessageResponseFilters { get; set; }
+    public Dictionary<Type, ITypedFilter> GlobalTypedMessageResponseFilters { get; set; } = new();
 
     /// <summary>
     /// Lists of view engines for this app.
     /// If view is needed list is looped until view is found.
     /// </summary>
-    public List<IViewEngine> ViewEngines { get; set; }
+    public List<IViewEngine> ViewEngines { get; set; } = [];
 
-    public List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; set; }
+    public List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; set; } = [];
 
-    public List<HandleServiceExceptionAsyncDelegate> ServiceExceptionHandlersAsync { get; set; }
+    public List<HandleServiceExceptionAsyncDelegate> ServiceExceptionHandlersAsync { get; set; } = [];
 
-    public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
+    public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; } = [];
 
-    public List<HandleUncaughtExceptionAsyncDelegate> UncaughtExceptionHandlersAsync { get; set; }
+    public List<HandleUncaughtExceptionAsyncDelegate> UncaughtExceptionHandlersAsync { get; set; } = [];
 
-    public List<HandleGatewayExceptionDelegate> GatewayExceptionHandlers { get; set; }
-    public List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; set; }
+    public List<HandleGatewayExceptionDelegate> GatewayExceptionHandlers { get; set; } = [];
+    public List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; set; } = [];
 
     /// <summary>
     /// Register static callbacks fired just before AppHost.Configure() 
@@ -644,7 +580,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Register callbacks fired just before AppHost.Configure() 
     /// </summary>
-    public List<Action<ServiceStackHost>> BeforeConfigure { get; set; }
+    public List<Action<ServiceStackHost>> BeforeConfigure { get; set; } = [];
 
     /// <summary>
     /// Register static callbacks fired just after AppHost.Configure() 
@@ -654,7 +590,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Register callbacks fired just after AppHost.Configure() 
     /// </summary>
-    public List<Action<ServiceStackHost>> AfterConfigure { get; set; }
+    public List<Action<ServiceStackHost>> AfterConfigure { get; set; } = [];
 
     /// <summary>
     /// Register static callbacks fired just after plugins are loaded 
@@ -664,12 +600,12 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Register callbacks fired just after plugins are loaded 
     /// </summary>
-    public List<Action<ServiceStackHost>> AfterPluginsLoaded { get; set; }
+    public List<Action<ServiceStackHost>> AfterPluginsLoaded { get; set; } = [];
 
     /// <summary>
     /// Register callbacks that's fired after the AppHost is initialized
     /// </summary>
-    public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
+    public List<Action<IAppHost>> AfterInitCallbacks { get; set; } = [];
 
     /// <summary>
     /// Register static callbacks fired after the AppHost is initialized 
@@ -679,12 +615,12 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Register callbacks that's fired when AppHost is disposed
     /// </summary>
-    public List<Action<IAppHost>> OnDisposeCallbacks { get; set; }
+    public List<Action<IAppHost>> OnDisposeCallbacks { get; set; } = [];
 
     /// <summary>
     /// Register callbacks to execute at the end of a Request
     /// </summary>
-    public List<Action<IRequest>> OnEndRequestCallbacks { get; set; }
+    public List<Action<IRequest>> OnEndRequestCallbacks { get; set; } = [];
 
     /// <summary>
     /// Register highest priority IHttpHandler callbacks
@@ -695,13 +631,15 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Get "Catch All" IHttpHandler predicate IHttpHandler's, e.g. Used by HTML View Engines
     /// </summary>
-    public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
+    public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; } = [];
+
     internal HttpHandlerResolverDelegate[] CatchAllHandlersArray;
 
     /// <summary>
     /// Register fallback Request Handlers e.g. Used by #Script &amp; Razor Page Based Routing
     /// </summary>
-    public List<HttpHandlerResolverDelegate> FallbackHandlers { get; set; }
+    public List<HttpHandlerResolverDelegate> FallbackHandlers { get; set; } = [];
+
     internal HttpHandlerResolverDelegate[] FallbackHandlersArray;
 
     /// <summary>
@@ -712,27 +650,46 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Register Custom IServiceStackHandler to handle specific HttpStatusCode's 
     /// </summary>
-    public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; }
+    public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; } = new()
+    {
+        [HttpStatusCode.NotFound] = new NotFoundHttpHandler(),
+        [HttpStatusCode.Forbidden] = new ForbiddenHttpHandler(),
+    };
 
     /// <summary>
     /// Captured StartUp Exceptions
     /// </summary>
-    public List<ResponseStatus> StartUpErrors { get; set; }
+    public List<ResponseStatus> StartUpErrors { get; set; } = [];
 
     /// <summary>
     /// Captured Unobserved Async Errors
     /// </summary>
-    public List<ResponseStatus> AsyncErrors { get; set; }
+    public List<ResponseStatus> AsyncErrors { get; set; } = [];
 
     /// <summary>
     /// Which plugins were loaded in this AppHost
     /// </summary>
-    public List<string> PluginsLoaded { get; set; }
+    public List<string> PluginsLoaded { get; set; } = [];
 
     /// <summary>
     /// Collection of added plugins.
     /// </summary>
-    public List<IPlugin> Plugins { get; set; }
+    public List<IPlugin> Plugins { get; set; } =
+    [
+        new PreProcessRequest(),
+        new HtmlFormat(),
+        new CsvFormat(),
+        new JsonlFormat(),
+        new PredefinedRoutesFeature(),
+        new MetadataFeature(),
+        new NativeTypesFeature(),
+        new HttpCacheFeature(),
+        new RequestInfoFeature(),
+        new SvgFeature(),
+        new UiFeature(),
+        new Validation.ValidationFeature(),
+        new VirtualFilesFeature(),
+    ];
 
     /// <summary>
     /// Writable Virtual File Source, uses FileSystemVirtualFiles at content root by default 
@@ -762,23 +719,26 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Insert higher priority VFS providers at the start of the VFS providers list
     /// </summary>
-    public List<IVirtualPathProvider> InsertVirtualFileSources { get; set; }
-        
+    public List<IVirtualPathProvider> InsertVirtualFileSources { get; set; } =
+    [
+        new MemoryVirtualFiles() //allow injecting files
+    ];
+
     /// <summary>
     /// Append lower priority VFS providers at the end of the VFS providers list
     /// </summary>
-    public List<IVirtualPathProvider> AddVirtualFileSources { get; set; }
+    public List<IVirtualPathProvider> AddVirtualFileSources { get; set; } = [];
 
-    public List<Action<IRequest, object>> GatewayRequestFilters { get; set; }
+    public List<Action<IRequest, object>> GatewayRequestFilters { get; set; } = [];
     internal Action<IRequest, object>[] GatewayRequestFiltersArray;
 
-    public List<Func<IRequest, object, Task>> GatewayRequestFiltersAsync { get; set; }
+    public List<Func<IRequest, object, Task>> GatewayRequestFiltersAsync { get; set; } = [];
     internal Func<IRequest, object, Task>[] GatewayRequestFiltersAsyncArray;
 
-    public List<Action<IRequest, object>> GatewayResponseFilters { get; set; }
+    public List<Action<IRequest, object>> GatewayResponseFilters { get; set; } = [];
     internal Action<IRequest, object>[] GatewayResponseFiltersArray;
 
-    public List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; set; }
+    public List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; set; } = [];
     internal Func<IRequest, object, Task>[] GatewayResponseFiltersAsyncArray;
 
     /// <summary>
@@ -1629,8 +1589,8 @@ public abstract partial class ServiceStackHost
         return VirtualFileSources.CombineVirtualPath(RootDirectory.RealPath, virtualPath);
     }
 
-    public Dictionary<Type, List<Action<IPlugin>>> OnPreRegisterPlugins { get; set; }
-        
+    public Dictionary<Type, List<Action<IPlugin>>> OnPreRegisterPlugins { get; set; } = new();
+
     /// <summary>
     /// Register a callback to configure a plugin just before it's registered 
     /// </summary>
@@ -1641,8 +1601,8 @@ public abstract partial class ServiceStackHost
         actions.Add(plugin => configure((T)plugin));
     }
 
-    public Dictionary<Type, List<Action<IPlugin>>> OnPostRegisterPlugins { get; set; } 
-        
+    public Dictionary<Type, List<Action<IPlugin>>> OnPostRegisterPlugins { get; set; } = new();
+
     /// <summary>
     /// Register a callback to configure a plugin just after it's registered 
     /// </summary>
@@ -1653,8 +1613,8 @@ public abstract partial class ServiceStackHost
         actions.Add(plugin => configure((T)plugin));
     }
 
-    public Dictionary<Type, List<Action<IPlugin>>> OnAfterPluginsLoaded { get; set; } 
-        
+    public Dictionary<Type, List<Action<IPlugin>>> OnAfterPluginsLoaded { get; set; } = new();
+
     /// <summary>
     /// Register a callback to configure a plugin after AfterPluginsLoaded is run 
     /// </summary>

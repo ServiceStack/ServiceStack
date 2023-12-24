@@ -26,38 +26,38 @@ namespace ServiceStack;
 public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 {
     public string Id { get; set; } = Plugins.Metadata;
-    public string PluginLinksTitle { get; set; }
-    public Dictionary<string, string> PluginLinks { get; set; }
+    public string PluginLinksTitle { get; set; } = "Plugin Links:";
+    public Dictionary<string, string> PluginLinks { get; set; } = new();
 
-    public string DebugLinksTitle { get; set; }
-    public Dictionary<string, string> DebugLinks { get; set; }
+    public string DebugLinksTitle { get; set; } = "Debug Info:";
+    public Dictionary<string, string> DebugLinks { get; set; } = new()
+    {
+        ["operations/metadata"] = "Operations Metadata",
+    };
 
     public Action<IndexOperationsControl> IndexPageFilter { get; set; }
     public Action<OperationControl> DetailPageFilter { get; set; }
         
-    public List<Action<AppMetadata>> AppMetadataFilters { get; } = new();
-    public List<Action<IRequest,AppMetadata>> AfterAppMetadataFilters { get; } = new() {
-        MetadataUtils.LocalizeMetadata,
-    };
+    public List<Action<AppMetadata>> AppMetadataFilters { get; } = [];
+    public List<Action<IRequest,AppMetadata>> AfterAppMetadataFilters { get; } = [
+        MetadataUtils.LocalizeMetadata
+    ];
 
     public bool ShowResponseStatusInMetadataPages { get; set; }
         
     /// <summary>
     /// Export built-in Types so they're available from /metadata/app
     /// </summary>
-    public List<Type> ExportTypes { get; } = new() {
-        typeof(AuditBase),
-    };
+    public List<Type> ExportTypes { get; } = [ typeof(AuditBase) ];
         
     public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
-        { typeof(MetadataAppService), new[]
-        {
-            "/" + "metadata".Localize() + "/" + "app".Localize(),
-        } },
-        { typeof(MetadataNavService), new[] {
+        [typeof(MetadataAppService)] = [
+            "/" + "metadata".Localize() + "/" + "app".Localize()
+        ],
+        [typeof(MetadataNavService)] = [
             "/" + "metadata".Localize() + "/" + "nav".Localize(),
-            "/" + "metadata".Localize() + "/" + "nav".Localize() + "/{Name}",
-        } },
+            "/" + "metadata".Localize() + "/" + "nav".Localize() + "/{Name}"
+        ],
     };
 
     public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui") {
@@ -85,17 +85,6 @@ public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     }
 
     public Func<string,string> TagFilter { get; set; }
-
-    public MetadataFeature()
-    {
-        PluginLinksTitle = "Plugin Links:";
-        PluginLinks = new Dictionary<string, string>();
-
-        DebugLinksTitle = "Debug Info:";
-        DebugLinks = new Dictionary<string, string> {
-            {"operations/metadata", "Operations Metadata"},
-        };
-    }
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
