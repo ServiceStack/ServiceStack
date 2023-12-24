@@ -91,10 +91,10 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
     public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
 
-    public ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>> DataSources { get; private set; }
+    public ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>> DataSources { get; }
 
-    public List<QueryCondition> Conditions = new List<QueryCondition>
-    {
+    public List<QueryCondition> Conditions =
+    [
         new EqualsCondition(),
         new NotEqualCondition(),
         new LessEqualCondition(),
@@ -108,8 +108,8 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
 
         new InCollectionCondition(),
         new InBetweenCondition(),
-        new CaseInsensitiveEqualCondition(),
-    };
+        new CaseInsensitiveEqualCondition()
+    ];
 
     public Dictionary<string, QueryCondition> ConditionsAliases = new(StringComparer.OrdinalIgnoreCase);
 
@@ -170,12 +170,12 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
             StringComparer.OrdinalIgnoreCase);
         AutoQueryServiceBaseType = typeof(AutoQueryDataServiceBase);
         QueryFilters = new Dictionary<Type, QueryDataFilterDelegate>();
-        ResponseFilters = new List<Action<QueryDataFilterContext>> { IncludeAggregates };
+        ResponseFilters = [IncludeAggregates];
         IncludeTotal = false;
         EnableUntypedQueries = true;
         EnableAutoQueryViewer = true;
         OrderByPrimaryKeyOnPagedQuery = true;
-        LoadFromAssemblies = new HashSet<Assembly>();
+        LoadFromAssemblies = [];
         DataSources = new ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>>();
     }
 
@@ -233,11 +233,7 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         appHost.Metadata.GetOperationAssemblies()
             .Each(x => LoadFromAssemblies.Add(x));
 
-        ((ServiceStackHost)appHost).ServiceAssemblies.Each(x =>
-        {
-            if (!LoadFromAssemblies.Contains(x))
-                LoadFromAssemblies.Add(x);
-        });
+        ((ServiceStackHost)appHost).ServiceAssemblies.Each(x => LoadFromAssemblies.Add(x));
 
         if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
             appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
@@ -420,33 +416,18 @@ public abstract class FilterExpression
     public abstract IEnumerable<T> Apply<T>(IEnumerable<T> source);
 }
 
-public class OrderByExpression : FilterExpression
+public class OrderByExpression(string[] fieldNames, GetMemberDelegate[] fieldGetters, bool[] orderAsc)
+    : FilterExpression
 {
-    public string[] FieldNames { get; private set; }
-    public GetMemberDelegate[] FieldGetters { get; private set; }
-    public bool[] OrderAsc { get; private set; }
+    public string[] FieldNames { get; private set; } = fieldNames;
+    public GetMemberDelegate[] FieldGetters { get; } = fieldGetters;
+    public bool[] OrderAsc { get; } = orderAsc;
 
     public OrderByExpression(string fieldName, GetMemberDelegate fieldGetter, bool orderAsc = true)
-        : this(new[] { fieldName }, new[] { fieldGetter }, new[] { orderAsc }) { }
+        : this([fieldName], [fieldGetter], [orderAsc]) { }
 
-    public OrderByExpression(string[] fieldNames, GetMemberDelegate[] fieldGetters, bool[] orderAsc)
+    class OrderByComparator<T>(GetMemberDelegate[] getters, bool[] orderAsc) : IComparer<T>
     {
-        this.FieldNames = fieldNames;
-        this.FieldGetters = fieldGetters;
-        this.OrderAsc = orderAsc;
-    }
-
-    class OrderByComparator<T> : IComparer<T>
-    {
-        readonly GetMemberDelegate[] getters;
-        readonly bool[] orderAsc;
-
-        public OrderByComparator(GetMemberDelegate[] getters, bool[] orderAsc)
-        {
-            this.getters = getters;
-            this.orderAsc = orderAsc;
-        }
-
         public int Compare(T x, T y)
         {
             for (int i = 0; i < getters.Length; i++)
@@ -471,15 +452,15 @@ public class OrderByExpression : FilterExpression
     }
 }
 
-public class DataQuery<T> : IDataQuery
+public class DataQuery<T>(QueryDataContext context) : IDataQuery
 {
     private static PropertyInfo PrimaryKey;
 
-    private QueryDataContext context;
+    private QueryDataContext context = context;
 
-    public IQueryData Dto { get; private set; }
-    public Dictionary<string, string> DynamicParams { get; private set; }
-    public List<DataConditionExpression> Conditions { get; set; }
+    public IQueryData Dto { get; } = context.Dto;
+    public Dictionary<string, string> DynamicParams { get; } = context.DynamicParams;
+    public List<DataConditionExpression> Conditions { get; set; } = [];
     public OrderByExpression OrderBy { get; set; }
     public HashSet<string> OnlyFields { get; set; }
     public int? Offset { get; set; }
@@ -492,14 +473,6 @@ public class DataQuery<T> : IDataQuery
                      ?? pis.FirstOrDefault(x => x.HasAttribute<AutoIncrementAttribute>())
                      ?? pis.FirstOrDefault(x => x.Name == IdUtils.IdField)
                      ?? pis.FirstOrDefault();
-    }
-
-    public DataQuery(QueryDataContext context)
-    {
-        this.context = context;
-        this.Dto = context.Dto;
-        this.DynamicParams = context.DynamicParams;
-        this.Conditions = new List<DataConditionExpression>();
     }
 
     public virtual bool HasConditions => Conditions.Count > 0;
@@ -695,7 +668,7 @@ public class AutoQueryData : IAutoQueryData, IAutoQueryDataOptions
     public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
     public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
 
-    private static Dictionary<Type, ITypedQueryData> TypedQueries = new Dictionary<Type, ITypedQueryData>();
+    private static Dictionary<Type, ITypedQueryData> TypedQueries = new();
 
     public Type GetFromType(Type requestDtoType)
     {
@@ -917,7 +890,7 @@ public class AutoQueryData : IAutoQueryData, IAutoQueryDataOptions
             TypedQuery = GetTypedQuery(requestDtoType, fromType)};
     }
 
-    private Dictionary<Type, GenericAutoQueryData> genericAutoQueryCache = new Dictionary<Type, GenericAutoQueryData>();
+    private Dictionary<Type, GenericAutoQueryData> genericAutoQueryCache = new();
 
     public IQueryResponse Execute(IQueryData request, IDataQuery q, IQueryDataSource db)
     {
@@ -1284,7 +1257,7 @@ public class TypedQueryData<QueryModel, From> : ITypedQueryData
         return q;
     }
 
-    private static readonly char[] FieldSeperators = new[] { ',', ';' };
+    private static readonly char[] FieldSeperators = [',', ';'];
 
     private static void AppendLimits(IDataQuery q, IQueryData dto, IAutoQueryDataOptions options)
     {
@@ -1567,8 +1540,7 @@ public static class AutoQueryDataExtensions
 
     public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> sourceFn, ICacheClient cache, TimeSpan? expiresIn = null, string cacheKey = null)
     {
-        if (cacheKey == null)
-            cacheKey = "aqd:" + typeof(T).Name;
+        cacheKey ??= "aqd:" + typeof(T).Name;
 
         var cachedResults = cache.Get<List<T>>(cacheKey);
         if (cachedResults != null)

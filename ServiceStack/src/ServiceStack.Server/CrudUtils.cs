@@ -9,28 +9,23 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class AutoGenContext
+public class AutoGenContext(CrudCodeGenTypes instruction, string tableName, TableSchema tableSchema)
 {
-    public AutoGenContext(CrudCodeGenTypes instruction, string tableName, TableSchema tableSchema)
-    {
-        Instruction = instruction;
-        TableName = tableName;
-        TableSchema = tableSchema;
-    }
-
     /// <summary>
     /// AutoGen Request DTO Instruction
     /// </summary>
-    public CrudCodeGenTypes Instruction { get; set; }
+    public CrudCodeGenTypes Instruction { get; set; } = instruction;
+
     /// <summary>
     /// Original Table Name
     /// </summary>
-    public string TableName { get; }
+    public string TableName { get; } = tableName;
+
     /// <summary>
     /// RDBMS TableSchema
     /// </summary>
-    public TableSchema TableSchema { get; }
-        
+    public TableSchema TableSchema { get; } = tableSchema;
+
     /// <summary>
     /// Generated DataModel Name to use 
     /// </summary>
@@ -313,7 +308,7 @@ public class DbSchema
     public string Schema { get; set; }
     public string NamedConnection { get; set; }
 
-    public List<TableSchema> Tables { get; set; } = new List<TableSchema>();
+    public List<TableSchema> Tables { get; set; } = [];
 }
 
 public class TableSchema

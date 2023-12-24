@@ -1,28 +1,20 @@
 ﻿using ServiceStack.Redis;
 
-namespace ServiceStack
+namespace ServiceStack;
+
+public class RedisSequenceSource(IRedisClientsManager redisManager) : ISequenceSource
 {
-    public class RedisSequenceSource : ISequenceSource
+    public void InitSchema() {}
+
+    public long Increment(string key, long amount = 1)
     {
-        private readonly IRedisClientsManager redisManager;
+        using var redis = redisManager.GetClient();
+        return redis.IncrementValueBy("seq:" + key, amount);
+    }
 
-        public RedisSequenceSource(IRedisClientsManager redisManager)
-        {
-            this.redisManager = redisManager;
-        }
-
-        public void InitSchema() {}
-
-        public long Increment(string key, long amount = 1)
-        {
-            using var redis = redisManager.GetClient();
-            return redis.IncrementValueBy("seq:" + key, amount);
-        }
-
-        public void Reset(string key, long startingAt = 0)
-        {
-            using var redis = redisManager.GetClient();
-            redis.IncrementValueBy("seq:" + key, startingAt);
-        }
+    public void Reset(string key, long startingAt = 0)
+    {
+        using var redis = redisManager.GetClient();
+        redis.IncrementValueBy("seq:" + key, startingAt);
     }
 }

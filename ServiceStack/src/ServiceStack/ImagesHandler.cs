@@ -14,18 +14,12 @@ namespace ServiceStack;
 /// <summary>
 ///  Handler to manage in memory collection of images
 /// </summary>
-public class ImagesHandler : HttpAsyncTaskHandler
+public class ImagesHandler(string path, StaticContent fallback) : HttpAsyncTaskHandler
 {
-    public string Path { get; }
+    public string Path { get; } = path ?? throw new ArgumentNullException(nameof(path));
     public Dictionary<string, StaticContent> ImageContents { get; } = new();
         
-    public StaticContent Fallback { get; }
-
-    public ImagesHandler(string path, StaticContent fallback)
-    {
-        Path = path ?? throw new ArgumentNullException(nameof(path));
-        Fallback = fallback ?? throw new ArgumentNullException(nameof(fallback));
-    }
+    public StaticContent Fallback { get; } = fallback ?? throw new ArgumentNullException(nameof(fallback));
 
     public virtual string? RewriteImageUri(string imageUri)
     {
@@ -56,17 +50,11 @@ public class ImagesHandler : HttpAsyncTaskHandler
 /// <summary>
 ///  Handler to manage persistent images
 /// </summary>
-public class PersistentImagesHandler : ImagesHandler
+public class PersistentImagesHandler(string path, StaticContent fallback, IVirtualFiles virtualFiles, string dirPath)
+    : ImagesHandler(path, fallback)
 {
-    public IVirtualFiles VirtualFiles { get; }
-    public string DirPath { get; }
-
-    public PersistentImagesHandler(string path, StaticContent fallback, IVirtualFiles virtualFiles, string dirPath)
-        : base(path, fallback)
-    {
-        VirtualFiles = virtualFiles;
-        DirPath = dirPath;
-    }
+    public IVirtualFiles VirtualFiles { get; } = virtualFiles;
+    public string DirPath { get; } = dirPath;
 
     public override StaticContent? Get(string path)
     {
@@ -74,7 +62,7 @@ public class PersistentImagesHandler : ImagesHandler
         if (file == null)
             return null;
 
-        return new StaticContent(file.GetBytesContentsAsMemory(), MimeTypes.GetExtension(file.Extension));
+        return new StaticContent(file.ReadAllBytesAsMemory(), MimeTypes.GetExtension(file.Extension));
     }
         
     public override void Save(string path, StaticContent content)

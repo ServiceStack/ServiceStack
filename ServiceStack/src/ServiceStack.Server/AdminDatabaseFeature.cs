@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
-using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
