@@ -26,7 +26,8 @@ public class RequestInfoFeature : IPlugin, Model.IHasStringId
         host.MapEndpoints(routeBuilder =>
         {
             var handler = new RequestInfoHandler();
-            routeBuilder.MapGet("/" + Keywords.RequestInfo, httpContext => httpContext.ProcessRequestAsync(handler));
+            routeBuilder.MapGet("/" + Keywords.RequestInfo, httpContext => httpContext.ProcessRequestAsync(handler))
+                .WithMetadata<RequestInfoResponse>(nameof(RequestInfoFeature), contentType:MimeTypes.Json);
         });
 #endif
     }

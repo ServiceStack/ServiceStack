@@ -196,8 +196,10 @@ public class ServerEventsFeature : IPlugin, Model.IHasStringId
         var host = (AppHostBase)appHost;
         host.MapEndpoints(routeBuilder =>
         {
-            routeBuilder.MapGet(StreamPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHandler()));
-            routeBuilder.MapGet(HeartbeatPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHeartbeatHandler()));
+            routeBuilder.MapGet(StreamPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHandler()))
+                .WithMetadata<string>(nameof(StreamPath), tag:GetType().Name);
+            routeBuilder.MapGet(HeartbeatPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHeartbeatHandler()))
+                .WithMetadata<string>(nameof(HeartbeatPath), tag:GetType().Name);
         });
 #endif
         
