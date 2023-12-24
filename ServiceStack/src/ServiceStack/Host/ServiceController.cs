@@ -769,7 +769,7 @@ public class ServiceController : IServiceController
 
             var response = await GatewayExecuteAsync(request, req, applyFilters: false);
 
-            if (!await appHost.ApplyGatewayRespoonseFiltersAsync(req, response))
+            if (!await appHost.ApplyGatewayResponseFiltersAsync(req, response))
                 return default;
 
             return response;

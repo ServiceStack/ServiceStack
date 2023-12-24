@@ -25,8 +25,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #if !NETCORE
                     host.Plugins.Add(new SoapFormat());
 #endif
-                    host.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
-                    host.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+                    host.CatchAllHandlers.Add(new PredefinedRoutesFeature().GetHandler);
+                    host.CatchAllHandlers.Add(new MetadataFeature().GetHandler);
                 }
             }.Init();
         }

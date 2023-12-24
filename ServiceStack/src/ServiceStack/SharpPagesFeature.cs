@@ -196,8 +196,9 @@ public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHas
 
     private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new();
 
-    protected virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
+    protected virtual IHttpHandler RequestHandler(IRequest req)
     {
+        var pathInfo = req.PathInfo;
         if (!DebugMode && catchAllPathsNotFound.ContainsKey(pathInfo))
             return null;
         if (!VirtualPathUtils.IsValidFilePath(pathInfo))
@@ -240,11 +241,11 @@ public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHas
         return null;
     }
 
-    protected virtual IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+    protected virtual IHttpHandler PageBasedRoutingHandler(IRequest req)
     {
-        var page = GetRoutingPage(pathInfo, out var args);
+        var page = GetRoutingPage(req.PathInfo, out var args);
         return page != null
-            ? new SharpPageHandler(page) {Args = args}
+            ? new SharpPageHandler(page) { Args = args }
             : null;
     }
 

@@ -450,7 +450,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Execute Service Gateway Response Filters
     /// </summary>
-    public async Task<bool> ApplyGatewayRespoonseFiltersAsync(IRequest req, object responseDto)
+    public async Task<bool> ApplyGatewayResponseFiltersAsync(IRequest req, object responseDto)
     {
         foreach (var filter in HostContext.AppHost.GatewayResponseFiltersArray)
         {

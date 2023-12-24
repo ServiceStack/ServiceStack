@@ -153,7 +153,7 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
         var responseDto = await ConvertToResponseAsync<TResponse>(response).ConfigAwait();
 
-        if (!await appHost.ApplyGatewayRespoonseFiltersAsync(req, responseDto))
+        if (!await appHost.ApplyGatewayResponseFiltersAsync(req, responseDto))
             return default;
 
         return responseDto;

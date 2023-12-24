@@ -4,6 +4,7 @@ using ServiceStack.Host;
 using System.Web;
 #endif
 using ServiceStack.Host.Handlers;
+using ServiceStack.Web;
 
 #if NET8_0_OR_GREATER
 using Microsoft.AspNetCore.Builder;
@@ -16,7 +17,7 @@ public class RequestInfoFeature : IPlugin, Model.IHasStringId
     public string Id { get; set; } = Plugins.RequestInfo;
     public void Register(IAppHost appHost)
     {
-        appHost.CatchAllHandlers.Add(ProcessRequest);
+        appHost.CatchAllHandlers.Add(GetHandler);
 
         appHost.ConfigurePlugin<MetadataFeature>(
             feature => feature.AddDebugLink($"?{Keywords.Debug}={Keywords.RequestInfo}", "Request Info"));
@@ -32,9 +33,9 @@ public class RequestInfoFeature : IPlugin, Model.IHasStringId
 #endif
     }
 
-    public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
+    public IHttpHandler GetHandler(IRequest req)
     {
-        var pathParts = pathInfo.TrimStart('/').Split('/');
+        var pathParts = req.PathInfo.TrimStart('/').Split('/');
         return pathParts.Length == 0 ? null : GetHandlerForPathParts(pathParts);
     }
 

@@ -184,7 +184,7 @@ public class HttpHandlerFactory : IHttpHandlerFactory
                     (matchesFallback.MatchRule == null && !(matchesFallback.Priority < 0))) // is not targeted fallback
                 {
                     //e.g. to Process View Engine requests
-                    var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                    var catchAllHandler = appHost.GetCatchAllHandler(httpReq);
                     if (catchAllHandler != null) return catchAllHandler;
                 }
 
@@ -236,7 +236,7 @@ public class HttpHandlerFactory : IHttpHandlerFactory
                 (matchesFallback.MatchRule == null && !(matchesFallback.Priority < 0))) // is not targeted fallback
             {
                 //e.g. to Process View Engine requests
-                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                var catchAllHandler = appHost.GetCatchAllHandler(httpReq);
                 if (catchAllHandler != null) return catchAllHandler;
             }
 

@@ -37,8 +37,8 @@ namespace ServiceStack.Common.Tests
             {
                 ConfigureAppHost = host =>
                 {
-                    host.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
-                    host.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+                    host.CatchAllHandlers.Add(new PredefinedRoutesFeature().GetHandler);
+                    host.CatchAllHandlers.Add(new MetadataFeature().GetHandler);
                 }
             }.Init();
         }

@@ -105,9 +105,10 @@ namespace ServiceStack.Formats
 
             RegisterMarkdownPages(appHost.Config.WebHostPhysicalPath);
 
-            appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
+            appHost.CatchAllHandlers.Add(req => {
                 MarkdownPage markdownPage = null;
 
+                var pathInfo = req.PathInfo;
                 if (catchAllPathsNotFound.Contains(pathInfo))
                     return null;
 

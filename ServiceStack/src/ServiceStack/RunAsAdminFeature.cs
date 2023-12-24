@@ -14,9 +14,9 @@ public class RunAsAdminFeature : IPlugin, Model.IHasStringId
     
     public void Register(IAppHost appHost)
     {
-        appHost.LoadPlugin(new AuthFeature(() => new AuthUserSession(), new [] {
-            new CredentialsAuthProvider(appHost.AppSettings),
-        }));
+        appHost.LoadPlugin(new AuthFeature(() => new AuthUserSession(), [
+            new CredentialsAuthProvider(appHost.AppSettings)
+        ]));
         
         appHost.PreRequestFilters.Add((req, res) => {
             req.Items[Keywords.Session] = appHost.GetPlugin<AuthFeature>().AuthSecretSession;
@@ -24,9 +24,9 @@ public class RunAsAdminFeature : IPlugin, Model.IHasStringId
 
         if (RedirectTo != null)
         {
-            appHost.CatchAllHandlers.Add((string httpMethod, string pathInfo, string filePath) =>
+            appHost.CatchAllHandlers.Add(httpReq =>
             {
-                if (httpMethod == HttpMethods.Get && string.IsNullOrEmpty(pathInfo.TrimStart('/')))
+                if (httpReq.Verb == HttpMethods.Get && string.IsNullOrEmpty(httpReq.PathInfo.TrimStart('/')))
                 {
                     return new RedirectHttpHandler {
                         RelativeUrl = RedirectTo

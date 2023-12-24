@@ -129,8 +129,9 @@ namespace ServiceStack.Api.OpenApi
 
             if (!DisableSwaggerUI)
             {
-                appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
+                appHost.CatchAllHandlers.Add(req =>
                 {
+                    var pathInfo = req.PathInfo;
                     IVirtualFile indexFile;
                     IVirtualFile patchFile = null;
                     IVirtualFile patchPreLoadFile = null;

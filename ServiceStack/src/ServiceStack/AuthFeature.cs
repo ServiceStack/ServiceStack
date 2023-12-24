@@ -415,8 +415,8 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
             appHost.VirtualFileSources.GetMemoryVirtualFiles().WriteFile("/login.html", 
                 Templates.HtmlTemplates.GetLoginTemplate());
             // required when not using feature like SharpPagesFeature to auto map /login => /login.html
-            appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => pathInfo == "/login"
-                ? new Host.Handlers.StaticFileHandler(HostContext.VirtualFileSources.GetFile("/login.html"))
+            appHost.CatchAllHandlers.Add(httpReq => httpReq.PathInfo == "/login"
+                ? new StaticFileHandler(HostContext.VirtualFileSources.GetFile("/login.html"))
                 : null);
         }
 
@@ -433,7 +433,7 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
                 ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(routes => {
                     var register = appHost.GetPlugin<RegistrationFeature>();
                     if (register != null)
-                        routes[nameof(RegisterService)] = new []{ register.AtRestPath };
+                        routes[nameof(RegisterService)] = [register.AtRestPath];
                 }),
                 AuthProviders = AuthenticateService.GetAuthProviders()
                     .OrderBy(x => (x as AuthProvider)?.Sort ?? 0)

@@ -109,7 +109,7 @@ public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
         appHost.RegisterServices(ServiceRoutes);
 
-        appHost.CatchAllHandlers.Add(ProcessRequest);
+        appHost.CatchAllHandlers.Add(GetHandler);
         
 #if NET8_0_OR_GREATER
         var host = (AppHostBase)appHost;
@@ -158,9 +158,9 @@ public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         
     }
 
-    public virtual IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
+    public virtual IHttpHandler GetHandler(IRequest req)
     {
-        var pathParts = pathInfo.TrimStart('/').Split('/');
+        var pathParts = req.PathInfo.TrimStart('/').Split('/');
         if (pathParts.Length == 0) return null;
         return GetHandlerForPathParts(pathParts);
     }

@@ -69,8 +69,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public void Register(IAppHost appHost)
     {
-        if (ViewLocations == null)
-            ViewLocations = GetDefaultViewLocations(appHost.VirtualFiles);
+        ViewLocations ??= GetDefaultViewLocations(appHost.VirtualFiles);
 
         appHost.CatchAllHandlers.Add(CatchAllHandler);
         appHost.ViewEngines.Add(this);
@@ -87,9 +86,9 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             throw new Exception(ErrorMvcNotInit);
     }
 
-    public Host.IHttpHandler CatchAllHandler(string httpMethod, string pathInfo, string filepath)
+    public Host.IHttpHandler CatchAllHandler(IRequest req)
     {
-        var viewEngineResult = GetPageFromPathInfo(pathInfo);
+        var viewEngineResult = GetPageFromPathInfo(req.PathInfo);
 
         return viewEngineResult != null
             ? new RazorHandler(viewEngineResult)
@@ -131,13 +130,13 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public string IndexPage { get; set; } = "default";
 
-    protected virtual Host.IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+    protected virtual Host.IHttpHandler PageBasedRoutingHandler(IRequest req)
     {
-        var extPos = pathInfo.LastIndexOf('.');
-        if (extPos >= 0 && pathInfo.Substring(extPos) != ".cshtml")
+        var extPos = req.PathInfo.LastIndexOf('.');
+        if (extPos >= 0 && req.PathInfo.Substring(extPos) != ".cshtml")
             return null;
         
-        var viewEngineResult = GetRoutingPage(pathInfo, out var args);
+        var viewEngineResult = GetRoutingPage(req.PathInfo, out var args);
         return viewEngineResult != null
             ? new RazorHandler(viewEngineResult) { Args = args }
             : null;

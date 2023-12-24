@@ -529,14 +529,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    class RouteInfoAppHost : AppSelfHostBase
+    class RouteInfoAppHost() : AppSelfHostBase(nameof(RouteInfoAppHost), typeof(RouteInfoAppHost).Assembly)
     {
-        public RouteInfoAppHost() : base(typeof(RouteInfoAppHost).Name, typeof(RouteInfoAppHost).Assembly) { }
         public override void Configure(Container container)
         {
-            CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
+            CatchAllHandlers.Add(httpReq =>
             {
-                if (pathInfo.StartsWith("/swagger-ui"))
+                if (httpReq.PathInfo.StartsWith("/swagger-ui"))
                 {
                     return new CustomResponseHandler((req, res) => 
                         new GetRouteInfoResponse

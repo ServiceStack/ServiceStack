@@ -99,7 +99,7 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
             JsonApiRoute = null;
         }
             
-        appHost.CatchAllHandlers.Add(ProcessRequest);
+        appHost.CatchAllHandlers.Add(GetHandler);
     }
 
     public void AfterInit(IAppHost appHost)
@@ -160,9 +160,9 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
         }
     }
 
-    public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
+    public IHttpHandler GetHandler(IRequest req)
     {
-        var pathParts = pathInfo.TrimStart('/').Split('/');
+        var pathParts = req.PathInfo.TrimStart('/').Split('/');
         if (pathParts.Length == 0) return null;
         return GetHandlerForPathParts(pathParts);
     }

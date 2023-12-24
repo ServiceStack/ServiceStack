@@ -7,9 +7,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host;
 
-public delegate IHttpHandler HttpHandlerResolverDelegate(string httpMethod, string pathInfo, string filePath);
+public delegate IHttpHandler HttpHandlerResolverDelegate(IRequest httpReq);
 
-public delegate bool StreamSerializerResolverDelegate(IRequest requestContext, object dto, IResponse httpRes);
+public delegate bool StreamSerializerResolverDelegate(IRequest httpReq, object dto, IResponse httpRes);
 
 public delegate void HandleUncaughtExceptionDelegate(
     IRequest httpReq, IResponse httpRes, string operationName, Exception ex);
