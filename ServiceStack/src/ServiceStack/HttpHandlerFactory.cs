@@ -260,37 +260,6 @@ public class HttpHandlerFactory : IHttpHandlerFactory
                ?? NotFoundHttpHandler;
     }
 
-    // no handler registered 
-    // serve the file from the filesystem, restricting to a safe-list of extensions
-    public static bool ShouldAllow(string pathInfo)
-    {
-        if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
-            return true;
-
-        var config = HostContext.Config;
-        foreach (var path in config.ForbiddenPaths)
-        {
-            if (pathInfo.StartsWith(path))
-                return false;
-        }
-            
-        var parts = pathInfo.SplitOnLast('.');
-        if (parts.Length == 1 || string.IsNullOrEmpty(parts[1]))
-            return false;
-
-        var fileExt = parts[1];
-        if (config.AllowFileExtensions.Contains(fileExt))
-            return true;
-
-        foreach (var pathGlob in config.AllowFilePaths)
-        {
-            if (pathInfo.GlobPath(pathGlob))
-                return true;
-        }
-            
-        return false;
-    }
-
     public static IHttpHandler GetHandlerForPathInfo(IHttpRequest httpReq, string filePath)
     {
         var appHost = HostContext.AppHost;
@@ -305,56 +274,13 @@ public class HttpHandlerFactory : IHttpHandlerFactory
         if (restPath != null)
             return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
 
-        var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpMethod, pathInfo, filePath);
+        var catchAllHandler = appHost.GetCatchAllHandler(httpReq);
         if (catchAllHandler != null)
             return catchAllHandler;
 
-        var isFile = httpReq.IsFile();
-        var isDirectory = httpReq.IsDirectory();
-
-        if (!isFile && !isDirectory && Env.IsMono)
-            isDirectory = StaticFileHandler.MonoDirectoryExists(filePath, filePath.Substring(0, filePath.Length - pathInfo.Length));
-
-        if (isFile || isDirectory)
-        {
-            //If pathInfo is for Directory try again with redirect including '/' suffix
-            if (appHost.Config.RedirectDirectoriesToTrailingSlashes && isDirectory && !httpReq.OriginalPathInfo.EndsWith("/"))
-                return new RedirectHttpHandler { RelativeUrl = pathInfo + "/" };
-
-            if (isDirectory)
-                return StaticFilesHandler;
-
-            return ShouldAllow(pathInfo)
-                ? StaticFilesHandler
-                : ForbiddenHttpHandler;
-        }
-
-        // Check for PagedBasedRouting before wildcard Fallback Service
-        foreach (var httpHandlerResolver in appHost.FallbackHandlersArray)
-        {
-            var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
-            if (httpHandler != null)
-                return httpHandler;
-        }
-
-        if (appHost.Config.FallbackRestPath != null)
-        {
-            restPath = appHost.Config.FallbackRestPath(httpReq);
-            if (restPath != null)
-                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
-        }
-            
-        return null;
-    }
-
-    private static IHttpHandler GetCatchAllHandlerIfAny(ServiceStackHost appHost, string httpMethod, string pathInfo, string filePath)
-    {
-        foreach (var httpHandlerResolver in appHost.CatchAllHandlersArray)
-        {
-            var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
-            if (httpHandler != null)
-                return httpHandler;
-        }
+        var fallbackHandler = appHost.GetFallbackHandler(httpReq);
+        if (fallbackHandler != null)
+            return fallbackHandler;
 
         return null;
     }

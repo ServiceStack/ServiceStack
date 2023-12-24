@@ -18,16 +18,16 @@ namespace ServiceStack.Common.Tests
                 }
             }.Init())
             {
-                Assert.That(HttpHandlerFactory.ShouldAllow("a.js"));
-                Assert.That(HttpHandlerFactory.ShouldAllow("a.aaa"));
-                Assert.That(HttpHandlerFactory.ShouldAllow("dir/a/b/c/a.aaa"));
-                Assert.That(!HttpHandlerFactory.ShouldAllow("a.zzz"));
-                Assert.That(HttpHandlerFactory.ShouldAllow("dir/a.zzz"));
-                Assert.That(HttpHandlerFactory.ShouldAllow("dir/a/b/c/a.zzz"));
+                Assert.That(VirtualFilesFeature.ShouldAllow("a.js"));
+                Assert.That(VirtualFilesFeature.ShouldAllow("a.aaa"));
+                Assert.That(VirtualFilesFeature.ShouldAllow("dir/a/b/c/a.aaa"));
+                Assert.That(!VirtualFilesFeature.ShouldAllow("a.zzz"));
+                Assert.That(VirtualFilesFeature.ShouldAllow("dir/a.zzz"));
+                Assert.That(VirtualFilesFeature.ShouldAllow("dir/a/b/c/a.zzz"));
 
-                Assert.That(!HttpHandlerFactory.ShouldAllow("a.json"));
-                Assert.That(HttpHandlerFactory.ShouldAllow("jspm_packages/a.json"));
-                Assert.That(HttpHandlerFactory.ShouldAllow("jspm_packages/a/b/c/a.json"));
+                Assert.That(!VirtualFilesFeature.ShouldAllow("a.json"));
+                Assert.That(VirtualFilesFeature.ShouldAllow("jspm_packages/a.json"));
+                Assert.That(VirtualFilesFeature.ShouldAllow("jspm_packages/a/b/c/a.json"));
             }
         }
     }

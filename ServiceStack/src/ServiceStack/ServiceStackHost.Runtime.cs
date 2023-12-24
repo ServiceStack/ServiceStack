@@ -522,6 +522,46 @@ public abstract partial class ServiceStackHost
         }
     }
 
+    public virtual IHttpHandler GetCatchAllHandler(IHttpRequest httpReq)
+    {
+        foreach (var httpHandlerResolver in CatchAllHandlersArray)
+        {
+            var httpHandler = httpHandlerResolver(httpReq);
+            if (httpHandler != null)
+                return httpHandler;
+        }
+
+        return null;
+    }
+
+    public virtual IHttpHandler GetFallbackHandler(IHttpRequest httpReq)
+    {
+        // Check for PagedBasedRouting before wildcard Fallback Service
+        foreach (var httpHandlerResolver in FallbackHandlersArray)
+        {
+            var httpHandler = httpHandlerResolver(httpReq);
+            if (httpHandler != null)
+                return httpHandler;
+        }
+
+        if (Config.FallbackRestPath != null)
+        {
+            var fallbackPath = Config.FallbackRestPath(httpReq);
+            if (fallbackPath != null)
+            {
+                RestHandler.GetSanitizedPathInfo(httpReq.PathInfo, out var contentType);
+                return new RestHandler
+                {
+                    RestPath = fallbackPath, 
+                    RequestName = fallbackPath.RequestType.GetOperationName(), 
+                    ResponseContentType = contentType,
+                };
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Configuration of ServiceStack's /metadata pages
     /// </summary>
@@ -992,7 +1032,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// If they don't have an ICacheClient configured use an In Memory one.
     /// </summary>
-    internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient();
+    internal static readonly MemoryCacheClient DefaultCache = new();
 
     /// <summary>
     /// Tries to resolve <see cref="ICacheClient"></see> through IoC container.

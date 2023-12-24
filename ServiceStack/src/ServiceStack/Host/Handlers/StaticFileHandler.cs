@@ -317,19 +317,6 @@ public class StaticFileHandler : HttpAsyncTaskHandler
 
     public override bool IsReusable => true;
 
-    public static bool MonoDirectoryExists(string dirPath, string appFilePath)
-    {
-        if (dirPath == null) return false;
-
-        if (allDirs == null)
-            allDirs = CreateDirIndex(appFilePath);
-
-        var foundDir = allDirs.ContainsKey(dirPath.ToLower());
-
-        //log.DebugFormat("Found dirPath {0} in Mono: ", dirPath, foundDir);
-        return foundDir;
-    }
-        
     private static Dictionary<string, string> allDirs; //populated by GetFiles()
     private static Dictionary<string, string> allFiles;
 
