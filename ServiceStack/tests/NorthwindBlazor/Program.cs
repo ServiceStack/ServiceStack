@@ -93,7 +93,7 @@ app.MapAdditionalIdentityEndpoints();
 
 app.UseServiceStack(new AppHost(), options =>
 {
-    options.MapEndpoints();
+    options.MapEndpoints(force:true);
     options.WithOpenApi();
 });
 

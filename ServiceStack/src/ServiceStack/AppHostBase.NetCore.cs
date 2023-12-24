@@ -352,6 +352,18 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);
             httpReq.RequestAttributes = httpReq.GetAttributes() | RequestAttributes.Http;
 
+#if NET8_0_OR_GREATER
+            // Only use fallback handlers when ServiceStack Routing is disabled
+            if (Options.DisableServiceStackRouting)
+            {
+                if (GetFallbackHandler(httpReq) is HttpAsyncTaskHandler fallbackHandler)
+                {
+                    await context.ProcessRequestAsync(fallbackHandler);
+                    return;
+                }
+            }
+#endif
+
             httpRes = httpReq.Response;
             handler = HttpHandlerFactory.GetHandler(httpReq);
 
@@ -390,6 +402,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                 await next().ConfigAwait();
                 return;
             }
+
+#if NET8_0_OR_GREATER            
+            if (Options.DisableServiceStackRouting)
+            {
+                Log.WarnFormat("ServiceStack Routing is disabled, request to {0} by {1} is ignored", httpReq.PathInfo, handler.GetType().Name);
+                await next().ConfigAwait();
+                return;
+            }
+#endif
 
             try
             {
@@ -473,10 +494,11 @@ public class ServiceStackOptions
     /// <summary>
     /// Generate ASP.NET Core Endpoints for ServiceStack APIs
     /// </summary>
-    public void MapEndpoints(bool use = true)
+    public void MapEndpoints(bool use = true, bool force = false)
     {
         MapEndpointRouting = true;
         UseEndpointRouting = use;
+        DisableServiceStackRouting = force;
     }
 
     /// <summary>
@@ -498,6 +520,11 @@ public class ServiceStackOptions
     /// Custom handlers to execute for each ServiceStack API endpoint
     /// </summary>
     public List<RouteHandlerBuilderDelegate> RouteHandlerBuilders { get; } = new();
+    
+    /// <summary>
+    /// Whether to disable ServiceStack Routing and use ASP.NET Core Endpoint Routing to handle all ServiceStack Requests
+    /// </summary>
+    public bool DisableServiceStackRouting { get; set; }
 #endif
 }
 
@@ -581,6 +608,20 @@ public static class NetCoreAppHostExtensions
         configure((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)appHost.App);
     }
     
+    public static Task ProcessRequestAsync(this HttpContext httpContext, Func<IRequest,HttpAsyncTaskHandler> handlerFactory, string apiName=null, Action<IRequest> configure = null)
+    {
+        if (handlerFactory == null)
+            return Task.CompletedTask;
+        var req = httpContext.ToRequest();
+        var handler = handlerFactory(req);
+        if (handler == null)
+            return Task.CompletedTask;
+        var res = (NetCoreResponse)req.Response;
+        //res.KeepOpen = true; // Let ASP.NET Core close request
+        configure?.Invoke(req);
+        return handler.ProcessRequestAsync(req, req.Response, apiName ?? httpContext.Request.Path);
+    }
+
     public static Task ProcessRequestAsync(this HttpContext httpContext, HttpAsyncTaskHandler handler, string apiName=null, Action<IRequest> configure = null)
     {
         if (handler == null)
@@ -597,13 +638,15 @@ public static class NetCoreAppHostExtensions
         string tag=null,
         string description=null,
         string contentType=null,
-        string[] additionalContentTypes=null) =>
+        string[] additionalContentTypes=null,
+        bool exclude=true) =>
         builder.WithMetadata(name:name,
             tag:tag,
             description:description,
             responseType:typeof(TResponse),
             contentType:contentType,
-            additionalContentTypes:additionalContentTypes);
+            additionalContentTypes:additionalContentTypes,
+            exclude:true);
     
     public static IEndpointConventionBuilder WithMetadata(this IEndpointConventionBuilder builder,
         string name=null,
@@ -611,7 +654,8 @@ public static class NetCoreAppHostExtensions
         string description=null,
         Type responseType=null,
         string contentType=null,
-        string[] additionalContentTypes=null)
+        string[] additionalContentTypes=null,
+        bool exclude=true)
     {
         if (name != null)
             builder.WithName(name);
@@ -624,7 +668,9 @@ public static class NetCoreAppHostExtensions
             var routeBuilder = (RouteHandlerBuilder)builder;
             routeBuilder.Produces(200, responseType, contentType: contentType, additionalContentTypes: additionalContentTypes ?? Array.Empty<string>());
         }
-        return builder.ExcludeFromDescription();
+        if (exclude)
+            builder.ExcludeFromDescription();
+        return builder;
     }
 #endif
 
