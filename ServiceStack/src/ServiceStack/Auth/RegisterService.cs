@@ -104,7 +104,7 @@ public class RegisterService : RegisterUserAuthServiceBase
     {
         if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
         {
-            RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
+            RegistrationValidator?.ValidateAndThrow(request, ApplyTo.Put);
         }
 
         var response = ValidateFn?.Invoke(this, HttpMethods.Put, request);

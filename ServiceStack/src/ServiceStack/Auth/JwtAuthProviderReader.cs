@@ -1076,8 +1076,7 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
         if (isRsa && PrivateKey == null && PublicKey == null)
             throw new ArgumentNullException(nameof(PrivateKey), @"PrivateKey is Required to use JWT with " + HashAlgorithm);
 
-        if (KeyId == null)
-            KeyId = GetKeyId(null);
+        KeyId ??= GetKeyId(null);
              
         appHost.RegisterServices(ServiceRoutes);
 

@@ -11,11 +11,11 @@ namespace ServiceStack;
 
 public class SimpleContainer : IContainer, IResolver 
 {
-    public HashSet<string> IgnoreTypesNamed { get; } = new HashSet<string>();
+    public HashSet<string> IgnoreTypesNamed { get; } = new();
 
-    protected readonly ConcurrentDictionary<Type, object> InstanceCache = new ConcurrentDictionary<Type, object>();
+    protected readonly ConcurrentDictionary<Type, object> InstanceCache = new();
 
-    protected readonly ConcurrentDictionary<Type, Func<object>> Factory = new ConcurrentDictionary<Type, Func<object>>();
+    protected readonly ConcurrentDictionary<Type, Func<object>> Factory = new();
 
     public object Resolve(Type type)
     {
@@ -34,15 +34,15 @@ public class SimpleContainer : IContainer, IResolver
         return instance;
     }
 
-    public IContainer AddSingleton(Type type, Func<object> factory)
+    public IContainer AddSingleton(Type serviceType, Func<object> factory)
     {
-        Factory[type] = () => InstanceCache.GetOrAdd(type, factory());
+        Factory[serviceType] = () => InstanceCache.GetOrAdd(serviceType, factory());
         return this;
     }
 
-    public IContainer AddTransient(Type type, Func<object> factory)
+    public IContainer AddTransient(Type serviceType, Func<object> factory)
     {
-        Factory[type] = factory;
+        Factory[serviceType] = factory;
         return this;
     }
 

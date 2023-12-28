@@ -2,26 +2,19 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-
-namespace ServiceStack;
+using Microsoft.Extensions.DependencyInjection;
 
 #if NETCORE
-
-using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+#endif
 
-/// <summary>
-/// Implement to register your App's dependencies in a "no-touch" Startup configuration class 
-/// </summary>
-public interface IConfigureServices 
-{
-    void Configure(IServiceCollection services);
-}
+namespace ServiceStack;
     
+#if NETCORE
+
 /// <summary>
 /// Implement to register your App's features in a "no-touch" Startup configuration class 
 /// </summary>
@@ -187,7 +180,7 @@ public abstract class ModularStartup : IStartup
         var mi = GetType().GetMethod(nameof(ConfigureServices));
         if (mi != null)
         {
-            mi.Invoke(this, new object[] { services });
+            mi.Invoke(this, [services]);
         }
 
         var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();

@@ -371,5 +371,4 @@ public static class HostContext
         ServiceStackHost.GlobalAfterPluginsLoaded.Clear();
         ServiceStackHost.GlobalAfterAppHostInit.Clear();
     }
-        
 }

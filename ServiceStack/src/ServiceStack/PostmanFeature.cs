@@ -210,7 +210,7 @@ public class PostmanService : Service
                     op.Routes.SelectMany(x => x.Verbs))
                 .SelectMany(x => x == ActionContext.AnyAction
                     ? feature.DefaultVerbsForAny
-                    : new List<string> { x }));
+                    : [x]));
 
             var propertyTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             op.RequestType.GetSerializableFields()
@@ -348,7 +348,7 @@ public class PostmanService : Service
 
 public static class PostmanExtensions
 {
-    private static readonly char[] PathDelim = {'/'};
+    private static readonly char[] PathDelim = ['/'];
     internal static string[] SplitPaths(this string text) => 
         text.Split(PathDelim, StringSplitOptions.RemoveEmptyEntries);
 
@@ -388,8 +388,7 @@ public static class PostmanExtensions
     public static List<PostmanData> ApplyPropertyTypes(this List<PostmanData> data,
         Dictionary<string, string> typeMap, string defaultValue = "")
     {
-        string typeName;
-        data.Each(x => x.value = typeMap.TryGetValue(x.key, out typeName) ? typeName : x.value ?? defaultValue);
+        data.Each(x => x.value = typeMap.TryGetValue(x.key, out var typeName) ? typeName : x.value ?? defaultValue);
         return data;
     }
         
@@ -398,8 +397,7 @@ public static class PostmanExtensions
         string defaultValue = "")
     {
         var to = new Dictionary<string, string>();
-        string typeName;
-        names.Each(x => to[x] = typeMap.TryGetValue(x, out typeName) ? typeName : defaultValue);
+        names.Each(x => to[x] = typeMap.TryGetValue(x, out var typeName) ? typeName : defaultValue);
         return to;
     }        
 }

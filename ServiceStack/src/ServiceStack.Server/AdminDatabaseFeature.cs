@@ -135,7 +135,7 @@ public class AdminDatabaseService : Service
         }
     }
 
-    private static char[] Delims = { '=', '!', '<', '>', '[', ']' };
+    private static char[] Delims = ['=', '!', '<', '>', '[', ']'];
 
     private static ConcurrentDictionary<string, List<MetadataPropertyType>> ColumnCache = new();
 

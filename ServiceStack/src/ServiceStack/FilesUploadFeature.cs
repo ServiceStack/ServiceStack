@@ -314,16 +314,10 @@ public class DeleteFileUploadService : Service
     }
 }
 
-public readonly struct ResolvedPath
+public readonly struct ResolvedPath(string publicPath, string virtualPath)
 {
-    public string PublicPath { get; }
-    public string VirtualPath { get; }
-
-    public ResolvedPath(string publicPath, string virtualPath)
-    {
-        PublicPath = publicPath;
-        VirtualPath = virtualPath;
-    }
+    public string PublicPath { get; } = publicPath;
+    public string VirtualPath { get; } = virtualPath;
 }
 
 public readonly struct FilesUploadContext

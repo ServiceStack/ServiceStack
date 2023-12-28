@@ -69,7 +69,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Request_filter_auto_wired()
         {
             // Arrange
-            var filter = appHost.GetContainer().Resolve<TypedRequestFilter>();
+            var filter = appHost.Resolve<TypedRequestFilter>();
 
             // Assert
             Assert.NotNull(filter.Dependency);
@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Response_filter_auto_wired()
         {
             // Arrange
-            var filter = appHost.GetContainer().Resolve<TypedResponseFilter>();
+            var filter = appHost.Resolve<TypedResponseFilter>();
 
             // Assert
             Assert.NotNull(filter.Dependency);

@@ -36,7 +36,7 @@ public class CancellableRequestService : Service
     public object Any(CancelRequest request)
     {
         if (request.Tag.IsNullOrEmpty())
-            throw new ArgumentNullException("Tag");
+            throw new ArgumentNullException(nameof(request.Tag));
 
         using var cancellableReq = base.Request.GetCancellableRequest(request.Tag);
         if (cancellableReq == null)

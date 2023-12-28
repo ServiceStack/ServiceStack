@@ -243,12 +243,13 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     /// <returns></returns>
     public AuthFeature AddAuthenticateAliasRoutes()
     {
-        ServiceRoutes[typeof(AuthenticateService)] = new[] {
+        ServiceRoutes[typeof(AuthenticateService)] =
+        [
             "/" + LocalizedStrings.Auth.Localize(),
             "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
             "/" + LocalizedStrings.Authenticate.Localize(),
-            "/" + LocalizedStrings.Authenticate.Localize() + "/{provider}",
-        };
+            "/" + LocalizedStrings.Authenticate.Localize() + "/{provider}"
+        ];
         return this;
     }
 
@@ -271,13 +272,12 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         this.authProviders = authProviders;
 
         ServiceRoutes = new Dictionary<Type, string[]> {
-            { typeof(AuthenticateService), [
-                    "/" + LocalizedStrings.Auth.Localize(),
-                    "/" + LocalizedStrings.Auth.Localize() + "/{provider}"
-                ]
-            },
-            { typeof(AssignRolesService), ["/" + LocalizedStrings.AssignRoles.Localize()] },
-            { typeof(UnAssignRolesService), ["/" + LocalizedStrings.UnassignRoles.Localize()] },
+            [typeof(AuthenticateService)] = [
+                "/" + LocalizedStrings.Auth.Localize(),
+                "/" + LocalizedStrings.Auth.Localize() + "/{provider}"
+            ],
+            [typeof(AssignRolesService)] = ["/" + LocalizedStrings.AssignRoles.Localize()],
+            [typeof(UnAssignRolesService)] = ["/" + LocalizedStrings.UnassignRoles.Localize()],
         };
         ServiceRoutesVerbs = new()
         {

@@ -45,14 +45,15 @@ public class HotReloadFilesService : Service
     public static IVirtualPathProvider UseVirtualFiles { get; set; }
     public static string DefaultPattern { get; set; } = "*";
         
-    public static List<string> ExcludePatterns { get; } = new List<string> {
+    public static List<string> ExcludePatterns { get; } =
+    [
         "*.sqlite",
         "*.db",
-        "*.cs",  //monitored by dotnet watch
-        "*.ts",  //watch on generated .js instead
+        "*.cs", //monitored by dotnet watch
+        "*.ts", //watch on generated .js instead
         "*.log", //exclude log files
-        "*.csv",
-    };
+        "*.csv"
+    ];
         
     public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
     public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);

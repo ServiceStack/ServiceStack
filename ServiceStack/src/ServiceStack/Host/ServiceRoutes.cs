@@ -69,9 +69,6 @@ public class ServiceRoutes(ServiceStackHost appHost) : IServiceRoutes
         {
             var existingRouteMsg = "Existing Route for '{0}' at '{1}' already exists".Fmt(requestType.GetOperationName(), restPath);
 
-            //if (!EndpointHostConfig.SkipRouteValidation) //wait till next deployment
-            //    throw new Exception(existingRouteMsg);
-
             log.Warn(existingRouteMsg);
             return true;
         }

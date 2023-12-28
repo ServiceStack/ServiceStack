@@ -19,14 +19,10 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class ScriptConditionValidator : PropertyValidator, IPredicateValidator
+public class ScriptConditionValidator(SharpPage code)
+    : PropertyValidator(new LanguageStringSource(nameof(PredicateValidator))), IPredicateValidator
 {
-    public SharpPage Code { get; }
-        
-    public ScriptConditionValidator(SharpPage code) : base(new LanguageStringSource(nameof(PredicateValidator)))
-    {
-        Code = code;
-    }
+    public SharpPage Code { get; } = code;
 
     public override bool ShouldValidateAsynchronously(IValidationContext context) => true;
     //public override bool ShouldValidateAsync(ValidationContext context) => true;
@@ -149,7 +145,6 @@ public static class Validators
         else ThrowInvalidValidateRequest();
     }
 
-
     /// <summary>
     /// Register declarative property [Validate] attributes.
     /// </summary>
@@ -218,7 +213,7 @@ public static class Validators
                         var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, elementType);
                         var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor(new[] { propValidatorType, typeof(Type) })
                                              ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
-                        var childAdaptor = ciChildAdaptor.Invoke(new[] { validator, propValidatorType }) as IPropertyValidator; 
+                        var childAdaptor = ciChildAdaptor.Invoke([validator, propValidatorType]) as IPropertyValidator; 
                         // Rule.AddValidator(validator);
                         collectionRule.AddValidator(childAdaptor);
                             
@@ -242,8 +237,9 @@ public static class Validators
                         var propAccessorFn = (Func<object,object>)propAccessorExpr.Compile();
                         var propertyRuleCtor = typeof(PropertyRule).GetConstructor(CollectionCtorTypes)
                                                ?? throw new Exception("Could not find PropertyRule Constructor");
-                        var propRule = (PropertyRule)propertyRuleCtor.Invoke(new object[]
-                            {member, propAccessorFn, propAccessorExpr, CascadeMode, pi.PropertyType, type});
+                        var propRule = (PropertyRule)propertyRuleCtor.Invoke([
+                            member, propAccessorFn, propAccessorExpr, CascadeMode, pi.PropertyType, type
+                        ]);
 
                         // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
                         // Rule.AddValidator(validator);
@@ -252,16 +248,14 @@ public static class Validators
                         var validator = container.TryResolve(propValidatorType);
 
                         var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, pi.PropertyType);
-                        var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor(new[] { propValidatorType, typeof(Type) })
+                        var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor([propValidatorType, typeof(Type)])
                                              ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
-                        var childAdaptor = ciChildAdaptor.Invoke(new[] { validator, propValidatorType }) as IPropertyValidator; 
+                        var childAdaptor = ciChildAdaptor.Invoke([validator, propValidatorType]) as IPropertyValidator; 
                         propRule.AddValidator(childAdaptor);
 
                         typeRules.Add(propRule);
                     }
-                        
                 }
-                    
             }
         }
 
@@ -312,7 +306,7 @@ public static class Validators
     {
         var typeRules = TypePropertyRulesMap.TryGetValue(type, out var rules)
             ? rules
-            : TypePropertyRulesMap[type] = new List<IValidationRule>();
+            : TypePropertyRulesMap[type] = [];
 
         var rule = typeRules.FirstOrDefault(x => (x as PropertyRule)?.PropertyName == pi.Name);
         if (rule == null)
@@ -340,7 +334,7 @@ public static class Validators
 
     public static void AppendDefaultValueOnEmptyValidators(PropertyInfo pi, IValidateRule rule)
     {
-        if (rule.Validator == "Empty" || rule.Validator == "NotEmpty")
+        if (rule.Validator is "Empty" or "NotEmpty")
         {
             // Not/EmptyValidator has a required default constructor required to accurately determine empty for value types
             if (pi.PropertyType.IsValueType && !pi.PropertyType.IsNullableType())
