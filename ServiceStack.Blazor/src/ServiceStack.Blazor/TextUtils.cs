@@ -24,10 +24,9 @@ public class TextDumpOptions
     public TextStyle HeaderStyle { get; set; }
     public string? Caption { get; set; }
     public string? CaptionIfEmpty { get; set; }
-
     public string[]? Headers { get; set; }
     public bool IncludeRowNumbers { get; set; } = true;
-
+    
     internal int Depth { get; set; }
     internal bool HasCaption { get; set; }
 }
