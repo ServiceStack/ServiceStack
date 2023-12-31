@@ -6,92 +6,91 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+public class SpinWait : IReturn<SpinWait>
 {
-    public class SpinWait : IReturn<SpinWait>
-    {
-        public int? Iterations { get; set; }
-    }
+    public int? Iterations { get; set; }
+}
 
-    public class Sleep : IReturn<Sleep>
-    {
-        public int? ForMs { get; set; }
-    }
+public class Sleep : IReturn<Sleep>
+{
+    public int? ForMs { get; set; }
+}
 
-    public class PerfServices : Service
-    {
-        private const int DefaultIterations = 1000 * 1000;
-        private const int DefaultMs = 100;
+public class PerfServices : Service
+{
+    private const int DefaultIterations = 1000 * 1000;
+    private const int DefaultMs = 100;
 
-        public object Any(SpinWait request)
-        {
+    public object Any(SpinWait request)
+    {
 #if NETCORE
-            int i = request.Iterations.GetValueOrDefault(DefaultIterations);
-            //SpinWait.SpinUntil(i-- > 0);
+        int i = request.Iterations.GetValueOrDefault(DefaultIterations);
+        //SpinWait.SpinUntil(i-- > 0);
 #else
-            Thread.SpinWait(request.Iterations.GetValueOrDefault(DefaultIterations));
+        Thread.SpinWait(request.Iterations.GetValueOrDefault(DefaultIterations));
 #endif
-            return request;
-        }
-
-        public object Any(Sleep request)
-        {
-            Thread.Sleep(request.ForMs.GetValueOrDefault(DefaultMs));
-            return request;
-        }
+        return request;
     }
 
-    public class AppHostSmartPool : AppHostHttpListenerSmartPoolBase
+    public object Any(Sleep request)
     {
-        public AppHostSmartPool() : base("SmartPool Test", typeof(PerfServices).Assembly) { }
+        Thread.Sleep(request.ForMs.GetValueOrDefault(DefaultMs));
+        return request;
+    }
+}
 
-        public override void Configure(Container container)
-        {
-        }
+public class AppHostSmartPool : AppHostHttpListenerSmartPoolBase
+{
+    public AppHostSmartPool() : base("SmartPool Test", typeof(PerfServices).Assembly) { }
+
+    public override void Configure(Container container)
+    {
+    }
+}
+
+[TestFixture, Ignore("Requires explicit admin privileges")]
+public class AppSelfHostTests
+{
+    private readonly ServiceStackHost appHost;
+
+    private readonly string ListeningOn;
+
+    public AppSelfHostTests()
+    {
+        var port = HostContext.FindFreeTcpPort(startingFrom: 5000);
+        if (port < 5000)
+            throw new Exception("Expected port >= 5000, got: " + port);
+
+        ListeningOn = "http://localhost:{0}/".Fmt(port);
+
+        appHost = new AppHostSmartPool()
+            .Init()
+            .Start(ListeningOn);
     }
 
-    [TestFixture]
-    public class AppSelfHostTests
+    [OneTimeTearDown]
+    public void TestFixtureTearDown()
     {
-        private readonly ServiceStackHost appHost;
+        appHost.Dispose();
+    }
 
-        private readonly string ListeningOn;
+    [Test]
+    public void Can_call_SelfHost_Services()
+    {
+        var client = new JsonServiceClient(ListeningOn);
 
-        public AppSelfHostTests()
-        {
-            var port = HostContext.FindFreeTcpPort(startingFrom: 5000);
-            if (port < 5000)
-                throw new Exception("Expected port >= 5000, got: " + port);
+        client.Get(new Sleep { ForMs = 100 });
+        client.Get(new SpinWait { Iterations = 1000 });
+    }
 
-            ListeningOn = "http://localhost:{0}/".Fmt(port);
+    [Test]
+    public async Task Can_call_SelfHost_Services_async()
+    {
+        var client = new JsonServiceClient(ListeningOn);
 
-            appHost = new AppHostSmartPool()
-                .Init()
-                .Start(ListeningOn);
-        }
-
-        [OneTimeTearDown]
-        public void TestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
-
-        [Test]
-        public void Can_call_SelfHost_Services()
-        {
-            var client = new JsonServiceClient(ListeningOn);
-
-            client.Get(new Sleep { ForMs = 100 });
-            client.Get(new SpinWait { Iterations = 1000 });
-        }
-
-        [Test]
-        public async Task Can_call_SelfHost_Services_async()
-        {
-            var client = new JsonServiceClient(ListeningOn);
-
-            var sleep = await client.GetAsync(new Sleep { ForMs = 100 });
-            var spin = await client.GetAsync(new SpinWait { Iterations = 1000 });
-        }
+        var sleep = await client.GetAsync(new Sleep { ForMs = 100 });
+        var spin = await client.GetAsync(new SpinWait { Iterations = 1000 });
     }
 }
