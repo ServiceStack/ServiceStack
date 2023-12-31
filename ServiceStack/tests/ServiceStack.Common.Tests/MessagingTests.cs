@@ -1,4 +1,5 @@
 ﻿#if !NETCORE
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Messaging;
@@ -6,8 +7,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
+    [DataContract]
     public class Incr
     {
+        [DataMember]
         public int Value { get; set; }
     }
 

@@ -18,8 +18,8 @@ namespace ServiceStack.Common.Tests.FluentValidation
 
         public class UserSeverityTests
         {
-            private const string Urlbase = "http://localhost:2001/";
-            
+            private const string Urlbase = "http://localhost:20000/";
+
             [Test]
             public void Stores_user_severity_against_validation_failure()
             {
@@ -40,9 +40,6 @@ namespace ServiceStack.Common.Tests.FluentValidation
 
             public class TestValidator : AbstractValidator<ErrorCodeTests.Person>
             {
-                public TestValidator()
-                {
-                }
             }
 
             [Test]
@@ -50,13 +47,12 @@ namespace ServiceStack.Common.Tests.FluentValidation
             {
                 using (var appHost = new TestAppHost())
                 {
-                    appHost.Plugins.Add(new ValidationFeature());
                     appHost.Init();
                     appHost.Start(Urlbase);
 
                     var sc = new JsonServiceClient(Urlbase);
 
-                    var response = sc.Get(new EchoRequest {Day = "Monday", Word = "Word"});
+                    var response = sc.Get(new EchoRequest { Day = "Monday", Word = "Word" });
 
                     Assert.That(response.Day, Is.EqualTo("Monday"));
                     Assert.That(response.Word, Is.EqualTo("Word"));
@@ -68,29 +64,29 @@ namespace ServiceStack.Common.Tests.FluentValidation
             {
                 using (var appHost = new TestAppHost())
                 {
-                    appHost.Plugins.Add(new ValidationFeature {TreatInfoAndWarningsAsErrors = true});
+                    appHost.ConfigurePlugin<ValidationFeature>(x => x.TreatInfoAndWarningsAsErrors = true);
                     appHost.Init();
                     appHost.Start(Urlbase);
 
                     var sc = new JsonServiceClient(Urlbase);
 
-                    Assert.Throws<WebServiceException>(() => sc.Get(new EchoRequest {Day = "Monday", Word = ""}),
+                    Assert.Throws<WebServiceException>(() => sc.Get(new EchoRequest { Day = "Monday", Word = "" }),
                         "'Word' should not be empty.");
                 }
             }
-            
+
             [Test]
             public void Can_return_response_when_no_failed_validations_and_TreatInfoAndWarningsAsErrors_set_false()
             {
                 using (var appHost = new TestAppHost())
                 {
-                    appHost.Plugins.Add(new ValidationFeature {TreatInfoAndWarningsAsErrors = false});
+                    appHost.ConfigurePlugin<ValidationFeature>(x => x.TreatInfoAndWarningsAsErrors = false);
                     appHost.Init();
                     appHost.Start(Urlbase);
 
                     var sc = new JsonServiceClient(Urlbase);
 
-                    var resp = sc.Get(new EchoRequest {Day = "Monday", Word = "Word"});
+                    var resp = sc.Get(new EchoRequest { Day = "Monday", Word = "Word" });
 
                     Assert.That(resp.ResponseStatus, Is.Null);
                 }
@@ -101,13 +97,13 @@ namespace ServiceStack.Common.Tests.FluentValidation
             {
                 using (var appHost = new TestAppHost())
                 {
-                    appHost.Plugins.Add(new ValidationFeature {TreatInfoAndWarningsAsErrors = false});
+                    appHost.ConfigurePlugin<ValidationFeature>(x => x.TreatInfoAndWarningsAsErrors = false);
                     appHost.Init();
                     appHost.Start(Urlbase);
 
                     var sc = new JsonServiceClient(Urlbase);
 
-                    var response = sc.Get(new EchoRequest {Day = "", Word = ""});
+                    var response = sc.Get(new EchoRequest { Day = "", Word = "" });
 
                     Assert.That(response.ResponseStatus, Is.Not.Null);
                     Assert.That(response.ResponseStatus.Errors, Is.Not.Empty);
@@ -135,7 +131,7 @@ namespace ServiceStack.Common.Tests.FluentValidation
 
         public class EchoService : Service
         {
-            public object Any(EchoRequest request) => new EchoResponse {Day = request.Day, Word = request.Word};
+            public object Any(EchoRequest request) => new EchoResponse { Day = request.Day, Word = request.Word };
         }
 
         public class EchoRequestValidator : AbstractValidator<EchoRequest>

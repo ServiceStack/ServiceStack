@@ -1,6 +1,7 @@
 ﻿#if !NETCORE
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -77,46 +78,62 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
-
+    [DataContract]
     public class AnyTestMq
     {
+        [DataMember]
         public int Id { get; set; }
     }
 
+    [DataContract]
     public class AnyTestMqAsync
     {
+        [DataMember]
         public int Id { get; set; }
     }
 
+    [DataContract]
     public class AnyTestMqResponse
     {
+        [DataMember]
         public int CorrelationId { get; set; }
     }
 
+    [DataContract]
     public class PostTestMq
     {
+        [DataMember]
         public int Id { get; set; }
     }
 
+    [DataContract]
     public class PostTestMqResponse
     {
+        [DataMember]
         public int CorrelationId { get; set; }
     }
 
+    [DataContract]
     public class ValidateTestMq
     {
+        [DataMember]
         public int Id { get; set; }
     }
 
+    [DataContract]
     public class ValidateTestMqResponse
     {
+        [DataMember]
         public int CorrelationId { get; set; }
 
+        [DataMember]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [DataContract]
     public class ThrowGenericError
     {
+        [DataMember]
         public int Id { get; set; }
     }
 
@@ -130,8 +147,10 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
+    [DataContract]
     public class ThrowVoid
     {
+        [DataMember]
         public string Content { get; set; }
     }
         
@@ -201,8 +220,8 @@ namespace ServiceStack.Common.Tests.Messaging
     [TestFixture]
     public abstract class MqServerAppHostTests
     {
-        protected const string ListeningOn = "http://*:2001/";
-        public const string Host = "http://localhost:2001";
+        protected const string ListeningOn = "http://*:20000/";
+        public const string Host = "http://localhost:20000";
         private const string BaseUri = Host + "/";
 
         protected ServiceStackHost appHost;
