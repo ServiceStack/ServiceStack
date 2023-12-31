@@ -445,7 +445,7 @@ public class DynamicRequest
     
 //Validation Rules
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
-public class GetValidationRules : IReturn<GetValidationRulesResponse>
+public class GetValidationRules : IGet, IReturn<GetValidationRulesResponse>
 {
     [DataMember(Order = 1)]
     public string AuthSecret { get; set; }
@@ -494,7 +494,7 @@ public partial class GetCrudEvents : QueryDb<CrudEvent>
 }
 
 [DataContract, ExcludeMetadata]
-public partial class CheckCrudEvents : IReturn<CheckCrudEventsResponse>
+public partial class CheckCrudEvents : IGet, IReturn<CheckCrudEventsResponse>
 {
     [DataMember(Order = 1)]
     public string AuthSecret { get; set; }
