@@ -81,7 +81,7 @@ public class GrpcMarshallerFactory : MarshallerFactory
 }
 
 [Priority(10)]
-public class GrpcFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, Model.IHasStringId
+public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.Grpc;
     public string ServicesName { get; set; } = "GrpcServices";
@@ -156,6 +156,23 @@ public class GrpcFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, Model.IHasS
             feature => feature.AddPluginLink("types/proto", "gRPC .proto APIs"));
     }
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(TypesProtoService));
+        
+        foreach (var serviceType in RegisterServices)
+        {
+            if (!typeof(IStreamService).IsAssignableFrom(serviceType))
+            {
+                services.RegisterService(serviceType!);
+            }
+            else
+            {
+                services.AddSingleton(serviceType);
+            }
+        }
+    }
+
     public void Register(IAppHost appHost)
     {
         var cors = appHost.GetPlugin<CorsFeature>();
@@ -174,19 +191,6 @@ public class GrpcFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, Model.IHasS
         NativeTypesService.TypeLinksFilters.Add((req,links) => {
             links["Proto"] = new TypesProto().ToAbsoluteUri(req);
         });
-        appHost.RegisterService(typeof(TypesProtoService));
-
-        foreach (var serviceType in RegisterServices)
-        {
-            if (!typeof(IStreamService).IsAssignableFrom(serviceType))
-            {
-                appHost.RegisterService(serviceType);
-            }
-            else
-            {
-                ((ServiceStackHost)appHost).Container.RegisterAutoWiredType(serviceType);
-            }
-        }
     }
 
     public void AfterPluginsLoaded(IAppHost appHost)
@@ -458,9 +462,8 @@ public class TypesProto : NativeTypesBase { }
 
 [DefaultRequest(typeof(TypesProto))]
 [Restrict(VisibilityTo = RequestAttributes.None)]
-public class TypesProtoService : Service
+public class TypesProtoService(INativeTypesMetadata metadata) : Service
 {
-    public INativeTypesMetadata NativeTypesMetadata { get; set; }
     private string GetBaseUrl(string baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();
 
     [AddHeader(ContentType = MimeTypes.PlainText)]
@@ -468,8 +471,8 @@ public class TypesProtoService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+        var typesConfig = metadata.GetConfig(request);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
         var proto = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request);
         return proto;
     }
@@ -487,7 +490,7 @@ public class StreamFileService : Service, IStreamService<StreamFiles,FileContent
         while (!cancel.IsCancellationRequested)
         {
             var file = VirtualFileSources.GetFile(paths[i]);
-            var bytes = file?.GetBytesContentsAsBytes();
+            var bytes = file?.ReadAllBytes();
             var to = file != null
                 ? new FileContent {
                     Name = file.Name,
@@ -513,7 +516,7 @@ public class StreamFileService : Service, IStreamService<StreamFiles,FileContent
 
 public class SubscribeServerEventsService : Service, IStreamService<StreamServerEvents, StreamServerEventsResponse>
 {
-    public static HashSet<string> IgnoreMetaProps { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+    public static HashSet<string> IgnoreMetaProps { get; } = new(StringComparer.OrdinalIgnoreCase) {
         nameof(ServerEventMessage.EventId),
         nameof(ServerEventMessage.Data),
         nameof(ServerEventMessage.Channel),

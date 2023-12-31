@@ -263,11 +263,11 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         OnBeforeInit.Add(configure);
     }
         
-    public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), new []{ authProvider }) {}
+    public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), [authProvider]) {}
     public AuthFeature(IEnumerable<IAuthProvider> authProviders) : this(() => new AuthUserSession(), authProviders.ToArray()) {}
     public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
     {
-        this.SessionFactory = sessionFactory;
+        this.SessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
         this.SessionType = sessionFactory().GetType();
         this.authProviders = authProviders;
 
@@ -282,7 +282,7 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         ServiceRoutesVerbs = new()
         {
             ["/" + LocalizedStrings.Auth.Localize()] = "GET,POST",
-            ["/" + LocalizedStrings.Auth.Localize() + "/{provider}"] = "POST",
+            ["/" + LocalizedStrings.Auth.Localize() + "/{provider}"] = "GET,POST",
         };
 
         this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();

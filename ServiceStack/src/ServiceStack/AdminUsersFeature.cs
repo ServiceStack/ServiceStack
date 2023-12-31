@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Html;
@@ -9,7 +10,7 @@ using ServiceStack.NativeTypes;
 
 namespace ServiceStack.Admin;
 
-public class AdminUsersFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, IAfterInitAppHost
+public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin, IAfterInitAppHost
 {
     public string Id { get; set; } = Plugins.AdminUsers;
     public string AdminRole { get; set; } = RoleNames.Admin;
@@ -152,10 +153,13 @@ public class AdminUsersFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, IA
         });
     }
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(AdminUsersService));
+    }
+
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(AdminUsersService));
-
         appHost.AddToAppMetadata(meta => {
             var host = (ServiceStackHost) appHost;
             var authRepo = host.GetAuthRepository();

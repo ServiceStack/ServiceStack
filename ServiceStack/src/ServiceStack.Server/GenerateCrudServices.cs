@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -16,6 +17,7 @@ using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -53,7 +55,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     /// <summary>
     /// Generate services 
     /// </summary>
-    public List<CreateCrudServices> CreateServices { get; set; } = new();
+    public List<CreateCrudServices> CreateServices { get; set; } = [];
 
     /// <summary>
     /// Customize AutoGen Operation Generation
@@ -104,12 +106,19 @@ public class GenerateCrudServices : IGenerateCrudServices
     public Action<List<TableSchema>> TableSchemasFilter { get; set; }
         
     public GetTableNamesDelegate GetTableNames { get; set; }
-        
+
+    public static ScriptContext DefaultScriptContext = new ScriptContext {
+        ScriptLanguages = { ScriptLisp.Language },
+    }.InitForSharpPages().Init();
+
+    public static ScriptContext ScriptContext => HostContext.AppHost?.HasStarted == true
+        ? HostContext.AppHost.ScriptContext
+        : DefaultScriptContext;
+    
     /// <summary>
     /// Override which table columns to generate APIs for from a 'table' and 'schema'  
     /// </summary>
     public GetTableColumnsDelegate GetTableColumns { get; set; }
-
 
     public static Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
     {
@@ -157,11 +166,11 @@ public class GenerateCrudServices : IGenerateCrudServices
 
     private const string NoSchema = "__noschema";
 
-    public void Register(IAppHost appHost)
+    public void Configure(IServiceCollection services)
     {
         if (AccessRole != null)
         {
-            appHost.RegisterServices(ServiceRoutes);
+            services.RegisterServices(ServiceRoutes);
         }
     }
 
@@ -328,7 +337,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 return entry.Value;
         }
 
-        foreach (var asm in HostContext.AppHost.ServiceAssemblies)
+        foreach (var asm in ServiceStackHost.GlobalServiceAssemblies)
         {
             var type = asm.GetTypes().FirstOrDefault(x => x.Name == typeName);
             if (type != null)
@@ -343,7 +352,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         if (ssClientType != null)
             return ssClientType;
             
-        return HostContext.AppHost.ScriptContext.ProtectedMethods.@typeof(typeName);
+        return ScriptContext.ProtectedMethods.@typeof(typeName);
     }
 
     private static Type AssertResolveType(string typeName, Dictionary<Tuple<string, string>, Type> generatedTypes)
@@ -379,7 +388,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         if (appType != null)
             return appType;
 
-        return HostContext.AppHost.ScriptContext.ProtectedMethods.@typeof(fullTypeName);
+        return ScriptContext.ProtectedMethods.@typeof(fullTypeName);
     }
 
     private static Type AssertResolveType(Tuple<string, string> typeKey, Dictionary<Tuple<string, string>, Type> generatedTypes)
@@ -930,7 +939,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         var excludeTables = genServices.ExcludeTables;
         if (request.ExcludeTables?.Count > 0)
         {
-            excludeTables = new List<string>(genServices.ExcludeTables);
+            excludeTables = [..genServices.ExcludeTables];
             excludeTables.AddRange(request.ExcludeTables);
         }
 
@@ -1153,8 +1162,8 @@ public class GenerateCrudServices : IGenerateCrudServices
         };
         if (request.Include == "new")
         {
-            crudMetadataTypes.Operations = new List<MetadataOperationType>();
-            crudMetadataTypes.Types = new List<MetadataType>();
+            crudMetadataTypes.Operations = [];
+            crudMetadataTypes.Types = [];
         }
 
         using var db = request.NamedConnection == null
@@ -1188,8 +1197,8 @@ public class GenerateCrudServices : IGenerateCrudServices
                     },
                     Name = StringUtils.SnakeCaseToPascalCase(column.ColumnName),
                     Type = dataType.GetMetadataPropertyType(),
-                    IsValueType = underlyingType.IsValueType ? true : (bool?) null,
-                    IsEnum = underlyingType.IsEnum ? true : (bool?) null,
+                    IsValueType = underlyingType.IsValueType ? true : null,
+                    IsEnum = underlyingType.IsEnum ? true : null,
                     Namespace = dataType.Namespace,
                     GenericArgs = dataType.ToGenericArgs(),
                     DataMember = typesConfig.AddDataContractAttributes

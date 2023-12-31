@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -14,7 +15,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class AdminDatabaseFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
+public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin
 {
     public string Id { get; set; } = Plugins.AdminDatabase;
     public string AdminRole { get; set; } = RoleNames.Admin;
@@ -24,10 +25,13 @@ public class AdminDatabaseFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
     public int QueryLimit { get; set; } = 100;
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(AdminDatabaseService));
+    }
+
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(AdminDatabaseService));
-
         var dbFactory = appHost.Resolve<IDbConnectionFactory>();
         using var db = dbFactory.Open();
 

@@ -41,24 +41,11 @@ public class ServiceController : IServiceController
         this.ResolveServicesFn = resolveServicesFn;
     }
 
-    public ServiceController(ServiceStackHost appHost, params Assembly[] assembliesWithServices)
-        : this(appHost)
-    {
-        if (assembliesWithServices == null || assembliesWithServices.Length == 0)
-            throw new ArgumentException(
-                "No Assemblies provided in your AppHost's base constructor.\n"
-                + "To register your services, please provide the assemblies where your web services are defined.");
-
-        this.ResolveServicesFn = () => GetAssemblyTypes(assembliesWithServices);
-    }
-
-    private readonly HashSet<Type> registeredServices = new();
+    private readonly HashSet<Type> registeredServices = [];
     readonly Dictionary<Type, ServiceExecFn> requestExecMap = new();
     readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs = new();
 
     public Dictionary<Type, Func<IRequest, object>> RequestTypeFactoryMap { get; set; }
-
-    public string DefaultOperationsNamespace { get; set; }
 
     public Func<IEnumerable<Type>> ResolveServicesFn { get; set; }
 
@@ -71,39 +58,11 @@ public class ServiceController : IServiceController
         this.Register(typeFactory);
 
         appHost.Container.RegisterAutoWiredTypes(appHost.Metadata.ServiceTypes);
+        ServiceStackHost.GlobalServicesRegistered.AddDistinctRange(appHost.Metadata.ServiceTypes);
 
         return this;
     }
 
-    private List<Type> GetAssemblyTypes(Assembly[] assembliesWithServices)
-    {
-        var results = new List<Type>();
-        string assemblyName = null;
-        string typeName = null;
-
-        try
-        {
-            foreach (var assembly in assembliesWithServices)
-            {
-                assemblyName = assembly.FullName;
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (appHost.ExcludeAutoRegisteringServiceTypes.Contains(type))
-                        continue;
-
-                    typeName = type.GetOperationName();
-                    results.Add(type);
-                }
-            }
-            return results;
-        }
-        catch (Exception ex)
-        {
-            var msg = $"Failed loading types, last assembly '{assemblyName}', type: '{typeName}'";
-            LogManager.GetLogger(GetType()).Error(msg, ex);
-            throw new Exception(msg, ex);
-        }
-    }
     public void RegisterServicesInAssembly(Assembly assembly)
     {
         foreach (var serviceType in assembly.GetTypes().Where(IsServiceType))
@@ -116,11 +75,18 @@ public class ServiceController : IServiceController
     {
         try
         {
+            if (ServiceStackHost.GlobalServicesRegistered.Contains(serviceType))
+            {
+                LogManager.GetLogger(GetType()).WarnFormat("'{0}' Service has already been registered", serviceType.Name);
+                return;
+            }
+            
             if (!IsServiceType(serviceType))
                 throw new ArgumentException($"Type {serviceType.FullName} is not a Web Service that implements IService");
                 
             RegisterService(typeFactory, serviceType);
             appHost.Container.RegisterAutoWiredType(serviceType);
+            ServiceStackHost.GlobalServicesRegistered.Add(serviceType);
         }
         catch (Exception ex)
         {
@@ -132,7 +98,8 @@ public class ServiceController : IServiceController
     // Called from ServiceController.Init() in AppHost.Init()
     internal void Register(ITypeFactory serviceFactoryFn)
     {
-        foreach (var serviceType in ResolveServicesFn())
+        var serviceTypes = ResolveServicesFn();
+        foreach (var serviceType in serviceTypes)
         {
             RegisterService(serviceFactoryFn, serviceType);
         }
@@ -144,17 +111,16 @@ public class ServiceController : IServiceController
 
         if (IsServiceType(serviceType))
         {
-            if (registeredServices.Contains(serviceType))
+            if (!registeredServices.Add(serviceType))
                 return;
-            registeredServices.Add(serviceType);
 
             var log = LogManager.GetLogger(GetType());
                 
             foreach (var mi in serviceType.GetActions())
             {
                 var requestType = mi.GetParameters()[0].ParameterType;
-                if (processedReqs.Contains(requestType)) continue;
-                processedReqs.Add(requestType);
+                if (!processedReqs.Add(requestType)) 
+                    continue;
 
                 RegisterServiceExecutor(requestType, serviceType, serviceFactoryFn);
 
@@ -222,18 +188,55 @@ public class ServiceController : IServiceController
         if (requestType.IsValueType || requestType == typeof(string))
             return false;
 
+        return IsServiceAction(actionName);
+    }
+
+    public static bool IsServiceAction(string actionName)
+    {
         actionName = actionName.ToUpper();
         if (actionName.EndsWith(ActionMethod.AsyncUpper))
             actionName = actionName.Substring(0, actionName.Length - ActionMethod.AsyncUpper.Length);
 
-        var ret = HttpMethods.AllVerbs.Contains(actionName) || actionName == ActionContext.AnyAction 
-                                                            || HttpMethods.AllVerbs.Any(verb => 
-                                                                ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) 
-                                                            || ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format));
+        var ret = HttpMethods.AllVerbs.Contains(actionName) 
+                  || actionName == ActionContext.AnyAction 
+                  || HttpMethods.AllVerbs.Any(verb => 
+                      ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) 
+                  || ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format));
         return ret;
     }
 
-    public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
+    /// <summary>
+    /// Get all Request DTO types implemented in Service Types
+    /// </summary>
+    public static HashSet<Type> GetServiceRequestTypes(IEnumerable<Type> serviceTypes)
+    {
+        var requestTypes = new HashSet<Type>();
+        foreach (var requestType in serviceTypes.SelectMany(x => x.GetActions()).Select(x => x.RequestType))
+        {
+            requestTypes.Add(requestType);
+        }
+        return requestTypes;
+    }
+    
+    /// <summary>
+    /// Get all Auto Batched requests implemented in service types
+    /// </summary>
+    public static HashSet<Type> GetAutoBatchedRequestTypes(IEnumerable<Type> serviceTypes)
+    {
+        var to = new HashSet<Type>();
+        foreach (var serviceType in serviceTypes)
+        {
+            var batchedRequestTypes = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(mi => IsServiceAction(mi.Name)
+                             && mi.GetParameters().Length == 1)
+                .Select(mi => mi.GetParameters()[0].ParameterType)
+                .Where(x => !(x.IsValueType || x.IsInterface || x.IsAbstract || x == typeof(string)) && x.IsArray);
+            to.AddDistinctRange(batchedRequestTypes);
+        }
+        return to;
+    }
+
+    public readonly Dictionary<string, List<RestPath>> RestPathMap = new();
 
     private static RestPath fallbackRestPath = null;
 
@@ -279,7 +282,7 @@ public class ServiceController : IServiceController
 
         if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out var pathsAtFirstMatch))
         {
-            pathsAtFirstMatch = new List<RestPath>();
+            pathsAtFirstMatch = [];
             RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;
         }
         pathsAtFirstMatch.Add(restPath);
@@ -865,7 +868,7 @@ public class ServiceController : IServiceController
             }
 
             //sync
-            if (!(firstResponse is Task asyncResponse)) 
+            if (firstResponse is not Task asyncResponse) 
             {
                 var ret = firstResponse != null
                     ? (object[])Array.CreateInstance(firstResponse.GetType(), dtosList.Count)

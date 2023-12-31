@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.Text;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -33,7 +34,7 @@ public class EncryptedMessagesService : Service
     }
 }
 
-public class EncryptedMessagesFeature : IPlugin, Model.IHasStringId
+public class EncryptedMessagesFeature : IPlugin, IConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.EncryptedMessaging;
     public static readonly string RequestItemsIv = "_encryptIv";
@@ -46,18 +47,17 @@ public class EncryptedMessagesFeature : IPlugin, Model.IHasStringId
     public static string ErrorRequestTooOld = "Request too old";
     public static string ErrorKeyNotFound = "Key with Id '{0}' was not found. Ensure you're using the latest Public Key from '{1}'";
 
-
-    private readonly ConcurrentDictionary<byte[], DateTime> nonceCache = new ConcurrentDictionary<byte[], DateTime>(ByteArrayComparer.Instance);
+    private readonly ConcurrentDictionary<byte[], DateTime> nonceCache = new(ByteArrayComparer.Instance);
 
     public RSAParameters? PrivateKey { get; set; }
 
-    public List<RSAParameters> FallbackPrivateKeys { get; set; }
+    public List<RSAParameters> FallbackPrivateKeys { get; set; } = new();
 
     protected Dictionary<string, RSAParameters> PrivateKeyModulusMap { get; set; }
 
-    public string PublicKeyPath { get; set; }
+    public string PublicKeyPath { get; set; } = "/publickey";
 
-    public TimeSpan MaxRequestAge { get; set; }
+    public TimeSpan MaxRequestAge { get; set; } = DefaultMaxMaxRequestAge;
 
     public string PrivateKeyXml
     {
@@ -65,23 +65,18 @@ public class EncryptedMessagesFeature : IPlugin, Model.IHasStringId
         set => PrivateKey = value.ToPrivateRSAParameters();
     }
 
-    public EncryptedMessagesFeature()
+    public void Configure(IServiceCollection services)
     {
-        PublicKeyPath = "/publickey";
-        MaxRequestAge = DefaultMaxMaxRequestAge;
-        FallbackPrivateKeys = new List<RSAParameters>();
+        services.RegisterService(typeof(EncryptedMessagesService), PublicKeyPath);
     }
 
     public void Register(IAppHost appHost)
     {
-        if (PrivateKey == null)
-            PrivateKey = RsaUtils.CreatePrivateKeyParams();
-
-        appHost.RegisterService(typeof(EncryptedMessagesService), PublicKeyPath);
+        PrivateKey ??= RsaUtils.CreatePrivateKeyParams();
 
         PrivateKeyModulusMap = new Dictionary<string, RSAParameters>
         {
-            { Convert.ToBase64String(PrivateKey.Value.Modulus), PrivateKey.Value },
+            [Convert.ToBase64String(PrivateKey.Value.Modulus)] = PrivateKey.Value,
         };
         foreach (var fallbackKey in FallbackPrivateKeys)
         {

@@ -2,19 +2,20 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Redis;
 
 namespace ServiceStack;
 
-public class AdminRedisFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
+public class AdminRedisFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin
 {
     public string Id { get; set; } = Plugins.AdminRedis;
     public string AdminRole { get; set; } = RoleNames.Admin;
 
     public int QueryLimit { get; set; } = 100;
-    public List<int> Databases { get; set; } = new() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    public List<int> Databases { get; set; } = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
     /// <summary>
     /// Whether to allow configured connection to be modified
@@ -33,10 +34,13 @@ public class AdminRedisFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         "MONITOR",
     };
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(AdminRedisService));
+    }
+
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(AdminRedisService));
-
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.AdminRedis = new AdminRedisInfo
             {

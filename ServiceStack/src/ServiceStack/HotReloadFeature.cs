@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.Text;
@@ -11,7 +12,7 @@ namespace ServiceStack;
 /// <summary>
 /// Back-end Service used by /js/hot-fileloader.js to detect file changes in /wwwroot and auto reload page.
 /// </summary>
-public class HotReloadFeature : IPlugin, Model.IHasStringId
+public class HotReloadFeature : IPlugin, IConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.HotReload;
     public IVirtualPathProvider VirtualFiles
@@ -23,10 +24,14 @@ public class HotReloadFeature : IPlugin, Model.IHasStringId
     {
         set => HotReloadFilesService.DefaultPattern = value;
     }
+
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(HotReloadFilesService));
+    }
         
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(HotReloadFilesService));
     }
 }
 

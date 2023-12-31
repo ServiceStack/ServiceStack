@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -169,8 +170,7 @@ public static class HostContext
 
     public static T AssertPlugin<T>() where T : class, IPlugin
     {
-        var appHost = AppHost;
-        var plugin = appHost.GetPlugin<T>();
+        var plugin = GetPlugin<T>();
         if (plugin == null)
             throw new NotImplementedException($"Plugin '{typeof(T).Name}' has not been registered.");
         return plugin;
@@ -179,7 +179,9 @@ public static class HostContext
     public static T GetPlugin<T>() where T : class, IPlugin
     {
         var appHost = AppHost;
-        return appHost?.GetPlugin<T>();
+        return appHost != null
+            ? appHost.GetPlugin<T>()
+            : ServiceStackHost.GlobalPluginsToLoad.FirstOrDefault(x => x is T) as T;
     }
 
     public static bool HasPlugin<T>() where T : class, IPlugin
@@ -370,5 +372,12 @@ public static class HostContext
         ServiceStackHost.GlobalAfterConfigure.Clear();
         ServiceStackHost.GlobalAfterPluginsLoaded.Clear();
         ServiceStackHost.GlobalAfterAppHostInit.Clear();
+        ServiceStackHost.GlobalPluginsToLoad.Clear();
+        ServiceStackHost.GlobalPluginsToLoad.AddRange(ServiceStackHost.DefaultPluginsToLoad());
+        ServiceStackHost.GlobalPluginsConfigured.Clear();
+        ServiceStackHost.GlobalServicesRegistered.Clear();
+        ServiceStackHost.GlobalServiceAssemblies.Clear();
+        ServiceStackHost.GlobalServices.Clear();
+        ServiceStackHost.GlobalServiceRoutes.Clear();
     }
 }

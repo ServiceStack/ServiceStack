@@ -8,12 +8,13 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
-using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Text;
+using ServiceStack.MiniProfiler;
 
 #if !NET6_0_OR_GREATER
 using ServiceStack.Extensions;
@@ -75,7 +76,7 @@ public class QueryDataFilterContext
     public IQueryResponse Response { get; set; }
 }
 
-public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
+public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.AutoQueryData;
     public HashSet<string> IgnoreProperties { get; set; }
@@ -179,6 +180,22 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         DataSources = new ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>>();
     }
 
+    public void Configure(IServiceCollection services)
+    {
+        services.AddSingleton<IAutoQueryData>(c => new AutoQueryData {
+            IgnoreProperties = IgnoreProperties,
+            MaxLimit = MaxLimit,
+            IncludeTotal = IncludeTotal,
+            EnableUntypedQueries = EnableUntypedQueries,
+            OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
+            GlobalQueryFilter = GlobalQueryFilter,
+            QueryFilters = QueryFilters,
+            ResponseFilters = ResponseFilters,
+            StartsWithConventions = StartsWithConventions,
+            EndsWithConventions = EndsWithConventions,
+        });
+    }
+
     public void Register(IAppHost appHost)
     {
         foreach (var condition in Conditions)
@@ -215,21 +232,6 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
             }
         }
 
-        appHost.GetContainer().AddSingleton<IAutoQueryData>(c =>
-            new AutoQueryData
-            {
-                IgnoreProperties = IgnoreProperties,
-                MaxLimit = MaxLimit,
-                IncludeTotal = IncludeTotal,
-                EnableUntypedQueries = EnableUntypedQueries,
-                OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
-                GlobalQueryFilter = GlobalQueryFilter,
-                QueryFilters = QueryFilters,
-                ResponseFilters = ResponseFilters,
-                StartsWithConventions = StartsWithConventions,
-                EndsWithConventions = EndsWithConventions,
-            });
-
         appHost.Metadata.GetOperationAssemblies()
             .Each(x => LoadFromAssemblies.Add(x));
 
@@ -239,45 +241,61 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
             appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
     }
 
-    public void AfterPluginsLoaded(IAppHost appHost)
+    public void AfterConfigure(IServiceCollection services)
     {
-        var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
+        var scannedTypes = ServiceStackHost.ResolveAssemblyRequestTypes();
+
+        var userRequestDtosMap = ServiceStackHost.ResolveGlobalRequestServiceTypesMap();
 
         var missingRequestTypes = scannedTypes
             .Where(x => x.HasInterface(typeof(IQueryData)))
-            .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
+            .Where(x => !userRequestDtosMap.ContainsKey(x))
             .ToList();
 
         if (missingRequestTypes.Count == 0)
             return;
 
         var serviceType = GenerateMissingServices(missingRequestTypes);
-        appHost.RegisterService(serviceType);
+        services.RegisterService(serviceType);
     }
 
     Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes)
     {
-        var assemblyName = new AssemblyName { Name = "tmpAssembly" };
+        var assemblyName = new AssemblyName { Name = "__AutoQueryDataAssembly" };
         var typeBuilder =
             AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
-                .DefineDynamicModule("tmpModule")
+                .DefineDynamicModule("__AutoQueryDataModule")
                 .DefineType("__AutoQueryDataServices",
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
+        Type[] ctorArgs = [typeof(IAutoQueryData)];
+        var baseCtor = AutoQueryServiceBaseType.GetConstructor(
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy | BindingFlags.Instance, null, ctorArgs, null);
+        if (baseCtor != null)
+        {
+            var ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, ctorArgs);
+            var ctorIl = ctorBuilder.GetILGenerator();
+            ctorIl.Emit(OpCodes.Ldarg_0);        // push "this" onto stack.
+            ctorIl.Emit(OpCodes.Ldarg_1);        // push the ctor parameter
+            ctorIl.Emit(OpCodes.Call, baseCtor); // call base constructor
+            ctorIl.Emit(OpCodes.Nop);            // C# compiler add 2 NOPS so we'll add them, too.
+            ctorIl.Emit(OpCodes.Nop);
+            ctorIl.Emit(OpCodes.Ret);
+        }
+        
         foreach (var requestType in missingRequestTypes)
         {
             var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<,>));
             var hasExplicitInto = genericDef != null;
-            if (genericDef == null)
-                genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<>));
+            genericDef ??= requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<>));
             if (genericDef == null)
                 continue;
 
             var method = typeBuilder.DefineMethod(ActionContext.AnyMethod, MethodAttributes.Public | MethodAttributes.Virtual,
                 CallingConventions.Standard,
                 returnType: typeof(object),
-                parameterTypes: new[] { requestType });
+                parameterTypes: [requestType]);
 
             GenerateServiceFilter?.Invoke(typeBuilder, method, requestType);
 
@@ -300,7 +318,7 @@ public class AutoQueryDataFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
             il.Emit(OpCodes.Ret);
         }
 
-        var servicesType = typeBuilder.CreateTypeInfo().AsType();
+        var servicesType = typeBuilder.CreateTypeInfo()!.AsType();
         return servicesType;
     }
 
@@ -601,10 +619,8 @@ public interface IAutoQueryData
     IQueryResponse Execute(IQueryData request, IDataQuery q, IQueryDataSource db);
 }
 
-public abstract class AutoQueryDataServiceBase : Service
+public abstract class AutoQueryDataServiceBase(IAutoQueryData autoQuery) : Service
 {
-    public IAutoQueryData AutoQuery { get; set; }
-
     public virtual object Exec<From>(IQueryData<From> dto)
     {
         DataQuery<From> q;
@@ -612,14 +628,14 @@ public abstract class AutoQueryDataServiceBase : Service
             ? Request.GetDtoQueryParams()
             : Request.GetRequestParams();
         var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
-        using var db = AutoQuery.GetDb<From>(ctx);
+        using var db = autoQuery.GetDb<From>(ctx);
         using (Profiler.Current.Step("AutoQueryData.CreateQuery"))
         {
-            q = AutoQuery.CreateQuery(dto, requestParams, Request, db);
+            q = autoQuery.CreateQuery(dto, requestParams, Request, db);
         }
         using (Profiler.Current.Step("AutoQueryData.Execute"))
         {
-            return AutoQuery.Execute(dto, q, db);
+            return autoQuery.Execute(dto, q, db);
         }
     }
 
@@ -630,14 +646,14 @@ public abstract class AutoQueryDataServiceBase : Service
             ? Request.GetDtoQueryParams()
             : Request.GetRequestParams();
         var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
-        using var db = AutoQuery.GetDb<From>(ctx);
+        using var db = autoQuery.GetDb<From>(ctx);
         using (Profiler.Current.Step("AutoQueryData.CreateQuery"))
         {
-            q = AutoQuery.CreateQuery(dto, requestParams, Request, db);
+            q = autoQuery.CreateQuery(dto, requestParams, Request, db);
         }
         using (Profiler.Current.Step("AutoQueryData.Execute"))
         {
-            return AutoQuery.Execute(dto, q, db);
+            return autoQuery.Execute(dto, q, db);
         }
     }
 }

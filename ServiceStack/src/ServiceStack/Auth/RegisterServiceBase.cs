@@ -68,8 +68,6 @@ public class RegistrationValidator : AbstractValidator<Register>
 /// </summary>
 public abstract class RegisterUserAuthServiceBase : RegisterServiceBase
 {
-    public IValidator<Register> RegistrationValidator { get; set; }
-
     protected virtual IUserAuth ToUser(Register request)
     {
         var to = AuthRepositoryAsync is ICustomUserAuth customUserAuth
@@ -84,6 +82,13 @@ public abstract class RegisterUserAuthServiceBase : RegisterServiceBase
     protected virtual async Task<bool> UserExistsAsync(IAuthSession session) => 
         session.IsAuthenticated && await AuthRepositoryAsync.GetUserAuthAsync(session, null).ConfigAwait() != null;
 
+    private IValidator<Register> registrationValidator;
+    public IValidator<Register> RegistrationValidator
+    {
+        get => registrationValidator ?? Request.TryResolve<IValidator<Register>>();
+        set => registrationValidator = value;
+    }
+
     protected virtual async Task ValidateAndThrowAsync(Register request)
     {
         var validator = RegistrationValidator ?? new RegistrationValidator();
@@ -92,7 +97,7 @@ public abstract class RegisterUserAuthServiceBase : RegisterServiceBase
 
     protected virtual async Task RegisterNewUserAsync(IAuthSession session, IUserAuth user)
     {
-        var authEvents = TryResolve<IAuthEvents>();
+        var authEvents = Request.TryResolve<IAuthEvents>();
         session.UserAuthId = user.Id.ToString(CultureInfo.InvariantCulture);
         session.PopulateSession(user);
         session.OnRegistered(Request, session, this);
@@ -183,7 +188,7 @@ public abstract class RegisterServiceBase : Service
         return response;
     }
 
-    RegisterResponse ToRegisterResponse(AuthenticateResponse typedResponse, string userId) => new RegisterResponse
+    RegisterResponse ToRegisterResponse(AuthenticateResponse typedResponse, string userId) => new()
     {
         SessionId = typedResponse.SessionId,
         UserName = typedResponse.UserName,

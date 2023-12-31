@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
@@ -22,11 +23,71 @@ public enum AdminUiFeature
     All = Users | Validation | Logging | Profiling | Redis | Database,
 }
 
-public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
+public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, IHasStringId
 {
     public string Id => Plugins.Ui;
 
-    public UiInfo Info { get; set; }
+    public UiInfo Info { get; set; } = new()
+    {
+        HideTags = [TagNames.Auth, TagNames.Admin],
+        AlwaysHideTags = [TagNames.Admin],
+        BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
+        Theme = new ThemeInfo
+        {
+            Form = "shadow overflow-hidden sm:rounded-md bg-white",
+            ModelIcon = Svg.ImageSvg(Svg.Create(Svg.Body.Table)),
+        },
+        DefaultFormats = new ApiFormat
+        {
+            // Defaults to browsers navigator.languages
+            //Locale = Thread.CurrentThread.CurrentCulture.Name,
+            AssumeUtc = true,
+            Date = new Intl(IntlFormat.DateTime) {
+                Date = DateStyle.Medium,
+            }.ToFormat(),
+        },
+        Locode = new()
+        {
+            Css = new ApiCss
+            {
+                Form = "max-w-screen-2xl",
+                Fieldset = "grid grid-cols-12 gap-6",
+                Field = "col-span-12 lg:col-span-6 xl:col-span-4",
+            },
+            Tags = new AppTags
+            {
+                Default = "Tables",
+                Other = "other",
+            },
+            MaxFieldLength = 150,
+            MaxNestedFields = 2,
+            MaxNestedFieldLength = 30,
+        },
+        Explorer = new()
+        {
+            Css = new ApiCss
+            {
+                Form = "max-w-screen-md",
+                Fieldset = "grid grid-cols-12 gap-6", 
+                Field = "col-span-12 sm:col-span-6",
+            },
+            Tags = new AppTags
+            {
+                Default = "APIs",
+                Other = "other",
+            },
+        },
+        Admin = new()
+        {
+            Css = new ApiCss
+            {
+                Form = "max-w-screen-lg",
+                Fieldset = "grid grid-cols-12 gap-6", 
+                Field = "col-span-12",
+            }
+        },
+        AdminLinks = new(),
+    };
 
     public List<HtmlModule> HtmlModules { get; } = new();
     
@@ -65,81 +126,19 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         .Configure((appHost,module) => 
             module.VirtualFiles = appHost.VirtualFileSources);
     
-    public Action<IAppHost> Configure { get; set; }
+    public Action<IAppHost> OnConfigure { get; set; }
 
     /// <summary>
     /// Only Attributes used in built-in UIs are returned in /metadata/app.json  
     /// </summary>
-    public List<string> PreserveAttributesNamed { get; set; } = new()
-    {
-        nameof(ComputedAttribute),
-    };
+    public List<string> PreserveAttributesNamed { get; set; } =
+    [
+        nameof(ComputedAttribute)
+    ];
 
-    public UiFeature()
-    {
-        Info = new UiInfo
-        {
-            HideTags = new() { TagNames.Auth, TagNames.Admin },
-            AlwaysHideTags = new() { TagNames.Admin },
-            BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
-            Theme = new ThemeInfo
-            {
-                Form = "shadow overflow-hidden sm:rounded-md bg-white",
-                ModelIcon = Svg.ImageSvg(Svg.Create(Svg.Body.Table)),
-            },
-            DefaultFormats = new ApiFormat
-            {
-                // Defaults to browsers navigator.languages
-                //Locale = Thread.CurrentThread.CurrentCulture.Name,
-                AssumeUtc = true,
-                Date = new Intl(IntlFormat.DateTime) {
-                    Date = DateStyle.Medium,
-                }.ToFormat(),
-            },
-            Locode = new()
-            {
-                Css = new ApiCss
-                {
-                    Form = "max-w-screen-2xl",
-                    Fieldset = "grid grid-cols-12 gap-6",
-                    Field = "col-span-12 lg:col-span-6 xl:col-span-4",
-                },
-                Tags = new AppTags
-                {
-                    Default = "Tables",
-                    Other = "other",
-                },
-                MaxFieldLength = 150,
-                MaxNestedFields = 2,
-                MaxNestedFieldLength = 30,
-            },
-            Explorer = new()
-            {
-                Css = new ApiCss
-                {
-                    Form = "max-w-screen-md",
-                    Fieldset = "grid grid-cols-12 gap-6", 
-                    Field = "col-span-12 sm:col-span-6",
-                },
-                Tags = new AppTags
-                {
-                    Default = "APIs",
-                    Other = "other",
-                },
-            },
-            Admin = new()
-            {
-                Css = new ApiCss
-                {
-                    Form = "max-w-screen-lg",
-                    Fieldset = "grid grid-cols-12 gap-6", 
-                    Field = "col-span-12",
-                }
-            },
-            AdminLinks = new(),
-        };
-    }
-    
+    // Defaults to browsers navigator.languages
+    //Locale = Thread.CurrentThread.CurrentCulture.Name,
+
     public void AddAdminLink(AdminUiFeature feature, LinkInfo link)
     {
         if (!AdminUi.HasFlag(feature)) 
@@ -152,6 +151,11 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         Info.AdminLinks.Add(link);
     }
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(AdminDashboardService));
+    }
+
     public void BeforePluginsLoaded(IAppHost appHost)
     {
         if (AdminHtmlModule != null && AdminUi != AdminUiFeature.None)
@@ -162,7 +166,6 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
             });
             
             AddAdminLink(AdminUiFeature.None, DashboardLink);
-            appHost.RegisterService(typeof(AdminDashboardService));
         }
     }
 
@@ -175,7 +178,7 @@ public class UiFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, IHasStringId
         if (HtmlModules.Count > 0)
         {
             Info.Modules = HtmlModules.Map(x => x.BasePath);
-            Configure?.Invoke(appHost);
+            OnConfigure?.Invoke(appHost);
             Module.Modules.AddRange(HtmlModules);
             Module.Handlers.AddRange(Handlers);
             Module.Register(appHost);

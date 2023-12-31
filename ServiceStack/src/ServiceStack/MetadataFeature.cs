@@ -7,6 +7,7 @@ using System.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.HtmlModules;
@@ -23,7 +24,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ServiceStack;
 
-public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
+public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin
 {
     public string Id { get; set; } = Plugins.Metadata;
     public string PluginLinksTitle { get; set; } = "Plugin Links:";
@@ -100,14 +101,17 @@ public class MetadataFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         }
     }
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterServices(ServiceRoutes);
+    }
+
     public void Register(IAppHost appHost)
     {
         if (EnableNav)
         {
             ViewUtils.Load(appHost.AppSettings);
         }
-
-        appHost.RegisterServices(ServiceRoutes);
 
         appHost.CatchAllHandlers.Add(GetHandler);
         
@@ -251,10 +255,9 @@ public class MetadataNavService : Service
 
 [DefaultRequest(typeof(MetadataApp))]
 [Restrict(VisibilityTo = RequestAttributes.None)]
-public class MetadataAppService : Service
+public class MetadataAppService(INativeTypesMetadata nativeTypesMetadata) : Service
 {
-    public INativeTypesMetadata NativeTypesMetadata { get; set; }
-    public AppMetadata Any(MetadataApp request) => NativeTypesMetadata.ToAppMetadata(Request);
+    public AppMetadata Any(MetadataApp request) => nativeTypesMetadata.ToAppMetadata(Request);
 }
 
 public static class MetadataUtils
@@ -265,7 +268,7 @@ public static class MetadataUtils
         var view = req.Dto is MetadataApp dto ? dto.View?.ToLower() : null;
 
         var pluginsOnly = view?.StartsWith("plugins") == true; 
-        MetadataTypes metadataTypes = new MetadataTypes
+        var metadataTypes = new MetadataTypes
         {
             Namespaces = new(),
             Operations = new(),

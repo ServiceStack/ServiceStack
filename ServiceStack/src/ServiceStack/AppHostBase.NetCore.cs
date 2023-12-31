@@ -120,7 +120,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         else
         {
             configuration = (appHost.AppSettings as NetCoreAppSettings)?.Configuration;
-            if (appHost is IRequireConfiguration requiresConfig)
+            if (appHost is IRequireConfiguration requiresConfig && configuration != null)
                 requiresConfig.Configuration = configuration;
         }
 
@@ -217,7 +217,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         return useExistingNonWildcardEndpoint;
     }
     
-    public virtual void ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation)
+    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation)
     {
         if (operation.ResponseType != null)
         {
@@ -247,6 +247,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         if (operation.RequestType.ExcludesFeature(Feature.Metadata) || 
             operation.RequestType.ExcludesFeature(Feature.ApiExplorer))
             builder.ExcludeFromDescription();
+
+        return builder;
     }
     
     public virtual void RegisterEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
@@ -261,6 +263,20 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 
     public virtual void MapUserDefinedRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
     {
+        Task HandleRequestAsync(Type requestType, HttpContext httpContext)
+        {
+            var req = httpContext.ToRequest();
+            var restPath = RestHandler.FindMatchingRestPath(req, out var contentType);
+            var handler = restPath != null
+                ? (HttpAsyncTaskHandler)new RestHandler {
+                    RestPath = restPath, 
+                    RequestName = restPath.RequestType.GetOperationName(), 
+                    ResponseContentType = contentType
+                }
+                : new NotFoundHttpHandler();
+            return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
+        }
+        
         foreach (var entry in Metadata.OperationsMap)
         {
             var requestType = entry.Key;
@@ -281,14 +297,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                         continue;
 
                     var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
-                    {
-                        var req = httpContext.ToRequest();
-                        var restPath = RestHandler.FindMatchingRestPath(req, out var contentType);
-                        var handler = restPath != null
-                            ? (HttpAsyncTaskHandler)new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType }
-                            : new NotFoundHttpHandler();
-                        return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
-                    });
+                        HandleRequestAsync(requestType, httpContext));
                     
                     ConfigureOperationEndpoint(pathBuilder, operation);
 
@@ -296,6 +305,17 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                     {
                         handler(pathBuilder, operation, routeVerb, route.Path);
                     }
+                }
+                
+                // Add /custom/path.{format} routes for GET requests
+                if (routeVerbs.Contains(HttpMethods.Get) && !route.Path.Contains('.'))
+                {
+                    var pathBuilder = routeBuilder.MapMethods(route.Path + ".{format}", EndpointVerbs[HttpMethods.Get], 
+                            (string format, HttpResponse response, HttpContext httpContext) =>
+                        HandleRequestAsync(requestType, httpContext));
+                    
+                    ConfigureOperationEndpoint(pathBuilder, operation)
+                        .WithMetadata<string>(route.Path + ".format");
                 }
             }
         }
@@ -356,9 +376,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             // Only use fallback handlers when ServiceStack Routing is disabled
             if (Options.DisableServiceStackRouting)
             {
+                if (GetCatchAllHandler(httpReq) is HttpAsyncTaskHandler catchAllHandler)
+                {
+                    await context.ProcessRequestAsync(catchAllHandler).ConfigAwait();
+                    return;
+                }
+
                 if (GetFallbackHandler(httpReq) is HttpAsyncTaskHandler fallbackHandler)
                 {
-                    await context.ProcessRequestAsync(fallbackHandler);
+                    await context.ProcessRequestAsync(fallbackHandler).ConfigAwait();
                     return;
                 }
             }
@@ -488,6 +514,16 @@ public delegate void RouteHandlerBuilderDelegate(RouteHandlerBuilder builder, Op
 
 #endif
 
+#if NET8_0_OR_GREATER
+public class ServiceStackServicesOptions
+{
+    public List<Assembly> ServiceAssemblies { get; } = new();
+    public List<Type> ServiceTypes { get; } = new();
+    public Dictionary<Type, string[]> ServiceRoutes { get; } = new();
+    public List<IPlugin> Plugins { get; } = new();
+}
+#endif
+
 public class ServiceStackOptions
 {
 #if NET8_0_OR_GREATER
@@ -551,6 +587,48 @@ public static class NetCoreAppHostExtensions
             afterAppHostInit:afterAppHostInit);
         return builder;
     }
+
+    public static void AddPlugin<T>(this IServiceCollection services, T plugin) where T : IPlugin
+    {
+        ServiceStackHost.GlobalPluginsToLoad.AddIfNotExists(plugin);
+    }
+
+#if NET8_0_OR_GREATER    
+    public static void AddServiceStack(this IServiceCollection services, Action<ServiceStackServicesOptions> configure = null)
+    {
+        var options = new ServiceStackServicesOptions();
+        configure?.Invoke(options);
+
+        ServiceStackHost.GlobalServiceAssemblies.AddDistinctRange(options.ServiceAssemblies);
+        ServiceStackHost.GlobalPluginsToLoad.AddDistinctRange(options.Plugins);
+
+        foreach (var plugin in ServiceStackHost.GlobalPluginsToLoad)
+        {
+            if (plugin is IConfigureServices servicesPlugin)
+            {
+                servicesPlugin.Configure(services);
+            }
+        }
+        foreach (var plugin in ServiceStackHost.GlobalPluginsToLoad)
+        {
+            if (plugin is IPostConfigureServices servicesPlugin)
+            {
+                servicesPlugin.AfterConfigure(services);
+            }
+        }
+        ServiceStackHost.GlobalPluginsToLoad.ForEach(x => ServiceStackHost.GlobalPluginsConfigured.Add(x));
+
+        var allServiceTypes = ServiceStackHost.GlobalServiceAssemblies.SelectMany(x => x.GetTypes().Where(ServiceController.IsServiceType)).ToSet();
+        allServiceTypes.AddDistinctRange(ServiceStackHost.GlobalServices);
+        allServiceTypes.AddDistinctRange(ServiceStackHost.GlobalServiceRoutes.Keys);
+
+        foreach (var type in allServiceTypes)
+        {
+            services.AddTransient(type);
+        }
+        Console.WriteLine("End of AddServiceStack()");
+    }
+#endif
 
     public static IConfiguration GetConfiguration(this IAppHost appHost) =>
         ((IAppHostNetCore)appHost).Configuration;

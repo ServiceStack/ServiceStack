@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.Html;
@@ -8,10 +9,10 @@ namespace ServiceStack;
 /// <summary>
 /// Enable the Registration feature and configure the RegistrationService.
 /// </summary>
-public class RegistrationFeature : IPlugin, Model.IHasStringId
+public class RegistrationFeature : IPlugin, IConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.Register;
-    public string AtRestPath { get; set; }
+    public string AtRestPath { get; set; } = "/register";
 
     /// <summary>
     /// UI Layout for User Registration
@@ -36,19 +37,17 @@ public class RegistrationFeature : IPlugin, Model.IHasStringId
         set => RegisterService.AllowUpdates = value;
     }
 
-    public RegistrationFeature()
+    public void Configure(IServiceCollection services)
     {
-        this.AtRestPath = "/register";
+        if (!services.Exists<IValidator<Register>>())
+        {
+            services.AddSingleton<IValidator<Register>, RegistrationValidator>();
+        }
     }
 
     public void Register(IAppHost appHost)
     {
         appHost.RegisterService<RegisterService>(AtRestPath);
         appHost.ConfigureOperation<Register>(op => op.FormLayout = FormLayout);
-
-        if (!appHost.GetContainer().Exists<IValidator<Register>>())
-        {
-            appHost.RegisterAs<RegistrationValidator, IValidator<Register>>();
-        }
     }
 }

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -18,7 +19,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
+public class ProfilingFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin
 {
     public string Id => Plugins.Profiling;
     public const int DefaultCapacity = 10000;
@@ -109,16 +110,15 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
     public ProfilingFeature()
     {
-        this.ExcludeRequestPathInfoStartingWith = new[] {
+        ExcludeRequestPathInfoStartingWith = [
             "/js/petite-vue.js",
             "/js/servicestack-client.js",
             "/js/require.js",
             "/js/highlight.js",
             "/admin-ui",
-        }.ToList();
+        ];
         // Sync with RequestLogsFeature
-        this.ExcludeRequestDtoTypes = new[]
-        {
+        ExcludeRequestDtoTypes = [
             typeof(RequestLogs),
             typeof(HotReloadFiles),
             typeof(TypesCommonJs),
@@ -127,20 +127,18 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             typeof(AdminProfiling),
             typeof(AdminRedis),
             typeof(NativeTypesBase),
-        }.ToList();
-        this.HideRequestBodyForRequestDtoTypes = new[] 
-        {
+        ];
+        HideRequestBodyForRequestDtoTypes = [
             typeof(Authenticate), 
             typeof(Register),
-        }.ToList();
-        this.ExcludeResponseTypes = new[]
-        {
+        ];
+        ExcludeResponseTypes = [
             typeof(AppMetadata),
             typeof(MetadataTypes),
             typeof(byte[]),
             typeof(string),
-        }.ToList();
-        this.SummaryFields = new List<string> {
+        ];
+        SummaryFields = [
             nameof(DiagnosticEntry.Id),
             nameof(DiagnosticEntry.TraceId),
             nameof(DiagnosticEntry.Source),
@@ -150,15 +148,18 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             nameof(DiagnosticEntry.UserAuthId),
             nameof(DiagnosticEntry.Duration),
             nameof(DiagnosticEntry.Date),
-        };
+        ];
+    }
+
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(AdminProfilingService));
     }
 
     public void Register(IAppHost appHost)
     {
         if (IncludeStackTrace != null)
             Diagnostics.IncludeStackTrace = IncludeStackTrace.Value;
-        
-        appHost.RegisterService(typeof(AdminProfilingService));
         
         Observer = new ProfilerDiagnosticObserver(this);
         var subscription = DiagnosticListener.AllListeners.Subscribe(Observer);
@@ -191,19 +192,13 @@ public class ProfilingFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
     }
 }
 
-public sealed class ProfilerDiagnosticObserver : 
-    IObserver<DiagnosticListener>, 
+public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
+    IObserver<DiagnosticListener>,
     IObserver<KeyValuePair<string, object>>
 {
     public static int AnalyzeCommandLength { get; set; } = 100;
-    
-    private readonly ProfilingFeature feature;
-    private readonly int capacity;
-    public ProfilerDiagnosticObserver(ProfilingFeature feature)
-    {
-        this.feature = feature;
-        this.capacity = feature.Capacity;
-    }
+
+    private readonly int capacity = feature.Capacity;
 
     protected readonly ConcurrentQueue<DiagnosticEntry> entries = new();
     private long idCounter = 0;

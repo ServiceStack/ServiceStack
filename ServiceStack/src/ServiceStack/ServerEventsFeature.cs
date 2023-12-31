@@ -12,8 +12,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Internal;
 using ServiceStack.Logging;
@@ -26,7 +28,7 @@ using Microsoft.AspNetCore.Builder;
 
 namespace ServiceStack;
 
-public class ServerEventsFeature : IPlugin, Model.IHasStringId
+public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.ServerEvents;
     public string StreamPath { get; set; }
@@ -153,44 +155,45 @@ public class ServerEventsFeature : IPlugin, Model.IHasStringId
         };
     }
 
-    public void Register(IAppHost appHost)
+    public void Configure(IServiceCollection services)
     {
-        var container = appHost.GetContainer();
-
-        if (!container.Exists<IServerEvents>())
+        if (services.Exists<IServerEvents>()) 
+            return;
+        
+        var broker = new MemoryServerEvents
         {
-            var broker = new MemoryServerEvents
-            {
-                IdleTimeout = IdleTimeout,
-                HouseKeepingInterval = HouseKeepingInterval,
-                OnSubscribeAsync = OnSubscribeAsync,
-                OnUnsubscribeAsync = OnUnsubscribeAsync,
-                OnUpdateAsync = OnUpdateAsync,
-                NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
-                Serialize = Serialize,
-                OnError = OnError,
-            };
-            container.Register<IServerEvents>(broker);
-        }
-
-        appHost.RawHttpHandlers.Add(httpReq =>
-            httpReq.PathInfo.EndsWith(StreamPath)
-                ? (IHttpHandler)new ServerEventsHandler()
-                : httpReq.PathInfo.EndsWith(HeartbeatPath)
-                    ? new ServerEventsHeartbeatHandler()
-                    : null);
-
+            IdleTimeout = IdleTimeout,
+            HouseKeepingInterval = HouseKeepingInterval,
+            OnSubscribeAsync = OnSubscribeAsync,
+            OnUnsubscribeAsync = OnUnsubscribeAsync,
+            OnUpdateAsync = OnUpdateAsync,
+            NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
+            Serialize = Serialize,
+            OnError = OnError,
+        };
+        services.AddSingleton<IServerEvents>(broker);
+        
         if (UnRegisterPath != null)
         {
-            appHost.RegisterService(typeof(ServerEventsUnRegisterService), UnRegisterPath);
+            services.RegisterService(typeof(ServerEventsUnRegisterService), UnRegisterPath);
         }
 
         if (SubscribersPath != null)
         {
-            appHost.RegisterService(typeof(ServerEventsSubscribersService), SubscribersPath);
+            services.RegisterService(typeof(ServerEventsSubscribersService), SubscribersPath);
         }
-            
-        appHost.OnDisposeCallbacks.Add(host => container.Resolve<IServerEvents>().Stop());
+    }
+
+    public void Register(IAppHost appHost)
+    {
+        appHost.RawHttpHandlers.Add(httpReq =>
+            httpReq.PathInfo.EndsWith(StreamPath)
+                ? new ServerEventsHandler()
+                : httpReq.PathInfo.EndsWith(HeartbeatPath)
+                    ? new ServerEventsHeartbeatHandler()
+                    : null);
+
+        appHost.OnDisposeCallbacks.Add(host => appHost.Resolve<IServerEvents>().Stop());
         
 #if NET8_0_OR_GREATER
         var host = (AppHostBase)appHost;
@@ -202,7 +205,6 @@ public class ServerEventsFeature : IPlugin, Model.IHasStringId
                 .WithMetadata<string>(nameof(HeartbeatPath), tag:GetType().Name);
         });
 #endif
-        
     }
 
     internal bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
@@ -460,10 +462,8 @@ public class ServerEventsHeartbeatHandler : HttpAsyncTaskHandler
 
 [DefaultRequest(typeof(GetEventSubscribers))]
 [Restrict(VisibilityTo = RequestAttributes.None)]
-public class ServerEventsSubscribersService : Service
+public class ServerEventsSubscribersService(IServerEvents serverEvents) : Service
 {
-    public IServerEvents ServerEvents { get; set; }
-
     public object Any(GetEventSubscribers request)
     {
         var channels = new List<string>();
@@ -476,8 +476,8 @@ public class ServerEventsSubscribersService : Service
             channels.AddRange(request.Channels);
 
         return channels.Count > 0
-            ? ServerEvents.GetSubscriptionsDetails(channels.ToArray())
-            : ServerEvents.GetAllSubscriptionsDetails();
+            ? serverEvents.GetSubscriptionsDetails(channels.ToArray())
+            : serverEvents.GetAllSubscriptionsDetails();
     }
 }
 
@@ -489,10 +489,8 @@ public class UnRegisterEventSubscriber : IReturn<Dictionary<string, string>>
 
 [DefaultRequest(typeof(UnRegisterEventSubscriber))]
 [Restrict(VisibilityTo = RequestAttributes.None)]
-public class ServerEventsUnRegisterService : Service
+public class ServerEventsUnRegisterService(IServerEvents serverEvents) : Service
 {
-    public IServerEvents ServerEvents { get; set; }
-
     public const string UnRegisterSubNotExists = nameof(UnRegisterSubNotExists);
     private const string UnRegisterInvalidAccess = nameof(UnRegisterInvalidAccess);
     private const string UnRegisterApi = nameof(UnRegisterApi);
@@ -500,7 +498,7 @@ public class ServerEventsUnRegisterService : Service
     [AddHeader(ContentType = MimeTypes.Json)]
     public async Task<object> Any(UnRegisterEventSubscriber request)
     {
-        var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
+        var subscription = serverEvents.GetSubscriptionInfo(request.Id);
 
         var feature = HostContext.GetPlugin<ServerEventsFeature>();
         if (subscription == null)
@@ -516,7 +514,7 @@ public class ServerEventsUnRegisterService : Service
         }
 
         feature.IncrementCounter(UnRegisterApi);
-        await ServerEvents.UnRegisterAsync(subscription.SubscriptionId).ConfigAwait();
+        await serverEvents.UnRegisterAsync(subscription.SubscriptionId).ConfigAwait();
 
         return subscription.Meta;
     }
@@ -526,7 +524,7 @@ public class ServerEventsUnRegisterService : Service
 
     public async Task<object> Any(UpdateEventSubscriber request)
     {
-        var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
+        var subscription = serverEvents.GetSubscriptionInfo(request.Id);
 
         var feature = HostContext.GetPlugin<ServerEventsFeature>();
         if (subscription == null)
@@ -542,9 +540,9 @@ public class ServerEventsUnRegisterService : Service
         }
 
         if (request.UnsubscribeChannels != null)
-            await ServerEvents.UnsubscribeFromChannelsAsync(subscription.SubscriptionId, request.UnsubscribeChannels).ConfigAwait();
+            await serverEvents.UnsubscribeFromChannelsAsync(subscription.SubscriptionId, request.UnsubscribeChannels).ConfigAwait();
         if (request.SubscribeChannels != null)
-            await ServerEvents.SubscribeToChannelsAsync(subscription.SubscriptionId, request.SubscribeChannels).ConfigAwait();
+            await serverEvents.SubscribeToChannelsAsync(subscription.SubscriptionId, request.SubscribeChannels).ConfigAwait();
 
         return new UpdateEventSubscriberResponse();
     }

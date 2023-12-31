@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
@@ -34,7 +35,7 @@ public class QueryDbFilterContext
     public IQueryResponse Response { get; set; }
 }
 
-public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin, Model.IHasStringId
+public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfigureServices, IPreInitPlugin, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.AutoQuery;
     private static readonly string[] DefaultIgnoreProperties =
@@ -156,7 +157,67 @@ public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin
     {
         ResponseFilters = [IncludeAggregates];
     }
-        
+
+    public void Configure(IServiceCollection services)
+    {
+        services.AddSingleton<IAutoQueryDb>(c => new AutoQuery
+        {
+            IgnoreProperties = IgnoreProperties,
+            IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
+            MaxLimit = MaxLimit,
+            IncludeTotal = IncludeTotal,
+            EnableUntypedQueries = EnableUntypedQueries,
+            EnableSqlFilters = EnableRawSqlFilters,
+            OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
+            GlobalQueryFilter = GlobalQueryFilter,
+            QueryFilters = QueryFilters,
+            ResponseFilters = ResponseFilters,
+            StartsWithConventions = StartsWithConventions,
+            EndsWithConventions = EndsWithConventions,
+            UseNamedConnection = UseNamedConnection,
+        });
+
+        //CRUD Services
+        GenerateCrudServices?.Configure(services);
+    }
+
+    public void AfterConfigure(IServiceCollection services)
+    {
+        ServiceStackHost.ExcludeServiceAssemblies.Add(GetType().Assembly);
+        var scannedTypes = ServiceStackHost.ResolveAssemblyRequestTypes();
+
+        var crudServices = GenerateCrudServices?.GenerateMissingServices(this);
+        crudServices?.Each(x => scannedTypes.Add(x));
+
+        var userRequestDtosMap = ServiceStackHost.ResolveGlobalRequestServiceTypesMap();
+
+        var customBatchedRequestTypes = ServiceController.GetAutoBatchedRequestTypes(ServiceStackHost.ResolveAssemblyServiceTypes());
+
+        var missingQueryRequestTypes = scannedTypes
+            .Where(x => x.HasInterface(typeof(IQueryDb)) 
+                        && !userRequestDtosMap.ContainsKey(x)
+                        && !IgnoreGeneratingServicesFor.Contains(x))
+            .ToList();
+        var missingCrudRequestTypes = scannedTypes
+            .Where(x => x.HasInterface(typeof(ICrud))
+                        && !userRequestDtosMap.ContainsKey(x)
+                        && !IgnoreGeneratingServicesFor.Contains(x))
+            .ToList();
+
+        if (FilterAutoQueryRequestTypes != null)
+            missingQueryRequestTypes = FilterAutoQueryRequestTypes(missingQueryRequestTypes);
+        if (FilterAutoCrudRequestTypes != null)
+            missingCrudRequestTypes = FilterAutoCrudRequestTypes(missingCrudRequestTypes);
+
+        if (missingQueryRequestTypes.Count == 0 && missingCrudRequestTypes.Count == 0)
+            return;
+
+        var serviceType = GenerateMissingQueryServices(customBatchedRequestTypes, missingQueryRequestTypes, missingCrudRequestTypes);
+        services.RegisterService(serviceType);
+
+        OnRegister(services);
+    }
+
     public void BeforePluginsLoaded(IAppHost appHost)
     {
         if (HtmlModule != null)
@@ -196,29 +257,6 @@ public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin
                 EndsWithConventions[key] = query;
         }
 
-        var container = appHost.GetContainer();
-        container.AddSingleton<IAutoQueryDb>(c => new AutoQuery
-        {
-            IgnoreProperties = IgnoreProperties,
-            IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
-            MaxLimit = MaxLimit,
-            IncludeTotal = IncludeTotal,
-            EnableUntypedQueries = EnableUntypedQueries,
-            EnableSqlFilters = EnableRawSqlFilters,
-            OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
-            GlobalQueryFilter = GlobalQueryFilter,
-            QueryFilters = QueryFilters,
-            ResponseFilters = ResponseFilters,
-            StartsWithConventions = StartsWithConventions,
-            EndsWithConventions = EndsWithConventions,
-            UseNamedConnection = UseNamedConnection,
-        });
-
-        appHost.Metadata.GetOperationAssemblies()
-            .Each(x => LoadFromAssemblies.Add(x));
-
-        ((ServiceStackHost)appHost).ServiceAssemblies.Each(x => LoadFromAssemblies.Add(x));
-
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.AutoQuery = new AutoQueryInfo {
                 MaxLimit = MaxLimit,
@@ -227,7 +265,7 @@ public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin
                 Async = EnableAsync.NullIfFalse(),
                 AutoQueryViewer = EnableAutoQueryViewer.NullIfFalse(),
                 OrderByPrimaryKey = OrderByPrimaryKeyOnPagedQuery.NullIfFalse(),
-                CrudEvents = container.Exists<ICrudEvents>().NullIfFalse(),
+                CrudEvents = appHost.GetContainer().Exists<ICrudEvents>().NullIfFalse(),
                 CrudEventsServices = (ServiceRoutes.ContainsKey(typeof(GetCrudEventsService)) && AccessRole != null).NullIfFalse(),
                 AccessRole = AccessRole,
                 NamedConnection = UseNamedConnection,
@@ -247,70 +285,37 @@ public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin
         if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
             appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
             
-        appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(CrudEvent));
-            
-        //CRUD Services
-        GenerateCrudServices?.Register(appHost);
-
-        OnRegister(appHost);
+        appHost.PostConfigurePlugin<MetadataFeature>(c => c.ExportTypes.Add(typeof(CrudEvent)));
     }
         
     public Func<List<Type>,List<Type>> FilterAutoQueryRequestTypes { get; set; }
     public Func<List<Type>,List<Type>> FilterAutoCrudRequestTypes { get; set; }
 
-    public void AfterPluginsLoaded(IAppHost appHost)
-    {
-        var scannedTypes = new HashSet<Type>();
-            
-        var crudServices = GenerateCrudServices?.GenerateMissingServices(this);
-        crudServices?.Each(x => scannedTypes.Add(x));
-
-        foreach (var assembly in LoadFromAssemblies)
-        {
-            try
-            {
-                assembly.GetTypes().Each(x => scannedTypes.Add(x));
-            }
-            catch (Exception ex)
-            {
-                appHost.NotifyStartupException(ex, nameof(AfterPluginsLoaded), assembly.FullName);
-            }
-        }
-
-        var missingQueryRequestTypes = scannedTypes
-            .Where(x => x.HasInterface(typeof(IQueryDb)) 
-                        && !appHost.Metadata.OperationsMap.ContainsKey(x)
-                        && !IgnoreGeneratingServicesFor.Contains(x))
-            .ToList();
-        var missingCrudRequestTypes = scannedTypes
-            .Where(x => x.HasInterface(typeof(ICrud))
-                        && !appHost.Metadata.OperationsMap.ContainsKey(x)
-                        && !IgnoreGeneratingServicesFor.Contains(x))
-            .ToList();
-
-        if (FilterAutoQueryRequestTypes != null)
-            missingQueryRequestTypes = FilterAutoQueryRequestTypes(missingQueryRequestTypes);
-        if (FilterAutoCrudRequestTypes != null)
-            missingCrudRequestTypes = FilterAutoCrudRequestTypes(missingCrudRequestTypes);
-
-        if (missingQueryRequestTypes.Count == 0 && missingCrudRequestTypes.Count == 0)
-            return;
-
-        var serviceType = GenerateMissingQueryServices(missingQueryRequestTypes, missingCrudRequestTypes);
-        appHost.RegisterService(serviceType);
-    }
-
-    Type GenerateMissingQueryServices(
+    Type GenerateMissingQueryServices(HashSet<Type> customBatchedRequestTypes,
         List<Type> missingQueryRequestTypes, List<Type> missingCrudRequestTypes)
     {
-        var appHost = HostContext.AssertAppHost();
-        var assemblyName = new AssemblyName { Name = "tmpAssembly" };
+        var assemblyName = new AssemblyName { Name = "__AutoQueryAssembly" };
         var typeBuilder =
             AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
-                .DefineDynamicModule("tmpModule")
+                .DefineDynamicModule("__AutoQueryModule")
                 .DefineType("__AutoQueryServices",
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
+
+        Type[] ctorArgs = [typeof(IAutoQueryDb)];
+        var baseCtor = AutoQueryServiceBaseType.GetConstructor(
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy | BindingFlags.Instance, null, ctorArgs, null);
+        if (baseCtor != null)
+        {
+            var ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, ctorArgs);
+            var ctorIl = ctorBuilder.GetILGenerator();
+            ctorIl.Emit(OpCodes.Ldarg_0);        // push "this" onto stack.
+            ctorIl.Emit(OpCodes.Ldarg_1);        // push the ctor parameter
+            ctorIl.Emit(OpCodes.Call, baseCtor); // call base constructor
+            ctorIl.Emit(OpCodes.Nop);            // C# compiler add 2 NOPS so we'll add them, too.
+            ctorIl.Emit(OpCodes.Nop);
+            ctorIl.Emit(OpCodes.Ret);
+        }
 
         foreach (var requestType in missingQueryRequestTypes)
         {
@@ -376,7 +381,7 @@ public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin
             var method = typeBuilder.DefineMethod(ActionContext.AnyMethod, MethodAttributes.Public | MethodAttributes.Virtual,
                 CallingConventions.Standard,
                 returnType: typeof(object),
-                parameterTypes: new[] { requestType });
+                parameterTypes: [requestType]);
 
             var il = method.GetILGenerator();
 
@@ -405,7 +410,7 @@ public partial class AutoQueryFeature : IPlugin, IPreInitPlugin, IPostInitPlugin
             if (GenerateAutoBatchImplementationsFor.Contains(crudTypes.Value.Operation))
             {
                 var requestArrayType = requestType.MakeArrayType();
-                var hasCustomBatchImpl = appHost.ServiceController.HasService(requestArrayType); 
+                var hasCustomBatchImpl = customBatchedRequestTypes.Contains(requestArrayType); 
                 if (!hasCustomBatchImpl)
                 {
                     var baseBatchMethodName = $"Batch{crudTypes.Value.Operation}Async";
@@ -678,7 +683,12 @@ public interface IAutoCrudDb
     
 public abstract partial class AutoQueryServiceBase : Service
 {
-    public IAutoQueryDb AutoQuery { get; set; }
+    public IAutoQueryDb AutoQuery { get; }
+
+    protected AutoQueryServiceBase(IAutoQueryDb autoQuery)
+    {
+        AutoQuery = autoQuery;
+    }
 
     public virtual object Exec<From>(IQueryDb<From> dto)
     {

@@ -2,21 +2,17 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class CancellableRequestsFeature : IPlugin, Model.IHasStringId
+public class CancellableRequestsFeature : IPlugin, IConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.CancelRequests;
-    public string AtPath { get; set; }
+    public string AtPath { get; set; } = "/current-requests/{Tag}/cancel";
 
     internal ConcurrentDictionary<string, ICancellableRequest> RequestsMap = new();
-
-    public CancellableRequestsFeature()
-    {
-        this.AtPath = "/current-requests/{Tag}/cancel";
-    }
 
     internal void UnregisterCancellableRequest(string requestTag)
     {
@@ -24,9 +20,13 @@ public class CancellableRequestsFeature : IPlugin, Model.IHasStringId
             existing.Dispose();
     }
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(CancellableRequestService), AtPath);
+    }
+
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(CancellableRequestService), AtPath);
     }
 }
 
