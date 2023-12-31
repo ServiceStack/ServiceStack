@@ -350,7 +350,8 @@ namespace ServiceStack
             return Uri.EscapeDataString(valueString);
         };
 
-        private static readonly char[] PathSeparatorChars = { '/', '.' };
+        private static readonly char[] PathSeparatorChars = ['/', '.'];
+        private static readonly char[] VerbSeparatorChars = [',', ' '];
         private const string VariablePrefix = "{";
         private const char VariablePrefixChar = '{';
         private const string VariablePostfix = "}";
@@ -361,7 +362,7 @@ namespace ServiceStack
 
         public RestRoute(Type type, string path, string verbs, int priority)
         {
-            this.HttpMethods = (verbs ?? Empty).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            this.HttpMethods = (verbs ?? Empty).Split(VerbSeparatorChars, StringSplitOptions.RemoveEmptyEntries);
             this.Type = type;
             this.Path = path;
             this.Priority = priority;
@@ -369,7 +370,7 @@ namespace ServiceStack
             this.queryProperties = GetQueryProperties(type);
             foreach (var variableName in GetUrlVariables(path))
             {
-                var safeVarName = variableName.TrimEnd('*');
+                var safeVarName = variableName.Trim('*');
                 if (!this.queryProperties.TryGetValue(safeVarName, out var propertyInfo))
                 {
                     this.AppendError($"Variable '{variableName}' does not match any property.");
@@ -420,7 +421,7 @@ namespace ServiceStack
             {
                 var property = variable.Value;
                 var value = property.GetValue(request);
-                var isWildCard = variable.Key.EndsWith("*");
+                var isWildCard = variable.Key.StartsWith("*") || variable.Key.EndsWith("*");
                 if (value == null && !isWildCard)
                 {
                     unmatchedVariables.Add(variable.Key);

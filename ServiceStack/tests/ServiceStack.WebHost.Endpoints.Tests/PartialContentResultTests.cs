@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Common.Tests;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -13,6 +12,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/partialfiles/{RelativePath*}")]
     public class PartialFile
+    {
+        public string RelativePath { get; set; }
+
+        public string MimeType { get; set; }
+    }
+
+    [Route("/partialprefix/{*RelativePath}")]
+    public class PartialFilePrefix
     {
         public string RelativePath { get; set; }
 
@@ -39,6 +46,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new HttpResult(new FileInfo(filePath), request.MimeType);
         }
 
+        public object Get(PartialFilePrefix request) => Get(new PartialFile {
+            RelativePath = request.RelativePath, 
+            MimeType = request.MimeType
+        });
+
         public object Get(PartialFromMemory request)
         {
             var customText = "123456789012345678901234567890";
@@ -58,9 +70,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class PartialContentAppHost : AppHostHttpListenerBase
+    public class PartialContentAppHost() : AppHostHttpListenerBase(nameof(PartialFile), typeof(PartialFile).Assembly)
     {
-        public PartialContentAppHost() : base(nameof(PartialFile), typeof(PartialFile).Assembly) { }
         public override void Configure(Container container) {}
     }
 
@@ -105,6 +116,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             $"File size {uploadedFile.Length}".Print();
 
             byte[] actualContents = $"{BaseUri}/partialfiles/TestExistingDir/upload.html".GetBytesFromUrl(
+                responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
+
+            $"response size {actualContents.Length}".Print();
+
+            Assert.That(actualContents.Length, Is.EqualTo(uploadedFile.Length));
+        }
+
+        [Test]
+        public void Can_GET_200_OK_response_for_file_with_no_range_header_using_prefix_wildcard()
+        {
+            $"File size {uploadedFile.Length}".Print();
+
+            byte[] actualContents = $"{BaseUri}/partialprefix/TestExistingDir/upload.html".GetBytesFromUrl(
                 responseFilter: httpRes => $"Content-Length header {httpRes.GetContentLength()}".Print());
 
             $"response size {actualContents.Length}".Print();

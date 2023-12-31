@@ -262,6 +262,29 @@ namespace ServiceStack.Common.Tests
             Assert.That(url, Is.EqualTo("/images/"));
         }
 
+        // Support endpoint routing syntax
+        [Route("/images/{*ImagePath}")]
+        public class WildCardPrefixPath : IReturn<object>
+        {
+            public string ImagePath { get; set; }
+        }
+
+        [Test]
+        public void Can_generate_route_with_WildCardPrefix_path()
+        {
+            var request = new WildCardPrefixPath { ImagePath = "this/that/theother.jpg" };
+            var url = request.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/images/" + Uri.EscapeDataString(request.ImagePath)));
+        }
+
+        [Test]
+        public void Can_generate_empty_route_with_WildCardPrefix_path()
+        {
+            var request = new WildCardPrefixPath();
+            var url = request.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/images/"));
+        }
+
         [Test]
         public void Show_what_uri_escaping_encodes()
         {

@@ -178,10 +178,13 @@ public class RestPath
             if (component.StartsWith(VariablePrefix))
             {
                 var variableName = component.Substring(1, component.Length - 2);
-                if (variableName[variableName.Length - 1] == WildCardChar)
+                //support wildcard in first /{*path} or last position /{path*}
+                if (variableName[0] == WildCardChar || variableName[variableName.Length - 1] == WildCardChar)
                 {
                     this.isWildcard[i] = true;
-                    variableName = variableName.Substring(0, variableName.Length - 1);
+                    variableName = variableName[0] == WildCardChar
+                        ? variableName.Substring(1)
+                        : variableName.Substring(0, variableName.Length - 1);
                 }
                 this.variablesNames[i] = variableName;
                 this.VariableArgsCount++;
