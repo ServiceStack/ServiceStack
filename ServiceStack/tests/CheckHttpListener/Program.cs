@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Web.UI.WebControls;
 using Check.ServiceInterface;
 using Check.ServiceModel;
 using Funq;
@@ -12,69 +9,69 @@ using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Formats;
 using ServiceStack.OrmLite;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace CheckHttpListener
+namespace CheckHttpListener;
+
+public class AppSelfHost : AppSelfHostBase
 {
-    public class AppSelfHost : AppSelfHostBase
+    public static Rockstar[] SeedRockstars =
+    [
+        new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 },
+        new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27 },
+        new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27 },
+        new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42 },
+        new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44 },
+        new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48 },
+        new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50 }
+    ];
+
+    public AppSelfHost()
+        : base("DocuRec Services", typeof(TestService).Assembly, typeof(TechStacksService).Assembly)
+    { }
+
+    public override void Configure(Container container)
     {
-        public static Rockstar[] SeedRockstars = new[] {
-            new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 },
-            new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27 },
-            new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27 },
-            new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42 },
-            new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44 },
-            new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48 },
-            new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50 },
-        };
+        container.Register<IDbConnectionFactory>(
+            new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
-        public AppSelfHost()
-            : base("DocuRec Services", typeof(TestService).Assembly, typeof(TechStacksService).Assembly)
-        { }
-
-        public override void Configure(Container container)
+        using (var db = container.Resolve<IDbConnectionFactory>().Open())
         {
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
-
-            using (var db = container.Resolve<IDbConnectionFactory>().Open())
-            {
-                db.DropAndCreateTable<Rockstar>();
-                db.InsertAll(SeedRockstars);
-            }
-            
-            Plugins.Add(new SharpPagesFeature());
-            
-            Plugins.Add(new OpenApiFeature());
-
-            Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
-            // Plugins.Add(new AdminFeature());
-
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                new[] { new BasicAuthProvider(AppSettings) })
-            {
-                //ServiceRoutes = new Dictionary<Type, string[]> {
-                //  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
-                //}
-            });
-
-            Plugins.Add(new RequestLogsFeature());
-
-            SetConfig(new HostConfig
-            {
-//                HandlerFactoryPath = "api",
-                CompressFilesWithExtensions = { "js", "css" },
-                // (optional), only compress .js or .css files > 10k
-                CompressFilesLargerThanBytes = 10 * 1024,
-                DebugMode = false
-            });
-            
-            ContentTypes.Register("text/x-custom+csv", new CsvFormat().SerializeToStream, null);
+            db.DropAndCreateTable<Rockstar>();
+            db.InsertAll(SeedRockstars);
         }
+            
+        Plugins.Add(new SharpPagesFeature());
+            
+        Plugins.Add(new OpenApiFeature());
 
-        public override string ResolvePathInfo(IRequest request, string originalPathInfo) =>
-            base.ResolvePathInfo(request, originalPathInfo.Replace("/testsite", "/TestSite"));
+        Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
+        // Plugins.Add(new AdminFeature());
+
+        Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+            [new BasicAuthProvider(AppSettings)])
+        {
+            //ServiceRoutes = new Dictionary<Type, string[]> {
+            //  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
+            //}
+        });
+
+        Plugins.Add(new RequestLogsFeature());
+
+        SetConfig(new HostConfig
+        {
+//                HandlerFactoryPath = "api",
+            CompressFilesWithExtensions = { "js", "css" },
+            // (optional), only compress .js or .css files > 10k
+            CompressFilesLargerThanBytes = 10 * 1024,
+            DebugMode = false
+        });
+            
+        ContentTypes.Register("text/x-custom+csv", new CsvFormat().SerializeToStream, null);
+    }
+
+    public override string ResolvePathInfo(IRequest request, string originalPathInfo) =>
+        base.ResolvePathInfo(request, originalPathInfo.Replace("/testsite", "/TestSite"));
 
 //        public override RouteAttribute[] GetRouteAttributes(Type requestType)
 //        {
@@ -82,33 +79,32 @@ namespace CheckHttpListener
 //            routes.Each(x => x.Path = "/api" + x.Path);
 //            return routes;
 //        }
-    }
+}
 
-    [Route("/query/rockstars")]
-    public class QueryRockstars : QueryDb<Rockstar> { }
+[Route("/query/rockstars")]
+public class QueryRockstars : QueryDb<Rockstar> { }
 
-    //public class Hello { }
+//public class Hello { }
 
-    public class TestService : Service
+public class TestService : Service
+{
+    //public object Any(Hello request)
+    //{
+    //    return request;
+    //}
+}
+
+internal class Program
+{
+    private static void Main(string[] args)
     {
-        //public object Any(Hello request)
-        //{
-        //    return request;
-        //}
-    }
+        var baseUrl = "http://localhost:8000/";
+        var appHost = new AppSelfHost()
+            .Init()
+            .Start(baseUrl);
 
-    internal class Program
-    {
-        private static void Main(string[] args)
-        {
-            var baseUrl = "http://localhost:8000/";
-            var appHost = new AppSelfHost()
-                .Init()
-                .Start(baseUrl);
-
-            Console.WriteLine(baseUrl);
-            Process.Start(baseUrl);
-            Console.ReadLine();
-        }
+        Console.WriteLine(baseUrl);
+        Process.Start(baseUrl);
+        Console.ReadLine();
     }
 }

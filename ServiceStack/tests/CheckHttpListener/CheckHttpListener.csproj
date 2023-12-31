@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <OutputType>Exe</OutputType>
     <DebugType>portable</DebugType>
     <AssemblyName>CheckHttpListener</AssemblyName>
     <PackageId>CheckHttpListener</PackageId>
