@@ -1,7 +1,7 @@
 using ServiceStack;
 using ServiceStack.Redis;
 
-// [assembly: HostingStartup(typeof(NorthwindAuto.ConfigureRedis))]
+[assembly: HostingStartup(typeof(NorthwindAuto.ConfigureRedis))]
 
 namespace NorthwindAuto;
 

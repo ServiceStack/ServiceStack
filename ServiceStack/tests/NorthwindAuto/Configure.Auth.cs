@@ -36,9 +36,8 @@ public class ConfigureAuth : IHostingStartup
         .ConfigureAppHost(appHost =>
         {
             var appSettings = appHost.AppSettings;
-            appHost.Plugins.Add(new AuthFeature(() => new CustomUserSession(),
-                new IAuthProvider[] {
-                    new CredentialsAuthProvider(appSettings),
+            appHost.Plugins.Add(new AuthFeature(() => new CustomUserSession(), [
+                new CredentialsAuthProvider(appSettings),
                     new JwtAuthProvider(appSettings) {
                         AuthKeyBase64 = appSettings.GetString("AuthKeyBase64") ?? "cARl12kvS/Ra4moVBIaVsrWwTpXYuZ0mZf/gNLUhDW5=",
                     },
@@ -48,8 +47,8 @@ public class ConfigureAuth : IHostingStartup
                     
                     new FacebookAuthProvider(appSettings),
                     new GoogleAuthProvider(appSettings),
-                    new MicrosoftGraphAuthProvider(appSettings),
-                })
+                    new MicrosoftGraphAuthProvider(appSettings)
+            ])
             {
                 // IncludeDefaultLogin = false
                 ProfileImages = new PersistentImagesHandler("/auth-profiles", Svg.GetStaticContent(Svg.Icons.Female),

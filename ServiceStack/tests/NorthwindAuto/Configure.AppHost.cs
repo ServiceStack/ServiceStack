@@ -100,16 +100,12 @@ public class AppHost : AppHostBase
                 readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
         ));
 
-        Metadata.ForceInclude = new() { 
-            typeof(GetAccessToken)
-        };
+        Metadata.ForceInclude = [typeof(GetAccessToken)];
         Plugins.Add(new ServiceStack.Api.OpenApi.OpenApiFeature());
 
         ScriptContext.Args[nameof(AppData)] = new AppData
         {
-            AlphaValues = new() {
-                "Alpha", "Bravo", "Charlie"
-            },
+            AlphaValues = ["Alpha", "Bravo", "Charlie"],
             AlphaDictionary = new() {
                 ["A"] = "Alpha",
                 ["B"] = "Bravo",
