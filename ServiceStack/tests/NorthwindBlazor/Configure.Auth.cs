@@ -8,9 +8,9 @@ namespace MyApp;
 public class ConfigureAuth : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
-        .ConfigureAppHost(appHost => 
+        .ConfigureServices(services =>
         {
-            appHost.Plugins.Add(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {
+            services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {
                 options.EnableCredentialsAuth = true;
                 options.SessionFactory = () => new CustomUserSession();
             })));

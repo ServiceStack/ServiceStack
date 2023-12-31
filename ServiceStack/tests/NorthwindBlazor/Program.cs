@@ -8,6 +8,7 @@ using ServiceStack.Blazor;
 using MyApp.Data;
 using MyApp.Components;
 using MyApp.Components.Account;
+using MyApp.ServiceInterface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +64,11 @@ services.AddSwaggerGen(c =>
     c.AddServiceStack();
     c.AddBasicAuth(BasicAuthenticationHandler.Scheme);
 });
+
+// Register all services
+services.AddServiceStack(c => {
+    c.ServiceAssemblies.Add(typeof(MyServices).Assembly);
+}); 
 
 var app = builder.Build();
 
