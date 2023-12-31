@@ -1,24 +1,23 @@
 ﻿using ServiceStack;
 
-namespace Check.ServiceInterface
+namespace Check.ServiceInterface;
+
+[Route("/files/{Path*}")]
+public class GetFile
 {
-    [Route("/files/{Path*}")]
-    public class GetFile
-    {
-        public string Path { get; set; }
-    }
+    public string Path { get; set; }
+}
 
-    public class FileServices : Service
+public class FileServices : Service
+{
+    public object Any(GetFile request)
     {
-        public object Any(GetFile request)
-        {
-            var file = VirtualFileSources.GetFile(request.Path);
-            if (file == null)
-                throw HttpError.NotFound("File '{0}' does not exist".Fmt(request.Path));
+        var file = VirtualFileSources.GetFile(request.Path);
+        if (file == null)
+            throw HttpError.NotFound("File '{0}' does not exist".Fmt(request.Path));
 
-            return new HttpResult(file) {
-                ContentType = MimeTypes.GetMimeType(file.Extension)
-            };
-        }
+        return new HttpResult(file) {
+            ContentType = MimeTypes.GetMimeType(file.Extension)
+        };
     }
 }
