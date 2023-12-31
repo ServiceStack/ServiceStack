@@ -79,6 +79,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 
     public Func<NetCoreRequest, Task> BeforeNextMiddleware { get; set; }
 
+    /// <summary>
+    /// Register dependencies in ServiceStack IOC, to register dependencies in ASP .NET Core IOC implement IHostingStartup
+    /// and register services in ConfigureServices(IServiceCollection)
+    /// </summary>
+    /// <param name="container"></param>
+    public override void Configure(Funq.Container container) => Configure();
+
+    public virtual void Configure() {}
+
     public virtual void Bind(IApplicationBuilder app)
     {
         this.app = app;

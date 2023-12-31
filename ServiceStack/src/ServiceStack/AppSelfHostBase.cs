@@ -18,6 +18,10 @@ public abstract class AppSelfHostBase : AppHostHttpListenerPoolBase
     
     protected AppSelfHostBase(string serviceName, params Type[] serviceTypes) 
         : base(serviceName, serviceTypes) { }
+
+    public override void Configure(Funq.Container container) => Configure();
+
+    public virtual void Configure() {}
 }
 
 #endif
