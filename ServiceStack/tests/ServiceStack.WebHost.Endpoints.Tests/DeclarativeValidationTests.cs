@@ -118,31 +118,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     public class DeclarativeValidationTests
     {
-        class AppHost : AppSelfHostBase
+        class AppHost() : AppSelfHostBase(nameof(DeclarativeValidationTests), typeof(DeclarativeValidationServices))
         {
-            public AppHost()
-                : base(nameof(DeclarativeValidationTests), typeof(DeclarativeValidationServices)) {}
-            
             public override void Configure(Container container)
             {
-                Plugins.Add(new ValidationFeature());
-                
                 container.RegisterValidator(typeof(FluentChildValidationValidator));
                 container.RegisterValidator(typeof(FluentSingleValidationValidator));
             }
         }
 
-        private readonly ServiceStackHost appHost;
-        public DeclarativeValidationTests()
-        {
-            appHost = new AppHost()
-                .Init()
-                .Start(Config.ListeningOn);
-        }
+        private readonly ServiceStackHost appHost = new AppHost()
+            .Init()
+            .Start(Config.ListeningOn);
+
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
+        
         IServiceClient CreateClient() => new JsonServiceClient(Config.ListeningOn);
-
         
         [Test]
         public void Does_execute_declarative_collection_validation_when_collection_has_own_not_empty()
@@ -153,10 +145,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var invalidRequest = new DeclarativeCollectionValidationParentAttribute {
                     Site = "Location 1",
-                    DeclarativeValidationsWithNotEmpty = new List<DeclarativeChildValidation>
-                    {
+                    DeclarativeValidationsWithNotEmpty = [
                         new() { Name = "Location 1", Value = "Very long description > 20 chars" }
-                    }
+                    ]
                 };
                 var response = client.Post(invalidRequest);
                 Assert.Fail("Should throw");
@@ -187,9 +178,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var invalidRequest = new DeclarativeCollectiveValidationTest {
                     Site = "Location 1",
-                    DeclarativeValidations = new List<DeclarativeChildValidation> {
+                    DeclarativeValidations = [
                         new() { Name = "Location 1", Value = "Very long description > 20 chars" }
-                    }
+                    ]
                 };
                 var response = client.Post(invalidRequest);
                 Assert.Fail("Should throw");
@@ -220,9 +211,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var invalidRequest = new DeclarativeCollectiveValidationTest {
                     Site = "Location 1",
-                    FluentValidations = new List<FluentChildValidation> {
-                        new() {Name = "Location 1", Value = "Very long description > 20 chars"}
-                    }
+                    FluentValidations = [
+                        new() { Name = "Location 1", Value = "Very long description > 20 chars" }
+                    ]
                 };
                 var response = client.Post(invalidRequest);
                 Assert.Fail("Should throw");

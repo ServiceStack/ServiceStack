@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
+using Funq;
 using ServiceStack.Logging;
 using ServiceStack.NetCore;
 using ServiceStack.Text;
@@ -226,7 +227,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
     {
         urlBase = ParsePathBase(urlBase);
 
-        return Start(new[] { urlBase });
+        return Start([urlBase]);
     }
 
     public IWebHost WebHost { get; private set; }
@@ -256,6 +257,15 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
     public virtual void Configure(IServiceCollection services) {}
 
     /// <summary>
+    /// Register dependencies in ServiceStack IOC, to register dependencies in ASP .NET Core IOC implement IHostingStartup
+    /// and register services in ConfigureServices(IServiceCollection)
+    /// </summary>
+    /// <param name="container"></param>
+    public override void Configure(Funq.Container container) => Configure();
+
+    public virtual void Configure() {}
+
+    /// <summary>
     /// Override to Configure .NET Core App
     /// </summary>
     public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -267,10 +277,9 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
 
     public static AppSelfHostBase HostInstance => (AppSelfHostBase)Platforms.PlatformNetCore.HostInstance;
 
-    protected class Startup
+    protected class Startup(IConfiguration configuration)
     {
-        public IConfiguration Configuration { get; }
-        public Startup(IConfiguration configuration) => Configuration = configuration;
+        public IConfiguration Configuration { get; } = configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {

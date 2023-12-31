@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -525,7 +526,6 @@ public class SpaFallbackService : Service
     public object Any(SpaFallback request) => Request.GetPageResult("/");
 }
 
-
 [ExcludeMetadata]
 [Route("/hotreload/page")]
 public class HotReloadPage : IReturn<HotReloadPageResponse>
@@ -544,18 +544,16 @@ public class HotReloadPageResponse
 
 [DefaultRequest(typeof(HotReloadPage))]
 [Restrict(VisibilityTo = RequestAttributes.None)]
-public class HotReloadPageService : Service
+public class HotReloadPageService(ISharpPages pages) : Service
 {
     public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
     public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
     public static TimeSpan ModifiedDelay = TimeSpan.FromMilliseconds(50);
 
-    public ISharpPages Pages { get; set; }
-
     public async Task<HotReloadPageResponse> Any(HotReloadPage request)
     {
         var pathInfo = request.Path ?? "/";
-        var page = Pages.GetPage(pathInfo);
+        var page = pages.GetPage(pathInfo);
         if (page == null)
         {
             var matchingRoute = RestHandler.FindMatchingRestPath(
@@ -573,9 +571,7 @@ public class HotReloadPageService : Service
                     page = feature.GetViewPage(responseType.Name);
                 }
             }
-
-            if (page == null)
-                page = feature.GetRoutingPage(pathInfo, out var args);
+            page ??= feature.GetRoutingPage(pathInfo, out var args);
         }
 
         if (page == null)
@@ -591,7 +587,7 @@ public class HotReloadPageService : Service
 
         while (DateTime.UtcNow - startedAt < LongPollDuration)
         {
-            maxLastModified = Pages.GetLastModified(page);
+            maxLastModified = pages.GetLastModified(page);
 
             if (eTagTicks == null)
                 return new HotReloadPageResponse { ETag = maxLastModified.Ticks.ToString() };
@@ -690,7 +686,7 @@ public class SharpApiService : Service
 
     internal static IHttpResult ToHttpResult(PageResult pageResult, object response)
     {
-        if (!(response is IHttpResult httpResult))
+        if (response is not IHttpResult httpResult)
         {
             if (pageResult.ReturnValue?.Args != null)
             {
@@ -827,12 +823,13 @@ public class ScriptAdminResponse
 [Restrict(VisibilityTo = RequestAttributes.None)]
 public class ScriptAdminService : Service
 {
-    public static string[] Routes { get; set; } = { "/script/admin", "/script/admin/{Actions}" }; 
+    public static string[] Routes { get; set; } = ["/script/admin", "/script/admin/{Actions}"]; 
         
-    public static string[] Actions = {
+    public static string[] Actions =
+    [
         nameof(ProtectedScripts.invalidateAllCaches),
-        nameof(SharpPagesFeature.RunInitPage),
-    };
+        nameof(SharpPagesFeature.RunInitPage)
+    ];
         
     public async Task<object> Any(ScriptAdmin request)
     {
@@ -841,7 +838,7 @@ public class ScriptAdminService : Service
         await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.ScriptAdminRole);
             
         if (string.IsNullOrEmpty(request.Actions))
-            return new ScriptAdminResponse { Results = new[]{ "Available actions: " + string.Join(",", Actions) } };
+            return new ScriptAdminResponse { Results = ["Available actions: " + string.Join(",", Actions)] };
 
         var actions = request.Actions.Split(',');
 
@@ -992,20 +989,12 @@ public class SharpPageHandler : HttpAsyncTaskHandler
     }
 }
 
-public class SharpCodePageHandler : HttpAsyncTaskHandler
+public class SharpCodePageHandler(SharpCodePage page, SharpPage layoutPage = null) : HttpAsyncTaskHandler
 {
-    private readonly SharpCodePage page;
-    private readonly SharpPage layoutPage;
     public object Model { get; set; }
     public Stream OutputStream { get; set; }
         
     public Dictionary<string, object> Args { get; set; }
-
-    public SharpCodePageHandler(SharpCodePage page, SharpPage layoutPage = null)
-    {
-        this.page = page;
-        this.layoutPage = layoutPage;
-    }
 
     public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
     {
@@ -1056,7 +1045,7 @@ public abstract class ServiceStackCodePage : SharpCodePage, IRequiresRequest
     public virtual T TryResolve<T>()
     {
         return this.GetResolver() == null
-            ? default(T)
+            ? default
             : this.GetResolver().TryResolve<T>();
     }
 
@@ -1149,6 +1138,11 @@ public static class SharpPagesFeatureExtensions
     public static ScriptContext InitForSharpPages(this ScriptContext context, IAppHost appHost)
     {
         context.Container = appHost.GetContainer();
+        return InitForSharpPages(context);
+    }
+
+    public static ScriptContext InitForSharpPages(this ScriptContext context)
+    {
         context.AllowScriptingOfAllTypes = true;
         context.ScriptNamespaces.AddRange(new [] {
             "System",

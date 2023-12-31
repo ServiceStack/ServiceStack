@@ -45,21 +45,15 @@ public class SmtpConfig
     public string? Bcc { get; set; }
 }
 
+/* Uncomment to enable sending emails with SMTP
 /// <summary>
 /// Uses a configured SMTP client to send emails
 /// </summary>
-public class EmailServices : Service
+public class EmailServices(SmtpConfig config, ILogger<EmailServices> log) : Service
 {
-    public EmailServices(SmtpConfig config, ILogger<EmailServices> log)
-    {
-        Config = config;
-        Log = log;
-    }
+    public SmtpConfig Config { get; } = config;
+    public ILogger<EmailServices> Log { get; } = log;
 
-    public SmtpConfig Config { get; }
-    public ILogger<EmailServices> Log { get; }
-
-    /* Uncomment to enable sending emails with SMTP
     public object Any(SendEmail request)
     {
         Log.LogInformation("Sending email to {Email} with subject {Subject}", request.To, request.Subject);
@@ -91,5 +85,5 @@ public class EmailServices : Service
 
         return new EmptyResponse();
     }
-    */
 }
+*/

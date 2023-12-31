@@ -43,18 +43,16 @@ public class ScriptConditionValidator(SharpPage code)
 public static class Validators
 {
     public static Dictionary<Type, List<ITypeValidator>> TypeRulesMap { get; private set; } = new();
-
     public static Dictionary<Type, List<IValidationRule>> TypePropertyRulesMap { get; private set; } = new();
-
     public static Dictionary<string, string> ConditionErrorCodes { get; private set; } = new();
     public static Dictionary<string, string> ErrorCodeMessages { get; private set; } = new();
 
     internal static void Reset()
     {
-        TypeRulesMap = new Dictionary<Type, List<ITypeValidator>>();
-        TypePropertyRulesMap = new Dictionary<Type, List<IValidationRule>>();
-        ConditionErrorCodes = new Dictionary<string, string>();
-        ErrorCodeMessages = new Dictionary<string, string>();
+        TypeRulesMap = new();
+        TypePropertyRulesMap = new();
+        ConditionErrorCodes = new();
+        ErrorCodeMessages = new();
         ValidationExtensions.Reset();
     }
 
@@ -148,21 +146,17 @@ public static class Validators
     /// <summary>
     /// Register declarative property [Validate] attributes.
     /// </summary>
-    /// <param name="type"></param>
     /// <returns></returns>
-    public static bool RegisterPropertyRulesFor(Type type)
+    public static bool RegisterPropertyRulesFor(Container container, Type dtoType, bool registerChildValidators = true)
     {
-        var container = HostContext.AppHost.Container;
-        var registerChildValidators = HostContext.GetPlugin<ValidationFeature>()?.ImplicitlyValidateChildProperties == true;
-
         // Don't register child validators for explicit FluentValidation validators to avoid double registration
-        var typesValidatorIsDefault = ValidationExtensions.TypesValidatorsMap.TryGetValue(type, out var typeValidator) 
+        var typesValidatorIsDefault = ValidationExtensions.TypesValidatorsMap.TryGetValue(dtoType, out var typeValidator) 
                                       && typeValidator.HasInterface(typeof(IDefaultValidator));
 
         var typeRules = new List<IValidationRule>();
-        foreach (var pi in type.GetPublicProperties())
+        foreach (var pi in dtoType.GetPublicProperties())
         {
-            var rule = CreateDeclarativePropertyRuleIfExists(type, pi);
+            var rule = CreateDeclarativePropertyRuleIfExists(dtoType, pi);
             if (rule != null)
             {
                 typeRules.Add(rule);
@@ -191,14 +185,14 @@ public static class Validators
                         // var rule = CollectionPropertyRule<T, TElement>.Create(expression, () => CascadeMode);
                         // AddRule(rule);
 
-                        var genericTypeDef = typeof(CollectionPropertyRule<,>).MakeGenericType(type, elementType);
+                        var genericTypeDef = typeof(CollectionPropertyRule<,>).MakeGenericType(dtoType, elementType);
                         var member = pi;
-                        var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(type, pi);
+                        var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(dtoType, pi);
                         var propAccessorFn = (Func<object,object>)propAccessorExpr.Compile();
                         var ciCollectionPropRule = genericTypeDef.GetConstructor(CollectionCtorTypes)
                                                    ?? throw new Exception("Could not find CollectionPropertyRule<T,TElement> Constructor");
-                        var collectionRule = (PropertyRule)ciCollectionPropRule.Invoke(new object[]
-                            {member, propAccessorFn, propAccessorExpr, CascadeMode, elementType, type});
+                        var collectionRule = (PropertyRule)ciCollectionPropRule.Invoke([
+                            member, propAccessorFn, propAccessorExpr, CascadeMode, elementType, dtoType]);
 
                         // RuleBuilder.SetValidator(new ChildValidator()) does:
                         // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
@@ -206,12 +200,12 @@ public static class Validators
                             
                         //validator: Generate the declarative TypeValidator for this property 
                         var propValidatorType = typeof(IValidator<>).MakeGenericType(elementType);
-                        container.RegisterNewValidatorIfNotExists(elementType);
+                        container.RegisterNewValidatorIfNotExists(elementType, true);
                         var validator = container.TryResolve(propValidatorType);
                             
                         // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
-                        var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, elementType);
-                        var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor(new[] { propValidatorType, typeof(Type) })
+                        var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(dtoType, elementType);
+                        var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor([propValidatorType, typeof(Type) ])
                                              ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
                         var childAdaptor = ciChildAdaptor.Invoke([validator, propValidatorType]) as IPropertyValidator; 
                         // Rule.AddValidator(validator);
@@ -233,21 +227,21 @@ public static class Validators
                         // return new PropertyRule(member, compiled.CoerceToNonGeneric(), expression, cascadeModeThunk, typeof(TProperty), typeof(T));
                             
                         var member = pi;
-                        var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(type, pi);
+                        var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(dtoType, pi);
                         var propAccessorFn = (Func<object,object>)propAccessorExpr.Compile();
                         var propertyRuleCtor = typeof(PropertyRule).GetConstructor(CollectionCtorTypes)
                                                ?? throw new Exception("Could not find PropertyRule Constructor");
                         var propRule = (PropertyRule)propertyRuleCtor.Invoke([
-                            member, propAccessorFn, propAccessorExpr, CascadeMode, pi.PropertyType, type
+                            member, propAccessorFn, propAccessorExpr, CascadeMode, pi.PropertyType, dtoType
                         ]);
 
                         // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
                         // Rule.AddValidator(validator);
                         var propValidatorType = typeof(IValidator<>).MakeGenericType(pi.PropertyType);
-                        container.RegisterNewValidatorIfNotExists(pi.PropertyType);
+                        container.RegisterNewValidatorIfNotExists(pi.PropertyType, true);
                         var validator = container.TryResolve(propValidatorType);
 
-                        var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, pi.PropertyType);
+                        var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(dtoType, pi.PropertyType);
                         var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor([propValidatorType, typeof(Type)])
                                              ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
                         var childAdaptor = ciChildAdaptor.Invoke([validator, propValidatorType]) as IPropertyValidator; 
@@ -261,7 +255,7 @@ public static class Validators
 
         if (typeRules.Count > 0)
         {
-            TypePropertyRulesMap[type] = typeRules;
+            TypePropertyRulesMap[dtoType] = typeRules;
             return true;
         }
 

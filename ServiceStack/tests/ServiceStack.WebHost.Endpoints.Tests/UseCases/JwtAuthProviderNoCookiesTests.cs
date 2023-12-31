@@ -233,11 +233,8 @@ public abstract class JwtAuthProviderNoCookiesTests
     public const string Username = "cookieless";
     public const string Password = "p@55word";
 
-    class AppHost : AppSelfHostBase
+    class AppHost() : AppSelfHostBase(nameof(JwtAuthProviderTests), typeof(JwtServices).Assembly)
     {
-        public AppHost()
-            : base(nameof(JwtAuthProviderTests), typeof(JwtServices).Assembly) { }
-
         public virtual JwtAuthProvider JwtAuthProvider { get; set; }
 
         public override void Configure(Container container)
@@ -246,8 +243,7 @@ public abstract class JwtAuthProviderNoCookiesTests
 
             container.Register<IDbConnectionFactory>(dbFactory);
             container.Register<IAuthRepository>(c =>
-                new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>())
-                {
+                new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()) {
                     UseDistinctRoleTables = true
                 });
 
@@ -260,12 +256,11 @@ public abstract class JwtAuthProviderNoCookiesTests
 
             // just for testing, create a privateKeyXml on every instance
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                new IAuthProvider[]
-                {
-                    new BasicAuthProvider(),
+            [
+                new BasicAuthProvider(),
                     new CredentialsAuthProvider(),
-                    JwtAuthProvider,
-                }));
+                    JwtAuthProvider
+            ]));
 
             Plugins.Add(new RegistrationFeature());
 

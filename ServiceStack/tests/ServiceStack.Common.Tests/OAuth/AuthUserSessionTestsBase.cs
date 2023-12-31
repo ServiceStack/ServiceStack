@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Testing;
 using ServiceStack.Text;
@@ -74,7 +75,7 @@ namespace ServiceStack.Common.Tests.OAuth
         protected BasicRequest requestContext;
         protected IServiceBase service;
 
-        protected AuthTokens facebookGatewayTokens = new AuthTokens
+        protected AuthTokens facebookGatewayTokens = new()
         {
             UserId = "623501766",
             DisplayName = "Demis Bellot FB",
@@ -82,16 +83,16 @@ namespace ServiceStack.Common.Tests.OAuth
             LastName = "Bellot",
             Email = "demis.bellot@gmail.com",
         };
-        protected AuthTokens twitterGatewayTokens = new AuthTokens
+        protected AuthTokens twitterGatewayTokens = new()
         {
             DisplayName = "Demis Bellot TW"
         };
-        protected AuthTokens facebookAuthTokens = new AuthTokens
+        protected AuthTokens facebookAuthTokens = new()
         {
             Provider = FacebookAuthProvider.Name,
             AccessTokenSecret = "AAADDDCCCoR848BAMkQIZCRIKnVWZAvcKWqo7Ibvec8ebV9vJrfZAz8qVupdu5EbjFzmMmbwUFDbcNDea9H6rOn5SVn8es7KYZD",
         };
-        protected AuthTokens twitterAuthTokens = new AuthTokens
+        protected AuthTokens twitterAuthTokens = new()
         {
             Provider = TwitterAuthProvider.Name,
             RequestToken = "JGGZZ22CCqgB1GR5e0EmGFxzyxGTw2rwEFFcC8a9o7g",
@@ -110,12 +111,12 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var appSettings = new DictionarySettings();
 
-            new AuthFeature(null, new IAuthProvider[] {
+            new AuthFeature(() => new AuthUserSession(), [
                 new CredentialsAuthProvider(),
                 new BasicAuthProvider(),
                 new FacebookAuthProvider(appSettings),
                 new TwitterAuthProvider(appSettings)
-            })
+            ])
             .Register(null);
 
             requestContext = new BasicRequest
@@ -145,10 +146,8 @@ namespace ServiceStack.Common.Tests.OAuth
             AuthUserSession oAuthUserSession = null,
             BasicRequest request = null)
         {
-            if (request == null)
-                request = new BasicRequest();
-            if (oAuthUserSession == null)
-                oAuthUserSession = request.ReloadSession();
+            request ??= new BasicRequest();
+            oAuthUserSession ??= request.ReloadSession();
 
             oAuthUserSession.Id = request.Response.CreateSessionId(request);
             request.Items[Keywords.Session] = oAuthUserSession;

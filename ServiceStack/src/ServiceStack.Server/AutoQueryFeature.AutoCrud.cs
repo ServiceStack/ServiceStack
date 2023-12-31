@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
@@ -20,15 +21,15 @@ namespace ServiceStack;
 
 public partial class AutoQueryFeature
 {
-    public List<Action<AutoCrudMetadata>> AutoCrudMetadataFilters { get; set; } = new() {
+    public List<Action<AutoCrudMetadata>> AutoCrudMetadataFilters { get; set; } = [
         AuditAutoCrudMetadataFilter
-    };
+    ];
         
     public string AccessRole { get; set; } = RoleNames.Admin;
 
     public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
-        { typeof(GetCrudEventsService), ["/" + "crudevents".Localize() + "/{Model}"] },
-        { typeof(CheckCrudEventService), ["/" + "crudevents".Localize() + "/check"] },
+        [typeof(GetCrudEventsService)] = ["/" + "crudevents".Localize() + "/{Model}"],
+        [typeof(CheckCrudEventService)] = ["/" + "crudevents".Localize() + "/check"],
     };
 
     /// <summary>
@@ -56,11 +57,11 @@ public partial class AutoQueryFeature
     public Action<CrudContext> OnAfterDelete { get; set; }
     public Func<CrudContext,Task> OnAfterDeleteAsync { get; set; }
 
-    protected void OnRegister(IAppHost appHost)
+    protected void OnRegister(IServiceCollection services)
     {
-        if (AccessRole != null && appHost.GetContainer().Exists<ICrudEvents>())
+        if (AccessRole != null && services.Exists<ICrudEvents>())
         {
-            appHost.RegisterServices(ServiceRoutes);
+            services.RegisterServices(ServiceRoutes);
         }
     }
 
@@ -110,11 +111,8 @@ public partial class AutoQueryFeature
 }
     
 [DefaultRequest(typeof(GetCrudEvents))]
-public partial class GetCrudEventsService : Service
+public partial class GetCrudEventsService(IAutoQueryDb autoQuery, IDbConnectionFactory dbFactory) : Service
 {
-    public IAutoQueryDb AutoQuery { get; set; }
-    public IDbConnectionFactory DbFactory { get; set; }
-
     public async Task<object> Any(GetCrudEvents request)
     {
         var appHost = HostContext.AppHost;
@@ -128,11 +126,11 @@ public partial class GetCrudEventsService : Service
         var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
         using var useDb = namedConnection != null
-            ? await DbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
-            : await DbFactory.OpenDbConnectionAsync().ConfigAwait();
+            ? await dbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
+            : await dbFactory.OpenDbConnectionAsync().ConfigAwait();
             
-        var q = AutoQuery.CreateQuery(request, Request, useDb);
-        var response = await AutoQuery.ExecuteAsync(request, q, Request, useDb).ConfigAwait();
+        var q = autoQuery.CreateQuery(request, Request, useDb);
+        var response = await autoQuery.ExecuteAsync(request, q, Request, useDb).ConfigAwait();
 
         // EventDate is populated in UTC but in some RDBMS (SQLite) it doesn't preserve UTC Kind, so we set it here
         foreach (var result in response.Results)
@@ -146,10 +144,8 @@ public partial class GetCrudEventsService : Service
 }
 
 [DefaultRequest(typeof(CheckCrudEvents))]
-public partial class CheckCrudEventService : Service
+public partial class CheckCrudEventService(IDbConnectionFactory dbFactory) : Service
 {
-    public IDbConnectionFactory DbFactory { get; set; }
-
     public async Task<object> Any(CheckCrudEvents request)
     {
         var appHost = HostContext.AppHost;
@@ -167,8 +163,8 @@ public partial class CheckCrudEventService : Service
         var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
         using var useDb = namedConnection != null
-            ? await DbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
-            : await DbFactory.OpenDbConnectionAsync().ConfigAwait();
+            ? await dbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
+            : await dbFactory.OpenDbConnectionAsync().ConfigAwait();
 
         var q = useDb.From<CrudEvent>()
             .Where(x => x.Model == request.Model)

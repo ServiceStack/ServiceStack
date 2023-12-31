@@ -232,11 +232,8 @@ public abstract class JwtAuthProviderTests
     public const string Username = "mythz";
     public const string Password = "p@55word";
 
-    class AppHost : AppSelfHostBase
+    class AppHost() : AppSelfHostBase(nameof(JwtAuthProviderTests), typeof(JwtServices).Assembly)
     {
-        public AppHost()
-            : base(nameof(JwtAuthProviderTests), typeof(JwtServices).Assembly) { }
-
         public virtual JwtAuthProvider JwtAuthProvider { get; set; }
 
         public override void Configure(Container container)

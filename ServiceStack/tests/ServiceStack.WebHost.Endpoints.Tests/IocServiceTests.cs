@@ -12,11 +12,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class IocAppHost : AppHostHttpListenerBase
+    public class IocAppHost() : AppHostHttpListenerBase("IocApp Service", typeof(IocService).Assembly)
     {
-        public IocAppHost()
-            : base("IocApp Service", typeof(IocService).Assembly) { }
-
         public override void Configure(Container container)
         {
             IocShared.Configure(this);
@@ -124,12 +121,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var response = client.Get<IocResponse>("iocasync");
                 var expected = new List<string> {
-                    typeof(FunqDepCtor).Name,
-                    typeof(AltDepCtor).Name,
-                    typeof(FunqDepProperty).Name,
-                    typeof(FunqDepDisposableProperty).Name,
-                    typeof(AltDepProperty).Name,
-                    typeof(AltDepDisposableProperty).Name,
+                    nameof(FunqDepCtor),
+                    nameof(AltDepCtor),
+                    nameof(FunqDepProperty),
+                    nameof(FunqDepDisposableProperty),
+                    nameof(AltDepProperty),
+                    nameof(AltDepDisposableProperty),
                 };
 
                 //Console.WriteLine(response.Results.Dump());
@@ -272,10 +269,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = client.Get(new ActionAttr());
 
                 var expected = new List<string> {
-                    typeof(FunqDepProperty).Name,
-                    typeof(FunqDepDisposableProperty).Name,
-                    typeof(AltDepProperty).Name,
-                    typeof(AltDepDisposableProperty).Name,
+                    nameof(FunqDepProperty),
+                    nameof(FunqDepDisposableProperty),
+                    nameof(AltDepProperty),
+                    nameof(AltDepDisposableProperty),
                 };
 
                 Assert.That(expected.EquivalentTo(response.Results));
@@ -297,10 +294,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = client.Get(new ActionAttrAsync());
 
                 var expected = new List<string> {
-                    typeof(FunqDepProperty).Name,
-                    typeof(FunqDepDisposableProperty).Name,
-                    typeof(AltDepProperty).Name,
-                    typeof(AltDepDisposableProperty).Name,
+                    nameof(FunqDepProperty),
+                    nameof(FunqDepDisposableProperty),
+                    nameof(AltDepProperty),
+                    nameof(AltDepDisposableProperty),
                 };
 
                 Assert.That(expected.EquivalentTo(response.Results));

@@ -16,17 +16,9 @@ namespace ServiceStack.NativeTypes;
 public delegate string TypeFilterDelegate(string typeName, string[] genericArgs);
 public delegate string AddCodeDelegate(List<MetadataType> allTypes, MetadataTypesConfig config);
 
-public class NativeTypesMetadata : INativeTypesMetadata
+public class NativeTypesMetadata(ServiceMetadata meta, MetadataTypesConfig defaults) 
+    : INativeTypesMetadata
 {
-    private readonly ServiceMetadata meta;
-    private readonly MetadataTypesConfig defaults;
-
-    public NativeTypesMetadata(ServiceMetadata meta, MetadataTypesConfig defaults)
-    {
-        this.meta = meta;
-        this.defaults = defaults;
-    }
-
     public MetadataTypesConfig GetConfig(NativeTypesBase req)
     {
         return new() {
@@ -718,10 +710,9 @@ public class MetadataTypesGenerator
 
     public MetadataAttribute ToAttribute(Attribute attr)
     {
-        if (AttributeConverters.TryGetValue(attr.GetType(), out var converter))
-            return converter(attr);
-
-        return ToMetadataAttribute(attr);
+        return AttributeConverters.TryGetValue(attr.GetType(), out var converter) 
+            ? converter(attr) 
+            : ToMetadataAttribute(attr);
     }
 
     public MetadataAttribute ToMetadataAttribute(Attribute attr)
@@ -836,7 +827,7 @@ public class MetadataTypesGenerator
             property.IsRequired = true;
 
         var uploadTo = pi.FirstAttribute<UploadToAttribute>();
-        if (property.Input != null && property.Input.Accept == null && uploadTo != null)
+        if (property.Input is { Accept: null } && uploadTo != null)
         {
             var feature = HostContext.GetPlugin<FilesUploadFeature>();
             var location = feature?.Locations.FirstOrDefault(x => x.Name == uploadTo.Location);

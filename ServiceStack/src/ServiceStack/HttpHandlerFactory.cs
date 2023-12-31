@@ -64,8 +64,7 @@ public class HttpHandlerFactory : IHttpHandlerFactory
                         DefaultRootFileName = fileNameLower;
                         StaticFileHandler.SetDefaultFile(file.VirtualPath, file.ReadAllBytes(), file.LastModified);
 
-                        if (DefaultHttpHandler == null)
-                            DefaultHttpHandler = new StaticFileHandler(file);
+                        DefaultHttpHandler ??= new StaticFileHandler(file);
                     }
                 }
             }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Data;
 using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
@@ -83,8 +84,15 @@ public interface IGenerateCrudServices
     string AccessRole { get; set; }
     DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema = null, string namedConnection = null,
         List<string> includeTables = null, List<string> excludeTables = null);
-    void Register(IAppHost appHost);
+    void Configure(IServiceCollection services);
+    
+    /// <summary>
+    /// Generate AutoQuery DTOs for specified RDBMS Tables
+    /// </summary>
+    /// <param name="feature"></param>
+    /// <returns>New AutoQuery Request DTOs</returns>
     List<Type> GenerateMissingServices(AutoQueryFeature feature);
+    
     Action<List<TableSchema>> TableSchemasFilter { get; set; }
 
     /// <summary>
@@ -117,7 +125,7 @@ public static class CrudUtils
         Dictionary<string, object> args = null, Attribute attr = null)
     {
         var metaAttr = ToAttribute(name, args, attr);
-        type.Attributes ??= new List<MetadataAttribute>();
+        type.Attributes ??= [];
         type.Attributes.Add(metaAttr);
         return type;
     }
@@ -126,7 +134,7 @@ public static class CrudUtils
     {
         var nativeTypesGen = HostContext.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
         var metaAttr = nativeTypesGen.ToMetadataAttribute(attr);
-        type.Attributes ??= new List<MetadataAttribute>();
+        type.Attributes ??= [];
         type.Attributes.Add(metaAttr);
         return type;
     }
@@ -143,7 +151,7 @@ public static class CrudUtils
     {
         var nativeTypesGen = HostContext.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
         var metaAttr = nativeTypesGen.ToMetadataAttribute(attr);
-        propType.Attributes ??= new List<MetadataAttribute>();
+        propType.Attributes ??= [];
         propType.Attributes.Add(metaAttr);
         return propType;
     }

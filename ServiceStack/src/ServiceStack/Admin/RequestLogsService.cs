@@ -50,7 +50,7 @@ public class RequestLogsResponse
 }
 
 [DefaultRequest(typeof(RequestLogs))]
-public class RequestLogsService : Service
+public class RequestLogsService(IRequestLogger requestLogger) : Service
 {
     private static readonly Dictionary<string, string> Usage = new() {
         {"int BeforeSecs",      "Requests before elapsed time"},
@@ -74,24 +74,19 @@ public class RequestLogsService : Service
         {"string OrderBy",      "Order results by specified fields, e.g. SessionId,-Id"},
     };
 
-    public IRequestLogger RequestLogger { get; set; }
-
     public async Task<object> Any(RequestLogs request)
     {
-        if (RequestLogger == null)
-            throw new Exception("No IRequestLogger is registered");
-
         if (!HostContext.DebugMode)
-            await RequiredRoleAttribute.AssertRequiredRolesAsync(Request, RequestLogger.RequiredRoles);
+            await RequiredRoleAttribute.AssertRequiredRolesAsync(Request, requestLogger.RequiredRoles);
 
         if (request.EnableSessionTracking.HasValue)
-            RequestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
+            requestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
 
         var feature = GetPlugin<RequestLogsFeature>();
         var defaultLimit = feature?.DefaultLimit ?? 100;
 
         var now = DateTime.UtcNow;
-        var snapshot = RequestLogger.GetLatestLogs(null);
+        var snapshot = requestLogger.GetLatestLogs(null);
         var logs = snapshot.AsQueryable();
 
         if (request.BeforeSecs.HasValue)

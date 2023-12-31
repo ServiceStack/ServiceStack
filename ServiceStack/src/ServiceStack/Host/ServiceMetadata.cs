@@ -15,36 +15,23 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host;
 
-public class ServiceMetadata
+public class ServiceMetadata(List<RestPath> restPaths)
 {
-    public ServiceMetadata(List<RestPath> restPaths)
-    {
-        this.restPaths = restPaths;
-        this.RequestTypes = new HashSet<Type>();
-        this.ServiceTypes = new HashSet<Type>();
-        this.ResponseTypes = new HashSet<Type>();
-        this.OperationsMap = new Dictionary<Type, Operation>();
-        this.OperationsResponseMap = new Dictionary<Type, Operation>();
-        this.OperationNamesMap = new Dictionary<string, Operation>();
-        this.ForceInclude = new HashSet<Type>();
-    }
+    public Dictionary<Type, Operation> OperationsMap { get; protected set; } = new();
+    public Dictionary<Type, Operation> OperationsResponseMap { get; protected set; } = new();
+    public Dictionary<string, Operation> OperationNamesMap { get; protected set; } = new();
+    public HashSet<Type> RequestTypes { get; protected set; } = new();
+    public HashSet<Type> ServiceTypes { get; protected set; } = new();
+    public HashSet<Type> ResponseTypes { get; protected set; } = new();
 
-    public Dictionary<Type, Operation> OperationsMap { get; protected set; }
-    public Dictionary<Type, Operation> OperationsResponseMap { get; protected set; }
-    public Dictionary<string, Operation> OperationNamesMap { get; protected set; }
-    public HashSet<Type> RequestTypes { get; protected set; }
-    public HashSet<Type> ServiceTypes { get; protected set; }
-    public HashSet<Type> ResponseTypes { get; protected set; }
-    private readonly List<RestPath> restPaths;
-        
     public List<Action<Operation>> ConfigureOperations { get; protected set; } = new();
     public List<Action<MetadataType>> ConfigureMetadataTypes { get; protected set; } = new();
 
     public IEnumerable<Operation> Operations => OperationsMap.Values;
         
-    public HashSet<Type> ForceInclude { get; set; }
+    public HashSet<Type> ForceInclude { get; set; } = new();
 
-    public void Add(Type serviceType, Type requestType, Type responseType)
+    public void Add(Type serviceType, Type requestType, Type? responseType)
     {
         if (requestType.IsArray) //Custom AutoBatched requests
         {
@@ -64,7 +51,7 @@ public class ServiceMetadata
 
         var reqFilterAttrs = new[] { reqAttrs, svcAttrs }
             .SelectMany(x => x.OfType<IRequestFilterBase>()).ToList();
-        var resFilterAttrs = (resAttrs != null ? new[] { resAttrs, svcAttrs } : new[] { svcAttrs })
+        var resFilterAttrs = (resAttrs != null ? [resAttrs, svcAttrs] : new[] { svcAttrs })
             .SelectMany(x => x.OfType<IResponseFilterBase>()).ToList();
 
         var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
@@ -73,8 +60,8 @@ public class ServiceMetadata
         authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
         var tagNames = reqAttrs.OfType<TagAttribute>().Map(x => x.Name);
         var description = reqAttrs.OfType<DescriptionAttribute>().FirstOrDefault()?.Description
-                          ?? reqAttrs.OfType<System.ComponentModel.DescriptionAttribute>().FirstOrDefault()?.Description
-                          ?? reqAttrs.OfType<ApiMemberAttribute>().FirstOrDefault()?.Description;
+            ?? reqAttrs.OfType<System.ComponentModel.DescriptionAttribute>().FirstOrDefault()?.Description
+            ?? reqAttrs.OfType<ApiMemberAttribute>().FirstOrDefault()?.Description;
         var notes = reqAttrs.OfType<NotesAttribute>()?.FirstOrDefault()?.Notes;
 
         var operation = new Operation
@@ -167,10 +154,10 @@ public class ServiceMetadata
     }
 
     public List<Operation> GetOperationsByTag(string tag) => 
-        Operations.Where(x => x.Tags.Any(t => t== tag)).ToList();
+        Operations.Where(x => x.Tags?.Any(t => t== tag) == true).ToList();
 
     public List<Operation> GetOperationsByTags(string[] tags) => 
-        Operations.Where(x => x.Tags.Any(t => Array.IndexOf(tags, t) >= 0)).ToList();
+        Operations.Where(x => x.Tags?.Any(t => Array.IndexOf(tags, t) >= 0) == true).ToList();
 
     public Operation? GetOperation(Type? requestType)
     {
@@ -865,29 +852,26 @@ public class Operation : ICloneable
 
     public void AddRequestTypeValidationRules(List<ITypeValidator> typeValidators)
     {
-        if (typeValidators != null)
+        RequestTypeValidationRules ??= [];
+        RequestTypeValidationRules.AddRange(typeValidators);
+
+        var authValidators = typeValidators.OfType<IAuthTypeValidator>().ToList();
+        if (authValidators.Count > 0)
         {
-            RequestTypeValidationRules ??= new List<ITypeValidator>();
-            RequestTypeValidationRules.AddRange(typeValidators);
+            RequiresAuthentication = true;
 
-            var authValidators = typeValidators.OfType<IAuthTypeValidator>().ToList();
-            if (authValidators.Count > 0)
+            var rolesValidators = authValidators.OfType<HasRolesValidator>();
+            foreach (var validator in rolesValidators)
             {
-                RequiresAuthentication = true;
+                RequiredRoles ??= [];
+                validator.Roles.Each(x => RequiredRoles.AddIfNotExists(x));
+            }
 
-                var rolesValidators = authValidators.OfType<HasRolesValidator>();
-                foreach (var validator in rolesValidators)
-                {
-                    RequiredRoles ??= new List<string>();
-                    validator.Roles.Each(x => RequiredRoles.AddIfNotExists(x));
-                }
-
-                var permsValidators = authValidators.OfType<HasPermissionsValidator>();
-                foreach (var validator in permsValidators)
-                {
-                    RequiredPermissions ??= new List<string>();
-                    validator.Permissions.Each(x => RequiredPermissions.AddIfNotExists(x));
-                }
+            var permsValidators = authValidators.OfType<HasPermissionsValidator>();
+            foreach (var validator in permsValidators)
+            {
+                RequiredPermissions ??= [];
+                validator.Permissions.Each(x => RequiredPermissions.AddIfNotExists(x));
             }
         }
     }
@@ -896,7 +880,7 @@ public class Operation : ICloneable
     {
         if (propertyValidators != null)
         {
-            RequestPropertyValidationRules ??= new List<IValidationRule>();
+            RequestPropertyValidationRules ??= [];
             RequestPropertyValidationRules.AddRange(propertyValidators);
         }
     }

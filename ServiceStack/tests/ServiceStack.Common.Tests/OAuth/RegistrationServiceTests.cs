@@ -6,13 +6,14 @@ using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
     [TestFixture]
     public class RegistrationServiceTests
     {
-        static AuthUserSession authUserSession = new AuthUserSession();
+        static AuthUserSession authUserSession = new();
 
         private ServiceStackHost appHost;
 
@@ -75,6 +76,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var service = GetRegistrationService();
 
             var response = PostRegistrationError(service, new Register());
+            response.ResponseStatus.PrintDump();
             var errors = response.GetFieldErrors();
 
             Assert.That(errors.Count, Is.EqualTo(3));

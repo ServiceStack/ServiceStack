@@ -13,7 +13,7 @@ namespace ServiceStack.SmartThreadPool
         : AppHostHttpListenerBase
     {
         private readonly ILog log = LogManager.GetLogger(typeof(AppSelfHostBase));
-        private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
+        private readonly AutoResetEvent listenForNextRequest = new(initialState:false);
         private readonly Amib.Threading.SmartThreadPool threadPoolManager;
 
         private const int IdleTimeout = 300;

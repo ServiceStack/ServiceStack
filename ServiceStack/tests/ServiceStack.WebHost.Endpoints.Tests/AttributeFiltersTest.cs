@@ -161,15 +161,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class PriorityAttributeTest : IReturn<PriorityAttributeTest>
     {
-        public PriorityAttributeTest()
-        {
-            this.Names = new List<string>();
-        }
-
-        public List<string> Names { get; set; }
+        public List<string> Names { get; set; } = [];
     }
 
-    public class PriortyAttributeService : Service
+    public class PriorityAttributeService : Service
     {
         [Priority(3, "3rd")]
         [Priority(2, "2nd")]

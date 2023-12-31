@@ -139,13 +139,11 @@ public class AutoQueryMetadataResponse : IMeta
 }
 
 [Restrict(VisibilityTo = RequestAttributes.None)]
-public class AutoQueryMetadataService : Service
+public class AutoQueryMetadataService(INativeTypesMetadata metadata) : Service
 {
-    public INativeTypesMetadata NativeTypesMetadata { get; set; }
-
     public async Task<object> AnyAsync(AutoQueryMetadata request)
     {
-        if (NativeTypesMetadata == null)
+        if (metadata == null)
             throw new NotSupportedException("AutoQueryViewer requires NativeTypesFeature");
 
         var feature = HostContext.GetPlugin<AutoQueryMetadataFeature>();
@@ -154,21 +152,18 @@ public class AutoQueryMetadataService : Service
         if (config == null)
             throw new NotSupportedException("AutoQueryViewerConfig is missing");
 
-        if (config.ServiceBaseUrl == null)
-            config.ServiceBaseUrl = base.Request.GetBaseUrl();
-
-        if (config.ServiceName == null)
-            config.ServiceName = HostContext.ServiceName;
+        config.ServiceBaseUrl ??= base.Request.GetBaseUrl();
+        config.ServiceName ??= HostContext.ServiceName;
 
         var userSession = await Request.GetSessionAsync();
 
-        var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
+        var typesConfig = metadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
         foreach (var type in feature.ExportTypes)
         {
             typesConfig.ExportTypes.Add(type);
         }
 
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig, 
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig, 
             op => HostContext.Metadata.IsAuthorized(op, Request, userSession));
 
         var response = new AutoQueryMetadataResponse {
@@ -176,8 +171,8 @@ public class AutoQueryMetadataService : Service
             UserInfo = new AutoQueryViewerUserInfo {
                 IsAuthenticated = userSession.IsAuthenticated,
             },
-            Operations = new List<AutoQueryOperation>(),
-            Types = new List<MetadataType>(),
+            Operations = [],
+            Types = [],
         };
 
         var includeTypeNames = new HashSet<string>();

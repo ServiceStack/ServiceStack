@@ -57,25 +57,20 @@ public class StopFilterExecutionException : StopExecutionException, IResponseSta
     }
 }
 
-public class ScriptException : Exception
+public class ScriptException(PageResult pageResult) : Exception(
+    pageResult.LastFilterError?.Message ?? throw new ArgumentNullException(nameof(pageResult)),
+    pageResult.LastFilterError)
 {
-    public PageResult PageResult { get; }
+    public PageResult PageResult { get; } = pageResult;
     public string PageStackTrace => PageResult.LastFilterStackTrace.Map(x => "   at " + x).Join(Environment.NewLine);
-
-    public ScriptException(PageResult pageResult) : base(
-        pageResult.LastFilterError?.Message ?? throw new ArgumentNullException(nameof(pageResult)),
-        pageResult.LastFilterError)
-    {
-        PageResult = pageResult;
-    }
 }
 
 public class ScriptMethods
 {
     public ScriptContext Context { get; set; }
     public ISharpPages Pages { get; set; }
-        
-    private readonly Dictionary<string, MethodInfo> lookupIndex = new Dictionary<string, MethodInfo>();
+
+    private readonly Dictionary<string, MethodInfo> lookupIndex = new();
 
     public ScriptMethods()
     {
@@ -115,7 +110,7 @@ public class ScriptMethods
         return filters;
     }
 
-    public ConcurrentDictionary<string, MethodInvoker> InvokerCache { get; } = new ConcurrentDictionary<string, MethodInvoker>();
+    public ConcurrentDictionary<string, MethodInvoker> InvokerCache { get; } = new();
 
     public MethodInvoker GetInvoker(string name, int argsCount, InvokerType type)
     {
@@ -187,7 +182,7 @@ public static class TemplateFilterUtils
 
     public static string AssertExpression(this ScriptScopeContext scope, string filterName, object expression)
     {
-        if (!(expression is string literal)) 
+        if (expression is not string literal) 
             throw new NotSupportedException($"'{filterName}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
         return literal;
     }

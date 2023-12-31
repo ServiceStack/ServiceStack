@@ -4,76 +4,73 @@ using System.Linq;
 using Funq;
 using NUnit.Framework;
 
-namespace ServiceStack.WebHost.Endpoints.Tests.Issues
+namespace ServiceStack.WebHost.Endpoints.Tests.Issues;
+
+public class PostEmptyArray : IReturnVoid
 {
-    public class PostEmptyArray : IReturnVoid
+    public int[] Ids { get; set; }
+}
+
+public class GetEmptyArray : IReturn<List<int>>
+{
+    public int[] Ids { get; set; }
+}
+
+public class TestService : Service
+{
+    public void Post(PostEmptyArray e)
     {
-        public int[] Ids { get; set; }
+        if (e.Ids == null)
+            throw new Exception();
     }
 
-    public class GetEmptyArray : IReturn<List<int>>
+    public List<int> Get(GetEmptyArray e)
     {
-        public int[] Ids { get; set; }
-    }
+        if (e.Ids == null)
+            throw new Exception();
 
-    public class TestService : Service
+        return e.Ids.ToList();
+    }
+}
+
+public class EmptyDtoIssue
+{
+    public class EmptyArrayDtoTest
     {
-        public void Post(PostEmptyArray e)
+        public class AppHost() : AppHostHttpListenerBase(nameof(EmptyArrayDtoTest), typeof(GetEmptyArray).Assembly)
         {
-            if (e.Ids == null)
-                throw new Exception();
+            public override void Configure(Container container) { }
         }
 
-        public List<int> Get(GetEmptyArray e)
-        {
-            if (e.Ids == null)
-                throw new Exception();
+        ServiceStackHost appHost;
 
-            return e.Ids.ToList();
+        [OneTimeSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new AppHost()
+                .Init()
+                .Start(Config.ListeningOn);
         }
-    }
 
-    public class EmptyDtoIssue
-    {
-        public class EmptyArrayDtoTest
+        [OneTimeTearDown]
+        public void TestFixtureTearDown()
         {
-            public class AppHost : AppHostHttpListenerBase
-            {
-                public AppHost() : base(typeof(EmptyArrayDtoTest).Name, typeof(GetEmptyArray).Assembly) { }
+            appHost.Dispose();
+        }
 
-                public override void Configure(Container container) { }
-            }
+        [Test]
+        public void Can_POST_empty_array()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            client.Post(new PostEmptyArray { Ids = [] });
+        }
 
-            ServiceStackHost appHost;
+        [Test]
+        public void Can_GET_empty_array()
+        {
 
-            [OneTimeSetUp]
-            public void TestFixtureSetUp()
-            {
-                appHost = new AppHost()
-                    .Init()
-                    .Start(Config.ListeningOn);
-            }
-
-            [OneTimeTearDown]
-            public void TestFixtureTearDown()
-            {
-                appHost.Dispose();
-            }
-
-            [Test]
-            public void Can_POST_empty_array()
-            {
-                var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-                client.Post(new PostEmptyArray { Ids = new int[] { } });
-            }
-
-            [Test]
-            public void Can_GET_empty_array()
-            {
-
-                var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-                client.Get(new GetEmptyArray { Ids = new int[] { } });
-            }
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            client.Get(new GetEmptyArray { Ids = [] });
         }
     }
 }

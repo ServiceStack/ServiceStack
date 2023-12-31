@@ -59,6 +59,14 @@ public static class ListExtensions
         }
     }
 
+    public static void AddDistinctRange<T>(this HashSet<T> set, IEnumerable<T> items)
+    {
+        foreach (var item in items)
+        {
+            set.Add(item);
+        }
+    }
+
     public static T[] NewArray<T>(this T[] array, T with = null, T without = null) where T : class
     {
         var to = new List<T>(array);
@@ -72,15 +80,9 @@ public static class ListExtensions
         return to.ToArray();
     }
 
-    public static List<T> InList<T>(this T value)
-    {
-        return new List<T> { value };
-    }
+    public static List<T> InList<T>(this T value) => [value];
 
-    public static T[] InArray<T>(this T value)
-    {
-        return new[] { value };
-    }
+    public static T[] InArray<T>(this T value) => [value];
 
     public static List<Type> Add<T>(this List<Type> types)
     {
