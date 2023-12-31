@@ -134,12 +134,16 @@ public static class ReflectionExtensions
 
     public static bool HasInterface(this Type type, Type interfaceType)
     {
+#if NET6_0_OR_GREATER        
+        return type.IsAssignableTo(interfaceType);
+#else
         foreach (var t in type.GetInterfaces())
         {
             if (t == interfaceType)
                 return true;
         }
         return false;
+#endif
     }
 
     public static bool HasAnyInterface(this Type type, Type[] interfaceTypes)
