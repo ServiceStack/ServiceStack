@@ -71,15 +71,13 @@ services.AddBlazorServerIdentityApiClient(baseUrl);
 services.AddLocalStorage();
 
 services.AddEndpointsApiExplorer();
-services.AddSwaggerGen(c =>
-{
-    c.AddServiceStack();
-    c.AddBasicAuth(BasicAuthenticationHandler.Scheme);
-});
+services.AddSwaggerGen();
 
 // Register all services
-services.AddServiceStack(c => {
-    c.ServiceAssemblies.Add(typeof(MyServices).Assembly);
+services.AddServiceStack(typeof(MyServices).Assembly, c => {
+    c.AddSwagger(o => {
+        o.AddJwtBearer();
+    });
 }); 
 
 var app = builder.Build();
@@ -112,7 +110,6 @@ app.MapAdditionalIdentityEndpoints();
 app.UseServiceStack(new AppHost(), options =>
 {
     options.MapEndpoints(force:true);
-    options.WithOpenApi();
 });
 
 BlazorConfig.Set(new()

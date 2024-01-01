@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using ServiceStack.Host;
@@ -9,6 +10,56 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.AspNetCore.OpenApi;
+
+public static class OpenApiSecurity
+{
+    public static OpenApiSecurityRequirement BasicAuth { get; } = new()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = BasicAuthenticationHandler.Scheme
+                }
+            },
+            Array.Empty<string>()
+        }
+    };
+    public static OpenApiSecurityScheme BasicAuthScheme { get; set; } = new()
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Description = "HTTP Basic access authentication",
+        Type = SecuritySchemeType.Http,
+        Scheme = BasicAuthenticationHandler.Scheme,
+    };
+
+    public static OpenApiSecurityRequirement JwtBearer { get; } = new()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = JwtBearerDefaults.AuthenticationScheme,
+                }
+            },
+            Array.Empty<string>()
+        }
+    };
+    public static OpenApiSecurityScheme JwtBearerScheme { get; set; } = new()
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Description = "JWT Bearer Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+    };
+}
 
 public class OpenApiMetadata
 {
@@ -64,6 +115,21 @@ public class OpenApiMetadata
 
     public Dictionary<string, OpenApiSchema> Schemas { get; } = new();
     internal static List<string> InlineSchemaTypesInNamespaces { get; set; } = new();
+    
+    public OpenApiSecurityScheme? SecurityDefinition { get; set; }
+    public OpenApiSecurityRequirement? SecurityRequirement { get; set; }
+
+    public void AddBasicAuth()
+    {
+        SecurityDefinition = OpenApiSecurity.BasicAuthScheme;
+        SecurityRequirement = OpenApiSecurity.BasicAuth;
+    }
+
+    public void AddJwtBearer()
+    {
+        SecurityDefinition = OpenApiSecurity.JwtBearerScheme;
+        SecurityRequirement = OpenApiSecurity.JwtBearer;
+    }
 
     public OpenApiOperation AddOperation(OpenApiOperation op, Operation operation, string verb, string route)
     {
@@ -140,7 +206,8 @@ public class OpenApiMetadata
         
         if (operation.RequiresAuthentication)
         {
-            op.Security.Add(new OpenApiSecurityRequirement());
+            if (SecurityRequirement != null)
+                op.Security.Add(SecurityRequirement);
         }
         var userTags = operation.RequestType.AllAttributes<TagAttribute>().Map(x => x.Name);
         if (userTags.Count > 0)

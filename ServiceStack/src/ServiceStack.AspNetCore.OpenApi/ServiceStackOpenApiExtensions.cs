@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
 using ServiceStack.AspNetCore.OpenApi;
-using ServiceStack.Auth;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace ServiceStack;
@@ -16,7 +15,7 @@ public static class ServiceStackOpenApiExtensions
     {
         if (!options.MapEndpointRouting)
             throw new NotSupportedException("MapEndpointRouting must be enabled to use OpenApi");
-        
+
         options.RouteHandlerBuilders.Add((builder, operation, method, route) =>
         {
             builder.WithOpenApi(op =>
@@ -26,55 +25,22 @@ public static class ServiceStackOpenApiExtensions
             });
         });
     }
-    
-    public static void AddServiceStack(this SwaggerGenOptions swaggerGenOptions, Action<OpenApiMetadata>? configure = null)
+
+    public static void AddSwagger(this ServiceStackServicesOptions options, Action<OpenApiMetadata>? configure = null)
     {
         configure?.Invoke(OpenApiMetadata);
 
-        foreach (var filterType in OpenApiMetadata.DocumentFilterTypes)
-        {
-            swaggerGenOptions.DocumentFilterDescriptors.Add(new FilterDescriptor
-            {
-                Type = filterType,
-                Arguments = Array.Empty<object>(),
-            });
-        }
-        foreach (var filterType in OpenApiMetadata.SchemaFilterTypes)
-        {
-            swaggerGenOptions.SchemaFilterDescriptors.Add(new FilterDescriptor
-            {
-                Type = filterType,
-                Arguments = Array.Empty<object>(),
-            });
-        }
+        options.Services.AddSingleton(OpenApiMetadata);
+        options.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
+        options.Services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
     }
 
-    public static void AddBasicAuth(this SwaggerGenOptions swaggerGenOptions, string scheme)
-    {
-        swaggerGenOptions.AddSecurityDefinition(BasicAuthenticationHandler.Scheme, new OpenApiSecurityScheme
-        {
-            Name = "Authorization",
-            Type = SecuritySchemeType.Http,
-            Scheme = scheme,
-            In = ParameterLocation.Header,
-            Description = "HTTP Basic access authentication"
-        });
-        swaggerGenOptions.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = scheme
-                    }
-                },
-                ["Basic "]
-            }
-        });
-    }
+    public static void AddBasicAuth(this SwaggerGenOptions options) =>
+        options.AddSecurityDefinition(OpenApiSecurity.BasicAuthScheme.Scheme, OpenApiSecurity.BasicAuthScheme);
 
-    internal static List<IOpenApiAny> ToOpenApiEnums(this IEnumerable<string>? enums) => 
-        enums.Safe().Map(x => (IOpenApiAny) new OpenApiString(x));
+    public static void AddJwtAuth(this SwaggerGenOptions options) =>
+        options.AddSecurityDefinition(OpenApiSecurity.JwtBearerScheme.Scheme, OpenApiSecurity.JwtBearerScheme);
+
+    internal static List<IOpenApiAny> ToOpenApiEnums(this IEnumerable<string>? enums) =>
+        enums.Safe().Map(x => (IOpenApiAny)new OpenApiString(x));
 }

@@ -682,6 +682,12 @@ public static class NetCoreAppHostExtensions
                 appHost.RegisterEndpoints(routeBuilder);
             }
         }
+
+        var appOptions = app.ApplicationServices.GetServices<IConfigureOptions<ServiceStackOptions>>();
+        foreach (var appOption in appOptions)
+        {
+            appOption.Configure(appHost.Options);
+        }
 #endif
         
         return app;

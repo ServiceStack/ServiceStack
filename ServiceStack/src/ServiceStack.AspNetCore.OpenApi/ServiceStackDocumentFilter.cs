@@ -5,12 +5,15 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace ServiceStack.AspNetCore.OpenApi;
 
 // Last OpenApi Filter to run
-public class ServiceStackDocumentFilter : IDocumentFilter
+public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFilter
 {
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
         //Console.WriteLine(GetType().Name + "...");
-        var openApi = ServiceStackOpenApiExtensions.OpenApiMetadata;
+        if (metadata.SecurityDefinition != null)
+        {
+            swaggerDoc.Components.SecuritySchemes[metadata.SecurityDefinition.Scheme] = metadata.SecurityDefinition;
+        }
 
         var operations = HostContext.Metadata.OperationsMap.Values.ToList();
         var dtos = new HashSet<Type>();
@@ -26,7 +29,7 @@ public class ServiceStackDocumentFilter : IDocumentFilter
         foreach (var type in orderedDtos)
         {
             //Console.WriteLine("Type: " + type.ToPrettyName() + " ...");
-            var schema = openApi.CreateSchema(type, allTypes: dtos);
+            var schema = metadata.CreateSchema(type, allTypes: dtos);
             if (schema != null)
             {
                 swaggerDoc.Components.Schemas[OpenApiMetadata.GetSchemaTypeName(type)] = schema;
