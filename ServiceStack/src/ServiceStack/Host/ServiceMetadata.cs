@@ -63,7 +63,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
             ?? reqAttrs.OfType<System.ComponentModel.DescriptionAttribute>().FirstOrDefault()?.Description
             ?? reqAttrs.OfType<ApiMemberAttribute>().FirstOrDefault()?.Description;
         var notes = reqAttrs.OfType<NotesAttribute>()?.FirstOrDefault()?.Notes;
-
+        
         var operation = new Operation
         {
             ServiceType = serviceType,
@@ -89,6 +89,31 @@ public class ServiceMetadata(List<RestPath> restPaths)
             LocodeCss = X.Map(requestType.FirstAttribute<LocodeCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
             ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
         };
+
+#if NET8_0_OR_GREATER
+        operation.Authorize = reqAttrs.OfType<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().FirstOrDefault();
+        if (operation.Authorize == null)
+        {
+            var policy = authAttrs.FirstOrDefault(x => x.Policy != null)?.Policy;
+            if (policy != null)
+            {
+                operation.Authorize = new()
+                {
+                    Policy = policy,
+                    Roles = operation.RequiredRoles.Join(",")
+                };
+            }
+        }
+        else if (operation.Authorize != null)
+        {
+            operation.RequiresAuthentication = true;
+            if (operation.Authorize.Roles != null)
+            {
+                var roles = operation.Authorize.Roles.Split(',');
+                operation.RequiredRoles.AddDistinctRange(roles);
+            }
+        }
+#endif
 
         this.OperationsMap[requestType] = operation;
         this.OperationNamesMap[operation.Name.ToLowerInvariant()] = operation;
@@ -823,6 +848,10 @@ public class Operation : ICloneable
     public HashSet<Type>? RequestPropertyAttributes { get; set; }
     public List<ITypeValidator>? RequestTypeValidationRules { get; private set; }
     public List<IValidationRule>? RequestPropertyValidationRules { get; private set; }
+    
+#if NET8_0_OR_GREATER
+    public Microsoft.AspNetCore.Authorization.AuthorizeAttribute? Authorize { get; set; }
+#endif
 
     object ICloneable.Clone() => Clone();
     public Operation Clone() => new() {

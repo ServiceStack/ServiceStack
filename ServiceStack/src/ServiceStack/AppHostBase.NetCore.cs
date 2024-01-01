@@ -245,7 +245,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
         if (operation.RequiresAuthentication)
         {
-            var authAttr = new AuthorizeAttribute { AuthenticationSchemes = Options.AuthenticationSchemes };
+            var authAttr = operation.Authorize ?? new AuthorizeAttribute();
+            authAttr.AuthenticationSchemes ??= Options.AuthenticationSchemes;
             builder.RequireAuthorization(authAttr);
         }
         else

@@ -32,6 +32,13 @@ public class AuthenticateAttribute : RequestFilterAsyncAttribute
     /// </summary>
     public string HtmlRedirect { get; set; }
 
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Restrict authentication to a specific Policy when using endpoint routing
+    /// </summary>
+    public string Policy { get; set; }
+#endif
+
     public AuthenticateAttribute(ApplyTo applyTo)
         : base(applyTo)
     {
