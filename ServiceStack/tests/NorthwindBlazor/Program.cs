@@ -1,9 +1,11 @@
 using System.Net;
+using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ServiceStack.Blazor;
 using MyApp.Data;
 using MyApp.Components;
@@ -28,6 +30,16 @@ services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new()
+        {
+            ValidIssuer = config["JwtBearer:ValidIssuer"],
+            ValidAudience = config["JwtBearer:ValidAudience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtBearer:IssuerSigningKey"]!)),
+            ValidateIssuerSigningKey = true,
+        };
     })
     .AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler<ApplicationUser>>(BasicAuthenticationHandler.Scheme, null)
     .AddIdentityCookies();

@@ -444,7 +444,7 @@ public static class UserAuthExtensions
         }
     }
         
-    public static void PopulateFromMap(this IAuthSession session, IDictionary<string, string> map)
+    public static void PopulateFromMap(this IAuthSession session, IEnumerable<KeyValuePair<string, string>> map)
     {
         var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern
         session.IsAuthenticated = true;
@@ -487,11 +487,11 @@ public static class UserAuthExtensions
                     session.ProfileUrl = entry.Value;
                     break;
                 case JwtClaimTypes.Role:
-                    session.Roles ??= new();
+                    session.Roles ??= [];
                     session.Roles.Add(entry.Value);
                     break;
                 case JwtClaimTypes.Permission:
-                    session.Permissions ??= new();
+                    session.Permissions ??= [];
                     session.Permissions.Add(entry.Value);
                     break;
                 //ServiceStack JWT uses array in roles/perms instead of multiple role/permission claims
@@ -500,14 +500,21 @@ public static class UserAuthExtensions
                     var jsonRoles = jsonObj != null
                         ? jsonObj.GetUnescaped("roles") ?? jsonObj.GetUnescaped("Roles")
                         : entry.Value;
-                    session.Roles = jsonRoles.FromJson<List<string>>();
+                    session.Roles ??= [];
+                    session.Roles.AddDistinctRange(jsonRoles.FromJson<List<string>>());
                     break;
                 case JwtClaimTypes.Permissions:
                 case "Permissions":
                     var jsonPerms = jsonObj != null
                         ? jsonObj.GetUnescaped("perms") ?? jsonObj.GetUnescaped("Perms") ?? jsonObj.GetUnescaped("Permissions")
                         : entry.Value;
-                    session.Permissions = jsonPerms.FromJson<List<string>>();
+                    session.Permissions ??= [];
+                    session.Permissions.AddDistinctRange(jsonPerms.FromJson<List<string>>());
+                    break;
+                //ASP.NET Identity Roles
+                case ClaimTypes.Role:
+                    session.Roles ??= [];
+                    session.Roles.Add(entry.Value);
                     break;
                 case JwtClaimTypes.IssuedAt:
                 case "CreatedAt":

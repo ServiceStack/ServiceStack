@@ -137,7 +137,8 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     private long refreshIdCounter;
     public string LastRefreshJwtId() => Interlocked.Read(ref refreshIdCounter).ToString();
 
-    public List<(string fieldName, string claimType)> MapIdentityUserToClaims { get; set; } = new() {
+    public List<(string fieldName, string claimType)> MapIdentityUserToClaims { get; set; } =
+    [
         new(nameof(ClaimTypes.Surname), JwtClaimTypes.FamilyName),
         new(nameof(JwtClaimTypes.Email), JwtClaimTypes.Email),
         new(nameof(JwtClaimTypes.GivenName), JwtClaimTypes.GivenName),
@@ -151,16 +152,17 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         new(nameof(AuthUserSession.LastName), JwtClaimTypes.FamilyName),
         new(nameof(AuthUserSession.DisplayName), JwtClaimTypes.Name),
         new(nameof(AuthUserSession.ProfileUrl), JwtClaimTypes.Picture),
-        new(nameof(AuthUserSession.UserAuthName), JwtClaimTypes.PreferredUserName),
-    };
+        new(nameof(AuthUserSession.UserAuthName), JwtClaimTypes.PreferredUserName)
+    ];
 
-    public List<string> NameClaimFieldNames { get; set; } = new() {
+    public List<string> NameClaimFieldNames { get; set; } =
+    [
         nameof(UserAuth.DisplayName),
         "Name",
         "FullName",
         nameof(JwtClaimTypes.GivenName),
-        nameof(AuthUserSession.FirstName),
-    };
+        nameof(AuthUserSession.FirstName)
+    ];
 
     /// <summary>
     /// Customize which claims are included in the JWT Token
@@ -186,13 +188,14 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         ResolveRefreshJwtId = _ => NextRefreshJwtId();
 
         Label = "JWT";
-        FormLayout = new() {
-            new InputInfo(nameof(IHasBearerToken.BearerToken), Html.Input.Types.Textarea) {
+        FormLayout = [
+            new InputInfo(nameof(IHasBearerToken.BearerToken), Html.Input.Types.Textarea)
+            {
                 Label = "JWT",
                 Placeholder = "JWT Bearer Token",
                 Required = true,
-            },
-        };
+            }
+        ];
     }
 
     public override void Register(IAppHost appHost, AuthFeature feature)
@@ -303,11 +306,12 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? HostContext.AppHost.CreateSessionId();
         var session = SessionFeature.CreateNewSession(req, sessionId);
 
+        session.IsAuthenticated = true;
         session.AuthProvider = Name;
         session.FromToken = true;
 
-        var claimMap = new Dictionary<string, string>();
-        claims.Each(x => claimMap[x.Type] = x.Value);
+        var claimMap = new List<KeyValuePair<string, string>>();
+        claims.Each(x => claimMap.Add(new(x.Type, x.Value)));
         session.PopulateFromMap(claimMap);
 
         OnSessionCreated?.Invoke(session, claims, req);
@@ -355,7 +359,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
                 authContext.AuthResponse.BearerToken = CreateJwtBearerToken(authContext.AuthService.Request, user, authContext.Session.Roles);
                 authContext.AuthResponse.RefreshToken = EnableRefreshToken()
-                    ? CreateJwtRefreshToken(authService.Request, user.Id.ToString(), ExpireRefreshTokensIn)
+                    ? CreateJwtRefreshToken(authService.Request, user.Id.ToString()!, ExpireRefreshTokensIn)
                     : null;
             }
         }
@@ -364,7 +368,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     protected string? CreateJwtBearerToken(IRequest req, TUser user, IEnumerable<string>? roles = null)
     {
         var claims = new List<Claim> {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()!),
             new(JwtClaimTypes.PreferredUserName, user.UserName),
         };
 
@@ -430,10 +434,10 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
     protected virtual string? CreateJwtRefreshToken(IRequest req, string userId, TimeSpan expireRefreshTokensIn)
     {
-        var claims = new List<Claim> {
+        List<Claim> claims = [
             new(JwtRegisteredClaimNames.Typ, "JWTR"),
-            new(JwtRegisteredClaimNames.Sub, userId),
-        };
+            new(JwtRegisteredClaimNames.Sub, userId)
+        ];
 
         var jti = ResolveRefreshJwtId?.Invoke(req);
         if (jti != null)
