@@ -488,11 +488,11 @@ public static class UserAuthExtensions
                     break;
                 case JwtClaimTypes.Role:
                     session.Roles ??= [];
-                    session.Roles.Add(entry.Value);
+                    session.Roles.AddIfNotExists(entry.Value);
                     break;
                 case JwtClaimTypes.Permission:
                     session.Permissions ??= [];
-                    session.Permissions.Add(entry.Value);
+                    session.Permissions.AddIfNotExists(entry.Value);
                     break;
                 //ServiceStack JWT uses array in roles/perms instead of multiple role/permission claims
                 case JwtClaimTypes.Roles:
@@ -514,7 +514,7 @@ public static class UserAuthExtensions
                 //ASP.NET Identity Roles
                 case ClaimTypes.Role:
                     session.Roles ??= [];
-                    session.Roles.Add(entry.Value);
+                    session.Roles.AddIfNotExists(entry.Value);
                     break;
                 case JwtClaimTypes.IssuedAt:
                 case "CreatedAt":

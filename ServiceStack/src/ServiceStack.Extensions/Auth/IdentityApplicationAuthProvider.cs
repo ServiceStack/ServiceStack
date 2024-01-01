@@ -158,23 +158,23 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         {
             if (claim.Type == ClaimTypes.Role)
             {
-                session.Roles ??= new();
-                session.Roles.Add(claim.Value);
+                session.Roles ??= [];
+                session.Roles.AddIfNotExists(claim.Value);
             }
             else if (claim.Type == PermissionClaimType)
             {
-                session.Permissions ??= new();
-                session.Permissions.Add(claim.Value);
+                session.Permissions ??= [];
+                session.Permissions.AddIfNotExists(claim.Value);
             }
             else if (extended != null && claim.Type == JwtClaimTypes.Audience)
             {
-                extended.Audiences ??= new();
-                extended.Audiences.Add(claim.Value);
+                extended.Audiences ??= [];
+                extended.Audiences.AddIfNotExists(claim.Value);
             }
             else if (extended != null && claim.Type == JwtClaimTypes.Scope)
             {
-                extended.Scopes ??= new();
-                extended.Scopes.Add(claim.Value);
+                extended.Scopes ??= [];
+                extended.Scopes.AddIfNotExists(claim.Value);
             }
             else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
             {
