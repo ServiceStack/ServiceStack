@@ -172,16 +172,17 @@ public class OpenApiMetadata
                         });
                     }
                 }
-                foreach (var propName in inPaths)
-                {
-                    openApiType.Properties.Remove(propName);
-                }
                 
                 var formType = new OpenApiMediaType
                 {
-                    Schema = openApiType,
+                    Schema = new(openApiType),
                 };
-                foreach (var entry in openApiType.Properties)
+                foreach (var propName in inPaths)
+                {
+                    formType.Schema.Properties.Remove(propName);
+                }
+                
+                foreach (var entry in formType.Schema.Properties)
                 {
                     formType.Encoding[entry.Key] = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = false };
                 }
