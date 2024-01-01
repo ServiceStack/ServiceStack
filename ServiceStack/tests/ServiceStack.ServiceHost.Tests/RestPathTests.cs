@@ -69,6 +69,14 @@ public class RestPathTests
         public string Name { get; set; }
 
         public Guid UniqueId { get; set; }
+        
+        public bool? Active { get; set; }
+        
+        public int? Age { get; set; }
+        
+        public DateTime? DateOfBirth { get; set; }
+        
+        public double? Weight { get; set; }
     }
 
     [Test]
@@ -488,5 +496,37 @@ public class RestPathTests
         var restPath = new RestPath(typeof(ComplexType), "/Complex/{Id}/{Name}/Unique/{UniqueId}", "PUT");
         var withPathInfoParts = RestPath.GetPathPartsForMatching("/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547");
         Assert.That(restPath.IsMatch("put", withPathInfoParts, out _));
+    }
+
+    [Test]
+    public void Can_parse_endpoint_routing_syntax()
+    {
+        void AssertArguments(string path, string[] expectedArgs, string[] expectedConstraints)
+        {
+            var restPath = new RestPath(typeof(ComplexType), path);
+            Assert.That(restPath.VariablesNames, Is.EquivalentTo(expectedArgs));
+            Assert.That(restPath.Constraints, Is.EquivalentTo(expectedConstraints));
+        }
+
+        // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/routing
+        AssertArguments("/path", [null], [null]);
+        AssertArguments("/path/{Id}", [null, "Id"], [null, null]);
+        AssertArguments("/path/{Id:int}", [null, "Id"], [null, "int"]);
+        AssertArguments("/path/{Id?}", [null, "Id"], [null, null]);
+        AssertArguments("/path/{*Name}", [null, "Name"], [null, null]);
+        AssertArguments("/path/{**Name}", [null, "Name"], [null, null]);
+        AssertArguments("/path/{Active:bool}", [null, "Active"], [null, "bool"]);
+        AssertArguments("/path/{DateOfBirth:datetime}", [null, "DateOfBirth"], [null, "datetime"]);
+        AssertArguments("/path/{Weight:double}", [null, "Weight"], [null, "double"]);
+        AssertArguments("/path/{UniqueId:guid}", [null, "UniqueId"], [null, "guid"]);
+        AssertArguments("/path/{Name:minlength(4)}", [null, "Name"], [null, "minlength(4)"]);
+        AssertArguments("/path/{Name:maxlength(8)}", [null, "Name"], [null, "maxlength(8)"]);
+        AssertArguments("/path/{Name:length(12)}", [null, "Name"], [null, "length(12)"]);
+        AssertArguments("/path/{Name:length(8,16)}", [null, "Name"], [null, "length(8,16)"]);
+        AssertArguments("/path/{Age:min(18)}", [null, "Age"], [null, "min(18)"]);
+        AssertArguments("/path/{Age:max(120)}", [null, "Age"], [null, "max(120)"]);
+        AssertArguments("/path/{Name:alpha}", [null, "Name"], [null, "alpha"]);
+        AssertArguments(@"/path/{Name:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}", [null, "Name"], [null, @"regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)"]);
+        AssertArguments("/path/{Name:required}", [null, "Name"], [null, "required"]);
     }
 }

@@ -9,37 +9,38 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host;
 
-public class RestPath
-    : IRestPath
+public class RestPath : IRestPath
 {
     private const string WildCard = "*";
     private const char WildCardChar = '*';
     private const string PathSeparator = "/";
     private const char PathSeparatorChar = '/';
-    private static readonly char[] PathSeparatorCharArray = {'/'};
+    private static readonly char[] PathSeparatorCharArray = ['/'];
+    private static readonly char[] VerbSeparatorCharArray = [',', ' '];
     private const char ComponentSeparator = '.';
     private const string VariablePrefix = "{";
 
     //in most cases URL parts are short-lengthly and we can create lookup for
     //most used constant prefix values for path parts
     //and reuse them to avoid slow string concatenations operations
-    private static readonly string[] prefixesLookup = {
+    private static readonly string[] prefixesLookup =
+    [
         "0" + PathSeparator, "1" + PathSeparator, "2" + PathSeparator, "3" + PathSeparator, 
         "4" + PathSeparator, "5" + PathSeparator, "6" + PathSeparator, "7" + PathSeparator, 
         "8" + PathSeparator, "9" + PathSeparator, "10" + PathSeparator, "11" + PathSeparator, 
         "12" + PathSeparator, "13" + PathSeparator, "14" + PathSeparator, "15" + PathSeparator
-    };
+    ];
 
     private readonly bool[] componentsWithSeparators;
 
-    public bool IsWildCardPath { get; private set; }
+    public bool IsWildCardPath { get; }
 
     private readonly string[] literalsToMatch;
 
-    private readonly string[] variablesNames;
+    public string[] VariablesNames { get; }
 
     private readonly bool[] isWildcard;
-    private readonly int wildcardCount = 0;
+    private readonly int wildcardCount;
 
     public int VariableArgsCount { get; set; }
 
@@ -56,8 +57,8 @@ public class RestPath
     public int TotalComponentsCount { get; set; }
 
     public string[] Verbs => AllowsAllVerbs 
-        ? new[] { ActionContext.AnyAction } 
-        : AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        ? [ActionContext.AnyAction]
+        : AllowedVerbs.Split(VerbSeparatorCharArray, StringSplitOptions.RemoveEmptyEntries);
 
     public Type RequestType { get; }
 
@@ -67,7 +68,7 @@ public class RestPath
 
     public string Notes { get; set; }
         
-    public string MatchRule { get; private set; }
+    public string MatchRule { get; }
 
     private Func<IHttpRequest, bool> matchRuleFn;
 
@@ -76,6 +77,8 @@ public class RestPath
     public string AllowedVerbs { get; }
 
     public int Priority { get; set; } //passed back to RouteAttribute
+
+    public string[] Constraints { get; }
 
     public static string[] GetPathPartsForMatching(string pathInfo)
     {
@@ -129,23 +132,23 @@ public class RestPath
 
     public RestPath(Type requestType, string path, string verbs, string summary = null, string notes = null, string matchRule = null)
     {
-        this.RequestType = requestType;
-        this.Summary = summary;
-        this.Notes = notes;
-        this.MatchRule = matchRule;
-        this.Path = path;
+        RequestType = requestType;
+        Summary = summary;
+        Notes = notes;
+        MatchRule = matchRule;
+        Path = path;
 
-        this.AllowsAllVerbs = verbs is null or WildCard;
-        if (!this.AllowsAllVerbs)
+        AllowsAllVerbs = verbs is null or WildCard;
+        if (!AllowsAllVerbs)
         {
-            this.AllowedVerbs = verbs?.ToUpper();
+            AllowedVerbs = verbs?.ToUpper();
         }
 
         var componentsList = new List<string>();
 
         //We only split on '.' if the restPath has them. Allows for /{action}.{type}
         var hasSeparators = new List<bool>();
-        foreach (var component in this.Path.Split(PathSeparatorCharArray, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var component in Path.Split(PathSeparatorCharArray, StringSplitOptions.RemoveEmptyEntries))
         {
             if (component.Contains(VariablePrefix)
                 && component.Contains(ComponentSeparator))
@@ -161,13 +164,14 @@ public class RestPath
         }
 
         var components = componentsList.ToArray();
-        this.TotalComponentsCount = components.Length;
+        TotalComponentsCount = components.Length;
 
-        this.literalsToMatch = new string[this.TotalComponentsCount];
-        this.variablesNames = new string[this.TotalComponentsCount];
-        this.isWildcard = new bool[this.TotalComponentsCount];
-        this.componentsWithSeparators = hasSeparators.ToArray();
-        this.PathComponentsCount = this.componentsWithSeparators.Length;
+        literalsToMatch = new string[TotalComponentsCount];
+        VariablesNames = new string[TotalComponentsCount];
+        Constraints = new string[TotalComponentsCount];
+        isWildcard = new bool[TotalComponentsCount];
+        componentsWithSeparators = hasSeparators.ToArray();
+        PathComponentsCount = componentsWithSeparators.Length;
         string firstLiteralMatch = null;
 
         var sbHashKey = StringBuilderCache.Allocate();
@@ -181,47 +185,50 @@ public class RestPath
                 //support wildcard in first /{*path} or last position /{path*}
                 if (variableName[0] == WildCardChar || variableName[variableName.Length - 1] == WildCardChar)
                 {
-                    this.isWildcard[i] = true;
+                    isWildcard[i] = true;
                     variableName = variableName[0] == WildCardChar
-                        ? variableName.Substring(1)
+                        ? variableName.TrimStart('*') // also handle {**slug}
                         : variableName.Substring(0, variableName.Length - 1);
                 }
-                this.variablesNames[i] = variableName;
-                this.VariableArgsCount++;
+                var nameOnly = variableName.LeftPart(':');
+                nameOnly = nameOnly.TrimEnd('?');
+                VariablesNames[i] = nameOnly;
+                Constraints[i] = variableName.Contains(':') ? variableName.RightPart(':') : null; 
+                VariableArgsCount++;
             }
             else
             {
-                this.literalsToMatch[i] = component.ToLowerInvariant();
-                sbHashKey.Append(i + PathSeparator + this.literalsToMatch);
+                literalsToMatch[i] = component.ToLowerInvariant();
+                sbHashKey.Append(i + PathSeparator + literalsToMatch);
 
                 if (firstLiteralMatch == null)
                 {
-                    firstLiteralMatch = this.literalsToMatch[i];
+                    firstLiteralMatch = literalsToMatch[i];
                 }
             }
         }
 
         for (var i = 0; i < components.Length - 1; i++)
         {
-            if (!this.isWildcard[i]) continue;
-            if (this.literalsToMatch[i + 1] == null)
+            if (!isWildcard[i]) continue;
+            if (literalsToMatch[i + 1] == null)
             {
                 throw new ArgumentException(
                     "A wildcard path component must be at the end of the path or followed by a literal path component.");
             }
         }
 
-        this.wildcardCount = this.isWildcard.Count(x => x);
-        this.IsWildCardPath = this.wildcardCount > 0;
+        wildcardCount = isWildcard.Count(x => x);
+        IsWildCardPath = wildcardCount > 0;
 
-        this.FirstMatchHashKey = !this.IsWildCardPath
-            ? this.PathComponentsCount + PathSeparator + firstLiteralMatch
+        FirstMatchHashKey = !IsWildCardPath
+            ? PathComponentsCount + PathSeparator + firstLiteralMatch
             : WildCardChar + PathSeparator + firstLiteralMatch;
 
-        this.IsValid = sbHashKey.Length > 0;
-        this.UniqueMatchHashKey = StringBuilderCache.ReturnAndFree(sbHashKey);
+        IsValid = sbHashKey.Length > 0;
+        UniqueMatchHashKey = StringBuilderCache.ReturnAndFree(sbHashKey);
 
-        this.typeDeserializer = new StringMapTypeDeserializer(this.RequestType);
+        typeDeserializer = new StringMapTypeDeserializer(RequestType);
         RegisterCaseInsensitivePropertyNameMappings();
     }
 
@@ -230,14 +237,14 @@ public class RestPath
         var propertyName = "";
         try
         {
-            foreach (var propertyInfo in this.RequestType.GetSerializableProperties())
+            foreach (var propertyInfo in RequestType.GetSerializableProperties())
             {
                 propertyName = propertyInfo.Name;
                 propertyNamesMap.Add(propertyName, propertyName);
             }
             if (JsConfig.IncludePublicFields)
             {
-                foreach (var fieldInfo in this.RequestType.GetSerializableFields())
+                foreach (var fieldInfo in RequestType.GetSerializableFields())
                 {
                     propertyName = fieldInfo.Name;
                     propertyNamesMap.Add(propertyName, propertyName);
@@ -247,7 +254,7 @@ public class RestPath
         catch (Exception)
         {
             throw new AmbiguousMatchException("Property names are case-insensitive: "
-                                              + this.RequestType.GetOperationName() + "." + propertyName);
+                                              + RequestType.GetOperationName() + "." + propertyName);
         }
     }
 
@@ -315,11 +322,11 @@ public class RestPath
 
     public void AfterInit()
     {
-        if (this.MatchRule != null)
+        if (MatchRule != null)
         {
-            if (!HostContext.Config.RequestRules.TryGetValue(this.MatchRule, out this.matchRuleFn))
+            if (!HostContext.Config.RequestRules.TryGetValue(MatchRule, out matchRuleFn))
             {
-                var regexParts = this.MatchRule.SplitOnFirst("=~");
+                var regexParts = MatchRule.SplitOnFirst("=~");
                 if (regexParts.Length == 2)
                 {
                     var field = regexParts[0].Trim();
@@ -334,7 +341,7 @@ public class RestPath
                 }
                 else
                 {
-                    var exactMatchParts = this.MatchRule.SplitOnFirst('=');
+                    var exactMatchParts = MatchRule.SplitOnFirst('=');
                     if (exactMatchParts.Length == 2)
                     {
                         var field = exactMatchParts[0].Trim();
@@ -355,7 +362,7 @@ public class RestPath
         }
     }
 
-    public Func<IHttpRequest, bool> GetRequestRule() => this.matchRuleFn;
+    public Func<IHttpRequest, bool> GetRequestRule() => matchRuleFn;
 
     /// <summary>
     /// For performance withPathInfoParts should already be a lower case string
@@ -369,28 +376,28 @@ public class RestPath
     {
         wildcardMatchCount = 0;
 
-        if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath) return false;
-        if (!this.AllowsAllVerbs && !this.AllowedVerbs.Contains(httpMethod.ToUpper())) return false;
+        if (withPathInfoParts.Length != PathComponentsCount && !IsWildCardPath) return false;
+        if (!AllowsAllVerbs && !AllowedVerbs.Contains(httpMethod.ToUpper())) return false;
 
         if (!ExplodeComponents(ref withPathInfoParts)) return false;
-        if (this.TotalComponentsCount != withPathInfoParts.Length && !this.IsWildCardPath) return false;
+        if (TotalComponentsCount != withPathInfoParts.Length && !IsWildCardPath) return false;
 
         int pathIx = 0;
-        for (var i = 0; i < this.TotalComponentsCount; i++)
+        for (var i = 0; i < TotalComponentsCount; i++)
         {
-            if (this.isWildcard[i])
+            if (isWildcard[i])
             {
-                if (i < this.TotalComponentsCount - 1)
+                if (i < TotalComponentsCount - 1)
                 {
                     // Continue to consume up until a match with the next literal
-                    while (pathIx < withPathInfoParts.Length && withPathInfoParts[pathIx] != this.literalsToMatch[i + 1])
+                    while (pathIx < withPathInfoParts.Length && withPathInfoParts[pathIx] != literalsToMatch[i + 1])
                     {
                         pathIx++;
                         wildcardMatchCount++;
                     }
 
                     // Ensure there are still enough parts left to match the remainder
-                    if ((withPathInfoParts.Length - pathIx) < (this.TotalComponentsCount - i - 1))
+                    if ((withPathInfoParts.Length - pathIx) < (TotalComponentsCount - i - 1))
                     {
                         return false;
                     }
@@ -404,7 +411,7 @@ public class RestPath
             }
             else
             {
-                var literalToMatch = this.literalsToMatch[i];
+                var literalToMatch = literalsToMatch[i];
                 if (literalToMatch == null)
                 {
                     // Matching an ordinary (non-wildcard) variable consumes a single part
@@ -428,8 +435,8 @@ public class RestPath
             var component = withPathInfoParts[i];
             if (string.IsNullOrEmpty(component)) continue;
 
-            if (this.PathComponentsCount != this.TotalComponentsCount
-                && this.componentsWithSeparators[i])
+            if (PathComponentsCount != TotalComponentsCount
+                && componentsWithSeparators[i])
             {
                 var subComponents = component.Split(ComponentSeparator);
                 if (subComponents.Length < 2) return false;
@@ -456,27 +463,27 @@ public class RestPath
 
         ExplodeComponents(ref requestComponents);
 
-        if (requestComponents.Length != this.TotalComponentsCount)
+        if (requestComponents.Length != TotalComponentsCount)
         {
-            var isValidWildCardPath = this.IsWildCardPath
-                                      && requestComponents.Length >= this.TotalComponentsCount - this.wildcardCount;
+            var isValidWildCardPath = IsWildCardPath
+                                      && requestComponents.Length >= TotalComponentsCount - wildcardCount;
 
             if (!isValidWildCardPath)
-                throw new ArgumentException($"Path Mismatch: Request Path '{pathInfo}' has invalid number of components compared to: '{this.Path}'");
+                throw new ArgumentException($"Path Mismatch: Request Path '{pathInfo}' has invalid number of components compared to: '{Path}'");
         }
 
         var requestKeyValuesMap = new Dictionary<string, string>();
         var pathIx = 0;
-        for (var i = 0; i < this.TotalComponentsCount; i++)
+        for (var i = 0; i < TotalComponentsCount; i++)
         {
-            var variableName = this.variablesNames[i];
+            var variableName = VariablesNames[i];
             if (variableName == null)
             {
                 pathIx++;
                 continue;
             }
 
-            if (!this.propertyNamesMap.TryGetValue(variableName, out var propertyNameOnRequest))
+            if (!propertyNamesMap.TryGetValue(variableName, out var propertyNameOnRequest))
             {
                 if (Keywords.Ignore.EqualsIgnoreCase(variableName))
                 {
@@ -489,9 +496,9 @@ public class RestPath
             }
 
             var value = requestComponents.Length > pathIx ? requestComponents[pathIx] : null; //wildcard has arg mismatch
-            if (value != null && this.isWildcard[i])
+            if (value != null && isWildcard[i])
             {
-                if (i == this.TotalComponentsCount - 1)
+                if (i == TotalComponentsCount - 1)
                 {
                     // Wildcard at end of path definition consumes all the rest
                     var sb = StringBuilderCache.Allocate();
@@ -507,7 +514,7 @@ public class RestPath
                     // Wildcard in middle of path definition consumes up until it
                     // hits a match for the next element in the definition (which must be a literal)
                     // It may consume 0 or more path parts
-                    var stopLiteral = i == this.TotalComponentsCount - 1 ? null : this.literalsToMatch[i + 1];
+                    var stopLiteral = i == TotalComponentsCount - 1 ? null : literalsToMatch[i + 1];
                     if (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                     {
                         var sb = StringBuilderCache.Allocate();
@@ -544,7 +551,7 @@ public class RestPath
             }
         }
 
-        return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, 
+        return typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, 
             HostContext.Config.IgnoreWarningsOnAllProperties 
                 ? null 
                 : HostContext.Config.IgnoreWarningsOnAutoQueryApis && fromInstance is IQuery
@@ -554,7 +561,7 @@ public class RestPath
 
     public bool IsVariable(string name)
     {
-        return name != null && variablesNames.Any(name.EqualsIgnoreCase);
+        return name != null && VariablesNames.Any(name.EqualsIgnoreCase);
     }
 
     public override int GetHashCode()
