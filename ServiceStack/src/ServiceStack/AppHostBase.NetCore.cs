@@ -678,6 +678,12 @@ public static class NetCoreAppHostExtensions
         
 #if NET8_0_OR_GREATER
         configure?.Invoke(appHost.Options);
+
+        var appOptions = app.ApplicationServices.GetServices<IConfigureOptions<ServiceStackOptions>>();
+        foreach (var appOption in appOptions)
+        {
+            appOption.Configure(appHost.Options);
+        }
 #endif
         appHost.Bind(app);
         appHost.Init();
@@ -689,12 +695,6 @@ public static class NetCoreAppHostExtensions
             {
                 appHost.RegisterEndpoints(routeBuilder);
             }
-        }
-
-        var appOptions = app.ApplicationServices.GetServices<IConfigureOptions<ServiceStackOptions>>();
-        foreach (var appOption in appOptions)
-        {
-            appOption.Configure(appHost.Options);
         }
 #endif
         
