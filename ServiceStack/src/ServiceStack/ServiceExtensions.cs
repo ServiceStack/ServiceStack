@@ -108,17 +108,30 @@ public static class ServiceExtensions
 
     public static void RemoveSession(this IRequest httpReq)
     {
-        RemoveSession(httpReq, httpReq.GetSessionId());
+        var sessionId = httpReq.GetSessionId(); 
+        if (sessionId == null) // !SessionFeature
+        {
+            httpReq.Items.Remove(Keywords.Session);
+            return;
+        }
+        httpReq.RemoveSession(sessionId);
     }
 
     public static Task RemoveSessionAsync(this IRequest httpReq, CancellationToken token=default)
     {
-        return RemoveSessionAsync(httpReq, httpReq.GetSessionId(), token);
+        var sessionId = httpReq.GetSessionId();
+        if (sessionId == null) // !SessionFeature
+        {
+            httpReq.Items.Remove(Keywords.Session);
+            return Task.CompletedTask;
+        }
+        return httpReq.RemoveSessionAsync(sessionId, token);
     }
 
     public static void RemoveSession(this IRequest httpReq, string sessionId)
     {
-        if (httpReq == null) return;
+        if (httpReq == null) 
+            return;
         if (sessionId == null)
             throw new ArgumentNullException(nameof(sessionId));
 

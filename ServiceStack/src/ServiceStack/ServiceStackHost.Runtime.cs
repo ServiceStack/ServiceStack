@@ -837,11 +837,13 @@ public abstract partial class ServiceStackHost
         if (session.FromToken) // Don't persist Sessions populated from tokens 
             return; 
 
-        var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
         session.LastModified = DateTime.UtcNow;
-        this.GetCacheClient(httpReq).CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
-
         httpReq.Items[Keywords.Session] = session;
+        if (!HasPlugin<SessionFeature>())
+            return;
+
+        var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
+        this.GetCacheClient(httpReq).CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
     }
 
     /// <summary>
@@ -852,9 +854,12 @@ public abstract partial class ServiceStackHost
         if (httpReq == null || session.FromToken) // Don't persist Sessions populated from tokens 
             return TypeConstants.EmptyTask;
 
-        var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
         session.LastModified = DateTime.UtcNow;
         httpReq.Items[Keywords.Session] = session;
+        if (!HasPlugin<SessionFeature>())
+            return Task.CompletedTask;
+        
+        var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
         return this.GetCacheClientAsync(httpReq).CacheSetAsync(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq), token);
     }
 

@@ -479,12 +479,17 @@ public class AuthenticateService : Service
             return null; //Just return sessionInfo if no provider or username is given
 
         var authFeature = GetPlugin<AuthFeature>();
-        var generateNewCookies = (authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication)
-                                 //keep existing session during OAuth flow                                     
-                                 && string.IsNullOrEmpty(Request.QueryString["oauth_token"]) && string.IsNullOrEmpty(Request.QueryString["State"]) && string.IsNullOrEmpty(Request.QueryString["state"]);
+        if (authFeature?.HasSessionFeature == true)
+        {
+            var generateNewCookies = authFeature.GenerateNewSessionCookiesOnAuthentication
+                 //keep existing session during OAuth flow
+                 && string.IsNullOrEmpty(Request.QueryString["oauth_token"]) 
+                 && string.IsNullOrEmpty(Request.QueryString["State"]) 
+                 && string.IsNullOrEmpty(Request.QueryString["state"]);
 
-        if (generateNewCookies)
-            await Request.GenerateNewSessionCookiesAsync(session, token).ConfigAwait();
+            if (generateNewCookies)
+                await Request.GenerateNewSessionCookiesAsync(session, token).ConfigAwait();
+        }
 
         var response = await oAuthConfig.AuthenticateAsync(this, session, request, token).ConfigAwait();
 

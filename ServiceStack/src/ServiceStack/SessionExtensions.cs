@@ -365,7 +365,7 @@ public static class SessionExtensions
 
     public static async Task GenerateNewSessionCookiesAsync(this IRequest req, IAuthSession session, CancellationToken token=default)
     {
-        if (!(req.Response is IHttpResponse httpRes))
+        if (req.Response is not IHttpResponse httpRes)
             return;
 
         var sessionId = req.GetSessionId();

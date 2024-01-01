@@ -51,11 +51,8 @@ public class SessionFeature : IPlugin, Model.IHasStringId
 
     public static string CreateSessionIds(IRequest httpReq = null, IResponse httpRes = null)
     {
-        if (httpReq == null)
-            httpReq = HostContext.GetCurrentRequest();
-        if (httpRes == null)
-            httpRes = httpReq.Response;
-
+        httpReq ??= HostContext.GetCurrentRequest();
+        httpRes ??= httpReq.Response;
         return httpRes.CreateSessionIds(httpReq);
     }
 
@@ -134,11 +131,17 @@ public class SessionFeature : IPlugin, Model.IHasStringId
     public static IAuthSession CreateNewSession(IRequest httpReq, string sessionId)
     {
         var session = AuthenticateService.CurrentSessionFactory();
-        session.Id = sessionId ?? CreateSessionIds(httpReq);
+
+        var appHost = HostContext.AppHost;
+        if (appHost.HasPlugin<SessionFeature>())
+        {
+            session.Id = sessionId ?? CreateSessionIds(httpReq);
+        }
+        
         session.CreatedAt = session.LastModified = DateTime.UtcNow;
         session.OnCreated(httpReq);
 
-        var authEvents = HostContext.TryResolve<IAuthEvents>();
+        var authEvents = appHost.TryResolve<IAuthEvents>();
         authEvents?.OnCreated(httpReq, session);
 
         return session;

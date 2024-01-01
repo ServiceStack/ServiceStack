@@ -36,12 +36,12 @@ public static class AuthProviderExtensions
 
     public static bool PopulateRequestDtoIfAuthenticated(this IRequest req, object requestDto)
     {
-        if (requestDto is IHasSessionId hasSession && hasSession.SessionId == null)
+        if (requestDto is IHasSessionId { SessionId: null } hasSession)
         {
             hasSession.SessionId = req.GetSessionId();
             return hasSession.SessionId != null;
         }
-        if (requestDto is IHasBearerToken hasToken && hasToken.BearerToken == null)
+        if (requestDto is IHasBearerToken { BearerToken: null } hasToken)
         {
             hasToken.BearerToken = req.GetJwtToken();
             return hasToken.BearerToken != null;

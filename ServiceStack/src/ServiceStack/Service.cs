@@ -113,16 +113,22 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     public virtual IAuthSession GetSession(bool reload = false)
     {
         var req = this.Request;
-        if (req.GetSessionId() == null)
-            req.Response.CreateSessionIds(req);
+        if (GetPlugin<SessionFeature>() != null)
+        {
+            if (req.GetSessionId() == null)
+                req.Response.CreateSessionIds(req);
+        }
         return req.GetSession(reload);
     }
 
     public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default)
     {
         var req = this.Request;
-        if (req.GetSessionId() == null)
-            req.Response.CreateSessionIds(req);
+        if (GetPlugin<SessionFeature>() != null)
+        {
+            if (req.GetSessionId() == null)
+                req.Response.CreateSessionIds(req);
+        }
         return req.GetSessionAsync(reload, token);
     }
 

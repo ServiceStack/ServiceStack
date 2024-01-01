@@ -67,6 +67,8 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
 
     public List<IPlugin> RegisterPlugins { get; set; } = [new SessionFeature()];
 
+    public bool HasSessionFeature => RegisterPlugins.Any(x => x is SessionFeature);
+
     public List<IAuthEvents> AuthEvents { get; set; } = [];
 
     /// <summary>

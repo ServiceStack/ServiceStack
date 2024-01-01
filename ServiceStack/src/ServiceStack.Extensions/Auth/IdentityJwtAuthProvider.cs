@@ -203,11 +203,11 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         base.Register(appHost, feature);
         var applicationServices = appHost.GetApplicationServices();
 
-        var optionsMonitor = applicationServices.TryResolve<IOptionsMonitor<JwtBearerOptions>>();
+        var optionsMonitor = applicationServices.Resolve<IOptionsMonitor<JwtBearerOptions>>();
         Options = optionsMonitor.Get(AuthenticationScheme);
 
-        var cookieOptions = applicationServices.TryResolve<IOptionsMonitor<CookiePolicyOptions>>().Get("");
-        RequireSecureConnection = cookieOptions.Secure != CookieSecurePolicy.None;
+        var cookieOptions = applicationServices.TryResolve<IOptionsMonitor<CookiePolicyOptions>>()?.Get("");
+        RequireSecureConnection = cookieOptions?.Secure != CookieSecurePolicy.None;
 
         var tokenParams = Options.TokenValidationParameters;
         tokenParams.ValidIssuer ??= DefaultIssuer;
@@ -226,7 +226,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         if (ctx.AuthResponse.BearerToken == null)
             return ctx.AuthResponse;
 
-        req.RemoveSession(req.GetSessionId());
+        req.RemoveSession();
 
         var httpResult = ctx.AuthResponse.ToTokenCookiesHttpResult(req,
             IdentityAuth.TokenCookie,
