@@ -58,14 +58,14 @@ public static class IdentityAuth
             if (ctx.IncludeAssignRoleServices)
             {
                 authFeature.ServiceRoutes[typeof(IdentityAssignRolesService<TUser, TKey>)] =
-                    new[] { "/" + LocalizedStrings.AssignRoles.Localize() };
+                    ["/" + LocalizedStrings.AssignRoles.Localize()];
                 authFeature.ServiceRoutes[typeof(IdentityUnAssignRolesService<TUser, TKey>)] =
-                    new[] { "/" + LocalizedStrings.UnassignRoles.Localize() };
+                    ["/" + LocalizedStrings.UnassignRoles.Localize()];
             }
             if (ctx.IncludeRegisterService)
             {
                 authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] =
-                    new[] { "/" + "register".Localize() };
+                    ["/" + "register".Localize()];
                 HostContext.Container.RegisterAs<IdentityRegistrationValidator<TUser, TKey>, IValidator<Register>>();
             }
 

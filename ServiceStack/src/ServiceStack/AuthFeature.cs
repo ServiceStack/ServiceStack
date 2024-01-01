@@ -65,21 +65,19 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     public Dictionary<Type, string[]> ServiceRoutes { get; set; }
     public Dictionary<string, string> ServiceRoutesVerbs { get; set; }
 
-    public List<IPlugin> RegisterPlugins { get; set; } = new() {
-        new SessionFeature()
-    };
+    public List<IPlugin> RegisterPlugins { get; set; } = [new SessionFeature()];
 
-    public List<IAuthEvents> AuthEvents { get; set; } = new();
+    public List<IAuthEvents> AuthEvents { get; set; } = [];
 
     /// <summary>
     /// Invoked before AuthFeature is registered
     /// </summary>
-    public List<Action<AuthFeature>> OnBeforeInit { get; set; } = new();
+    public List<Action<AuthFeature>> OnBeforeInit { get; set; } = [];
 
     /// <summary>
     /// Invoked after AuthFeature is registered
     /// </summary>
-    public List<Action<AuthFeature>> OnAfterInit { get; set; } = new();
+    public List<Action<AuthFeature>> OnAfterInit { get; set; } = [];
         
     /// <summary>
     /// Login path to redirect to
@@ -154,27 +152,31 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     /// <summary>
     /// UI Layout for Authentication
     /// </summary>
-    public List<InputInfo> FormLayout { get; set; } = new()
-    {
-        Input.For<Authenticate>(x => x.provider, x => { x.Type = Input.Types.Select; x.Label = ""; }),
+    public List<InputInfo> FormLayout { get; set; } =
+    [
+        Input.For<Authenticate>(x => x.provider, x =>
+        {
+            x.Type = Input.Types.Select;
+            x.Label = "";
+        }),
         Input.For<Authenticate>(x => x.UserName, x => x.Label = "Email"),
         Input.For<Authenticate>(x => x.Password, x => x.Type = Input.Types.Password),
-        Input.For<Authenticate>(x => x.RememberMe),
-    };
+        Input.For<Authenticate>(x => x.RememberMe)
+    ];
 
     public MetaAuthProvider AdminAuthSecretInfo { get; set; } = new() {
         Name = Keywords.AuthSecret,
         Type = Keywords.AuthSecret,
         Label = "Auth Secret",
-        FormLayout = new()
-        {
+        FormLayout =
+        [
             new InputInfo(Keywords.AuthSecret, Input.Types.Password)
             {
                 Label = "Auth Secret",
                 Placeholder = "Admin Auth Secret",
                 Required = true,
             }
-        }
+        ]
     };
 
     /// <summary>
