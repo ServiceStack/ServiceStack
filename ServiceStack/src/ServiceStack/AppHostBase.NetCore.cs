@@ -1,4 +1,5 @@
-﻿#if NETCORE
+﻿#nullable enable
+#if NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Options;
 
 #if NETSTANDARD2_0
 using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
@@ -53,7 +55,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 
     private string pathBase;
 
-    public override string PathBase
+    public override string? PathBase
     {
         get => pathBase ?? Config?.HandlerFactoryPath;
         set
@@ -72,12 +74,12 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
     }
 
-    IApplicationBuilder app;
+    IApplicationBuilder? app;
 
-    public IApplicationBuilder App => app;
-    public IServiceProvider ApplicationServices => app?.ApplicationServices;
+    public IApplicationBuilder App => app ?? throw new ArgumentNullException(nameof(app));
+    public IServiceProvider ApplicationServices => App.ApplicationServices;
 
-    public Func<NetCoreRequest, Task> BeforeNextMiddleware { get; set; }
+    public Func<NetCoreRequest, Task>? BeforeNextMiddleware { get; set; }
 
     /// <summary>
     /// Register dependencies in ServiceStack IOC, to register dependencies in ASP .NET Core IOC implement IHostingStartup
@@ -141,8 +143,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     public override void OnApplicationStarted()
     {
         AppTasks.Run(onExit: () => {
-            var appLifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
-            appLifetime.StopApplication();
+            var appLifetime = ApplicationServices.GetService<IHostApplicationLifetime>();
+            appLifetime?.StopApplication();
         });
     }
 
@@ -157,10 +159,10 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         return HostingEnvironment.WebRootPath;
     }
 
-    private IWebHostEnvironment env;
+    private IWebHostEnvironment? env;
 
     public IWebHostEnvironment HostingEnvironment =>
-        env ??= app?.ApplicationServices.GetService<IWebHostEnvironment>();
+        (env ??= ApplicationServices.GetService<IWebHostEnvironment>()) ?? throw new ArgumentNullException(nameof(env));
 
     public override void OnConfigLoad()
     {
@@ -193,14 +195,14 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
     }
 
-    public Func<HttpContext, Task<bool>> NetCoreHandler { get; set; }
+    public Func<HttpContext, Task<bool>>? NetCoreHandler { get; set; }
 
     public bool InjectRequestContext { get; set; } = true;
     
     /// <summary>
     /// Whether ServiceStack should ignore handling request
     /// </summary>
-    public Func<HttpContext, bool> IgnoreRequestHandler { get; set; }
+    public Func<HttpContext, bool>? IgnoreRequestHandler { get; set; }
 
 #if NET8_0_OR_GREATER
     
@@ -475,23 +477,23 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 
     public override string MapProjectPath(string relativePath)
     {
-        if (HostingEnvironment?.ContentRootPath != null && relativePath?.StartsWith("~") == true)
+        if (relativePath.StartsWith("~"))
             return Path.GetFullPath(HostingEnvironment.ContentRootPath.CombineWith(relativePath.Substring(1)));
 
         return relativePath.MapHostAbsolutePath();
     }
 
-    public override IRequest TryGetCurrentRequest()
+    public override IRequest? TryGetCurrentRequest()
     {
-        return GetOrCreateRequest(app.ApplicationServices.GetService<IHttpContextAccessor>());
+        return GetOrCreateRequest(ApplicationServices.GetRequiredService<IHttpContextAccessor>());
     }
 
     /// <summary>
     /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton
     /// </summary>
-    public static IRequest GetOrCreateRequest(IHttpContextAccessor httpContextAccessor) => httpContextAccessor.GetOrCreateRequest();
+    public static IRequest? GetOrCreateRequest(IHttpContextAccessor httpContextAccessor) => httpContextAccessor.GetOrCreateRequest();
 
-    public static IRequest GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
+    public static IRequest? GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
 
     protected override void Dispose(bool disposing)
     {
@@ -525,8 +527,9 @@ public delegate void RouteHandlerBuilderDelegate(RouteHandlerBuilder builder, Op
 #endif
 
 #if NET8_0_OR_GREATER
-public class ServiceStackServicesOptions
+public class ServiceStackServicesOptions(IServiceCollection services)
 {
+    public IServiceCollection Services => services;
     public List<Assembly> ServiceAssemblies { get; } = new();
     public List<Type> ServiceTypes { get; } = new();
     public Dictionary<Type, string[]> ServiceRoutes { get; } = new();
@@ -540,7 +543,7 @@ public class ServiceStackOptions
     /// <summary>
     /// Generate ASP.NET Core Endpoints for ServiceStack APIs
     /// </summary>
-    public void MapEndpoints(bool use = true, bool force = false)
+    public void MapEndpoints(bool use = true, bool force = true)
     {
         MapEndpointRouting = true;
         UseEndpointRouting = use;
@@ -560,12 +563,13 @@ public class ServiceStackOptions
     /// <summary>
     /// The ASP.NET Core AuthenticationSchemes to use for protected ServiceStack APIs
     /// </summary>
-    public string AuthenticationSchemes { get; set; } = Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme + ",basic";
+    public string AuthenticationSchemes { get; set; } = 
+        Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme + ",Bearer,basic";
     
     /// <summary>
     /// Custom handlers to execute for each ServiceStack API endpoint
     /// </summary>
-    public List<RouteHandlerBuilderDelegate> RouteHandlerBuilders { get; } = new();
+    public List<RouteHandlerBuilderDelegate> RouteHandlerBuilders { get; } = [];
     
     /// <summary>
     /// Whether to disable ServiceStack Routing and use ASP.NET Core Endpoint Routing to handle all ServiceStack Requests
@@ -585,10 +589,10 @@ public static class NetCoreAppHostExtensions
     /// <param name="afterAppHostInit">Register static callbacks fired after the AppHost is initialized</param> 
     /// </summary>
     public static IWebHostBuilder ConfigureAppHost(this IWebHostBuilder builder,
-        Action<ServiceStackHost> beforeConfigure = null,
-        Action<ServiceStackHost> afterConfigure = null,
-        Action<ServiceStackHost> afterPluginsLoaded = null,
-        Action<ServiceStackHost> afterAppHostInit = null)
+        Action<ServiceStackHost>? beforeConfigure = null,
+        Action<ServiceStackHost>? afterConfigure = null,
+        Action<ServiceStackHost>? afterPluginsLoaded = null,
+        Action<ServiceStackHost>? afterAppHostInit = null)
     {
         HostContext.ConfigureAppHost(
             beforeConfigure:beforeConfigure,
@@ -603,10 +607,15 @@ public static class NetCoreAppHostExtensions
         ServiceStackHost.GlobalPluginsToLoad.AddIfNotExists(plugin);
     }
 
-#if NET8_0_OR_GREATER    
-    public static void AddServiceStack(this IServiceCollection services, Action<ServiceStackServicesOptions> configure = null)
+#if NET8_0_OR_GREATER
+    public static void AddServiceStack(this IServiceCollection services, Assembly serviceAssembly, Action<ServiceStackServicesOptions>? configure = null) =>
+        services.AddServiceStack([serviceAssembly], configure);
+    
+    public static void AddServiceStack(this IServiceCollection services, IEnumerable<Assembly>? serviceAssemblies, Action<ServiceStackServicesOptions>? configure = null)
     {
-        var options = new ServiceStackServicesOptions();
+        var options = new ServiceStackServicesOptions(services);
+        if (serviceAssemblies != null)
+            options.ServiceAssemblies.AddRange(serviceAssemblies);
         configure?.Invoke(options);
 
         ServiceStackHost.GlobalServiceAssemblies.AddDistinctRange(options.ServiceAssemblies);
@@ -636,7 +645,6 @@ public static class NetCoreAppHostExtensions
         {
             services.AddTransient(type);
         }
-        Console.WriteLine("End of AddServiceStack()");
     }
 #endif
 
@@ -660,7 +668,7 @@ public static class NetCoreAppHostExtensions
     public static bool IsProductionEnvironment(this IAppHost appHost) =>
         appHost.GetHostingEnvironment().EnvironmentName == "Production";
 
-    public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost, Action<ServiceStackOptions> configure = null)
+    public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost, Action<ServiceStackOptions>? configure = null)
     {
         // Manually simulating Modular Startup when using .NET 6+ top-level statements app builder
         if (TopLevelAppModularStartup.Instance != null)
@@ -702,7 +710,7 @@ public static class NetCoreAppHostExtensions
         configure((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)appHost.App);
     }
     
-    public static Task ProcessRequestAsync(this HttpContext httpContext, Func<IRequest,HttpAsyncTaskHandler> handlerFactory, string apiName=null, Action<IRequest> configure = null)
+    public static Task ProcessRequestAsync(this HttpContext httpContext, Func<IRequest,HttpAsyncTaskHandler?>? handlerFactory, string? apiName=null, Action<IRequest>? configure = null)
     {
         if (handlerFactory == null)
             return Task.CompletedTask;
@@ -716,7 +724,7 @@ public static class NetCoreAppHostExtensions
         return handler.ProcessRequestAsync(req, req.Response, apiName ?? httpContext.Request.Path);
     }
 
-    public static Task ProcessRequestAsync(this HttpContext httpContext, HttpAsyncTaskHandler handler, string apiName=null, Action<IRequest> configure = null)
+    public static Task ProcessRequestAsync(this HttpContext httpContext, HttpAsyncTaskHandler? handler, string? apiName=null, Action<IRequest>? configure = null)
     {
         if (handler == null)
             return Task.CompletedTask;
@@ -728,11 +736,11 @@ public static class NetCoreAppHostExtensions
     }
 
     public static IEndpointConventionBuilder WithMetadata<TResponse>(this IEndpointConventionBuilder builder,
-        string name=null,
-        string tag=null,
-        string description=null,
-        string contentType=null,
-        string[] additionalContentTypes=null,
+        string? name=null,
+        string? tag=null,
+        string? description=null,
+        string? contentType=null,
+        string[]? additionalContentTypes=null,
         bool exclude=true) =>
         builder.WithMetadata(name:name,
             tag:tag,
@@ -743,12 +751,12 @@ public static class NetCoreAppHostExtensions
             exclude:true);
     
     public static IEndpointConventionBuilder WithMetadata(this IEndpointConventionBuilder builder,
-        string name=null,
-        string tag=null,
-        string description=null,
-        Type responseType=null,
-        string contentType=null,
-        string[] additionalContentTypes=null,
+        string? name=null,
+        string? tag=null,
+        string? description=null,
+        Type? responseType=null,
+        string? contentType=null,
+        string[]? additionalContentTypes=null,
         bool exclude=true)
     {
         if (name != null)
@@ -773,29 +781,29 @@ public static class NetCoreAppHostExtensions
         return app.Use(httpHandler.Middleware);
     }
 
-    public static IHttpRequest ToRequest(this HttpContext httpContext, string operationName = null)
+    public static IHttpRequest ToRequest(this HttpContext httpContext, string? operationName = null)
     {
         var req = new NetCoreRequest(httpContext, operationName, RequestAttributes.None);
         req.RequestAttributes = req.GetAttributes() | RequestAttributes.Http;
         return req;
     }
 
-    public static T TryResolve<T>(this IServiceProvider provider) => provider.GetService<T>();
-    public static T Resolve<T>(this IServiceProvider provider) => provider.GetRequiredService<T>();
+    public static T? TryResolve<T>(this IServiceProvider provider) => provider.GetService<T>();
+    public static T Resolve<T>(this IServiceProvider provider) where T : notnull => provider.GetRequiredService<T>();
 
-    public static IHttpRequest ToRequest(this HttpRequest request, string operationName = null) =>
+    public static IHttpRequest ToRequest(this HttpRequest request, string? operationName = null) =>
         request.HttpContext.ToRequest();
 
-    public static T TryResolveScoped<T>(this IRequest req) => (T)((IServiceProvider)req).GetService(typeof(T));
-    public static object TryResolveScoped(this IRequest req, Type type) => ((IServiceProvider)req).GetService(type);
-    public static T ResolveScoped<T>(this IRequest req) => (T)((IServiceProvider)req).GetRequiredService(typeof(T));
+    public static T? TryResolveScoped<T>(this IRequest req) => ((IServiceProvider)req).GetService<T>();
+    public static object? TryResolveScoped(this IRequest req, Type type) => ((IServiceProvider)req).GetService(type);
+    public static T ResolveScoped<T>(this IRequest req) where T : notnull => ((IServiceProvider)req).GetRequiredService<T>();
 
     public static object ResolveScoped(this IRequest req, Type type) =>
         ((IServiceProvider)req).GetRequiredService(type);
 
     public static IServiceScope CreateScope(this IRequest req) => ((IServiceProvider)req).CreateScope();
 
-    public static IEnumerable<object> GetServices(this IRequest req, Type type) =>
+    public static IEnumerable<object?> GetServices(this IRequest req, Type type) =>
         ((IServiceProvider)req).GetServices(type);
 
     public static IEnumerable<T> GetServices<T>(this IRequest req) => ((IServiceProvider)req).GetServices<T>();
@@ -803,17 +811,17 @@ public static class NetCoreAppHostExtensions
     /// <summary>
     /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton
     /// </summary>
-    public static IRequest GetOrCreateRequest(this IHttpContextAccessor httpContextAccessor)
+    public static IRequest? GetOrCreateRequest(this IHttpContextAccessor httpContextAccessor)
     {
         return GetOrCreateRequest(httpContextAccessor?.HttpContext);
     }
 
-    public static IRequest GetOrCreateRequest(this HttpContext httpContext)
+    public static IRequest? GetOrCreateRequest(this HttpContext? httpContext)
     {
         if (httpContext != null)
         {
             if (httpContext.Items.TryGetValue(Keywords.IRequest, out var oRequest))
-                return (IRequest)oRequest;
+                return oRequest as IRequest;
 
             var req = httpContext.ToRequest();
             httpContext.Items[Keywords.IRequest] = req;
@@ -824,7 +832,7 @@ public static class NetCoreAppHostExtensions
     }
     
 #if NET6_0_OR_GREATER
-    public static T ConfigureAndResolve<T>(this IHostingStartup config, string hostDir = null, bool setHostDir = true)
+    public static T ConfigureAndResolve<T>(this IHostingStartup config, string? hostDir = null, bool setHostDir = true)
     {
         var holdCurrentDir = Environment.CurrentDirectory;
         var host = new HostBuilder()
