@@ -20,6 +20,8 @@ namespace ServiceStack.Validation;
 public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin, IAfterInitAppHost, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.Validation;
+    public int Priority => ConfigurePriority.ValidationFeature;
+
     public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
     public bool ScanAppHostAssemblies { get; set; } = true;
@@ -76,7 +78,7 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
 
         if (ScanAppHostAssemblies)
         {
-            var assemblies = ServiceStackHost.ResolveAllServiceAssemblies().ToArray();
+            var assemblies = ServiceStackHost.InitOptions.ResolveAllServiceAssemblies().ToArray();
             services.RegisterValidators(assemblies);
         }
     }
@@ -149,7 +151,10 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
             };
         });
 
-        appHost.PostConfigurePlugin<MetadataFeature>(c => c.ExportTypes.Add(typeof(ValidationRule)));
+        appHost.PostConfigurePlugin<MetadataFeature>(c =>
+        {
+            c.ExportTypes.Add(typeof(ValidationRule));
+        });
     }
 
     public void AfterInit(IAppHost appHost)

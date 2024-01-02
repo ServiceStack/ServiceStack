@@ -79,6 +79,8 @@ public class QueryDataFilterContext
 public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.AutoQueryData;
+    public int Priority => ConfigurePriority.AutoQueryDataFeature;
+
     public HashSet<string> IgnoreProperties { get; set; }
     public HashSet<Assembly> LoadFromAssemblies { get; set; }
     public int? MaxLimit { get; set; }
@@ -243,9 +245,9 @@ public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureS
 
     public void AfterConfigure(IServiceCollection services)
     {
-        var scannedTypes = ServiceStackHost.ResolveAssemblyRequestTypes();
+        var scannedTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes();
 
-        var userRequestDtosMap = ServiceStackHost.ResolveGlobalRequestServiceTypesMap();
+        var userRequestDtosMap = ServiceStackHost.InitOptions.ResolveRequestServiceTypesMap();
 
         var missingRequestTypes = scannedTypes
             .Where(x => x.HasInterface(typeof(IQueryData)))

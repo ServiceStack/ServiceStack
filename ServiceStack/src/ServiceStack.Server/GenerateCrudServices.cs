@@ -337,7 +337,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 return entry.Value;
         }
 
-        foreach (var asm in ServiceStackHost.GlobalServiceAssemblies)
+        foreach (var asm in ServiceStackHost.InitOptions.ServiceAssemblies)
         {
             var type = asm.GetTypes().FirstOrDefault(x => x.Name == typeName);
             if (type != null)

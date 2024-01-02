@@ -51,9 +51,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         PathBase = iisPathBase;
     }
 
-    public ServiceStackOptions Options { get; set; } = new();
-
-    private string pathBase;
+    private string? pathBase;
 
     public override string? PathBase
     {
@@ -205,6 +203,10 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     public Func<HttpContext, bool>? IgnoreRequestHandler { get; set; }
 
 #if NET8_0_OR_GREATER
+    /// <summary>
+    /// Options for app.UseServiceStack(new AppHost(), options => { ... })
+    /// </summary>
+    public ServiceStackOptions Options { get; set; } = new();
     
     public readonly Dictionary<string, string[]> EndpointVerbs = new()
     {
@@ -526,64 +528,6 @@ public delegate void RouteHandlerBuilderDelegate(RouteHandlerBuilder builder, Op
 
 #endif
 
-#if NET8_0_OR_GREATER
-public class ServiceStackServicesOptions(IServiceCollection services)
-{
-    public IServiceCollection Services => services;
-    public List<Assembly> ServiceAssemblies { get; } = new();
-    public List<Type> ServiceTypes { get; } = new();
-    public Dictionary<Type, string[]> ServiceRoutes { get; } = new();
-    public List<IPlugin> Plugins { get; } = new();
-}
-#endif
-
-public class ServiceStackOptions
-{
-#if NET8_0_OR_GREATER
-    /// <summary>
-    /// Generate ASP.NET Core Endpoints for ServiceStack APIs
-    /// </summary>
-    public void MapEndpoints(bool use = true, bool force = true, bool useSystemJson = true)
-    {
-        MapEndpointRouting = true;
-        UseEndpointRouting = use;
-        DisableServiceStackRouting = force;
-        UseSystemJson = useSystemJson;
-    }
-
-    /// <summary>
-    /// Use ASP .NET Route Endpoint implementations
-    /// </summary>
-    public bool MapEndpointRouting { get; set; }
-
-    /// <summary>
-    /// Use ASP .NET Route Endpoint implementations
-    /// </summary>
-    public bool UseEndpointRouting { get; set; }
-
-    /// <summary>
-    /// Use System.Text JSON for ServiceStack APIs
-    /// </summary>
-    public bool UseSystemJson { get; set; }
-
-    /// <summary>
-    /// The ASP.NET Core AuthenticationSchemes to use for protected ServiceStack APIs
-    /// </summary>
-    public string AuthenticationSchemes { get; set; } = 
-        Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme + ",Bearer,basic";
-    
-    /// <summary>
-    /// Custom handlers to execute for each ServiceStack API endpoint
-    /// </summary>
-    public List<RouteHandlerBuilderDelegate> RouteHandlerBuilders { get; } = [];
-    
-    /// <summary>
-    /// Whether to disable ServiceStack Routing and use ASP.NET Core Endpoint Routing to handle all ServiceStack Requests
-    /// </summary>
-    public bool DisableServiceStackRouting { get; set; }
-#endif
-}
-
 public static class NetCoreAppHostExtensions
 {
     /// <summary>
@@ -610,43 +554,23 @@ public static class NetCoreAppHostExtensions
 
     public static void AddPlugin<T>(this IServiceCollection services, T plugin) where T : IPlugin
     {
-        ServiceStackHost.GlobalPluginsToLoad.AddIfNotExists(plugin);
+        ServiceStackHost.InitOptions.Plugins.AddIfNotExists(plugin);
     }
 
 #if NET8_0_OR_GREATER
+
     public static void AddServiceStack(this IServiceCollection services, Assembly serviceAssembly, Action<ServiceStackServicesOptions>? configure = null) =>
         services.AddServiceStack([serviceAssembly], configure);
     
     public static void AddServiceStack(this IServiceCollection services, IEnumerable<Assembly>? serviceAssemblies, Action<ServiceStackServicesOptions>? configure = null)
     {
-        var options = new ServiceStackServicesOptions(services);
+        ServiceStackHost.InitOptions.UseServices(services);
+        var options = ServiceStackHost.InitOptions;
         if (serviceAssemblies != null)
             options.ServiceAssemblies.AddRange(serviceAssemblies);
         configure?.Invoke(options);
 
-        ServiceStackHost.GlobalServiceAssemblies.AddDistinctRange(options.ServiceAssemblies);
-        ServiceStackHost.GlobalPluginsToLoad.AddDistinctRange(options.Plugins);
-
-        foreach (var plugin in ServiceStackHost.GlobalPluginsToLoad)
-        {
-            if (plugin is IConfigureServices servicesPlugin)
-            {
-                servicesPlugin.Configure(services);
-            }
-        }
-        foreach (var plugin in ServiceStackHost.GlobalPluginsToLoad)
-        {
-            if (plugin is IPostConfigureServices servicesPlugin)
-            {
-                servicesPlugin.AfterConfigure(services);
-            }
-        }
-        ServiceStackHost.GlobalPluginsToLoad.ForEach(x => ServiceStackHost.GlobalPluginsConfigured.Add(x));
-
-        var allServiceTypes = ServiceStackHost.GlobalServiceAssemblies.SelectMany(x => x.GetTypes().Where(ServiceController.IsServiceType)).ToSet();
-        allServiceTypes.AddDistinctRange(ServiceStackHost.GlobalServices);
-        allServiceTypes.AddDistinctRange(ServiceStackHost.GlobalServiceRoutes.Keys);
-
+        var allServiceTypes = options.GetAllServiceTypes();
         foreach (var type in allServiceTypes)
         {
             services.AddTransient(type);
@@ -674,7 +598,11 @@ public static class NetCoreAppHostExtensions
     public static bool IsProductionEnvironment(this IAppHost appHost) =>
         appHost.GetHostingEnvironment().EnvironmentName == "Production";
 
-    public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost, Action<ServiceStackOptions>? configure = null)
+    public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost
+#if NET8_0_OR_GREATER
+        , Action<ServiceStackOptions>? configure = null
+#endif
+    )
     {
         // Manually simulating Modular Startup when using .NET 6+ top-level statements app builder
         if (TopLevelAppModularStartup.Instance != null)

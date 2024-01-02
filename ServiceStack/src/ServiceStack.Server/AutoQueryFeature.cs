@@ -38,6 +38,8 @@ public class QueryDbFilterContext
 public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfigureServices, IPreInitPlugin, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.AutoQuery;
+    public int Priority => ConfigurePriority.AutoQueryFeature;
+    
     private static readonly string[] DefaultIgnoreProperties =
         ["Skip", "Take", "OrderBy", "OrderByDesc", "Fields", "_select", "_from", "_join", "_where"];
     public HashSet<string> IgnoreProperties { get; set; } = new(DefaultIgnoreProperties, StringComparer.OrdinalIgnoreCase);
@@ -183,15 +185,16 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
 
     public void AfterConfigure(IServiceCollection services)
     {
-        ServiceStackHost.ExcludeServiceAssemblies.Add(GetType().Assembly);
-        var scannedTypes = ServiceStackHost.ResolveAssemblyRequestTypes();
+        
+        ServiceStackHost.InitOptions.ExcludeServiceAssemblies.Add(GetType().Assembly);
+        var scannedTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes();
 
         var crudServices = GenerateCrudServices?.GenerateMissingServices(this);
         crudServices?.Each(x => scannedTypes.Add(x));
 
-        var userRequestDtosMap = ServiceStackHost.ResolveGlobalRequestServiceTypesMap();
+        var userRequestDtosMap = ServiceStackHost.InitOptions.ResolveRequestServiceTypesMap();
 
-        var customBatchedRequestTypes = ServiceController.GetAutoBatchedRequestTypes(ServiceStackHost.ResolveAssemblyServiceTypes());
+        var customBatchedRequestTypes = ServiceController.GetAutoBatchedRequestTypes(ServiceStackHost.InitOptions.ResolveAssemblyServiceTypes());
 
         var missingQueryRequestTypes = scannedTypes
             .Where(x => x.HasInterface(typeof(IQueryDb)) 

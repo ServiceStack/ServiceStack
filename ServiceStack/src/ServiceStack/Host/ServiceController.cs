@@ -58,7 +58,7 @@ public class ServiceController : IServiceController
         this.Register(typeFactory);
 
         appHost.Container.RegisterAutoWiredTypes(appHost.Metadata.ServiceTypes);
-        ServiceStackHost.GlobalServicesRegistered.AddDistinctRange(appHost.Metadata.ServiceTypes);
+        ServiceStackHost.InitOptions.ServicesRegistered.AddDistinctRange(appHost.Metadata.ServiceTypes);
 
         return this;
     }
@@ -75,7 +75,7 @@ public class ServiceController : IServiceController
     {
         try
         {
-            if (ServiceStackHost.GlobalServicesRegistered.Contains(serviceType))
+            if (ServiceStackHost.InitOptions.ServicesRegistered.Contains(serviceType))
             {
                 LogManager.GetLogger(GetType()).WarnFormat("'{0}' Service has already been registered", serviceType.Name);
                 return;
@@ -86,7 +86,7 @@ public class ServiceController : IServiceController
                 
             RegisterService(typeFactory, serviceType);
             appHost.Container.RegisterAutoWiredType(serviceType);
-            ServiceStackHost.GlobalServicesRegistered.Add(serviceType);
+            ServiceStackHost.InitOptions.ServicesRegistered.Add(serviceType);
         }
         catch (Exception ex)
         {

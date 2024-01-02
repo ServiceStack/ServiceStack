@@ -21,7 +21,7 @@ public class BasicAppHost : ServiceStackHost
     {
         this.TestMode = true;
         Plugins.Clear();
-        GlobalPluginsToLoad.Clear();
+        InitOptions.Plugins.Clear();
     }
 
     public override void Configure(Container container)

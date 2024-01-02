@@ -104,13 +104,19 @@ public abstract partial class ServiceStackHost
     /// </summary>
     public string AppName { get; set; }
 
+    /// <summary>
+    /// Init Options before AppHost is initialized, e.g. in services.AddServiceStack(asm, options => { ... })
+    /// </summary>
+    public static ServiceStackServicesOptions InitOptions { get; internal set; } = new();
+
     protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
     {
         this.StartedAt = DateTime.UtcNow;
 
         ServiceName = serviceName;
-        GlobalServiceAssemblies.AddDistinctRange(assembliesWithServices);
-        ServiceAssemblies = GlobalServiceAssemblies;
+        ServiceAssemblies = InitOptions.ServiceAssemblies;
+        ServiceAssemblies.AddDistinctRange(assembliesWithServices);
+        Plugins = InitOptions.Plugins;
 
         ContentTypes = new ContentTypes();
         Routes = new ServiceRoutes(this);
@@ -139,8 +145,8 @@ public abstract partial class ServiceStackHost
                 + "To register your services, please provide the assemblies where your web services are defined.");
 
         var serviceTypes = GetAssemblyTypes(assembliesWithServices);
-        serviceTypes.AddDistinctRange(GlobalServices);
-        GlobalServices.Clear();
+        serviceTypes.AddDistinctRange(InitOptions.ServiceTypes);
+        InitOptions.ServiceTypes.Clear();
         
         return CreateServiceController(serviceTypes);
     }
@@ -264,8 +270,6 @@ public abstract partial class ServiceStackHost
         preStartupConfigs.ForEach(RunConfigure);
         BeforeConfigure.Each(RunManagedAction);
 
-        Plugins.AddRange(GlobalPluginsToLoad);
-        
         Configure(Container);
 
         ConfigureLogging();
@@ -652,139 +656,6 @@ public abstract partial class ServiceStackHost
     /// Register static callbacks fired after the AppHost is initialized 
     /// </summary>
     public static List<Action<ServiceStackHost>> GlobalAfterAppHostInit { get; } = new();
-
-    /// <summary>
-    /// Register plugins to load before AppHost Configure
-    /// </summary>
-    public static List<IPlugin> GlobalPluginsToLoad { get; } = DefaultPluginsToLoad();
-
-    public static List<IPlugin> DefaultPluginsToLoad() =>
-    [
-        new PreProcessRequest(),
-        new HtmlFormat(),
-        new CsvFormat(),
-        new JsonlFormat(),
-        new PredefinedRoutesFeature(),
-        new MetadataFeature(),
-        new NativeTypesFeature(),
-        new HttpCacheFeature(),
-        new RequestInfoFeature(),
-        new SvgFeature(),
-        new UiFeature(),
-        new Validation.ValidationFeature(),
-        new VirtualFilesFeature(),
-    ];
-
-    internal static HashSet<IPlugin> GlobalPluginsConfigured = [];
-    internal static HashSet<Type> GlobalServicesRegistered = [];
-
-    public static List<Assembly> ExcludeServiceAssemblies { get; } = [
-        typeof(Service).Assembly,
-        typeof(Authenticate).Assembly,
-    ];
-
-    /// <summary>
-    /// Register Assemblies to scan for ServiceStack Services to load before AppHost Configure
-    /// </summary>
-    public static List<Assembly> GlobalServiceAssemblies { get; } = new(); // Same collection as AppHost.ServiceAssemblies
-
-    /// <summary>
-    /// Register Service Types to load before AppHost Configure
-    /// </summary>
-    public static List<Type> GlobalServices { get; } = new();
-
-    /// <summary>
-    /// Register ServiceStack Services and user-defined to load before AppHost Configure
-    /// </summary>
-    public static Dictionary<Type, string[]> GlobalServiceRoutes { get; } = new();
-
-    /// <summary>
-    /// Find All Service Assemblies
-    /// </summary>
-    public static HashSet<Assembly> ResolveAllServiceAssemblies()
-    {
-        var assemblies = new HashSet<Assembly>(GlobalServiceAssemblies);
-        GlobalServices.Each(x => assemblies.Add(x.Assembly));
-        GlobalServicesRegistered.Each(x => assemblies.Add(x.Assembly));
-        GlobalServiceRoutes.Keys.Each(x => assemblies.Add(x.Assembly));
-        if (Instance != null)
-        {
-            assemblies.AddDistinctRange(Instance.ServiceAssemblies);
-        }
-        ExcludeServiceAssemblies.ForEach(x => assemblies.Remove(x));
-        return assemblies;
-    }
-
-    /// <summary>
-    /// Find all IService types in Service Assemblies
-    /// </summary>
-    /// <returns></returns>
-    public static HashSet<Type> ResolveAssemblyServiceTypes()
-    {
-        var assemblies = ResolveAllServiceAssemblies();
-        var serviceTypes = assemblies.SelectMany(x => x.GetTypes()).Where(x => x.HasInterface(typeof(IService))).ToSet();
-        return serviceTypes;
-    }
-
-    /// <summary>
-    /// Find all Request DTO types in Service Assemblies
-    /// </summary>
-    /// <returns></returns>
-    public static HashSet<Type> ResolveAssemblyRequestTypes()
-    {
-        var origAssemblies = ResolveAllServiceAssemblies();
-        var assemblies = new HashSet<Assembly>(origAssemblies);
-
-        var serviceTypes = ResolveAssemblyServiceTypes();
-        var requestTypes = ServiceController.GetServiceRequestTypes(serviceTypes);
-
-        foreach (var requestType in requestTypes)
-        {
-            assemblies.Add(requestType.Assembly);
-        }
-        
-        foreach (var assembly in assemblies)
-        {
-            foreach (var type in assembly.GetTypes().Where(x => x.HasInterface(typeof(IQuery)) || x.HasInterface(typeof(ICrud))))
-            {
-                requestTypes.Add(type);
-            }
-        }
-        
-        return requestTypes;
-    }
-    
-    /// <summary>
-    /// Find all available Request DTOs in GlobalServiceAssemblies, GlobalServices and GlobalServiceRoutes
-    /// </summary>
-    /// <returns></returns>
-    public static Dictionary<Type, Type> ResolveGlobalRequestServiceTypesMap()
-    {
-        var to = new Dictionary<Type, Type>();
-        // If AppHost has initialized use Metadata Operations
-        if (Instance != null)
-        {
-            foreach (var entry in Instance.Metadata.OperationsMap)
-            {
-                to[entry.Key] = entry.Value.ServiceType;
-            }
-            return to;
-        }
-
-        // Otherwise use registered Services
-        var allServiceTypes = GlobalServiceAssemblies.SelectMany(x => x.GetTypes().Where(ServiceController.IsServiceType)).ToSet();
-        allServiceTypes.AddDistinctRange(GlobalServices);
-        allServiceTypes.AddDistinctRange(GlobalServiceRoutes.Keys);
-
-        foreach (var serviceType in allServiceTypes)
-        {
-            foreach (var action in serviceType.GetActions())
-            {
-                to[action.RequestType] = serviceType;
-            }
-        }
-        return to;
-    }
 
     /// <summary>
     /// Register callbacks that's fired when AppHost is disposed
@@ -1340,9 +1211,9 @@ public abstract partial class ServiceStackHost
         delayedLoadPlugin = true;
         LoadPluginsInternal(plugins);
 
-        GlobalServices.ForEach(x => RegisterService(x));
-        GlobalServices.Clear();
-        this.RegisterServices(GlobalServiceRoutes);
+        InitOptions.ServiceTypes.ForEach(x => RegisterService(x));
+        InitOptions.ServiceTypes.Clear();
+        this.RegisterServices(InitOptions.ServiceRoutes);
 
         // If another ScriptContext (i.e. SharpPagesFeature) is already registered, don't override its IOC registrations.
         if (!Container.Exists<ISharpPages>())
@@ -1812,25 +1683,7 @@ public abstract partial class ServiceStackHost
     internal virtual void LoadPluginsInternal(params IPlugin[] plugins)
     {
         // Only for .NET FX as Configure Services for .NET Core is done in services.AddServiceStack() with ASP.NET Core IOC
-        foreach (var plugin in plugins)
-        {
-            if (GlobalPluginsConfigured.Contains(plugin))
-                continue;
-            if (plugin is IConfigureServices configureServices)
-            {
-                configureServices.Configure(Container);
-            }
-        }
-        foreach (var plugin in plugins)
-        {
-            if (GlobalPluginsConfigured.Contains(plugin))
-                continue;
-            if (plugin is IPostConfigureServices configureServices)
-            {
-                configureServices.AfterConfigure(Container);
-            }
-        }
-        GlobalPluginsToLoad.ForEach(x => GlobalPluginsConfigured.Add(x));
+        InitOptions.ConfigurePlugins(Container);
         
         foreach (var plugin in plugins)
         {

@@ -181,7 +181,7 @@ public static class HostContext
         var appHost = AppHost;
         return appHost != null
             ? appHost.GetPlugin<T>()
-            : ServiceStackHost.GlobalPluginsToLoad.FirstOrDefault(x => x is T) as T;
+            : ServiceStackHost.InitOptions.Plugins.FirstOrDefault(x => x is T) as T;
     }
 
     public static bool HasPlugin<T>() where T : class, IPlugin
@@ -372,12 +372,6 @@ public static class HostContext
         ServiceStackHost.GlobalAfterConfigure.Clear();
         ServiceStackHost.GlobalAfterPluginsLoaded.Clear();
         ServiceStackHost.GlobalAfterAppHostInit.Clear();
-        ServiceStackHost.GlobalPluginsToLoad.Clear();
-        ServiceStackHost.GlobalPluginsToLoad.AddRange(ServiceStackHost.DefaultPluginsToLoad());
-        ServiceStackHost.GlobalPluginsConfigured.Clear();
-        ServiceStackHost.GlobalServicesRegistered.Clear();
-        ServiceStackHost.GlobalServiceAssemblies.Clear();
-        ServiceStackHost.GlobalServices.Clear();
-        ServiceStackHost.GlobalServiceRoutes.Clear();
+        ServiceStackHost.InitOptions = new();
     }
 }
