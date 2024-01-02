@@ -543,11 +543,12 @@ public class ServiceStackOptions
     /// <summary>
     /// Generate ASP.NET Core Endpoints for ServiceStack APIs
     /// </summary>
-    public void MapEndpoints(bool use = true, bool force = true)
+    public void MapEndpoints(bool use = true, bool force = true, bool useSystemJson = true)
     {
         MapEndpointRouting = true;
         UseEndpointRouting = use;
         DisableServiceStackRouting = force;
+        UseSystemJson = useSystemJson;
     }
 
     /// <summary>
@@ -559,6 +560,11 @@ public class ServiceStackOptions
     /// Use ASP .NET Route Endpoint implementations
     /// </summary>
     public bool UseEndpointRouting { get; set; }
+
+    /// <summary>
+    /// Use System.Text JSON for ServiceStack APIs
+    /// </summary>
+    public bool UseSystemJson { get; set; }
 
     /// <summary>
     /// The ASP.NET Core AuthenticationSchemes to use for protected ServiceStack APIs

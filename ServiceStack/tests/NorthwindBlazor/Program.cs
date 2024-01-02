@@ -77,8 +77,9 @@ services.AddSwaggerGen();
 services.AddServiceStack(typeof(MyServices).Assembly, c => {
     c.AddSwagger(o => {
         o.AddJwtBearer();
+        //o.AddBasicAuth();
     });
-}); 
+});
 
 var app = builder.Build();
 
