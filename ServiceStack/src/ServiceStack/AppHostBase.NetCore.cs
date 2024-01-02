@@ -564,11 +564,13 @@ public static class NetCoreAppHostExtensions
     
     public static void AddServiceStack(this IServiceCollection services, IEnumerable<Assembly>? serviceAssemblies, Action<ServiceStackServicesOptions>? configure = null)
     {
-        ServiceStackHost.InitOptions.UseServices(services);
         var options = ServiceStackHost.InitOptions;
+        options.UseServices(services);
         if (serviceAssemblies != null)
             options.ServiceAssemblies.AddRange(serviceAssemblies);
         configure?.Invoke(options);
+
+        options.ConfigurePlugins(services);
 
         var allServiceTypes = options.GetAllServiceTypes();
         foreach (var type in allServiceTypes)
