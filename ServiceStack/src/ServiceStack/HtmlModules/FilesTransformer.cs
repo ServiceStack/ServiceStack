@@ -10,9 +10,9 @@ namespace ServiceStack.HtmlModules;
 
 public class FileTransformerOptions
 {
-    public List<HtmlModuleLine> LineTransformers { get; set; } = new();
-    public List<HtmlModuleBlock> BlockTransformers { get; set; } = new();
-    public List<HtmlModuleBlock> FilesTransformers { get; set; } = new();
+    public List<HtmlModuleLine> LineTransformers { get; set; } = [];
+    public List<HtmlModuleBlock> BlockTransformers { get; set; } = [];
+    public List<HtmlModuleBlock> FilesTransformers { get; set; } = [];
 
     public FileTransformerOptions Without(Run behavior)
     {
@@ -189,53 +189,52 @@ public class FilesTransformer
         }
     }
     
-    public static List<HtmlModuleLine> HtmlModuleLineTransformers { get; } = new()
-    {
-        new RemoveLineEndingWith(new[]{ "/*debug*/", "<!--debug-->" }, ignoreWhiteSpace:true, Run.IgnoreInDebug),
+    public static List<HtmlModuleLine> HtmlModuleLineTransformers { get; } =
+    [
+        new RemoveLineEndingWith(["/*debug*/", "<!--debug-->"], ignoreWhiteSpace: true, Run.IgnoreInDebug),
         // Hide dev comments from browser
-        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
-        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
-        new RemoveLineWithOnlyWhitespace(Run.Always),
-    };
+        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace: true, Run.Always),
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, behaviour: Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always)
+    ];
 
-    public static List<HtmlModuleLine> HtmlLineTransformers { get; } = new()
-    {
-        // Enable static typing during dev, strip from browser to run
-        new RemoveLineStartingWith(new[]{ "import ", "declare " }, ignoreWhiteSpace:false, Run.Always), 
-        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always), 
-        new RemoveLineEndingWith(new[]{ "/*debug*/", "<!--debug-->" }, ignoreWhiteSpace:true, Run.IgnoreInDebug),
+    public static List<HtmlModuleLine> HtmlLineTransformers { get; } =
+    [
+        new RemoveLineStartingWith(["import ", "declare "], ignoreWhiteSpace: false, Run.Always),
+        new RemovePrefixesFromLine("export ", ignoreWhiteSpace: false, Run.Always),
+        new RemoveLineEndingWith(["/*debug*/", "<!--debug-->"], ignoreWhiteSpace: true, Run.IgnoreInDebug),
         // Hide dev comments from browser
-        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace:true, Run.Always),
-        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
-        new RemoveLineWithOnlyWhitespace(Run.Always),
-    };
+        new RemoveLineStartingWith("<!---:", ignoreWhiteSpace: true, Run.Always),
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, behaviour: Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always)
+    ];
 
     // Enable static typing during dev, strip from browser to run
-    public static List<HtmlModuleLine> MjsLineTransformers { get; } = new()
-    {
-        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
+    public static List<HtmlModuleLine> MjsLineTransformers { get; } =
+    [
+        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace: true, Run.IgnoreInDebug),
         // Hide dev comments from browser
-        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, behaviour: Run.Always)
         // new RemoveLineWithOnlyWhitespace(Run.Always), // removes significant whitespace in docs
-    };
+    ];
 
     // Enable static typing during dev, strip from browser to run
-    public static List<HtmlModuleLine> JsLineTransformers { get; } = new()
-    {
-        new RemoveLineStartingWith(new[] { "import ", "declare " }, ignoreWhiteSpace:false, Run.Always),
-        new RemovePrefixesFromLine("export ", ignoreWhiteSpace:false, Run.Always),
-        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace:true, Run.IgnoreInDebug),
+    public static List<HtmlModuleLine> JsLineTransformers { get; } =
+    [
+        new RemoveLineStartingWith(["import ", "declare "], ignoreWhiteSpace: false, Run.Always),
+        new RemovePrefixesFromLine("export ", ignoreWhiteSpace: false, Run.Always),
+        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace: true, Run.IgnoreInDebug),
         // Hide dev comments from browser
-        new RemoveLineStartingWith("/**:", ignoreWhiteSpace:true, behaviour:Run.Always),
-        new RemoveLineWithOnlyWhitespace(Run.Always),
-    };
+        new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, behaviour: Run.Always),
+        new RemoveLineWithOnlyWhitespace(Run.Always)
+    ];
 
-    public static List<HtmlModuleLine> CssLineTransformers { get; } = new()
-    {
+    public static List<HtmlModuleLine> CssLineTransformers { get; } =
+    [
         new RemoveLineStartingWith("/**:", ignoreWhiteSpace: true, Run.Always),
         new RemoveLineWithOnlyWhitespace(Run.Always),
-        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace: true, Run.IgnoreInDebug),
-    };
+        new RemoveLineEndingWith("/*debug*/", ignoreWhiteSpace: true, Run.IgnoreInDebug)
+    ];
 
     public static string ModuleHeader(IVirtualFile file)
     {
