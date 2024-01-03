@@ -42,7 +42,7 @@ public class CustomRequestDataTests
 	public void Can_parse_custom_form_data()
 	{
 #pragma warning disable CS0618, SYSLIB0014
-		var webReq = WebRequest.CreateHttp("http://localhost:1337/customformdata?format=json");
+		var webReq = WebRequest.CreateHttp(ListeningOn + "customformdata?format=json");
 #pragma warning restore CS0618, SYSLIB0014
 		webReq.Method = HttpMethods.Post;
 		webReq.ContentType = MimeTypes.FormUrlEncoded;
